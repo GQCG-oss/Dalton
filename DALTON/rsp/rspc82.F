@@ -586,7 +586,6 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C
       CALL QENTER('RSPELI')
 C
@@ -664,7 +663,7 @@ C CBN+JK 03.01.06 : This covers also mm/pcm
 C
 C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. QMNPMM
 C
-      IF (EMBEDDING .OR. WAVPCM) THEN
+      IF (EMBEDDING) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      &               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

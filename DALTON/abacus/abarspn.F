@@ -396,12 +396,13 @@ C
 
 C
       IF (ABSLRS) THEN
+        LUABSVECS = -1
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
-          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
           WRITE(LUABSVECS) 'EOFLABEL'
         ELSE
-          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
         END IF
       ENDIF
 C
@@ -492,8 +493,8 @@ C
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'KEEP')
       CALL GPCLOSE(LURSP ,'KEEP')
-      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
-      IF (ABSLRS) CLOSE(LUABSVECS,status='keep')
+      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL    ,'KEEP')
+      IF (ABSLRS)     CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')

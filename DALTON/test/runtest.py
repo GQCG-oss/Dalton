@@ -15,7 +15,7 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.2'
+RUNTEST_VERSION = 'v0.1.5'
 
 import re
 import os
@@ -202,11 +202,13 @@ class _SingleFilter:
         if 'rel_tolerance' in kwargs.keys():
             self.tolerance = kwargs.get('rel_tolerance')
             self.tolerance_is_relative = True
+            self.tolerance_is_set = True
         elif 'abs_tolerance' in kwargs.keys():
             self.tolerance = kwargs.get('abs_tolerance')
             self.tolerance_is_relative = False
+            self.tolerance_is_set = True
         else:
-            raise FilterKeywordError('ERROR: you have to specify either rel_tolerance or abs_tolerance\n')
+            self.tolerance_is_set = False
 
         self.mask = kwargs.get('mask', [])
         if self.mask == []:
@@ -278,119 +280,52 @@ class Filter:
             - nothing
 
         Generates the following files in work_dir:
-
             - out_name.filtered  -- numbers extracted from output
             - out_name.reference -- numbers extracted from reference
             - out_name.diff      -- difference between the two above
 
         Raises:
             - TestFailedError
-            - BadFilterError
         """
 
-        out = open(out_name).readlines()
-        log_out = open('%s.filtered' % out_name, 'w')
-
-        ref = open(ref_name).readlines()
-        log_ref = open('%s.reference' % out_name, 'w')
-
-        log_diff = open('%s.diff' % out_name, 'w')
-
-        numeric_const_pattern = r"""
-        [-+]? # optional sign
-        (?:
-            (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
-            |
-            (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
-        )
-        # followed by optional exponent part if desired
-        (?: [EeDd] [+-]? \d+ ) ?
-        """
-
-        p = re.compile(numeric_const_pattern, re.VERBOSE)
-        pd = re.compile(r'[dD]')
+        log_out  = open('%s.filtered'  % out_name, 'w')
+        log_ref  = open('%s.reference' % out_name, 'w')
+        log_diff = open('%s.diff'      % out_name, 'w')
 
         for f in self.filter_list:
 
-            line_l_out = self._extract(f, out)
-            line_l_ref = self._extract(f, ref)
-            for (line_l, string_l, log, file_name) in \
-                    [(line_l_out, out, log_out, out_name),
-                     (line_l_ref, ref, log_ref, ref_name)]:
-                if line_l == []:
-                    if f.num_lines > 0:
-                        r = '[%i lines from "%s"]' % (f.num_lines, f.from_string)
-                    else:
-                        r = '["%s" ... "%s"]' % (f.from_string, f.to_string)
-                    message = 'ERROR: filter %s did not extract anything from file %s\n' % (r, file_name)
-                    raise BadFilterError(message)
-                for line in line_l:
-                    log.write(string_l[line])
+            out_filtered = self._filter_file(f, out_name)
+            log_out.write(''.join(out_filtered))
+            out_numbers, out_location = self._extract_numbers(f, out_filtered)
 
-            f_l_out = []
-            f_l_ref = []
-            f_to_line_out = []
-            f_to_line_ref = []
-            for (line_l, string_l, f_l, f_to_line) in \
-                    [(line_l_out, out, f_l_out, f_to_line_out),
-                     (line_l_ref, ref, f_l_ref, f_to_line_ref)]:
-                for line in line_l:
-                    i = 0
-                    for w in string_l[line].split():
-                        i += 1
-                        if (f.use_mask) and (i not in f.mask):
-                            continue
-                        # do not consider words like TzB1g
-                        # otherwise we would extract 1 later
-                        if re.match(r'^[0-9\.eEdD\+\-]*$', w):
-                            # apply floating point regex
-                            for m in p.findall(w):
-                                # substitute dD by e
-                                m = pd.sub('e', m)
-                                f_l.append(float(m))
-                                f_to_line.append(line)
+            ref_filtered = self._filter_file(f, ref_name)
+            log_ref.write(''.join(out_filtered))
+            ref_numbers, ref_location = self._extract_numbers(f, ref_filtered)
 
-            if len(f_l_out) == len(f_l_ref):
-                for i in range(len(f_l_out)):
-                    r_out = f_l_out[i]
-                    r_ref = f_l_ref[i]
+            if len(out_numbers) == len(ref_numbers):
+                l = self._compare_numbers(f, out_numbers, ref_numbers)
+                if 0 in l:
+                    log_diff.write('\n')
+                    for k, line in enumerate(out_filtered):
+                        log_diff.write('.       %s' % line)
+                        for i, num in enumerate(out_numbers):
+                            (line_num, start_char, length) = out_location[i]
+                            if line_num == k:
+                                if l[i] == 0:
+                                    is_integer = isinstance(num, int)
+                                    log_diff.write('ERROR   %s' % self._underline(f, start_char, length, ref_numbers[i], is_integer))
 
-                    if f.ignore_sign:
-                        # if ignore sign take absolute values
-                        r_out = abs(r_out)
-                        r_ref = abs(r_ref)
-
-                    if abs(r_ref) > f.ignore_below:
-                        # calculate relative error only for
-                        # significant ('nonzero') numbers
-                        error = r_out - r_ref
-                        if f.tolerance_is_relative:
-                            error /= r_ref
-                        if abs(error) > f.tolerance:
-                            log_diff.write('line %i: %s' % (f_to_line_out[i] + 1, out[f_to_line_out[i]]))
-                            if f.tolerance_is_relative:
-                                log_diff.write('    rel error %7.4e > tolerance %7.4e\n\n' % (error, f.tolerance))
-                            else:
-                                log_diff.write('    abs error %7.4e > tolerance %7.4e\n\n' % (error, f.tolerance))
-            else:
+            if len(out_numbers) != len(ref_numbers):
                 log_diff.write('extracted sizes do not match\n')
+                log_diff.write('own gave %i numbers:\n' % len(out_numbers))
+                log_diff.write(''.join(out_filtered) + '\n')
+                log_diff.write('refernce gave %i numbers:\n' % len(ref_numbers))
+                log_diff.write(''.join(ref_filtered) + '\n')
 
-                log_diff.write('own gave %i numbers:\n' % len(f_l_out))
-                last_line_printed = -1
-                for i in range(len(f_l_out)):
-                    if (f_to_line_out[i] != last_line_printed):
-                        log_diff.write('    %s' % out[f_to_line_out[i]])
-                        last_line_printed = f_to_line_out[i]
-
-                log_diff.write('reference gave %i numbers:\n' % len(f_l_ref))
-                last_line_printed = -1
-                for i in range(len(f_l_ref)):
-                    if (f_to_line_ref[i] != last_line_printed):
-                        log_diff.write('    %s' % ref[f_to_line_ref[i]])
-                        last_line_printed = f_to_line_ref[i]
         log_out.close()
         log_ref.close()
         log_diff.close()
+
         if os.path.getsize('%s.diff' % out_name) > 0:
             log_diff = open('%s.diff' % out_name, 'r')
             diff = ''
@@ -403,45 +338,199 @@ class Filter:
             raise TestFailedError(message)
 
     #--------------------------------------------------------------------------
-    def _extract(self, f, out):
+    def _filter_file(self, f, file_name):
         """
         Input:
             - f -- filter task
-            - out -- the output string to filter
+            - file_name -- the output file to filter
 
         Returns:
-            - line_l -- list of line numbers from which numbers will be extracted
+            - output_filtered -- the filtered output
 
         Raises:
-            nothing
+            - BadFilterError
         """
 
-        if f.from_is_re:
-            ps = re.compile(r'.*%s' % f.from_string)
-        if f.to_is_re:
-            pe = re.compile(r'.*%s' % f.to_string)
+        output = open(file_name).readlines()
 
-        line_l = []
-        for i in range(len(out)):
+        output_filtered = []
+
+        for i in range(len(output)):
             start_line_matches = False
             if f.from_is_re:
-                start_line_matches = ps.match(out[i])
+                start_line_matches = re.match(r'.*%s' % f.from_string, output[i])
             else:
-                start_line_matches = (f.from_string in out[i])
+                start_line_matches = (f.from_string in output[i])
             if start_line_matches:
                 if f.num_lines > 0:
                     for n in range(i, i + f.num_lines):
-                        line_l.append(n)
+                        output_filtered.append(output[n])
                 else:
-                    for j in range(i, len(out)):
+                    for j in range(i, len(output)):
                         f.end_line_matches = False
                         if f.to_is_re:
-                            f.end_line_matches = pe.match(out[j])
+                            f.end_line_matches = re.match(r'.*%s' % f.to_string, output[j])
                         else:
-                            f.end_line_matches = (f.to_string in out[j])
+                            f.end_line_matches = (f.to_string in output[j])
                         if f.end_line_matches:
                             for n in range(i, j + 1):
-                                line_l.append(n)
+                                output_filtered.append(output[n])
                             break
 
-        return line_l
+        if output_filtered == []:
+            if f.num_lines > 0:
+                r = '[%i lines from "%s"]' % (f.num_lines, f.from_string)
+            else:
+                r = '["%s" ... "%s"]' % (f.from_string, f.to_string)
+            message = 'ERROR: filter %s did not extract anything from file %s\n' % (r, file_name)
+            raise BadFilterError(message)
+
+        return output_filtered
+
+    #--------------------------------------------------------------------------
+    def _extract_numbers(self, f, text):
+        """
+        Input:
+            - f -- filter task
+            - text -- list of lines where we extract numbers from
+
+        Returns:
+            - numbers -- list of numbers
+            - location -- location of each number, list of triples
+                          (line, start position, length)
+
+        Raises:
+            - nothing
+        """
+
+        numeric_const_pattern = r"""
+        [-+]? # optional sign
+        (?:
+            (?: \d* \. \d+ ) # .1 .12 .123 etc 9.1 etc 98.1 etc
+            |
+            (?: \d+ \.? ) # 1. 12. 123. etc 1 12 123 etc
+        )
+        # followed by optional exponent part if desired
+        (?: [EeDd] [+-]? \d+ ) ?
+        """
+
+        pattern_int = re.compile('^-?[0-9]+$', re.VERBOSE)
+        pattern_float = re.compile(numeric_const_pattern, re.VERBOSE)
+        pattern_d = re.compile(r'[dD]')
+
+        numbers = []
+        location = []
+
+        for n, line in enumerate(text):
+            i = 0
+            for w in line.split():
+                i += 1
+                if (f.use_mask) and (i not in f.mask):
+                    continue
+                # do not consider words like TzB1g
+                # otherwise we would extract 1 later
+                if re.match(r'^[0-9\.eEdD\+\-]*$', w):
+                    is_integer = False
+                    if len(pattern_float.findall(w)) > 0:
+                        is_integer = (pattern_float.findall(w) == pattern_int.findall(w))
+                    # apply floating point regex
+                    for m in pattern_float.findall(w):
+                        index = line.index(m)
+                        # substitute dD by e
+                        m = pattern_d.sub('e', m)
+                        if is_integer:
+                            numbers.append(int(m))
+                        else:
+                            numbers.append(float(m))
+                        location.append((n, index, len(m)))
+
+        return numbers, location
+
+    #--------------------------------------------------------------------------
+    def _underline(self, f, start_char, length, reference, is_integer):
+        """
+        Input:
+            - f -- filter task
+            - start_char -- position of start character
+            - length -- underline length
+            - reference -- reference number
+            - is_integer -- whether reference number is integer
+
+        Returns:
+            - s -- underline string with info about reference and tolerance
+
+        Raises:
+            - nothing
+        """
+
+        s = ''
+        for i in range(start_char):
+            s += ' '
+        for i in range(length):
+            s += '#'
+        s += ' expected: %s' % reference
+
+        if not is_integer:
+            if f.tolerance_is_set:
+                if f.tolerance_is_relative:
+                    s += ' (rel tolerance: %e)' % f.tolerance
+                else:
+                    s += ' (abs tolerance: %e)' % f.tolerance
+
+        return s + '\n'
+
+    #--------------------------------------------------------------------------
+    def _compare_numbers(self, f, l1, l2):
+        """
+        Input:
+            - f -- filter task
+            - l1 -- list of numbers
+            - l2 -- another list of numbers
+
+        Returns:
+            - res -- list that contains ones (pass) or zeros (failures)
+                     l1, l2, and res have same length
+
+        Raises:
+            - FilterKeywordError
+        """
+
+        res = []
+
+        for i in range(len(l1)):
+
+            r_out = l1[i]
+            r_ref = l2[i]
+
+            if f.ignore_sign:
+                # if ignore sign take absolute values
+                r_out = abs(r_out)
+                r_ref = abs(r_ref)
+
+            is_integer_out = isinstance(r_out, int)
+            is_integer_ref = isinstance(r_ref, int)
+
+            if is_integer_out and is_integer_ref:
+                # we compare integers
+                if r_out == r_ref:
+                    res.append(1)
+                else:
+                    res.append(0)
+            else:
+                # we compare floats
+                if not f.tolerance_is_set:
+                    raise FilterKeywordError('ERROR: for floats you have to specify either rel_tolerance or abs_tolerance\n')
+                if abs(r_ref) > f.ignore_below:
+                    # calculate relative error only for
+                    # significant ('nonzero') numbers
+                    error = r_out - r_ref
+                    if f.tolerance_is_relative:
+                        error /= r_ref
+                    if abs(error) > f.tolerance:
+                        res.append(0)
+                    else:
+                        res.append(1)
+                else:
+                    res.append(1)
+
+        return res

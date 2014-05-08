@@ -1,6 +1,6 @@
 *testjob-pid*
-runtest*/*.out
-runtest*/*.stdout
-runtest*/*.diff
-runtest*/*.filtered
-runtest*/*.reference
+*/*.out
+*/*.stdout
+*/*.diff
+*/*.filtered
+*/*.reference

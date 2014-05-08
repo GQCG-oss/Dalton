@@ -25,7 +25,7 @@ f.add(from_re = 'Singlet electronic excitation energies',
       mask = [4],
       rel_tolerance = 1.0e-6)
 
-f.add(from_re = 'Electric transition dipole moments \(in a\.u\.\)',
+f.add(from_re = 'Electric transition dipole moments \(au\)',
       num_lines = 9,
       abs_tolerance = 1.0e-3)
 

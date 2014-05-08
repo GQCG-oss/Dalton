@@ -49,33 +49,32 @@ contains
 !> \param F full Fock matrix 
 !> \param S full Overlap matrix 
 !> \param nbast full dimensions 
-subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast)
+subroutine trilevel_diag_per_ang(ang,basis_size,bCMO,F,S,nbast,nb)
 implicit none
-
-integer, intent(in)     :: ang, basis_size(:), nbast
+integer, intent(in)     :: ang, nbast,nb
+integer, intent(in)     :: basis_size(:)
 real(realk), intent(in) :: F(nbast,nbast), S(nbast,nbast)
-real(realk),target      :: bCMO( basis_size(ang+1), basis_size(ang+1))
+real(realk),target      :: bCMO(nb,nb)
 !
 real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
-integer                 :: i, j, k, istart, info, nb, lwrk,itype
+integer                 :: i, j, k, istart, info, lwrk,itype
 integer,     pointer    :: indexlist(:) 
 #ifdef VAR_LSESSL
-integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
+integer :: ifail(nb),iwrk(5*nb),nfound
 real(realk) :: no_ref,tol
-real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
+real(realk) :: Z(nb,nb)
 #endif
  
  info = 0
- nb =  basis_size(ang+1)
  itype=1
  call trilevel_indexlist(ang,basis_size,indexlist)
 
 !create subblock matrix
  call mem_alloc(bS,nb,nb)
- bF => bCMO
+ call mem_alloc(bF,nb,nb)
 
- do i=1, nb
-  do j=1, nb
+ do j=1, nb
+  do i=1, nb
        bF(i,j)=F(indexlist(i),indexlist(j))
        bS(i,j)=S(indexlist(i),indexlist(j))
   enddo
@@ -115,6 +114,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 
   call mem_dealloc(eig)
   call mem_dealloc(wrk)
+  bCMO = bF
  else
   bCMO(1,1)=1E0_realk
  endif
@@ -122,6 +122,7 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 !cleanup
 call mem_dealloc(indexlist)
 call mem_dealloc(bS)
+call mem_dealloc(bF)
 
 end subroutine trilevel_diag_per_ang
 
@@ -333,7 +334,7 @@ integer, pointer       ::  perm(:), iperm(:), basis_size(:)
 
      call mem_alloc(bCMO,nb,nb)
      !diagonal angular block => bCMO
-     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast)
+     call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast,nb)
      !set occupation numbers based on element table in ecdata
      call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%REGULAR%ATOMTYPE(itype)%Charge)
      !Build full MO coefficient matrix from the bCMO blocks
@@ -606,8 +607,8 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 
    call mem_alloc(bCMO,nb,nb)
 
-   do i=1, nb
-    do j=1, nb
+   do j=1, nb
+    do i=1, nb
        bCMO(i,j)=CMO(indexlist(i),indexlist(j))
     enddo
    enddo
@@ -1585,6 +1586,18 @@ type(LowAccuracyStartType)  :: LAStype
 
   !loops over all distinct atoms and build valensbasis
   call trilevel_full2valence(ls,ai,config%LUPRI)
+
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        IF(ls%SETTING%BASIS(iAO)%p%VALENCE%nAtomtypes.NE.0)THEN
+           call lsquit('this should not happen setting valence basis non zero',-1)
+           call free_basissetinfo(ls%SETTING%BASIS(iAO)%p%VALENCE)
+        ENDIF
+        call copy_basissetinfo(ls%input%basis%valence,ls%SETTING%BASIS(iAO)%p%VALENCE)
+        call determine_nbast(ls%setting%MOLECULE(iAO)%p,ls%SETTING%BASIS(iAO)%p%VALENCE,&
+             &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
+     ENDDO
+  ENDIF
   !in the valence basis is built as a GC basis
   !so we do not need to transform when doing integrals
 
@@ -1830,6 +1843,11 @@ type(LowAccuracyStartType)  :: LAStype
   call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%VALENCE)
   !Due to the construction of Vbasis from regular basis we need to free some space
   !that is not used in the valence basis - But we do not actually free the basis
+  IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
+     DO iAO=1,ls%SETTING%nAO
+        call freeVbasis(ls%SETTING%BASIS(iAO)%p)
+     ENDDO
+  ENDIF
   call freeVbasis(ls%input%BASIS)
 
   ! initialize decomp%lcv_CMO
@@ -1862,7 +1880,8 @@ type(LowAccuracyStartType)  :: LAStype
   !we restore the default settings, which sets the GRDONE=0 
   !so that the dft grid is calculated with the full basis 
   !on the next kohn-sham matrix build
-  call typedef_set_default_setting(ls%setting,ls%input)
+!  call typedef_set_default_setting(ls%setting,ls%input)
+  CALL typedef_setIntegralSchemeFromInput(LS%INPUT%DALTON,LS%SETTING%SCHEME)
 
   IF(.NOT.config%decomp%cfg_gcbasis)then
      IF(.NOT.ls%input%basis%REGULAR%DunningsBasis)THEN

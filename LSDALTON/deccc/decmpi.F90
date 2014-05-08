@@ -151,11 +151,12 @@ contains
     end if
 
     ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
-    if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
-       call lsquit('mpi_send_recv_single_fragment: Not implemented for &
-            & sending/receiving fragment basis info!',-1)
-    end if
-
+    if(mynum==MySender) then
+       if(MyFragment%BasisInfoIsSet) then
+          call lsquit('mpi_send_recv_single_fragment: Not implemented for &
+               & sending/receiving fragment basis info!',-1)
+       end if
+    endif
     ! Init buffer
     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
@@ -291,11 +292,12 @@ contains
        CommunicateFragment: if(whichfrags(atom)) then
 
           ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
-          if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
-             call lsquit('mpi_bcast_many_fragments: Not implemented for &
-                  & sending/receiving fragment basis info!',-1)
-          end if
-
+          if(mynum==0) then
+             if(Fragments(atom)%BasisInfoIsSet) then
+                call lsquit('mpi_bcast_many_fragments: Not implemented for &
+                     & sending/receiving fragment basis info!',-1)
+             end if
+          endif
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
@@ -549,6 +551,8 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN
           call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
@@ -593,6 +597,8 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -682,9 +688,9 @@ contains
     call ls_mpi_buffer(MyFragment%EvirtFOP,master)
     call ls_mpi_buffer(MyFragment%LagFOP,master)
     CALL ls_mpi_buffer(MyFragment%flops_slaves,master)
-    call ls_mpi_buffer(MyFragment%slavetime_work,master)
-    call ls_mpi_buffer(MyFragment%slavetime_comm,master)
-    call ls_mpi_buffer(MyFragment%slavetime_idle,master)
+    call ls_mpi_buffer(MyFragment%slavetime_work,ndecmodels,master)
+    call ls_mpi_buffer(MyFragment%slavetime_comm,ndecmodels,master)
+    call ls_mpi_buffer(MyFragment%slavetime_idle,ndecmodels,master)
     call ls_mpi_buffer(MyFragment%RejectThr,2,master)
     call ls_mpi_buffer(MyFragment%DmaxAE,master)
     call ls_mpi_buffer(MyFragment%DmaxAOS,master)
@@ -1026,19 +1032,20 @@ contains
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
       k=SPLIT_MSG_REC
+      !This used to be SPLIT_MSG_REC but now 
 
       nelms = nbas*nocc
-      call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(xo,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(yo,nelms,infpar%master,infpar%lg_comm)
 
       nelms = nbas*nvirt
-      call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(xv,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(yv,nelms,infpar%master,infpar%lg_comm)
 
       nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if(iter/=1.and.(s==0.or.s==4))then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
       if(.not.loc)then
@@ -1486,7 +1493,9 @@ contains
        call mem_alloc(jobs%ntasks,jobs%njobs)
        call mem_alloc(jobs%flops,jobs%njobs)
        call mem_alloc(jobs%LMtime,jobs%njobs)
-       call mem_alloc(jobs%load,jobs%njobs)
+       call mem_alloc(jobs%workt,jobs%njobs)
+       call mem_alloc(jobs%commt,jobs%njobs)
+       call mem_alloc(jobs%idlet,jobs%njobs)
     end if
 
     ! Buffer handling for pointers
@@ -1503,7 +1512,9 @@ contains
     call ls_mpi_buffer(jobs%ntasks,jobs%njobs,master)
     call ls_mpi_buffer(jobs%flops,jobs%njobs,master)
     call ls_mpi_buffer(jobs%LMtime,jobs%njobs,master)
-    call ls_mpi_buffer(jobs%load,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%workt,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%commt,jobs%njobs,master)
+    call ls_mpi_buffer(jobs%idlet,jobs%njobs,master)
 
   end subroutine mpicopy_fragment_joblist
 
@@ -1746,14 +1757,13 @@ contains
     write(DECinfo%output,*) '      Similarly, GFLOPS is set to -1 if you have not linked to the PAPI library'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,5X,a)') 'Job', '#occ', &
-         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load'
+    write(DECinfo%output,'(5X,a,4X,a,3X,a,2X,a,1X,a,2X,a,5X,a,5X,a,4X,a,6X,a)') 'Job', '#occ', &
+         & '#virt', '#basis', 'slotsiz', '#tasks', 'GFLOPS', 'Time(s)', 'Load1', 'Load2'
 
     avflop         = 0.0E0_realk
     totflops       = 0.0E0_realk
     tottime_actual = 0.0E0_realk
-    slavetime      = 0.0_realk
-
+    slavetime      = 0.0E0_realk
 
     minflop        = huge(minflop)
     maxflop        = tiny(maxflop)
@@ -1778,11 +1788,13 @@ contains
        ! Update total time used by ALL nodes (including dead time by local slaves)
        tottime_actual = tottime_actual + jobs%LMtime(i)*jobs%nslaves(i)
        ! Effective slave time (WITHOUT dead time by slaves)
-       slavetime = slavetime + jobs%load(i)*jobs%nslaves(i)*jobs%LMtime(i)
+       slavetime = slavetime + jobs%workt(i) + jobs%commt(i)
 
        if(.not. jobs%dofragopt(i)) then
-          write(DECinfo%output,'(6i8,3X,3g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
-               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), jobs%load(i), 'STAT'
+          write(DECinfo%output,'(6i8,3X,4g11.3,a)') i, jobs%nocc(i), jobs%nunocc(i), jobs%nbasis(i),&
+               & jobs%nslaves(i), jobs%ntasks(i), Gflops, jobs%LMtime(i), &
+               &(jobs%workt(i)+jobs%commt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), &
+               &(jobs%workt(i))/(jobs%LMtime(i)*jobs%nslaves(i)), 'STAT'
        end if
 
        ! Accumulated Gflops per sec
@@ -1832,11 +1844,11 @@ contains
             & maxflop, ' for job ', maxidx
 #endif
     write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%)     = ', globalloss
-       if(.not. any(jobs%dofragopt) ) then
+       !if(.not. any(jobs%dofragopt) ) then
           ! Only print local loss when it is actually implemented
           write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)      = ', localloss
           write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)      = ', localloss+globalloss
-       end if
+       !end if
     write(DECinfo%output,*) '-----------------------------------------------------------------------------'
 
     end if
@@ -1932,43 +1944,32 @@ contains
   !
   !> Author:  Pablo Baudin
   !> Date:    January 2014
-  subroutine mpi_communicate_moccsd_data(pgmo_diag,pgmo_up,t1,omega1,t2,omega2, &
-             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,lampo,lampv, &
-             & lamho,lamhv,deltafock,ppfock,pqfock,qpfock,qqfock)
+  subroutine mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,om2, &
+             & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,loc)
 
     implicit none
      
+    !> CC model
+    integer,intent(inout) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer :: nbas, nocc, nvir, iter
     type(array) :: pgmo_diag, pgmo_up
     type(array) :: govov
     type(array) :: t1
-    type(array) :: omega1
     type(array) :: t2
-    type(array) :: omega2
-     
-    !> Long-range correction to Fock matrix
-    type(array) :: deltafock
-    !> occupied-occupied block of the t1-fock matrix
-    type(array) :: ppfock
-    !> virtual-virtual block of the t1-fock matrix
-    type(array) :: qqfock
-    !> occupied-virtual block of the t1-fock matrix
-    type(array) :: pqfock
-    !> virtual-occupied block of the t1-fock matrix
-    type(array) :: qpfock
-    !> transformation matrices from AO to t1-MO:
-    real(realk), pointer :: lampo(:,:), lampv(:,:)
-    real(realk), pointer :: lamho(:,:), lamhv(:,:)
+    type(array) :: om2
      
     !> LS item with information needed for integrals
     type(lsitem) :: MyLsItem
      
     !> Batches info:
     type(MObatchInfo) :: MOinfo
+    logical :: loc
 
     integer :: pgmo_diag_addr(infpar%lg_nodtot)   
     integer :: pgmo_up_addr(infpar%lg_nodtot)   
+    integer :: t1addr(infpar%lg_nodtot), t2addr(infpar%lg_nodtot)
+    integer :: gaddr(infpar%lg_nodtot), oaddr(infpar%lg_nodtot)
     integer :: ntot, k
     integer(kind=long) :: nelms
     logical :: master
@@ -1981,6 +1982,8 @@ contains
     call ls_mpi_buffer(nvir,infpar%master)
     call ls_mpi_buffer(iter,infpar%master)
     call ls_mpi_buffer(MOinfo%nbatch,infpar%master)
+    call ls_mpi_buffer(loc,infpar%master)
+    call ls_mpi_buffer(ccmodel,infpar%master)
     if (.not.master) then
       call mem_alloc(MOinfo%dimInd1,MOinfo%nbatch)
       call mem_alloc(MOinfo%dimInd2,MOinfo%nbatch)
@@ -1995,6 +1998,17 @@ contains
     call ls_mpi_buffer(MOinfo%StartInd2,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%dimTot,MOinfo%nbatch,infpar%master)
     call ls_mpi_buffer(MOinfo%tileInd,MOinfo%nbatch,2,infpar%master)
+
+    if(.not.loc)then
+      if(master)t1addr=t1%addr_p_arr
+      call ls_mpi_buffer(t1addr,infpar%lg_nodtot,infpar%master)
+      if(master)gaddr=govov%addr_p_arr
+      call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
+      if(master)t2addr=t2%addr_p_arr
+      call ls_mpi_buffer(t2addr,infpar%lg_nodtot,infpar%master)
+      if(master)oaddr=om2%addr_p_arr
+      call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
+    endif
 
     if (master) pgmo_diag_addr=pgmo_diag%addr_p_arr
     call ls_mpi_buffer(pgmo_diag_addr,infpar%lg_nodtot,infpar%master)
@@ -2015,15 +2029,18 @@ contains
       !ccsd_data_preparation
       k=SPLIT_MSG_REC
 
-      nelms = nvir*nocc
-      call ls_mpibcast_chunks(t1%elm1,nelms,infpar%master,infpar%lg_comm,k)
-
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if (iter/=1) then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
+      if(.not.loc)then
+        t1    = get_arr_from_parr(t1addr(infpar%lg_mynum+1))
+        govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
+        t2    = get_arr_from_parr(t2addr(infpar%lg_mynum+1))
+        om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
+      endif
       pgmo_diag = get_arr_from_parr(pgmo_diag_addr(infpar%lg_mynum+1))
       if (MOinfo%nbatch>1) pgmo_up = get_arr_from_parr(pgmo_up_addr(infpar%lg_mynum+1))
     endif
@@ -2075,6 +2092,7 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
+    call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
@@ -2103,6 +2121,7 @@ contains
     call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
+    call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -2134,10 +2153,13 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
+    call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
@@ -2149,7 +2171,7 @@ contains
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
-    call ls_mpi_buffer(DECitem%MP2density,Master)
+    call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
@@ -2157,69 +2179,164 @@ contains
     call ls_mpi_buffer(DECitem%kappaMaxIter,Master)
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
+    call ls_mpi_buffer(DECitem%SOS,Master)
     mydim=8  
     call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
+    call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)
+    if(DECitem%only_n_frag_jobs>0)then
+       if(.not. AddToBuffer)then
+          call mem_alloc(DECitem%frag_job_nr,DECitem%only_n_frag_jobs)
+       endif
+       call ls_mpi_buffer(DECitem%frag_job_nr,DECitem%only_n_frag_jobs,Master)
+    endif
 
   end subroutine mpicopy_dec_settings
 
   subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
     implicit none
-    real(realk),intent(inout),pointer :: gmo(:)
-    type(array4), intent(inout) :: omega2
+    !real(realk),intent(inout),pointer :: gmo(:)
+    !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: gmo
+    type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
+    !real(realk),intent(inout)         :: t2(:,:,:,:)
     integer,intent(inout)             :: nvirt,nocc
     logical :: master
+    integer :: addr1(infpar%lg_nodtot)
+    integer :: addr2(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
 
 
     master = (infpar%lg_mynum == infpar%master)
+
+    if(master) then
+   !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
+      addr1 = omega2%addr_p_arr
+      !addr2 = gmo%addr_p_arr
+      !addr3 = t2%addr_p_arr
+    endif
+
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
+    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+
+
     if(.not.master)then
-      call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+      omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+      !gmo     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
-      omega2=array4_init([nvirt,nocc,nvirt,nocc])
-      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      !omega2=array4_init([nvirt,nocc,nvirt,nocc])
+      !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
-    call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    !print*,' inside rpa_res_comm',infpar%lg_mynum
 
     
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    !call ls_mpibcast(t2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(omega2%val,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    !print*,' after gmo',infpar%lg_mynum
+
+    !print*,' after omega2',infpar%lg_mynum
+
+
+    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    !print*,' after t2',infpar%lg_mynum
+    call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+
+
+    !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+    !print*,' after finalize',infpar%lg_mynum
+    call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+
 
   end subroutine rpa_res_communicate_data
 
-  subroutine rpa_fock_communicate_data(omega2,t2,pfock,qfock,nocc,nvirt)
+  subroutine rpa_fock_communicate_data(t2,omega2,pfock,qfock,no,nv)
     implicit none
-    type(array4), intent(inout) :: omega2
-    type(array2), intent(inout) :: pfock,qfock
-    type(array4),intent(inout)         :: t2
-    integer,intent(inout)             :: nvirt,nocc
+    !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: omega2
+    type(array),intent(inout)         :: t2
+    type(array), intent(inout) :: pfock,qfock
+    integer,intent(inout)             :: nv,no
+    integer :: addr1(infpar%lg_nodtot)
+    integer :: addr2(infpar%lg_nodtot)
+    integer :: addr3(infpar%lg_nodtot)
+    integer :: addr4(infpar%lg_nodtot)
+    !real(realk), intent(inout) :: pfock(no,no),qfock(nv,nv)
     logical :: master
 
 
     master = (infpar%lg_mynum == infpar%master)
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    if(.not.master)then
-      !call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
-      t2=array4_init([nvirt,nocc,nvirt,nocc])
-      pfock=array2_init([nocc,nocc])
-      qfock=array2_init([nvirt,nvirt])
-    endif
-    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
-    call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
-    call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
 
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(nv,infpar%master)
+    call ls_mpi_buffer(no,infpar%master)
+
+    if(master) then
+      addr1 = pfock%addr_p_arr
+      addr2 = qfock%addr_p_arr
+      addr3 = t2%addr_p_arr
+      addr4 = omega2%addr_p_arr
+    endif
+
+    call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+    call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+
+
+!    if(.not.master)then
+!      !call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+!      !t2=array4_init([nvirt,nocc,nvirt,nocc])
+!      !omega2=array4_init([nv,no,nv,no])
+!
+!      write(*,*) 't2 ainit'
+!      !t2=array_ainit([nv,nv,no,no],4,atype='TDAR')
+!      write(*,*) 't2 init'
+!    !  pfock=array_ainit([no,no],2,atype='TDAR')
+!      write(*,*) 'pf init'
+!    !  qfock=array_ainit([nv,nv],2,atype='TDAR')
+!    !  pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+!      write(*,*) 'vf init'
+!    !  qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+!      !pfock=array2_init([nocc,nocc])
+!      !qfock=array2_init([nvirt,nvirt])
+!    endif
+!    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(pfock%val,nocc,nocc,infpar%master)
+    !call ls_mpi_buffer(qfock%val,nvirt,nvirt,infpar%master)
+
+!    write(*,*) 'bcast t2',infpar%lg_mynum
     
+    !call ls_mpibcast(t2%elm4,nv,nv,no,no,infpar%master,infpar%lg_comm)
+!    write(*,*) 'after bcast t2',infpar%lg_mynum
+    !call ls_mpibcast(pfock%elm2,no,no,infpar%master,infpar%lg_comm)
+    !call ls_mpibcast(qfock%elm2,nv,nv,infpar%master,infpar%lg_comm)
+
+!    write(*,*) 'finalized buffer',infpar%lg_mynum
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-    call ls_mpibcast(t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+
+    if(.not.master)then
+      !t2=array_ainit([nv,nv,no,no],4,local =.true.,atype='TDAR')
+      pfock   = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+      qfock    = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      t2    = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+      omega2   = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+    endif
+    !call ls_mpibcast(t2%elm1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+
 
   end subroutine rpa_fock_communicate_data
 
@@ -2242,11 +2359,12 @@ contains
 
   end subroutine mpi_dec_fullinfo_master_to_slaves_precursor
 
-  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem)
+  subroutine wake_slaves_for_simple_mo(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,c)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
+     logical, intent(inout) :: c
      integer :: addr1(infpar%lg_nodtot)
      integer :: addr2(infpar%lg_nodtot)
      integer :: addr3(infpar%lg_nodtot)
@@ -2274,6 +2392,7 @@ contains
      call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
      call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
      call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpi_buffer(c,infpar%master)
      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
      if(.not.master)then
@@ -2288,6 +2407,48 @@ contains
   end subroutine wake_slaves_for_simple_mo
 
 
+  subroutine get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
+     implicit none
+     type(array),intent(inout) :: omega2,iajb,t2,oof,vvf
+     logical :: master
+     integer :: addr1(infpar%lg_nodtot)
+     integer :: addr2(infpar%lg_nodtot)
+     integer :: addr3(infpar%lg_nodtot)
+     integer :: addr4(infpar%lg_nodtot)
+     integer :: addr5(infpar%lg_nodtot)
+     integer :: iter
+
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     if(master) call ls_mpibcast(SIMPLE_MP2_PAR,infpar%master,infpar%lg_comm)
+
+     if(master)then
+        addr1 = omega2%addr_p_arr
+        addr2 = iajb%addr_p_arr
+        addr3 = t2%addr_p_arr
+        addr4 = oof%addr_p_arr
+        addr5 = vvf%addr_p_arr
+     endif
+
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr4,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(addr5,infpar%lg_nodtot,infpar%master)
+     call ls_mpi_buffer(iter,infpar%master)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+     if(.not.master)then
+        omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
+        iajb   = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+        t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
+        oof    = get_arr_from_parr(addr4(infpar%lg_mynum+1))
+        vvf    = get_arr_from_parr(addr5(infpar%lg_mynum+1))
+     endif
+
+  end subroutine get_slaves_to_simple_par_mp2_res
 
 
 #else

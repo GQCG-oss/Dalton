@@ -74,6 +74,8 @@ C
       CALL HERINI
       HAMILT = .FALSE.
       PVPINT = .TRUE.
+!     we do not need to save the following variables
+!     because HERINP has not been called yet.
       POTENE = .TRUE.
       KINENE = .TRUE.
       PROPRI = .FALSE.
@@ -311,7 +313,7 @@ C
       CALL DZERO(XMAT,N2BASX)
       DO I = 1, NBAST
          II = I*(I + 1)/2
-         IF (TRMAT1(II) .LT. 1.0D-6) THEN
+         IF (TRMAT1(II) .LT. 1.0D-8) THEN
             WRITE (LUPRI,*)
      &      ' >>> ERROR DKH_DRIV: Linear dependency in '//
      &      'primitive basis used in Douglas-Kroll-Hess ', I, TRMAT1(II)

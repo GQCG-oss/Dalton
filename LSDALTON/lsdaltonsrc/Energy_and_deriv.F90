@@ -19,8 +19,10 @@ use initial_guess, only: get_initial_dens
 use dec_typedef_module, only: DECinfo
 use lsdalton_fock_module, only: lsint_fock_data
 use matrix_operations_aux, only: mat_density_from_orbs
+use matrix_util, only: save_fock_matrix_to_file
 use integralinterfaceMod, only: II_get_molecular_gradient,&
-     & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat
+     & II_get_nucpot,II_get_overlap,II_get_h1,II_precalc_ScreenMat,&
+     & II_get_fock_mat
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod
 use ls_util, only: ls_print_gradient
@@ -57,8 +59,10 @@ contains
     Logical :: do_decomp,integraltransformGC
 
 
-       Eerr = 0E0_realk
-       nbast = D(1)%nrow
+
+       Eerr   = 0E0_realk
+       ExcitE = 0E0_realk    !Zeroing to initialize
+       nbast  = D(1)%nrow
        do_decomp =.TRUE. !(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
 !           & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
 !           & config%decomp%cfg_check_converged_solution .or. &

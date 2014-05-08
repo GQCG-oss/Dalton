@@ -527,6 +527,18 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
                    &OLDBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents(1:nrow)
            ENDDO
         ENDDO
+        DO J=NEWBAS%ATOMTYPE(I)%nAngmom+1,maxAOangmom
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nprim = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%norb  = -1
+           NEWBAS%ATOMTYPE(I)%SHELL(J)%nsegments  = -1
+           DO K=1,maxBASISsegment
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%nrow  = -1
+              NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%ncol  = -1
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%elms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%UCCelms)
+              NULLIFY(NEWBAS%ATOMTYPE(I)%SHELL(J)%segment(K)%Exponents)
+           ENDDO
+        ENDDO
      ENDDO
   ENDIF
   IF(NEWBAS%nChargeindex .NE. 0)THEN
@@ -534,6 +546,8 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
      DO I = 0,NEWBAS%nChargeindex
         NEWBAS%Chargeindex(I) = OLDBAS%Chargeindex(I)  
      ENDDO
+  ELSE
+     NULLIFY(NEWBAS%Chargeindex)
   ENDIF
  
 END SUBROUTINE copy_basissetinfo

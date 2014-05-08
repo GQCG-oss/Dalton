@@ -111,11 +111,11 @@ subroutine davidson_solver(CFG,grad,x)
         &" Gradient norm",CFG%arh_gradnorm
      elseif (.not. CFG%arh_davidson) then
         call test_convergence(CFG,grad,resnorm_2d)
-	if (CFG%orb_debug) then
+        if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &"   2D ResNorm",resnorm_2d
-	end if
+        end if
      end if
     
     !TEST CONVERGENCE

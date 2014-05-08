@@ -169,13 +169,11 @@ contains
              all_atoms( CentralAtom ) = .true.
           end if
        end do
-
-
     end do OccEOSSize
 
     ! Size of unoccupied EOS
     ! **********************
-
+    
     ! Logical vector keeping track of EOS orbitals
     call mem_alloc(unoccEOS,nunocc)
     unoccEOS=.false.
@@ -190,22 +188,6 @@ contains
              fragment%nunoccEOS       = fragment%nunoccEOS + 1
              unoccEOS(j)              = .true.
              all_atoms( CentralAtom ) = .true.
-
-             ! Special case: Only occupied partitioning
-             ! ----------------------------------------
-             ! When we are only interested in the occupied partitioning scheme,
-             ! there are effectively zero virtual EOS orbitals.
-             ! However, setting fragment%nunoccEOS to 0 would cause numerous
-             ! problems many places in the code, since some arrays would have zero size.
-             ! For now, we solve this problem in a pragmatic and dirty manner:
-             ! We simply initialize an unocc EOS containing a single dummy orbital.
-             ! At some point we want to separate out the occ and virt
-             ! partitioning scheme, and when this is done, this temporary solution
-             ! will be superfluous.
-             if(DECinfo%onlyoccpart) then
-                exit UnoccEOSLoop
-             end if
-
           end if
        end do
 
@@ -228,7 +210,6 @@ contains
     ! *******************************************************************************
     fragment%nunoccLOC = count(unocc_list)
     fragment%nunoccAOS => fragment%nunoccLOC  ! AOS orbitals = local orbitals
-
     ! Fragment-adapted information, for now set equal to local dimensions
     fragment%noccFA = fragment%noccLOC
     fragment%nunoccFA = fragment%nunoccLOC
@@ -303,7 +284,6 @@ contains
 
     ! Loop over remaining AOS orbitals (not EOS)
     do i=1,nunocc
-
        if(unocc_list(i) .and. (.not. unoccEOS(i)) ) then
           idx=idx+1
           fragment%unoccAOSidx(idx) = i
@@ -751,7 +731,6 @@ contains
        end if
     end do
 
-
     ! Create fragment based on logical vectors for occupied and virtual AOS
     call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
          & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag)
@@ -811,7 +790,7 @@ contains
     call mem_alloc( unocc_atoms, natoms )
 
     call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,MyMolecule%distancetable(:,MyAtom),&
-         & init_radius,Occ_atoms, Unocc_atoms)
+         & init_radius,init_radius,Occ_atoms, Unocc_atoms)
 
     ! Init atomic fragment
     pairfrag=.false.
@@ -1371,14 +1350,14 @@ contains
     type(lsitem), intent(inout) :: mylsitem
 
     type(matrix) :: CMO_RI
-    integer :: ncabsAO,ncabs,lupri
+    integer :: ncabsAO,ncabs
 
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
 
     call mat_init(CMO_RI,ncabsAO,ncabsAO)
 
     call init_cabs()
-    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,lupri)
+    call build_RI_MO(CMO_RI,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
@@ -2651,32 +2630,30 @@ contains
 
     implicit none
     type(decfrag), intent(inout) :: fragment
-    integer :: i,j
+    integer :: i,j,nocc_eos,nvirt_eos
 
-    ! don't do that if no occ assigned
-    if(fragment%noccEOS == 0) return
-
-    call mem_alloc(fragment%idxo,fragment%noccEOS)
-    do i=1,fragment%noccEOS
-       do j=1,fragment%noccAOS
-          if(fragment%occAOSidx(j) == fragment%occEOSidx(i)) then
-             fragment%idxo(i) = j
-             exit
-          end if
+    if(fragment%noccEOS .NE. 0)THEN
+       call mem_alloc(fragment%idxo,fragment%noccEOS)
+       do i=1,fragment%noccEOS
+          do j=1,fragment%noccAOS
+             if(fragment%occAOSidx(j) == fragment%occEOSidx(i)) then
+                fragment%idxo(i) = j
+                exit
+             end if
+          end do
        end do
-    end do
-
-    call mem_alloc(fragment%idxu,fragment%nunoccEOS)
-    do i=1,fragment%nunoccEOS
-       do j=1,fragment%nunoccAOS
-          if(fragment%unoccAOSidx(j) == fragment%unoccEOSidx(i)) then
-             fragment%idxu(i) = j
-             exit
-          end if
+    endif
+    if(fragment%nunoccEOS .NE. 0)THEN
+       call mem_alloc(fragment%idxu,fragment%nunoccEOS)
+       do i=1,fragment%nunoccEOS
+          do j=1,fragment%nunoccAOS
+             if(fragment%unoccAOSidx(j) == fragment%unoccEOSidx(i)) then
+                fragment%idxu(i) = j
+                exit
+             end if
+          end do
        end do
-    end do
-
-    return
+    endif
   end subroutine target_indices
 
 
@@ -4512,7 +4489,9 @@ contains
     joblist12%ntasks(1:joblist1%njobs) = joblist1%ntasks
     joblist12%flops(1:joblist1%njobs) = joblist1%flops
     joblist12%LMtime(1:joblist1%njobs) = joblist1%LMtime
-    joblist12%load(1:joblist1%njobs) = joblist1%load
+    joblist12%workt(1:joblist1%njobs) = joblist1%workt
+    joblist12%commt(1:joblist1%njobs) = joblist1%commt
+    joblist12%idlet(1:joblist1%njobs) = joblist1%idlet
 
     ! Joblist 2 --> Joblist12
     startidx=joblist1%njobs+1
@@ -4529,7 +4508,9 @@ contains
     joblist12%ntasks(startidx:njobs) = joblist2%ntasks
     joblist12%flops(startidx:njobs) = joblist2%flops
     joblist12%LMtime(startidx:njobs) = joblist2%LMtime
-    joblist12%load(startidx:njobs) = joblist2%load
+    joblist12%workt(startidx:njobs) = joblist2%workt
+    joblist12%commt(startidx:njobs) = joblist2%commt
+    joblist12%idlet(startidx:njobs) = joblist2%idlet
 
   end subroutine concatenate_joblists
 
@@ -4951,7 +4932,9 @@ contains
     jobs%ntasks(1:nold) = oldjobs%ntasks(1:nold)
     jobs%flops(1:nold) = oldjobs%flops(1:nold)
     jobs%LMtime(1:nold) = oldjobs%LMtime(1:nold)
-    jobs%load(1:nold) = oldjobs%load(1:nold)
+    jobs%workt(1:nold) = oldjobs%workt(1:nold)
+    jobs%commt(1:nold) = oldjobs%commt(1:nold)
+    jobs%idlet(1:nold) = oldjobs%idlet(1:nold)
 
 
     ! Set logical vectors with fragment orbital information
@@ -5120,20 +5103,22 @@ contains
 
 
     ! Copy old job list information
-    jobscopy%atom1 = jobs%atom1
-    jobscopy%atom2 = jobs%atom2
-    jobscopy%jobsize = jobs%jobsize
-    jobscopy%jobsdone = jobs%jobsdone
+    jobscopy%atom1     = jobs%atom1
+    jobscopy%atom2     = jobs%atom2
+    jobscopy%jobsize   = jobs%jobsize
+    jobscopy%jobsdone  = jobs%jobsdone
     jobscopy%dofragopt = jobs%dofragopt
-    jobscopy%esti = jobs%esti
-    jobscopy%nslaves = jobs%nslaves
-    jobscopy%nocc = jobs%nocc
-    jobscopy%nunocc = jobs%nunocc
-    jobscopy%nbasis = jobs%nbasis
-    jobscopy%ntasks = jobs%ntasks
-    jobscopy%flops = jobs%flops
-    jobscopy%LMtime = jobs%LMtime
-    jobscopy%load = jobs%load
+    jobscopy%esti      = jobs%esti
+    jobscopy%nslaves   = jobs%nslaves
+    jobscopy%nocc      = jobs%nocc
+    jobscopy%nunocc    = jobs%nunocc
+    jobscopy%nbasis    = jobs%nbasis
+    jobscopy%ntasks    = jobs%ntasks
+    jobscopy%flops     = jobs%flops
+    jobscopy%LMtime    = jobs%LMtime
+    jobscopy%workt     = jobs%workt
+    jobscopy%commt     = jobs%commt
+    jobscopy%idlet     = jobs%idlet
 
   end subroutine copy_joblist
 

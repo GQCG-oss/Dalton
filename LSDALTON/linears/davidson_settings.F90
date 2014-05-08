@@ -212,6 +212,7 @@ CFG%NOL2OPT     = .false.
 CFG%OnlyLocalize       = .false.
 CFG%PFM_input%TESTCASE = .false.
 CFG%all_orb_locality   = .false.
+CFG%orb_debug          = .false.
 CFG%make_orb_plot      = .false.
 CFG%linesearch         =.true.
 CFG%PM_input%ChargeLocMulliken = .false.

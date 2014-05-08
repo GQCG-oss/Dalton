@@ -551,16 +551,13 @@ C----------------
 C----------------
 C
       IF (ITABS .GT. 0) THEN
-         WRITE (LUW4,1005) EMCSCF,ITABS
-         IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
+         WRITE (LUW4,1005)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
+         IF (LUPRI.NE.LUW4)
+     &   WRITE (LUPRI,1005) WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
       ELSE
-         IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
-            WRITE (LUW4,1011) EMCSCF,ITMAC
-            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1011) EMCSCF,ITMAC
-         ELSE
-            WRITE (LUW4,1010) EMCSCF,ITMAC
-            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
-         END IF
+         WRITE (LUW4,1010)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
+         IF (LUPRI.NE.LUW4)
+     &   WRITE (LUPRI,1010) WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
       END IF
       IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
          EMYTMP = EMY - ESRDFTY
@@ -587,11 +584,9 @@ chj   END IF
          IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
+ 1005 FORMAT(/' Total ',A,' energy',T27,':',F30.15,T54,
      *        '(after absorp',I4,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',F30.15,T60,
-     *        '(MACRO ',I4,')' )
- 1011 FORMAT(/' Total MC-srDFT energy    :',F30.15,T60,
+ 1010 FORMAT(/' Total ',A,' energy',T27,':',F30.15,T60,
      *        '(MACRO ',I4,')' )
  1015 FORMAT(/' - Nuclear repulsion      :',F30.15,
      *       /' - Inactive energy        :',F30.15,
@@ -1229,7 +1224,6 @@ C
 #include "scbrhf.h"
 #include "infind.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C
       CALL QENTER('RHFENR')
 C
@@ -1389,13 +1383,6 @@ C     take care of 1-electron case and no virtuals case
      *      ' Deviation from canonical Hartree-Fock orbitals :',
      *      ' Largest off-diagonal Fock matrix element is',VALCON
       END IF
-CVW Catch orbital energies
-      IF (WAVPCM) THEN
-         DO I = 1, NBAST
-            WAVOE(I) = SCRA(I)
-         END DO
-      END IF
-CVW
  9999 CALL QEXIT('RHFENR')
       RETURN
 C

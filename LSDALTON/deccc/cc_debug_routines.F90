@@ -11,7 +11,8 @@ module cc_debug_routines_module
    use dec_typedef_module
    use tensor_type_def_module
    use screen_mod
- 
+   use II_XC_interfaceModule
+   use IntegralInterfaceMOD 
 
    ! DEC DEPENDENCIES (within deccc directory)   
    ! *****************************************
@@ -306,13 +307,13 @@ module cc_debug_routines_module
        if(get_mult)then
 
          if(DECinfo%use_singles)then
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
+           call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
          else
-           call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
+           call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=t2_final%val)
          endif
 
        elseif(u_pnos)then
-         call ccsolver_local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc,Uvirt,vovo=m2%val)
        endif
 
 
@@ -408,7 +409,7 @@ module cc_debug_routines_module
      call mem_alloc(omega2,DECinfo%ccMaxIter)
 
      ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-     if(decinfo%ccmodel /= MODEL_MP2 .and.decinfo%ccmodel /= MODEL_RPA ) then
+     if(decinfo%ccmodel /= MODEL_MP2 .and. decinfo%ccmodel /= MODEL_RPA ) then
         xocc = array2_init(occ_dims)
         yocc = array2_init(occ_dims)
         xvirt = array2_init(virt_dims)
@@ -647,11 +648,13 @@ module cc_debug_routines_module
            !  !rpa_multipliers not yet implemented
            !  call RPA_multiplier(Omega2(iter),t2_final,t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
            !else
-#ifdef VAR_MPI
-             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#else
+!#ifdef VAR_MPI
+!             call RPA_residualpar(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
+!#else
+             !msg =' Norm of gmo'
+             !call print_norm(govov,msg)
              call RPA_residualdeb(Omega2(iter),t2(iter),govov%elm1,ppfock,qqfock,nocc,nvirt)
-#endif
+!#endif
            !call lsquit('ccsolver_debug: Residual for model is not implemented!',-1)
            !  call RPA_residual(Omega2(iter),t2(iter),govov,ppfock,qqfock,nocc,nvirt)
            !endif
@@ -958,9 +961,9 @@ module cc_debug_routines_module
         call array4_free(t2(i))
 
      end do
-     if(.not.DECinfo%use_singles)then
-       t1_final = array2_init([nvirt,nocc])
-     endif
+     !if(.not.DECinfo%use_singles)then
+     !  t1_final = array2_init([nvirt,nocc])
+     !endif
 
      ! Write finalization message
      !---------------------------
@@ -1023,14 +1026,14 @@ module cc_debug_routines_module
 
      !transform back to original basis   
      if(DECinfo%use_singles)then
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val,vo=t1_final%val)
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=VOVO%val)
      else
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=t2_final%val)
-       call ccsolver_can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
+       call can_local_trans(nocc,nvirt,nbasis,Uocc,Uvirt,&
        &vovo=VOVO%val)
      endif
 
@@ -2810,6 +2813,8 @@ module cc_debug_routines_module
 
     myload = 0
 
+    fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
+
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
@@ -2946,6 +2951,10 @@ module cc_debug_routines_module
     iFock = 0.0E0_realk
     call II_get_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
     & Dens,.false.,iFock)
+    IF(DECinfo%DFTreference)THEN
+       call II_get_xc_fock_mat_full(DECinfo%output,DECinfo%output,MyLsItem%setting,nb,&
+            & Dens,iFock)
+    ENDIF
     !use dens as temporay array 
     call ii_get_h1_mixed_full(DECinfo%output,DECinfo%output,MyLsItem%setting,&
          & Dens,nb,nb,AORdefault,AORdefault)

@@ -127,6 +127,7 @@ Character(len=22),intent(IN)     :: label
 NULLIFY(MOLECULE%ATOM)
 MOLECULE%nAtoms = nAtoms
 MOLECULE%nAtomsNPC = nAtoms
+MOLECULE%nelectrons = 0
 IF (nAtoms.GT. 0) call mem_alloc(MOLECULE%ATOM,nAtoms)
 MOLECULE%label = label
 

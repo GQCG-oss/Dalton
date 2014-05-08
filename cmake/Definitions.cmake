@@ -12,9 +12,22 @@ if(ENABLE_PELIB)
     add_definitions(-DBUILD_PELIB)
 endif()
 
+if(ENABLE_QFITLIB)
+    add_definitions(-DBUILD_QFITLIB)
+endif()
+
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)
+
+if(ENABLE_TITANBUILD)
+   add_definitions(-DVAR_HAVE_MPI3)
+   if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
+      if(ENABLE_TITANBUILD)
+          add_definitions(-DVAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN)
+      endif()
+   endif()
+endif()
 
 add_definitions(-DBINARY_INFO_AVAILABLE)
 
@@ -36,6 +49,8 @@ endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
     add_definitions(-DVAR_64BITS)
+else()
+    add_definitions(-DVAR_MPI_32BIT_INT)
 endif()
 
 if(ENABLE_OPENACC)

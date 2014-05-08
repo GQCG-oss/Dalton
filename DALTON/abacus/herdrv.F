@@ -110,12 +110,6 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
-      CALL GPINQ('AOPROPER','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
-     &                                  IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUPROP,'DELETE')
-      END IF
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
          WRITE (LUPRI,'(/15X,A)')
@@ -129,7 +123,13 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -462,6 +462,9 @@ C
          ONEPRP = .TRUE.
       END IF
 C
+      CALL TITLER('Output from **INTEGRALS input processing (HERMIT)',
+     &   '*',118)
+C
 C     **** Find Hermit input *****
 C
       REWIND (LUCMD,IOSTAT=IOS)
@@ -482,6 +485,8 @@ C         if reading input from a terminal
   920 CONTINUE
          WORD  = '**END O'
          WORD1 = '**END O'
+         WRITE (LUPRI,'(/A)')
+     &   ' - Using defaults, no **INTEGRALS input found'
          GOTO 300
   930 CONTINUE
 C
@@ -1299,13 +1304,13 @@ cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
 cs            ENDIF
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
-         GO TO 299
+         GO TO 300
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in '//WORD1)
       END IF
-  299 CONTINUE
+  300 CONTINUE
 
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
 cLig <>
@@ -1687,7 +1692,6 @@ cLig <<
 C
 C     **** Process input for various program sections  *****
 C
-  300 CONTINUE
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -2351,8 +2355,16 @@ C     **********************************
 C     ***** One-Electron Integrals *****
 C     **********************************
 C
+C     Both Hamiltionian and property one-electron integrals.
+C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+
+!        Open standard property integral file AOPROPER if LUPROP .le. 0
+!        (if calculating integrals for DKH, then LUPROP is already opened
+!         as AODKHINT)
+         IF (LUPROP .LE. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C           ***** These integrals are used to modify the Hamiltonian ****
 C           ***** thus calculated first of all if requested          ****
@@ -3512,7 +3524,8 @@ C
             END IF
 cLig <<
          END IF
-      END IF
+      END IF  ! (RUNONE)
+      RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0

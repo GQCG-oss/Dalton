@@ -54,206 +54,6 @@ private
 contains
 
 
-
-!!> \brief Get coupled-cluster energy by calling general ccsolver.
-!!> \author Kasper Kristensen
-!function ccsolver_justenergy(ccmodel,MyMolecule,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-!      &mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f) result(ccenergy)
-!
-!   implicit none
-!
-!   !> CC model
-!   integer,intent(inout) :: ccmodel
-!   !> full molecule information
-!   type(fullmolecule), intent(in) :: MyMolecule
-!   !> Number of occupied orbitals in full molecule/fragment AOS
-!   !> (only number of valence orbitals for frozen core)
-!   integer, intent(in) :: nocc
-!   !> Number of virtual orbitals in full molecule/fragment AOS
-!   integer, intent(in) :: nvirt
-!   !> Number of basis functions in full molecule/atomic extent
-!   integer, intent(in) :: nbasis
-!   !> Fock matrix in AO basis for fragment or full molecule
-!   real(realk), dimension(nbasis,nbasis), intent(in) :: fock_f
-!   !> Occupied MO coefficients  for fragment/full molecule
-!   real(realk), dimension(nbasis,nocc), intent(inout) :: Co_f
-!   !> Virtual MO coefficients  for fragment/full molecule
-!   real(realk), dimension(nbasis,nvirt), intent(inout) :: Cv_f
-!   !> Occ-occ block of Fock matrix in MO basis
-!   real(realk), dimension(nocc,nocc), intent(inout) :: ppfock_f
-!   !> Virt-virt block of Fock matrix in MO basis
-!   real(realk), dimension(nvirt,nvirt), intent(inout) :: qqfock_f
-!   !> Is this a fragment job (true) or a full molecular calculation (false)
-!   logical, intent(in) :: fragment_job
-!   !> LS item information
-!   type(lsitem), intent(inout) :: mylsitem
-!   !> How much to print? ( ccPrintLevel>0 --> print info stuff)
-!   integer, intent(in) :: ccPrintLevel
-!   !> Coupled cluster energy for fragment/full molecule
-!   real(realk) :: ccenergy!,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-!   type(array4) :: t2_final,VOVO, mp2_amp!,ccsdpt_t2
-!   type(array2) :: t1_final!,ccsdpt_t1
-!   logical :: local
-!
-!   local=.true.
-!#ifdef VAR_MPI
-!   if(infpar%lg_nodtot>1.or.DECinfo%hack2)local=.false.
-!#endif
-!   ! temporary default for moccsd:
-!   if (decinfo%moccsd) local = .true.
-!
-!
-!
-!   if(DECinfo%CCDEBUG)then
-!
-!      if(DECinfo%use_pnos)then
-!
-!         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
-!         call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, Cv_f, Co_f, VOVO )
-!         call mp2_solver( nocc, nvirt, ppfock_f, qqfock_f, VOVO, mp2_amp )
-!         call array4_free( VOVO )
-!
-!         !CALL THE SOLVER WITH PNO ARGUMENT
-!         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-!            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-!            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
-!
-!         !FREE MP2 AMPLITUDES
-!         call array4_free( mp2_amp )
-!
-!      else
-!
-!         !CALL DEBUG SOLVER WITHOUT PNOS
-!         call ccsolver_debug(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-!            & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-!            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
-!
-!      endif
-!   else
-!
-!      ! CALL PRODUCTION SOLVER
-!      call ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nbasis,nocc,nvirt, &
-!         & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
-!         & t1_final,t2_final,VOVO,.false.,local)
-!
-!   endif
-!
-!
-!   ! Print fragment energies (currently only for occupied partitioning scheme)
-!   if(DECinfo%full_molecular_cc .and. DECinfo%full_print_frag_energies) then
-!      call fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1_final,t2_final,VOVO) 
-!   end if
-!
-!   ! Free arrays
-!   call array2_free(t1_final)
-!   call array4_free(t2_final)
-!   call array4_free(VOVO)
-!
-!end function ccsolver_justenergy
-
-
-!!> \brief Calculate and print CCSD (or CCD) fragment energies from amplitudes
-!!> for the full molecular system. Only intended for testing purposes.
-!!> Only for occupied partitioning scheme at this stage.
-!!> \author Kasper Kristensen
-!subroutine fragment_energies_in_fulL_ccsd_occ(MyMolecule,mylsitem,t1,t2,VOVO) 
-!
-!   implicit none
-!
-!   !> full molecule information
-!   type(fullmolecule), intent(in) :: MyMolecule
-!   !> LS item information
-!   type(lsitem), intent(inout) :: mylsitem
-!   !> Singles amplitudes (not changed but need to be inout)
-!   type(array2),intent(inout) :: t1
-!   !> Doubles amplitudes (not changed but need to be inout)
-!   type(array4),intent(inout) :: t2
-!   !> Integrals (ai|bj) stored as (a,i,b,j) (not changed but need to be inout)
-!   type(array4),intent(inout) :: VOVO
-!   integer :: natoms,nocc_tot,ncore,i,p,pdx,nvirt,nocc
-!   type(decorbital), pointer :: occorbitals(:)
-!   type(decorbital), pointer :: unoccorbitals(:)
-!   logical, pointer :: orbitals_assigned(:)
-!   type(array2) :: ccsd_mat_tot,ccsd_mat_tmp
-!   real(realk) :: interactionE
-!
-!
-!#ifdef MOD_UNRELEASED
-!   natoms = MyMolecule%natoms
-!   ! Note: For frozen core approx: nocc_tot = nocc + ncore,  nocc=#valence orbitals
-!   !       Without frozen core approx: nocc_tot = nocc
-!   nocc_tot = MyMolecule%nocc
-!   if(DECinfo%frozencore) then
-!      ncore = MyMolecule%ncore
-!      nocc = MyMolecule%nval
-!   else
-!      ncore = 0
-!      nocc = nocc_tot
-!   endif
-!   nvirt = MyMolecule%nunocc
-!
-!   ! -- Analyze basis and create orbitals
-!   call mem_alloc(occorbitals,nocc_tot)
-!   call mem_alloc(unoccorbitals,nvirt)
-!   call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc_tot,nvirt,natoms, &
-!      & occorbitals,unoccorbitals)
-!
-!   ! Orbital assignment
-!   call mem_alloc(orbitals_assigned,natoms)
-!   orbitals_assigned=.false.
-!   do p=1,nocc_tot
-!      pdx = occorbitals(p)%centralatom
-!      orbitals_assigned(pdx) = .true.
-!   end do
-!   do p=1,nvirt
-!      pdx = unoccorbitals(p)%centralatom
-!      orbitals_assigned(pdx) = .true.
-!   end do
-!
-!   ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-!   call array4_reorder(VOVO,[1,3,2,4])
-!   ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
-!   call array4_reorder(t2,[1,3,2,4])
-!
-!   ! Calculate and print out ccsd fragment and pair interaction energies
-!   ccsd_mat_tot = array2_init([natoms,natoms])
-!   ccsd_mat_tmp = array2_init([natoms,natoms])
-!   call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2,t1,VOVO,occorbitals,&
-!      & ccsd_mat_tot%val,ccsd_mat_tmp%val)
-!   call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
-!   IF(DECinfo%InteractionEnergy)THEN
-!      call lsquit('InteractionEnergy not implemented in full ccsd',-1)
-!   ENDIF
-!   IF(DECinfo%PrintInteractionEnergy)THEN
-!      call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
-!         & interactionE,MyMolecule%SubSystemIndex,2)
-!      write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy : ',interactionE
-!   ENDIF
-!
-!   ! Delete orbitals 
-!   do i=1,nocc_tot
-!      call orbital_free(OccOrbitals(i))
-!   end do
-!   do i=1,nvirt
-!      call orbital_free(UnoccOrbitals(i))
-!   end do
-!   call mem_dealloc(occorbitals)
-!   call mem_dealloc(unoccorbitals)
-!   call mem_dealloc(orbitals_assigned)
-!   call array2_free(ccsd_mat_tot)
-!   call array2_free(ccsd_mat_tmp)
-!
-!   ! reorder VOVO integrals back: from (a,b,i,j) to (a,i,b,j)
-!   call array4_reorder(VOVO,[1,3,2,4])
-!   ! reorder doubles amplitudes back: from (a,b,i,j) to (a,i,b,j)
-!   call array4_reorder(t2,[1,3,2,4])
-!#endif
-!
-!end subroutine fragment_energies_in_fulL_ccsd_occ
-
-
-
-
 !> \brief get ccsd(t) corrections for full molecule.
 !> \author Janus Juul Eriksen, modified by Patrick Ettenhuber and TK
 !> \date February 2013
@@ -284,14 +84,16 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
    !> Coupled cluster energy for full molecule
    real(realk) :: ccenergy,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
-   type(array4) :: t2_final,ccsdpt_t2,VOVO
-   type(array2) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
+   type(array2) :: t1_final_arr2
+   type(array4) :: t2_final_arr4, VOVO_arr4
+   type(array) :: t2_final,ccsdpt_t2,VOVO
+   type(array) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
    integer :: natoms,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
    logical :: local
-   real(realk) :: InteractionECCSD,InteractionECCSDPT4,InteractionECCSDPT5
+   real(realk) :: InteractionE,InteractionECCSDPT4,InteractionECCSDPT5
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -307,8 +109,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-    ! temporary default for moccsd:
-    if (decinfo%moccsd) local = .true.
 
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
@@ -326,11 +126,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if (DECinfo%CCDEBUG) then
          call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
+
       else
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,local)
+            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
       endif
 
    else
@@ -339,21 +140,36 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if (DECinfo%CCDEBUG) then
          call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,SOLVE_AMPLITUDES)
+            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
       else
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-            & t1_final,t2_final,VOVO,.false.,local)
+            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
       endif
 
    end if
 
+   !FIXME: remove all array2 and array4 structures from this driver
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   if(DECinfo%use_singles)then
+      t1_final = array_init(t1_final_arr2%dims,2)
+      call array_convert(t1_final_arr2%val,t1_final)
+      call array2_free(t1_final_arr2)
+   endif
+   t2_final = array_init(t2_final_arr4%dims,4)
+   call array_convert(t2_final_arr4%val,t2_final)
+   call array4_free(t2_final_arr4)
+   VOVO = array_init(VOVO_arr4%dims,4)
+   call array_convert(VOVO_arr4%val,VOVO)
+   call array4_free(VOVO_arr4)
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
    if(DECinfo%PL>1)then
       call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
          &swwork = time_pT_work, swcomm = time_pT_comm, swidle = time_pT_idle, &
-         &labeldwwork = 'MASTER WORK CCSD: ',&
-         &labeldwcomm = 'MASTER COMM CCSD: ',&
-         &labeldwidle = 'MASTER IDLE CCSD: ') 
+         &labeldwwork = 'MASTER WORK CC solver: ',&
+         &labeldwcomm = 'MASTER COMM CC solver: ',&
+         &labeldwidle = 'MASTER IDLE CC solver: ') 
    endif
 
    natoms = MyMolecule%natoms
@@ -361,8 +177,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    if(ccmodel == MODEL_CCSDpT)then
 
-      ccsdpt_t1 = array2_init([nvirt,nocc])
-      ccsdpt_t2 = array4_init([nvirt,nvirt,nocc,nocc])
+      ccsdpt_t1 = array_init([nvirt,nocc],2)
+      ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
 
       if(DECinfo%frozencore) then
          call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
@@ -381,7 +197,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    else
 
-      call array4_reorder(t2_final,[1,3,2,4])
+      call array_reorder(t2_final,[1,3,2,4])
 
    endif
 
@@ -408,76 +224,88 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    end do
 
    ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-   call array4_reorder(VOVO,[1,3,2,4])
+   call array_reorder(VOVO,[1,3,2,4])
 
    ! print out ccsd fragment and pair interaction energies
-   ccsd_mat_tot = array2_init([natoms,natoms])
-   ccsd_mat_tmp = array2_init([natoms,natoms])
+   ccsd_mat_tot = array_init([natoms,natoms],2)
+   ccsd_mat_tmp = array_init([natoms,natoms],2)
 
    call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
-      & ccsd_mat_tot%val,ccsd_mat_tmp%val)
+      & ccsd_mat_tot%elm1,ccsd_mat_tmp%elm1)
 
-   call print_ccsd_full_occ(natoms,ccsd_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+   call array_free(ccsd_mat_tmp)
+
+   call print_ccsd_full_occ(natoms,ccsd_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
 
 
    if(DECinfo%InteractionEnergy)then
       call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
    endif
    if(DECinfo%PrintInteractionEnergy)then
-      call add_dec_interactionenergies(natoms,ccsd_mat_tot%val,orbitals_assigned,&
-         & interactionECCSD,MyMolecule%SubSystemIndex,2)
+      call add_dec_interactionenergies(natoms,ccsd_mat_tot%elm1,orbitals_assigned,&
+         & interactionE,MyMolecule%SubSystemIndex,2)
    endif
 
    ! release ccsd stuff
-   call array2_free(ccsd_mat_tot)
-   call array2_free(ccsd_mat_tmp)
+   call array_free(ccsd_mat_tot)
 
    ! free integrals
-   call array4_free(VOVO)
+   call array_free(VOVO)
 
    if(ccmodel == MODEL_CCSDpT)then
       ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
-      e4_mat_tot = array2_init([natoms,natoms])
-      e4_mat_tmp = array2_init([natoms,natoms])
-      e5_mat_tot = array2_init([natoms,natoms])
+      e4_mat_tot = array_init([natoms,natoms],2)
+      e4_mat_tmp = array_init([natoms,natoms],2)
+      e5_mat_tot = array_init([natoms,natoms],2)
 
       call ccsdpt_energy_e4_full(nocc,nvirt,natoms,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
-         & e4_mat_tot%val,e4_mat_tmp%val,ccsdpt_e4)
+         & e4_mat_tot%elm1,e4_mat_tmp%elm1,ccsdpt_e4)
 
       call ccsdpt_energy_e5_full(nocc,nvirt,natoms,ncore,t1_final,ccsdpt_t1,&
-         & occ_orbitals,unocc_orbitals,e5_mat_tot%val,ccsdpt_e5)
+         & occ_orbitals,unocc_orbitals,e5_mat_tot%elm1,ccsdpt_e5)
 
       ! print out the fourth- and fifth-order fragment and pair interactin energies
-      call print_e4_full(natoms,e4_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+      call print_e4_full(natoms,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
 
-      call print_e5_full(natoms,e5_mat_tot%val,orbitals_assigned,mymolecule%distancetable)
+      call print_e5_full(natoms,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
 
 
       if(DECinfo%PrintInteractionEnergy)then
-         call add_dec_interactionenergies(natoms,e4_mat_tot%val,orbitals_assigned,&
+         call add_dec_interactionenergies(natoms,e4_mat_tot%elm1,orbitals_assigned,&
             & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
          write(DECinfo%output,'(A)') ' '
          write(DECinfo%output,'(A)') ' '
          write(DECinfo%output,'(A)') 'Interaction Energies '
          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-            & interactionECCSD
+            & interactionE
          write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
             & InteractionECCSDPT4
-         call add_dec_interactionenergies(natoms,e5_mat_tot%val,orbitals_assigned,&
+         call add_dec_interactionenergies(natoms,e5_mat_tot%elm1,orbitals_assigned,&
             & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
          write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
             & InteractionECCSDPT5
          write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
-            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionECCSD
+            & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
          write(DECinfo%output,'(A)') ' '
+         interactionE = InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
       endif
 
       ! release stuff
-      call array2_free(e4_mat_tot)
-      call array2_free(e4_mat_tmp)
-      call array2_free(e5_mat_tot)
+      call array_free(e4_mat_tot)
+      call array_free(e4_mat_tmp)
+      call array_free(e5_mat_tot)
+   else
+      if(DECinfo%PrintInteractionEnergy)then
+         write(DECinfo%output,'(A)') ' '
+         if (ccmodel == MODEL_CCSD ) then
+            write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+                 & interactionE
+         else if (ccmodel == MODEL_MP2 ) then
+            write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Interaction correlation energy                  :',&
+                 & interactionE
+         endif
+      endif
    endif
-
 
 
    do i=1,nocc_tot
@@ -493,23 +321,32 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! sum up energies
    ccsdpt_tot = ccsdpt_e4 + ccsdpt_e5
 
-   ! finally, print out total energies 
+   !MODIFY FOR NEW MODEL
    write(DECinfo%output,*)
    write(DECinfo%output,*)
-   if(ccmodel == MODEL_CCSDpT)then
-      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   if(ccmodel == MODEL_CCSDpT )then
       write(DECinfo%output,'(1X,a)') '*                      Full CCSD(T) calculation is done !                   *'
-      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
-   else
-      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   else if (ccmodel == MODEL_CCSD ) then
       write(DECinfo%output,'(1X,a)') '*                      Full CCSD calculation is done !                      *'
-      write(DECinfo%output,'(1X,a)') '*****************************************************************************'
+   else if (ccmodel == MODEL_CC2 ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full CC2 calculation is done !                       *'
+   else if (ccmodel == MODEL_MP2 ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
+   else if (ccmodel == MODEL_RPA ) then
+      write(DECinfo%output,'(1X,a)') '*                      Full RPA calculation is done !                       *'
+   else
+      call lsquit("ERROR(ccsolver_justenergy)model not recognized",-1)
    endif
+   write(DECinfo%output,'(1X,a)') '*****************************************************************************'
    write(DECinfo%output,*)
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD correlation energy           =', ccenergy
+   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
+   if(DECinfo%PrintInteractionEnergy)then
+    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy =', interactionE
+   endif
    write(DECinfo%output,*)
 
    ! now update ccenergy with ccsd(t) correction
@@ -537,13 +374,16 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
    endif
 
-   ! free amplitude arrays
-   call array2_free(t1_final)
-   call array4_free(t2_final)
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
+      ! free amplitude arrays
+      call array_free(t1_final)
+   endif
+
+   call array_free(t2_final)
 
    if(ccmodel == MODEL_CCSDpT)then
-      call array2_free(ccsdpt_t1)
-      call array4_free(ccsdpt_t2)
+      call array_free(ccsdpt_t1)
+      call array_free(ccsdpt_t2)
    endif
 
 end function ccsolver_justenergy
@@ -551,20 +391,29 @@ end function ccsolver_justenergy
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
 !> two-electron integrals (a i | bj ) required for CC energy.
 !> Intended to be used for CC2 and CCSD (and NOT for MP2).
-!> \author Kasper Kristensen
+!> \author Kasper Kristensen, heavily modifed by PE
 !> \date January 2012
-subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
+subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
 
    implicit none
 
    !> Fragment info (only t1 information in MyFragment may be changed here)
    type(decfrag), intent(inout) :: MyFragment
    !> Singles amplitudes t1(a,i)
-   type(array2),intent(inout) :: t1
+   type(array),intent(inout) :: t1_arr
    !> Doubles amplitudes t2(a,i,b,j)
-   type(array4),intent(inout) :: t2
+   type(array),intent(inout) :: t2_arr
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
-   type(array4),intent(inout) :: VOVO
+   type(array),intent(inout) :: VOVO_arr
+   !> Singles multipliers m1(a,i)
+   type(array),intent(inout), optional :: m1_arr
+   !> Doubles multipliers m2(a,i,b,j)
+   type(array),intent(inout), optional :: m2_arr
+   type(array2) :: t1
+   type(array4) :: t2
+   type(array4) :: VOVO
+   type(array2) :: m1
+   type(array4) :: m2
 
    !INTERNAL PARAMETERS
    type(array4) :: mp2_amp
@@ -582,8 +431,6 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
 #ifdef VAR_MPI
    if(infpar%lg_nodtot>1)local=.false.
 #endif
-   ! temporary default for moccsd:
-   if (DECinfo%MOCCSD) local = .true.
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
    ! from previous fragment calculations to describe long-range
@@ -627,12 +474,28 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
             & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
             & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
 
+         if(DECinfo%CCSDmultipliers)then
+
+            call array4_free(VOVO)
+
+            call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,myfragment%fock,myfragment%nbasis,&
+               &myfragment%noccAOS,myfragment%nunoccAOS, &
+               &myfragment%mylsitem,DECinfo%PL,.true.,myfragment%ppfock,myfragment%qqfock,ccenergy, &
+               & t1,t2,VOVO, .false., SOLVE_MULTIPLIERS, m2 = m2, m1 = m1)
+
+         endif
+
       endif
    else
+
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
+
+      if(DECinfo%CCSDmultipliers)then
+         call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
+      endif
    endif
 
    ! Save singles amplitudes in fragment structure
@@ -640,68 +503,34 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO)
       call save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
    end if
 
-end subroutine fragment_ccsolver
+   if(DECinfo%use_singles)then
+      t1_arr = array_init(t1%dims,2)
+      call array_convert(t1%val,t1_arr)
+      call array2_free(t1)
+   endif
 
-
-
-!> \brief For a given fragment, calculate combined doubles+singles amplitudes:
-!> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-!> and two-electron integrals (a i | bj ).
-!> The EOS indices are extracted for both the occupied and
-!> the virtual spaces
-!> Intended to be used for CC2 and CCSD (and NOT for MP2).
-!> \author Kasper Kristensen
-!> \date January 2012
-subroutine CCfragment_get_EOS_amplitudes_and_integrals(MyFragment,&
-      & uocc,uvirt,VOVOocc,VOVOvirt)
-
-   implicit none
-
-   !> Fragment info (only t1 information in MyFragment may be changed here)
-   type(decfrag), intent(inout) :: MyFragment
-   !> Combined doubles+singles amplitudes for occupied partitioning
-   type(array4),intent(inout) :: uocc
-   !> Combined doubles+singles amplitudes for virtual partitioning
-   type(array4),intent(inout) :: uvirt
-   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for occ part.
-   !> (a,b: AOS orbitals;   i,j: EOS orbitals)
-   type(array4),intent(inout) :: VOVOocc
-   !> Two electron integrals (a i | b j) stored as (a,i,b,j) for virt part.
-   !> (a,b: EOS orbitals;   i,j: AOS orbitals)
-   type(array4),intent(inout) :: VOVOvirt
-   type(array2) :: t1
-   type(array4) :: t2,u,VOVO
-
-
-   ! Solve CC equation to calculate amplitudes and integrals
-   ! *******************************************************
-   ! Here all output indices in t1,t2, and VOVO are AOS indices.
-   call fragment_ccsolver(MyFragment,t1,t2,VOVO)
-
-
-   ! Extract EOS indices for integrals
-   ! *********************************
-   call array4_extract_eos_indices_both_schemes(VOVO, &
-      & VOVOocc, VOVOvirt, MyFragment)
-   call array4_free(VOVO)
-
-
-   ! Calculate combined single+doubles amplitudes
-   ! ********************************************
-   ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-   call get_combined_SingleDouble_amplitudes(t1,t2,u)
-   call array2_free(t1)
+   t2_arr = array_init(t2%dims,4)
+   call array_convert(t2%val,t2_arr)
    call array4_free(t2)
 
+   VOVO_arr = array_init(VOVO%dims,4)
+   call array_convert(VOVO%val,VOVO_arr)
+   call array4_free(VOVO)
 
-   ! Extract EOS indices for amplitudes
-   ! **********************************
-   call array4_extract_eos_indices_both_schemes(u, &
-      & uocc, uvirt, MyFragment)
-   call array4_free(u)
+   if(DECinfo%CCSDmultipliers)then
+      if(present(m1_arr))then
+         m1_arr = array_init(m1%dims,2)
+         call array_convert(m1%val,m1_arr)
+         call array2_free(m1)
+      endif
+      if(present(m2_arr))then
+         m2_arr = array_init(m2%dims,4)
+         call array_convert(m2%val,m2_arr)
+         call array4_free(m2)
+      endif
+   endif
 
-
-end subroutine CCfragment_get_EOS_amplitudes_and_integrals
+end subroutine fragment_ccsolver
 
 
 
@@ -1468,7 +1297,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array)  :: fock,Co,Cv,Co2,Cv2
    type(array)  :: ppfock,qqfock,pqfock,qpfock
    type(array)  :: ifock,delta_fock
-   type(array)  :: aibj,iajb
+   type(array)  :: iajb
    type(array), pointer :: t2(:),omega2(:)
    type(array), pointer :: t1(:),omega1(:)
    type(array) :: omega1_opt, t1_opt, omega1_prec
@@ -1480,7 +1309,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                 :: iter,last_iter,i,j,k,l
    logical                 :: crop_ok,break_iterations,saferun
    type(ri)                :: l_ao
-   type(array)             :: ppfock_prec, qqfock_prec
+   type(array)             :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
    integer                 :: nnodes
@@ -1499,14 +1328,38 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array)            :: tmp
    character(ARR_MSG_LEN) :: msg
    integer                :: ii, jj, aa, bb, old_iter
-   logical                :: restart, w_cp, restart_from_converged
+   logical                :: restart, w_cp, restart_from_converged, collective
+   character(4)           :: atype
+
+   time_work        = 0.0E0_realk
+   time_comm        = 0.0E0_realk
+   time_idle        = 0.0E0_realk
+   time_fock_mat    = 0.0E0_realk
+   time_prec1       = 0.0E0_realk
+   time_start_guess = 0.0E0_realk
+   time_copy_opt    = 0.0E0_realk
+   time_crop_mat    = 0.0E0_realk
+   time_energy      = 0.0E0_realk
+   time_iter        = 0.0E0_realk
+   time_main        = 0.0E0_realk
+   time_mixing      = 0.0E0_realk
+   time_mo_ints     = 0.0E0_realk
+   time_new_guess   = 0.0E0_realk
+   time_norm        = 0.0E0_realk
+   time_residual    = 0.0E0_realk
+   time_solve_crop  = 0.0E0_realk
+   time_t1_trafo    = 0.0E0_realk
+   time_write       = 0.0E0_realk
+   time_finalize    = 0.0E0_realk
+
+   collective       = .true.
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
    !Set defaults
    restart     = .false.
    w_cp        = .false.
-   saferun     = (.not.DECinfo%CCSDnosaferun)
+   saferun     = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
 
 
    nnodes      = 1
@@ -1545,6 +1398,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
    end if
 
+   if(ccmodel == MODEL_MP2)then
+      atype = 'REAR'
+   else
+      atype = 'LDAR'
+   endif
 
    ! go to a (pseudo) canonical basis
    call mem_alloc( focc,     no     )
@@ -1602,11 +1460,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
-   Co   = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-   Cv   = array_minit( virt_dims,2, local=local, atype='LDAR' )
-   Co2  = array_minit( occ_dims, 2, local=local, atype='LDAR' )
-   Cv2  = array_minit( virt_dims,2, local=local, atype='LDAR' )
-   fock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+   Co   = array_minit( occ_dims, 2, local=local, atype=atype )
+   Cv   = array_minit( virt_dims,2, local=local, atype=atype )
+   Co2  = array_minit( occ_dims, 2, local=local, atype=atype )
+   Cv2  = array_minit( virt_dims,2, local=local, atype=atype )
+   fock = array_minit( ao2_dims, 2, local=local, atype=atype )
 
    call array_convert( Co_d,   Co   )
    call array_convert( Cv_d,   Cv   )
@@ -1633,9 +1491,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(dens,nb,nb)
    call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
+   ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
+
    if(fragment_job) then ! fragment: calculate correction
 
-      ifock = array_minit( ao2_dims, 2, local=local, atype='LDAR' )
 
       if(longrange_singles) then
          ! Get Fock matrix using singles amplitudes from previous
@@ -1655,13 +1514,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call array_cp_data(fock,delta_fock)
       call array_add(delta_fock,-1.0E0_realk,ifock)
-      call array_free(ifock)
 
    else 
       ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
-         ifock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
          !print *,"DEBUGGGING: zero iFOck instead of calculating it"
          !call array_zero(ifock)
@@ -1669,53 +1526,58 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          delta_fock=array_minit( ao2_dims, 2, local=local, atype='LDAR' )
          call array_cp_data(fock,delta_fock)
          call array_add(delta_fock,-1.0E0_realk,ifock)
-         call array_free(ifock)
       else
          delta_fock=array_minit( ao2_dims,2,local=local, atype='LDAR' )
          call array_zero(delta_fock)
       end if
    end if
 
-   call mem_dealloc(dens)
 
-   ! special MP2 things
-   MP2Special : if(CCmodel == MODEL_MP2 .or. CCmodel == MODEL_RPA) then
-      call lsquit("ERROR(ccsolver_par):ccsolver_par is called for MP2, there&
-         & are faster and better possibilities to solve the MP2 equations than this&
-         & solver",-1)
-   end if MP2Special
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
       &twall = time_prec1 , labelttot = 'CCSOL: AO FOCK MATRIX :', output = DECinfo%output)
 
-   ! get fock matrices for preconditioning
-   Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
 
-      ppfock_prec = array_minit( [no,no], 2, local=local, atype='REPD' )
-      qqfock_prec = array_minit( [nv,nv], 2, local=local, atype='REPD' )
 
-      call array_change_atype_to_rep( ppfock_prec, local )
-      call array_change_atype_to_rep( qqfock_prec, local )
+   ! get fock matrices, used in Preconditioning and MP2
 
-      if(DECinfo%precondition_with_full) then
-         call array_convert( ppfock_d, ppfock_prec )
-         call array_convert( qqfock_d, qqfock_prec )
-      else
-         tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
-         call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
-         call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
-         call array_free(tmp)
+   ppfock_prec = array_minit( [no,no], 2, local=local, atype='REPD' )
+   qqfock_prec = array_minit( [nv,nv], 2, local=local, atype='REPD' )
+   qpfock_prec = array_minit( [nv,no], 2, local=local, atype='REPD' )
 
-         tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
-         call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
-         call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
-         call array_free(tmp)
-      end if
+   call array_change_atype_to_rep( ppfock_prec, local )
+   call array_change_atype_to_rep( qqfock_prec, local )
 
+   if(DECinfo%precondition_with_full) then
+      call array_convert( ppfock_d, ppfock_prec )
+      call array_convert( qqfock_d, qqfock_prec )
+      call array_zero(qpfock_prec)
+   else
+      tmp = array_minit( [nb,no], 2, local=local, atype='LDAR' )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
+      call array_free(tmp)
+
+      tmp = array_minit( [nb,nv], 2, local=local, atype='LDAR'  )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
+      call array_free(tmp)
+
+      tmp = array_minit( [nb,no], 2, local=local, atype='LDAR'  )
+      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
+      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qpfock_prec)
+      call array_free(tmp)
+   end if
+
+   if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA )then
       call array_change_atype_to_d( ppfock_prec )
       call array_change_atype_to_d( qqfock_prec )
+   endif
 
-   end if Preconditioner
+
+   call array_free(ifock)
+   call mem_dealloc(dens)
+
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_prec1,&
       &labelttot = 'CCSOL: PRECOND. INIT. :', output = DECinfo%output)
@@ -1736,7 +1598,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(omega2,DECinfo%ccMaxIter)
 
    ! initialize T1 matrices and fock transformed matrices for CC pp,pq,qp,qq
-   if(CCmodel /= MODEL_MP2) then
+   if(CCmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA) then
       xo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       yo = array_minit( occ_dims, 2, local=local, atype='LDAR' )
       xv = array_minit( virt_dims,2, local=local, atype='LDAR' )
@@ -1746,28 +1608,47 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_zero(iajb)
 
+
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
 
    call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
 
+
+
+
    ! get guess amplitude vectors in the first iteration --> zero if no
    ! restart, else the t*.restart files are read
    two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
    if(DECinfo%use_singles)then
+
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
-      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
-         &safefilet21,safefilet22, safefilet2f, t1(1),safefilet11,safefilet12, safefilet1f  )
+      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
+
+      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+         & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
+         & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
-      t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
-      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),&
-         &safefilet21,safefilet22, safefilet2f )
+
+      !if MP2, just zero the array, and keep it in PDM all the time
+         atype = 'TDAR'
+         t2(1) = array_minit( ampl4_dims, 4, local=local, atype=atype )
+      if(ccmodel == MODEL_MP2 )then
+         old_iter = 0
+      else
+         call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+            & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+      endif
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
-   if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_start_guess,&
+   call array_free(qpfock_prec)
+
+
+   if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
+
+
 
    ! title
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
@@ -1776,26 +1657,47 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    If_not_converged: if(.not.restart_from_converged)then
 
-      !============================================================================!
-      !                          MO-CCSD initialization                            !
-      !____________________________________________________________________________!
-      !
       mo_ccsd = .false.
       if (DECinfo%MOCCSD) mo_ccsd = .true.
-      !
-      ! Check if there is enough memory to performed an MO-CCSD calculation.
-      !   YES: get full set of t1 free gmo and pack them
-      !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-      if (mo_ccsd) then
-         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
 
-         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
-            & nb,no,nv,CCmodel,MOinfo)
+      INTEGRAL : if(ccmodel == MODEL_MP2) then
 
-         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
-          &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+         call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
 
-      end if
+      else
+
+         !============================================================================!
+         !                          MO-CCSD initialization                            !
+         !____________________________________________________________________________!
+         ! Check if there is enough memory to performed an MO-CCSD calculation.
+         !   YES: get full set of t1 free gmo and pack them
+         !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+         if (mo_ccsd) then
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+
+            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+               & nb,no,nv,CCmodel,MOinfo)
+
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+               &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+
+         end if
+
+         !JOHANNES MODEL_RPA
+         if (ccmodel == MODEL_RPA) then
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+
+            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,&
+              & pgmo_diag,pgmo_up,nb,no,nv,CCmodel,MOinfo)
+
+            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+               &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+
+         end if
+
+      end if INTEGRAL
+
 
 
       ! readme : the iteration sequence is universal and may be used for all
@@ -1816,6 +1718,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! remove old vectors
          RemoveOldVectors : if(iter > DECinfo%ccMaxDIIS) then
+
             if(DECinfo%cc_driver_debug) then
                write(DECinfo%output,'(a,i4)') ' debug :: vector to delete : ',iter-DECinfo%ccMaxDIIS
             end if
@@ -1827,6 +1730,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             end if
             call array_free(t2(iter-DECinfo%ccMaxDIIS))
             call array_free(omega2(iter-DECinfo%ccMaxDIIS))
+
          end if RemoveOldVectors
 
 
@@ -1838,9 +1742,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          omega2(iter) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
          call array_zero(omega2(iter))
 
+
          if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_t1_trafo ) 
          ! get singles
          T1Related : if(DECinfo%use_singles) then
+
+            ! synchronize singles data on slaves
+            call array_sync_replicated(t1(iter))
 
             ! get the T1 transformation matrices
             call array_cp_data(Cv2,yv)
@@ -1862,18 +1770,38 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          ! MODIFY FOR NEW MODEL
          ! If you implement a new model, please insert call to your own residual routine here!
-         SelectCoupledClusterModel : select case(CCmodel)
-         case(MODEL_MP2)
-            call lsquit("ERROR(ccsolver_par):no mp2 implemented",DECinfo%output)
-         case(MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT) !CC2 or  CCSD or CCSD(T)
+         SelectCoupledClusterModel : select case( CCmodel )
+         case( MODEL_MP2 )
+
+            call get_simple_parallel_mp2_residual(omega2(iter),iajb,t2(iter),ppfock_prec,qqfock_prec,iter,local)
+
+         case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
+
 
             call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,&
                & mo_ccsd,iter,local,restart)
 
-         case(MODEL_RPA)
-            call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
+         case( MODEL_RPA )
+           
+            !msg = 'Norm of gmo'
+            !call print_norm(iajb,msg)
+
+            !msg = 'Norm of t2'
+            !call print_norm(t2(iter),msg)
+
+            !msg = 'Norm of omega2'
+            !call print_norm(omega2(iter),msg)
+#ifdef VAR_MPI
+           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+#else
+           call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+#endif
+            !msg = 'Norm of omega2 after computations'
+            !call print_norm(omega2(iter),msg)
+
+            !call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
          end select SelectCoupledClusterModel
@@ -2016,19 +1944,26 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
          EnergyForCCmodel: select case(CCmodel)
          case( MODEL_MP2 )
-            ! MP2
-            call lsquit("ERROR(ccsolver_par):CCD/MP2 energy not yet implemented",-1)
+
+            ccenergy = get_mp2_energy(t2(iter),iajb,no,nv)
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+
             ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
             ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
          case(MODEL_RPA)
-            call lsquit("ERROR(ccsolver_par): RPA energy not yet implemented",-1)
+           ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+           if(DECinfo%SOS) then
+             ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
+           endif
+
 
          case default
+
             call lsquit("ERROR(ccsolver_par):energy expression for your model&
                & not yet implemented",-1)
+
          end select EnergyForCCmodel
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
@@ -2045,7 +1980,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
                call array_free(omega2_prec)
@@ -2055,21 +1990,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_cp_data(t1_opt,t1(iter+1))
                   call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
                endif
-               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDPD' )
+               t2(iter+1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
-
             !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
             if(saferun)then
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
 
                if(DECinfo%use_singles)then
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22,&
-                     &t1(iter+1),safefilet11,safefilet12)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22,t1(iter+1),safefilet11,safefilet12)
                else
-                  call save_current_guess(iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,safefilet22)
+                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
+                     &safefilet22)
                endif
 
                if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
@@ -2106,12 +2041,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    else
 
-      !call get_mo_integral_par(iajb,Co,Cv,Co,Cv,mylsitem,local)
-
       call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,.false.,fragment_job)
 
       break_iterations = .true.
       last_iter        = 1
+
    endif If_not_converged
 
 
@@ -2129,11 +2063,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         t2_final = array4_init([nv,no,nv,no])
-         if(.not.restart_from_converged)then
-            call array_cp_tiled2dense(t2(last_iter),.true.)
-         endif
-         call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
+         ! Save two-electron integrals in the order (virt,occ,virt,occ)
+         t2_final = array4_init([nv,nv,no,no])
+         call array_convert(t2(last_iter),t2_final%val)
+         call array4_reorder(t2_final,[1,3,2,4])
+         !if(.not.restart_from_converged)then
+         !   call array_cp_tiled2dense(t2(last_iter),.true.)
+         !endif
+         !call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
 
          if(DECinfo%use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
@@ -2145,15 +2082,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(DECinfo%use_singles)then
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
                   &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
 
-         call array_change_itype_to_td(t2(last_iter),local)
+         !call array_change_itype_to_td(t2(last_iter),local)
       end if
 
       ! Free doubles residuals
@@ -2169,21 +2106,28 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 
    end do
+   
+   !in the call to get_combined_SingleDouble_amplitudes
+   !t1 is used, for RPA use_singles = .false. 
+   !it should be moved out of this routine
+   !but I get a wrong energy if it is moved out of the
+   !routine. Johannes 
+  ! if(CCmodel == MODEL_RPA)then
+  !   t1_final = array2_init([nv,no])
+  ! endif
+
+   call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
    ! Write finalization message
    call print_ccjob_summary(break_iterations,.false.,fragment_job,last_iter+old_iter,&
       &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
    ! Save two-electron integrals in the order (virt,occ,virt,occ)
-   if(CCmodel == MODEL_MP2) then
-      print *,"not implemented"
-      stop 0
-   else
-      VOVO = array4_init([no,nv,no,nv])
-      call array_convert(iajb,VOVO%val)
-      call array_free(iajb)
-      call array4_reorder(VOVO,[2,1,4,3])
-   end if
+   VOVO = array4_init([no,nv,no,nv])
+   call array_convert(iajb,VOVO%val)
+   call array_free(iajb)
+   call array4_reorder(VOVO,[2,1,4,3])
+   call print_norm(VOVO%val,i8*no*no*nv*nv)
 
    ! deallocate stuff
    if(DECinfo%use_singles) then
@@ -2202,10 +2146,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_free(delta_fock)
 
 
-   if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
-      call array_free(ppfock_prec)
-      call array_free(qqfock_prec)
-   end if
+   call array_free(ppfock_prec)
+   call array_free(qqfock_prec)
 
    if(DECinfo%use_singles) then
       !call array2_free(h1)
@@ -2217,8 +2159,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_free(qpfock)
    end if
 
-   call array_free(ppfock)
-   call array_free(qqfock)
+   
+   if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
+     call array_free(ppfock)
+     call array_free(qqfock)
+   endif
 
    call array_free(Co)
    call array_free(Co2)
@@ -2242,11 +2187,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !transform back to original basis   
    if(DECinfo%use_singles)then
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
+      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
+      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
    else
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val)
-      call ccsolver_can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
+      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val)
+      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
    endif
 
    call mem_dealloc(Uocc)
@@ -2261,13 +2206,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #ifdef MOD_UNRELEASED
    if( .not. fragment_job .and. DECinfo%PL>2 )then
-      call array4_print_statistics(DECinfo%output)
       call array_print_mem_info(DECinfo%output,.true.,.false.)
    endif
 #endif
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_finalize, &
-      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output, twall = ttotstart_wall )
+      &labelttot = 'CCSOL: FINALIZATION   :', output = DECinfo%output )
 
 end subroutine ccsolver_par
 
@@ -2278,13 +2222,16 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safefilet22,safefilet2f,&
-      & t1,safefilet11,safefilet12,safefilet1f)
+subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vvf,vof,mylsitem,local,&
+   & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
    logical,intent(out) :: restart
    real(realk), intent(out) :: norm,energy
    !> contains the guess doubles amplitudes on output
-   type(array),intent(inout) :: t2
+   type(array), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
+   logical, intent(in) :: local
+   !> integral info
+   type(lsitem), intent(inout) :: mylsitem
    !> the filenames to check for valid doubles amplitudes
    character(3),intent(in) :: safefilet21,safefilet22,safefilet2f
    !> contains the singles amplitudes on output
@@ -2301,6 +2248,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safef
    logical :: all_singles, fin1_exists, fin2_exists
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(ARR_MSG_LEN) :: msg
+   integer :: a,i
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
 
@@ -2480,16 +2428,31 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,safefilet21,safef
       CLOSE(fu_t1)
       restart = .true.
    else
-      call array_zero(t1)
+      !do a=1,nv
+      !   do i=1,no
+
+      !      t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+
+      !   end do
+      !end do
+      if(DECinfo%use_singles) call array_zero(t1)
    endif
+
    if(readfile2)then
+      ! allocate dense part of t2 array:
+      if (.not.local) call memory_allocate_array_dense(t2)
       READ(fu_t2) t2%elm1
       READ(fu_t2) norm
       READ(fu_t2) energy
       CLOSE(fu_t2)
+      ! mv dense part to tiles:
+      if (.not.local) call array_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
+      !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
+      !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
       call array_zero(t2)
+      !call array_zero(iajb)
    endif
 end subroutine get_guess_vectors
 
@@ -2497,17 +2460,18 @@ end subroutine get_guess_vectors
 !iteration
 !> \author Patrick Ettenhuber
 !> \date Dezember 2012
-subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
+subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefilet22,&
       &t1,safefilet11,safefilet12)
    implicit none
+   logical, intent(in) :: local
    !> iteration number
    integer,intent(in) :: iter
    !> write the corresponding residual norm into the file
-   real(realk), intent(in) :: res_norm,energy
+   real(realk), intent(in)    :: res_norm,energy
    !> doubles guess amplitudes for the next iteration
-   type(array), intent(in) :: t2
+   type(array), intent(inout) :: t2
    !> alternating filenames for the doubles amplitudes
-   character(3),intent(in) :: safefilet21,safefilet22
+   character(3),intent(in)    :: safefilet21,safefilet22
    !> singles guess amplitudes for the next iteration
    type(array), intent(in), optional :: t1
    !> alternating filenames for the singles amplitudes
@@ -2524,6 +2488,9 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
    character(11) :: fullname11, fullname12, fullname21, fullname22
    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
 #endif
+   ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
+   if (.not.local) call array_cp_tiled2dense(t2,.false.)
+
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
    fu_t11=111
    fu_t12=112
@@ -2631,7 +2598,33 @@ subroutine save_current_guess(iter,res_norm,energy,t2,safefilet21,safefilet22,&
       call lsquit("ERROR(ccdriver_par):impossible iteration&
          &number)",DECinfo%output)
    endif
+   ! deallocate dense part of doubles:
+   if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
+!> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
+!
+!> Author:  Pablo Baudin
+!> Date:    January 2014
+subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem)
+
+  implicit none
+
+  integer, intent(in) :: nb, no, nv
+  real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
+  type(array), intent(inout) :: govov
+  integer, intent(in) :: ccmodel
+  !> LS item with information needed for integrals
+  type(lsitem), intent(inout) :: MyLsItem
+     
+  ! dummy arguments:
+  type(array) :: pgmo_diag, pgmo_up
+  type(MObatchInfo) :: MOinfo
+  logical :: mo_ccsd  
+  
+  call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
+    & nb,no,nv,CCmodel,MOinfo)
+ 
+  end subroutine wrapper_to_get_real_t1_free_gmo
 
 end module ccdriver
