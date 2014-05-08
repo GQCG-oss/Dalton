@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2011 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2011 (2011), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -78,11 +78,19 @@ C
 #include "ccfro.h"
 #include "ccinftap.h"
 C
+#include "ccdeco.h"
+#include "ccdeco2.h"
+
       LOGICAL LOCDBG
       PARAMETER(LOCDBG=.FALSE.)
 C
       LOGICAL KAJ,LINQCC,RSPIM2,LTRIP(4),LRST1,LRST2,LPROJECT,TRIPLET
-      LOGICAL LREDS
+Cholesky pablo
+      LOGICAL LREDS,CCRSTRS,LREDS_SV
+      LOGICAL CCS_DONE
+      SAVE CCS_DONE
+      DATA CCS_DONE /.FALSE./
+Cholesky pablo
       DIMENSION WORK(LWORK),NCCEXSAV(8,3),CONT(28)
       CHARACTER MODEL*24,MODELP*24,MODEL1*24,CHSYM*4,FILEX*10,FILOLD*10
       CHARACTER MOPRPC*10
@@ -95,6 +103,7 @@ C
       PARAMETER (FRHO12='CCR_RH12',FC12AM='CCR_C12M',FS12AM='CCR_S12M')
       PARAMETER (FS2AM ='CCR_S2DM')
       PARAMETER (TWO = 2.0D00,TF=1.0D-04, TLOVLP = 0.5D0 )
+      PARAMETER (ZERO = 0.0D0)
       PARAMETER (XMONE = -1.0D00 , THRLDP = 1.0D-20)
       PARAMETER (THRDEGEN = 1.0D-8)
       CHARACTER*8 LABEL,LABEL1
@@ -103,6 +112,13 @@ C
 C
       CALL QENTER('CC_EXCI')
 C
+      IF (CHOINT .AND. (.NOT. (CCS .OR. CC2))) THEN
+         WRITE(LUPRI,*) 'Error : ',
+     &        'Only CCS/CC2 singlet excitation energies have been ',
+     &        'implemented with Cholesky decomposed integrals'
+         CALL QUIT('Cholesky only for CCS/CC2 singlet excitations')
+      END IF
+c
       LUFC1  = -1
       LUFC2  = -1
       LUFC12 = -1
@@ -113,6 +129,7 @@ C
       LUFS2  = -1
 C
       IF (CCP2)   CCS = .TRUE.
+      IF (CHOINT .AND. CC2) CHOEXC = .TRUE.
       TRIPLET = .FALSE.
       LABEL  = "Excita  "
       LABEL1 = "Exctot  "
@@ -138,7 +155,7 @@ C
             IMULTE(IEX) = 3
          END DO
       END DO
-      IF (IPRINT.GT.15) THEN
+casm  IF (IPRINT.GT.15) THEN
          WRITE(LUPRI,*) 'IN CC_EXCI after Reinit'
          WRITE(LUPRI,*) 'NEXCI: ',NEXCI
          WRITE(LUPRI,*) 'Singlet: ',(NCCEXCI(J,1),J=1,NSYM)
@@ -148,7 +165,8 @@ C
          WRITE(LUPRI,*) 'ISYEXC:',(ISYEXC(J), J=1,NEXCI)
          WRITE(LUPRI,*) 'IMULTE:',(IMULTE(J), J=1,NEXCI)
          WRITE(LUPRI,*) 'EIGVAL:',(EIGVAL(J), J=1,NEXCI)
-      ENDIF
+         write(lupri,*) 'minscr', minscr
+casm  ENDIF
 C
 C-----------------------
 C     Initialize Leinfi.
@@ -233,7 +251,11 @@ C
       MODEL = 'CCSD'
       MOPRPC = 'CCSD      '
       IF (CC2) THEN
-         CALL AROUND( ' CC2 Excitation Energies ')
+         IF (CHOINT) THEN
+            CALL AROUND( ' Cholesky-based CC2 Excitation Energies ')
+         ELSE
+            CALL AROUND( ' CC2 Excitation Energies ')
+         END IF
          MODEL = 'CC2'
          MOPRPC = 'CC2       '
       ENDIF
@@ -243,7 +265,12 @@ C
          MOPRPC ='CC(2)     '
       ENDIF
       IF (CCS.AND.(.NOT.CIS)) THEN
-         CALL AROUND( ' CCS Excitation Energies ')
+         IF (CHOINT) THEN
+            CALL AROUND( ' Cholesky-based CCS Excitation Energies ')
+            CCS_DONE = .TRUE.
+         ELSE
+            CALL AROUND( ' CCS Excitation Energies ')
+         END IF
          MODEL = 'CCS'
          MOPRPC ='CCS       '
       ENDIF
@@ -347,6 +374,7 @@ C
       DO 9000 ISYM = 1, NSYM
 C
 C
+         write(lupri,*) 'minscr' ,minscr
 C--------------------------------------
 C       Start loop over multiplicities: 
 C--------------------------------------
@@ -371,9 +399,16 @@ C
      &             ' TRIPLET EXCITATION ENERGIES',
      &               ' ARE NOT (YET) AVAILABLE.'
            END IF
+           IF (CHOINT) THEN
+              WRITE(LUPRI,*) 'Error : ',
+     &             'Only singlet excitation energies have been ',
+     &             'implemented with Cholesky decomposed integrals'
+              WRITE(LUPRI,*) 'Triplet excitations ignored'
+           END IF
          END IF
 C
          LREDS  = CCR12 .OR. (CCSDT .AND. CCSDT_DIIS) 
+     &            .OR. (CHOINT .AND. CC2 .AND. CHEXDI)
          LINQCC = .FALSE.
 C
          IF (LIST(1:2) .EQ. 'RE') ISIDE  = +1
@@ -386,18 +421,27 @@ C
          ENDIF
 C
          ISYMTR = ISYM
-         IF (CCS) THEN
+c        IF (CCS) THEN
+         IF (CCS .OR. (CC2 .AND. CHOINT)) THEN
            NCCVAR = NT1AM(ISYMTR)
          ELSE
            NCCVAR = NT1AM(ISYMTR) + NT2AM(ISYMTR)
            IF (CCR12)   NCCVAR = NCCVAR + NTR12AM(ISYMTR)
            IF (TRIPLET) NCCVAR = NCCVAR + NT2AMA(ISYMTR)
          END IF
-         CALL CCLR_LEINFI(TRIPLET)
+c
+         IF (TRIPLET .AND. CHOINT) THEN
+            NCCEXSAV(ISYM,IMULT) = 0
+            NCCEXCI(ISYM,IMULT) = 0
+            GOTO 8000
+         ELSE
+            CALL CCLR_LEINFI(TRIPLET)
+         END IF
 C
 C---------------
 C        OUTPUT.
 C---------------
+C
 C
          IF (ISYM .GT. 1) WRITE(LUPRI,'(//A)')
      *     ' ***********************************************'
@@ -453,7 +497,9 @@ C
          KREDS  = KWRK1 
          IF (LREDS) KWRK1  = KREDS  + MAXRED*MAXRED
 
-         IF (CCSDT .AND. CCSDT_DIIS) THEN
+casm     IF (CCSDT .AND. CCSDT_DIIS) THEN
+         IF ((CCSDT .AND. CCSDT_DIIS)  .OR.
+     &       (CHOINT .AND. CC2 .AND. CHEXDI)) THEN
             KAMAT  = KWRK1
             KITRAN = KAMAT  + (MXDIIS+1)*(MXDIIS+1)*NSIM
             KCONV  = KITRAN + NSIM
@@ -511,21 +557,99 @@ C
      *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                 WORK(KWRK1),LWRK1,LIST)
          CALL FLSHFO(LUPRI)
+c
 C
 C------------------------------------------
 C        Solve equations by call to solver.
 C------------------------------------------
 C
-         IF (OMESC .AND. CCSDT .AND. CCSDT_DIIS) THEN
+casm     IF ((OMESC .AND. CCSDT .AND. CCSDT_DIIS))  THEN
+         IF ((OMESC .AND. CCSDT .AND. CCSDT_DIIS)  .OR. 
+     &       (CHOINT .AND. CC2 .AND. CHEXDI)) THEN
 
-           DO ICOUNT = 1, NSIM
-             IF (TRIPLET) THEN
-               WORK(KEIVAL-1+ICOUNT) = EIGVAL(ITROFE(ISYM)+ICOUNT)
-             ELSE
-               WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
-             END IF
-           END DO
+           IF (CHOINT) THEN
+              DO ICOUNT = 1,NSIM
+                 IF (CCS_DONE) THEN 
+                    WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
+                 ELSE
+                    WORK(KEIVAL-1+ICOUNT) = 0.0D0
+                 END IF
+              END DO
+C
+              IF (DV4DIS) THEN
+                 NUPVEC_SV = NUPVEC
+                 LREDS_SV = LREDS
+                 LREDS = .FALSE.
+                 THRLE_SV = THRLE
+                 THRLE = 1.0D-3
+                 ECURR = 0.0D0
+                 CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+     *                      FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                      FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                      LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
+     *                      LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                      NREDH,WORK(KREDH),WORK(KEIVAL),
+     *                      WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
+C
+C                Discard all trial vectors unless last one
+C
+                 CCRSTRS = CCRSTR
+                 CCRSTR  = .TRUE.
+C
+                 KIPLAC = KWRK1
+                 KWRK2  = KIPLAC + MAXRED
+                 LWRK2  = LWORK  - KWRK2
+                 IF (LWRK2 .LT. 0) STOP 'Not enough space for DV4DIS'
+C
+                 CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
+     *                 TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                 NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                 WORK(KWRK2),LWRK2,LIST)
+c                NUPVEC = NUPVEC_SV
+c                NREDH  = NUPVEC
+C 
+                 write(lupri,*) 'After CCEQ_STR. nupvec :',nupvec
+                 write(lupri,*) 'After CCEQ_STR. nredh  :',nredh 
+                 CCRSTR = CCRSTRS
+                 LREDS  = LREDS_SV
+                 THRLE  = THRLE_SV
+              END IF
+C
+           ELSE
+              DO ICOUNT = 1, NSIM
+                IF (TRIPLET) THEN
+                   WORK(KEIVAL-1+ICOUNT) = EIGVAL(ITROFE(ISYM)+ICOUNT)
+                ELSE
+                   WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
+                END IF
+              END DO
+           END IF
+c          stop 'End of test'
+C
+c          DO ICOUNT = 1, NSIM
+c            IF (CHOINT) THEN
+c               NUPVEC_SV = NUPVEC
+c               continue
+c               WORK(KEIVAL-1+ICOUNT) = 0.0D0
+c               work(keival) = 0.3087169265
+c               work(keival+1) = 0.8969289376
+c              write(lupri,'(a,2i4,d15.6)') 'isymm, state, eigval :',
+c    &                     isym,icount,EIGVAL(ISYOFE(ISYM)+ICOUNT)
+c            ELSE
+c               IF (TRIPLET) THEN
+c                 WORK(KEIVAL-1+ICOUNT) = EIGVAL(ITROFE(ISYM)+ICOUNT)
+c               ELSE
+c                 WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
+c               END IF
+c            END IF
+c          END DO
+C
+c 666      CONTINUE
 
+           do icount = 1,nsim
+              write(lupri,*) 'work(keival) ',WORK(KEIVAL-1+ICOUNT) 
+           end do
            CALL CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
      *                     FC1AM,LUFC1,FC2AM,LUFC2,LIST,IRST,
      *                     TRIPLET,ISIDE,NSIMR,NUPVEC,
@@ -533,6 +657,25 @@ C
      *                     WORK(KSOLEQ),WORK(KAMAT),
      *                     WORK(KITRAN),WORK(KCONV),WORK(KRNORM),
      *                     WORK(KWRK1),LWRK1)
+C
+c          IF (CHOINT .AND. (.NOT. DISCON)) THEN
+c             MAXLE_SV = MAXLE
+c             MAXLE = 5
+c             ecurr = ecurr_new
+c             from_diis = .true.
+c             CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
+c    *                      FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+c    *                      FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+c    *                      LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
+c    *                      LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+c    *                      NREDH,WORK(KREDH),WORK(KEIVAL),
+c    *                      WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
+c             MAXLE  = MAXLE_SV
+c             NUPVEC = NUPVEC_SV
+c             NREDH  = NUPVEC
+c             GOTO 666
+c          END IF
+C
          ELSE
            CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
      *                   FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
@@ -725,11 +868,20 @@ C
 C
 C----------------------------------------------------------
 C==========================================================
-C       IF CCSDT we may solve until self consistency:
+C       IF CCSDT we may solve until self consistency.
+C       And we have to if Cholesky CC2
 C==========================================================
 C----------------------------------------------------------
 C
-         IF (OMESC.AND.CCSDT.AND.(.NOT.CCSDT_DIIS)) THEN
+         write(lupri,*) '==================================='
+         write(lupri,*)
+         write(lupri,*) 'About to enter self-consistent loop'
+         write(lupri,*)
+         write(lupri,*) '==================================='
+         call flshfo(lupri)
+C
+         IF (OMESC .AND. ((CCSDT.AND.(.NOT.CCSDT_DIIS)) 
+     &       .OR. (CHOINT .AND. CC2 .AND. (.NOT. CHEXDI)))) THEN
 C
          CALL DZERO(WORK(KEXCIS),NCCEXCI(ISYMTR,IMULT))
          CALL DZERO(WORK(KT1PS),NCCEXCI(ISYMTR,IMULT))
@@ -739,6 +891,7 @@ C        Solve for all NOMINP eigenvalues self-consistently.
 C-----------------------------------------------------------
 C
          DO 1000 IOM = 1, NOMINP(ISYMTR,IMULT)
+
 C
 C-----------------------
 C        Solve equtions.
@@ -756,11 +909,24 @@ C           Create start vectors.
 C--------------------------------
 C
             LPROJECT = .FALSE.
-            CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
-     *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
-     *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
-     *                    WORK(KWRK1),LWRK1,LIST)
+Cholesky pablo
+            IF (CHOINT .AND. CC2) THEN
+              CCRSTRS = CCRSTR
+              CCRSTR = .TRUE.
+              CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                      FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
+     *                      TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                      NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                      WORK(KWRK1),LWRK1,LIST)
+              CCRSTR = CCRSTRS
+            ELSE
+              CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                      FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
+     *                      TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                      NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                      WORK(KWRK1),LWRK1,LIST)
+            END IF
+Cholesky pablo
             CALL FLSHFO(LUPRI)
 C
 C-------------------------------------------------------------------
@@ -800,6 +966,11 @@ C
             ITSC   = ITSC + 1
             ECURR  = ECURR1
 C
+            IF (CHOINT) THEN
+               WRITE(LUPRI,'(A,I3,A,F8.5)') 'Calculating state :',
+     &                     ISTATE, ' with present energy :',ecurr
+               CALL FLSHFO(LUPRI)
+            END IF
 C
 C---------------------------------------------
 C           Solve equations by call to solver.
@@ -955,23 +1126,12 @@ C                   -------------------------------
      &                   'Warning - Large difference between '//
      &                   'left and right excitation energies'
                     ELSE
+             write(lupri,*) 'cc_exci. eigval :',ILSTNR,EIGVAL(ILSTNR)
                      EIGVAL(ILSTNR) = WORK(KEIVAL+ICOUNT-1)
                     END IF
 C
-C-----------------------------------------------------
-C                   Restart if not selfconsistent yet.
-C-----------------------------------------------------
-C
-                  ELSE
-C
-                    LPROJECT = .FALSE.
-                    CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                            FS12AM,LUFS12,FS2AM,LUFS2,
-     *                            LPROJECT,ISTATPRJ,
-     *                            TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
-     *                            NREDH,WORK(KEIVAL),WORK(KIPLAC),
-     *                            WORK(KWRK1),LWRK1,LIST)
-                    CALL FLSHFO(LUPRI)
+Cholesky pablo: Call to CCEQ_STR moved after the loop 
+C               in order to call it just once.
 C
                   ENDIF
 C
@@ -987,6 +1147,28 @@ C---------------------------------------------------------
 C
             IF (ABS(ECURR1-ECURR).GT. TOLSC) THEN
 C
+Cholesky pablo
+               LPROJECT = .FALSE.
+               IF (CHOINT .AND. CC2) THEN
+                 CCRSTRS = CCRSTR
+                 CCRSTR = .TRUE.
+                 CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,
+     *                         LUFC12,FS12AM,LUFS12,FS2AM,LUFS2,
+     *                         LPROJECT,ISTATPRJ,
+     *                         TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                         NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                         WORK(KWRK1),LWRK1,LIST)
+                 CCRSTR = CCRSTRS
+               ELSE
+                 CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,
+     *                         LUFC12,FS12AM,LUFS12,FS2AM,LUFS2,
+     *                         LPROJECT,ISTATPRJ,
+     *                         TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
+     *                         NREDH,WORK(KEIVAL),WORK(KIPLAC),
+     *                         WORK(KWRK1),LWRK1,LIST)
+               END IF
+Cholesky pablo
+               CALL FLSHFO(LUPRI)
                GOTO 2000
 C
             ENDIF
@@ -1557,6 +1739,7 @@ C
 C
       THRLE  = THREXC
       MAXLE  = MAXITE
+      IF (CHOINT .AND. CHEXDI) MAXLE = MAXLE / 2
       IPRLE  = IPRINT
 C
 Cholesky
@@ -1564,7 +1747,7 @@ C
       IF (CHOINT) THEN
          IF (TRIPLET)
      &   CALL QUIT('CCLR_LEINFI: Triplet Cholesky not implemented')
-         IF (CC2) THEN
+         IF (CC2 .OR. CCS) THEN
             LETYPA = NT1AM(ISYMTR)
          ELSE
             CALL QUIT('CCLR_LEINFI: Only Cholesky CC2 implemented')

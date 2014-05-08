@@ -1,0 +1,184 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > choles_cc2_exci.info <<'%EOF%'
+   choles_cc2_exci
+   -----------------
+   Molecule:         7-hydroxi-1-indanone (C9O2H8)
+   Wave Functions:   Turbomole-SVP
+   Test Purpose:     Cholesky CC2 excitation energies
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > choles_cc2_exci.mol <<'%EOF%'
+BASIS
+Turbomole-SVP
+............
+............
+Atomtypes=3 Angstrom
+Charge=6 Atoms=9
+C      2.009267      1.229042      0.000000
+C      1.266421     -0.092531      0.000000
+C     -0.113670      0.125297      0.000000
+C     -0.420179      1.545646      0.000000
+C      0.903188      2.307707      0.000000
+C      1.755626     -1.392577      0.000000
+C      0.825197     -2.443817      0.000000
+C     -0.556138     -2.228617      0.000000
+C     -1.046832     -0.920237      0.000000
+Charge=8 Atoms=2
+O     -2.378196     -0.674406      0.000000
+O     -1.561925      2.034255      0.000000
+Charge=1 Atoms=8
+H     -1.250704     -3.059750      0.000000
+H      2.819391     -1.601083      0.000000
+H      1.186061     -3.466649      0.000000
+H     -2.476595      0.303641      0.000000
+H      0.938604      2.951310     -0.880991
+H      2.649351      1.310372      0.881111
+H      0.938604      2.951310      0.880991
+H      2.649351      1.310372     -0.881111
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > choles_cc2_exci.dal <<'%EOF%'
+**DALTON
+.RUN WAVE
+.CHOLES
+**INTEGRALS
+.DIPLEN
+**CHOLESKY
+.REDUCE
+.SPANDI
+  1.0d-3
+.THRCOM
+ 1.0D-6
+!.RSTDIA
+!.RSTCHO
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-8
+.MAX DIIS
+  100
+*ORBITAL
+.MOSTART
+ HUCKEL
+.NOSUPSYM
+*CC INP
+.PRINT
+  1
+.FREEZE
+  11   0
+.CCS
+.CC2
+*CCEXCI
+.CHEXDI
+.DV4DIS
+.NCCEXCI
+  2   1
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >choles_cc2_exci.check
+cat >>choles_cc2_exci.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# SCF and  MP2 CC2 energies:
+CRIT1=`$GREP "Total SCF" $log | $GREP "\-494.8444509" | wc -l`
+CRIT2=`$GREP "Total CC2" $log | $GREP "\-496.4012943" | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2`
+CTRL[1]=5
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# Amplitudes
+CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "2541" | wc -l`
+CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "4848711" | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2`
+CTRL[2]=4
+ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
+
+
+# CCS excitations
+CRIT1=`$GREP "\^1A'" $log | grep "0.2029" | wc -l`
+CRIT2=`$GREP "\^1A'" $log | grep "0.219" | wc -l`
+CRIT3=`$GREP "\^1A\"" $log | grep "0.1913" | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
+
+
+
+# CC2 excitations
+CRIT1=`$GREP "\^1A'" $log | grep "0.1606" | wc -l`
+CRIT2=`$GREP "\^1A'" $log | grep "0.2032" | wc -l`
+CRIT3=`$GREP "\^1A\"" $log | grep "0.1533" | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
+
+
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+
+%EOF%
+chmod +x choles_cc2_exci.check
+#######################################################################

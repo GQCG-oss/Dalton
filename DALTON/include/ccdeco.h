@@ -9,7 +9,8 @@
 
       PARAMETER (MXCHVC = 80 000)
 C
-      LOGICAL CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,NEWSCF
+      LOGICAL CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,
+     &        NEWSCF,CHOEXC,CHEXDI,DV4DIS
 C
       COMMON /CHOINT/ DIASCR(MXSHEL,MXSHEL),
      &                THRCOM, THRDEF, THINDI, THSUDI, SPAN,
@@ -19,7 +20,7 @@ C
      &                NUMCHO(8), LENCHO(MXCHVC,8),IDNTCH(MXCHVC,8),
      &                NDIAG,IDIAG(8),MAXDIA,MAXDI1,
      &                CHOINT,COMP,RSTDIA,RSTCHO,SCDIAG,REDUCE,DIACAL,
-     &                NEWSCF
+     &                NEWSCF,CHOEXC,CHEXDI,DV4DIS
 
 #ifdef NOT_USED
 ! hjaaj Sep 2013: these are not used, but IALBET uses a lot of static memory
