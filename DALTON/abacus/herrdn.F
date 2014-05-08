@@ -2610,13 +2610,13 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-      if (.NOT.SLAVE .AND. (PEQM .OR. PEMEP)
+         IF (PEQM .OR. PEMEP
 #if defined (BUILD_PELIB)
      &    .or. pe_savden
 #endif
      &   ) THEN
 #if defined(BUILD_PELIB)
-            CALL PE_IFC_INIT()
+         CALL PE_IFC_INIT()
 #endif
          END IF
       END IF
