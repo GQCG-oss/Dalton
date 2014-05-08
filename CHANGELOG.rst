@@ -24,6 +24,10 @@ DALTON
   MXSHEL 1000 -> 1500; MXCORB 2400 -> 5000; MXPRIM 8000 -> 15000;
   MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT_QM 200 -> 500
   (the static size of dalton.x went from 100 MB to 165 MB) 
+- do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (*EXCITA module)
+- corrected input description for transition moments between excited states (*QUADRA with .DOUBLE RESIDUE)
+- fix for **RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated)
+- fix for molden file when exponent greater than 1.D8
 
 
 LSDALTON

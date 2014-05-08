@@ -71,8 +71,8 @@ public mem_deallocated_mem_lvec_data
 public mem_allocated_lattice_cell
 public mem_allocated_mem_lattice_cell
 public mem_deallocated_mem_lattice_cell
-public mem_add_external_memory
 #endif
+public mem_add_external_memory
 public longintbuffersize
 logical,save :: PrintSCFmemory
 logical,save :: MemModParamPrintMemory
@@ -2525,7 +2525,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
    simp = .false.
    if(present(simple))simp = simple
 
-   if(present(comm))then
+   if(present(comm).and..not.simp)then
 #ifdef VAR_MPI
       loc = .false.
       if(present(local))loc=local

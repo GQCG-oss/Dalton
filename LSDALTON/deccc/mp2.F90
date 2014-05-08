@@ -3658,7 +3658,8 @@ end subroutine Get_ijba_integrals
   !> STEP 3: Final transformations (diagonal->local basis) after integral loop
   !> \author Kasper Kristensen
   !> \date December 2011
-subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,printstuff,adapt_to_nnodes,FullMemoryNeeded)
+subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,&
+  & bat,printstuff,adapt_to_nnodes,FullMemoryNeeded)
   implicit none
   !> Fragment info
   type(decfrag),intent(inout) :: MyFragment
