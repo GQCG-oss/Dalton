@@ -616,9 +616,39 @@ contains
        
        call mem_alloc(molecule%AtomCenters,3,nAtoms)
        call getAtomicCenters(mylsitem%setting,molecule%AtomCenters,nAtoms)
+
+       !> Distances between Occ Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomOcc,nocc,nAtoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomOcc,nocc,natoms,&
+            & Molecule%carmomocc,molecule%AtomCenters) 
+       !> Distances between Virtual Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomVirt,nvirt,natoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
+            & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
   end subroutine molecule_get_carmom
 
+
+  subroutine GetOrbAtomDistances(DistanceTableOrbAtom,nocc,natoms,&
+       & Carmom,AtomCenters) 
+    implicit none
+    integer,intent(in) :: nocc,natoms
+    real(realk),intent(inout) :: DistanceTableOrbAtom(nocc,natoms)
+    real(realk),intent(in) :: AtomCenters(3,nAtoms)
+    real(realk),intent(in) :: Carmom(3,nocc)
+    !local variables
+    integer :: iatom,i
+    real(realk) :: Xa,Ya,Za
+    do iatom=1,nAtoms
+     Xa = -AtomCenters(1,iatom)
+     Ya = -AtomCenters(2,iatom)
+     Za = -AtomCenters(3,iatom)
+     do i=1,nocc
+      DistanceTableOrbAtom(i,iatom)=&
+ & sqrt((Xa+Carmom(1,i))*(Xa+Carmom(1,i))+(Ya+Carmom(2,i))*(Ya+Carmom(2,i))+(Za+Carmom(3,i))*(Za+Carmom(3,i)))
+     end do
+    end do
+  end subroutine GetOrbAtomDistances
 
   !> \brief Destroy fullmolecule structure
   !> \param molecule Full molecular info
@@ -729,6 +759,14 @@ contains
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
     end if
+
+    if(associated(molecule%DistanceTableOrbAtomOcc)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomOcc)
+    endif
+
+    if(associated(molecule%DistanceTableOrbAtomVirt)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomVirt)
+    endif
 
     if(associated(molecule%PhantomAtom)) then
        call mem_dealloc(molecule%PhantomAtom)

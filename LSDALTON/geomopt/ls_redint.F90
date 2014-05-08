@@ -3537,6 +3537,7 @@ Implicit Real(realk) (A-H,O-Z)
       Real(realk) BMTINV(MXRCRD,MXCOOR)
       Real(realk) GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
       Real(realk) STPLIN(MXRCRD), VECMOD(MXCOOR)
+      Real(realk) CMPLIM
       LOGICAL   INSIDE, ACTIVE, DOSCAL
       PARAMETER (D0 = 0.0E0_realk, D1 = 1.0E0_realk, DP5 = 0.5E0_realk)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -3571,11 +3572,9 @@ Implicit Real(realk) (A-H,O-Z)
 !     First comes the trust region method
 !
       IF (optinfo%TrustRg .OR. (optinfo%GDIIS .AND. (optinfo%KEPTIT .LT. 3))) THEN
-!!!! Vladimir: saddle point code disabled
-!!!!
 !     For saddle point optimizations, we construct the image function.
 !
-!         IF (optinfo%Saddle) THEN
+         IF (optinfo%Saddle) THEN
 !            IMODE = optinfo%NSPMod
 !
 !     We can follow a specific eigenvector if needed...
@@ -3588,24 +3587,23 @@ Implicit Real(realk) (A-H,O-Z)
 !     ... otherwise we have to find the first mode with a non-zero
 !     gradient-element.
 !
-!               IMODE = 1
-! 3             CONTINUE
-!               IF ((ABS(optinfo%GRDDIA(IMODE)) .LE. 1.0E-10_realk) &
-!     &              .AND. (IMODE .LE. NVEC)) THEN
-!                  IMODE = IMODE + 1
-!                  GOTO 3
-!               ELSE IF (IMODE .GT. NVEC) THEN
-!                  IMODE = 1
-!               END IF
+               IMODE = 1
+               Do j = 1, NVEC
+                  If (ABS(optinfo%GRDDIA(IMODE)) .LE. 1.0E-10_realk) then
+                     IMODE = IMODE + 1
+                  Endif
+               Enddo
+               If (IMODE .GT. NVEC) IMODE = 1
 !            END IF
-!            IF (optinfo%IPrint .GE. IPRMED) THEN
-!               WRITE(LUPRI,*)
-!               WRITE(LUPRI,*) 'Making image function by changing  &
-!     &              the sign of mode ',IMODE
-!               WRITE(LUPRI,*)
-!            END IF
-!            call ls_MAKIMG(optinfo%NIntCoord,NVEC,MXRCRD,IMODE,.FALSE.,lupri,optinfo)
-!         END IF
+            IF (optinfo%IPrint .GE. IPRMED) THEN
+               WRITE(LUPRI,*)
+               WRITE(LUPRI,*) 'Making image function by changing  &
+     &              the sign of mode ',IMODE
+               WRITE(LUPRI,*)
+            END IF
+            call MAKIMG(optinfo%NProjected,optinfo%NIntCoord,&
+               & optinfo%EVAL,optinfo%GRDDIA,optinfo%STPDIA,IMODE,.FALSE.)
+         END IF
 !
 
 !
@@ -3653,22 +3651,21 @@ Implicit Real(realk) (A-H,O-Z)
                WRITE(LUPRI,'(/A,F15.10)')' Norm, boundary step:', optinfo%stepNorm
             END IF
          END IF
-!!!!!! Vladimir: saddle point code disabled in LINSCA
-!!!!!!
 !     For saddle point optimizations, we restore the original function.
 !
-!         IF (optinfo%Saddle) THEN
-!            DOSCAL = (.NOT. optinfo%Newton)
-!            IF (optinfo%InitHess .AND. (optinfo%ItrNmr .EQ. 0)) DOSCAL = .FALSE.
-!            IF (DOSCAL) THEN
-!               CMPLIM = MAX(optinfo%TrustRad*0.67E0_realk, 0.5E0_realk)
-!               DO 35 I = 1, optinfo%NIntCoord
-!                  IF (ABS(optinfo%STPDIA(I)) .GT. CMPLIM) &
-!     &                 optinfo%STPDIA(I) = SIGN(CMPLIM,optinfo%STPDIA(I))
-! 35            CONTINUE
-!            END IF
-!            call ls_MAKIMG(optinfo%NIntCoord,NVEC,MXRCRD,IMODE,.TRUE.,lupri,optinfo)
-!         END IF
+         IF (optinfo%Saddle) THEN
+            DOSCAL = (.NOT. optinfo%Newton)
+            IF (optinfo%InitHess .AND. (optinfo%ItrNmr .EQ. 0)) DOSCAL = .FALSE.
+            IF (DOSCAL) THEN
+               CMPLIM = MAX(optinfo%TrustRad*0.67E0_realk, 0.5E0_realk)
+               DO I = 1, optinfo%NIntCoord
+                  IF (ABS(optinfo%STPDIA(I)) .GT. CMPLIM) &
+     &                 optinfo%STPDIA(I) = SIGN(CMPLIM,optinfo%STPDIA(I))
+               ENDDO
+            END IF
+            call MAKIMG(optinfo%NProjected,optinfo%NIntCoord,&
+               & optinfo%EVAL,optinfo%GRDDIA,optinfo%STPDIA,IMODE,.TRUE.)
+         END IF
 
 
 !
@@ -5013,4 +5010,3 @@ Use precision
       IF (INFO .EQ. 0) CALL DGEDI(AINV,N,N,IPVT,DET,WRK,01)
       RETURN
 END SUBROUTINE
-

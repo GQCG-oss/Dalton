@@ -551,6 +551,8 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN
           call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
@@ -595,6 +597,8 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -1028,19 +1032,20 @@ contains
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
       k=SPLIT_MSG_REC
+      !This used to be SPLIT_MSG_REC but now 
 
       nelms = nbas*nocc
-      call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(xo,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(yo,nelms,infpar%master,infpar%lg_comm)
 
       nelms = nbas*nvirt
-      call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(xv,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast(yv,nelms,infpar%master,infpar%lg_comm)
 
       nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if(iter/=1.and.(s==0.or.s==4))then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
       if(.not.loc)then
@@ -2025,9 +2030,9 @@ contains
       k=SPLIT_MSG_REC
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if (iter/=1) then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
       if(.not.loc)then
@@ -2148,6 +2153,7 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
@@ -2165,7 +2171,7 @@ contains
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
-    call ls_mpi_buffer(DECitem%MP2density,Master)
+    call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
@@ -2190,8 +2196,9 @@ contains
 
   subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
     implicit none
-    real(realk),intent(inout),pointer :: gmo(:)
+    !real(realk),intent(inout),pointer :: gmo(:)
     !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: gmo
     type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
@@ -2200,7 +2207,7 @@ contains
     logical :: master
     integer :: addr1(infpar%lg_nodtot)
     integer :: addr2(infpar%lg_nodtot)
-    integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
 
 
     master = (infpar%lg_mynum == infpar%master)
@@ -2208,46 +2215,50 @@ contains
     if(master) then
    !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
       addr1 = omega2%addr_p_arr
-  !    addr2 = t2%addr_p_arr
+      !addr2 = gmo%addr_p_arr
+      !addr3 = t2%addr_p_arr
     endif
 
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
-  !  call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
 
 
     if(.not.master)then
-      call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
       omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
-  !    t2     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !gmo     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
       t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
-    call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
     !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    print*,' inside rpa_res_comm',infpar%lg_mynum
+    !print*,' inside rpa_res_comm',infpar%lg_mynum
 
     
-    print*,' after gmo',infpar%lg_mynum
+    !print*,' after gmo',infpar%lg_mynum
 
-    print*,' after omega2',infpar%lg_mynum
+    !print*,' after omega2',infpar%lg_mynum
 
 
-    call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    print*,' after t2',infpar%lg_mynum
+    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    !print*,' after t2',infpar%lg_mynum
+    call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
     !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
-    print*,' after finalize',infpar%lg_mynum
-    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+    !print*,' after finalize',infpar%lg_mynum
+    call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
   end subroutine rpa_res_communicate_data

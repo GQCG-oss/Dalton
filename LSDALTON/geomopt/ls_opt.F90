@@ -3756,19 +3756,6 @@ Implicit Real(realk) (A-H,O-Z)
 !!$         end if
       END IF
 !
-!     If the energy difference is below THRSYM and the total Hessian is
-!     non-zero, we can be pretty sure that we're approaching a saddle
-!     point, and the symmetry should be broken. Only applies to
-!     second order methods.
-!
-!      IF ((optinfo%Newton .OR. optinfo%QuadSD) .AND. (optinfo%IndHes .GT. 0) .AND. &
-!     &     (EDIFF .LE. MAX(optinfo%ThrErg,THRSYM)) .AND. &
-!     &     ((optinfo%ItrNmr-1) .NE. optinfo%ItBreak) .AND. (.NOT. optinfo%Saddle)) THEN
-!         BRKSYM = .TRUE.
-!         optinfo%Restart = .TRUE.
-!         NWSYMM = .TRUE.
-!      END IF
-!
 !     Output from the testing is written.
 !
       IF (.NOT. optinfo%NatNorm .AND. (optinfo%IPrint .GT. 2)) THEN

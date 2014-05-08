@@ -494,7 +494,8 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
-    real(realk) :: Edft(1)
+    real(realk) :: Edft(1),DFTELS
+    logical :: doMPI 
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -505,8 +506,20 @@ contains
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
     IF(DECinfo%DFTreference)THEN
+       IF(DECinfo%FrozenCore)THEN
+          !not the full number of electrons we deactivate the testing
+          DFTELS = MyLsItem%setting%scheme%DFT%DFTELS
+          MyLsItem%setting%scheme%DFT%DFTELS = 100.0E0_realk
+       ENDIF
+       !Deactivate MPI - done at the DEC level - maybe this could
+       !be done in the local group - then the MyLsItem%setting%node
+       !and MyLsItem%setting%comm needs to be set correctly
+       doMPI = MyLsItem%setting%scheme%doMPI
+       MyLsItem%setting%scheme%doMPI = .FALSE.
        call II_get_xc_fock_mat(DECinfo%output,DECinfo%output,&
-            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)
+            & MyLsItem%setting,U%nrow,U,FockU,Edft,1)       
+       MyLsItem%setting%scheme%doMPI = doMPI 
+       IF(DECinfo%FrozenCore)MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
     ENDIF
 
   end subroutine dec_fock_transformation
@@ -782,9 +795,9 @@ contains
     logical :: print_debug
        
     ! MPI variables:
-    logical :: master, local
-    integer :: myload
-    integer(kind=ls_mpik) :: ierr, myrank, nnod
+    logical :: master, local, gdi_lk, gup_lk
+    integer :: myload, win
+    integer(kind=ls_mpik) :: ierr, myrank, nnod, dest
     integer, pointer      :: tasks(:)
 
     ! Screening integrals stuff:
@@ -814,6 +827,9 @@ contains
     local       = .true.
     myrank      = int(0,kind=ls_mpik)
     nnod        = 1
+    !> logical stating if the windows of int. array are locked:
+    gdi_lk      = .false.
+    gup_lk      = .false.
 #ifdef VAR_MPI
     myrank      = infpar%lg_mynum
     nnod        = infpar%lg_nodtot
@@ -878,10 +894,8 @@ contains
         call init_gmo_arrays(ntot,dimP,Nbatch,local,local_moccsd,pgmo_diag,pgmo_up)
 
       case(MODEL_RPA)
-        write(*,*) 'Johannes First RPA in t1_free'
         call get_AO_batches_size_rpa(ntot,nb,no,nv,MaxAllowedDimAlpha, &
                   & MaxAllowedDimGamma,MyLsItem)
-        write(*,*) 'Johannes after first RPA in t1_free'
       case default
           call lsquit('only RPA, CCSD and CCSD(T) model should use this routine',DECinfo%output)
       end select
@@ -990,6 +1004,9 @@ contains
 
     if(ccmodel == MODEL_RPA) then
       ! working arrays
+      gmosize = int(i8*no*nv*no*nv,kind=long)
+      call mem_alloc(gmo,gmosize)
+      gmo = 0.0_realk
       tmp_size = max(nb*MaxActualDimAlpha*MaxActualDimGamma, MaxActualDimGamma*no*nv)
       tmp_size = int(i8*tmp_size*no, kind=long)
       call mem_alloc(tmp1, tmp_size)
@@ -1108,7 +1125,9 @@ contains
        if (ccmodel == MODEL_RPA) then
          
 
-         call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
+         !call gao_to_govov(govov%elm1,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
+         !     & GammaStart,dimGamma,tmp1,tmp2)
+         call gao_to_govov(gmo,gao,Co,Cv,nb,no,nv,AlphaStart,dimAlpha, &
               & GammaStart,dimGamma,tmp1,tmp2)
 
        else
@@ -1124,24 +1143,39 @@ contains
            dimQ   = MOinfo%DimInd2(PQ_batch)
  
            call gao_to_gmo(gmo,gao,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
-                          & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
+                          & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1, &
+                          & tmp2,pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
           
            if (P_sta==Q_sta) then
              idb = idb + 1 
+             if (.not.local) then
+               !LOCK WINDOW AND LOCK_SET = .true.
+               win = idb
+               dest = get_residence_of_tile(win,pgmo_diag)
+               call lsmpi_win_lock(dest,pgmo_diag%wi(win),'s')
+               gdi_lk = .true. 
+             end if
              call pack_and_add_gmo(gmo,pgmo_diag,idb,ntot,dimP,dimQ,.true.,tmp2)
            else 
              iub = iub + 1 
+             if (.not.local) then
+               !LOCK WINDOW AND LOCK_SET = .true.
+               win = iub
+               dest = get_residence_of_tile(win,pgmo_up)
+               call lsmpi_win_lock(dest,pgmo_up%wi(win),'s')
+               gup_lk = .true.
+             end if
              call pack_and_add_gmo(gmo,pgmo_up,iub,ntot,dimP,dimQ,.false.,tmp2)
            end if
 
          end do BatchPQ
+
        end if
 
 
     end do BatchAlpha
     end do BatchGamma
 
- 
     ! Free integral stuff
     ! *******************
     nullify(Mylsitem%setting%LST_GAB_LHS)
@@ -1170,17 +1204,24 @@ contains
     end do
     call mem_dealloc(batch2orbAlpha)
 
-    ! Free matrices:
-    call mem_dealloc(gao)
-    call mem_dealloc(tmp1)
-    call mem_dealloc(tmp2)
-    if (ccmodel/=MODEL_RPA) then 
-      call mem_dealloc(Cov)
-      call mem_dealloc(CP)
-      call mem_dealloc(CQ)
-      call mem_dealloc(gmo)
+
+    if (ccmodel==MODEL_RPA) then 
+      !call array_scatter(1.0E0_realk,gmo,0.0E0_realk,govov,i8*no*nv*no*nv)
+      if(master) then
+      !  call print_norm(gmo,i8*no*no*nv*nv)
+        call array_convert(gmo,govov)
+      !  call print_norm(govov)
+      endif
+      !call daxpy(ncopy,1.0E0_realk,gmo,1,govov%elm1,1)
+    endif
+
+    ! UNLOCK REMAINING WINDOWS
+    if (gdi_lk) then
+      call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
+    else if (gup_lk) then
+      call lsmpi_win_unlock(dest,pgmo_up%wi(win))
     end if
-     
+
 #ifdef VAR_MPI
     call mem_dealloc(tasks)
     ! Problem specific to one sided comm. and maybe bcast,
@@ -1191,6 +1232,17 @@ contains
       call time_start_phase(PHASE_WORK)
     end if
 #endif
+     
+    ! Free matrices:
+    call mem_dealloc(gao)
+    call mem_dealloc(tmp1)
+    call mem_dealloc(tmp2)
+    call mem_dealloc(gmo)
+    if (ccmodel/=MODEL_RPA) then 
+      call mem_dealloc(Cov)
+      call mem_dealloc(CP)
+      call mem_dealloc(CQ)
+    end if
 
     call LSTIMER('get_t1_free_gmo',tcpu,twall,DECinfo%output)
 
@@ -1659,7 +1711,8 @@ contains
   !> Author:  Pablo Baudin
   !> Date:    October 2013
   subroutine gao_to_gmo(gmo,gao,Cov,CP,CQ,nb,ntot,AlphaStart,dimAlpha, &
-             & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2)
+             & GammaStart,dimGamma,P_sta,dimP,Q_sta,dimQ,tmp1,tmp2, &
+             & pgmo_diag,pgmo_up,gdi_lk,gup_lk,win,dest)
 
     implicit none
 
@@ -1667,9 +1720,14 @@ contains
     integer, intent(in) :: ntot, P_sta, dimP, Q_sta, dimQ
     real(realk), intent(inout) :: gmo(dimP*dimQ*ntot*ntot)
     real(realk), intent(in) :: gao(nb*nb*dimAlpha*dimGamma), Cov(nb,ntot)
+    !> MPI related:
+    type(array), intent(in) :: pgmo_diag, pgmo_up
+    logical, intent(inout)  :: gdi_lk, gup_lk
+    integer, intent(in) :: win
+    integer(kind=ls_mpik), intent(in) :: dest
+
     real(realk) :: CP(dimAlpha,dimP), CQ(dimGamma,dimQ)
     real(realk) :: tmp1(:), tmp2(:)
-
     integer :: AlphaEnd, GammaEnd, P_end, Q_end
 
     AlphaEnd = AlphaStart+dimAlpha-1
@@ -1684,26 +1742,30 @@ contains
     ! transfo Beta to r => [delta alphaB gammaB, r]
     call dgemm('t','n',nb*dimAlpha*dimGamma,ntot,nb,1.0E0_realk, &
          & gao,nb,Cov,nb,0.0E0_realk,tmp1,nb*dimAlpha*dimGamma)
-    call lsmpi_poke() 
+
+    ! UNLOCK WINDOW IF (LOCK_SET)
+    if (gdi_lk) then
+      call lsmpi_win_unlock(dest,pgmo_diag%wi(win))
+      gdi_lk = .false.
+    else if (gup_lk) then
+      call lsmpi_win_unlock(dest,pgmo_up%wi(win))
+      gup_lk = .false.
+    end if
 
     ! transfo delta to s => [alphaB gammaB r, s]
     call dgemm('t','n',dimAlpha*dimGamma*ntot,ntot,nb,1.0E0_realk, &
          & tmp1,nb,Cov,nb,0.0E0_realk,tmp2,dimAlpha*dimGamma*ntot)
-    call lsmpi_poke() 
 
     ! transfo alphaB to P_batch => [gammaB r s, P]
     call dgemm('t','n',dimGamma*ntot*ntot,dimP,dimAlpha,1.0E0_realk, &
          & tmp2,dimAlpha,CP,dimAlpha,0.0E0_realk,tmp1,dimGamma*ntot*ntot)
-    call lsmpi_poke() 
 
     ! transfo gammaB to Q_batch => [r s P, Q]
     call dgemm('t','n',ntot*ntot*dimP,dimQ,dimGamma,1.0E0_realk, &
          & tmp1,dimGamma,CQ,dimGamma,0.0E0_realk,tmp2,ntot*ntot*dimP)
-    call lsmpi_poke() 
-     
+    
     ! transpose matrix => [P_batch, Q_batch, r, s]
     call mat_transpose(ntot*ntot,dimP*dimQ,1.0E0_realk,tmp2,0.0E0_realk,gmo)
-    call lsmpi_poke() 
 
   end subroutine gao_to_gmo
 
@@ -1892,7 +1954,7 @@ contains
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
@@ -1921,7 +1983,7 @@ contains
       ! accumulate tile
       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
         call time_start_phase(PHASE_COMM)
-        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy)
+        call array_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
         call time_start_phase(PHASE_WORK)
       else if (nnod>1.and.pack_gmo%itype==TILED) then
         call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
@@ -2042,13 +2104,14 @@ contains
   
   end subroutine unpack_gmo
 
-  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective)
+  subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
      implicit none
      type(array),intent(inout)   :: integral
      type(array),intent(inout)   :: trafo1,trafo2,trafo3,trafo4
      type(lsitem), intent(inout) :: mylsitem
      logical, intent(in) :: local
      logical, intent(inout) :: collective
+     integer, intent(in), optional :: order(4)
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -2068,7 +2131,7 @@ contains
      integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)  :: DecScreen
      real(realk), pointer :: w1(:),w2(:)
-     real(realk) :: MemFree
+     real(realk) :: MemFree,nrm
      integer(kind=long) :: maxsize
      logical :: master
      integer(kind=ls_mpik) :: me, nnod
@@ -2132,25 +2195,25 @@ contains
 
         nba = nb
         nbg = nb
-        gamm: do i = MinAObatch, nb
-           alp: do k = MinAObatch, nb
+        alp: do i = MinAObatch, nb
+           gamm: do k = MinAObatch, nb
 
-              maxsize=max(max(nb**2*k*i,n1*n2*k*i),n1*n2*n3*n4)
-              maxsize=maxsize + max(n1*nb*k*i,n1*n2*n3*i)
+              maxsize=max(max(nb**2*i*k,n1*n2*k*i),n1*n2*n3*n4)
+              maxsize=maxsize + max(n1*nb*i*k,n1*n2*n3*k)
               if(collective) maxsize = maxsize + n1*n2*n3*n4
 
               if(float(maxsize*8)/(1024.0**3) > fraction_of*MemFree )then
                  if(nba <= MinAObatch .and. nbg<= MinAObatch .and. collective)then
                     collective = .false.
                  else
-                    nba = k - 1
-                    nbg = i
-                    exit gamm
+                    nba = i
+                    nbg = k - 1
+                    exit alp
                  endif
               endif
 
-           enddo alp
-        enddo gamm
+           enddo gamm
+        enddo alp
 
 
         if(DECinfo%manual_batchsizes)then
@@ -2165,7 +2228,7 @@ contains
            if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba==MinAObatch).and.nnod>1)then
               do while((nb/nba)*(nb/nbg)<magic*nnod)
                  nbg=nbg-1
-                 if(nbg<1)exit
+                 if(nbg<=MinAObatch)exit
               enddo
               if(nbg<MinAObatch)nbg=MinAObatch
            endif
@@ -2341,7 +2404,7 @@ contains
               call dgemm('t','n',n1*n2*n3,n4,lg,1.0E0_realk,w2,lg,trafo4%elm1(fg),nb,0.0E0_realk,w1,n1*n2*n3)
 
               call time_start_phase( PHASE_COMM )
-              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize)
+              call array_add(integral,1.0E0_realk,w1,wrk=w2,iwrk=maxsize, order = order)
               call time_start_phase( PHASE_WORK )
            endif
 
@@ -2379,14 +2442,6 @@ contains
      call mem_dealloc(jobdist)
 
 
-     if(.not.local)then
-        integral%access_type = MASTER_ACCESS
-        trafo1%access_type = MASTER_ACCESS
-        trafo2%access_type = MASTER_ACCESS
-        trafo3%access_type = MASTER_ACCESS
-        trafo4%access_type = MASTER_ACCESS
-     endif
-
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
 
@@ -2395,16 +2450,28 @@ contains
      call lsmpi_barrier(infpar%lg_comm)
      if(collective)then
         call time_start_phase( PHASE_COMM )
-        call lsmpi_reduction(work,(i8*n1)*n2*n3*n4,infpar%master,infpar%lg_comm)
-        if( me == 0 )then
-           call array_convert(work,integral)
-        endif
+        call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
+        call array_convert(work,integral, order = order )
      endif
      call time_start_phase( PHASE_WORK )
 #else
-     call array_convert(work,integral)
+     call array_convert(work,integral, order = order )
 #endif
      if(collective) call mem_dealloc( work )
+
+     if(DECinfo%PL>2)then
+        call print_norm(integral,nrm)
+        if(master) print *," NORM of the integral :",nrm
+     endif
+
+     if(.not.local)then
+        integral%access_type = MASTER_ACCESS
+        trafo1%access_type = MASTER_ACCESS
+        trafo2%access_type = MASTER_ACCESS
+        trafo3%access_type = MASTER_ACCESS
+        trafo4%access_type = MASTER_ACCESS
+     endif
+
 
   end subroutine get_mo_integral_par
 

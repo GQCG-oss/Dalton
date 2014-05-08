@@ -325,6 +325,8 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
+     !> Which Fragment Expansion Scheme should be used
+     integer :: FragmentExpansionScheme
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
      !> Use RI for Fragment Expansion 
@@ -376,10 +378,10 @@ module dec_typedef_module
 
      ! First order properties
      ! **********************
-     !> Do first order properties (MP2 density, electric dipole, mp2 gradient)
+     !> Do first order properties (density, electric dipole, gradient)
      logical :: first_order
-     !> MP2 density matrix (and not gradient)
-     logical :: MP2density    
+     !> density matrix (and not gradient)
+     logical :: density    
      !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
@@ -563,6 +565,10 @@ module dec_typedef_module
      real(realk), pointer :: carmomvirt(:,:) => null()
      !> atomic centers
      real(realk), pointer :: AtomCenters(:,:) => null()
+     !> Distances between Occ Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomOcc(:,:) => null()
+     !> Distances between Virtual Orbitals and Atoms
+     real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
      !> Which atoms are phantom atoms (only basis functions)
      Logical, pointer :: PhantomAtom(:) => null()
      

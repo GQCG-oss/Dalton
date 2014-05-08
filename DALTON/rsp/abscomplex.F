@@ -614,12 +614,13 @@ C
       KFREE = 1
       LFREE = LWRK
 C    
+      LUABSVECS = -1
       CALL GPINQ('ABSVECS','EXIST',EX)
       IF (.NOT.EX) THEN
-        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
         WRITE(LUABSVECS) 'EOFLABEL'
       ELSE
-        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
@@ -663,7 +664,7 @@ C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
-      CLOSE(LUABSVECS,status='keep')
+      CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       RETURN
       END
@@ -833,7 +834,6 @@ C
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
@@ -884,7 +884,6 @@ c
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
 C

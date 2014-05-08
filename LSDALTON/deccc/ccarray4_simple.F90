@@ -12,31 +12,13 @@ module array4_simple_operations
   use dec_typedef_module
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
+  use reorder_frontend_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array4_memory_manager
-  use reorder_frontend_module!,only:manual_4231_reordering,&
-                               !     &manual_2413_reordering,&
-                               !     &manual_3214_reordering,&
-                               !     &manual_1324_reordering,&
-                               !     &manual_1432_reordering,&
-                               !     &manual_2314_reordering,&
-                               !     &manual_2341_reordering,&
-                               !     &manual_4123_reordering,&
-                               !     &manual_4132_reordering,&
-                               !     &manual_1243_reordering,&
-                               !     &manual_2143_reordering,&
-                               !     &manual_1423_reordering,&
-                               !     &manual_1342_reordering,&
-                               !     &manual_4321_reordering,&
-                               !     &manual_2134_reordering,&
-                               !     &manual_2431_reordering,&
-                               !     &manual_3421_reordering,&
-                               !     &manual_3142_reordering
-  use dec_fragment_utils
-
+  use dec_tools_module
 
   !> Number of array
   integer(kind=long) :: ArrayNumber=0
@@ -3881,88 +3863,6 @@ contains
 
   end subroutine array4_print
 
-  !> Assuming that the last index in the array A contains core+valence indices,
-  !> remove the core indices. Only to be used for frozen core approx.
-  !> Assumes core indices are placed BEFORE valence indices!
-  !> \author Kasper Kristensen
-  !> \date December 2012
-  subroutine remove_core_orbitals_from_last_index(MyFragment,A,B)
-    implicit none
-    !> Atomic fragment
-    type(decfrag),intent(inout) :: MyFragment
-    !> Original array
-    type(array4),intent(in) :: A
-    !> New array where core indices for the last index are removed
-    type(array4),intent(inout) :: B
-    integer :: dims(4), i,j,k,l
-
-    ! Sanity check 1: Frozen core.
-    if(.not. DECinfo%frozencore) then
-       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
-    end if
-
-    ! Sanity check 2: Correct dimensions
-    if(A%dims(4) /= MyFragment%nocctot) then
-       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
-       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
-    end if
-
-    ! Init with new dimensions - same as before, except for last index which is only valence indices
-    dims(1) = A%dims(1)
-    dims(2) = A%dims(2)
-    dims(3) = A%dims(3)
-    dims(4) = MyFragment%noccAOS
-    B = array4_init_standard(dims) 
-
-
-    ! Copy elements from A to B, but only valence for last index
-    do l=1,B%dims(4)
-       do k=1,B%dims(3)
-          do j=1,B%dims(2)
-             do i=1,B%dims(1)
-                B%val(i,j,k,l) = A%val(i,j,k,l+MyFragment%ncore)
-             end do
-          end do
-       end do
-    end do
-
-
-  end subroutine remove_core_orbitals_from_last_index
-
-
-  !> \brief Calculate combined single+double amplitudes:
-  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
-  !> \author Kasper Kristensen
-  !> \date January 2012
-  subroutine get_combined_SingleDouble_amplitudes(t1,t2,u)
-    implicit none
-    !> Singles amplitudes t1(a,i)
-    type(array2),intent(in) :: t1
-    !> Doubles amplitudes t2(a,i,b,j)
-    type(array4),intent(in) :: t2
-    !> Combined single+double amplitudes
-    type(array4),intent(inout) :: u
-    integer :: i,j,a,b,nocc,nvirt
-
-    ! Number of occupied/virtual orbitals assuming index ordering given above
-    nocc=t1%dims(2)
-    nvirt=t1%dims(1)
-
-    ! Init combined amplitudes
-    u = array4_init(t2%dims)
-
-    do j=1,nocc
-       do b=1,nvirt
-          do i=1,nocc
-             do a=1,nvirt
-                u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
-             end do
-          end do
-       end do
-    end do
-
-
-  end subroutine get_combined_SingleDouble_amplitudes
 
   !> \brief Transform virtual orbital indices in local basis (or whatever the input basis is) 
   !> for doubles amplitudes to fragment-adapted orbital basis, leaving occupied indices untouched.

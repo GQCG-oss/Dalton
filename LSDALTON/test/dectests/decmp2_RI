@@ -17,50 +17,51 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decrpa_energy.info <<'%EOF%'
-   DEC-RPA energies for full DEC
+cat > decmp2_RI.info <<'%EOF%'
+   DEC-MP2 energies for full DEC
    -----------------------------
-   Molecule:         HCCH
-   Wave Function:    RPA / 6-31G
-   Test Purpose:     DEC-RPA energy calculation (Johannes R)
+   Molecule:         HCOOH
+   Wave Function:    MP2 / 6-31G
+   Test Purpose:     DEC-MP2 energy Using RI fragment expansion
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decrpa_energy.mol <<'%EOF%'
+cat > decmp2_RI.mol <<'%EOF%'
 BASIS
-6-31G
+6-31G Aux=Ahlrichs-Coulomb-Fit
 
 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2
-C          0.57878        0.01237        0.13701
-C         -0.57877       -0.01239       -0.13714
+Atomtypes=3 Nosymmetry Angstrom
+Charge=6.0 Atoms=1
+C          0.41977       -0.05971        0.16752
+Charge=8.0 Atoms=2
+O          0.90317       -0.15439       -0.93920
+O         -0.90756        0.14113        0.24096
 Charge=1.0 Atoms=2
-H          1.61433        0.03455        0.38251
-H         -1.61434       -0.03454       -0.38238
+H          0.88996       -0.11071        1.15515
+H         -1.30534        0.18370       -0.62443
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decrpa_energy.dal <<'%EOF%'
+cat > decmp2_RI.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH
+.ARH DAVID
 .START
 TRILEVEL
-.NOATOMSTART
+.CONVDYN
+TIGHT
+**INFO
+.DEBUG_MPI_MEM
 **DEC
-.MPISPLIT
-0
-.CCDEBUG
-.MOCCSD
-.RPA
-.SOSEX
+.MP2
+.FRAGMENTEXPANSIONRI
 .FOT
-4
+2
 .MEMORY
 2.0
 *END OF INPUT
@@ -74,8 +75,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decrpa_energy.check
-cat >>decrpa_energy.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_RI.check
+cat >>decmp2_RI.check <<'%EOF%'
 
 log=$1
 
@@ -86,13 +87,13 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Hartree-Fock energy : * \-76\.792507" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-188\.6610339" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.11908" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  \: * \-0.321" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Total correlation energy is not correct"

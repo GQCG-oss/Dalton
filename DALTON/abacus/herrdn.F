@@ -2312,7 +2312,7 @@ C
      *  '                   current maximum number              ',
      *  MXSHEL,
      *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
-        CALL QUIT('BASPRO: Too many shells')
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
      *  ' >>> BASPRO error, number of contracted basis functions',
@@ -2328,7 +2328,7 @@ C
      *  '                   current maximum number             ',
      *  MXPRIM,
      *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
-        CALL QUIT('BASPRO: Too many primitives')
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
  5040 CONTINUE
@@ -2338,7 +2338,7 @@ C
      *  '                   current maximum number                 ',
      *     MXSHEL,
      *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
-        CALL QUIT('BASPRO: Too many shells')
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
         WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
      *  ' >>> BASPRO error, # of contracted bf. after adding Huckel ',
@@ -2356,7 +2356,7 @@ C
      *  '                   current maximum number                 ',
      *  '       ',MXPRIM,
      *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
-        CALL QUIT('BASPRO: Too many primitives')
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO, BASREF,
@@ -2606,14 +2606,19 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) THEN
+
+         CALL PRICAR(WORK,LWORK)
 
       if (.NOT.SLAVE .AND. (PEQM .OR. PEMEP)
 #if defined (BUILD_PELIB)
      &    .or. pe_savden
 #endif
      &   ) THEN
-        CALL PE_IFC_INIT()
+#if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+#endif
+         END IF
       END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
