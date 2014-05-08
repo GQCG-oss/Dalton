@@ -151,11 +151,12 @@ contains
     end if
 
     ! Sanity check 2: Basis info in "Expensive box" in decfrag should not be sent
-    if(MyFragment%BasisInfoIsSet .and. mynum==MySender) then
-       call lsquit('mpi_send_recv_single_fragment: Not implemented for &
-            & sending/receiving fragment basis info!',-1)
-    end if
-
+    if(mynum==MySender) then
+       if(MyFragment%BasisInfoIsSet) then
+          call lsquit('mpi_send_recv_single_fragment: Not implemented for &
+               & sending/receiving fragment basis info!',-1)
+       end if
+    endif
     ! Init buffer
     call ls_mpiInitBuffer(master,LSMPISENDRECV,comm,sender=MySender, receiver=MyReceiver)
 
@@ -291,11 +292,12 @@ contains
        CommunicateFragment: if(whichfrags(atom)) then
 
           ! Sanity check: Basis info in "Expensive box" in decfrag should not be sent
-          if(Fragments(atom)%BasisInfoIsSet .and. mynum==0) then
-             call lsquit('mpi_bcast_many_fragments: Not implemented for &
-                  & sending/receiving fragment basis info!',-1)
-          end if
-
+          if(mynum==0) then
+             if(Fragments(atom)%BasisInfoIsSet) then
+                call lsquit('mpi_bcast_many_fragments: Not implemented for &
+                     & sending/receiving fragment basis info!',-1)
+             end if
+          endif
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
@@ -549,6 +551,8 @@ contains
        call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%nocc)
        call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%nunocc)
        call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms)
        call mem_alloc(MyMolecule%PhantomAtom,MyMolecule%natoms)
        IF(DECinfo%F12)THEN
           call mem_alloc(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc)
@@ -593,6 +597,8 @@ contains
     call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%nunocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomOcc,MyMolecule%nocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTableOrbAtomVirt,MyMolecule%nunocc,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%PhantomAtom,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
     IF(DECinfo%F12)THEN
        call ls_mpibcast(MyMolecule%Fij,MyMolecule%nocc,MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -2085,6 +2091,7 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%MOCCSD,Master)
+    call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
@@ -2145,6 +2152,7 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
@@ -2162,7 +2170,7 @@ contains
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
     call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
-    call ls_mpi_buffer(DECitem%MP2density,Master)
+    call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%kappa_use_preconditioner_in_b,Master)
@@ -2187,8 +2195,9 @@ contains
 
   subroutine rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
     implicit none
-    real(realk),intent(inout),pointer :: gmo(:)
+    !real(realk),intent(inout),pointer :: gmo(:)
     !type(array4), intent(inout) :: omega2
+    type(array), intent(inout) :: gmo
     type(array), intent(inout) :: omega2
     !type(array4),intent(inout)         :: t2
     type(array),intent(inout)         :: t2
@@ -2197,7 +2206,7 @@ contains
     logical :: master
     integer :: addr1(infpar%lg_nodtot)
     integer :: addr2(infpar%lg_nodtot)
-    integer :: addr3(infpar%lg_nodtot)
+    !integer :: addr3(infpar%lg_nodtot)
 
 
     master = (infpar%lg_mynum == infpar%master)
@@ -2205,46 +2214,50 @@ contains
     if(master) then
    !   write(*,*)'Johannes addr in comm', omega2%addr_p_arr
       addr1 = omega2%addr_p_arr
-  !    addr2 = t2%addr_p_arr
+      !addr2 = gmo%addr_p_arr
+      !addr3 = t2%addr_p_arr
     endif
 
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(addr1,infpar%lg_nodtot,infpar%master)
-  !  call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
+    !call ls_mpi_buffer(addr2,infpar%lg_nodtot,infpar%master)
     !call ls_mpi_buffer(addr3,infpar%lg_nodtot,infpar%master)
 
 
     if(.not.master)then
-      call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
+     ! call mem_alloc(gmo,nvirt*nocc*nocc*nvirt)
       omega2 = get_arr_from_parr(addr1(infpar%lg_mynum+1))
-  !    t2     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !gmo     = get_arr_from_parr(addr2(infpar%lg_mynum+1))
+      !t2     = get_arr_from_parr(addr3(infpar%lg_mynum+1))
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
       t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
-    call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
+    !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
     !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-    print*,' inside rpa_res_comm',infpar%lg_mynum
+    !print*,' inside rpa_res_comm',infpar%lg_mynum
 
     
-    print*,' after gmo',infpar%lg_mynum
+    !print*,' after gmo',infpar%lg_mynum
 
-    print*,' after omega2',infpar%lg_mynum
+    !print*,' after omega2',infpar%lg_mynum
 
 
-    call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    print*,' after t2',infpar%lg_mynum
+    !call ls_mpibcast(t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    !print*,' after t2',infpar%lg_mynum
+    call ls_mpibcast(gmo%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
     !call ls_mpibcast(omega2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
-    print*,' after finalize',infpar%lg_mynum
-    !call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
+    !print*,' after finalize',infpar%lg_mynum
+    call ls_mpibcast(t2%elm1,nvirt*nvirt*nocc*nocc,infpar%master,infpar%lg_comm)
 
 
   end subroutine rpa_res_communicate_data

@@ -90,7 +90,6 @@ contains
     call mem_alloc(dofrag,natoms)
     call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
          & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
-      print *,"SLAVE DOFRAG",dofrag
 
     IF(DECinfo%StressTest)THEN
      call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
@@ -100,10 +99,10 @@ contains
     ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
     ! Better solution should be implemented at some point...
-    dens_save = DECinfo%MP2density
+    dens_save = DECinfo%density
     FO_save = DECinfo%first_order
     grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
+    DECinfo%density=.false.
     DECinfo%first_order=.false.
     DECinfo%gradient=.false.
 
@@ -143,11 +142,10 @@ contains
 
        ! Special for step 2: Reset first-order keywords and get optimized fragments
        ! **************************************************************************
-       print *,"SLAVE",doFRAG
        Step2: if(step==2) then
 
           ! Restore first order keywords for second step
-          DECinfo%MP2density=dens_save
+          DECinfo%density=dens_save
           DECinfo%first_order = FO_save
           DECinfo%gradient = grad_save
 
@@ -670,6 +668,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
   logical :: mpi_split
+  real(realk) :: memoryneeded
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -685,7 +684,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
 
   ! Determine optimal batchsizes with available memory
   if(MyFragment%ccmodel==MODEL_MP2) then ! MP2
-     call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.)
+     call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.,.false.,memoryneeded)
   else  ! CC2 or CCSD
      mpi_split = .true.
      call wrapper_get_ccsd_batch_sizes(MyFragment,bat,mpi_split,ntasks)

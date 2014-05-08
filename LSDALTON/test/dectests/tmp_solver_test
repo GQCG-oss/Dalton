@@ -17,52 +17,55 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decrpa_energy.info <<'%EOF%'
-   DEC-RPA energies for full DEC
-   -----------------------------
-   Molecule:         HCCH
-   Wave Function:    RPA / 6-31G
-   Test Purpose:     DEC-RPA energy calculation (Johannes R)
+cat > tmp_solver_test.info <<'%EOF%'
+   DEC-CCSD energy for full molecule
+   --------------------------------
+   Molecule:         HF
+   Wave Function:    CCSD / cc-pVDZ
+   Test Purpose:     Test full ccsd solver without using dense array (V2O2)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decrpa_energy.mol <<'%EOF%'
+cat > tmp_solver_test.mol <<'%EOF%'
 BASIS
-6-31G
+cc-pVDZ
 
 
-Atomtypes=2 Angstrom Nosymmetry
-Charge=6.0 Atoms=2
-C          0.57878        0.01237        0.13701
-C         -0.57877       -0.01239       -0.13714
-Charge=1.0 Atoms=2
-H          1.61433        0.03455        0.38251
-H         -1.61434       -0.03454       -0.38238
+Atomtypes=2  Angstrom Nosymmetry
+Charge=9.0 Atoms=1
+F         -0.17632        0.11634       -1.09866
+Charge=1.0 Atoms=1
+H          0.70368        0.11634       -1.09866
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decrpa_energy.dal <<'%EOF%'
+cat > tmp_solver_test.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
 TRILEVEL
-.NOATOMSTART
-**DEC
-.MPISPLIT
-0
-.CCDEBUG
-.MOCCSD
-.RPA
-.SOSEX
-.FOT
-4
+.CONVTHR
+1.0d-5
+**INFO
+.DEBUG_MPI_MEM
+**CC
+.v2o2_free_solver
+!.CCSD_DEBUG_COMMUNICATION
+.FrozenCore
+.CCSDforce_scheme
+2
+.CCSD
+.ccThr
+1e-7
 .MEMORY
-2.0
+1.0
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -74,8 +77,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decrpa_energy.check
-cat >>decrpa_energy.check <<'%EOF%'
+echo $CHECK_SHELL >tmp_solver_test.check
+cat >>tmp_solver_test.check <<'%EOF%'
 
 log=$1
 
@@ -86,16 +89,17 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Hartree-Fock energy : * \-76\.792507" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-99\.893559" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.11908" $log | wc -l`
+# CCSD ENERGY
+CRIT1=`$GREP "Correlation energy  : * \-0\.20526[3-4]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Total correlation energy is not correct"
+ERROR[2]="CCSD correlation energy is not correct"
+
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
@@ -109,14 +113,8 @@ TEST[4]=`expr  $CRIT1`
 CTRL[4]=1                                                                 
 ERROR[4]="Memory leak for array4 -" 
 
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[5]=`expr  $CRIT1`
-CTRL[5]=0
-ERROR[5]="MPI Memory leak -"
-
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

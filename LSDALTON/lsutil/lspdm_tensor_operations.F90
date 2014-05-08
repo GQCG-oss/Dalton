@@ -140,6 +140,8 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_INIT_ARR_PC         = 24
   integer,parameter :: JOB_TEST_ARRAY          = 25
   integer,parameter :: JOB_GET_MP2_ENERGY      = 26
+  integer,parameter :: JOB_GET_RPA_ENERGY      = 27
+  integer,parameter :: JOB_GET_SOS_ENERGY      = 28
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -679,10 +681,86 @@ module lspdm_tensor_operations_module
     type(array), intent(in) :: t2
     !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
-    real(realk),pointer :: t(:,:,:,:)
+    real(realk),pointer :: t2tile(:,:,:,:)
+    real(realk),pointer :: t1tile(:), g_iajb(:), g_ibja(:)
     integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
 
+    integer :: glob_mode_idx(gmo%mode), idx
+    integer(kind=ls_mpik) :: mode
+    integer(kind=long) :: tiledim
+    real(realk), external :: ddot
+    integer, pointer :: table_iajb(:,:), table_ibja(:,:)
+    logical :: nomem
+
+  nomem = .false.
+  if(DECinfo%v2o2_free_solver)  nomem = .true.
 #ifdef VAR_MPI
+  mode  = MPI_MODE_NOCHECK
+  if (nomem) then
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
+    endif
+
+    tiledim = t2%tdim(1)*t2%tdim(2)*t2%tdim(3)*t2%tdim(4)
+    call mem_alloc(g_iajb,tiledim)
+    call mem_alloc(g_ibja,tiledim)
+    call mem_alloc(t1tile,tiledim)
+    call mem_alloc(table_iajb,tiledim,3_long)
+    call mem_alloc(table_ibja,tiledim,3_long)
+    g_iajb = 0.0E0_realk
+    g_ibja = 0.0E0_realk
+    E1=0.0E0_realk
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      ! Here we get the info needed to (mpi) get the int. tiles correponding
+      ! to the amplitude tile. at the same time we reorder the single amplitudes:*
+      ! t1(a,i)*t1(b,j) => t1tile[ab,ij]
+      call get_info_for_mpi_get_and_reorder_t1(gmo,table_iajb,table_ibja, &
+           & t2%ti(lt)%d,o,t1,t1tile)
+
+      ! Communication epoch: build a local int. tile corresponding to the t2:
+      call time_start_phase(PHASE_COMM)
+      call arr_lock_wins(gmo,'s',mode)
+      do i=1,t2%ti(lt)%e
+        call lsmpi_get(g_iajb(i),table_iajb(i,1),int(table_iajb(i,2),kind=ls_mpik), &
+             & int(table_iajb(i,3),kind=ls_mpik))
+        call lsmpi_get(g_ibja(i),table_ibja(i,1),int(table_ibja(i,2),kind=ls_mpik), &
+             & int(table_ibja(i,3),kind=ls_mpik))
+      end do
+      call arr_unlock_wins(gmo)
+      call time_start_phase(PHASE_WORK)
+
+      ! Actual calculation of the energy.
+      E2 = E2 + ddot(t2%ti(lt)%e,t2%ti(lt)%t,1,2.0E0_realk*g_iajb,1)
+      E2 = E2 - ddot(t2%ti(lt)%e,t2%ti(lt)%t,1,g_ibja,1)
+      E1 = E1 + ddot(t2%ti(lt)%e,t1tile,1,2.0E0_realk*g_iajb,1)
+      E1 = E1 - ddot(t2%ti(lt)%e,t1tile,1,g_ibja,1)
+    enddo
+
+    call mem_dealloc(g_iajb)
+    call mem_dealloc(g_ibja)
+    call mem_dealloc(t1tile)
+    call mem_dealloc(table_iajb)
+    call mem_dealloc(table_ibja)
+    nullify(g_iajb)
+    nullify(g_ibja)
+    nullify(table_iajb)
+    nullify(table_ibja)
+    nullify(t1tile)
+
+    call lsmpi_local_reduction(E1,infpar%master)
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec=E1+E2
+  else 
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
@@ -694,7 +772,7 @@ module lspdm_tensor_operations_module
     E2=0.0E0_realk
     Ec=0.0E0_realk
     do lt=1,t2%nlti
-      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      call ass_D1to4(t2%ti(lt)%t,t2tile,t2%ti(lt)%d)
       !get offset for global indices
       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
       do j=1,t2%mode
@@ -706,14 +784,14 @@ module lspdm_tensor_operations_module
       di = t2%ti(lt)%d(3)
       dj = t2%ti(lt)%d(4)
       !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t,&
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t2tile,&
       !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
       do j=1,dj
         do i=1,di
           do b=1,db
             do a=1,da
      
-              E2 = E2 + t(a,b,i,j)*&
+              E2 = E2 + t2tile(a,b,i,j)*&
               & (2.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
               E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
                    (2.0E0_realk*gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
@@ -723,7 +801,7 @@ module lspdm_tensor_operations_module
         enddo
       enddo
       !$OMP END PARALLEL DO
-      nullify(t)
+      nullify(t2tile)
     enddo
 
     call arr_deallocate_dense(gmo)
@@ -732,10 +810,83 @@ module lspdm_tensor_operations_module
     call lsmpi_local_reduction(E2,infpar%master)
 
     Ec=E1+E2
+  end if
 #else
     Ec = 0.0E0_realk
 #endif
   end function get_cc_energy_parallel
+
+  subroutine get_info_for_mpi_get_and_reorder_t1(arr,table_iajb,table_ibja, &
+           & dims,ord,t1,t1tile)
+    implicit none
+
+    type(array), intent(in) :: arr, t1
+    integer, intent(out) :: table_iajb(:,:), table_ibja(:,:)   
+    integer, intent(in) :: dims(4), ord(4)
+    real(realk), intent(out) :: t1tile(:)
+    
+    !> mode and combined idices of the tile:
+    integer :: timode(4), ticomb
+    !> mode index of the elmt in the tile:
+    integer :: modeinti(4)
+    !> mode idex of the elmt in dense array
+    integer ::  modeinde(4)
+
+    integer :: source, pos, k, idx, da, db, di, dj, a, b, i, j
+#ifdef VAR_MPI
+      da = dims(1)
+      db = dims(2)
+      di = dims(3)
+      dj = dims(4)
+
+      ! Make table of indices:
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(arr,ord,t1,t1tile, &
+      !$OMP  table_iajb,table_ibja,da,db,di,dj) PRIVATE(i,j,k,a,b,idx,pos, &
+      !$OMP  source,modeinde,modeinti,timode,ticomb) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+              ! get combined index for tiles:
+              idx = a + (b-1)*da + (i-1)*da*db + (j-1)*da*db*di
+
+              ! GET G_IAJB ELMT FROM PDM ARRAY:    
+              modeinde = [i+ord(3),a+ord(1),j+ord(4),b+ord(2)]
+              ! get tile mode index:
+              do k=1,arr%mode
+                timode(k)   = (modeinde(k)-1)/arr%tdim(k) + 1
+                modeinti(k) = mod((modeinde(k)-1) , arr%tdim(k)) + 1
+              end do
+              ticomb = get_cidx(timode,arr%ntpm,arr%mode)
+              pos    = get_cidx(modeinti,arr%tdim,arr%mode)
+              source = get_residence_of_tile(ticomb,arr)
+               
+              ! get tile elmts from source:
+              table_iajb(idx,:) = [pos,source,ticomb]
+
+              ! GET G_IBJA ELMT FROM PDM ARRAY:    
+              modeinde = [i+ord(3),b+ord(2),j+ord(4),a+ord(1)]
+              ! get tile mode index:
+              do k=1,arr%mode
+                timode(k)   = (modeinde(k)-1)/arr%tdim(k) + 1
+                modeinti(k) = mod((modeinde(k)-1) , arr%tdim(k)) + 1
+              end do
+              ticomb = get_cidx(timode,arr%ntpm,arr%mode)
+              pos    = get_cidx(modeinti,arr%tdim,arr%mode)
+              source = get_residence_of_tile(ticomb,arr)
+               
+              ! get tile elmts from source:
+              table_ibja(idx,:) = [pos,source,ticomb]
+             
+              ! reorder t1 contributions into one big tile:
+              t1tile(idx) = t1%elm2(a+ord(1),i+ord(3))*t1%elm2(b+ord(2),j+ord(4))
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+#endif
+  end subroutine get_info_for_mpi_get_and_reorder_t1
 
   !> \author Patrick Ettenhuber
   !> \date April 2014
@@ -753,6 +904,36 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
     !Get the slaves to this routine
+      !bloda = t2%ti(lt)%d(1)
+      !db = t2%ti(lt)%d(2)
+      !di = t2%ti(lt)%d(3)
+      !dj = t2%ti(lt)%d(4)
+        
+      !! Make table of indices:
+      !!$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t1tile,table_iajb,table_ibja,&
+      !!$OMP  da,db,di,dj) PRIVATE(i,j,a,b,idx,glob_mode_idx) COLLAPSE(3)
+      !do j=1,dj
+      !  do i=1,di
+      !    do b=1,db
+      !      do a=1,da
+      !        ! get combined index for tiles:
+      !        idx = a + (b-1)*da + (i-1)*da*db + (j-1)*da*db*di
+        
+      !        ! GET G_IAJB ELMT FROM PDM ARRAY:    
+      !        glob_mode_idx = [i+o(3),a+o(1),j+o(4),b+o(2)]
+      !        call get_data_table(gmo,glob_mode_idx,table_iajb(idx,:))
+        
+      !        ! GET G_IBJA ELMT FROM PDM ARRAY:    
+      !        glob_mode_idx = [i+o(3),b+o(2),j+o(4),a+o(1)]
+      !        call get_data_table(gmo,glob_mode_idx,table_ibja(idx,:))
+      !       
+      !        ! reorder t1 contributions into one big tile:
+      !        t1tile(idx) = t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4))
+      !      enddo 
+      !    enddo
+      !  enddo
+      !enddo
+      !!$OMP END PARALLEL DO
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_GET_MP2_ENERGY,t2,gmo)
     endif
@@ -801,6 +982,137 @@ module lspdm_tensor_operations_module
     Ec = 0.0E0_realk
 #endif
   end function get_mp2_energy_parallel
+
+
+  function get_rpa_energy_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E1,E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_RPA_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (1.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2)))
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_rpa_energy_parallel
+
+
+  function get_sosex_cont_parallel(t2,gmo) result(Ec)
+    implicit none
+    !> two electron integrals in the mo-basis
+    type(array), intent(inout) :: gmo
+    !> doubles amplitudes
+    type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
+    real(realk) :: E2,Ec
+    real(realk),pointer :: t(:,:,:,:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
+
+#ifdef VAR_MPI
+    !Get the slaves to this routine
+    if(infpar%lg_mynum==infpar%master)then
+      call pdm_array_sync(infpar%lg_comm,JOB_GET_SOS_ENERGY,t2,gmo)
+    endif
+    call memory_allocate_array_dense(gmo)
+    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
+
+    E2=0.0E0_realk
+    Ec=0.0E0_realk
+    do lt=1,t2%nlti
+      call ass_D1to4(t2%ti(lt)%t,t,t2%ti(lt)%d)
+      !get offset for global indices
+      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+      do j=1,t2%mode
+        o(j)=(o(j)-1)*t2%tdim(j)
+      enddo
+
+      da = t2%ti(lt)%d(1)
+      db = t2%ti(lt)%d(2)
+      di = t2%ti(lt)%d(3)
+      dj = t2%ti(lt)%d(4)
+      !count over local indices
+      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t,&
+      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E2) COLLAPSE(3)
+      do j=1,dj
+        do i=1,di
+          do b=1,db
+            do a=1,da
+     
+              E2 = E2 + t(a,b,i,j)*&
+              & (-0.5E0_realk* gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)) )
+   
+            enddo 
+          enddo
+        enddo
+      enddo
+      !$OMP END PARALLEL DO
+      nullify(t)
+    enddo
+
+    call arr_deallocate_dense(gmo)
+    
+    call lsmpi_local_reduction(E2,infpar%master)
+
+    Ec = E2
+#else
+    Ec = 0.0E0_realk
+#endif
+  end function get_sosex_cont_parallel
+
+
+
+
 
   !> \brief doubles preconditionning routine for pdm distributed doubles
   !amplitudes

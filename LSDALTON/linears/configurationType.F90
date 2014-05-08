@@ -120,6 +120,8 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+   !> do MPI testing of mpicopy_setting and mpicopy_screen
+   logical              :: doTestMPIcopy
 end type ConfigItem
 
 type LowAccuracyStartType

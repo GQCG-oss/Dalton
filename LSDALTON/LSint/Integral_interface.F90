@@ -38,7 +38,7 @@ MODULE IntegralInterfaceMOD
                          util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
 #ifdef VAR_MPI
-  use screen_modMPI, only: mpicopy_screen
+  use lsmpi_op, only: mpicopy_screen
   use lsmpi_type!, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, &
 !       & LSMPIBROADCAST,  ls_mpibcast, get_rank_for_comm
   use infpar_module

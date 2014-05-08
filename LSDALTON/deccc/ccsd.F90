@@ -973,7 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: myload,nelms,n4
      real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,MemFree,ActuallyUsed
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
-     real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time
+     real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
      integer(kind=8) :: els2add
 
@@ -1974,6 +1974,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
      max_wait_time = time_intloop_idle
+     min_wait_time = time_intloop_idle
 
 
      if(scheme==3)then
@@ -1981,13 +1982,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call mem_alloc(gvvoo,o2v2,comm=infpar%pc_comm,local=.true.)
            call mem_alloc(gvoov,o2v2,comm=infpar%pc_comm,local=.true.)
         else
-#ifdef VAR_HAVE_MPI3
-           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
-           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
-#else
+!#ifdef VAR_HAVE_MPI3
+!           call mem_alloc(gvvoo,o2v2,comm=infpar%lg_comm)
+!           call mem_alloc(gvoov,o2v2,comm=infpar%lg_comm)
+!#else
            call mem_alloc(gvvoo,o2v2,simple=.true.)
            call mem_alloc(gvoov,o2v2,simple=.true.)
-#endif
+!#endif
         endif
      endif
 
@@ -2011,11 +2012,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &infpar%mynum,myload,time_intloop_idle
 #endif
      call lsmpi_local_reduction(time_intloop_idle,infpar%master)
-     call lsmpi_local_max(max_wait_time,infpar%master)
+     call lsmpi_reduce_realk_max(max_wait_time,infpar%master,infpar%lg_comm)
+     call lsmpi_reduce_realk_min(min_wait_time,infpar%master,infpar%lg_comm)
+     ave_wait_time = time_intloop_idle/(infpar%nodtot*1.0E0_realk)
      if(master.and.print_debug)then
         write(*,'("----------------------------------------------------------")')
         write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)') time_intloop_idle,&
-           &time_intloop_idle/(infpar%nodtot*1.0E0_realk),max_wait_time
+           &ave_wait_time,max_wait_time
      endif
 
 
@@ -2066,7 +2069,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("     total work time   :",g10.3,"s")') time_intloop_work+time_intloop_B1work
         write( *,'("     total comm time   :",g10.3,"s")') time_intloop_comm+time_intloop_B1comm
         write( *,'("     total ints time   :",g10.3,"s")') time_intloop_int
-        write( *,'("     total idle time   :",g10.3,"s")') time_intloop_idle
+        write( *,'("     max/ave/min idle  :",g10.3,"s",g10.3,"s",g10.3,"s")') max_wait_time,ave_wait_time,min_wait_time
         write( *,'("     B1 work time      :",g10.3,"s")') time_intloop_B1work
         write( *,'("     B1 comm time      :",g10.3,"s")') time_intloop_B1comm
         if(DECinfo%PL>3)then
@@ -4398,7 +4401,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  recursive subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
+  subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
   &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
     implicit none
     integer, intent(inout) :: scheme
@@ -4423,16 +4426,26 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !magic = DECinfo%MPIsplit/5
     magic = 2
     !test for scheme with highest reqirements --> fastest
-    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
+    scheme   = 4
+    mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
     if(first)then
+
       if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
+
         !test for scheme with medium requirements
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,3,.false.)
+        scheme   = 3
+        mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
         if (mem_used>frac_of_total_mem*MemFree)then
+
           !test for scheme with low requirements
-          mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,2,.false.)
+          scheme   = 2
+          mem_used = get_min_mem_req(no,nv,nb,nba,nbg,4,scheme,.false.)
+
           if (mem_used>frac_of_total_mem*MemFree)then
+
             write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
@@ -4441,18 +4454,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
-            call lsquit("ERROR(CCSD): there is just not enough memory&
-            & available",DECinfo%output)
-          else
-            scheme=2
+            call lsquit("ERROR(CCSD): there is just not enough memory available",DECinfo%output)
+
           endif
-        else
-          scheme=3
         endif
 #endif
-      else
-        scheme=4
       endif
+
+    endif
+
+    if(scheme /= 4 .and. scheme /= 3 .and. scheme /= 2 )then
+      call lsquit("ERROR(get_ccsd_residual_integral_driven) this can never happen",-1)
     endif
 
     if(DECinfo%force_scheme)then
@@ -4485,13 +4497,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (manual) then
       ! KK and PE hacks -> only for debugging
       ! extended to mimic the behaviour of the mem estimation routine when memory is filled up
-      if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
-        call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
-             & .false.,e2a,local,mpi_split)
-      else
-        nba = DECinfo%ccsdAbatch - iter * 0
-        nbg = DECinfo%ccsdGbatch - iter * 0
-      endif
+      !if((DECinfo%ccsdGbatch==0).and.(DECinfo%ccsdAbatch==0)) then
+      !  call get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,minbsize,.false.,iter,MemFree, &
+      !       & .false.,e2a,local,mpi_split)
+      !else
+        nba = min(DECinfo%ccsdAbatch - iter * 0,nb)
+        nbg = min(DECinfo%ccsdGbatch - iter * 0,nb)
+      !endif
       ! Use value given in input --> the zero can be adjusted to vary batch sizes during the iterations
 
       m = nbg-0*iter
@@ -5370,9 +5382,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> ccsd doubles amplitudes and VOVO integrals (ordered as (a,b,i,j))
-    type(array4), intent(inout) :: ccsd_doubles, integral
+    type(array), intent(inout) :: ccsd_doubles, integral
     !> ccsd singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles
+    type(array), intent(inout) :: ccsd_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5410,9 +5422,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif
@@ -5427,7 +5439,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(integral,[1,2,4,3])
+    call array_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
     !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
@@ -5440,9 +5452,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp_1 = ccsd_doubles%val(a,b,i,j) * integral%val(a,b,i,j)
+                energy_tmp_1 = ccsd_doubles%elm4(a,b,i,j) * integral%elm4(a,b,i,j)
                 if(DECinfo%use_singles)then
-                   energy_tmp_2 = ccsd_singles%val(a,i) * ccsd_singles%val(b,j) * integral%val(a,b,i,j)
+                   energy_tmp_2 = ccsd_singles%elm2(a,i) * ccsd_singles%elm2(b,j) * integral%elm4(a,b,i,j)
                 else
                    energy_tmp_2 = 0.0E0_realk
                 endif
@@ -5598,7 +5610,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> MPI info:
     integer, pointer :: joblist(:)
     logical :: master
-    integer(kind=ls_mpik) :: tile_master, myrank, nnod
+    integer(kind=ls_mpik) :: tile_master, myrank, nnod, mode
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -5641,6 +5653,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nnod          = 1
     master        = .true.
 #ifdef VAR_MPI
+    mode        = MPI_MODE_NOCHECK
     myrank        = infpar%lg_mynum
     nnod          = infpar%lg_nodtot
     master        = (myrank == infpar%master)

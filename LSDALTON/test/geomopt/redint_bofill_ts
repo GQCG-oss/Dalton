@@ -17,46 +17,50 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSresponse_HF_opa.info <<'%EOF%'
-   LSresponse_HF_opa
-   -----------------
-   Molecule:         Hydrogen fluoride
-   Wave Function:    HF / 6-31G*
-   Test Purpose:     Test excitation energy and transition moment (Kasper K)
-                    
+cat > redint_bofill_ts.info <<'%EOF%'
+   redint_bofill_ts
+   -------------
+   Molecule:         CH3-CH3 = CH2-CH2 + H2
+   Wave Function:    HF / STO-3G
+   Test Purpose:     Test 1st order TS optimizer in redundant internal
+   coordinates with model Hessian updated with Bofill's formula
+                     
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSresponse_HF_opa.mol <<'%EOF%'
+cat > redint_bofill_ts.mol <<'%EOF%'
 BASIS
-6-31G*
------------test----------
+STO-3G
+Second order saddle point optimization in Cartesian coordinates
 
-Atomtypes=2 Generators=0
-Charge=1.0 Atoms=1 Basis=6-31G*
-H 0.000000000 0.0000000000   0.000000000000000
-Charge=9.0 Atoms=1 Basis=6-31G*
-F 1.96000000  0.0000000000   0.000000000000000
+Atomtypes=2
+Charge=6.0 Atoms=2
+C     0.0000000000        0.0000000000        1.4597876282   
+C     0.0000000000        0.0000000000       -1.4597876282   
+Charge=1.0 Atoms=6
+H     1.6808445513        0.9704360937        2.1445545504   
+H    -1.6808445513        0.9704360937        2.1445545504   
+H     0.0000000000       -1.9408721894        2.1445545504   
+H    -1.9608445513       -0.4204360937       -2.1445545504   
+H     1.2008445513       -1.4004360937       -2.1445545504   
+H     0.4600000000        1.8308721894       -2.1445545504   
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSresponse_HF_opa.dal <<'%EOF%'
-**GENERAL
-.TESTMPICOPY
-**WAVE FUNCTIONS
+cat > redint_bofill_ts.dal <<'%EOF%'
+**OPTIMI
+.REDINT
+.SADDLE
+.BAKER
+.PRINT 
+12
+**WAVE FUNCTION
 .HF
-*DENSOPT
-.ARH DAVID                   
-.CONVDYN
-TIGHT
-**RESPONS
-.NEXCIT
-5
-*END OF INPUT  
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -67,8 +71,8 @@ TIGHT
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > LSresponse_HF_opa.check
-cat >> LSresponse_HF_opa.check <<'%EOF%'
+echo $CHECK_SHELL > redint_bofill_ts.check
+cat >> redint_bofill_ts.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -78,7 +82,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-99\.98634" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-78\.3016053" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
@@ -89,12 +93,11 @@ TEST[2]=`expr  $CRIT2`
 CTRL[2]=1
 ERROR[2]="Memory leak -"
 
-# Excitation energy and transition moment
-CRIT1=`$GREP "0\.55349[0-9][0-9][0-9] * \-?1\.06696[0-9][0-9]" $log | wc -l`
-TEST[3]=`expr  $CRIT1`
-CTRL[3]=1
-ERROR[3]="Error in excitation energy /transition moment"
-
+# Number of energies
+CRIT3=`$GREP "Final * HF energy" $log | wc -l` 
+TEST[3]=`expr   $CRIT3`
+CTRL[3]=9
+ERROR[3]="Wrong number of geometry steps"
 
 PASSED=1
 for i in 1 2 3

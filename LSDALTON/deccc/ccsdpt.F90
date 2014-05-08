@@ -33,6 +33,7 @@ module ccsdpt_module
       use decmpi_module
 #endif
   use dec_workarounds_module
+  use crop_tools_module
   use dec_fragment_utils
   use array2_simple_operations
   use array3_simple_operations
@@ -65,7 +66,7 @@ contains
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles
+    type(array), intent(inout) :: ccsd_doubles
     !> 2-el integrals
     type(array4) :: jaik ! integrals (AI|JK) in the order (J,A,I,K)
     type(array4) :: abij ! integrals (AI|BJ) in the order (A,B,I,J)
@@ -87,8 +88,8 @@ contains
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
     type(array4) :: ccsdpt_doubles_2
-    type(array4),intent(inout) :: ccsdpt_doubles
-    type(array2),intent(inout) :: ccsdpt_singles
+    type(array),intent(inout) :: ccsdpt_doubles
+    type(array),intent(inout) :: ccsdpt_singles
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -99,6 +100,10 @@ contains
     dims_aaa    = [nvirt,nvirt,nvirt]
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
+
+    !Zero to be able to sum up 
+    call array_zero(ccsdpt_singles)
+    call array_zero(ccsdpt_doubles)
 
 #ifdef VAR_MPI
 
@@ -115,7 +120,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%val,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%elm4,mylsitem)
 
        call time_start_phase(PHASE_WORK)
 
@@ -151,9 +156,9 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) then
 
        print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
-       call array4_print_norm_nrm(jaik,jaik_norm)
-       call array4_print_norm_nrm(abij,abij_norm)
-       call array4_print_norm_nrm(ccsd_doubles,ccsd_doubles_norm)
+       call print_norm(jaik,jaik_norm)
+       call print_norm(abij,abij_norm)
+       call print_norm(ccsd_doubles,ccsd_doubles_norm)
        print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
        print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
@@ -170,13 +175,8 @@ contains
     ! transform ccsd doubles amplitudes to diagonal basis
     ! ***************************************************
 
-    call ccsdpt_local_can_trans(ccsd_doubles,nocc,nvirt,Uocc,Uvirt)
+    call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
 
-    ! Now we transpose the unitary transformation matrices as we will need these in the transformation
-    ! of the ^{ccsd}T^{ab}_{ij}, ^{*}T^{a}_{i}, and ^{*}T^{ab}_{ij} amplitudes from canonical to local basis
-    ! later on
-    call array2_transpose(Uocc)
-    call array2_transpose(Uvirt)
 
     ! ********************************
     ! begin actual triples calculation
@@ -204,7 +204,7 @@ contains
     ccsdpt_doubles_2 = array4_init_standard(dims_iaai)
 
     ! initially, reorder ccsd_doubles
-    call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
+    call array_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
     !**********************************************************
     ! here: the main ijk-loop: this is where the magic happens!
@@ -215,16 +215,16 @@ contains
     call time_start_phase(PHASE_WORK)
 
     ! the parallel version of the ijk-loop
-    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%val,&
-                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt,nodtotal)
+    call ijk_loop_par(nocc,nvirt,jaik%val,abij%val,cbai,ccsd_doubles%elm1,&
+                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt,nodtotal)
 
     call time_start_phase(PHASE_WORK)
 
 #else
 
     ! the serial version of the ijk-loop
-    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
-                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
+    call ijk_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%elm1,&
+                    & ccsdpt_doubles%elm1,ccsdpt_doubles_2%val,ccsdpt_singles%elm1,eivalocc,eivalvirt)
 !    ! the serial version of the abc-loop
 !    call abc_loop_ser(nocc,nvirt,jaik%val,abij%val,cbai%elm1,ccsd_doubles%val,&
 !                    & ccsdpt_doubles%val,ccsdpt_doubles_2%val,ccsdpt_singles%val,eivalocc,eivalvirt)
@@ -246,8 +246,10 @@ contains
 
        call time_start_phase(PHASE_COMM)
 
-       call lsmpi_local_reduction(ccsdpt_singles%val,nocc,nvirt,infpar%master)
-       call lsmpi_local_reduction(ccsdpt_doubles%val,nvirt,nocc,nvirt,nocc,infpar%master)
+       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
+       call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
+       !FIXME: Please introduce SPLIT_MSG_REC here, otherwise buffers may beocme
+       !too big
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
 
        call time_start_phase(PHASE_WORK)
@@ -257,9 +259,9 @@ contains
     if (infpar%lg_mynum .eq. infpar%master) then
 
        print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
-       call array4_print_norm_nrm(ccsdpt_doubles,ccsdpt_doubles_norm)
-       call array4_print_norm_nrm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
-       call array2_print_norm_nrm(ccsdpt_singles,ccsdpt_singles_norm)
+       call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
+       call print_norm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+       call print_norm(ccsdpt_singles,ccsdpt_singles_norm)
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
        print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
@@ -297,7 +299,7 @@ contains
     ! (*) here, ccsdpt_doubles_2 is simultaneously reordered as (j,a,b,i) --> (a,b,i,j)
     call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_2%val,ccsdpt_doubles_2%dims(1),&
                                &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
-                               &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%val)
+                               &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
 
     ! release ccsdpt_doubles_2 array4 structure
     call array4_free(ccsdpt_doubles_2)
@@ -306,7 +308,8 @@ contains
     ! ***** do canonical --> local transformation *****
     ! *************************************************
 
-    call ccsdpt_can_local_trans(ccsd_doubles,ccsdpt_singles,ccsdpt_doubles,nocc,nvirt,Uocc,Uvirt)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -318,14 +321,6 @@ contains
     call array4_free(abij)
     call array_free(cbai)
     call array4_free(jaik)
-
-    ! **************************************************************
-    ! *** do final reordering of amplitudes and clean the dishes ***
-    ! **************************************************************
-
-    ! reorder ccsdpt_doubles and ccsd_doubles back to (a,b,i,j) sequence
-    call array4_reorder(ccsdpt_doubles,[3,4,1,2])
-    call array4_reorder(ccsd_doubles,[4,3,2,1])
 
   end subroutine ccsdpt_driver
 
@@ -405,14 +400,14 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
-#ifdef VAR_MPI
-    do ij_count=1,infpar%lg_nodtot
-       if( ij_count - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," jobs 2 ",jobs
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
-#endif
+!#ifdef VAR_MPI
+!    do ij_count=1,infpar%lg_nodtot
+!       if( ij_count - 1 == infpar%lg_mynum)then
+!          print *,infpar%lg_mynum," jobs 2 ",jobs
+!       endif
+!       call lsmpi_barrier(infpar%lg_comm)
+!    enddo
+!#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -3498,17 +3493,23 @@ contains
   !> \date: september 2012
   !> \param: ccsd_t2, no and nv are nocc and nvirt, respectively, and U_occ and U_virt
   !          are unitary matrices from local --> canonical basis
-  subroutine ccsdpt_local_can_trans(ccsd_t2,no,nv,U_occ,U_virt)
+  subroutine ccsdpt_local_can_trans(ccsd_t2_arr,no,nv,U_occ,U_virt)
 
     implicit none
     !> ccsd doubles
-    type(array4), intent(inout) :: ccsd_t2
+    type(array), intent(inout) :: ccsd_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
     integer, intent(in) :: no, nv
     !> temp array4 structures
     type(array4) :: tmp1, tmp2
+    type(array4) :: ccsd_t2
+
+    !FIXME: THIS IS A CRAPPY HACK, USING A LOT OF MEMORY
+    ccsd_t2       = array4_init(ccsd_t2_arr%dims)
+    ccsd_t2%val   = ccsd_t2_arr%elm4
+    call deassoc_ptr_arr(ccsd_t2_arr) 
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
     ! we want to carry out the transformation:
@@ -3539,6 +3540,11 @@ contains
     call array4_contract1(tmp1,U_virt,ccsd_t2,.true.)
     call array4_free(tmp1)
 
+    ccsd_t2_arr%dims = ccsd_t2%dims        
+    call assoc_ptr_arr(ccsd_t2_arr) 
+    ccsd_t2_arr%elm4 = ccsd_t2%val  
+    call array4_free(ccsd_t2)
+
   end subroutine ccsdpt_local_can_trans
 
 
@@ -3547,13 +3553,13 @@ contains
   !> \date: september 2012
   !> \param: ccsd_t2, ccsdpt_t1, ccsdpt_t2, no and nv are nocc and nvirt, respectively, 
   !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-  subroutine ccsdpt_can_local_trans(ccsd_t2,ccsdpt_t1,ccsdpt_t2,no,nv,U_occ,U_virt)
+  subroutine ccsdpt_can_local_trans(ccsd_t2_arr,ccsdpt_t1_arr,ccsdpt_t2_arr,no,nv,U_occ,U_virt)
 
     implicit none
     !> ccsdpt_singles
-    type(array2), intent(inout) :: ccsdpt_t1
+    type(array), intent(inout) :: ccsdpt_t1_arr
     !> ccsd_doubles and ccsdpt_doubles
-    type(array4), intent(inout) :: ccsd_t2, ccsdpt_t2
+    type(array), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -3561,6 +3567,20 @@ contains
     !> temp array2 and array4 structures
     type(array2) :: tmp0
     type(array4) :: tmp1, tmp2, tmp3, tmp4
+    type(array2) :: ccsdpt_t1
+    type(array4) :: ccsd_t2, ccsdpt_t2
+
+    !FIXME: THIS IS A CRAPPY HACK, USING A LOT OF MEMORY
+    ccsdpt_t1     = array2_init(ccsdpt_t1_arr%dims)
+    ccsdpt_t1%val = ccsdpt_t1_arr%elm2
+    ccsdpt_t2     = array4_init(ccsdpt_t2_arr%dims)
+    ccsdpt_t2%val = ccsdpt_t2_arr%elm4
+    ccsd_t2       = array4_init(ccsd_t2_arr%dims)
+    ccsd_t2%val   = ccsd_t2_arr%elm4
+    
+    call deassoc_ptr_arr(ccsdpt_t1_arr) 
+    call deassoc_ptr_arr(ccsdpt_t2_arr) 
+    call deassoc_ptr_arr(ccsd_t2_arr) 
 
     ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
 
@@ -3640,6 +3660,22 @@ contains
     ! free tmp1 and tmp3
     call array4_free(tmp1)
     call array4_free(tmp3)
+
+    ccsdpt_t1_arr%dims    =  ccsdpt_t1%dims      
+    ccsdpt_t2_arr%dims    =  ccsdpt_t2%dims      
+    ccsd_t2_arr%dims      =  ccsd_t2%dims        
+
+    call assoc_ptr_arr(ccsdpt_t1_arr) 
+    call assoc_ptr_arr(ccsdpt_t2_arr) 
+    call assoc_ptr_arr(ccsd_t2_arr) 
+
+    ccsdpt_t1_arr%elm2 = ccsdpt_t1%val
+    ccsdpt_t2_arr%elm4 = ccsdpt_t2%val
+    ccsd_t2_arr%elm4   = ccsd_t2%val  
+
+    call array2_free(ccsdpt_t1)
+    call array4_free(ccsdpt_t2)
+    call array4_free(ccsd_t2)
 
   end subroutine ccsdpt_can_local_trans
 
@@ -4872,7 +4908,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
     integer :: nocc_eos, nvirt_eos, i,a, i_eos, a_eos
     !> temp energy
@@ -4902,7 +4938,7 @@ contains
        do a=1,nvirt_eos
           a_eos = MyFragment%idxu(a)
 
-          energy_tmp = ccsd_singles%val(a_eos,i_eos) * ccsdpt_singles%val(a_eos,i_eos)
+          energy_tmp = ccsd_singles%elm2(a_eos,i_eos) * ccsdpt_singles%elm2(a_eos,i_eos)
           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
        end do 
@@ -4943,7 +4979,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> integers
     integer :: nocc_eos, nvirt_eos, i, a, idx, adx, AtomI, AtomA, i_eos, a_eos
     !> logicals to avoid double counting
@@ -4987,8 +5023,8 @@ contains
 
           if (occ_in_frag_1 .and. virt_in_frag_2) then
              PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-               & * ccsdpt_singles%val(a_eos,i_eos)
+               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
+               & * ccsdpt_singles%elm2(a_eos,i_eos)
           end if
 
           ! virt in frag # 1, occ in frag # 2
@@ -5009,8 +5045,8 @@ contains
              
           if (occ_in_frag_2 .and. virt_in_frag_1) then
              PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%val(a_eos,i_eos) &
-               & * ccsdpt_singles%val(a_eos,i_eos)
+               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
+               & * ccsdpt_singles%elm2(a_eos,i_eos)
           end if
 
           ! sanity checks
@@ -5065,7 +5101,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
@@ -5137,8 +5173,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                    ! update contribution from aos orbital a
@@ -5156,7 +5192,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array4_reorder(ccsd_doubles,[1,2,4,3])
+       call array_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
@@ -5169,8 +5205,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%val(a,b,i_eos,j_eos) &
-                                  & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                                  & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_exc = energy_res_exc - energy_tmp
    
                    ! update contribution from aos orbital a
@@ -5206,16 +5242,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[3,4,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[3,4,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[4,3,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[4,3,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5233,8 +5269,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = 2.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = 2.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_exc = energy_res_exc - energy_tmp
    
                    ! update contribution from aos orbital i
@@ -5252,7 +5288,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array4_reorder(ccsd_doubles,[2,1,3,4])
+       call array_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
@@ -5265,8 +5301,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = 4.0E0_realk * ccsd_doubles%val(i,j,a_eos,b_eos) &
-                                  & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = 4.0E0_realk * ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                                  & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                    ! update contribution from aos orbital i
@@ -5305,17 +5341,17 @@ contains
        if (do_occ .and. (.not. do_virt)) then
 
           ! reorder from (a,b,j,i) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[1,4,2,3])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[1,4,2,3])
 
        else if (do_virt .and. (.not. do_virt)) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
 
        else if (do_occ .and. do_virt) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array4_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
 
        end if
 
@@ -5342,7 +5378,7 @@ contains
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
     logical, pointer :: dopair_occ(:,:), dopair_virt(:,:)
     !> integers
@@ -5424,8 +5460,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                 end do
@@ -5436,7 +5472,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array4_reorder(ccsd_doubles,[1,2,4,3])
+       call array_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
@@ -5451,8 +5487,8 @@ contains
              do b=1,nvirt_aos
                 do a=1,nvirt_aos
    
-                   energy_tmp = ccsd_doubles%val(a,b,i_eos,j_eos) &
-                              & * ccsdpt_doubles%val(a,b,i_eos,j_eos)
+                   energy_tmp = ccsd_doubles%elm4(a,b,i_eos,j_eos) &
+                              & * ccsdpt_doubles%elm4(a,b,i_eos,j_eos)
                    energy_res_exc = energy_res_exc + energy_tmp
    
                 end do
@@ -5481,16 +5517,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[3,4,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[3,4,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array4_reorder(ccsd_doubles,[4,3,1,2])
-          call array4_reorder(ccsdpt_doubles,[3,4,1,2])
+          call array_reorder(ccsd_doubles,[4,3,1,2])
+          call array_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -5510,8 +5546,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_exc = energy_res_exc + energy_tmp
    
                 end do
@@ -5522,7 +5558,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array4_reorder(ccsd_doubles,[2,1,3,4])
+       call array_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
@@ -5537,8 +5573,8 @@ contains
              do j=1,nocc_aos
                 do i=1,nocc_aos
    
-                   energy_tmp = ccsd_doubles%val(i,j,a_eos,b_eos) &
-                              & * ccsdpt_doubles%val(i,j,a_eos,b_eos)
+                   energy_tmp = ccsd_doubles%elm4(i,j,a_eos,b_eos) &
+                              & * ccsdpt_doubles%elm4(i,j,a_eos,b_eos)
                    energy_res_cou = energy_res_cou + energy_tmp
    
                 end do
@@ -5591,7 +5627,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) doubles amplitudes
-    type(array4), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5629,7 +5665,7 @@ contains
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%val(a,b,i,j) * ccsdpt_doubles%val(a,b,i,j)
+                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
                 eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) + energy_tmp
                 energy_res_cou = energy_res_cou + energy_tmp
 
@@ -5641,7 +5677,7 @@ contains
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array4_reorder(ccsd_doubles,[1,2,4,3])
+    call array_reorder(ccsd_doubles,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
     !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
@@ -5653,7 +5689,7 @@ contains
           do b=1,nvirt
              do a=1,nvirt
 
-                energy_tmp = ccsd_doubles%val(a,b,i,j) * ccsdpt_doubles%val(a,b,i,j)
+                energy_tmp = ccsd_doubles%elm4(a,b,i,j) * ccsdpt_doubles%elm4(a,b,i,j)
                 eccsdpt_matrix_exc(AtomI,AtomJ) = eccsdpt_matrix_exc(AtomI,AtomJ) + energy_tmp
                 energy_res_exc = energy_res_exc + energy_tmp
 
@@ -5769,7 +5805,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) singles amplitudes
-    type(array2), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, natoms, offset
     !> occupied orbital information
@@ -5798,7 +5834,7 @@ contains
        do a=1,nvirt
        AtomA = unocc_orbitals(a)%CentralAtom
 
-           energy_tmp = ccsd_singles%val(a,i) * ccsdpt_singles%val(a,i)
+           energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
            e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
            ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
@@ -5976,7 +6012,7 @@ contains
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-         & size1,size2,size3,.false.)
+         & size1,size2,size3,.true.)
 
 
     ! ************************************************
@@ -6087,12 +6123,12 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
-    do alphaB=1,infpar%lg_nodtot
-       if( alphaB - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," distribution ",distribution
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
+    !do alphaB=1,infpar%lg_nodtot
+    !   if( alphaB - 1 == infpar%lg_mynum)then
+    !      print *,infpar%lg_mynum," distribution ",distribution
+    !   endif
+    !   call lsmpi_barrier(infpar%lg_comm)
+    !enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
@@ -6256,11 +6292,11 @@ contains
     call mem_dealloc(distribution)
 
     
-    if(infpar%lg_mynum  == 0)then
-       call print_norm(JAIB)
-       call print_norm(JAIK)
-    endif
-    call print_norm(CBAI)
+    !if(infpar%lg_mynum  == 0)then
+    !   call print_norm(JAIB)
+    !   call print_norm(JAIK)
+    !endif
+    !call print_norm(CBAI)
 #endif
 
     ! free stuff
@@ -6321,247 +6357,250 @@ contains
   !> \author Kasper Kristensen & Janus Eriksen
   !> \date September 2011, rev. October 2012
   subroutine get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
-     & size1,size2,size3,adapt_to_nnodes)
+        & size1,size2,size3,adapt_to_nnodes)
 
-    implicit none
-  
-    !> Integral info
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of AO basis functions
-    integer,intent(in) :: nbasis
-    !> Number of occupied (AOS) orbitals
-    integer,intent(in) :: nocc
-    !> Number of virt (AOS) orbitals
-    integer,intent(in) :: nvirt
-    !> Max size for AO alpha batch
-    integer,intent(inout) :: alphadim
-    !> Max size for AO gamma batch
-    integer,intent(inout) :: gammadim
-    !> Dimension of temporary array 1
-    integer(kind=long),intent(inout) :: size1
-    !> Dimension of temporary array 2
-    integer(kind=long),intent(inout) :: size2
-    !> Dimension of temporary array 3
-    integer(kind=long),intent(inout) :: size3
-    !> choose to split if more nodes are available than necessary
-    logical,intent(in) :: adapt_to_nnodes
-    !> memory reals
-    real(realk) :: MemoryNeeded, MemoryAvailable
-    integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
-    integer(kind=ls_mpik) :: nnod
-    nnod = 1
+     implicit none
+
+     !> Integral info
+     type(lsitem), intent(inout) :: mylsitem
+     !> Number of AO basis functions
+     integer,intent(in) :: nbasis
+     !> Number of occupied (AOS) orbitals
+     integer,intent(in) :: nocc
+     !> Number of virt (AOS) orbitals
+     integer,intent(in) :: nvirt
+     !> Max size for AO alpha batch
+     integer,intent(inout) :: alphadim
+     !> Max size for AO gamma batch
+     integer,intent(inout) :: gammadim
+     !> Dimension of temporary array 1
+     integer(kind=long),intent(inout) :: size1
+     !> Dimension of temporary array 2
+     integer(kind=long),intent(inout) :: size2
+     !> Dimension of temporary array 3
+     integer(kind=long),intent(inout) :: size3
+     !> choose to split if more nodes are available than necessary
+     logical,intent(in) :: adapt_to_nnodes
+     !> memory reals
+     real(realk) :: MemoryNeeded, MemoryAvailable
+     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
+     integer(kind=ls_mpik) :: nnod,me
+     logical :: master
+     ! Memory currently available
+     ! **************************
+     call get_currently_available_memory(MemoryAvailable)
+     ! Note: We multiply by 85 % to be on the safe side!
+     MemoryAvailable = 0.85*MemoryAvailable
+
+     nnod = 1
+     me   = 0
 #ifdef VAR_MPI
-    nnod = infpar%lg_nodtot
+     nnod = infpar%lg_nodtot
+     me   = infpar%lg_mynum
+     call lsmpi_reduce_realk_min(MemoryAvailable,infpar%master,infpar%lg_comm)
 #endif
 
+     master = (me == 0)
 
-    ! Memory currently available
-    ! **************************
-    call get_currently_available_memory(MemoryAvailable)
-    ! Note: We multiply by 85 % to be on the safe side!
-    MemoryAvailable = 0.85*MemoryAvailable
-  
-  
-  
-    ! Maximum and minimum possible batch sizes
-    ! ****************************************
-  
-    ! The largest possible AO batch is the number of basis functions
-    MaxAObatch = nbasis
-  
-    ! The smallest possible AO batch depends on the basis set
-    ! (More precisely, if all batches are made as small as possible, then the
-    !  call below determines the largest of these small batches).
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
-  
-  
-    ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
-    AlphaDim=MinAObatch
-    GammaDim=MinAObatch
-  
-    GammaOpt = 0
-    AlphaOpt = 0
- 
-    ! Gamma batch size
-    ! =================================
-    GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
-  
-       call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
-            & size1,size2,size3,MemoryNeeded)
-  
-         if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
-            if(adapt_to_nnodes)then
-               if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
+
+
+     if ( master ) then
+
+        ! Maximum and minimum possible batch sizes
+        ! ****************************************
+
+        ! The largest possible AO batch is the number of basis functions
+        MaxAObatch = nbasis
+
+        ! The smallest possible AO batch depends on the basis set
+        ! (More precisely, if all batches are made as small as possible, then the
+        !  call below determines the largest of these small batches).
+        call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
+
+
+        ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
+        AlphaDim=MinAObatch
+        GammaDim=MinAObatch
+
+        GammaOpt = 0
+        AlphaOpt = 0
+
+        ! Gamma batch size
+        ! =================================
+        GammaLoop: do gamma = MaxAObatch,MinAOBatch,-1
+
+           call get_max_arraysizes_for_ccsdpt_integrals(alphaDim,gamma,nbasis,nocc,nvirt,&
+              & size1,size2,size3,MemoryNeeded)
+
+           if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
+              if(adapt_to_nnodes)then
+                 if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
 #ifdef VAR_MPI
-                  print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
+                    print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
 #else
-                  print *,'we hit GammaOpt 1'
+                    print *,'we hit GammaOpt 1'
 #endif
-                  GammaOpt = gamma
-                  exit GammaLoop
-               endif
-            else
+                    GammaOpt = gamma
+                    exit GammaLoop
+                 endif
+              else
 #ifdef VAR_MPI
-               print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
+                 print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
 #else
-               print *,'we hit GammaOpt 2'
+                 print *,'we hit GammaOpt 2'
 #endif
-               GammaOpt = gamma
-               exit GammaLoop
-            endif
-         end if
+                 GammaOpt = gamma
+                 exit GammaLoop
+              endif
+           end if
 
-    end do GammaLoop
+        end do GammaLoop
 
-    if (GammaOpt .eq. 0) then
+        if (GammaOpt .eq. 0) then
 
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
 #else
-       print *,'we hit GammaOpt NEW'
+           print *,'we hit GammaOpt NEW'
 #endif
-       GammaOpt = GammaDim
+           GammaOpt = GammaDim
 
-    endif 
+        endif 
 
 #ifdef VAR_MPI
-    print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
 #else
-    print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
+        print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
 #endif
 
-    ! If gamma batch size was set manually we use that value instead
-    if(DECinfo%ccsdGbatch/=0) then
-       write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
+        ! If gamma batch size was set manually we use that value instead
+        if(DECinfo%ccsdGbatch/=0) then
+           write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
 #else
-       print *,'we hit GammaOpt 3'
+           print *,'we hit GammaOpt 3'
 #endif
-       GammaOpt=DECinfo%ccsdGbatch
-    end if 
-  
-    ! The optimal gamma batch size is GammaOpt.
-    ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
-    ! and store this number in gammadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
-  
-  
-    ! Largest possible alpha batch size
-    ! =================================
-    AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
+           GammaOpt=DECinfo%ccsdGbatch
+        end if 
 
-       call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
-          & size1,size2,size3,MemoryNeeded)
+        ! The optimal gamma batch size is GammaOpt.
+        ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
+        ! and store this number in gammadim.
+        call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
 
-       if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
 
-          if( adapt_to_nnodes  )then
+        ! Largest possible alpha batch size
+        ! =================================
+        AlphaLoop: do alpha = MaxAObatch,MinAOBatch,-1
 
-             if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
+           call get_max_arraysizes_for_ccsdpt_integrals(alpha,gammadim,nbasis,nocc,nvirt,&
+              & size1,size2,size3,MemoryNeeded)
+
+           if(MemoryNeeded < MemoryAvailable .or. (alpha==minAObatch) ) then
+
+              if( adapt_to_nnodes  )then
+
+                 if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
 #ifdef VAR_MPI
-                print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
+                    print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
 #else
-                print *,'we hit AlphaOpt 1'
+                    print *,'we hit AlphaOpt 1'
 #endif
-                AlphaOpt = alpha
-                exit AlphaLoop
-             endif
-          else
+                    AlphaOpt = alpha
+                    exit AlphaLoop
+                 endif
+              else
 #ifdef VAR_MPI
-             print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
+                 print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
 #else
-             print *,'we hit AlphaOpt 2'
+                 print *,'we hit AlphaOpt 2'
 #endif
-             AlphaOpt = alpha
-             exit AlphaLoop
-          endif
-       end if
+                 AlphaOpt = alpha
+                 exit AlphaLoop
+              endif
+           end if
 
-    end do AlphaLoop
+        end do AlphaLoop
 
-    if (AlphaOpt .eq. 0) then
+        if (AlphaOpt .eq. 0) then
 
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
 #else
-       print *,'we hit AlphaOpt NEW'
+           print *,'we hit AlphaOpt NEW'
 #endif
-       AlphaOpt = AlphaDim
+           AlphaOpt = AlphaDim
 
-    endif
-  
+        endif
+
 #ifdef VAR_MPI
-    print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
 #else
-    print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+        print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
 #endif
 
-    ! If alpha batch size was set manually we use that value instead
-    if(DECinfo%ccsdAbatch/=0) then
-       write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
+        ! If alpha batch size was set manually we use that value instead
+        if(DECinfo%ccsdAbatch/=0) then
+           write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
+           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
 #else
-       print *,'we hit AlphaOpt 3'
+           print *,'we hit AlphaOpt 3'
 #endif
-       AlphaOpt=DECinfo%ccsdAbatch
-    end if
-  
-    ! The optimal alpha batch size is AlphaOpt.
-    ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
-    ! and store this number in alphadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
-   
+           AlphaOpt=DECinfo%ccsdAbatch
+        end if
+
+        ! The optimal alpha batch size is AlphaOpt.
+        ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
+        ! and store this number in alphadim.
+        call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
+
 #ifdef VAR_MPI
-       print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
-             &', and AlphaOpt = ',AlphaOpt
+        print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
+           &', and AlphaOpt = ',AlphaOpt
 #else
-       print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
+        print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
 #endif
- 
-    ! Print out and sanity check
-    ! ==========================
- 
+
+        ! Print out and sanity check
+        ! ==========================
+
+        write(DECinfo%output,*)
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
+        write(DECinfo%output,*) '======================================================================='
+        write(DECinfo%output,*)
+        write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+        write(DECinfo%output,*)
+        write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
+        write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
+        write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
+        write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+        write(DECinfo%output,*)
+
+
+     endif
+
 #ifdef VAR_MPI
-
-    if (infpar%lg_mynum .ne. infpar%master) goto 666
-
+     call ls_mpibcast(Gammadim,infpar%master,infpar%lg_comm)
+     call ls_mpibcast(Alphadim,infpar%master,infpar%lg_comm)
 #endif
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '======================================================================='
-    write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
-    write(DECinfo%output,*) '======================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
-    write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
-    write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
-    write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
-    write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-    write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
-    write(DECinfo%output,*)
-  
-#ifdef VAR_MPI
-
-666 continue
-
-#endif
-
-    ! Sanity check
-    call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
-         & size1,size2,size3,MemoryNeeded)  
-    if(MemoryNeeded > MemoryAvailable) then
-       write(DECinfo%output,*) 'Requested/available memory: ', MemoryNeeded, MemoryAvailable
-       call lsquit('CCSD(T) integrals: Insufficient memory!',-1)
-    end if
+     ! Sanity check
+     call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
+        & size1,size2,size3,MemoryNeeded)  
+     if(MemoryNeeded > MemoryAvailable) then
+        write(DECinfo%output,*) 'Requested/available memory: ', MemoryNeeded, MemoryAvailable
+        call lsquit('CCSD(T) integrals: Insufficient memory!',-1)
+     end if
 
 
   end subroutine get_optimal_batch_sizes_ccsdpt_integrals
@@ -6665,14 +6704,16 @@ end module ccsdpt_module
     implicit none
     integer :: nocc, nvirt,nbasis
     real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
-    type(array2) :: ccsdpt_t1
-    type(array4) :: ccsd_t2, ccsdpt_t2
+    type(array) :: ccsdpt_t1
+    type(array) :: ccsd_t2, ccsdpt_t2
     type(lsitem) :: mylsitem
 
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%val,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%elm4,mylsitem)
+
+    !FIXME: split MPI messages!!!!!!!!!!
 
     ! init and receive ppfock
     call mem_alloc(ppfock,nocc,nocc)
@@ -6691,12 +6732,12 @@ end module ccsdpt_module
     call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
 
     ! init and receive ccsd_doubles array4 structure
-    ccsd_t2 = array4_init([nvirt,nocc,nvirt,nocc])
-    call ls_mpibcast(ccsd_t2%val,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+    ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
+    call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
 
     ! init ccsd(t) singles and ccsd(t) doubles
-    ccsdpt_t1 = array2_init_plain([nvirt,nocc])
-    ccsdpt_t2 = array4_init_standard([nvirt,nvirt,nocc,nocc])
+    ccsdpt_t1 = array_init([nvirt,nocc],2)
+    ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
 
     call time_start_phase(PHASE_WORK)
 
@@ -6707,9 +6748,9 @@ end module ccsdpt_module
     call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
-    call array2_free(ccsdpt_t1)
-    call array4_free(ccsd_t2)
-    call array4_free(ccsdpt_t2)
+    call array_free(ccsdpt_t1)
+    call array_free(ccsd_t2)
+    call array_free(ccsdpt_t2)
 
     ! finally, release fragment or full molecule quantities
     call ls_free(mylsitem)
