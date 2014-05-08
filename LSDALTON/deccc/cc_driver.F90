@@ -38,10 +38,10 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldarray_wrapper
-!#ifdef MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 use ccsdpt_module
-!#endif mod_unreleased
-!#endif
+!endif mod_unreleased
+#endif
 use orbital_operations
 use rpa_module
 
