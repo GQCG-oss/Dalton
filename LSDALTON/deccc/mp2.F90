@@ -725,9 +725,12 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
           if(master.AND.DECinfo%PL>0)then
-           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp1%p using   ',MemInGB(max(bat%size1(1),dim1)),' GB Tot=',MemInGBCollected,' GB'
-           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp2%p using   ',MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
-           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp1%p using   ',&
+              &MemInGB(max(bat%size1(1),dim1)),' GB Tot=',MemInGBCollected,' GB'
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp2%p using   ',&
+              &MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',&
+              &MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
            FLUSH(DECinfo%output)
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
@@ -918,7 +921,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           call mem_dealloc(tmp1%p)
           call mem_dealloc(tmp2%p)
           if(master.and.DECinfo%PL>0)then
-             write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
+             write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
+                &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
              FLUSH(DECinfo%output)
           endif
           MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(4))
@@ -944,9 +948,12 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           call mem_dealloc(tmp3%p)
           do j=1,nthreads
              if(master.AND.DECinfo%PL>0)then
-                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b1(',j,')%p using   ',MemInGB(bat%size2(1)),' GB Tot=',MemInGBCollected,' GB'
-                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b2(',j,')%p using   ',MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
-                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b1(',j,')%p using   ',&
+                   &MemInGB(bat%size2(1)),' GB Tot=',MemInGBCollected,' GB'
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b2(',j,')%p using   ',&
+                   &MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',&
+                   &MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
                 FLUSH(DECinfo%output)
              endif
              MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
@@ -976,7 +983,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Step 2 is the virtual batching where the final AO-->MO transformations
           ! are carried out and the MP2 amplitudes are determined.
           if(master.AND.DECinfo%PL>0)then
-             WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM: MemInGBCollected = ',MemInGBCollected,' GB Before MP2 Workhorse OMP Loop'
+             WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM: MemInGBCollected = ',MemInGBCollected,&
+                &' GB Before MP2 Workhorse OMP Loop'
              flush(DECinfo%output)
           endif
           call mem_TurnONThread_Memory()
@@ -1180,7 +1188,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 ! b3(A,B,J,i) = sum_{I} b1(Abat,B,J,I) U^T_{Ii}
                 m=dimA*nvirt*nocc
                 dim3=i8*dimA*nvirt*nocc*noccEOS    ! dimension of b3
-                call dec_simple_dgemm(m,nocc, noccEOS, b1(num)%p(1:dim1), UoccEOST, b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+                call dec_simple_dgemm(m,nocc,noccEOS,b1(num)%p(1:dim1),UoccEOST,b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
                 
                 ! Reorder: b3(Abat,B,J,i) --> b2(J,Abat,B,i)
                 dim2=dim3
@@ -1197,7 +1205,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 ! b3(j,Abat,B,i) = sum_{J} U_{jJ} b2(J,Abat,B,i)
                 n=dimA*nvirt*noccEOS
                 dim3=i8*noccEOS*dimA*nvirt*noccEOS    ! dimension of b3
-                call dec_simple_dgemm(noccEOS,nocc, n, UoccEOS, b2(num)%p(1:dim2), b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+                call dec_simple_dgemm(noccEOS,nocc,n,UoccEOS,b2(num)%p(1:dim2),b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
                 
                 
                 
@@ -1289,7 +1297,8 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           MemInGBCollected = MemInGBCollected - size(tmp4%p,kind=long)*8.0E-9_realk
           call mem_dealloc(tmp4%p)
           do j=1,nthreads
-             MemInGBCollected = MemInGBCollected-size(b1(j)%p,kind=long)*8.0E-9_realk-size(b2(j)%p,kind=long)*8.0E-9_realk-size(b3(j)%p,kind=long)*8.0E-9_realk
+             MemInGBCollected = MemInGBCollected-size(b1(j)%p,kind=long)*8.0E-9_realk-size(b2(j)%p,kind=long)&
+                &*8.0E-9_realk-size(b3(j)%p,kind=long)*8.0E-9_realk
              call mem_dealloc(b1(j)%p)
              call mem_dealloc(b2(j)%p)
              call mem_dealloc(b3(j)%p)
@@ -1392,8 +1401,10 @@ call mem_dealloc(decmpitasks)
  call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
 #else
  if(master.and.DECinfo%PL>0) then
-    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp1%p using   ',MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
-    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
+    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp1%p using   ',&
+       &MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
+    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',&
+       &MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
     FLUSH(DECinfo%output)
  endif 
  MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
@@ -1478,7 +1489,8 @@ call mem_dealloc(decmpitasks)
        ! worth it to do one ugly reordering loop here...
 
        if(master.AND.DECinfo%PL>0)then
-          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gvirt2 using',MemInGB(nvirtEOS,nvirtEOS,nocc,nocctot),' GB'
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gvirt2 using',&
+             &MemInGB(nvirtEOS,nvirtEOS,nocc,nocctot),' GB'
           FLUSH(DECinfo%output)
        endif
        call mem_alloc(gvirt2,nvirtEOS,nvirtEOS,nocc,nocctot)

@@ -3224,8 +3224,10 @@ contains
           ENDIF
           IF(nLowerOcc.GT.nHigherOcc)CALL LSQUIT('nLowerOcc.GT.nHigherOcc',-1)
           IF(nLowerVirt.GT.nHigherVirt)CALL LSQUIT('nLowerVirt.GT.nHigherVirt',-1)
-          call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,DistanceRemoval,OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
-          call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
+          call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,DistanceRemoval,&
+             &OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
+          call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
+             &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
 
           IF(DECinfo%PL.GT.1)THEN
              WRITE(DECinfo%output,*)'BIN SEARCH COUNT(OccAOS_new)',COUNT(OccAOS_new)
