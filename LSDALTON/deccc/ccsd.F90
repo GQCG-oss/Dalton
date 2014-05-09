@@ -2027,7 +2027,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      if(infpar%lg_nodtot>1.or.scheme==3) then
 
         if(iter==1.and.scheme==4)then
-           call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm)
+           call lsmpi_allreduce(govov%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
         else if(scheme==3)then
            call array_cp_tiled2dense(govov,.false.)
         endif
@@ -2037,12 +2037,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !***********************************************************************
         if(Ccmodel > MODEL_CC2)then
 
-           call lsmpi_allreduce(sio4%d,int((i8*nor)*no2,kind=8),infpar%lg_comm)
+           call lsmpi_allreduce(sio4%d,int((i8*nor)*no2,kind=8),infpar%lg_comm,SPLIT_MSG_REC)
 
            if(scheme==4)then
 
-              call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm)
-              call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm)
+              call lsmpi_allreduce(gvvooa%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
+              call lsmpi_allreduce(gvoova%elm1,o2v2,infpar%lg_comm,SPLIT_MSG_REC)
 
            endif
 
@@ -2236,9 +2236,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      if(infpar%lg_nodtot>1) then
         if(scheme==4.or.scheme==3)&
-           &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master)
-        call lsmpi_local_reduction(Gbi,nb*no,infpar%master)
-        call lsmpi_local_reduction(Had,nb*nv,infpar%master)
+           &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master,SPLIT_MSG_REC)
+        call lsmpi_local_reduction(Gbi,nb*no,infpar%master,SPLIT_MSG_REC)
+        call lsmpi_local_reduction(Had,nb*nv,infpar%master,SPLIT_MSG_REC)
      endif
 
      call time_start_phase(PHASE_WORK, dt = time_reduction2)
@@ -5885,7 +5885,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
     no2v2 = int(nvir*nvir*nocc*nocc, kind=long)
-    call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master)
+    call lsmpi_local_reduction(omega2%elm1,no2v2,infpar%master,SPLIT_MSG_REC)
     call time_start_phase(PHASE_WORK)
 #endif
 
@@ -6680,21 +6680,21 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
     no2v2 = int(nv*nv*no*no, kind=long)
-    call lsmpi_local_reduction(goooo,no**4,infpar%master)
-    call lsmpi_local_reduction(govoo,nv*no**3,infpar%master)
-    call lsmpi_local_reduction(gvooo,nv*no**3,infpar%master)
-    call lsmpi_local_reduction(G_Pi,nt*no,infpar%master)
-    call lsmpi_local_reduction(H_aQ,nv*nt,infpar%master)
+    call lsmpi_local_reduction(goooo,no**4,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(govoo,nv*no**3,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(gvooo,nv*no**3,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(G_Pi,nt*no,infpar%master,SPLIT_MSG_REC)
+    call lsmpi_local_reduction(H_aQ,nv*nt,infpar%master,SPLIT_MSG_REC)
 
     if (ccmodel>MODEL_CC2) then
       ! ALL REDUCE FOR C2 AND D2 TERMS WITH MPI:
-      call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm)
-      call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm)
-      if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm)
+      call lsmpi_allreduce(gvoov,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      call lsmpi_allreduce(gvvoo,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
+      if (iter==1) call lsmpi_allreduce(govov%elm1,no2v2,infpar%lg_comm,SPLIT_MSG_REC)
     else if(ccmodel==MODEL_CC2) then
-      call lsmpi_local_reduction(gvoov,no2v2,infpar%master)
-      call lsmpi_local_reduction(gvvoo,no2v2,infpar%master)
-      if (iter==1) call lsmpi_local_reduction(govov%elm1,no2v2,infpar%master)
+      call lsmpi_local_reduction(gvoov,no2v2,infpar%master,SPLIT_MSG_REC)
+      call lsmpi_local_reduction(gvvoo,no2v2,infpar%master,SPLIT_MSG_REC)
+      if (iter==1) call lsmpi_local_reduction(govov%elm1,no2v2,infpar%master,SPLIT_MSG_REC)
     end if
     call time_start_phase(PHASE_WORK)
 #endif
@@ -6984,7 +6984,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 #ifdef VAR_MPI
-              call lsmpi_local_reduction(w1%d,o2v2,infpar%master)
+              call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
            else
               call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -7032,7 +7032,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #endif
 #ifdef VAR_MPI
-              call lsmpi_local_reduction(w1%d,o2v2,infpar%master)
+              call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
            else
               call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -7052,7 +7052,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               w1%d(1_long:o2v2) = omega2%elm1(1_long:o2v2)
 #endif
 #ifdef VAR_MPI
-              call lsmpi_local_reduction(w1%d,o2v2,infpar%master)
+              call lsmpi_local_reduction(w1%d,o2v2,infpar%master,SPLIT_MSG_REC)
 #endif
            else
               call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
@@ -7081,7 +7081,7 @@ subroutine ccsd_data_preparation()
   use dec_typedef_module
   use typedeftype,only:lsitem,array
   use infpar_module
-  use lsmpi_type, only:ls_mpibcast,LSMPIBROADCAST,MPI_COMM_NULL,&
+  use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks,LSMPIBROADCAST,MPI_COMM_NULL,&
   &ls_mpiInitBuffer,ls_mpi_buffer,ls_mpiFinalizeBuffer,SPLIT_MSG_REC
   use lsmpi_op, only:mpicopy_lsitem
   use daltoninfo, only:ls_free
@@ -7199,8 +7199,8 @@ subroutine ccsd_data_preparation()
      call mem_alloc( xodata, nelms )
   endif
   if( parent ) then
-     call ls_mpibcast( xodata, nelms, infpar%master, infpar%lg_comm)
-     call ls_mpibcast( yodata, nelms, infpar%master, infpar%lg_comm)
+     call ls_mpibcast_chunks( xodata, nelms, infpar%master, infpar%lg_comm, k )
+     call ls_mpibcast_chunks( yodata, nelms, infpar%master, infpar%lg_comm, k )
   endif
 
   nelms = nbas*nvirt
@@ -7214,16 +7214,16 @@ subroutine ccsd_data_preparation()
      call mem_alloc( yvdata, nelms )
   endif
   if( parent )then
-     call ls_mpibcast( xvdata, nelms, infpar%master, infpar%lg_comm)
-     call ls_mpibcast( yvdata, nelms, infpar%master, infpar%lg_comm)
+     call ls_mpibcast_chunks( xvdata, nelms, infpar%master, infpar%lg_comm, k )
+     call ls_mpibcast_chunks( yvdata, nelms, infpar%master, infpar%lg_comm, k )
   endif
   
 
   nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-  if( parent )call ls_mpibcast( t2%elm1, nelms, infpar%master, infpar%lg_comm)
+  if( parent )call ls_mpibcast_chunks( t2%elm1, nelms, infpar%master, infpar%lg_comm, k )
 
   if( iter/=1 .and. scheme==4 .and. parent )then
-     call ls_mpibcast( govov%elm1, nelms, infpar%master, infpar%lg_comm)
+     call ls_mpibcast_chunks( govov%elm1, nelms, infpar%master, infpar%lg_comm, k )
   endif
 
 
@@ -7496,9 +7496,9 @@ subroutine moccsd_data_slave()
   k=SPLIT_MSG_REC
 
   nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-  call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
+  call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
   if (iter/=1) then
-    call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
+    call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
   endif
 
   !==============================================================================

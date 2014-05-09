@@ -1032,20 +1032,19 @@ contains
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
       k=SPLIT_MSG_REC
-      !This used to be SPLIT_MSG_REC but now 
 
       nelms = nbas*nocc
-      call ls_mpibcast(xo,nelms,infpar%master,infpar%lg_comm)
-      call ls_mpibcast(yo,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
 
       nelms = nbas*nvirt
-      call ls_mpibcast(xv,nelms,infpar%master,infpar%lg_comm)
-      call ls_mpibcast(yv,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
 
       nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if(iter/=1.and.(s==0.or.s==4))then
-        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
       if(.not.loc)then
@@ -2030,9 +2029,9 @@ contains
       k=SPLIT_MSG_REC
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
+      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if (iter/=1) then
-        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
       endif
     else
       if(.not.loc)then
