@@ -194,8 +194,9 @@ module lsmpi_type
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  !integer,parameter     :: SPLIT_MPI_MSG = 2147483640
-  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
+  !integer,parameter     :: SPLIT_MPI_MSG     = 2147483640
+!  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
+  integer,parameter     :: SPLIT_MPI_MSG      = 100000000
   !The recommended size of message chunks
   integer,parameter     :: SPLIT_MSG_REC      =  100000000
   !split mpi one sided communication into 1GB msg, with CRAY workaround in 100MB
@@ -335,10 +336,9 @@ contains
 #ifdef VAR_MPI
       integer(kind=ls_mpik) :: ierr,n,datatype
       integer(kind=4) :: intbuffer
-
+      IERR=0
       DATATYPE = MPI_INTEGER4
       n = 1
-      IERR=0
 !     Convert from short integer to regular integer
       intbuffer = buffer
 !     Broadcast regular integer
@@ -749,6 +749,7 @@ contains
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
       IERR=0
+      DATATYPE = MPI_LOGICAL
       call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       IF(mpi_logical_extent.EQ.4)THEN
          !32 bit mpi logical
@@ -792,6 +793,7 @@ contains
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
       IERR=0
+      DATATYPE = MPI_LOGICAL
       call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       IF(mpi_logical_extent.EQ.4)THEN
          !32 bit mpi logical
@@ -835,6 +837,7 @@ contains
       logical(kind=8),pointer :: buffer8(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
       IERR=0
+      DATATYPE = MPI_LOGICAL
       call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       IF(mpi_logical_extent.EQ.4)THEN
          !32 bit mpi logical
@@ -842,7 +845,7 @@ contains
          do i=1,n,k
             nMPI=k
             if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-            CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)         
+            CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
             IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
          enddo
       ELSE
@@ -878,6 +881,7 @@ contains
       logical(kind=8),pointer :: buffer8(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
       IERR=0
+      DATATYPE = MPI_LOGICAL
       call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       IF(mpi_logical_extent.EQ.4)THEN
          !32 bit mpi logical
