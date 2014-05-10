@@ -3406,64 +3406,41 @@ contains
     integer(kind=8) :: n
     integer(kind=4) :: buffer(:)
 #ifdef VAR_MPI
-    integer(kind=4) :: n4
+    integer(kind=ls_mpik) :: ierr,mynum,nMPI,DATATYPE
     integer(kind=8) :: i,k
-    integer(kind=ls_mpik) :: ierr,mynum,thesize
     real(realk) :: null 
-      IERR=0
-    !loop over batches, which contain a number of elements,
-    !describable by 32 bit integers, here 2E9
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer4(buffer(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call get_rank_for_comm(comm,mynum)
-      THESIZE = n
-      !if(THESIZE.NE.n)THEN
-      !   call lsquit('lsmpi error in lmpi_reduction_integer_wrapper8',-1)
-      !endif
-      IF(mynum.EQ.master) THEN
-        CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,thesize,MPI_INTEGER4,MPI_SUM,&
-             &master,comm,IERR)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      ELSE
-        CALL MPI_REDUCE(BUFFER,NULL,thesize,MPI_INTEGER4,MPI_SUM,&
-             &master,comm,IERR)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      ENDIF
-    endif
+    IERR=0
+    DATATYPE=MPI_INTEGER4
+    k=SPLIT_MPI_MSG
+    call get_rank_for_comm(comm,mynum)
+    do i=1,n,k
+       nMPI=k
+       !if((n-i)<k)nMPI=mod(n,k)
+       if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
+       IF(mynum.EQ.master) THEN
+          CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER(i:i+nMPI-1),nMPI,DATATYPE,MPI_SUM,&
+               & master,comm,IERR)
+       ELSE
+          CALL MPI_REDUCE(BUFFER(i:i+nMPI-1),NULL,nMPI,DATATYPE,MPI_SUM,&
+               &master,comm,IERR)
+       ENDIF
+       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)       
+    enddo
 #endif
     end subroutine lsmpi_reduction_integer4_wrapper8
-    
-    subroutine lsmpi_reduction_integer4(buffer,n1,master,comm)
+  
+    subroutine lsmpi_reduction_integer4(buffer,n,master,comm)
     implicit none
     integer(kind=ls_mpik),intent(in) :: comm   ! communicator
     integer(kind=ls_mpik) :: master
-    integer(kind=4) :: n1
+    integer(kind=4) :: n
     integer(kind=4) :: buffer(:)
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: ierr,mynum,thesize
-    real(realk) :: null 
-      IERR=0
-    call get_rank_for_comm(comm,mynum)
-    THESIZE = n1
-    IF(mynum.EQ.master) THEN
-      CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,thesize,MPI_INTEGER4,MPI_SUM,&
-           &master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ELSE
-      CALL MPI_REDUCE(BUFFER,NULL,thesize,MPI_INTEGER4,MPI_SUM,&
-           &master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ENDIF
+    integer(kind=8) :: n1
+    n1 = n
+    call lsmpi_reduction_integer4_wrapper8(buffer,n1,master,comm)
 #endif
   end subroutine lsmpi_reduction_integer4
-
 
   subroutine lsmpi_reduction_integer8_wrapper8(buffer,n,master,comm)
     implicit none
@@ -3472,57 +3449,39 @@ contains
     integer(kind=8) :: n
     integer(kind=8) :: buffer(:)
 #ifdef VAR_MPI
-    integer(kind=4) :: n4
+    integer(kind=ls_mpik) :: ierr,mynum,nMPI,DATATYPE
     integer(kind=8) :: i,k
-    integer(kind=ls_mpik) :: mynum
-    integer(kind=ls_mpik) :: ierr
     real(realk) :: null 
-      IERR=0
-    !loop over batches, which contain a number of elements,
-    !describable by 32 bit integers, here 2E9
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer8(buffer(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call get_rank_for_comm(comm,mynum)
-      IF(mynum.EQ.master) THEN
-        CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,n,MPI_INTEGER8,MPI_SUM,&
-             &master,comm,IERR)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      ELSE
-        CALL MPI_REDUCE(BUFFER,NULL,n,MPI_INTEGER8,MPI_SUM,&
-             &master,comm,IERR)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      ENDIF
-    endif
+    IERR=0
+    DATATYPE=MPI_INTEGER8
+    k=SPLIT_MPI_MSG
+    call get_rank_for_comm(comm,mynum)
+    do i=1,n,k
+       nMPI=k
+       !if((n-i)<k)nMPI=mod(n,k)
+       if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
+       IF(mynum.EQ.master) THEN
+          CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER(i:i+nMPI-1),nMPI,DATATYPE,MPI_SUM,&
+               & master,comm,IERR)
+       ELSE
+          CALL MPI_REDUCE(BUFFER(i:i+nMPI-1),NULL,nMPI,DATATYPE,MPI_SUM,&
+               &master,comm,IERR)
+       ENDIF
+       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)       
+    enddo
 #endif
     end subroutine lsmpi_reduction_integer8_wrapper8
-    subroutine lsmpi_reduction_integer8(buffer,n1,master,comm)
+
+    subroutine lsmpi_reduction_integer8(buffer,n,master,comm)
     implicit none
     integer(kind=ls_mpik),intent(in) :: comm   ! communicator
     integer(kind=ls_mpik),intent(in) :: master
-    integer(kind=4) :: n1
+    integer(kind=4) :: n
     integer(kind=8) :: buffer(:)
 #ifdef VAR_MPI
-    integer(kind=ls_mpik) :: mynum
-    integer(kind=ls_mpik) :: ierr
-    real(realk) :: null 
-      IERR=0
-    call get_rank_for_comm(comm,mynum)
-    IF(mynum.EQ.master) THEN
-      CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,n1,MPI_INTEGER8,MPI_SUM,&
-           &master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ELSE
-      CALL MPI_REDUCE(BUFFER,NULL,n1,MPI_INTEGER8,MPI_SUM,&
-           &master,comm,IERR)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-    ENDIF
+    integer(kind=8) :: n1
+    n1 = n
+    call lsmpi_reduction_integer8_wrapper8(buffer,n1,master,comm)
 #endif
   end subroutine lsmpi_reduction_integer8
 
@@ -3533,22 +3492,11 @@ contains
     integer(kind=4) :: n1,n2
     integer(kind=4) :: buffer(n1,n2)
 #ifdef VAR_MPI
-    integer(kind=8) :: n,i,k
-    integer(kind=4) :: n4
+    integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
     call ass_44I2to1(buffer,buf,[n1,n2])
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer4(buf(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
-    endif
+    call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_integer4M4
@@ -3559,22 +3507,11 @@ contains
     integer(kind=8) :: n1,n2
     integer(kind=4) :: buffer(n1,n2)
 #ifdef VAR_MPI
-    integer(kind=8) :: n,i,k
-    integer(kind=4) :: n4
+    integer(kind=8) :: n
     integer(kind=4), pointer :: buf(:)
     n=n1*n2
     call ass_48I2to1(buffer,buf,[n1,n2])
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer4(buf(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
-    endif
+    call lsmpi_reduction_integer4_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_integer4M8
@@ -3585,22 +3522,12 @@ contains
     integer(kind=4) :: n1,n2
     integer(kind=8) :: buffer(n1,n2)
 #ifdef VAR_MPI
-    integer(kind=8) :: n,i,k
+    integer(kind=8) :: n
     integer(kind=4) :: n4
     integer(kind=8), pointer :: buf(:)
     n=n1*n2
     call ass_84I2to1(buffer,buf,[n1,n2])
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer8(buf(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
-    endif
+    call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_integer8M4
@@ -3611,26 +3538,14 @@ contains
     integer(kind=8) :: n1,n2
     integer(kind=8) :: buffer(n1,n2)
 #ifdef VAR_MPI
-    integer(kind=8) :: n,i,k
-    integer(kind=4) :: n4
+    integer(kind=8) :: n
     integer(kind=8), pointer :: buf(:)
     call ass_88I2to1(buffer,buf,[n1,n2])
     n=n1*n2
-    if(ls_mpik==4)then
-      k=SPLIT_MPI_MSG
-      do i=1,n,k
-        n4=k
-        !if((n-i)<k)n4=mod(n,k)
-        if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-        call lsmpi_reduction_integer8(buf(i:i+n4-1),n4,master,comm)
-      enddo
-    else
-      call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
-    endif
+    call lsmpi_reduction_integer8_wrapper8(buf,n,master,comm)
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_integer8M8
-
 
   subroutine lsmpi_reduction_realk_single(buffer,master,comm)
     implicit none
