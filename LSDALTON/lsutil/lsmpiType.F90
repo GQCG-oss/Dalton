@@ -663,8 +663,8 @@ contains
       integer :: nbuf1,nbuf2,nbuf3
       real(realk) :: buffer(:,:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
-      real(realk),pointer :: buf(:)
 #ifdef VAR_MPI
+      real(realk),pointer :: buf(:)
       call ass_8D3to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3])
       call ls_mpibcast_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,master,comm)
       buf => null()
@@ -1155,91 +1155,65 @@ contains
       integer(kind=8) :: nbuf
       integer(kind=ls_mpik) :: comm
       integer(kind=ls_mpik) :: receiver
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-      integer(kind=4) :: n4
-      integer(kind=8) :: i,k
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: tag,dtype,ierr,nMPI
+      integer(kind=8) :: k,i
       tag   = 124_ls_mpik
       ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
       dtype = MPI_DOUBLE_PRECISION
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call lsmpi_send_realkV_4(buffer(i:i+n4-1),n4,comm,receiver)
-        enddo
-      else
-        call MPI_SEND(buffer,nbuf,dtype,receiver,tag,comm,ierr)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      k=SPLIT_MPI_MSG
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         call MPI_SEND(buffer(i:i+nMPI-1),nMPI,dtype,receiver,tag,comm,ierr)
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif 
     end subroutine lsmpi_send_realkV_8
-    subroutine lsmpi_send_realkV_4(buffer,nbuf,comm,receiver)
-      implicit none
-      real(realk) :: buffer(:)
-      integer(kind=4) :: nbuf
-      integer(kind=ls_mpik) :: comm
-      integer(kind=ls_mpik) :: receiver
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-#ifdef VAR_MPI
-      tag   = 124_ls_mpik
-      ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
-      dtype = MPI_DOUBLE_PRECISION
-      call MPI_SEND(buffer,nbuf,dtype,receiver,tag,comm,ierr)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-#endif 
-    end subroutine lsmpi_send_realkV_4
+
     subroutine lsmpi_recv_realkV_8(buffer,nbuf,comm,sender)
       implicit none
       real(realk) :: buffer(:)
       integer(kind=8) :: nbuf
       integer(kind=ls_mpik) :: comm
       integer(kind=ls_mpik) :: sender
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-      integer(kind=4) :: n4
-      integer(kind=8) :: i,k
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: tag,dtype,ierr,nMPI
+      integer(kind=8) :: k,i
       tag   = 124_ls_mpik
       ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
       dtype = MPI_DOUBLE_PRECISION
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call lsmpi_recv_realkV_4(buffer(i:i+n4-1),n4,comm,sender)
-        enddo
-      else
-        call MPI_RECV(buffer,nbuf,dtype,sender,tag,comm,status,ierr)
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      k=SPLIT_MPI_MSG
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         call MPI_RECV(buffer(i:i+nMPI-1),nMPI,dtype,sender,tag,comm,status,ierr)
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif 
     end subroutine lsmpi_recv_realkV_8
+
     subroutine lsmpi_recv_realkV_4(buffer,nbuf,comm,sender)
       implicit none
       real(realk) :: buffer(:)
       integer(kind=4) :: nbuf
       integer(kind=ls_mpik) :: comm
       integer(kind=ls_mpik) :: sender
-      integer(kind=ls_mpik) :: tag
-      integer(kind=ls_mpik) :: nel,dtype,ierr
-#ifdef VAR_MPI
-      tag   = 124_ls_mpik
-      ierr  = 0_ls_mpik
-      nel   = int(nbuf,kind=ls_mpik)
-      dtype = MPI_DOUBLE_PRECISION
-      call MPI_RECV(buffer,nbuf,dtype,sender,tag,comm,status,ierr)
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-#endif 
-    end subroutine lsmpi_recv_realkV_4
-    
+      integer(kind=8) :: n
+      n=nbuf
+      call lsmpi_recv_realkV_8(buffer,n,comm,sender)
+    end subroutine lsmpi_recv_realkV_4    
+
+    subroutine lsmpi_send_realkV_4(buffer,nbuf,comm,receiver)
+      implicit none
+      real(realk) :: buffer(:)
+      integer(kind=4) :: nbuf
+      integer(kind=ls_mpik) :: comm
+      integer(kind=ls_mpik) :: receiver
+      integer(kind=8) :: n
+      n=nbuf
+      call lsmpi_send_realkV_8(buffer,n,comm,receiver)
+    end subroutine lsmpi_send_realkV_4    
 
     subroutine ls_mpisendrecv_integer(buffer,comm,sender,receiver)
       implicit none
@@ -1247,15 +1221,14 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag
 
       IERR=0
       tag=0
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
       DATATYPE = MPI_INTEGER4
-      THESIZE = 1
+      THESIZE = 1      
 
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
@@ -1305,34 +1278,12 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer :: integerbuffer
-      integer(kind=ls_mpik) :: mynum,tag,dummystat
-      IERR=0
-      tag=2
-      dummystat=0
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-      DATATYPE = MPI_INTEGER
-      THESIZE = 1
-
-      !     Convert from short integer to regular integer
-      integerbuffer = buffer
-
-      !     Send/receive regular integer
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(integerbuffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(integerbuffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_short: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-
-      !     Convert back
-      buffer = integerbuffer
+      integer(kind=4) :: intbuffer
+      !Convert from short integer to 32 bit integer
+      intbuffer = buffer
+      call ls_mpisendrecv_integer(buffer,comm,sender,receiver)
+      !Convert back
+      buffer = intbuffer
 #endif
     end subroutine ls_mpisendrecv_short
 
@@ -1342,53 +1293,22 @@ contains
       integer(kind=8)       :: nbuf
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k,n
-      integer(kind=4) :: n4
-      integer(kind=long) :: n1
+      !
 #ifdef VAR_MPI
-      IERR=0
-      if(ls_mpik==4)then
-        n=nbuf
-        k=SPLIT_MPI_MSG
-        do i=1,n,k
-          n4=k
-          !if((n-i)<k)n4=mod(n,k)
-          if(((n-i)<k).and.(mod(n-i+1,k)/=0))n4=mod(n,k)
-          call ls_mpisendrecv_shortV(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=3
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_INTEGER
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_shortV',-1)
-        if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_ShortV',-1)
-       
-        IF (mod(nbuf,int_to_short).NE.0) THEN
-          write(*,*) 'Error in ls_mpisendrecv_shortV',nbuf,int_to_short,mod(nbuf,int_to_short)
-          call lsquit('lsmpi nubf modular error in ls_mpisendrecv_ShortV',-1)
-        ENDIF
-        n = nbuf/int_to_short
-       
-        !     Send/receive regular integer
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer(1:nbuf),n,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer(1:nbuf),n,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_shortV: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      integer(kind=4),pointer :: intbuffer(:)
+      integer(kind=8) :: I
+      call mem_alloc(intbuffer,nbuf)
+      DO I=1,nbuf
+         INTBUFFER(I) = BUFFER(I)
+      ENDDO
+      call ls_mpisendrecv_integerV_wrapper8(intbuffer,nbuf,comm,sender,receiver)
+      DO I=1,nbuf
+         BUFFER(I) = INTBUFFER(I)
+      ENDDO
+      call mem_dealloc(intbuffer)
 #endif
     end subroutine ls_mpisendrecv_shortV_wrapper8
+
     subroutine ls_mpisendrecv_shortV(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=short)   :: buffer(:)
@@ -1396,40 +1316,19 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype,n
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=3
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_INTEGER
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_shortV',-1)
-      if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_ShortV',-1)
-
-      IF (mod(nbuf,int_to_short).NE.0) THEN
-        write(*,*) 'Error in ls_mpisendrecv_shortV',nbuf,int_to_short,mod(nbuf,int_to_short)
-        call lsquit('lsmpi nubf modular error in ls_mpisendrecv_ShortV',-1)
-      ENDIF
-      n = nbuf/int_to_short
-
-      !     Send/receive regular integer
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer(1:nbuf),n,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer(1:nbuf),n,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_shortV: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      integer(kind=4),pointer :: intbuffer(:)
+      integer(kind=4) :: I
+      call mem_alloc(intbuffer,nbuf)
+      DO I=1,nbuf
+         INTBUFFER(I) = BUFFER(I)
+      ENDDO
+      call ls_mpisendrecv_integerV(intbuffer,nbuf,comm,sender,receiver)
+      DO I=1,nbuf
+         BUFFER(I) = INTBUFFER(I)
+      ENDDO
+      call mem_dealloc(intbuffer)
 #endif
     end subroutine ls_mpisendrecv_shortV
-
 
     subroutine ls_mpisendrecv_longV_wrapper8(buffer,nbuf,comm,sender,receiver)
       implicit none
@@ -1437,46 +1336,34 @@ contains
       integer(kind=8) :: buffer(:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
-      integer(kind=long)    :: n1
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          !if((nbuf-i)<k)n4=mod(nbuf,k)
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_longV(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=4
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_INTEGER8
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_longV',-1)
-        if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_longV',-1)
-       
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_longV: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      DATATYPE = MPI_INTEGER8
+      k=SPLIT_MPI_MSG
+      tag=4
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+      do i=1,nbuf,k
+         nMPI=k
+         !if((nbuf-i)<k)nMPI=mod(nbuf,k)
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_longV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_longV_wrapper8
+
     subroutine ls_mpisendrecv_longV(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf
@@ -1484,34 +1371,32 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=long)    :: n1
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
+      DATATYPE = MPI_INTEGER8
+      k=SPLIT_MPI_MSG
       tag=4
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_INTEGER8
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_longV',-1)
-      if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_longV',-1)
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_longV: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         !if((nbuf-i)<k)nMPI=mod(nbuf,k)
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_longV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_longV
-
 
     subroutine ls_mpisendrecv_integerV_wrapper8(buffer,nbuf,comm,sender,receiver)
       implicit none
@@ -1519,44 +1404,34 @@ contains
       integer(kind=4) :: buffer(:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
-      integer(kind=long)    :: n1
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          !if((nbuf-i)<k)n4=mod(nbuf,k)
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_integerV(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=5
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-        DATATYPE = MPI_INTEGER4
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_integerV',-1)
-        if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_integerV',-1)
-       
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_integerV: Rank not sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      DATATYPE = MPI_INTEGER4
+      k=SPLIT_MPI_MSG
+      tag=4
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+      do i=1,nbuf,k
+         nMPI=k
+         !if((nbuf-i)<k)nMPI=mod(nbuf,k)
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_longV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_integerV_wrapper8
+
     subroutine ls_mpisendrecv_integerV(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf
@@ -1564,29 +1439,30 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=long)    :: n1
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      tag=5
+      DATATYPE = MPI_INTEGER4
+      k=SPLIT_MPI_MSG
+      tag=4
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
-      DATATYPE = MPI_INTEGER4
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_integerV',-1)
-      if(THESIZE.NE.nbuf)call lsquit('lsmpi error in ls_mpisendrecv_integerV',-1)
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-       print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-       call lsquit('ls_mpisendrecv_integerV: Rank not sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         !if((nbuf-i)<k)nMPI=mod(nbuf,k)
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_longV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_integerV
 
@@ -1596,16 +1472,14 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
+      integer(kind=ls_mpik) :: ierr,datatype,thesize
       integer(kind=ls_mpik) :: mynum,tag
       IERR=0
       tag=6
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
-
       DATATYPE = MPI_DOUBLE_PRECISION
       THESIZE = 1
-
       if(mynum.EQ.sender) then ! send stuff to receiver
          call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
       else if(mynum.EQ.receiver) then  ! receive stuff from sender
@@ -1625,46 +1499,32 @@ contains
       real(realk) :: buffer(:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
-      integer(kind=long)    :: n1
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_realkV(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=7
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-        DATATYPE = MPI_DOUBLE_PRECISION
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkV_wrapper8',-1)
-        if(THESIZE.NE.nbuf)THEN
-           call lsquit('lsmpi error in ls_mpisendrecv_realkV_wrapper8',-1)
-        endif
-       
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_realkV: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      k=SPLIT_MPI_MSG
+      tag=7
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+      DATATYPE = MPI_DOUBLE_PRECISION
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_realkV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_realkV_wrapper8
+
     subroutine ls_mpisendrecv_realkV(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf
@@ -1672,32 +1532,28 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=long)    :: n1
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k     
       IERR=0
+      k=SPLIT_MPI_MSG
       tag=7
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
       DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkV',-1)
-      if(THESIZE.NE.nbuf)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_realkV',-1)
-      endif
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_realkV: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_realkV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_realkV
 
@@ -1708,32 +1564,10 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer ::  I,J,offset
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=8
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer(:,:),kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkM',-1)
-      if(THESIZE.NE.nbuf1*nbuf2) call lsquit('lsmpi error in ls_mpisendrecv_realkM',-1)
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_realkM: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      real(realk),pointer :: buf(:)
+      call ass_8D2to1(buffer,buf,[i8*nbuf1,i8*nbuf2])
+      call ls_mpisendrecv_realkV_wrapper8(buf,(i8*nbuf1)*nbuf2,comm,sender,receiver)
+      nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkM
 
@@ -1744,35 +1578,10 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer :: I,J,K,offset
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=9
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realT',-1)
-      if(THESIZE.NE.nbuf1*nbuf2*nbuf3)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_realkT',-1)
-      endif
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_realkT: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-
+      real(realk),pointer :: buf(:)
+      call ass_8D3to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3])
+      call ls_mpisendrecv_realkV_wrapper8(buf,((i8*nbuf1)*nbuf2)*nbuf3,comm,sender,receiver)
+      nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkT
 
@@ -1783,33 +1592,10 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer :: I,J,K,offset
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=10
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_DOUBLE_PRECISION
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_realkQ',-1)
-      if(THESIZE.NE.nbuf1*nbuf2*nbuf3*nbuf4)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_realkQ',-1)
-      endif
-
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_realkQ: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      real(realk),pointer :: buf(:)
+      call ass_8D4to1(buffer,buf,[i8*nbuf1,i8*nbuf2,i8*nbuf3,i8*nbuf4])
+      call ls_mpisendrecv_realkV_wrapper8(buf,(((i8*nbuf1)*nbuf2)*nbuf3)*nbuf4,comm,sender,receiver)
+      nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_realkQ
 
@@ -1902,77 +1688,61 @@ contains
       IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
 #endif
     end subroutine ls_mpisendrecv_logical4
+
     subroutine ls_mpisendrecv_logical8V_wrapper8(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=8) :: nbuf
       logical(kind=8) :: buffer(:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k,j
       logical(kind=4),pointer :: buffer4(:)
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
-      integer(kind=long)    :: n1
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_logical8V(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=12
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_LOGICAL
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8V_wrapper',-1)
-        if(THESIZE.NE.nbuf)THEN
-           call lsquit('lsmpi error in ls_mpisendrecv_logical8V_wrapper8',-1)
-        endif
-        THESIZE = nbuf
-       
-        !     Send/receive 
-        call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call mem_alloc(buffer4,nbuf)
-              do I = 1,thesize
-                 buffer4(I) = buffer(I)
-              enddo
-              call MPI_SEND(buffer4,thesize,DATATYPE,receiver,tag,comm,ierr)
-              call mem_dealloc(buffer4)
-           ELSE
-              !64 bit mpi logical
-              call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-           ENDIF
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call mem_alloc(buffer4,nbuf)
-              call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,status,ierr)
-              do I = 1,thesize
-                 buffer(I) = buffer4(I)
-              enddo
-              call mem_dealloc(buffer4)
-           ELSE
-              !64 bit mpi logical
-              call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-           ENDIF
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_logical8V_wrapper8: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      k=SPLIT_MPI_MSG
+      tag=12
+      DATATYPE = MPI_LOGICAL
+      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call mem_alloc(buffer4,nMPI)
+               do J = 1,nMPI
+                  buffer4(J) = buffer(i+J-1)
+               enddo
+               call MPI_SEND(buffer4,nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call mem_dealloc(buffer4)
+            ELSE
+               !64 bit mpi logical
+               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            ENDIF
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call mem_alloc(buffer4,nMPI)
+               call MPI_RECV(buffer4,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               do J = 1,nMPI
+                  buffer(i+J-1) = buffer4(J)
+               enddo
+               call mem_dealloc(buffer4)
+            ELSE
+               !64 bit mpi logical
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            ENDIF
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_logical8V_wrapper8: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_logical8V_wrapper8
 
@@ -1983,60 +1753,53 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k,j
       logical(kind=4),pointer :: buffer4(:)
-      integer :: I
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
-      integer(kind=long)    :: n1
       IERR=0
+      k=SPLIT_MPI_MSG
       tag=12
+      DATATYPE = MPI_LOGICAL
+      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8V',-1)
-      if(THESIZE.NE.nbuf)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_logical8V',-1)
-      endif
-      THESIZE = nbuf
-
-      !     Send/receive 
-      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-      if(mynum.EQ.sender) then ! send stuff to receiver
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call mem_alloc(buffer4,nbuf)
-              do I = 1,nbuf
-                 buffer4(I) = buffer(I)
-              enddo
-              call MPI_SEND(buffer4,thesize,DATATYPE,receiver,tag,comm,ierr)
-              call mem_dealloc(buffer4)
-           ELSE
-              !64 bit mpi logical
-              call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-           ENDIF
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call mem_alloc(buffer4,nbuf)
-              call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,status,ierr)
-              do I = 1,nbuf
-                 buffer(I) = buffer4(I)
-              enddo
-              call mem_dealloc(buffer4)
-           ELSE
-              !64 bit mpi logical
-              call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-           ENDIF
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_logical8V: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call mem_alloc(buffer4,nMPI)
+               do J = 1,nMPI
+                  buffer4(J) = buffer(i+J-1)
+               enddo
+               call MPI_SEND(buffer4,nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call mem_dealloc(buffer4)
+            ELSE
+               !64 bit mpi logical
+               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            ENDIF
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call mem_alloc(buffer4,nMPI)
+               call MPI_RECV(buffer4,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               do J = 1,nMPI
+                  buffer(i+J-1) = buffer4(J)
+               enddo
+               call mem_dealloc(buffer4)
+            ELSE
+               !64 bit mpi logical
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            ENDIF
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_logical8V_wrapper8: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_logical8V
 
@@ -2046,71 +1809,54 @@ contains
       logical(kind=4) :: buffer(:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k,j
       logical(kind=8),pointer :: buffer8(:)
-      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb 
-      integer(kind=long)    :: n1
+      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_logical4V(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=12
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_LOGICAL
-        THESIZE = SIZE(buffer,kind=ls_mpik)
-        n1 = SIZE(buffer,kind=long)
-        if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logicalV',-1)
-        if(THESIZE.NE.nbuf)THEN
-           call lsquit('lsmpi error in ls_mpisendrecv_logicalV',-1)
-        endif
-        THESIZE = nbuf
-       
-        call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-           ELSE
-              !64 bit mpi logical
-              call mem_alloc(buffer8,nbuf)
-              do I = 1,nbuf
-                 buffer8(I) = buffer(I)
-              enddo
-              call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
-              call mem_dealloc(buffer8)
-           ENDIF
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           IF(mpi_logical_extent.EQ.4)THEN
-              !32 bit mpi logical
-              call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-           ELSE
-              !64 bit mpi logical
-              call mem_alloc(buffer8,nbuf)
-              call MPI_RECV(buffer8,thesize,DATATYPE,sender,tag,comm,status,ierr)
-              do I = 1,nbuf
-                 buffer(I) = buffer8(I)
-              enddo
-              call mem_dealloc(buffer8)
-           ENDIF
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_logicalV: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      k=SPLIT_MPI_MSG
+      tag=12
+      DATATYPE = MPI_LOGICAL
+      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            ELSE
+               !64 bit mpi logical
+               call mem_alloc(buffer8,nMPI)
+               do J = 1,nMPI
+                  buffer8(J) = buffer(i+J-1)
+               enddo
+               call MPI_SEND(buffer8,nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call mem_dealloc(buffer8)
+            ENDIF
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            ELSE
+               !64 bit mpi logical
+               call mem_alloc(buffer8,nMPI)
+               call MPI_RECV(buffer8,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               do J = 1,nMPI
+                  buffer(i+J-1) = buffer8(J)
+               enddo
+               call mem_dealloc(buffer8)
+            ENDIF
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_logical8V_wrapper8: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_logical4V_wrapper8
 
@@ -2121,202 +1867,119 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=ls_mpik) :: ierr,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k,j
       logical(kind=8),pointer :: buffer8(:)
-      integer(kind=8) :: nbuf8
-      integer :: I
       integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
-      integer(kind=long)    :: n1
       IERR=0
+      k=SPLIT_MPI_MSG
       tag=12
+      DATATYPE = MPI_LOGICAL
+      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logicalV',-1)
-      if(THESIZE.NE.nbuf)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_logicalV',-1)
-      endif
-      THESIZE = nbuf
-
-      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-         ELSE
-            !64 bit mpi logical
-            nbuf8 = nbuf
-            call mem_alloc(buffer8,nbuf8)
-            do I = 1,nbuf8
-               buffer8(I) = buffer(I)
-            enddo
-            call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
-            call mem_dealloc(buffer8)
-         ENDIF
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-         ELSE
-            !64 bit mpi logical
-            nbuf8 = nbuf
-            call mem_alloc(buffer8,nbuf8)
-            call MPI_RECV(buffer8,thesize,DATATYPE,sender,tag,comm,status,ierr)
-            do I = 1,nbuf8
-               buffer(I) = buffer8(I)
-            enddo
-            call mem_dealloc(buffer8)
-         ENDIF
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_logicalV: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            ELSE
+               !64 bit mpi logical
+               call mem_alloc(buffer8,nMPI)
+               do J = 1,nMPI
+                  buffer8(J) = buffer(i+J-1)
+               enddo
+               call MPI_SEND(buffer8,nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call mem_dealloc(buffer8)
+            ENDIF
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            IF(mpi_logical_extent.EQ.4)THEN
+               !32 bit mpi logical
+               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            ELSE
+               !64 bit mpi logical
+               call mem_alloc(buffer8,nMPI)
+               call MPI_RECV(buffer8,nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               do J = 1,nMPI
+                  buffer(i+J-1) = buffer8(J)
+               enddo
+               call mem_dealloc(buffer8)
+            ENDIF
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_logical8V_wrapper8: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_logical4V
 
     subroutine ls_mpisendrecv_logical4M(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
-      integer :: nbuf1,nbuf2
+      integer(kind=4) :: nbuf1,nbuf2
       logical(kind=4) :: buffer(:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      logical(kind=8),pointer :: buffer8(:,:)
-      integer :: I,J
-      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=13
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical4M',-1)
-      if(THESIZE.NE.nbuf1*nbuf2)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_logical4M',-1)
-      endif
-      THESIZE = nbuf1*nbuf2
-
-      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-         ELSE
-            !64 bit mpi logical
-            call mem_alloc(buffer8,nbuf1,nbuf2)
-            do J = 1,nbuf2
-               do I = 1,nbuf1
-                  buffer8(I,J) = buffer(I,J)
-               enddo
-            enddo
-            call MPI_SEND(buffer8,thesize,DATATYPE,receiver,tag,comm,ierr)
-            call mem_dealloc(buffer8)
-         ENDIF
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-         ELSE
-            !64 bit mpi logical
-            call mem_alloc(buffer8,nbuf1,nbuf2)
-            call MPI_RECV(buffer8,thesize,DATATYPE,sender,tag,comm,status,ierr)
-            do J = 1,nbuf2
-               do I = 1,nbuf1
-                  buffer(I,J) = buffer8(I,J)
-               enddo
-            enddo
-            call mem_dealloc(buffer8)
-         ENDIF
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_logical4M: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      integer(kind=8) :: n1,n2
+      logical(kind=4),pointer :: buf(:)      
+      n1 = nbuf1; n2 = nbuf2
+      call ass_48L2to1(buffer,buf,[n1,n2])
+      call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical4M
 
+    subroutine ls_mpisendrecv_logical4M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
+      implicit none
+      integer(kind=8) :: nbuf1,nbuf2
+      logical(kind=4) :: buffer(:,:)
+      integer(kind=ls_mpik) :: comm   ! communicator
+      integer(kind=ls_mpik) :: sender,receiver
+#ifdef VAR_MPI
+      integer(kind=8) :: n1,n2
+      logical(kind=4),pointer :: buf(:)      
+      n1 = nbuf1; n2 = nbuf2
+      call ass_48L2to1(buffer,buf,[n1,n2])
+      call ls_mpisendrecv_logical4V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      nullify(buf)
+#endif
+    end subroutine ls_mpisendrecv_logical4M_wrapper8
+
     subroutine ls_mpisendrecv_logical8M(buffer,nbuf1,nbuf2,comm,sender,receiver)
       implicit none
-      integer :: nbuf1,nbuf2
+      integer(kind=4) :: nbuf1,nbuf2
       logical(kind=8) :: buffer(:,:)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      logical(kind=4),pointer :: buffer4(:,:)
-      integer :: I,J 
-      integer(kind=MPI_ADDRESS_KIND) :: mpi_logical_extent,lb
-      integer(kind=long)    :: n1
-      IERR=0
-      tag=13
-      ! Get rank within specific communicator
-      call get_rank_for_comm(comm,mynum)
-
-      DATATYPE = MPI_LOGICAL
-      THESIZE = SIZE(buffer,kind=ls_mpik)
-      n1 = SIZE(buffer,kind=long)
-      if(THESIZE.NE.n1)call lsquit('lsmpi error1 in ls_mpisendrecv_logical8M',-1)
-      if(THESIZE.NE.nbuf1*nbuf2)THEN
-         call lsquit('lsmpi error in ls_mpisendrecv_logical8M',-1)
-      endif
-      THESIZE = nbuf1*nbuf2
-
-      call MPI_TYPE_GET_EXTENT(MPI_LOGICAL,lb,mpi_logical_extent,ierr)
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call mem_alloc(buffer4,nbuf1,nbuf2)
-            do J = 1,nbuf2
-               do I = 1,nbuf1
-                  buffer4(I,J) = buffer(I,J)
-               enddo
-            enddo
-            call MPI_SEND(buffer4,thesize,DATATYPE,receiver,tag,comm,ierr)
-            call mem_dealloc(buffer4)
-         ELSE
-            !64 bit mpi logical
-            call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-         ENDIF
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         IF(mpi_logical_extent.EQ.4)THEN
-            !32 bit mpi logical
-            call mem_alloc(buffer4,nbuf1,nbuf2)
-            call MPI_RECV(buffer4,thesize,DATATYPE,sender,tag,comm,status,ierr)
-            do J = 1,nbuf2
-               do I = 1,nbuf1
-                  buffer(I,J) = buffer4(I,J)
-               enddo
-            enddo
-            call mem_dealloc(buffer4)
-         ELSE
-            !64 bit mpi logical
-            call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-         ENDIF
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_logical8M: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      integer(kind=8) :: n1,n2
+      logical(kind=8),pointer :: buf(:)      
+      n1 = nbuf1; n2 = nbuf2
+      call ass_88L2to1(buffer,buf,[n1,n2])
+      call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      nullify(buf)
 #endif
     end subroutine ls_mpisendrecv_logical8M
+
+    subroutine ls_mpisendrecv_logical8M_wrapper8(buffer,nbuf1,nbuf2,comm,sender,receiver)
+      implicit none
+      integer(kind=8) :: nbuf1,nbuf2
+      logical(kind=8) :: buffer(:,:)
+      integer(kind=ls_mpik) :: comm   ! communicator
+      integer(kind=ls_mpik) :: sender,receiver
+#ifdef VAR_MPI
+      integer(kind=8) :: n1,n2
+      logical(kind=8),pointer :: buf(:)      
+      n1 = nbuf1; n2 = nbuf2
+      call ass_88L2to1(buffer,buf,[n1,n2])
+      call ls_mpisendrecv_logical8V_wrapper8(buf,n1*n2,comm,sender,receiver)
+      nullify(buf)
+#endif
+    end subroutine ls_mpisendrecv_logical8M_wrapper8
 
     subroutine ls_mpisendrecv_charac(buffer,comm,sender,receiver)
       implicit none
@@ -2324,8 +1987,7 @@ contains
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag
       IERR=0
       tag=14
       ! Get rank within specific communicator
@@ -2354,145 +2016,128 @@ contains
       character*(*) :: buffer
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      character :: tmpbuffer
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_characV(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=15
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_CHARACTER
-        THESIZE = nbuf
-       
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_characV: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif
+      DATATYPE = MPI_CHARACTER
+      k=SPLIT_MPI_MSG
+      tag=15
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_characV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_characV_wrapper8
+
     subroutine ls_mpisendrecv_characV(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf
       character*(*) :: buffer
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      character :: tmpbuffer
 #ifdef VAR_MPI
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
+      DATATYPE = MPI_CHARACTER
+      k=SPLIT_MPI_MSG
       tag=15
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
-      DATATYPE = MPI_CHARACTER
-      THESIZE = nbuf
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_characV: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_characV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_characV
-
     subroutine ls_mpisendrecv_characV2_wrapper8(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=8) :: nbuf
       character :: buffer(nbuf)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      character :: tmpbuffer
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
-      integer(kind=4) :: n4
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      if(ls_mpik==4)then
-        k=SPLIT_MPI_MSG
-        do i=1,nbuf,k
-          n4=k
-          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))n4=mod(nbuf,k)
-          call ls_mpisendrecv_characV2(buffer(i:i+n4-1),n4,comm,sender,receiver)
-        enddo
-      else
-        tag=16
-        ! Get rank within specific communicator
-        call get_rank_for_comm(comm,mynum)
-       
-        DATATYPE = MPI_CHARACTER
-        THESIZE = nbuf
-       
-        !     Send/receive 
-        if(mynum.EQ.sender) then ! send stuff to receiver
-           call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-        else if(mynum.EQ.receiver) then  ! receive stuff from sender
-           call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-        else ! Error: Node should be either sender or receiver
-           print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-           call lsquit('ls_mpisendrecv_characV2: &
-                & Rank is neither sender nor receiver',-1)
-        end if
-        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
-      endif 
+      DATATYPE = MPI_CHARACTER
+      k=SPLIT_MPI_MSG
+      tag=15
+      ! Get rank within specific communicator
+      call get_rank_for_comm(comm,mynum)
+
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_characV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_characV2_wrapper8
+
     subroutine ls_mpisendrecv_characV2(buffer,nbuf,comm,sender,receiver)
       implicit none
       integer(kind=4) :: nbuf
       character :: buffer(nbuf)
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      character :: tmpbuffer
-      integer(kind=ls_mpik) :: ierr,thesize,datatype
-      integer(kind=ls_mpik) :: mynum,tag
 #ifdef VAR_MPI
+      integer(kind=ls_mpik) :: ierr,thesize,datatype,mynum,tag,nMPI
+      integer(kind=8) :: i,k
       IERR=0
-      tag=16
+      DATATYPE = MPI_CHARACTER
+      k=SPLIT_MPI_MSG
+      tag=15
       ! Get rank within specific communicator
       call get_rank_for_comm(comm,mynum)
 
-      DATATYPE = MPI_CHARACTER
-      THESIZE = nbuf
-
-      !     Send/receive 
-      if(mynum.EQ.sender) then ! send stuff to receiver
-         call MPI_SEND(buffer,thesize,DATATYPE,receiver,tag,comm,ierr)
-      else if(mynum.EQ.receiver) then  ! receive stuff from sender
-         call MPI_RECV(buffer,thesize,DATATYPE,sender,tag,comm,status,ierr)
-      else ! Error: Node should be either sender or receiver
-         print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
-         call lsquit('ls_mpisendrecv_characV2: &
-              & Rank is neither sender nor receiver',-1)
-      end if
-      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      do i=1,nbuf,k
+         nMPI=k
+         if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
+         if(mynum.EQ.sender) then ! send stuff to receiver
+            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+         else if(mynum.EQ.receiver) then  ! receive stuff from sender
+            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+         else ! Error: Node should be either sender or receiver
+            print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
+            call lsquit('ls_mpisendrecv_characV: &
+                 & Rank is neither sender nor receiver',-1)
+         end if
+         IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+      enddo
 #endif
     end subroutine ls_mpisendrecv_characV2
 
