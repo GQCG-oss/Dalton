@@ -1281,7 +1281,7 @@ contains
       integer(kind=4) :: intbuffer
       !Convert from short integer to 32 bit integer
       intbuffer = buffer
-      call ls_mpisendrecv_integer(buffer,comm,sender,receiver)
+      call ls_mpisendrecv_integer(intbuffer,comm,sender,receiver)
       !Convert back
       buffer = intbuffer
 #endif
