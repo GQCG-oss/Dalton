@@ -3906,35 +3906,36 @@ module lspdm_tensor_operations_module
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
   subroutine arr_unlock_wins(arr,check)
-    implicit none
-    type(array) :: arr
-    logical, intent(in),optional:: check
-    integer(kind=ls_mpik) :: node
-    integer :: i
-    logical :: ch
+     implicit none
+     type(array) :: arr
+     logical, intent(in),optional:: check
+     integer(kind=ls_mpik) :: node
+     integer :: i
+     logical :: ch
 
-    ch = .false.
-    if(present(check))ch=check
+     ch = .false.
+     if(present(check))ch=check
 
-    if(ch)then
+     if(arr%itype/=DENSE)then
+        if(ch)then
+           do i=1,arr%ntiles
+              if(arr%lock_set(i))then
+                 node=get_residence_of_tile(i,arr)
+                 call lsmpi_win_unlock(node,arr%wi(i))
+                 arr%lock_set(i)=.false.
+              endif
+           enddo
 
-      do i=1,arr%ntiles
-        if(arr%lock_set(i))then
-          node=get_residence_of_tile(i,arr)
-          call lsmpi_win_unlock(node,arr%wi(i))
-          arr%lock_set(i)=.false.
+        else
+
+           do i=1,arr%ntiles
+              node=get_residence_of_tile(i,arr)
+              call lsmpi_win_unlock(node,arr%wi(i))
+              arr%lock_set(i)=.false.
+           enddo
+
         endif
-      enddo
-
-    else
-
-      do i=1,arr%ntiles
-        node=get_residence_of_tile(i,arr)
-        call lsmpi_win_unlock(node,arr%wi(i))
-        arr%lock_set(i)=.false.
-      enddo
-
-    endif
+     endif
 
   end subroutine arr_unlock_wins
 #endif
