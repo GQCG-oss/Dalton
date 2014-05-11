@@ -1944,17 +1944,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
-
      ! Reallocate 1 temporary array
      maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
      maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
      call mem_alloc(w1,maxsize64,simple=.true.)
 
 
-
      call ccsd_debug_print(ccmodel,1,master,local,scheme,print_debug,o2v2,w1,&
         &omega2,govov,gvvooa,gvoova)
-
 
 
 
@@ -1963,7 +1960,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
      w1%d=0.0E0_realk
 #endif
-
 
 
      !reorder integral for use within the solver and the c and d terms
