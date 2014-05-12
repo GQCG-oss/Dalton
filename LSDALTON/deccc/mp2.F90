@@ -4380,7 +4380,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    real(realk) :: nrm
    integer(kind=8) :: w3size
    integer(kind=ls_mpik) :: mode
-   logical :: lock_safe,lock_outside
+   logical :: lock_safe,lock_outside,traf1,traf2,trafi
 
 
    me   = 0
@@ -4458,8 +4458,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       !Setting transformation variables for each rank
       !**********************************************
-      call mo_work_dist(v2o,fai1,tl1)
-      call mo_work_dist(o2v,fai2,tl2)
+      call mo_work_dist(v2o,fai1,tl1,traf1)
+      call mo_work_dist(o2v,fai2,tl2,traf2)
 
 
       w3size = max(tl1*no,tl2*nv)
@@ -4467,7 +4467,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       call mem_alloc(w3,w3size)
 
       !DO ALL THINGS DEPENDING ON 1
-      if(lock_outside)then
+      if(lock_outside.and.traf1)then
          call time_start_phase(PHASE_COMM, at = tw)
          call arr_lock_wins(t2,'s',mode)
          call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
@@ -4483,17 +4483,19 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
          call time_start_phase(PHASE_COMM, at = tw)
          call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
          do nod=1,nnod-1
-            call mo_work_dist(nv*nv*no,fri,tri,nod)
-            if(me==0)then
-               do i=1,no
-                  call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
-               enddo
-            endif
-            if(me==0.or.me==nod)then
-               call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+            call mo_work_dist(nv*nv*no,fri,tri,trafi,nod)
+            if(trafi)then
+               if(me==0)then
+                  do i=1,no
+                     call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
+                  enddo
+               endif
+               if(me==0.or.me==nod)then
+                  call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+               endif
             endif
          enddo
-         if(me==0)then
+         if(me==0.and.traf1)then
             do i=1,no
                call dcopy(tl1,w_o2v2(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
             enddo
@@ -4501,31 +4503,32 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
          w_o2v2=0.0E0_realk
          call time_start_phase(PHASE_WORK, at = tc)
       else
-         call time_start_phase(PHASE_COMM, at = tw)
-         call arr_unlock_wins(t2)
-         call time_start_phase(PHASE_WORK, at = tc)
+         if(traf1)then
+            call time_start_phase(PHASE_COMM, at = tw)
+            call arr_unlock_wins(t2)
+            call time_start_phase(PHASE_WORK, at = tc)
+         endif
       endif
 
-      print *,me,"contraction done"
-      call lsmpi_barrier(infpar%lg_comm)
-
-      if(.not.lock_outside)then
-         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
-         call time_start_phase(PHASE_COMM, at = tw)
-         call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-         call time_start_phase(PHASE_WORK, at = tc)
-      else
-         !call arr_lock_wins(omega2,'s',mode)
-         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2,tl1)
-         call time_start_phase(PHASE_COMM, at = tw)
-         call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.)
-         call time_start_phase(PHASE_WORK, at = tc)
+      if(traf1)then
+         if(.not.lock_outside)then
+            call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
+            call time_start_phase(PHASE_COMM, at = tw)
+            call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
+            call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+            call time_start_phase(PHASE_WORK, at = tc)
+         else
+            !call arr_lock_wins(omega2,'s',mode)
+            call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2,tl1)
+            call time_start_phase(PHASE_COMM, at = tw)
+            call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.)
+            call time_start_phase(PHASE_WORK, at = tc)
+         endif
       endif
 
 
       !DO ALL THINGS DEPENDING ON 2
-      if(lock_outside)then
+      if(lock_outside.and.traf2)then
          call time_start_phase(PHASE_COMM, at = tw)
          call arr_lock_wins(t2,'s',mode)
          call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
@@ -4539,49 +4542,55 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
          call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
          call time_start_phase(PHASE_WORK, at = tc)
          do nod=1,nnod-1
-            call mo_work_dist(nv*no*no,fri,tri,nod)
-            if(me==0)then
-               do i=1,tri
-                  call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
-               enddo
-            endif
-            if(me==0.or.me==nod)then
-               call time_start_phase(PHASE_COMM, at = tw)
-               call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-               call time_start_phase(PHASE_WORK, at = tc)
+            call mo_work_dist(nv*no*no,fri,tri,trafi,nod)
+            if(trafi)then
+               if(me==0)then
+                  do i=1,tri
+                     call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
+                  enddo
+               endif
+               if(me==0.or.me==nod)then
+                  call time_start_phase(PHASE_COMM, at = tw)
+                  call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+                  call time_start_phase(PHASE_WORK, at = tc)
+               endif
             endif
          enddo
-         if(me==0)then
+         if(me==0.and.traf2)then
             do i=1,tl2
                call dcopy(nv,w_o2v2(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
             enddo
          endif
          w_o2v2=0.0E0_realk
       else
-         call time_start_phase(PHASE_COMM, at = tw)
-         call arr_unlock_wins(t2)
-         call time_start_phase(PHASE_WORK, at = tc)
+         if(traf2)then
+            call time_start_phase(PHASE_COMM, at = tw)
+            call arr_unlock_wins(t2)
+            call time_start_phase(PHASE_WORK, at = tc)
+         endif
       endif
 
 
-      if(.not.lock_outside)then
-         call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
-         call time_start_phase(PHASE_COMM, at = tw)
-         call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-         call time_start_phase(PHASE_WORK, at = tc)
-      else
-         call time_start_phase(PHASE_COMM, at = tw)
-         call arr_unlock_wins(omega2,.true.)
-         call arr_lock_wins(omega2,'s',mode)
-         call time_start_phase(PHASE_WORK, at = tc)
-         call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2,nv)
-         call time_start_phase(PHASE_COMM, at = tw)
-         call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,lock_outside)
-         call arr_unlock_wins(omega2)
-         call time_start_phase(PHASE_IDLE, at = tc)
-         call lsmpi_barrier(infpar%lg_comm)
-         call time_start_phase(PHASE_WORK, at = tc)
+      if(traf2)then
+         if(.not.lock_outside)then
+            call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+            call time_start_phase(PHASE_COMM, at = tw)
+            call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
+            call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+            call time_start_phase(PHASE_WORK, at = tc)
+         else
+            call time_start_phase(PHASE_COMM, at = tw)
+            call arr_unlock_wins(omega2,.true.)
+            call arr_lock_wins(omega2,'s',mode)
+            call time_start_phase(PHASE_WORK, at = tc)
+            call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2,nv)
+            call time_start_phase(PHASE_COMM, at = tw)
+            call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,lock_outside)
+            call arr_unlock_wins(omega2)
+            call time_start_phase(PHASE_IDLE, at = tc)
+            call lsmpi_barrier(infpar%lg_comm)
+            call time_start_phase(PHASE_WORK, at = tc)
+         endif
       endif
 
 
