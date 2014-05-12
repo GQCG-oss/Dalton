@@ -201,12 +201,12 @@ Reads in the print level that is to be used the rest of the subsequent
 calculations. Default is a print level of 0.
 
 \item[\Key{PROPERTIES}] Invoke the \aba\ module for the evaluation of static
-and dynamic properties, using a previously converged and saved wave function. See Chapter~\ref{ch:abacus}.
+and dynamic properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:abacus}.
 
 \item[\Key{RESPONSE}]
 
 Invoke the \resp\ module for the evaluation of static and dynamic
-properties, using a previously converged and saved wave function. See Chapter~\ref{ch:response}.
+properties, using a previously converged and saved wave function and saved integral files. See Chapter~\ref{ch:response}.
 
 \item[\Key{RUN ALL}]
 
@@ -267,8 +267,10 @@ detailed description of possible options.
 \index{SCF}\index{HF}\index{Hartree--Fock}\index{MP2}\index{MCSCF}\index{CC}
 \index{NEVPT2}\index{GASCI}\index{DFT}
 Invoke the {\sir} module for the evaluation of SCF, MP2, Coupled
-Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations.
-Necessary one-electron integrals are already evaluated and saved on files.
+Cluster, MCSCF, NEVPT2, GASCI wave functions as well as DFT calculations, according to input.
+Necessary one-electron integrals \em{must} already be evaluated and available (AOPROPER and AOONEINT files).
+The two-electron integrals will be generated if needed and not available (AOTWOINT file).
+Invoke the modules {\her} and {\sir} for a single point energy calculation using old saved integral files (AOONEINT, AOPROPER, and - if not .DIRECT or .CHOLESKY - AOTWOINT).
 See Chapter~\ref{chap:sirius-inpref}.
 \end{description}
 

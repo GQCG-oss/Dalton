@@ -132,13 +132,16 @@ CHJMAERKE: define IPR_DIIS separately?
 C
       MXERRV = MAXEVC
       IF (MXERRV .LE. 0) THEN
-         MXERRV = MIN(NWOPT,5)
+         MXERRV = MIN(NWOPT,8)
 C        ... fixes linear dependency problem for very small debug runs
 C            MXERRV=10 gave lin.dep. for 2 el. in 2 orbitals,
 C            MXERRV=2 gave quadratic convergence ! (940701-hjaaj)
 C        (130919-hjaaj: decreased default from 10 to 5, because
 C         with 10 the span of BMAT may be >1.D15, giving problems
 C         in the DIIS solver - an example has been seen !!!)
+C        (140307-jmho: increased default from 5 to 8, because
+C         with 5 it often resulted in 1-2 extra SCF iterations. At 8
+C         we should still avoid the problem mentioned above.)
          MXERRV = MAX(2,MXERRV)
       END IF
       IPR_DIIS = IPRRHF
@@ -831,13 +834,14 @@ C
          IF (PEQM) THEN
            CALL MEMGET('REAL', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET('REAL', KEPE, 1, WRK, KFREE, LFREE)
+#ifdef BUILD_PELIB
            IF (NASHT == 0 .OR. HSFOCK) THEN
-             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE),
-     &                        WRK(KFREE), LFREE-KFREE+1)
+             CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
-     &                        WRK(KEPE), WRK(KFREE), LFREE-KFREE+1)
+     &                        WRK(KEPE))
            END IF
+#endif
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
      &                          + WRK(KFPE:KFPE+NNBASX-1)
@@ -1464,13 +1468,13 @@ C
 C
       END IF
       IF (PEQM) THEN
+#ifdef BUILD_PELIB
         IF (NASHT == 0 .OR. HSFOCK) THEN
-            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
-            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1,
-     &                         WRK(KFREE), LFREE-KFREE+1)
+            CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
+#endif
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

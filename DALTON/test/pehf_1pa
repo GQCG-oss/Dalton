@@ -169,7 +169,7 @@ fi
 # Test of PE-HF one-photon absorption properties
 #
  CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*2\.0.......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.922715.. * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
+ CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.92271... * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
  CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.37......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
  CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*1\.2.......E\-05 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
  CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.7.......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`

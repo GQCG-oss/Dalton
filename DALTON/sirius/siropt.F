@@ -552,16 +552,13 @@ C----------------
 C----------------
 C
       IF (ITABS .GT. 0) THEN
-         WRITE (LUW4,1005) EMCSCF,ITABS
-         IF (LUPRI.NE.LUW4) WRITE (LUPRI,1005) EMCSCF,ITABS
+         WRITE (LUW4,1005)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
+         IF (LUPRI.NE.LUW4)
+     &   WRITE (LUPRI,1005) WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
       ELSE
-         IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
-            WRITE (LUW4,1011) EMCSCF,ITMAC
-            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1011) EMCSCF,ITMAC
-         ELSE
-            WRITE (LUW4,1010) EMCSCF,ITMAC
-            IF (LUPRI.NE.LUW4) WRITE (LUPRI,1010) EMCSCF,ITMAC
-         END IF
+         WRITE (LUW4,1010)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
+         IF (LUPRI.NE.LUW4)
+     &   WRITE (LUPRI,1010) WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
       END IF
       IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
          EMYTMP = EMY - ESRDFTY
@@ -587,11 +584,9 @@ chj   END IF
          IF (QM3) WRITE (LUPRI,1017) EQM3
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
- 1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
+ 1005 FORMAT(/' Total ',A,' energy',T27,':',F30.15,T54,
      *        '(after absorp',I4,')' )
- 1010 FORMAT(/' Total MCSCF energy       :',F30.15,T60,
-     *        '(MACRO ',I4,')' )
- 1011 FORMAT(/' Total MC-srDFT energy    :',F30.15,T60,
+ 1010 FORMAT(/' Total ',A,' energy',T27,':',F30.15,T60,
      *        '(MACRO ',I4,')' )
  1015 FORMAT(/' - Nuclear repulsion      :',F30.15,
      *       /' - Inactive energy        :',F30.15,
@@ -1213,6 +1208,7 @@ C
 #include "dummy.h"
 C
 C  Used from common blocks:
+C     pgroup : REP
 C     INFORB : NISH(*), NISHT, ...
 Chj-sep99: do not use NRHF(*) and NRHFT, because they are not
 C          correct in DIIS if AUTOCC and occupations have changed.
@@ -1221,6 +1217,7 @@ C     INFIND : IROW(*),ISW(*)
 C
 #include "maxash.h"
 #include "maxorb.h"
+#include "pgroup.h"
 #include "molde.h"
 #include "infinp.h"
 #include "inforb.h"
@@ -1246,8 +1243,8 @@ C hjaaj TODO:   EKT orbital energies may be defined later.
       IF (IPRINT .LT. 10) WRITE (LUPRI,'(/A)') ' Only the five'//
      &   ' lowest virtual orbital energies printed in each symmetry.'
       IF (IPRINT .GE. 2) WRITE (LUPRI,'(/A,I5/A,8I5)')
-     *   ' Number of electrons :',2*NISHT,
-     *   ' Orbital occupations :',(NISH(I),I=1,NSYM)
+     &   ' Number of electrons :',2*NISHT,
+     &   ' Orbital occupations :',(NISH(I),I=1,NSYM)
 C
       KORBEN = 1
       LNEED  = KORBEN + NORBT 
@@ -1337,10 +1334,11 @@ C                     because the Fock matrix is not zero for these
          IF (NFRHFI .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      &' Note: the first',NFRHFI,' orbitals in next symmetry are frozen'
          IF (SUPSYM) THEN
-            WRITE (LUPRI,1751)
-     &         ISYM,(SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1751) ISYM,REP(ISYM-1),
+     &         (SCRA(IORBI+I),ISSMO(IORBI+I),I=1,NLAST)
          ELSE
-            WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
+            WRITE (LUPRI,1750) ISYM,REP(ISYM-1),
+     &         (SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
 
@@ -1395,8 +1393,8 @@ C1732 FORMAT( /' Hartree-Fock total      energy:',F30.15)
  1840 FORMAT( /' Sym       Kohn-Sham orbital energies')
  1841 FORMAT( /' Sym       Kohn-Sham orbital energies',
      &         ' (supersymmetry in parenthesis)')
- 1750 FORMAT(/I3,1X,5F15.8/,(4X,5F15.8) )
- 1751 FORMAT(/I3,1X,4(F15.8,' (',I2,')')/,(4X,4(F15.8,' (',I2,')')) ) 
+ 1750 FORMAT(/I1,1X,A3,5F15.8/,(5X,5F15.8) )
+ 1751 FORMAT(/I1,1X,A3,4(F15.8,' (',I2,')')/,(5X,4(F15.8,' (',I2,')')) )
 C
 C
 C *** end of subroutine RHFENR

@@ -314,7 +314,7 @@ C
                IOPRHF = 0
             ELSE
                WRITE (LUPRI,'(/A)')
-     &            ' Lowering of symmetry for MCSCF not'//
+     &            ' Lowering of symmetry for MCSCF is not'//
      &            ' implemented in SIRIUS yet, sorry!'
                CALL QUIT('Lowering of symmetry for MCSCF not'//
      &            ' implemented in SIRIUS yet, sorry!')
@@ -1699,8 +1699,10 @@ C
 !     END IF
       IF(NOCCT .LT.0 .OR. NOCCT .GT.MAXOCC) THEN
          INPERR = INPERR + 1
-         WRITE(LUPRI,'(/A,I5/A,I5)') 'ERROR: Number of occ. orbitals :',
-     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC
+         WRITE(LUPRI,'(/A,I5/A,I5/A)') 
+     *      'ERROR: Number of occ. orbitals :',
+     *      NOCCT,' is .lt. 0 or .gt. MAXOCC :',MAXOCC,
+     *      'Increase MAXOCC in DALTON/include/maxorb.h and recompile'
       END IF
       IF(NSSHT .LT.0 .OR.NSSHT .GT.MXCORB) CALL ERRINP(11,INPERR)
 C
@@ -5099,6 +5101,7 @@ C   DFTCOM : DFTRUN, DOSRBCK, ...
 C   DFTACB : DFTIPT, DFTBR1, DFTBR2
 C   siripc : INPPRC
 C   gnrinf : NEWSYM,EMBEDDING,QM3,QMMM,?
+C   pgroup : GROUP, REP
 C   pcmlog : PCM
 C
 #include "priunit.h"
@@ -5107,6 +5110,7 @@ C
 #include "maxorb.h"
 C
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5495,16 +5499,19 @@ C     for SIRIUS (not LUCITA) :
       CALL MOLCHR(ICHARG)
 C     ... get total charge
       IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
-     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
+     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,
+     &   NSYM,GROUP,LSYM,REP(LSYM-1)
  1000 FORMAT(/5X,'Wave function specification'
-     *       /5X,'============================')
- 1002 FORMAT( '@    For the wave function of type :      >>> ',A,' <<<',
-     *       /'@    Number of closed shell electrons',I12,
-     *       /'@    Number of electrons in active shells',I8,
-     *       /'@    Total charge of the molecule',I16,
-     *      //'@    Spin multiplicity and 2 M_S',I17,I10,
-     *       /'     Total number of symmetries',I18,
-     *       /'@    Reference state symmetry',I20)
+     &       /5X,'============================')
+ 1002 FORMAT( '@    Wave function type        >>> ',A,' <<<',
+     &       /'@    Number of closed shell electrons',I12,
+     &       /'@    Number of electrons in active shells',I8,
+     &       /'@    Total charge of the molecule',I16,
+     &      //'@    Spin multiplicity and 2 M_S',I17,I10,
+     &       /'@    Total number of symmetries',I18,
+     &        ' (point group: ',A,')',
+     &       /'@    Reference state symmetry',I20,
+     &        ' (irrep name : ',A,')')
 C
       IF (MCTYPE .EQ. 2) THEN
          WRITE (IWUNIT,1075) NAS1T, NAS2T, NAS3T
@@ -5561,6 +5568,7 @@ C
 C ***** Orbital specifications *****
 C
       WRITE(IWUNIT,1100) (I,       I=1,NSYM)
+      WRITE(IWUNIT,1102) (REP(I-1),I=1,NSYM)
       WRITE(IWUNIT,1110) ('  ---', I=1,NSYM+1)
       IF (MCTYPE .GT. 0) THEN
          WRITE(IWUNIT,1200) NISHT,(NISH(I),I=1,NSYM)
@@ -5614,6 +5622,7 @@ C
  1100 FORMAT(/5X,'Orbital specifications',
      *       /5X,'======================',
      *       /5X,'Abelian symmetry species',T38,'  All |',8I5)
+ 1102 FORMAT(T44,'|',8(2X,A3))
  1110 FORMAT(T38,A5,' |',8A5)
  1200 FORMAT('@    Inactive orbitals',T38,I5,' |',8I5)
  1300 FORMAT('@    Active orbitals',T38,I5,' |',8I5)

@@ -2306,44 +2306,57 @@ C
 C       Error messages:
 C
  5000 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of shells                    ',KMAX,
-     *  '                   current maximum number              ',MXSHEL
-        CALL QUIT('BASPRO: Too many shells')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
+     *  ' >>> BASPRO error, number of shells                    ',
+     *  KMAX,
+     *  '                   current maximum number              ',
+     *  MXSHEL,
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5010 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
      *  ' >>> BASPRO error, number of contracted basis functions',
      *  NBASIS,
-     *  '                   current maximum number              ',MXCORB
+     *  '                   current maximum number              ',
+     *  MXCORB,
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, number of primitive basis functions',NPBAS,
-     *  '                   current maximum number             ',MXPRIM
-        CALL QUIT('BASPRO: Too many primitives')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
+     *  ' >>> BASPRO error, number of primitive basis functions',
+     *  NPBAS,
+     *  '                   current maximum number             ',
+     *  MXPRIM,
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
  5040 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
+        WRITE (LUPRI,'(/A,I6,/A,I6,/A)')
      *  ' >>> BASPRO error, # of shells when adding Huckel orbitals',
-     &     ISHELL,
+     *     ISHELL,
      *  '                   current maximum number                 ',
-     &     MXSHEL
-        CALL QUIT('BASPRO: Too many shells')
+     *     MXSHEL,
+     *  ' Increase MXSHEL in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many shells, increase MXSHEL')
  5050 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel '//
-     &     'orbitals',IORBD,
-     *  '                   current maximum number                  '//
-     &     '        ',MXCORB
+        WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
+     *  ' >>> BASPRO error, # of contracted bf. after adding Huckel ',
+     *     'orbitals',
+     *  IORBD,
+     *  '                   current maximum number                  ',
+     *  '        ',MXCORB,
+     *  ' Increase MXCORB in DALTON/include/maxorb.h and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5060 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' >>> BASPRO error, # of primitive bf after adding Huckel '//
-     &     'orbitals',IPRIMD,
-     *  '                   current maximum number                 '//
-     &     '        ',MXPRIM
-        CALL QUIT('BASPRO: Too many primitives')
+        WRITE (LUPRI,'(/A,A,I6,/A,A,I6,/A)')
+     *  ' >>> BASPRO error, # of primitive bf after adding Huckel ',
+     *     'orbitals',
+     *  IPRIMD,
+     *  '                   current maximum number                 ',
+     *  '       ',MXPRIM,
+     *  ' Increase MXPRIM in DALTON/include/maxorb.h and recompile'
+        CALL QUIT('BASPRO: Too many primitives, increase MXPRIM')
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,NONTYP,NONT,IQM,NBLCK,JCO, BASREF,
@@ -2590,10 +2603,15 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) THEN
 
-      if (.NOT.SLAVE .AND. PEQM) THEN
-        CALL PE_IFC_INIT()
+         CALL PRICAR(WORK,LWORK)
+
+         if (PEQM) THEN
+#if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+#endif
+         END IF
       END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
@@ -6969,6 +6987,7 @@ C
          WRITE (LUPRI,*) 'Incorrect input for atomic charge in'
          WRITE (LUPRI,*) TMPLN
          WRITE (LUPRI,*) 'Format is "Charge=?"'
+         CALL QENTER('LINE5R')
          CALL QUIT('Incorrect input for atomic charge')
       ELSE
          READ (BKPLIN((IPOS+IPOS2):),*) Q
@@ -6979,6 +6998,7 @@ C
                WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
                WRITE (LUPRI,*) TMPLN
                WRITE (LUPRI,*) 'Format is "Atoms=?"'
+               CALL QENTER('LINE5R')
                CALL QUIT('Incorrect input for # of atoms')
             ELSE
                READ (BKPLIN((IPOS+IPOS2):),*) NONT
@@ -6996,6 +7016,7 @@ C
      &                 'basis sets in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Sets=?"'
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for # of '//
      &                 'basis sets')
                ELSE
@@ -7006,6 +7027,7 @@ C
             WRITE(LUPRI,*)
      &         'ERROR, multiple basis set, but no .R12AUX specified.'
             WRITE(LUPRI,*) TMPLN
+            CALL QENTER('LINE5R')
             CALL QUIT('Error when reading .mol file')
          END IF
 C
@@ -7020,6 +7042,7 @@ C
      &                 'integral blocks in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Blocks=? ? ?"'
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for # of '//
      &                 'integral blocks')
                ELSE
@@ -7040,8 +7063,7 @@ C
      &                 'of atomic basis set in'
                   WRITE (LUPRI,*) TMPLN
                   WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
-                  WRITE (LUPRI,*) 'Input line was:'
-                  WRITE (LUPRI,*) BKPLIN
+                  CALL QENTER('LINE5R')
                   CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                ELSE
@@ -7049,10 +7071,10 @@ C
                   IF (IPOS3 .LE. 1) IPOS3 = LEN( BKPLIN((IPOS+IPOS2):) )
                   IF (IPOS3 .LE. 1) THEN
                      WRITE (LUPRI,*) 'Incorrect input for choice '//
-     &                 'of atomic basis set'
+     &                 'of atomic basis set in'
+                     WRITE (LUPRI,*) TMPLN
                      WRITE (LUPRI,*) 'Format is "Basis=? ? ?"'
-                     WRITE (LUPRI,*) 'Input line was:'
-                     WRITE (LUPRI,*) BKPLIN
+                     CALL QENTER('LINE5R')
                      CALL QUIT('Incorrect input for choice of '//
      &                 'atomic basis set')
                   END IF
@@ -7110,6 +7132,13 @@ C
       RETURN
       END
 C
+#ifdef INCLUDE_NOT_USED_ROUTINES
+! This routine has been replaced by LINE5_UPD on March 21, 2014.
+! It is not deleted completely because it will be useful if we sometime in the future
+! want to update other parts of line 5 than the numober of atom types (NONT).
+! The routine was replaced because LINE5W destroys basis set info for e.g. ano basis sets
+! (e.g. 'ano-1 2 1' will be replaced by just 'ano-1' in LINE5W because BASNAM does not contain the " 2 1".)
+! /hjaaj
       SUBROUTINE LINE5W(LINE,Q,NONT,MBSI,BASIS,ATOMBA,LMULBS,
      &                  BASNAM,IQM,JCO,KANG,RADIUS_PCM,ALPHA_PCM)
 C
@@ -7163,17 +7192,94 @@ C
       END IF
 C
       IF (PCM.AND.(RADIUS_PCM * ALPHA_PCM .GT. 0.1)) THEN
-         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Radius=',RADIUS_PCM
-         WRITE (LINE(ISTART:),'(A7,F6.2)') 'Alpha=',ALPHA_PCM
-         ISTART = ISTART + 30
+         WRITE (LINE(ISTART:),'(A8,F6.2,A8,F6.2,A1)')
+     &   ' Radius=',RADIUS_PCM,' Alpha=',ALPHA_PCM,' '
+         ISTART = ISTART + 29
       END IF
 c
       IF (ATOMBA) THEN
          WRITE (LINE(ISTART:),'(A6,A25)') 'Basis=',BASNAM(1:25)
+         ! hjaaj March 2014: note that this will be wrong for e.g. ano basis sets
+         ! as of e.g. 'ano-1 2 1' only 'ano-1' is in BASNAM
          ISTART = ISTART + 31
       END IF
 C
       RETURN
       END
+#endif
 
+      SUBROUTINE LINE5_UPD(LINE,NONT)
+C
+C     Update number of atom types in atom-specific input line in new format
+C     hjaaj March 2014
+C
+C#include "implicit.h"
+      IMPLICIT NONE
+#include "priunit.h"
+      INTEGER NONT, IPOS, IPOS2
+      CHARACTER LINE*(*)
+      CHARACTER BKP_LINE*(200)
+
+      BKP_LINE = LINE
+      CALL UPCASE(BKP_LINE)
+
+C     Check for errors
+
+      IPOS = INDEX(BKP_LINE,'CHA')
+      IPOS2 = INDEX(BKP_LINE(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+         WRITE (LUPRI,*) 'Invalid LINE in parameter list to LINE5_UPD:'
+         WRITE (LUPRI,*) LINE
+         WRITE (LUPRI,*) 'A valid line should contain "Charge=?"'
+         CALL QUIT('Invalid LINE in parameter list to LINE5_UPD')
+      END IF
+
+      IPOS = INDEX(BKP_LINE,'ATO')
+      IF (IPOS .NE. 0) THEN
+         IPOS2 = INDEX(BKP_LINE(IPOS:),'=')
+         IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
+            WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
+            WRITE (LUPRI,*) LINE
+            WRITE (LUPRI,*) 'Format is "Atoms=?"'
+            CALL QENTER('LINE5_UPD')
+            CALL QUIT('Incorrect input for # of atoms')
+         END IF
+      END IF
+
+      IPOS  = IPOS + IPOS2 ! points now to character just after "Atoms="
+      IPOS2 = INDEX(BKP_LINE((IPOS):),' ')
+      IF (IPOS2 .EQ. 1) THEN
+         WRITE (LUPRI,*) 'Incorrect input for # of atoms in'
+         WRITE (LUPRI,*) LINE
+         WRITE (LUPRI,*) 'Format is "Atoms=?"'
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('Incorrect input for # of atoms')
+      END IF
+
+C     line LINE seems to be OK, now we update number of atoms
+
+      IPOS2 = IPOS + IPOS2
+      BKP_LINE = LINE(IPOS2:)
+
+      IF (NONT .LE. 0) THEN
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('ERROR: non-positive NONT in LINE5_UPD')
+      ELSE IF (NONT .LT. 10) THEN
+         WRITE (LINE(IPOS:),'(I1,A)') NONT,' '
+         IPOS = IPOS + 2
+      ELSE IF (NONT .LT. 100) THEN
+         WRITE (LINE(IPOS:),'(I2,A)') NONT,' '
+         IPOS = IPOS + 3
+      ELSE IF (NONT .LT. 1000) THEN
+         WRITE (LINE(IPOS:),'(I3,A)') NONT,' '
+         IPOS = IPOS + 4
+      ELSE
+         WRITE (LUPRI,*) 'FATAL ERROR, NONT > 999 :',NONT
+         CALL QENTER('LINE5_UPD')
+         CALL QUIT('ERROR, NONT > 999')
+      END IF
+      LINE(IPOS:) = BKP_LINE
+C
+      RETURN
+      END
 C --- end of herrdn.F ---

@@ -881,10 +881,10 @@ C  /* Deck her_rvres */
      &                     IPRINT,DINTSKP)
 
 !     module dependencies
-      use parallel_communication_models_mpi
-      use one_sided_communication_wrappers
       use rma_windows
 #ifdef VAR_MPI
+      use parallel_communication_models_mpi
+      use one_sided_communication_wrappers
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif
@@ -2459,10 +2459,11 @@ C  /* Deck her_sdres */
      &                     ICOUNT,ITYPE,IPRINT)
 
 !     module dependencies
+      use rma_windows
+
+#ifdef VAR_MPI
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
-      use rma_windows
-#ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif

@@ -300,11 +300,11 @@ def gen_cmake_command(args):
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs.strip()
 
     if args.extra_fc_flags:
-        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags
+        command += ' -DEXTRA_Fortran_FLAGS:="%s"' % args.extra_fc_flags
     if args.extra_cc_flags:
-        command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
+        command += ' -DEXTRA_C_FLAGS:="%s"' % args.extra_cc_flags
     if args.extra_cxx_flags:
-        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
+        command += ' -DEXTRA_CXX_FLAGS:="%s"' % args.extra_cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'

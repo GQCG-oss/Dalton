@@ -12,6 +12,10 @@ if(ENABLE_CHEMSHELL)
     add_definitions(-DVAR_CHEMSHELL)
 endif()
 
+if(ENABLE_PELIB)
+    add_definitions(-DBUILD_PELIB)
+endif()
+
 add_definitions(-DVAR_MFDS)
 add_definitions(-D_FILE_OFFSET_BITS=64)
 add_definitions(-DIMPLICIT_NONE)

@@ -809,16 +809,15 @@ C        ... this is an atom !
       ROTB = ROTMHZ/BIMOM
       ROTC = ROTMHZ/CIMOM
       IF (LINEAR) THEN
-         WRITE (LUPRI,'(A/)') ' The molecule is linear.'
+         WRITE (LUPRI,'(A/)') '@    The molecule is linear.'
          WRITE (LUPRI,'(T16,A,F16.2,A,F12.6,A)')
      &        'B =', ROTB, ' MHz     (', CINVRS*ROTB, ' cm-1)'
-      ELSE IF (PLANAR) THEN
-         WRITE (LUPRI,'(A/)') ' The molecule is planar.'
-      END IF
-      IF (.NOT. LINEAR)
-     &     WRITE (LUPRI,'(T16,A,T36,A,T56,A,//3F20.4,A,/3F20.6,A)')
+      ELSE
+         IF (PLANAR) WRITE (LUPRI,'(A/)') '@    The molecule is planar.'
+         WRITE (LUPRI,'(T16,A,T36,A,T56,A,//3F20.4,A,/3F20.6,A)')
      &     'A','B','C', ROTA, ROTB, ROTC, ' MHz',
      &     CINVRS*ROTA, CINVRS*ROTB, CINVRS*ROTC, ' cm-1'
+      END IF
  9999 RETURN
       END
 C  /* Deck vibana */

@@ -246,6 +246,7 @@ C
       DIMENSION XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -301,8 +302,9 @@ C
       ELSE
          LABEL = 'SINGLAGR'
       END IF
-      WRITE (LUPRI,'(//A,I3,/2A)')
+      WRITE (LUPRI,'(//A,I2,3A/2A)')
      & ' RSPLAN -- linear response calculation for symmetry',KSYMOP,
+     & '  ( ',REP(KSYMOP-1),')',
      & ' RSPLAN -- operator label : ',LABEL
       CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,WRK(KGP),LWRK1)
       IF (IPRRSP.GT.120) THEN

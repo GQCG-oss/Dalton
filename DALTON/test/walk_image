@@ -230,7 +230,7 @@ CRIT2=`$GREP "\@ * 1 * 2 * \-*0*\.000000.... * 0*\.157841...." $log | wc -l`
 CRIT3=`$GREP "\@ * 1 * 3 * \-*0*\.000000.... * 0*\.157841...." $log | wc -l`
 CRIT4=`$GREP "\@ * 1 * 4 * \-*0*\.000000.... * 0*\.562539...." $log | wc -l`
 CRIT5=`$GREP "\@ * 1 * 5 * \-*0*\.000000.... * 1\.472916...." $log | wc -l`
-CRIT6=`$GREP "\@ * 1 * 6 * \-*0*\.000000.... * 1\.472918...." $log | wc -l`
+CRIT6=`$GREP "\@ * 1 * 6 * \-*0*\.000000.... * 1\.47291(8|9)...." $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[15]=6
 ERROR[15]="FINAL GRADIENT AND HESSIAN EIGENVALUES NOT CORRECT"
@@ -253,7 +253,7 @@ ERROR[17]="FINAL ANALYSIS NOT SET UP CORRECTLY"
 
 # Dipole moment gradient
  CRIT1=`$GREP "N * x * \-0*\.465254.. * \-*0*\.000000.. * \-*0*\.000000.." $log | wc -l`
- CRIT2=`$GREP "N * y * \-*0*\.000000.. * \-0*\.465255.. * \-*0*\.000000.." $log | wc -l`
+ CRIT2=`$GREP "N * y * \-*0*\.000000.. * \-0*\.46525(4|5).. * \-*0*\.000000.." $log | wc -l`
  CRIT3=`$GREP "N * z * \-*0*\.000000.. * \-*0*\.000000.. * \-1\.218508.." $log | wc -l`
  CRIT4=`$GREP "H * x * 0*\.151407.. * \-*0*\.000000.. * \-*0*\.000000.." $log | wc -l`
  CRIT5=`$GREP "H * y * \-*0*\.000000.. * 0*\.158762.. * \-*0*\.000000.." $log | wc -l`
@@ -283,7 +283,7 @@ CTRL[20]=3
 ERROR[20]="STATIC POLARIZABILITIES NOT CORRECT"
 
 # Rotational constants
-CRIT1=`$GREP "343486\..... * 343486\..... * 171743\.12.. MHz" $log | wc -l`
+CRIT1=`$GREP "343486\..... * 343486\..... * 171743\.1... MHz" $log | wc -l`
 CRIT2=`$GREP "11\.4574.. * 11\.4574.. * 5\.72873. cm\-1" $log | wc -l`
 TEST[21]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[21]=2

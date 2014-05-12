@@ -478,7 +478,9 @@ contains
  
   end subroutine close_communication_model
   
-#else 
-module dummy_comm_model
-#endif
 end module
+#else 
+subroutine comm_model
+! dummy routine for non-mpi compilation
+end
+#endif

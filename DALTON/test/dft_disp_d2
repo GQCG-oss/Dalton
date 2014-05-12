@@ -64,6 +64,8 @@ cat > dft_disp_d2.dal <<'%EOF%'
 *OPTIMIZE
 .NATNRM
 .VLOOSE
+.MAX IT
+50
 **WAVE FUNCTIONS
 .DFT
  BLYP
@@ -73,7 +75,7 @@ cat > dft_disp_d2.dal <<'%EOF%'
 BECKE
 *SCF INPUT
 .THRESH
- 1.0D-06
+ 1.0D-08
 **END OF INPUT
 %EOF%
 #######################################################################
@@ -121,30 +123,30 @@ ERROR[2]="1ST DFT ENERGY NOT CORRECT"
 #CTRL[3]=18
 #ERROR[3]="FINAL GEOMETRY NOT CORRECT"
 
- CRIT1=`$GREP "bond distance\: * H_ab_1 * C_a _1 * 1\.1063.." $log | wc -l`
- CRIT2=`$GREP "bond distance\: * H_ab_2 * C_a _1 * 1\.1063.." $log | wc -l`
- CRIT3=`$GREP "bond distance\: * H_ab_3 * C_a _2 * 1\.1063.." $log | wc -l`
- CRIT4=`$GREP "bond distance\: * H_ab_4 * C_a _2 * 1\.1063.." $log | wc -l`
- CRIT5=`$GREP "bond distance\: * H_ac_1 * C_a _1 * 1\.106[12].." $log | wc -l`
- CRIT6=`$GREP "bond distance\: * H_ac_2 * C_a _2 * 1\.106[12].." $log | wc -l`
- CRIT7=`$GREP "bond distance\: * H_ad_1 * C_a _1 * 1\.1067.." $log | wc -l`
- CRIT8=`$GREP "bond distance\: * H_ad_2 * C_a _2 * 1\.1067.." $log | wc -l`
+ CRIT1=`$GREP "bond distance\: * H_ab_1 * C_a _1 * 1\.1059.." $log | wc -l`
+ CRIT2=`$GREP "bond distance\: * H_ab_2 * C_a _1 * 1\.1059.." $log | wc -l`
+ CRIT3=`$GREP "bond distance\: * H_ab_3 * C_a _2 * 1\.1059.." $log | wc -l`
+ CRIT4=`$GREP "bond distance\: * H_ab_4 * C_a _2 * 1\.1059.." $log | wc -l`
+ CRIT5=`$GREP "bond distance\: * H_ac_1 * C_a _1 * 1\.1058.." $log | wc -l`
+ CRIT6=`$GREP "bond distance\: * H_ac_2 * C_a _2 * 1\.1058.." $log | wc -l`
+ CRIT7=`$GREP "bond distance\: * H_ad_1 * C_a _1 * 1\.1069.." $log | wc -l`
+ CRIT8=`$GREP "bond distance\: * H_ad_2 * C_a _2 * 1\.1069.." $log | wc -l`
 TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8`
 CTRL[3]=16
 ERROR[3]="FINAL BOND DISTANCES NOT CORRECT"
 
- CRIT1=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ab_2 *  109\.(39|40)" $log | wc -l`
- CRIT2=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ac_1 *  109\.3[34]" $log | wc -l`
- CRIT3=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ad_1 *  109\.5[56]" $log | wc -l`
- CRIT4=`$GREP "bond angle\: * H_ab_2 * C_a _1 * H_ac_1 *  109\.3[34]" $log | wc -l`
- CRIT5=`$GREP "bond angle\: * H_ab_2 * C_a _1 * H_ad_1 *  109\.5[56]" $log | wc -l`
- CRIT6=`$GREP "bond angle\: * H_ac_1 * C_a _1 * H_ad_1 *  109\.6[12]" $log | wc -l`
- CRIT7=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ab_4 *  109\.(39|40)" $log | wc -l`
- CRIT8=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ac_2 *  109\.3[34]" $log | wc -l`
- CRIT9=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ad_2 *  109\.5[56]" $log | wc -l`
-CRIT10=`$GREP "bond angle\: * H_ab_4 * C_a _2 * H_ac_2 *  109\.3[34]" $log | wc -l`
-CRIT11=`$GREP "bond angle\: * H_ab_4 * C_a _2 * H_ad_2 *  109\.5[56]" $log | wc -l`
-CRIT12=`$GREP "bond angle\: * H_ac_2 * C_a _2 * H_ad_2 *  109\.6[12]" $log | wc -l`
+ CRIT1=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ab_2 *  109\.33." $log | wc -l`
+ CRIT2=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ac_1 *  109\.34." $log | wc -l`
+ CRIT3=`$GREP "bond angle\: * H_ab_1 * C_a _1 * H_ad_1 *  109\.59." $log | wc -l`
+ CRIT4=`$GREP "bond angle\: * H_ab_2 * C_a _1 * H_ac_1 *  109\.34." $log | wc -l`
+ CRIT5=`$GREP "bond angle\: * H_ab_2 * C_a _1 * H_ad_1 *  109\.59." $log | wc -l`
+ CRIT6=`$GREP "bond angle\: * H_ac_1 * C_a _1 * H_ad_1 *  109\.60." $log | wc -l`
+ CRIT7=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ab_4 *  109\.33." $log | wc -l`
+ CRIT8=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ac_2 *  109\.34." $log | wc -l`
+ CRIT9=`$GREP "bond angle\: * H_ab_3 * C_a _2 * H_ad_2 *  109\.59." $log | wc -l`
+CRIT10=`$GREP "bond angle\: * H_ab_4 * C_a _2 * H_ac_2 *  109\.34." $log | wc -l`
+CRIT11=`$GREP "bond angle\: * H_ab_4 * C_a _2 * H_ad_2 *  109\.59." $log | wc -l`
+CRIT12=`$GREP "bond angle\: * H_ac_2 * C_a _2 * H_ad_2 *  109\.60." $log | wc -l`
 TEST[4]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7 + $CRIT8 + $CRIT9 + $CRIT10 + $CRIT11 + $CRIT12`
 CTRL[4]=24
 ERROR[4]="FINAL BOND ANGLES NOT CORRECT"
