@@ -985,74 +985,69 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
-    implicit none
-    integer,intent(inout) :: ccmodel
-    type(mp2_batch_construction) :: bat
-    integer            :: nbas,nocc,nvirt,ierr,iter,s
-    !real(realk)        :: t2(:),govov(:)
-    type(array),intent(inout) :: t2,govov,om2
-    real(realk)        :: xo(:),xv(:),yo(:),yv(:)
-    type(lsitem)       :: MyLsItem
-    real(realk)        :: norm
-    integer(kind=long) :: nelms
-    integer :: i,n4,k
-    integer :: gaddr(infpar%lg_nodtot)
-    integer :: taddr(infpar%lg_nodtot)
-    integer :: oaddr(infpar%lg_nodtot)
-    logical :: loc
-    character(ARR_MSG_LEN) :: msg
-    logical :: master
-    master=(infpar%lg_mynum==infpar%master)
-   !communicate mylsitem and integers
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
-    call ls_mpi_buffer(nbas,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(iter,infpar%master)
-    call ls_mpi_buffer(s,infpar%master)
-    call ls_mpi_buffer(loc,infpar%master)
-    call ls_mpi_buffer(ccmodel,infpar%master)
-    if(.not.loc)then
-      if(master)gaddr=govov%addr_p_arr
-      call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
-      if(master)taddr=t2%addr_p_arr
-      call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
-      if(master)oaddr=om2%addr_p_arr
-      call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
-    endif
-    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,loc)
+     implicit none
+     integer,intent(inout) :: ccmodel
+     type(mp2_batch_construction) :: bat
+     integer            :: nbas,nocc,nvirt,ierr,iter
+     !real(realk)        :: t2(:),govov(:)
+     type(array),intent(inout) :: t2,govov,om2
+     real(realk)        :: xo(:),xv(:),yo(:),yv(:)
+     type(lsitem)       :: MyLsItem
+     real(realk)        :: norm
+     integer(kind=long) :: nelms
+     integer :: i,n4,k
+     integer :: gaddr(infpar%lg_nodtot)
+     integer :: taddr(infpar%lg_nodtot)
+     integer :: oaddr(infpar%lg_nodtot)
+     logical :: loc
+     character(ARR_MSG_LEN) :: msg
+     logical :: master
+     master=(infpar%lg_mynum==infpar%master)
 
-    !communicate rest of the quantities, master here, slaves back in the slave
-    !routine, due to crappy pointer/non-pointer issues (->allocations)
-    if(master)then
+     !communicate mylsitem and integers
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     !    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
+     call ls_mpi_buffer(nbas,infpar%master)
+     call ls_mpi_buffer(nocc,infpar%master)
+     call ls_mpi_buffer(nvirt,infpar%master)
+     call ls_mpi_buffer(iter,infpar%master)
+     call ls_mpi_buffer(loc,infpar%master)
+     call ls_mpi_buffer(ccmodel,infpar%master)
+     if(.not.loc)then
+        if(master)gaddr=govov%addr_p_arr
+        call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
+        if(master)taddr=t2%addr_p_arr
+        call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
+        if(master)oaddr=om2%addr_p_arr
+        call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
+     endif
+     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-      !split messages in 2GB parts, compare to counterpart in
-      !ccsd_data_preparation
-      k=SPLIT_MSG_REC
+     !communicate rest of the quantities, master here, slaves back in the slave
+     !routine, due to crappy pointer/non-pointer issues (->allocations)
+     if(master)then
 
-      nelms = nbas*nocc
-      call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+        !split messages in 2GB parts, compare to counterpart in
+        !ccsd_data_preparation
+        k=SPLIT_MSG_REC
 
-      nelms = nbas*nvirt
-      call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+        nelms = nbas*nocc
+        call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
 
-      nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      if(iter/=1.and.(s==0.or.s==4))then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      endif
-    else
-      if(.not.loc)then
-        govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
-        t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
-        om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
-      endif
-    endif
+        nelms = nbas*nvirt
+        call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+
+     else
+        if(.not.loc)then
+           govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
+           t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
+           om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
+        endif
+     endif
   end subroutine mpi_communicate_ccsd_calcdata
 
   !> \brief mpi communcation where ccsd(t) data is transferred
