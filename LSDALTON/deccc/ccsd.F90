@@ -3102,8 +3102,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     
     nor=no*(no+1)/2
 
-    print *,me,"I have to ",fai,tl,traf
-    call lsmpi_barrier(infpar%lg_comm)
     ! do contraction
     if((s==4.or.s==3).and.traf)then
 
