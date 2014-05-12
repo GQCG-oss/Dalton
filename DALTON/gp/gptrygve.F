@@ -1382,4 +1382,12 @@ C
  9000 CONTINUE
       RETURN
       END
-! -- end of gptrygve.F --
+
+
+      subroutine clear_iuntab()
+#include "implicit.h"
+         common /unitar/ iuntab(1:99)
+         do i = 1, 99
+            iuntab(i) = 0
+         end do
+      end subroutine
