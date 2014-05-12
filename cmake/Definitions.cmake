@@ -49,8 +49,6 @@ endif()
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
     add_definitions(-DVAR_64BITS)
-else()
-    add_definitions(-DVAR_MPI_32BIT_INT)
 endif()
 
 if(ENABLE_OPENACC)
