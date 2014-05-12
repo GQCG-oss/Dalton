@@ -3102,8 +3102,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     
     nor=no*(no+1)/2
 
+    print *,me,"I have to ",fai,tl,traf
+    call lsmpi_barrier(infpar%lg_comm)
     ! do contraction
-    if(s==4.or.s==3.and.traf)then
+    if((s==4.or.s==3).and.traf)then
 
 
       w1=0.0E0_realk
@@ -3161,7 +3163,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       enddo
     enddo
 
-    if(s==4.or.s==3.and.traf)then
+    if((s==4.or.s==3).and.traf)then
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
       call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
