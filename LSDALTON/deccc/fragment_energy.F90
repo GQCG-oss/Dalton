@@ -2130,7 +2130,7 @@ contains
      integer      :: max_iter_red,nAtomsWithOccOrb,nAtomsWithVirtOrb
      logical :: expansion_converged,ExpandFragmentConverged,DistanceRemoval
      logical :: OccUnchanged,VirtUnchanged,ExpandVirt,ExpandOcc
-     logical :: BinarySearch,SeperateExpansion,OrbDistanceSpec
+     logical :: BinarySearch,SeperateExpansion,OrbDistanceSpec,TestOcc
      type(array4) :: t2,g
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
@@ -2153,6 +2153,7 @@ contains
      SeperateExpansion = .FALSE.
      OrbDistanceSpec = .FALSE.
      DistanceRemoval = .FALSE.
+     TestOcc = .FALSE.
      write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
      IF(DECinfo%FragmentExpansionScheme.EQ.1)THEN
         write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
@@ -2186,6 +2187,25 @@ contains
         ENDIF
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
+     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.6)THEN
+        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
+        IF(DECInfo%OnlyOccPart)THEN
+           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Virtual Orbitals in Reduction Scheme'
+           write(DECinfo%output,'(a)') ' Distance is used to remove Occupied Orbitals in  Reduction Scheme'        
+           DistanceRemoval = .TRUE. 
+        ELSEIF(DECInfo%OnlyVirtPart)THEN
+           write(DECinfo%output,'(a)') ' Energy Contribution is used to remove Occupied Orbitals in Reduction Scheme'
+           write(DECinfo%output,'(a)') ' Distance is used to remove Virtual Orbitals in  Reduction Scheme'        
+           DistanceRemoval = .TRUE. 
+        ELSE
+           write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+           write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+        ENDIF
+        write(DECinfo%output,'(a)') ' This scheme is identical to Scheme = 5 but first converges the Occ - then Virt'
+        BinarySearch = .TRUE.
+        OrbDistanceSpec = .TRUE. 
+        TestOcc = .TRUE.
      ELSE
         call lsquit('FragmentExpansionScheme unknown',-1)
      ENDIF
@@ -2466,14 +2486,15 @@ contains
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
                 & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
                 & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
-                & t1full=t1full)
+                & TestOcc,t1full=t1full)
         else
            call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,BinarySearch, &
               & MyMolecule,mylsitem,freebasisinfo,max_iter_red,OccContribs,VirtContribs,&
               & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
               & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
-              & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval)
+              & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
+              & TestOcc)
         end if
 
      end if WhichReductionScheme
@@ -3025,7 +3046,7 @@ contains
        & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
        & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
        & ExpOccAOS,ExpVirtAOS,ExpOldOccAOS,ExpOldVirtAOS,OrbDistanceSpec,&
-       & DistanceRemoval,t1full)
+       & DistanceRemoval,TestOcc,t1full)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3054,7 +3075,7 @@ contains
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)  :: RejectThresh,FOT
-    logical,intent(in) :: OrbDistanceSpec,DistanceRemoval
+    logical,intent(in) :: OrbDistanceSpec,DistanceRemoval,TestOcc
     logical,pointer :: ExpOccAOS(:),ExpVirtAOS(:),ExpOldOccAOS(:),ExpOldVirtAOS(:) !only alloc if OrbDistanceSpec
     logical,pointer :: OccAOS_old(:), VirtAOS_old(:), OccAOS_new(:), VirtAOS_new(:), &
          & OccAOS_orig(:),VirtAOS_orig(:)
@@ -3198,6 +3219,10 @@ contains
              !take the step that have biggest potential to 
              !reduce the number of orbitals Occ + Virt
              ModVirt = nDimVirt.GE.nDimOcc 
+          ENDIF
+          IF(TestOcc)THEN
+             ModVirt = .FALSE.
+             IF(bin_occ_conv)ModVirt = .TRUE.
           ENDIF
           nocc_new = nHigherOcc
           nvirt_new = nHigherVirt
