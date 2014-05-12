@@ -20,7 +20,7 @@ use lattice_type
 use lsmpi_module
 #endif
 private
-public Set_PrintSCFmemory
+public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
 public Set_PrintMemoryLowerLimit
@@ -71,8 +71,8 @@ public mem_deallocated_mem_lvec_data
 public mem_allocated_lattice_cell
 public mem_allocated_mem_lattice_cell
 public mem_deallocated_mem_lattice_cell
-public mem_add_external_memory
 #endif
+public mem_add_external_memory
 public longintbuffersize
 logical,save :: PrintSCFmemory
 logical,save :: MemModParamPrintMemory
@@ -370,7 +370,55 @@ INTERFACE mem_alloc
          &             lsmpi_deallocate_i8V,lsmpi_deallocate_i4V,lsmpi_deallocate_dV,lsmpi_local_deallocate_dV
    END INTERFACE
 
+   INTERFACE MemInGB
+      MODULE PROCEDURE Mem4dimInGB,Mem4dimInGBint8,&
+           & Mem2dimInGB,Mem2dimInGBint8,&
+           & Mem1dimInGB,Mem1dimInGBint8
+   END INTERFACE MemInGB
+
    CONTAINS
+
+     real(realk) function Mem4dimInGB(n1,n2,n3,n4)
+       implicit none
+       integer(kind=4),intent(in)  :: n1,n2,n3,n4
+       integer(kind=8) :: Ln1,Ln2,Ln3,Ln4
+       Ln1 = n1; Ln2 = n2; Ln3 = n3; Ln4 = n4
+       Mem4dimInGB = Mem4dimInGBint8(Ln1,Ln2,Ln3,Ln4)
+     end function Mem4dimInGB
+
+     real(realk) function Mem4dimInGBint8(n1,n2,n3,n4)
+       implicit none
+       integer(kind=8),intent(in)  :: n1,n2,n3,n4
+       Mem4dimInGBint8 = n1*n2*n3*n4*8.0E-9_realk
+     end function Mem4dimInGBint8
+
+     real(realk) function Mem2dimInGB(n1,n2)
+       implicit none
+       integer(kind=4),intent(in)  :: n1,n2
+       integer(kind=8) :: Ln1,Ln2
+       Ln1 = n1; Ln2 = n2
+       Mem2dimInGB = Mem2dimInGBint8(Ln1,Ln2)
+     end function Mem2dimInGB
+
+     real(realk) function Mem2dimInGBint8(n1,n2)
+       implicit none
+       integer(kind=8),intent(in)  :: n1,n2
+       Mem2dimInGBint8 = n1*n2*8.0E-9_realk
+     end function Mem2dimInGBint8
+
+     real(realk) function Mem1dimInGB(n1)
+       implicit none
+       integer(kind=4),intent(in)  :: n1
+       integer(kind=8) :: Ln1
+       Ln1 = n1
+       Mem1dimInGB = Mem1dimInGBint8(Ln1)
+     end function Mem1dimInGB
+
+     real(realk) function Mem1dimInGBint8(n1)
+       implicit none
+       integer(kind=8),intent(in)  :: n1
+       Mem1dimInGBint8 = n1*8.0E-9_realk
+     end function Mem1dimInGBint8
 
    subroutine Set_PrintSCFmemory(inputPrintSCFmemory)
       implicit none
@@ -916,6 +964,16 @@ INTERFACE mem_alloc
       !$OMP END CRITICAL
    end subroutine collect_thread_memory
 
+   !> \brief Print global mem
+   !> \author T. Kjaergaard
+   !> \date 2014
+   subroutine stats_globalmem(lupri)
+      implicit none
+      !> Logical unit number for output file.
+      integer,intent(in) :: lupri
+      call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
+      call print_maxmem(lupri,max_mem_used_global,'TOTAL')
+    end subroutine stats_globalmem
 
    !> \brief Print current and max. amount of memory allocated for different data types.
    !> \author S. Host
@@ -2497,7 +2555,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
    simp = .false.
    if(present(simple))simp = simple
 
-   if(present(comm))then
+   if(present(comm).and..not.simp)then
 #ifdef VAR_MPI
       loc = .false.
       if(present(local))loc=local

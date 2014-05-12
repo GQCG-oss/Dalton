@@ -381,9 +381,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy           =', ccenergy
+   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
    if(DECinfo%PrintInteractionEnergy)then
-    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy      =', interactionE
+    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy =', interactionE
    endif
    write(DECinfo%output,*)
 

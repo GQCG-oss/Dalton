@@ -149,10 +149,9 @@ contains
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
-    real(realk) :: time_mp2work, time_mp2comm, time_mp2idle
-    logical :: ts,fc
+    real(realk) :: time_mp2work, time_mp2comm, time_mp2idle,MemInGBCollected,MaxMemInGBCollected,MemoryNeeded
+    logical :: ts,fc,memfound
     Character            :: intSpec(5)
-
 
     call time_start_phase( PHASE_WORK, swwork=time_mp2work , swcomm=time_mp2comm , swidle=time_mp2idle )
 
@@ -211,6 +210,22 @@ contains
 
 
     ! Initialize stuff
+    if(master.AND.DECinfo%PL>0)THEN
+!       MemInGBCollected = 0.0E0_realk
+!       memfound = .FALSE.
+!       WRITE(DECinfo%output,*)'MP2_integrals_and_amplitudes_workhorse: call get_available_memory'
+!       call get_available_memory(DECinfo%output,MemInGBCollected,memfound)
+       MemInGBCollected = 0.0E0_realk
+       call get_currently_available_memory(MemInGBCollected)
+       WRITE(DECinfo%output,'(1X,A)')'MP2MEM: MP2_integrals_and_amplitudes_workhorse: Internal memory bookkeeping'
+       WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the beginning of the subroutine'
+       write(DECinfo%output,'(1X,a,g12.4)') 'MP2MEM: Total memory:    ', DECinfo%memory
+       WRITE(DECinfo%output,'(1X,a,g12.4)') 'MP2MEM: Memory Available:', MemInGBCollected
+       call stats_globalmem(DECinfo%output)
+    endif
+    MemInGBCollected = 0.0E0_realk
+    MaxMemInGBCollected = 0.0E0_realk
+
     nullify(orb2batchAlpha)
     nullify(batchdimAlpha)
     nullify(batchsizeAlpha)
@@ -260,6 +275,10 @@ contains
 !    IF(.NOT.DECinfo%OnlyVirtPart)THEN
        ! occupied EOS dimension during integral loop (different from output dimensions!)
        dimocc=[nvirt,noccEOS,noccEOS,nvirt]
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gocc using',MemInGB(nvirt,noccEOS,noccEOS,nvirt),' GB'
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate tocc using',MemInGB(nvirt,noccEOS,noccEOS,nvirt),' GB'
+       endif
        call mem_alloc(gocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS integrals
        call mem_alloc(tocc,dimocc(1),dimocc(2),dimocc(3),dimocc(4) )  ! occ EOS amplitudes
        gocc=0E0_realk
@@ -269,6 +288,10 @@ contains
 !    IF(.NOT.DECinfo%OnlyOccPart)THEN
        ! virtual EOS dimension during integral loop (different from output dimensions)
        dimvirt=[nvirtEOS,nvirtEOS,nocc,nocc]
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(1X,A,g16.8,A)') 'MP2MEM: Allocate gvirt using',MemInGB(nvirtEOS,nvirtEOS,nocc,nocc),' GB'
+          write(DECinfo%output,'(1X,A,g16.8,A)') 'MP2MEM: Allocate tvirt using',MemInGB(nvirtEOS,nvirtEOS,nocc,nocc),' GB'
+       endif
        call mem_alloc(tvirt,dimvirt(1),dimvirt(2),dimvirt(3),dimvirt(4) )  ! virt EOS amplitudes
        ! Special case: Last occupied index is both core+valence!
        call mem_alloc(gvirt,dimvirt(1),dimvirt(2),dimvirt(3),nocctot )  ! virt EOS integrals
@@ -278,6 +301,10 @@ contains
 
     ! Arrays used for updating integrals used for first-order MP2 properties
     if(first_order_integrals) then
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Allocate VVVO using',MemInGB(nvirt,nvirtEOS,nvirtEOS,nocc),' GB'
+          write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Allocate OOOV using',MemInGB(nocctot,noccEOS,noccEOS,nvirt),' GB'
+       endif
        call mem_alloc(VVVO,nvirt,nvirtEOS,nvirtEOS,nocc)
        call mem_alloc(OOOV,nocctot,noccEOS,noccEOS,nvirt)
        VVVO=0E0_realk
@@ -343,7 +370,7 @@ contains
     ! Determine optimal batchsizes with available memory
     ! **************************************************
     if(master) then
-       call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,.true.,.true.)
+       call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,.true.,.true.,MemoryNeeded)
     end if
 
 
@@ -566,15 +593,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       end do
 
       ! Memory requirement for big array
-      max1 = sum(bat%size1(1:3))  ! step 1 in integral/amplitude scheme
-      max2 = bat%size2(4) + nthreads*sum(bat%size2(1:3)) ! step 2 in integral/amplitude scheme
-      max3 = sum(bat%size3(1:2)) ! step 3 in integral/amplitude scheme
-
-      maxdim=max(max1,max2,max3)
-      ! Make maxdim extra large to ensure that all pointers start at 512+integer
-      narrays = 1 + nthreads*3   ! number of arrays in step 2
-      extra = narrays * 512    ! Extra size of maxdim to ensure this
-      maxdim = maxdim + extra
+      call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
 
       ! Print for statistics
       if(DECinfo%PL>0) write(DECinfo%output,'(a,4i14)') 'size1 ', bat%size1
@@ -591,7 +610,18 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       !  write(*,*) 'Static array: elms/GB = ', maxdim, real(maxdim)*8.0e-9
       !endif
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      if(master.AND.DECinfo%PL>0)then
+         write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Allocate big array using   ',MemInGB(maxdim),' GB'
+         FLUSH(DECinfo%output)
+      endif
+      MemInGBCollected = MemInGBCollected + MemInGB(maxdim)
+      MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
       call mem_alloc(arr,maxdim)
+      if(master.AND.DECinfo%PL>0)then
+         write(DECinfo%output,'(A,g16.8,A)') 'MP2MEM: Global Memory statistics after big array'
+         call stats_globalmem(DECinfo%output)
+         FLUSH(DECinfo%output)
+      endif
       ierr = 0
       if(ierr == 0) then
 #ifdef VAR_MPI
@@ -630,7 +660,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
 
 
-
       ! Pointers for step 2
       ! -------------------
       ! Sanity check - size of tmp4 in step 2 cannot exceed size of tmp1+tmp2 in step 1
@@ -647,12 +676,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
          ! tmp array b1 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
          start = b1(j)%end + 1
-
          ! tmp array b2 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
          start = b2(j)%end + 1
-
-         ! tmp array b3 inside OMP loop
+         ! tmp array b3 inside OMP loop        
          call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
          start = b3(j)%end + 1
       end do
@@ -697,14 +724,31 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          if(master.AND.DECinfo%PL>0)then
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp1%p using   ',&
+              &MemInGB(max(bat%size1(1),dim1)),' GB Tot=',MemInGBCollected,' GB'
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp2%p using   ',&
+              &MemInGB(bat%size1(2)),' GB Tot=',MemInGBCollected,' GB'
+           write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step1, Allocate tmp3%p using   ',&
+              &MemInGB(bat%size1(3)),' GB Tot=',MemInGBCollected,' GB'
+           FLUSH(DECinfo%output)
+          endif
+          MemInGBCollected = MemInGBCollected + MemInGB(max(bat%size1(1),dim1))
+          MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
           call mem_alloc(tmp1%p,max(bat%size1(1),dim1))
           tmp1%start = 1
           tmp1%N     = max(bat%size1(1),dim1)
           tmp1%end   = tmp1%N
+
+          MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(2))
+          MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
           call mem_alloc(tmp2%p,bat%size1(2))
           tmp2%start = 1
           tmp2%N     = bat%size1(2)
           tmp2%end   = tmp2%N 
+          
+          MemInGBCollected = MemInGBCollected + MemInGB(bat%size1(3))
+          MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
           call mem_alloc(tmp3%p,bat%size1(3))
           tmp3%start = 1
           tmp3%N     = bat%size1(3)
@@ -873,8 +917,16 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! =================================================
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
           call mem_dealloc(tmp1%p)
           call mem_dealloc(tmp2%p)
+          if(master.and.DECinfo%PL>0)then
+             write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate tmp4%p using   ',&
+                &MemInGB(bat%size2(4)),' GB Tot=',MemInGBCollected,' GB'
+             FLUSH(DECinfo%output)
+          endif
+          MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(4))
+          MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
           call mem_alloc(tmp4%p,bat%size2(4))
           tmp4%start = 1
           tmp4%N     = bat%size2(4)
@@ -892,8 +944,20 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           end do
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          MemInGBCollected = MemInGBCollected - size(tmp3%p,kind=long)*8.0E-9_realk
           call mem_dealloc(tmp3%p)
           do j=1,nthreads
+             if(master.AND.DECinfo%PL>0)then
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b1(',j,')%p using   ',&
+                   &MemInGB(bat%size2(1)),' GB Tot=',MemInGBCollected,' GB'
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b2(',j,')%p using   ',&
+                   &MemInGB(bat%size2(2)),' GB Tot=',MemInGBCollected,' GB'
+                write(DECinfo%output,'(A,I2,A,g16.8,A,g16.8,A)') 'MP2MEM: step2, Allocate b3(',j,')%p using   ',&
+                   &MemInGB(bat%size2(3)),' GB Tot=',MemInGBCollected,' GB'
+                FLUSH(DECinfo%output)
+             endif
+             MemInGBCollected = MemInGBCollected + MemInGB(bat%size2(1)) + MemInGB(bat%size2(2)) + MemInGB(bat%size2(3))
+             MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
              call mem_alloc(b1(j)%p,bat%size2(1))
              b1(j)%start = 1
              b1(j)%N     = bat%size2(1)
@@ -918,8 +982,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! *********************************************************************
           ! Step 2 is the virtual batching where the final AO-->MO transformations
           ! are carried out and the MP2 amplitudes are determined.
-
-
+          if(master.AND.DECinfo%PL>0)then
+             WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM: MemInGBCollected = ',MemInGBCollected,&
+                &' GB Before MP2 Workhorse OMP Loop'
+             flush(DECinfo%output)
+          endif
           call mem_TurnONThread_Memory()
           !$OMP PARALLEL DEFAULT(NONE) PRIVATE(Abat,Astart,Aend,dimA,m,n,siz,ts,&
           !$OMP dim1,dim2,dim3,counter,alpha,A,B,i,j,idx,idx2,deltaeps,num,mini1,mini2,mini3,mini4) &
@@ -1121,7 +1188,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 ! b3(A,B,J,i) = sum_{I} b1(Abat,B,J,I) U^T_{Ii}
                 m=dimA*nvirt*nocc
                 dim3=i8*dimA*nvirt*nocc*noccEOS    ! dimension of b3
-                call dec_simple_dgemm(m,nocc, noccEOS, b1(num)%p(1:dim1), UoccEOST, b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+                call dec_simple_dgemm(m,nocc,noccEOS,b1(num)%p(1:dim1),UoccEOST,b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
                 
                 ! Reorder: b3(Abat,B,J,i) --> b2(J,Abat,B,i)
                 dim2=dim3
@@ -1138,7 +1205,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
                 ! b3(j,Abat,B,i) = sum_{J} U_{jJ} b2(J,Abat,B,i)
                 n=dimA*nvirt*noccEOS
                 dim3=i8*noccEOS*dimA*nvirt*noccEOS    ! dimension of b3
-                call dec_simple_dgemm(noccEOS,nocc, n, UoccEOS, b2(num)%p(1:dim2), b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
+                call dec_simple_dgemm(noccEOS,nocc,n,UoccEOS,b2(num)%p(1:dim2),b3(num)%p(1:dim3), 'n', 'n',use_thread_safe=ts)
                 
                 
                 
@@ -1227,8 +1294,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           call mem_TurnOffThread_Memory()
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+          MemInGBCollected = MemInGBCollected - size(tmp4%p,kind=long)*8.0E-9_realk
           call mem_dealloc(tmp4%p)
           do j=1,nthreads
+             MemInGBCollected = MemInGBCollected-size(b1(j)%p,kind=long)*8.0E-9_realk-size(b2(j)%p,kind=long)&
+                &*8.0E-9_realk-size(b3(j)%p,kind=long)*8.0E-9_realk
              call mem_dealloc(b1(j)%p)
              call mem_dealloc(b2(j)%p)
              call mem_dealloc(b3(j)%p)
@@ -1285,6 +1355,7 @@ call mem_dealloc(decmpitasks)
     call mem_dealloc(batch2orbGamma(idx)%orbindex)
     batch2orbGamma(idx)%orbindex => null()
  end do
+
  call mem_dealloc(batch2orbGamma)
  batch2orbGamma => null()
 
@@ -1310,8 +1381,6 @@ call mem_dealloc(decmpitasks)
  call mem_dealloc(V)
 
 
-
-
  ! **********************************************************************************
  ! *                         STEP 3 IN MP2-INTEGRAL SCHEME                          *
  ! **********************************************************************************
@@ -1328,12 +1397,25 @@ call mem_dealloc(decmpitasks)
  start = 1
  call mypointer_init(maxdim,arr,start,bat%size3(1),tmp1)
  start = tmp1%end+1
+ 
  call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
 #else
+ if(master.and.DECinfo%PL>0) then
+    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp1%p using   ',&
+       &MemInGB(bat%size3(1)),' GB Tot=',MemInGBCollected,' GB'
+    write(DECinfo%output,'(A,g16.8,A,g16.8,A)') 'MP2MEM: step3, Allocate tmp2%p using   ',&
+       &MemInGB(bat%size3(2)),' GB Tot=',MemInGBCollected,' GB'
+    FLUSH(DECinfo%output)
+ endif 
+ MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(1))
+ MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
  call mem_alloc(tmp1%p,bat%size3(1))
  tmp1%start = 1
  tmp1%N     = bat%size3(1)
  tmp1%end   = tmp1%N 
+ 
+ MemInGBCollected = MemInGBCollected + MemInGB(bat%size3(2))
+ MaxMemInGBCollected = MAX(MaxMemInGBCollected,MemInGBCollected)
  call mem_alloc(tmp2%p,bat%size3(2))
  tmp2%start = 1
  tmp2%N     = bat%size3(1)
@@ -1405,6 +1487,12 @@ call mem_dealloc(decmpitasks)
        ! We therefore first need to put these orbitals back into the (core,valence) order...
        ! This is of course very ugly but it led to several simplifications above so it is
        ! worth it to do one ugly reordering loop here...
+
+       if(master.AND.DECinfo%PL>0)then
+          write(DECinfo%output,'(1X,A,g16.8,A)')'MP2MEM: Allocate gvirt2 using',&
+             &MemInGB(nvirtEOS,nvirtEOS,nocc,nocctot),' GB'
+          FLUSH(DECinfo%output)
+       endif
        call mem_alloc(gvirt2,nvirtEOS,nvirtEOS,nocc,nocctot)
        do I=1,ncore ! put core orbitals into right position
           gvirt2(:,:,:,I) = gvirt(:,:,:,I+nocc)
@@ -1538,6 +1626,7 @@ call mem_dealloc(decmpitasks)
 
 
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+ MemInGBCollected = MemInGBCollected - size(tmp1%p,kind=long)*8.0E-9_realk - size(tmp2%p,kind=long)*8.0E-9_realk
  call mem_dealloc(tmp1%p)
  call mem_dealloc(tmp2%p)
 #endif
@@ -1554,6 +1643,7 @@ call mem_dealloc(decmpitasks)
  nullify(tmp4%P)
  !deallocate(arr)
 #ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+ MemInGBCollected = MemInGBCollected - size(arr,kind=long)*8.0E-9_realk
  call mem_dealloc(arr)
 #endif
  call mem_dealloc(b1)
@@ -1580,7 +1670,18 @@ if(fc) then
  call array2_free(UoccALL)
 end if
 
-
+if(master.and.DECinfo%PL>0) then
+   IF(ABS(MemInGBCollected).GT.0.1E0_realk)THEN
+      WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:     MemInGBCollected = ',MemInGBCollected,' GB'
+   ENDIF
+   WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MaxMemInGBCollected = ',MaxMemInGBCollected,' GB'
+   WRITE(DECinfo%output,'(A,g16.8,A)')'MP2MEM:  MemoryNeeded        = ',MemoryNeeded,' GB'
+   call stats_globalmem(DECinfo%output)
+   FLUSH(DECinfo%output)
+!   IF(ABS(MaxMemInGBCollected-MemoryNeeded).GT.1.0E-6_realk)THEN
+!      CALL LSQUIT('Memory Error: MP2 workhorse MemoryNeeded.NE.MaxMemInGBCollected',-1)
+!   ENDIF
+endif
 
 ! MPI: Add arrays from master and all slaves to get final output arrays on master
 ! *******************************************************************************
@@ -1649,6 +1750,13 @@ end if MPIcollect
 MyFragment%ntasks= nbatchesAlpha*nbatchesGamma
 
 #endif
+
+if(DECinfo%PL>0)THEN
+   WRITE(DECinfo%output,'(1X,A)')'MP2MEM: MP2_integrals_and_amplitudes_workhorse:'
+   WRITE(DECinfo%output,'(1X,A)')'MP2MEM: Memory Statistics at the end of the subroutine'
+   call stats_globalmem(DECinfo%output)
+   FLUSH(DECinfo%output)
+endif
 
 
 if(master) then
@@ -3562,10 +3670,9 @@ end subroutine Get_ijba_integrals
   !> STEP 3: Final transformations (diagonal->local basis) after integral loop
   !> \author Kasper Kristensen
   !> \date December 2011
-subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,bat,printstuff,adapt_to_nnodes)
-
+subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_integrals,&
+  & bat,printstuff,adapt_to_nnodes,FullMemoryNeeded)
   implicit none
-
   !> Fragment info
   type(decfrag),intent(inout) :: MyFragment
   !> Are integrals needed for first-order properties also requested
@@ -3576,16 +3683,18 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   !> (If this subroutine is called by local slave we never print, 
   !> regardless of value of printstuff)
   logical,intent(in) :: printstuff, adapt_to_nnodes
-  real(realk) :: MemoryAvailable, GB, MemoryNeeded
+  !> Using the found optimal batch sizes how much memory will be used
+  real(realk),intent(inout) :: FullMemoryNeeded
+  real(realk) :: MemoryAvailable, GB,MemoryNeeded
   integer :: noccEOS,nocc,nvirtEOS,nvirt,nbasis,GammaOpt,AlphaOpt,step,nvbatches
   integer :: MaxAObatch, MinAOBatch, MaxVirtBatch, MinVirtBatch,gamma,alpha,A, nthreads
+  integer(kind=long) :: max1,max2,max3,maxdim
   logical :: doprint
   integer :: max_alpha, max_gamma, MaxActualDimAlpha, MaxActualDimGamma, nbatchesAlpha, nbatchesGamma
   integer(kind=ls_mpik) :: nnod
 #ifdef VAR_OMP
   integer, external :: OMP_GET_MAX_THREADS
 #endif
-
   doprint = printstuff
   nnod = 1
 #ifdef VAR_MPI
@@ -3621,7 +3730,6 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   call get_currently_available_memory(MemoryAvailable)
   ! Note: We multiply by 85 % to be on the safe side!
   MemoryAvailable = 0.85*MemoryAvailable
-
 
 
   ! Maximum and minimum possible batch sizes
@@ -3743,7 +3851,6 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
 
-
   if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual gamma size, memory (GB) =', &
      & GammaOpt,bat%MaxAllowedDimGamma,MemoryNeeded
   if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &
@@ -3812,7 +3919,9 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   step=1
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
-  if(MemoryNeeded > MemoryAvailable) then
+  FullMemoryNeeded = MemoryNeeded
+
+  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
      write(DECinfo%output,'(1X,a)') 'STEP 1 in integral loop'
      write(DECinfo%output,'(1X,a)') '-----------------------'
      write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
@@ -3820,6 +3929,8 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size1(2)/GB
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size1(3)/GB
      write(DECinfo%output,*)
+  endif
+  if(MemoryNeeded > MemoryAvailable) then
      call stats_mem(DECinfo%output)
      call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
         & larger than the available memory!',DECinfo%output)
@@ -3828,7 +3939,8 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   step=2
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
      & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size2,MemoryNeeded)
-  if(MemoryNeeded > MemoryAvailable) then
+  FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
+  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
      write(DECinfo%output,'(1X,a)') 'STEP 2 in integral loop'
      write(DECinfo%output,'(1X,a)') '-----------------------'
      write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
@@ -3837,6 +3949,8 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 3 (GB)    =', realk*bat%size2(3)/GB
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 4 (GB)    =', realk*bat%size2(4)/GB
      write(DECinfo%output,*)
+  endif
+  if(MemoryNeeded > MemoryAvailable) then
      call stats_mem(DECinfo%output)
      call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
         & larger than the available memory!',DECinfo%output)
@@ -3845,23 +3959,55 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
   step=3
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
        & bat%MaxAllowedDimAlpha, bat%MaxAllowedDimGamma, bat%virtbatch, step,nthreads,bat%size3,MemoryNeeded)
+  FullMemoryNeeded = MAX(FullMemoryNeeded,MemoryNeeded)
 
-  if(MemoryNeeded > MemoryAvailable) then
+  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
      write(DECinfo%output,'(1X,a)') 'STEP 3 in integral loop'
      write(DECinfo%output,'(1X,a)') '-----------------------'
      write(DECinfo%output,'(1X,a,g10.3)') 'Tot memory required for tmp arrays (GB) =', MemoryNeeded
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 1 (GB)    =', realk*bat%size3(1)/GB
      write(DECinfo%output,'(1X,a,g10.3)') 'Memory required for tmp array 2 (GB)    =', realk*bat%size3(2)/GB
      write(DECinfo%output,*)
+  endif
+
+  if(MemoryNeeded > MemoryAvailable) then
      call stats_mem(DECinfo%output)
      call lsquit('get_optimal_batch_sizes_for_mp2_integrals: Estimated array size is &
           & larger than the available memory!',DECinfo%output)
-  end if
+  endif
 
+  call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+  MemoryNeeded = maxdim*8.000E-9_realk
+  
+  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+     write(DECinfo%output,'(1X,a)') 'Summary'
+     write(DECinfo%output,'(1X,a)') '-----------------------'
+     write(DECinfo%output,'(1X,a,g10.3)') 'Memory required                 (GB)    =', FullMemoryNeeded
+  endif
+  call BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+  FullMemoryNeeded = maxdim*8.000E-9_realk
+  if(doprint.OR.MemoryNeeded > MemoryAvailable)then
+     write(DECinfo%output,'(1X,a,g10.3)') 'Big Array Memory required       (GB)    =', FullMemoryNeeded
+     write(DECinfo%output,*)
+  endif
 
 end subroutine get_optimal_batch_sizes_for_mp2_integrals
 
-
+subroutine BigArraymaxdim(bat,max1,max2,max3,maxdim,nthreads)
+  implicit none
+  type(mp2_batch_construction),intent(in) :: bat
+  integer,intent(in) :: nthreads
+  integer(kind=long),intent(out) :: max1,max2,max3,maxdim
+  integer :: extra,narrays
+  max1 = sum(bat%size1(1:3))  ! step 1 in integral/amplitude scheme
+  max2 = bat%size2(4) + nthreads*sum(bat%size2(1:3)) ! step 2 in integral/a
+  max3 = sum(bat%size3(1:2)) ! step 3 in integral/amplitude scheme
+  maxdim=max(max1,max2,max3)
+  ! Make maxdim extra large to ensure that all pointers start at 512+intege
+  narrays = 1 + nthreads*3   ! number of arrays in step 2
+  extra = narrays * 512    ! Extra size of maxdim to ensure this
+  maxdim = maxdim + extra
+end subroutine BigArraymaxdim
 
   !> \brief Get maximum size of each of the four-dimensional arrays used in
   !> MP2_integrals_and_amplitudes for given values of virtual batch size,

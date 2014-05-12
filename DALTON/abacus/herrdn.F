@@ -2603,10 +2603,15 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) THEN
 
-      if (.NOT.SLAVE .AND. PEQM) THEN
-        CALL PE_IFC_INIT()
+         CALL PRICAR(WORK,LWORK)
+
+         if (PEQM) THEN
+#if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+#endif
+         END IF
       END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')

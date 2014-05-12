@@ -492,62 +492,58 @@ Implicit Real(realk) (A-H,O-Z)
       STPNRM = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       RETURN
       END
-    SUBROUTINE LS_MAKIMG(ICRD,IPRJ,MCRD,IMODE,RESTOR,lupri,optinfo)
-!  /* Deck makimg */
+!========!
+! MAKIMG !
+!========!
+SUBROUTINE MAKIMG(IPRJ,MCRD,EVAL,GRDDIA,STPDIA,IMODE,RESTOR)
 use precision
-use ls_util
-use optimization_input
-use files
-use lstiming
 !
 !     Makes image function and sorts coordinates.
 !     It is also used to restore and resort coordinates.
 !
-Implicit Real(realk) (A-H,O-Z)
-      Integer :: lupri
-      Type(opt_setting) :: optinfo
-      SAVE ENEG, GNEG, ISORT
-      LOGICAL RESTOR
-      real(realk),PARAMETER ::DUMMY = 1.0E20_realk
-      integer,parameter :: IDUMMY = - 9999999
-      IF (.NOT. RESTOR) THEN
-         ENEG = -optinfo%EVAL(IMODE)
-         GNEG = -optinfo%GRDDIA(IMODE)
-         optinfo%EVAL(IMODE) = ENEG
-         optinfo%GRDDIA(IMODE) = DUMMY
-         call ls_ORDER(optinfo%GRDDIA,optinfo%EVAL,IPRJ,1)
-         DO 10 I = 1, IPRJ
-            IF ((optinfo%EVAL(I).EQ.ENEG).AND.(optinfo%GRDDIA(I).EQ.DUMMY)) ISORT = I
- 10      CONTINUE
-         optinfo%GRDDIA(ISORT) = GNEG
-      ELSE
-         SNEG = optinfo%STPDIA(ISORT)
-         IF (ISORT .LT. IMODE) THEN
-            DO 20 I = ISORT, IMODE-1
-               optinfo%EVAL(I)   = optinfo%EVAL(I+1)
-               optinfo%GRDDIA(I) = optinfo%GRDDIA(I+1)
-               optinfo%STPDIA(I) = optinfo%STPDIA(I+1)
- 20         CONTINUE
-            optinfo%EVAL(IMODE)   = -ENEG
-            optinfo%GRDDIA(IMODE) = -GNEG
-            optinfo%STPDIA(IMODE) = SNEG
-         ELSE IF (IMODE .LT. ISORT) THEN
-            DO 30 I = ISORT, IMODE+1,-1
-               optinfo%EVAL(I)   = optinfo%EVAL(I-1)
-               optinfo%GRDINT(I) = optinfo%GRDINT(I-1)
-               optinfo%STPDIA(I) = optinfo%STPDIA(I-1)
- 30         CONTINUE
-            optinfo%EVAL(IMODE)   = -ENEG
-            optinfo%GRDINT(IMODE) = -GNEG
-            optinfo%STPDIA(IMODE) = SNEG
-         ELSE
-            optinfo%EVAL(IMODE)   = -ENEG
-            optinfo%GRDINT(IMODE) = -GNEG
-         END IF
-      END IF
-      RETURN
-      END
-
+IMPLICIT NONE
+Integer :: MCRD, IPRJ, IMODE, ISORT, I  
+Real(realk), dimension(MCRD) ::  EVAL(MCRD), GRDDIA(MCRD), STPDIA(MCRD)
+Real(realk) :: ENEG, GNEG, SNEG
+Real(realk), parameter :: Dummy = 1.0E0_realk
+LOGICAL RESTOR
+SAVE ENEG, GNEG, ISORT
+IF (.NOT. RESTOR) THEN
+   ENEG = -EVAL(IMODE)
+   GNEG = -GRDDIA(IMODE)
+   EVAL(IMODE) = ENEG
+   GRDDIA(IMODE) = DUMMY
+   CALL LS_ORDER(GRDDIA,EVAL,IPRJ,1)
+   DO I = 1, IPRJ
+      IF ((EVAL(I).EQ.ENEG).AND.(GRDDIA(I).EQ.DUMMY)) ISORT = I
+   ENDDO
+   GRDDIA(ISORT) = GNEG
+ELSE
+   SNEG = STPDIA(ISORT)
+   IF (ISORT .LT. IMODE) THEN
+      DO I = ISORT, IMODE-1
+         EVAL(I)   = EVAL(I+1)
+         GRDDIA(I) = GRDDIA(I+1)
+         STPDIA(I) = STPDIA(I+1)
+      ENDDO
+      EVAL(IMODE)   = -ENEG
+      GRDDIA(IMODE) = -GNEG
+      STPDIA(IMODE) = SNEG
+   ELSE IF (IMODE .LT. ISORT) THEN
+      DO I = ISORT, IMODE+1,-1
+         EVAL(I)   = EVAL(I-1)
+         GRDDIA(I) = GRDDIA(I-1)
+         STPDIA(I) = STPDIA(I-1)
+      ENDDO
+      EVAL(IMODE)   = -ENEG
+      GRDDIA(IMODE) = -GNEG
+      STPDIA(IMODE) = SNEG
+   ELSE
+      EVAL(IMODE)   = -ENEG
+      GRDDIA(IMODE) = -GNEG
+   END IF
+END IF
+END SUBROUTINE MAKIMG
 !  /* Deck fndmod */
       SUBROUTINE LS_FNDMOD(INTERN,MXRCRD,EVEC,WILBMT,VECMOD,TMPVEC, &
      &     TMPVC2,IMODE,lupri,optinfo)

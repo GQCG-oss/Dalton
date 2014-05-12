@@ -902,13 +902,13 @@ C
                      DO 100 IFRVAL = 1,NFRVAL
                         IF (ABSORP) THEN
                           IF (ABSLRS) THEN
-                            OPEN(LUABSVECS,FILE='ABSVECS',
-     &                          STATUS='UNKNOWN',
-     &                          FORM='UNFORMATTED')
+                             LUABSVECS = -1
+                             CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',
+     &                           ' ',IDUMMY,.FALSE.)
                              CALL READ_XVEC(LUABSVECS,4*NVARPT,
      &                            WORK(KSLV),LABEL1,ISYM,
      &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
-                              CLOSE(LUABSVECS,STATUS='KEEP')
+                             CALL GPCLOSE(LUABSVECS,'KEEP')
                           ENDIF
                             CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                           ' ',IDUMMY,.FALSE.)
