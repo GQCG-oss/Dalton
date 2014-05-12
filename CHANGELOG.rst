@@ -13,9 +13,9 @@ DALTON
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
 - Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
-  (this bug resulted in aborted calculations, not in wrong results)
-- Print irrep names together with symmetry numbers for easier interpretation of output
-- More important output with '@' in column 1 (can be obtained with 'grep @' on the output)
+  (this bug resulted in aborted calculations, not in wrong results).
+- Print irrep names together with symmetry numbers for easier interpretation of output.
+- More important output with '@' in column 1 (can be obtained with 'grep @' on the output).
 - Environment variable DALTON_USE_GLOBAL_SCRATCH disables copying of binaries to worker nodes.
 - Environment variable DALTON_LAUNCHER introduced.
 - Fixed output information about number of MPI processes and number of OpenMP threads.
@@ -23,11 +23,11 @@ DALTON
 - Increased some of the values in the common blocks:
   MXSHEL 1000 -> 1500; MXCORB 2400 -> 5000; MXPRIM 8000 -> 15000;
   MAXOCC 800 -> 1500; MXCENT 200 -> 500; MXCENT_QM 200 -> 500
-  (the static size of dalton.x went from 100 MB to 165 MB) 
-- do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (*EXCITA module)
-- corrected input description for transition moments between excited states (*QUADRA with .DOUBLE RESIDUE)
-- fix for **RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated)
-- fix for molden file when exponent greater than 1.D8
+  (the static size of dalton.x went from 100 MB to 165 MB).
+- Do not print garbage non-zero transition moments and oscillator strengths for triplet excitations (\*EXCITA module).
+- Corrected input description for transition moments between excited states (\*QUADRA with .DOUBLE RESIDUE).
+- Fix for \*\*RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated).
+- Fix for molden file when exponent greater than 1.0D8,
 
 
 LSDALTON
