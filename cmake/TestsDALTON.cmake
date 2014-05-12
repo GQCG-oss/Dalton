@@ -324,17 +324,16 @@ add_dalton_test(cc_beta_solv                  "dalton;cc;medium")
 
 add_dalton_test(cc_geoopt2                    "dalton;cc;long")
 
-add_dalton_test(choles_b3lyp_polar   "dalton;cholesky;medium;dft")
-add_dalton_test(choles_cc2_fop       "dalton;cholesky;medium")
-add_dalton_test(choles_hf_magnet     "dalton;cholesky;medium")
-add_dalton_test(choles_kt3_ctocd     "dalton;cholesky;medium;dft")
-add_dalton_test(choles_lda_prop      "dalton;cholesky;medium;dft")
-add_dalton_test(choact_mp2_energy    "dalton;cholesky;short")
-add_dalton_test(choles_cc2_exci      "dalton;cholesky;long")
-
-add_dalton_test(choles_cc2_polar     "dalton;cholesky;medium")
-
-add_dalton_test(choles_ccsdpt_energy "dalton;cholesky;long")
+add_dalton_test(choles_b3lyp_polar     "dalton;cholesky;medium;dft")
+add_dalton_test(choles_cc2_fop         "dalton;cholesky;medium")
+add_dalton_test(choles_hf_magnet       "dalton;cholesky;medium")
+add_dalton_test(choles_kt3_ctocd       "dalton;cholesky;medium;dft")
+add_dalton_test(choles_lda_prop        "dalton;cholesky;medium;dft")
+add_dalton_test(choact_mp2_energy      "dalton;cholesky;short")
+add_dalton_test(choles_cc2_exci        "dalton;cholesky;medium")
+add_dalton_test(choles_cc2_excdiis     "dalton;cholesky;long")
+add_dalton_test(choles_cc2_polar       "dalton;cholesky;medium")
+add_dalton_test(choles_ccsdpt_energy   "dalton;cholesky;long")
 
 if(ENABLE_PELIB)
 add_dalton_test(pehf_iter     "dalton;peqm;parallel;short")

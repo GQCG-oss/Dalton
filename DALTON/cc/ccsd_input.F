@@ -802,12 +802,12 @@ C
       MSYM = MSYMS
       IF (ITEST .EQ. 0 ) THEN
          MINSCR = .TRUE.
-Casm
-         IF (CHEXDI) MINSCR = .TRUE.
-Casm
          IF (DIRECT) MINSCR = .FALSE.
          MINMEM = .FALSE.
          IF (DIRECT) MINMEM = .FALSE.
+Casm
+         IF (CHEXDI) MINSCR = .TRUE.
+Casm
       ENDIF
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
 

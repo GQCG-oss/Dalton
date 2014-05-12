@@ -341,7 +341,7 @@ C              -------------------
 C              Print trial vectors.
 C              --------------------
                
-c              IF (IPRINT .GT. 45) THEN
+               IF (IPRINT .GT. 45) THEN
                   KRHO2 = KEND1  ! just a dummy...
                   DO IV = 1, NSIMTR
                      KOFF1 = KC1AM + NT1AM(ISYMTR)*(IV - 1)
@@ -350,7 +350,7 @@ c              IF (IPRINT .GT. 45) THEN
                      WRITE(LUPRI,*) 'Vector nr is = ',NR1
                      CALL CC_PRP(WORK(KOFF1),WORK(KRHO2),ISYMTR,1,NC2)
                   ENDDO
-c              ENDIF
+               ENDIF
 
            ELSE
 C
@@ -587,9 +587,6 @@ c                        write(lupri,*) 'cc_trdrv. freq :',iii,freq(iii)
 c                        FREQ(III) = ECURR
 c                     END DO
 c                     CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),FREQ,
-                write(lupri,*) 'About to call CC_CHOATR from CC_TRDRV'
-                write(lupri,*) 'nsimtr :',NSIMTR
-                write(lupri,*) 'ecurr  :',ecurr
                       CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),ecurr,
      &                            WORK(KEND1),LWRK1,ISYMTR,NSIMTR,ISIDE)
                    ELSE

@@ -1,0 +1,81 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# SCF and CC2 energies:
+CRIT1=`$GREP "Total SCF" $log | $GREP "\-76.041415" | wc -l`
+CRIT2=`$GREP "Total CC2" $log | $GREP "\-76.263034" | wc -l`
+TEST[1]=`expr $CRIT1 + $CRIT2`
+CTRL[1]=5
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# Amplitudes
+CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "47" | wc -l`
+CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "2810" | wc -l`
+TEST[2]=`expr $CRIT1 + $CRIT2`
+CTRL[2]=4
+ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
+
+
+# CCS excitations
+CRIT1=`$GREP "\^1A1" $log | grep "0.405" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.473" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.319" | wc -l`
+CRIT4=`$GREP "\^1B1" $log | grep "0.446" | wc -l`
+CRIT5=`$GREP "\^1B2" $log | grep "0.465" | wc -l`
+CRIT6=`$GREP "\^1B2" $log | grep "0.527" | wc -l`
+CRIT7=`$GREP "\^1A2" $log | egrep "0.3809|0.3810" | wc -l`
+CRIT8=`$GREP "\^1A2" $log | egrep "0.4859|0.4860" | wc -l`
+CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
+TEST[3]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
+CTRL[3]=8
+ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
+
+
+
+# CC2 excitations
+CRIT1=`$GREP "\^1A1" $log | grep "0.349" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.418" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.261" | wc -l`
+CRIT4=`$GREP "\^1B1" $log | egrep "0.3940|0.3939" | wc -l`
+CRIT5=`$GREP "\^1B2" $log | grep "0.408" | wc -l`
+CRIT6=`$GREP "\^1B2" $log | egrep "0.5009|0.5010" | wc -l`
+CRIT7=`$GREP "\^1A2" $log | grep "0.321" | wc -l`
+CRIT8=`$GREP "\^1A2" $log | grep "0.436" | wc -l`
+CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
+TEST[4]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
+CTRL[4]=8
+ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
+
+
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+
