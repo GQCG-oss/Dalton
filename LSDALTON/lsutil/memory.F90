@@ -77,7 +77,7 @@ public longintbuffersize
 logical,save :: PrintSCFmemory
 logical,save :: MemModParamPrintMemory
 integer,save :: MemModParamPrintMemorylupri
-integer,save :: PrintMemoryLowerLimit
+integer(kind=8),save :: PrintMemoryLowerLimit
 integer,save :: longintbuffersize
 !Monitor memory for integral code and possibly other parts!
 !GLOBAL VARIABLES
@@ -435,7 +435,7 @@ INTERFACE mem_alloc
 
    Subroutine Set_PrintMemoryLowerLimit(inputPrintMemoryLowerLimit)
       implicit none
-      integer,intent(in) :: inputPrintMemoryLowerLimit
+      integer(kind=8),intent(in) :: inputPrintMemoryLowerLimit
       IF(MemModParamPrintMemory)THEN
          PrintMemoryLowerLimit = inputPrintMemoryLowerLimit
       ENDIF
