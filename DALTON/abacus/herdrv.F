@@ -4253,7 +4253,7 @@ C     Open Mean-field input file generate in READIN
 C
       LUTMP2   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4263,7 +4263,7 @@ C
       BREIT = .NOT.DKTRAN
 CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
-C     We loop over symmetry-independent center
+C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
@@ -4275,7 +4275,7 @@ C     We should now have all the atomic mean-field SO integrals,
 C     now generate them in symmetry-orbital basis
 C
       REWIND (LUMNFPRP)
-      CALL SYMTRAFO(LUMNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
       CALL GPCLOSE(LUTMP2,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')
