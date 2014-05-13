@@ -28,6 +28,7 @@ DALTON
 - Corrected input description for transition moments between excited states (\*QUADRA with .DOUBLE RESIDUE).
 - Fix for \*\*RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated).
 - Fix for Molden file when exponent greater than 1.0D8.
+- Fix for MNF-SO (amfi) if more than 40 nuclei.
 
 
 LSDALTON
