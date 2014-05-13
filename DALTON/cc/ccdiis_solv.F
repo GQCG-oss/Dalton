@@ -76,7 +76,7 @@ C
       INTEGER ITRAN(*)
 C
       CALL QENTER('CCDIIS_SOL')
-casm  IF (IPRLE .GT. 3 ) THEN
+      IF (IPRLE .GT. 3 ) THEN
          WRITE(LUPRI,*) 'CCDIIS_SOL: IPRLE   =    ',IPRLE
          WRITE(LUPRI,*) 'CCDIIS_SOL: TRIPLET =    ',TRIPLET
          WRITE(LUPRI,*) 'CCDIIS_SOL: NREDH   =    ',NREDH
@@ -86,10 +86,7 @@ casm  IF (IPRLE .GT. 3 ) THEN
          WRITE(LUPRI,*) 'CCDIIS_SOL: NVEC    =    ',NVEC
          WRITE(LUPRI,*) 'CCDIIS_SOL: NUPVEC  =    ',NUPVEC
          WRITE(LUPRI,*) 'CCDIIS_SOL: NCCVAR  =    ',NCCVAR
-         do i = 1,nvec
-            write(lupri,'(a,i4,d16.8)') 'eival :',i,eival(i)
-         end do
-casm  ENDIF
+      ENDIF
 C
       IF (CCR12) CALL QUIT('No R12 yet in CCDIIS_SOL.')
 C
@@ -158,8 +155,6 @@ c        IF (IPRLE .GT. 5) THEN
 c        ENDIF                      
 C
          IF (CHOINT) THEN
-            write(lupri,*) 'TEST'
-            write(lupri,*) 'CHOINT wit DIIS '
 c           stop 'Not yet'
             CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
      *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
@@ -185,8 +180,6 @@ C--------------------------------
 C
          TIMRED = TIMRED - SECOND()
 C
-         write(lupri,*) 'Eival before ccred2'
-         write(lupri,'(5f15.6)') (eival(i),i=1,nvec)
          CALL CCRED2(FRHO1,LUFR1,FRHO2,LUFR2,
      *               FC1AM,LUFC1,FC2AM,LUFC2,
      *               TRIPLET,REDH,REDS,NREDH,
@@ -210,8 +203,6 @@ C--------------------------------
 C     Find the next trial vector.
 C--------------------------------
 C
-         write(lupri,*) 'Eival before ccnex_diis'
-         write(lupri,'(5f15.6)') (eival(i),i=1,nvec)
          TIMNEX = TIMNEX - SECOND()
          CALL CCNEX_DIIS(FRHO1,LUFR1,FRHO2,LUFR2,
      *                   FC1AM,LUFC1,FC2AM,LUFC2,LIST,ISTART,
@@ -219,8 +210,6 @@ C
      *                   JCONV,EIVAL,SOLEQ,AMAT,
      *                   CONVERGED,WRK,LWRK,RNORM,RMXNORM)
 C
-         write(lupri,*) 'Eival after ccnex_diis'
-         write(lupri,'(5f15.6)') (eival(i),i=1,nvec)
 C-----------------------------------------------------
 C        Print timing & convergence statistic
 C-----------------------------------------------------
@@ -235,7 +224,7 @@ C-----------------------------------------------------
 C        Print eigenvalues and residuals:
 C-----------------------------------------------------
 C
-         IF (IPRLE .GT. 1 ) THEN
+         IF (CHOINT .OR. (IPRLE .GT. 1 )) THEN
            WRITE(LUPRI,'(/5X,A)')' eigenvalues    residual   converged'
            WRITE(LUPRI,'(5X,A)')'.....................................'
            DO I = 1, NVEC

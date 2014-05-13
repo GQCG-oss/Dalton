@@ -155,7 +155,7 @@ C
             IMULTE(IEX) = 3
          END DO
       END DO
-casm  IF (IPRINT.GT.15) THEN
+      IF (IPRINT.GT.15) THEN
          WRITE(LUPRI,*) 'IN CC_EXCI after Reinit'
          WRITE(LUPRI,*) 'NEXCI: ',NEXCI
          WRITE(LUPRI,*) 'Singlet: ',(NCCEXCI(J,1),J=1,NSYM)
@@ -165,8 +165,7 @@ casm  IF (IPRINT.GT.15) THEN
          WRITE(LUPRI,*) 'ISYEXC:',(ISYEXC(J), J=1,NEXCI)
          WRITE(LUPRI,*) 'IMULTE:',(IMULTE(J), J=1,NEXCI)
          WRITE(LUPRI,*) 'EIGVAL:',(EIGVAL(J), J=1,NEXCI)
-         write(lupri,*) 'minscr', minscr
-casm  ENDIF
+      ENDIF
 C
 C-----------------------
 C     Initialize Leinfi.
@@ -374,7 +373,6 @@ C
       DO 9000 ISYM = 1, NSYM
 C
 C
-         write(lupri,*) 'minscr' ,minscr
 C--------------------------------------
 C       Start loop over multiplicities: 
 C--------------------------------------
@@ -609,8 +607,6 @@ C
 c                NUPVEC = NUPVEC_SV
 c                NREDH  = NUPVEC
 C 
-                 write(lupri,*) 'After CCEQ_STR. nupvec :',nupvec
-                 write(lupri,*) 'After CCEQ_STR. nredh  :',nredh 
                  CCRSTR = CCRSTRS
                  LREDS  = LREDS_SV
                  THRLE  = THRLE_SV
@@ -625,31 +621,7 @@ C
                 END IF
               END DO
            END IF
-c          stop 'End of test'
 C
-c          DO ICOUNT = 1, NSIM
-c            IF (CHOINT) THEN
-c               NUPVEC_SV = NUPVEC
-c               continue
-c               WORK(KEIVAL-1+ICOUNT) = 0.0D0
-c               work(keival) = 0.3087169265
-c               work(keival+1) = 0.8969289376
-c              write(lupri,'(a,2i4,d15.6)') 'isymm, state, eigval :',
-c    &                     isym,icount,EIGVAL(ISYOFE(ISYM)+ICOUNT)
-c            ELSE
-c               IF (TRIPLET) THEN
-c                 WORK(KEIVAL-1+ICOUNT) = EIGVAL(ITROFE(ISYM)+ICOUNT)
-c               ELSE
-c                 WORK(KEIVAL-1+ICOUNT) = EIGVAL(ISYOFE(ISYM)+ICOUNT)
-c               END IF
-c            END IF
-c          END DO
-C
-c 666      CONTINUE
-
-           do icount = 1,nsim
-              write(lupri,*) 'work(keival) ',WORK(KEIVAL-1+ICOUNT) 
-           end do
            CALL CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,
      *                     FC1AM,LUFC1,FC2AM,LUFC2,LIST,IRST,
      *                     TRIPLET,ISIDE,NSIMR,NUPVEC,
@@ -657,24 +629,6 @@ c 666      CONTINUE
      *                     WORK(KSOLEQ),WORK(KAMAT),
      *                     WORK(KITRAN),WORK(KCONV),WORK(KRNORM),
      *                     WORK(KWRK1),LWRK1)
-C
-c          IF (CHOINT .AND. (.NOT. DISCON)) THEN
-c             MAXLE_SV = MAXLE
-c             MAXLE = 5
-c             ecurr = ecurr_new
-c             from_diis = .true.
-c             CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
-c    *                      FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
-c    *                      FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-c    *                      LREDS,WORK(KREDS),FS12AM,LUFS12,FS2AM,LUFS2,
-c    *                      LINQCC,TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
-c    *                      NREDH,WORK(KREDH),WORK(KEIVAL),
-c    *                      WORK(KSOLEQ),WORK(KWRK1),LWRK1,APROXR12)
-c             MAXLE  = MAXLE_SV
-c             NUPVEC = NUPVEC_SV
-c             NREDH  = NUPVEC
-c             GOTO 666
-c          END IF
 C
          ELSE
            CALL CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,
@@ -873,12 +827,6 @@ C       And we have to if Cholesky CC2
 C==========================================================
 C----------------------------------------------------------
 C
-         write(lupri,*) '==================================='
-         write(lupri,*)
-         write(lupri,*) 'About to enter self-consistent loop'
-         write(lupri,*)
-         write(lupri,*) '==================================='
-         call flshfo(lupri)
 C
          IF (OMESC .AND. ((CCSDT.AND.(.NOT.CCSDT_DIIS)) 
      &       .OR. (CHOINT .AND. CC2 .AND. (.NOT. CHEXDI)))) THEN
@@ -1126,7 +1074,6 @@ C                   -------------------------------
      &                   'Warning - Large difference between '//
      &                   'left and right excitation energies'
                     ELSE
-             write(lupri,*) 'cc_exci. eigval :',ILSTNR,EIGVAL(ILSTNR)
                      EIGVAL(ILSTNR) = WORK(KEIVAL+ICOUNT-1)
                     END IF
 C
