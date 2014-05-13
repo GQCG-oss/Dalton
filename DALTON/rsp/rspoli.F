@@ -1192,6 +1192,8 @@ C
              CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
          END IF
 C
+#ifdef FIXME
+! radovan working on this
          IF (IPRRSP.GT.30) THEN
             DO, ICSIM = 1,NCSIM
                WRITE(LUPRI,'(/A,I5)')
@@ -1224,6 +1226,7 @@ C
             END IF
             END DO
          END IF
+#endif
 
          IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
