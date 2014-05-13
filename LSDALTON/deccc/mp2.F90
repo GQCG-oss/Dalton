@@ -1806,12 +1806,12 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   integer,pointer :: IPVT(:)
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-#ifdef VAR_MPI
   real(realk), pointer   :: work1(:)
   real(realk)            :: RCOND
+  integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
+#ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
-  integer(kind=ls_mpik) :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
   TAG = 131124879
 #endif
   ForcePrint = .TRUE.
