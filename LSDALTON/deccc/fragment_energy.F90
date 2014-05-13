@@ -2139,7 +2139,7 @@ contains
      integer,pointer :: OrbOccDistTrackMyAtom(:)
      integer,pointer :: OrbVirtDistTrackMyAtom(:)
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
-
+     logical :: BruteForce
      times_fragopt => null()
      call dec_fragment_time_init(times_fragopt)
      
@@ -2149,11 +2149,12 @@ contains
      write(DECinfo%output,'(a)')    ' FOP ==============================================='
      write(DECinfo%output,'(a)')    ' FOP'
 
-     BinarySearch = .FALSE.
-     SeperateExpansion = .FALSE.
-     OrbDistanceSpec = .FALSE.
-     DistanceRemoval = .FALSE.
-     TestOcc = .FALSE.
+     BinarySearch = .FALSE.      !Use Binary Search in Reduction Scheme
+     SeperateExpansion = .FALSE. !Expansion for Occ and Virt is done seperately 
+     OrbDistanceSpec = .FALSE.   !Orbital Specific expansion
+     DistanceRemoval = .FALSE.   !Use Distance to remove orbitals when no Energy Contribs 
+     TestOcc = .FALSE.           !converge Occ first 
+     BruteForce = .FALSE.        !BruteForce 
      write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
      IF(DECinfo%FragmentExpansionScheme.EQ.1)THEN
         write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
@@ -2206,6 +2207,20 @@ contains
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
         TestOcc = .TRUE.
+     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.7)THEN
+        write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '
+        IF(DECInfo%OnlyOccPart)THEN
+           write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Occupied Orbitals'
+        ELSEIF(DECInfo%OnlyVirtPart)THEN
+           write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Virtual Orbitals'
+        ELSE
+!           write(DECinfo%output,'(a)') ' This schem is identical to Scheme = 4'
+!           write(DECinfo%output,'(a)') ' unless ONLYOCCPART or ONLYVIRTPART is specified which you have not'
+        ENDIF
+        write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
+        BinarySearch = .TRUE.
+        OrbDistanceSpec = .TRUE. 
+        BruteForce = .TRUE.
      ELSE
         call lsquit('FragmentExpansionScheme unknown',-1)
      ENDIF
@@ -2486,7 +2501,7 @@ contains
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
                 & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
                 & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
-                & TestOcc,t1full=t1full)
+                & TestOcc,BruteForce,t1full=t1full)
         else
            call fragopt_reduce_local_orbitals(MyAtom,AtomicFragment, &
               & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,BinarySearch, &
@@ -2494,7 +2509,7 @@ contains
               & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
               & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
               & OccAOS,VirtAOS,OldOccAOS,OldVirtAOS,OrbDistanceSpec,DistanceRemoval,&
-              & TestOcc)
+              & TestOcc,BruteForce)
         end if
 
      end if WhichReductionScheme
@@ -3046,7 +3061,7 @@ contains
        & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
        & SortedDistanceTableOrbAtomVirt,OrbVirtDistTrackMyAtom,&
        & ExpOccAOS,ExpVirtAOS,ExpOldOccAOS,ExpOldVirtAOS,OrbDistanceSpec,&
-       & DistanceRemoval,TestOcc,t1full)
+       & DistanceRemoval,TestOcc,BruteForce,t1full)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3075,7 +3090,7 @@ contains
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)  :: RejectThresh,FOT
-    logical,intent(in) :: OrbDistanceSpec,DistanceRemoval,TestOcc
+    logical,intent(in) :: OrbDistanceSpec,DistanceRemoval,TestOcc,BruteForce
     logical,pointer :: ExpOccAOS(:),ExpVirtAOS(:),ExpOldOccAOS(:),ExpOldVirtAOS(:) !only alloc if OrbDistanceSpec
     logical,pointer :: OccAOS_old(:), VirtAOS_old(:), OccAOS_new(:), VirtAOS_new(:), &
          & OccAOS_orig(:),VirtAOS_orig(:)
@@ -3091,6 +3106,9 @@ contains
     real(realk)  :: LagEnergyOld, OccEnergyOld,VirtEnergyOld
     real(realk),pointer :: SortedOccContribs(:),SortedVirtContribs(:)
     integer,pointer :: TrackSortedOccContribs(:),TrackSortedVirtContribs(:)
+    real(realk),pointer :: BruteForceOccContribs(:),BruteForceVirtContribs(:)
+    integer,pointer :: BruteForceTrackListOcc(:),BruteForceTrackListVirt(:)
+    integer :: k,j,noccEOS,nunoccEOS
 
     ! Initialize logical vectors controlling occupied and virtual AOS during reduction scheme
     call mem_alloc(OccAOS_old,nocc)
@@ -3119,6 +3137,109 @@ contains
     OccEnergyOld = AtomicFragment%EoccFOP
     VirtEnergyOld = AtomicFragment%EvirtFOP
 
+    noccEOS = AtomicFragment%noccEOS
+    nunoccEOS = AtomicFragment%nunoccEOS
+
+    IF(BruteForce)THEN
+       call mem_alloc(BruteForceOccContribs,nocc)
+       BruteForceOccContribs = 0.0E0_realk
+       call mem_alloc(BruteForceTrackListOcc,nocc)
+       do I=1,nocc
+          BruteForceTrackListOcc(I) = I
+       enddo
+!       IF(DECinfo%OnlyOccPart)THEN
+          !determine Brute Force Occupied Energy contribution
+          WRITE(DECinfo%output,*)'COUNT(ExpOccAOS)',COUNT(ExpOccAOS)
+          do I=1,COUNT(ExpOccAOS)
+             VirtAOS_new = ExpVirtAOS
+             OccAOS_new = ExpOccAOS
+             WRITE(DECinfo%output,*)'COUNT(OccAOS_new)',COUNT(OccAOS_new)
+             WRITE(DECinfo%output,*)'REMOVE number ',I
+             K=0
+             DO J=1,SIZE(OccAOS_new)
+                IF(OccAOS_new(J))K = K + 1
+                IF(K.EQ.I)THEN
+                   OccAOS_new(J) = .FALSE.
+                   EXIT
+                ENDIF
+             ENDDO
+             WRITE(DECinfo%output,*)'After Removal COUNT(OccAOS_new)',COUNT(OccAOS_new)
+             call SanityCheckOrbAOS(AtomicFragment,nocc,'O',OccAOS_new)
+             WRITE(DECinfo%output,*)'After SanityChack COUNT(OccAOS_new)',COUNT(OccAOS_new)
+             IF(COUNT(OccAOS_new).NE.COUNT(ExpOccAOS))THEN
+                bin_reduction_converged = .FALSE.
+                call atomic_fragment_free(AtomicFragment)
+                call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
+                     & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+                IF(DECinfo%FragmentExpansionRI)THEN
+                   CALL MP2_RI_energyContribution(AtomicFragment)
+                   call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+                ELSE
+                   call atomic_fragment_energy_and_prop(AtomicFragment)
+                ENDIF
+                BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP-OccEnergyOld)
+             ELSE
+                BruteForceOccContribs(I) = 300000.0E0_realk + I !EOS orbital
+             ENDIF
+          ENDDO
+          do I=1,nocc
+             WRITE(DECinfo%output,'(A,I3,A,ES16.8)')'Non Sorted BruteForceOccContribs(',I,')',BruteForceOccContribs(I)
+          enddo
+          call real_inv_sort_with_tracking(BruteForceOccContribs,BruteForceTrackListOcc,nocc)
+          do I=1,nocc
+             II = BruteForceTrackListOcc(I)
+             WRITE(DECinfo%output,'(A,I3,A,ES16.8)')'Sorted BruteForceOccContribs(',II,')',BruteForceOccContribs(I)
+          enddo
+          do I=1,nocc
+             II = OrbOccDistTrackMyAtom(I)
+             WRITE(DECinfo%output,'(A,I3,A,ES16.8)')'Sorted Distance(',II,')',SortedDistanceTableOrbAtomOcc(I)
+          enddo
+
+!       ENDIF
+
+       call mem_alloc(BruteForceVirtContribs,nunocc)
+       BruteForceVirtContribs = 0.0E0_realk
+       call mem_alloc(BruteForceTrackListVirt,nunocc)       
+       do I=1,nocc
+          BruteForceTrackListVirt(I) = I
+       enddo
+       IF(DECinfo%OnlyVirtPart)THEN
+          call lsquit('Brute force and virtonly not implemented',-1)
+       ENDIF
+!!$!       IF(DECinfo%OnlyVirtPart)THEN
+!!$          !determine Brute Force Occupied Energy contribution
+!!$          WRITE(DECinfo%output,*)'COUNT(ExpVirtAOS)',COUNT(ExpVirtAOS)
+!!$          do I=1,COUNT(ExpVirtAOS)
+!!$             VirtAOS_new = ExpVirtAOS
+!!$             OccAOS_new = ExpOccAOS
+!!$             WRITE(DECinfo%output,*)'COUNT(VirtAOS_new)',COUNT(VirtAOS_new)
+!!$             WRITE(DECinfo%output,*)'REMOVE number ',I
+!!$             K=0
+!!$             DO J=1,SIZE(VirtAOS_new)
+!!$                IF(VirtAOS_new(J))K = K + 1
+!!$                IF(K.EQ.I)THEN
+!!$                   VirtAOS_new(J) = .FALSE.
+!!$                   EXIT
+!!$                ENDIF
+!!$             ENDDO
+!!$             WRITE(DECinfo%output,*)'After Removal COUNT(VirtAOS_new)',COUNT(VirtAOS_new)
+!!$
+!!$             bin_reduction_converged = .FALSE.
+!!$             call atomic_fragment_free(AtomicFragment)
+!!$             call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
+!!$                  & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+!!$             IF(DECinfo%FragmentExpansionRI)THEN
+!!$                CALL MP2_RI_energyContribution(AtomicFragment)
+!!$                call get_occ_virt_lag_energies_fragopt(AtomicFragment)
+!!$             ELSE
+!!$                call atomic_fragment_energy_and_prop(AtomicFragment)
+!!$             ENDIF
+!!$             BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP)            
+!!$          ENDDO
+!!$          call real_inv_sort_with_tracking(BruteForceOccContribs,BruteForceTrackListOcc,nocc)
+!!$!       ENDIF
+    ENDIF
+
     ! Set FOT and convergence control
     FOT = DECinfo%FOT
     reduction_converged=.false.
@@ -3131,6 +3252,14 @@ contains
        enddo
        SortedOccContribs = ABS(OccContribs)
        call real_inv_sort_with_tracking(SortedOccContribs,TrackSortedOccContribs,nocc)
+
+       IF(BruteForce)THEN
+          do I=1,nocc
+             II = TrackSortedOccContribs(I)
+             WRITE(DECinfo%output,'(A,I3,A,ES16.8)')'Sorted OccContribs(',II,')',SortedOccContribs(I)
+          enddo
+       ENDIF
+
        call mem_alloc(SortedVirtContribs,nunocc)
        call mem_alloc(TrackSortedVirtContribs,nunocc)
        do i=1,nunocc
@@ -3138,6 +3267,8 @@ contains
        enddo
        SortedVirtContribs = ABS(VirtContribs)
        call real_inv_sort_with_tracking(SortedVirtContribs,TrackSortedVirtContribs,nunocc)
+
+!       call BinarySearch(PriorityListOcc,PriorityListVirt,...)
 
        IF(OrbDistanceSpec)THEN
           !the highest number of Occupied that has been verified to be acceptable
@@ -3183,8 +3314,10 @@ contains
           call ReduceSpace_orbitalspecific(AtomicFragment,nunocc,VirtContribs,'V',&
                & RejectThresh,VirtAOS_new,nvirt_new)
           nLowerOcc  = nocc_new  !highest number of Occupied that has been verified to be NOT acceptable
-          nLowerVirt = nvirt_new !highest number of Virtuals that has been verified to be NOT acceptable          
+          nLowerVirt = nvirt_new !highest number of Virtuals that has been verified to be NOT acceptable  
        ENDIF
+       !nLowerOcc = noccEOS
+       !nLowerVirt = nunoccEOS
        call mem_dealloc(SortedOccContribs)
        call mem_dealloc(SortedVirtContribs)
 
@@ -3249,10 +3382,17 @@ contains
           ENDIF
           IF(nLowerOcc.GT.nHigherOcc)CALL LSQUIT('nLowerOcc.GT.nHigherOcc',-1)
           IF(nLowerVirt.GT.nHigherVirt)CALL LSQUIT('nLowerVirt.GT.nHigherVirt',-1)
-          call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,DistanceRemoval,&
-             &OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
-          call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
-             &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
+          IF(BruteForce)THEN
+             call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,BruteForce,&
+                  &BruteForceTrackListOcc,'O',OccAOS_new,nocc_new)
+             call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,BruteForce,&
+                  &BruteForceTrackListVirt,'V',VirtAOS_new,nvirt_new)
+          ELSE
+             call ReduceSpace_binary(AtomicFragment,nocc,TrackSortedOccContribs,DistanceRemoval,&
+                  &OrbOccDistTrackMyAtom,'O',OccAOS_new,nocc_new)
+             call ReduceSpace_binary(AtomicFragment,nunocc,TrackSortedVirtContribs,DistanceRemoval,&
+                  &OrbVirtDistTrackMyAtom,'V',VirtAOS_new,nvirt_new)
+          ENDIF
 
           IF(DECinfo%PL.GT.1)THEN
              WRITE(DECinfo%output,*)'BIN SEARCH COUNT(OccAOS_new)',COUNT(OccAOS_new)
@@ -3342,6 +3482,13 @@ contains
        END DO BINARY_REDUCTION_LOOP
        call mem_dealloc(TrackSortedOccContribs)
        call mem_dealloc(TrackSortedVirtContribs)
+
+       IF(BruteForce)THEN
+          call mem_dealloc(BruteForceOccContribs)
+          call mem_dealloc(BruteForceTrackListOcc)
+          call mem_dealloc(BruteForceVirtContribs)
+          call mem_dealloc(BruteForceTrackListVirt)
+       ENDIF
     ELSE
        REDUCTION_LOOP: do iter=1,max_iter_red
           
@@ -3934,7 +4081,7 @@ contains
   end subroutine Set_fragment_fixed_AOSatoms
 
   subroutine ReduceSpace_binary(MyFragment,nocc_full,TrackSortedOccContribs,&
-       & DistanceRemoval,OrbOccDistTrackMyAtom,OccOrVirt,OccOrbAOS,nocc)
+       & NonOccContribsRemoval,SecondaryTrackList,OccOrVirt,OccOrbAOS,nocc)
     implicit none
     !> Fragment info
     type(decfrag),intent(inout) :: MyFragment
@@ -3943,8 +4090,8 @@ contains
     !> Tracking info of Sorted Contributions to the Virtual fragment 
     !> energy from each individual Occ/virt orbital
     integer,intent(in),dimension(nocc_full) :: TrackSortedOcccontribs
-    !> Tracking info of Sorted Distances from Orbital to MyAtom
-    integer,intent(in),dimension(nocc_full) :: OrbOccDistTrackMyAtom
+    !> Tracking info of Sorted Distances from Orbital to MyAtom   - OrbOccDistTrackMyAtom
+    integer,intent(in),dimension(nocc_full) :: SecondaryTrackList 
     !> Occupied ('O') or virtual orbitals ('V') under consideration
     character(len=1),intent(in) :: OccOrVirt
     !> Logical vector telling which Occ orbitals are included in AOS 
@@ -3953,22 +4100,22 @@ contains
     !> Number of desired occ orbitals AFTER the reduction has been carried out
     integer,intent(in) :: nOcc
     !> Use Distance compared to Energy contribution to reduce space
-    logical,intent(in) :: DistanceRemoval
+    logical,intent(in) :: NonOccContribsRemoval
     !local orbitals
     integer :: i,ii    
     !loop over the first nocc (with highest OccContribs(i)) 
     OccOrbAOS = .false.
     call SanityCheckOrbAOS(MyFragment,nocc_full,OccOrVirt,OccOrbAOS)
-    IF(DistanceRemoval.AND.(DECinfo%onlyOccPart.AND.(OccOrVirt.EQ.'O')))THEN
+    IF(NonOccContribsRemoval.AND.(DECinfo%onlyOccPart.AND.(OccOrVirt.EQ.'O')))THEN
        !add/remove Occupied Orbitals based on Distance
        do i=1,nocc
-          ii = OrbOccDistTrackMyAtom(i)
+          ii = SecondaryTrackList(i)
           OccOrbAOS(ii) = .true.
        enddo
-    ELSEIF(DistanceRemoval.AND.(DECinfo%onlyVirtPart.AND.(OccOrVirt.EQ.'V')))THEN
+    ELSEIF(NonOccContribsRemoval.AND.(DECinfo%onlyVirtPart.AND.(OccOrVirt.EQ.'V')))THEN
        !add/remove Virtual Orbitals based on Distance
        do i=1,nocc
-          ii = OrbOccDistTrackMyAtom(i)
+          ii = SecondaryTrackList(i)
           OccOrbAOS(ii) = .true.
        enddo
     ELSE
