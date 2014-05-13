@@ -7,13 +7,14 @@ module cc_tools_module
    
    contains
    
-   subroutine mo_work_dist(m,fai,tl,nod)
+   subroutine mo_work_dist(m,fai,tl,have_part,nod)
       implicit none
       integer,intent(in) :: m
       integer,intent(inout)::fai
       integer,intent(inout)::tl
-      integer(kind=ls_mpik) :: nnod, me
+      logical,intent(out)  :: have_part
       integer(kind=ls_mpik),optional,intent(inout)::nod
+      integer(kind=ls_mpik) :: nnod, me
       integer :: l,ml
    
       me   = 0
@@ -40,6 +41,15 @@ module cc_tools_module
             fai = fai + ml
             tl  = l
          endif
+      endif
+
+      !If too many nodes are used set the first element to an invalid counter
+      !**********************************************************************
+      if(fai > m)then
+         fai = -1
+         have_part = .false.
+      else
+         have_part = .true.
       endif
    
    end subroutine mo_work_dist

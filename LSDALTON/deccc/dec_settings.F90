@@ -720,6 +720,18 @@ contains
        DECinfo%CCSDnosaferun = .true.
     endif
 
+    if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
+      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+            & does not make sense, please change input!',-1)
+
+    endif
+
 
   end subroutine check_dec_input
 

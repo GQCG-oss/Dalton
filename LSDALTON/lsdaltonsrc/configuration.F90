@@ -1500,7 +1500,8 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
   LOGICAL,intent(inout)                :: READWORD
   character(len=80),intent(inout)  :: WORD
   character(len=2)   :: PROMPT
-  integer :: i,PrintMemoryLowerLimit
+  integer :: i
+  integer(kind=8) :: PrintMemoryLowerLimit
 
   INFOLOOP: DO   
      IF(READWORD) THEN

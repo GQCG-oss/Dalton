@@ -805,6 +805,9 @@ C
          IF (DIRECT) MINSCR = .FALSE.
          MINMEM = .FALSE.
          IF (DIRECT) MINMEM = .FALSE.
+Casm
+         IF (CHEXDI) MINSCR = .TRUE.
+Casm
       ENDIF
       IF ( .NOT. MINSCR ) MINMEM = .TRUE.
 
@@ -1174,6 +1177,8 @@ C=====================================================================*
 #include "ccrspprp.h"
 #include "ccexci.h"
 
+#include "maxorb.h"
+#include "ccdeco.h"
 
 * local parameters:
       CHARACTER SECNAM*(9)
@@ -1200,7 +1205,7 @@ C=====================================================================*
      *            '.JACTST','.LHTR  ','.NOSCOM','.STSD  ','.TOLSC ',
      *            '.OMEINP','.STVEC ','.STOLD ','.CCTREN','.THREXC',
      *            '.CCSPIC','.CC2PIC','.CCSDPI','.MARGIN','.SQROVL',
-     *            '.ANALYS','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     *            '.ANALYS','.CHEXDI','.DV4DIS','.XXXXXX','.XXXXXX'/
 
 *---------------------------------------------------------------------*
 * begin:
@@ -1233,6 +1238,9 @@ C
       MARGIN = .FALSE.
       EXCI_CONT = .FALSE.
       XMARGIN = 1.0
+C
+      CHEXDI = .FALSE.
+      DV4DIS = .FALSE.
 C
       SQROVLP    = .FALSE.
       CCSDTRENRM = .FALSE.
@@ -1504,17 +1512,20 @@ C
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .CHEXDI  Use DIIS solver for Cholesky CC2 excitations
 C----------------------------------------------------------------
 C
 22          CONTINUE
+               CHEXDI = .TRUE.
+               MINSCR = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------
-C           .XXXXXX  unused
+C           .DV4DIS Use Davidson with omega=zero before CC2/DIIS
 C----------------------------------------------------------------
 C
 23          CONTINUE
+               DV4DIS = .TRUE.
             GO TO 100
 C
 C----------------------------------------------------------------

@@ -26,7 +26,7 @@ C     Selection of specific (property) integrals:
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH,
+     &        DERAM,  DIPANH, RMAOTWO,
      &        S2MBRA, S2MKET, S2MMIX, TEST_GEN1INT, DOLRINTS
 C
       COMMON /CBIHER/ EXPKR(3), THRESH,
@@ -51,6 +51,6 @@ C
      &        XDDXR3, PVIOLA, PVPINT, POTENE, QDBINT, QDBTST,
      &        RANGMO, RPSO, PXPINT, OZKE, PSOKE, DNSKE, SDKE, FCKE,
      &        DSOKE,  PSOOZ,  EFBDER, EFB2DR, MAGQDP, MQDPTS,
-     &        DERAM,  DIPANH,
+     &        DERAM,  DIPANH, RMAOTWO,
      &        S2MBRA, S2MKET, S2MMIX, TEST_GEN1INT, DOLRINTS
 C --- end of cbiher.h ---
