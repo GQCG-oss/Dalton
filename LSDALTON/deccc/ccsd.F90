@@ -4278,35 +4278,37 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !magic = DECinfo%MPIsplit/5
     magic = 2
     !test for scheme with highest reqirements --> fastest
-    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,4,.false.)
+    print *,"call here 1"
+    scheme=4
+    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
     if(first)then
       if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,3,.false.)
+        print *,"call here 2"
+        scheme=3
+        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
         if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
-          mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,2,.false.)
+          scheme=2
+          print *,"call here 3"
+          mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
           if (mem_used>frac_of_total_mem*MemFree)then
             write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
             write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
+          print *,"call here exit 1"
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,3,.false.)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
+          print *,"call here exit 2"
             mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
             & available",DECinfo%output)
           else
-            scheme=2
-          endif
-        else
-          scheme=3
         endif
 #endif
-      else
-        scheme=4
       endif
     endif
 
@@ -4360,6 +4362,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
+          print *,"call here manual"
       mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
 
       if (frac_of_total_mem*MemFree<mem_used) then
@@ -4372,6 +4375,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !determine gamma batch first
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
         nbg=nbg+1
+          print *,"call here adapt 1"
         mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
       enddo
       if (nbg>=nb)then
@@ -4384,6 +4388,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !determine
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba=nba+1
+          print *,"call here adapt 2"
         mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
       enddo
       if (nba>=nb)then
@@ -4394,6 +4399,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
          nba=nba-1
       endif
     endif
+          print *,"call here done"
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
 
     ! mpi_split should be true when we want to estimate the workload associated
@@ -4517,7 +4523,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     !calculate minimum memory requirement
     ! u+3*integrals
-    if(s==4)then
+    select case(s)
+    case(4)
 
       !THROUGHOUT THE ALGORITHM
       !************************
@@ -4561,7 +4568,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       ! govov
       memout = memout + (1.0E0_realk*no*no)*nv*nv
 
-    else if(s==3)then
+    case(3)
 
 
 
@@ -4605,7 +4612,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            & + max(i8*nb*nb,max(2_long*tl1,i8*tl2)))       &
            & + 2.0E0_realk * (i8*nv**2)*no**2
 
-    else if(s==2)then
+    case(2)
 
 
       !THROUGHOUT THE ALGORITHM
@@ -4660,10 +4667,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
 
 
-    else
+    case default
+
       print *,"DECinfo%force_scheme",DECinfo%force_scheme,s
-      call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
-    endif
+      call lsquit("ERROR(get_min_mem_req):requested memory scheme not known,&
+      & should not happen",-1)
+
+    end select
 
     if(print_stuff) then
       write(DECinfo%output,*) "Memory requirements:"
