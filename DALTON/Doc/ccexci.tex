@@ -20,6 +20,8 @@ are also available.
 %and \cite{Hald:JCP113} for triplet excitation energies.
 For understanding the theoretical background for some
 aspects of the CC3 calculations consult also Ref.\ \cite{Christiansen:JCP105,Hald:JCP113,Christiansen:JCP103,Hald:JCP115}.
+The implementation of the CC2/Cholesky algorithm for calculating exitation
+energies is described in Ref. \cite{choexci}.
 
 \begin{center}
 \fbox{
@@ -123,6 +125,14 @@ in comparison to the default solver which scales quadratically.
 However this solver might fail in cases with states dominated by
 double or higher excited determinants. 
 (Default: OFF).
+%
+\item[\Key{CHEXDI}]
+Use DIIS solver for Cholesky CC2 excitation energies.
+(Default: Use Davidson algorithm)
+%
+\item[\Key{DV4DIS}]
+Run Davidson algorithm with zero omega as preconditioner for the 
+subsequent DIIS solver providing the self-consitent omegas.
 
 %\item[\Key{STVEC}] 
 %

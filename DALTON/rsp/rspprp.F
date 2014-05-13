@@ -291,7 +291,7 @@ C
 C CALCULATE CONFIGURATION PART OF GRADIENT VECTOR
 C
 C                (  <J,M,0> )
-C                (         )
+C                (          )
 C                ( -<0,M,J> )
 C
 C  |0> REFERENCE STATE OF SYMMETRY IREFSY
@@ -360,9 +360,9 @@ C
  60            CONTINUE
  70         CONTINUE
  50      CONTINUE
-         IF (IPRRSP.GT.110) THEN
+         IF (IPRRSP.GE.75) THEN
             WRITE(LUPRI,'(/A)')' ACTIVE PART OF PROPERTY MATRIX'
-            CALL OUTPUT(WRK(KUPRP),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
+            CALL OUTPUT(WRK(KUPRP),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
          END IF
          ISPIN1 = 0
          IF (TRPLET) THEN
@@ -375,7 +375,7 @@ C
      *               NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
 C        CALL RSPSIG(ICSYM,IHCSYM,NCDET,NHCDET,C,HC,FCAC,H2AC,IFLAG,
 C    *                  NOH2,WORK,KFREE,LFREE)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of GP vector
             IF ( IPRRSP.GT.110 ) THEN
                WRITE(LUPRI,'(/A)')
@@ -432,7 +432,7 @@ C
      *               GP(1+KZVAR,ISIM),WRK(KUPRP),DUMMY,
      *               NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
          CALL DSCAL(KZCONF,DM1,GP(1+KZVAR,ISIM),1)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of GP vector
             IF ( IPRRSP.GT.110 ) THEN
                WRITE(LUPRI,'(/A)')
@@ -480,7 +480,7 @@ C
 #include "infrsp.h"
 C
       CALL QENTER('GETGPV')
-      IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
+      IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR.
      &   WORD(3:8).EQ.'SPNSCA') THEN
          KGP   = 1
          KWRK1 = KGP + KZYVAR
@@ -492,9 +492,9 @@ C
          ANTSYM_GP = -1.0D0 ! real operator, GP_Z = ANTSYM_GP * GP_Y
       ELSE IF (WORD(2:7).EQ.'LONMAG') THEN
          CALL PRPABA(WORD,WRK,LWRK)
-      ELSE IF (OPRANK(INDPRP(WORD)).EQ.1 .AND. .NOT.SOPPA) THEN 
+      ELSE IF (OPRANK(INDPRP(WORD)).EQ.1 .AND. .NOT.SOPPA) THEN
          KGP = 1
-         KWRK1 = KGP + KZYVAR 
+         KWRK1 = KGP + KZYVAR
          LWRK1 = LWRK + 1 - KWRK1
          CALL QRGP(WORD,WRK(KGP),CMO,XINDX,ANTSYM,WRK(KWRK1),LWRK1)
       ELSE

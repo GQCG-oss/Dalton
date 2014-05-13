@@ -58,11 +58,6 @@ C
 #include "ccsdinp.h"
 #include "cclr.h"
 #include "leinf.h"
-
-#include "maxorb.h"
-#include "ccdeco.h"
-#include "ccdeco2.h"
-C
       PARAMETER (D0 = 0.0D0 )
 C
       CHARACTER*(*)  FRHO1,FRHO2,FC1AM,FC2AM
@@ -148,26 +143,17 @@ C
             END IF
           ENDDO
 
-c        IF (IPRLE .GT. 5) THEN
+         IF (IPRLE .GT. 5) THEN
             WRITE (LUPRI,*)
      *      ' >>> Call CC_TRDRV with TRIPLET flag set to:',
      *      TRIPLET
-c        ENDIF                      
+         ENDIF                      
 C
-         IF (CHOINT) THEN
-c           stop 'Not yet'
-            CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
-     *                    FS2AM,IDUMMY,
-     *                    ISIDE,0,NUPVEC,WRK,LWRK,APROXR12)
-         ELSE
-            CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
-     *                    FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
-     *                    TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
-     *                    FS2AM,IDUMMY,
-     *                    ISIDE,0,NUPVEC,WRK,LWRK,APROXR12)
-         END IF
+         CALL CC_TRDRV(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,FRHO12,LUFR12,
+     *                 FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
+     *                 TRIPLET,.TRUE.,ITRAN,EIVAL,FS12AM,IDUMMY,
+     *                 FS2AM,IDUMMY,
+     *                 ISIDE,0,NUPVEC,WRK,LWRK,APROXR12)
 C
          CALL FLSHFO(LUPRI)
          TIM    = SECOND() - TIM
@@ -224,13 +210,12 @@ C-----------------------------------------------------
 C        Print eigenvalues and residuals:
 C-----------------------------------------------------
 C
-         IF (CHOINT .OR. (IPRLE .GT. 1 )) THEN
+         IF (IPRLE .GT. 1 ) THEN
            WRITE(LUPRI,'(/5X,A)')' eigenvalues    residual   converged'
            WRITE(LUPRI,'(5X,A)')'.....................................'
            DO I = 1, NVEC
               WRITE(LUPRI,'(5X,F12.9,E13.4,5X,L2)')
      *          EIVAL(I), RNORM(I), CONVERGED(I)
-                if (.not. converged(i)) ecurr_new = eival(i)
            END DO
            WRITE(LUPRI,'(5X,A)')'.....................................'
          ENDIF
@@ -251,7 +236,6 @@ C           ( LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS )
      *         '     LINEAR DEPENDENCE BETWEEN ALL NEW TRIAL VECTORS'
          ELSE IF (JCONV.GT.0) THEN
 C           (CONVERGED)
-c           DISCON = .TRUE.
             IF (IPRLE .GT. 10) THEN
                WRITE(LUPRI,'(/,(A,I4,A,A,I4,A))')
      *         ' ITERATIONS CONVERGED FOR',NVEC,
@@ -265,12 +249,7 @@ c           DISCON = .TRUE.
             WRITE(LUPRI,'(/A,I5,A)')
      *         ' *** CCDIIS_SOL - MAXIMUM NUMBER OF ITERATIONS',
      *         ITLE,' REACHED.'
-               IF (CHOINT) THEN
-c                 DISCON = .FALSE.
-                  GOTO 666
-               ELSE
-                  CALL QUIT(' *** CCDIIS_SOL-MAX. ITERATIONS REACHED')
-               END IF
+               CALL QUIT(' *** CCDIIS_SOL-MAX. ITERATIONS REACHED')
          END IF
 C
 C
@@ -325,8 +304,6 @@ C
   930    CONTINUE
       END IF
       CALL FLSHFO(LUPRI)
-C
-  666 CONTINUE
 C
       CALL QEXIT('CCDIIS_SOL')
       RETURN
@@ -502,7 +479,6 @@ C
 C
       RETURN
       END
-C     Restart diis:  Pass ITLEMOD instead of ITLE
 C  /* Deck ccnex2 */
       SUBROUTINE CCNEX_DIIS(FRHO1,LUFR1,FRHO2,LUFR2,
      *                      FC1AM,LUFC1,FC2AM,LUFC2,LIST,ISTART,
