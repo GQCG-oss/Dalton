@@ -4306,8 +4306,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             call lsquit("ERROR(CCSD): there is just not enough memory&
             & available",DECinfo%output)
           endif
-#endif
       endif
+#endif
     endif
 
     if(DECinfo%force_scheme)then
