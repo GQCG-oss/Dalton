@@ -1192,8 +1192,6 @@ C
              CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
          END IF
 C
-#ifdef FIXME
-! radovan working on this
          IF (IPRRSP.GT.30) THEN
             DO, ICSIM = 1,NCSIM
                WRITE(LUPRI,'(/A,I5)')
@@ -1210,14 +1208,6 @@ C
                CALL OUTPUT(QBTD(1,1,ICSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,-1,LUPRI)
             END IF
-         END IF
-         IF (IPRRSP.GT.30) THEN
-            DO, ICSIM = 1,NCSIM
-               WRITE(LUPRI,'(/2A,I5)')' FVTD total contribution'
-     *         ,' FOR VECTOR ',ICSIM
-               CALL OUTPUT(FVTD(1,1,ICSIM),
-     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
-            END IF
             IF (DOMCSRDFT) THEN
                WRITE(LUPRI,'(/A,I5)')
      *         'V^[2c]sr_Hxc total contribution FOR VECTOR ',ICSIM
@@ -1226,7 +1216,6 @@ C
             END IF
             END DO
          END IF
-#endif
 
          IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
