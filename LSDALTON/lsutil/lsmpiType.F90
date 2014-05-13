@@ -239,24 +239,23 @@ module lsmpi_type
 !Checking and measuring variables!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   logical                     :: AddToBuffer
-  integer(kind=long)          :: iLog,iDP,iInt4,iInt8,iSho,iCha
-  integer(kind=long)          :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
+  integer(kind=long)          :: iLog,iDP,iInt4,iInt8,iCha
+  integer(kind=long)          :: nLog,nDP,nInteger4,nInteger8,nCha
   real(realk),pointer         :: lsmpibufferDP(:)
   integer(kind=4),pointer     :: lsmpibufferInt4(:)
   integer(kind=8),pointer     :: lsmpibufferInt8(:)
-  integer(kind=short),pointer :: lsmpibufferSho(:)
   logical,pointer             :: lsmpibufferLog(:)
   character,pointer           :: lsmpibufferCha(:)
   integer,parameter           :: incremLog=169,incremDP=100,incremInteger=626
-  integer,parameter           :: incremCha=1510,incremShort=incremInteger*int_to_short
+  integer,parameter           :: incremCha=1510
   real(realk)                 :: poketime=0.0E0_realk
   integer(kind=long)          :: poketimes = 0
   real(realk)                 :: time_win_unlock = 0.0E0_realk
 
 
-!$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iSho,iCha,&
-!$OMP nLog,nDP,nInteger4,nInteger8,nShort,nCha,lsmpibufferDP,lsmpibufferInt4,&
-!$OMP lsmpibufferInt8,lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
+!$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iCha,&
+!$OMP nLog,nDP,nInteger4,nInteger8,nCha,lsmpibufferDP,lsmpibufferInt4,&
+!$OMP lsmpibufferInt8,lsmpibufferLog,lsmpibufferCha)
 
 contains
   SUBROUTINE NullifyMPIbuffers()
@@ -264,18 +263,15 @@ contains
     nullify(lsmpibufferDP)
     nullify(lsmpibufferInt4)
     nullify(lsmpibufferInt8)
-    nullify(lsmpibufferSho)
     nullify(lsmpibufferLog)
     nullify(lsmpibufferCha)
     nLog=0
     nDP=0
-    nShort=0
     nInteger4=0
     nInteger8=0
     nCha=0
     iLog=0
     iDP=0
-    iSho=0
     iInt4=0
     iInt8=0
     iCha=0
@@ -286,7 +282,6 @@ contains
     print*,'# DoublePrecison elements',nDP
     print*,'# Integer 4 elements     ',nInteger4
     print*,'# Integer 8 elements     ',nInteger8
-    print*,'# Short integer elements ',nShort
     print*,'# Logical elements       ',nLog
     print*,'# Character elements     ',nCha
   END SUBROUTINE PRINTMPIBUFFERSIZES
@@ -2303,16 +2298,16 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer
       IF(AddToBuffer)THEN
-         IF(iSho+1 .GT. nShort)call increaselsmpibufferSho(1_long)
-         lsmpibufferSho(iSho+1) = buffer
-         iSho = iSho + 1
+         IF(iInt4+1 .GT. nInteger4)call increaselsmpibufferInt4(1_long)
+         lsmpibufferInt4(iInt4+1) = buffer
+         iInt4 = iInt4 + 1_long
       ELSE
-         IF(iSho+1 .GT. nShort) then
-           write(*,*) 'ls_mpi_buffer_shortinteger',iSho,nShort
+         IF(iInt4+1_long .GT. nInteger4) then
+           write(*,*) 'ls_mpi_buffer_shortinteger',iInt4,nInteger4
            call lsquit('ls_mpi_buffer_shortinteger: error using buffer',-1)
          ENDIF
-         buffer = lsmpibufferSho(iSho+1)
-         iSho = iSho + 1
+         buffer = lsmpibufferInt4(iInt4+1)
+         iInt4 = iInt4 + 1_long
       ENDIF
     end subroutine ls_mpi_buffer_shortinteger
 
@@ -2322,22 +2317,24 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:)
       integer :: I
-
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf .GT. nShort)call increaselsmpibufferSho(nbuf*i8)
-         DO I=1,nbuf
-            lsmpibufferSho(iSho+I) = buffer(I)
-         ENDDO
-         iSho = iSho + nbuf
-      ELSE
-         IF(iSho+nbuf .GT. nShort) then
-           write(*,*) 'ls_mpi_buffer_shortintegerV',iSho,nbuf,nShort
-           call lsquit('ls_mpi_buffer_shortintegerV: error using buffer',-1)
+         IF(iInt4+nbuf .GT. nInteger4) THEN
+           call increaselsmpibufferInt4(nbuf*i8)
          ENDIF
          DO I=1,nbuf
-            buffer(I) = lsmpibufferSho(iSho+I)
+            IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
+            lsmpibufferInt4(iInt4+I) = buffer(I)
          ENDDO
-         iSho = iSho + nbuf
+         iInt4 = iInt4 + nbuf
+      ELSE
+         IF(iInt4+nbuf .GT. nInteger4) THEN
+           write(*,*) 'ls_mpi_buffer_integer4V:',iInt4,nbuf,nInteger4
+           call lsquit('ls_mpi_buffer_integer4V: error using buffer',-1)
+         ENDIF
+         DO I=1,nbuf
+            buffer(I) = lsmpibufferInt4(iInt4+I)
+         ENDDO
+         iInt4 = iInt4 + nbuf
       ENDIF
     end subroutine ls_mpi_buffer_shortintegerV
 
@@ -2347,28 +2344,29 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:,:)
       integer :: I,J,offset
-
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*nbuf2*i8)
+         IF(iInt4+nbuf1*nbuf2 .GT. nInteger4) THEN
+            call increaselsmpibufferInt4(nbuf1*nbuf2*i8)
+         ENDIF
          DO J=1,nbuf2
-            offset = iSho+(J-1)*nbuf1
-            DO I=1,nbuf1
-               lsmpibufferSho(offset+I) = buffer(I,J)
+            offset = iInt4+(J-1)*nbuf1
+            DO I=1,nbuf1               
+               lsmpibufferInt4(offset+I) = buffer(I,J)
             ENDDO
+            iInt4 = iInt4 + nbuf1*nbuf2
          ENDDO
-         iSho = iSho + nbuf1*nbuf2
       ELSE
-         IF(iSho+nbuf1*nbuf2 .GT. nShort) then
-           write(*,*) 'ls_mpi_buffer_shortintegerM',iSho,nbuf1,nbuf2,nShort
+         IF(iInt4+nbuf1*nbuf2 .GT. nInteger4) THEN
+            write(*,*) 'ls_mpi_buffer_shortintegerM:',iInt4,nbuf1,nbuf2,nInteger4
            call lsquit('ls_mpi_buffer_shortintegerM: error using buffer',-1)
          ENDIF
          DO J=1,nbuf2
-            offset = iSho+(J-1)*nbuf1
-            DO I=1,nbuf1
-               buffer(I,J) = lsmpibufferSho(offset+I)
+            offset = iInt4+(J-1)*nbuf1
+            DO I=1,nbuf1               
+               buffer(I,J) = lsmpibufferInt4(offset+I)
             ENDDO
          ENDDO
-         iSho = iSho + nbuf1*nbuf2
+         iInt4 = iInt4 + nbuf1*nbuf2
       ENDIF
     end subroutine ls_mpi_buffer_shortintegerM
 
@@ -2384,7 +2382,6 @@ contains
       iDP   = 0
       iInt4 = 0
       iInt8 = 0
-      iSho  = 0
       iLog  = 0
       iCha  = 0
     end subroutine ls_mpiInitBufferAddToBuffer
@@ -2397,10 +2394,6 @@ contains
       nInteger8 = iInt8
       nLoG = iLog
       nCha = iCha
-!      modula = mod(iSho,int_to_short)
-!      additional = 0
-!      IF (modula.GT.0) additional = int_to_short - modula
-      nShort = iSho! + additional
     end subroutine ls_mpiModbuffersizes
     
     subroutine ls_mpiInitBuffer(master,Job,comm,sender,receiver)
@@ -2458,7 +2451,6 @@ contains
             nDP = incremDP
             nInteger4 = incremInteger
             nInteger8 = incremInteger
-            nShort = incremShort
             nCha = incremCha
             IF(MemModParamPrintMemory)THEN
                print*,'MemModParamPrintMemory   mynum',mynum
@@ -2467,20 +2459,17 @@ contains
                Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
                Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
                Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
-               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
                Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
                Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
             ENDIF
             IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
-            IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
             call mem_alloc(lsmpibufferDP,nDP)
             call mem_alloc(lsmpibufferInt4,nInteger4)
             call mem_alloc(lsmpibufferInt8,nInteger8)
-            call mem_alloc(lsmpibufferSho,nShort)
             call mem_alloc(lsmpibufferLog,nLog)
             call mem_alloc(lsmpibufferCha,nCha)
              IF(MemModParamPrintMemory)THEN
@@ -2490,7 +2479,6 @@ contains
             iDP   = 0
             iInt4 = 0
             iInt8 = 0
-            iSho  = 0
             iLog  = 0
             iCha  = 0
          ELSE ! read stuff from buffer
@@ -2504,7 +2492,6 @@ contains
             nDP = ndim(1)
             nInteger4 = ndim(2)
             nInteger8 = ndim(3)
-            nShort = ndim(4)
             nLog = ndim(5)
             nCha = ndim(6)
             IF(MemModParamPrintMemory)THEN
@@ -2513,20 +2500,17 @@ contains
                Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
                Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
                Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
-               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
                Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
                Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
             ENDIF
             IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
-            IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
             IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
             if(ndp.gt.0) call mem_alloc(lsmpibufferDP,nDP)
             if(ninteger4.gt.0) call mem_alloc(lsmpibufferInt4,nInteger4)
             if(ninteger8.gt.0) call mem_alloc(lsmpibufferInt8,nInteger8)
-            if(nshort .gt. 0) call mem_alloc(lsmpibufferSho,nShort)
             if(nlog.gt.0) call mem_alloc(lsmpibufferLog,nLog)
             if(ncha .gt. 0) call mem_alloc(lsmpibufferCha,nCha)
             IF(MemModParamPrintMemory)THEN
@@ -2542,9 +2526,6 @@ contains
                ENDIF
                IF(ndim(3).GT.0)THEN
                   call ls_mpibcast(lsmpibufferInt8,nInteger8,master,COMM)
-               ENDIF
-               IF(ndim(4).GT.0)THEN
-                  call ls_mpibcast(lsmpibufferSho,nShort,master,COMM)
                ENDIF
                IF(ndim(5).GT.0)THEN
                   call ls_mpibcast(lsmpibufferLog,nLog,master,COMM)
@@ -2563,9 +2544,6 @@ contains
                IF(ndim(3).GT.0)THEN
                   call ls_mpisendrecv(lsmpibufferInt8,nInteger8,comm,sender,receiver)
                ENDIF
-               IF(ndim(4).GT.0)THEN
-                  call ls_mpisendrecv(lsmpibufferSho,nShort,comm,sender,receiver)
-               ENDIF
                IF(ndim(5).GT.0)THEN
                   call ls_mpisendrecv(lsmpibufferLog,nLog,comm,sender,receiver)
                ENDIF
@@ -2577,7 +2555,6 @@ contains
             iDP = 0
             iInt4 = 0
             iInt8 = 0
-            iSho = 0
             iLog = 0
             iCha = 0
          ENDIF
@@ -2586,7 +2563,6 @@ contains
          nDP = incremDP+1
          nInteger4 = incremInteger+1
          nInteger8 = incremInteger+1
-         nShort = incremShort!+int_to_short
          nCha = incremCha+1
          IF(MemModParamPrintMemory)THEN
             print*,'MemModParamPrintMemory   mynum',mynum
@@ -2594,20 +2570,17 @@ contains
             Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',nDP
             Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',nInteger4
             Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',nInteger8
-            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',nShort
             Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',nLog
             Write(MemModParamPrintMemorylupri,*)'# Character elements     ',nCha
          ENDIF
          IF(associated(lsmpibufferDP))call lsquit('lsmpibufferDP associated in ls_mpiInitBuffer',-1)
          IF(associated(lsmpibufferInt4))call lsquit('lsmpibufferInt4 associated in ls_mpiInitBuffer',-1)
          IF(associated(lsmpibufferInt8))call lsquit('lsmpibufferInt8 associated in ls_mpiInitBuffer',-1)
-         IF(associated(lsmpibufferSho))call lsquit('lsmpibufferSho associated in ls_mpiInitBuffer',-1)
          IF(associated(lsmpibufferLog))call lsquit('lsmpibufferLog associated in ls_mpiInitBuffer',-1)
          IF(associated(lsmpibufferCha))call lsquit('lsmpibufferCha associated in ls_mpiInitBuffer',-1)
          call mem_alloc(lsmpibufferDP,nDP)
          call mem_alloc(lsmpibufferInt4,nInteger4)
          call mem_alloc(lsmpibufferInt8,nInteger8)
-         call mem_alloc(lsmpibufferSho,nShort)
          call mem_alloc(lsmpibufferLog,nLog)
          call mem_alloc(lsmpibufferCha,nCha)
          IF(MemModParamPrintMemory)THEN
@@ -2616,7 +2589,6 @@ contains
          iDP = 0
          iInt4 = 0
          iInt8 = 0
-         iSho = 0
          iLog = 0
          iCha = 0
       ELSE
@@ -2667,18 +2639,12 @@ contains
             ndim(1) = iDP
             ndim(2) = iInt4
             ndim(3) = iInt8
-! Add modula of iSho divided by int_to_short in order to use integer mpibcast for short integer
-!            modula = mod(iSho,int_to_short)
-!            additional = 0
-!            IF (modula.GT.0) additional = int_to_short - modula
-            ndim(4) = iSho! + additional
             ndim(5) = iLog
             ndim(6) = iCha
 
             nDP = iDP
             nInteger4 = iInt4
             nInteger8 = iInt8
-            nShort = iSho !+ additional
             nLoG = iLog
             nCha = iCha
 #ifdef VAR_MPI           
@@ -2695,9 +2661,6 @@ contains
                ENDIF
                IF(ndim(3).GT.0)THEN
                   call ls_mpibcast(lsmpibufferInt8(1:ndim(3)),ndim(3),master,COMM)
-               ENDIF
-               IF(ndim(4).GT.0)THEN
-                  call ls_mpibcast(lsmpibufferSho(1:ndim(4)),ndim(4),master,COMM)
                ENDIF
                IF(ndim(5).GT.0)THEN
                   call ls_mpibcast(lsmpibufferLog(1:ndim(5)),ndim(5),master,COMM)
@@ -2717,9 +2680,6 @@ contains
                IF(ndim(3).GT.0)THEN
                   call ls_mpisendrecv(lsmpibufferInt8(1:ndim(3)),ndim(3),comm,sender,receiver)
                ENDIF
-               IF(ndim(4).GT.0)THEN
-                  call ls_mpisendrecv(lsmpibufferSho(1:ndim(4)),ndim(4),comm,sender,receiver)
-               ENDIF
                IF(ndim(5).GT.0)THEN
                   call ls_mpisendrecv(lsmpibufferLog(1:ndim(5)),ndim(5),comm,sender,receiver)
                ENDIF
@@ -2731,18 +2691,11 @@ contains
             call nullify_mpibuffer
 
          ELSE ! Receiver - dealloc buffer 
-!            modula = mod(iSho,int_to_short)
-!            additional = 0
-!            IF (modula.GT.0) additional = int_to_short - modula
             IF ((iDP.NE.nDP).OR.(iInt4.NE.nInteger4).OR.(iInt8.NE.nInteger8)&
-!                &.OR.(iSho.NE.(nShort-additional)).OR.&
-                &.OR.(iSho.NE.(nShort)).OR.&
-     &          (iLog.NE.nLog).OR.(iCha.NE.nCha)) THEN
+                &.OR.(iLog.NE.nLog).OR.(iCha.NE.nCha)) THEN
               IF(iDP.NE.nDP)                  write(*,*) 'The full Buffer has not been used DP',iDP,nDP
               IF(iInt4.NE.nInteger4)          write(*,*) 'The full Buffer has not been used Int4',iInt4,nInteger4
               IF(iInt8.NE.nInteger8)          write(*,*) 'The full Buffer has not been used Int8',iInt8,nInteger8
-!              IF(iSho.NE.(nShort-additional)) write(*,*) 'The full Buffer has not been used Short',iSho,nShort-additional
-              IF(iSho.NE.(nShort)) write(*,*) 'The full Buffer has not been used Short',iSho,nShort!-additional
               IF(iLog.NE.nLog)                write(*,*) 'The full Buffer has not been used Log',iLog,nLog
               IF(iCha.NE.nCha)                write(*,*) 'The full Buffer has not been used Cha',iCha,nCha
             ENDIF
@@ -2750,8 +2703,6 @@ contains
             IF(iDP.NE.nDP)call lsquit('The full Buffer has not been used DP',-1)
             IF(iInt4.NE.nInteger4) call lsquit('The full Buffer has not been used Int4',-1)
             IF(iInt8.NE.nInteger8) call lsquit('The full Buffer has not been used Int8',-1)
-!            IF(iSho.NE.(nShort-additional)) call lsquit('The full Buffer has not been used Short',-1)
-            IF(iSho.NE.(nShort)) call lsquit('The full Buffer has not been used Short',-1)
             IF(iLog.NE.nLog) call lsquit('The full Buffer has not been used Log',-1)
             IF(iCha.NE.nCha) call lsquit('The full Buffer has not been used Cha',-1)
             call nullify_mpibuffer
@@ -2770,10 +2721,6 @@ contains
             call lsmpi_barrier(comm)
             call lsmpi_int_reduction(lsmpibufferInt8(1:iInt8),iInt8,master,comm)
          ENDIF
-         IF(iSho.GT.0)THEN
-            call lsmpi_barrier(comm)
-            call lsmpi_sho_reduction(lsmpibufferSho(1:iSho),iSho,master,comm)
-         ENDIF
 #endif
          IF(iLog.GT.0)THEN
             call lsquit('implement a logical reduction',-1)
@@ -2790,14 +2737,12 @@ contains
                Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP,kind=long)
                Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4,kind=long)
                Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8,kind=long)
-               Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho,kind=long)
                Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog,kind=long)
                Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha,kind=long)
             ENDIF
             call mem_dealloc(lsmpibufferDP)
             call mem_dealloc(lsmpibufferInt4)
             call mem_dealloc(lsmpibufferInt8)
-            call mem_dealloc(lsmpibufferSho)
             call mem_dealloc(lsmpibufferLog)
             call mem_dealloc(lsmpibufferCha)
             IF(MemModParamPrintMemory)THEN
@@ -2810,7 +2755,6 @@ contains
          iDP = 0
          iInt4 = 0
          iInt8 = 0
-         iSho = 0
          iLog = 0
          iCha = 0
       else if(Job.EQ.LSMPIREDUCTIONmaster)THEN
@@ -2820,7 +2764,6 @@ contains
          iDP = 0
          iInt4 = 0
          iInt8 = 0
-         iSho = 0
          iLog = 0
          iCha = 0
          IF(MemModParamPrintMemory)THEN
@@ -2829,14 +2772,12 @@ contains
             Write(MemModParamPrintMemorylupri,*)'# DoublePrecison elements',size(lsmpibufferDP,kind=long)
             Write(MemModParamPrintMemorylupri,*)'# Integer 4 elements     ',size(lsmpibufferInt4,kind=long)
             Write(MemModParamPrintMemorylupri,*)'# Integer 8 elements     ',size(lsmpibufferInt8,kind=long)
-            Write(MemModParamPrintMemorylupri,*)'# Short integer elements ',size(lsmpibufferSho,kind=long)
             Write(MemModParamPrintMemorylupri,*)'# Logical elements       ',size(lsmpibufferLog,kind=long)
             Write(MemModParamPrintMemorylupri,*)'# Character elements     ',size(lsmpibufferCha,kind=long)
          ENDIF
          call mem_dealloc(lsmpibufferDP)
          call mem_dealloc(lsmpibufferInt4)
          call mem_dealloc(lsmpibufferInt8)
-         call mem_dealloc(lsmpibufferSho)
          call mem_dealloc(lsmpibufferLog)
          call mem_dealloc(lsmpibufferCha)
          IF(MemModParamPrintMemory)THEN
@@ -2868,10 +2809,6 @@ contains
 
       if(associated(lsmpibufferInt8)) then
          call mem_dealloc(lsmpibufferInt8)
-      end if
-
-      if(associated(lsmpibufferSho)) then
-         call mem_dealloc(lsmpibufferSho)
       end if
 
       if(associated(lsmpibufferLog)) then
@@ -2927,28 +2864,6 @@ contains
       call mem_dealloc(tmpbuffer)
 
     end subroutine increaselsmpibufferInt8
-
-    subroutine increaselsmpibufferSho(add)
-      use memory_handling
-      implicit none
-      integer(kind=8) :: add
-      integer(kind=short),pointer :: tmpbuffer(:)
-!
-      integer(kind=long) :: i,n
-      n = size(lsmpibufferSho,kind=long)
-      call mem_alloc(tmpbuffer,n)
-      DO i=1,n
-         tmpbuffer(i) = lsmpibufferSho(i)
-      ENDDO
-      call mem_dealloc(lsmpibufferSho)
-      nShort = nShort + MIN(MAX(incremShort,add*int_to_short,nShort),MaxIncreaseSize)
-      call mem_alloc(lsmpibufferSho,nShort)
-      DO i=1,n
-         lsmpibufferSho(i) = tmpbuffer(i)
-      ENDDO
-      call mem_dealloc(tmpbuffer)
-
-    end subroutine increaselsmpibufferSho
 
     subroutine increaselsmpibufferLog(add)
       use memory_handling
