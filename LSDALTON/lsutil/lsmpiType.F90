@@ -399,7 +399,7 @@ contains
          nMPI=k
          !if((n-i)<k)nMPI=mod(n,k)
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif
@@ -434,7 +434,7 @@ contains
          nMPI=k
          !if((n-i)<k)nMPI=mod(n,k)
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif
@@ -471,7 +471,7 @@ contains
       do i=1,n,k
          nMPI=k
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUFFERTMP(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUFFERTMP(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
       enddo
       nullify(buffertmp)
 #endif
@@ -509,7 +509,7 @@ contains
       do i=1,n,k
          nMPI=k
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUFFERTMP(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUFFERTMP(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
       enddo
       nullify(buffertmp)
 #endif
@@ -552,14 +552,14 @@ contains
       real(realk) :: buffer(:)
 #ifdef VAR_MPI
       integer(kind=8) :: i,k
-      integer(kind=ls_mpik) :: ierr,datatype,nMPI      
+      integer(kind=ls_mpik) :: ierr,datatype,nMPI
       IERR=0
       DATATYPE = MPI_DOUBLE_PRECISION
       k=SPLIT_MPI_MSG
       do i=1,n,k
          nMPI=k
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif
@@ -596,7 +596,7 @@ contains
       do i=1,n,k
          nMPI=k
          if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-         CALL MPI_BCAST(BUF(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+         CALL MPI_BCAST(BUF(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
       nullify(buf)
@@ -707,7 +707,7 @@ contains
          do i=1,n,k
             nMPI=k
             if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-            CALL MPI_BCAST(BUFFER4(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)         
+            CALL MPI_BCAST(BUFFER4(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)         
             IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
          enddo
          DO I=1,n
@@ -720,7 +720,7 @@ contains
          do i=1,n,k
             nMPI=k
             if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-            CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)         
+            CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)         
             IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
          enddo
       ENDIF
@@ -760,7 +760,7 @@ contains
          do i=1,n,k
             nMPI=k
             if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-            CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+            CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
             IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
          enddo
       ELSE
@@ -773,7 +773,7 @@ contains
          do i=1,n,k
             nMPI=k
             if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-            CALL MPI_BCAST(BUFFER8(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)         
+            CALL MPI_BCAST(BUFFER8(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)         
             IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
          enddo
          DO I=1,n
@@ -889,7 +889,7 @@ contains
     do i=1,n,k
        nMPI=k
        if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-       CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+       CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
     enddo
 #endif
@@ -923,7 +923,7 @@ contains
     do i=1,n,k
        nMPI=k
        if(((n-i)<k).and.(mod(n-i+1,k)/=0))nMPI=mod(n,k)
-       CALL MPI_BCAST(BUFFER(i:i+nMPI-1),nMPI,DATATYPE,master,comm,IERR)
+       CALL MPI_BCAST(BUFFER(i:i+nMPI-1_long),nMPI,DATATYPE,master,comm,IERR)
        IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
     enddo
 #endif
@@ -955,7 +955,7 @@ contains
          n=batchsze
          if(((nelms-i)<batchsze).and.&
               &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
-         call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1),n,master,comm)
+         call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1_long),n,master,comm)
       enddo
 #endif
     end subroutine ls_mpibcast_realkV_parts44
@@ -973,7 +973,7 @@ contains
         n=batchsze
         if(((nelms-i)<batchsze).and.&
           &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
-        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1),n,master,comm)
+        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1_long),n,master,comm)
       enddo
 #endif
     end subroutine ls_mpibcast_realkV_parts48
@@ -991,7 +991,7 @@ contains
         n=batchsze
         if(((nelms-i)<batchsze).and.&
           &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
-        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1),n,master,comm)
+        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1_long),n,master,comm)
       enddo
 #endif
     end subroutine ls_mpibcast_realkV_parts84
@@ -1009,7 +1009,7 @@ contains
         n=batchsze
         if(((nelms-i)<batchsze).and.&
           &(mod(nelms-i+1,batchsze)/=0))n=mod(nelms,batchsze)
-        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1),n,master,comm)
+        call ls_mpibcast_realkV_wrapper8(buffer(i:i+n-1_long),n,master,comm)
       enddo
 #endif
     end subroutine ls_mpibcast_realkV_parts88
@@ -1033,7 +1033,7 @@ contains
       do i=1,nbuf,k
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
-         call MPI_SEND(buffer(i:i+nMPI-1),nMPI,dtype,receiver,tag,comm,ierr)
+         call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,dtype,receiver,tag,comm,ierr)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif 
@@ -1055,7 +1055,7 @@ contains
       do i=1,nbuf,k
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
-         call MPI_RECV(buffer(i:i+nMPI-1),nMPI,dtype,sender,tag,comm,status,ierr)
+         call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,dtype,sender,tag,comm,status,ierr)
          IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
       enddo
 #endif 
@@ -1211,9 +1211,9 @@ contains
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
          !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
          if(mynum.EQ.sender) then ! send stuff to receiver
-            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_longV: &
@@ -1258,9 +1258,9 @@ contains
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
          !         call ls_mpisendrecv_longV(buffer(i:i+nMPI-1),nMPI,comm,sender,receiver)
          if(mynum.EQ.sender) then ! send stuff to receiver
-            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_longV: &
@@ -1330,9 +1330,9 @@ contains
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
          if(mynum.EQ.sender) then ! send stuff to receiver
-            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_realkV: &
@@ -1514,13 +1514,13 @@ contains
                !32 bit mpi logical
                call mem_alloc(buffer4,nMPI)
                do J = 1,nMPI
-                  buffer4(J) = buffer(i+J-1)
+                  buffer4(J) = buffer(i+J-1_long)
                enddo
                call MPI_SEND(buffer4,nMPI,DATATYPE,receiver,tag,comm,ierr)
                call mem_dealloc(buffer4)
             ELSE
                !64 bit mpi logical
-               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
             ENDIF
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
             IF(mpi_logical_extent.EQ.4)THEN
@@ -1528,12 +1528,12 @@ contains
                call mem_alloc(buffer4,nMPI)
                call MPI_RECV(buffer4,nMPI,DATATYPE,sender,tag,comm,status,ierr)
                do J = 1,nMPI
-                  buffer(i+J-1) = buffer4(J)
+                  buffer(i+J-1_long) = buffer4(J)
                enddo
                call mem_dealloc(buffer4)
             ELSE
                !64 bit mpi logical
-               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
             ENDIF
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
@@ -1582,12 +1582,12 @@ contains
          if(mynum.EQ.sender) then ! send stuff to receiver
             IF(mpi_logical_extent.EQ.4)THEN
                !32 bit mpi logical
-               call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+               call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
             ELSE
                !64 bit mpi logical
                call mem_alloc(buffer8,nMPI)
                do J = 1,nMPI
-                  buffer8(J) = buffer(i+J-1)
+                  buffer8(J) = buffer(i+J-1_long)
                enddo
                call MPI_SEND(buffer8,nMPI,DATATYPE,receiver,tag,comm,ierr)
                call mem_dealloc(buffer8)
@@ -1595,13 +1595,13 @@ contains
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
             IF(mpi_logical_extent.EQ.4)THEN
                !32 bit mpi logical
-               call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+               call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
             ELSE
                !64 bit mpi logical
                call mem_alloc(buffer8,nMPI)
                call MPI_RECV(buffer8,nMPI,DATATYPE,sender,tag,comm,status,ierr)
                do J = 1,nMPI
-                  buffer(i+J-1) = buffer8(J)
+                  buffer(i+J-1_long) = buffer8(J)
                enddo
                call mem_dealloc(buffer8)
             ENDIF
@@ -1741,9 +1741,9 @@ contains
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
          if(mynum.EQ.sender) then ! send stuff to receiver
-            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_characV: &
@@ -1787,9 +1787,9 @@ contains
          nMPI=k
          if(((nbuf-i)<k).and.(mod(nbuf-i+1,k)/=0))nMPI=mod(nbuf,k)
          if(mynum.EQ.sender) then ! send stuff to receiver
-            call MPI_SEND(buffer(i:i+nMPI-1),nMPI,DATATYPE,receiver,tag,comm,ierr)
+            call MPI_SEND(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,receiver,tag,comm,ierr)
          else if(mynum.EQ.receiver) then  ! receive stuff from sender
-            call MPI_RECV(buffer(i:i+nMPI-1),nMPI,DATATYPE,sender,tag,comm,status,ierr)
+            call MPI_RECV(buffer(i:i+nMPI-1_long),nMPI,DATATYPE,sender,tag,comm,status,ierr)
          else ! Error: Node should be either sender or receiver
             print '(a,3i6)', 'Rank,sender,receiver',mynum,sender,receiver
             call lsquit('ls_mpisendrecv_characV: &
@@ -2076,7 +2076,7 @@ contains
       real(realk) :: buffer
       integer(kind=ls_mpik) :: master
       IF(AddToBuffer)THEN
-         IF(iDP+1 .GT. nDP)call increaselsmpibufferDP(1)
+         IF(iDP+1 .GT. nDP)call increaselsmpibufferDP(1_long)
          lsmpibufferDP(iDP+1) = buffer
          iDP = iDP + 1
       ELSE
@@ -2093,7 +2093,7 @@ contains
       real(realk) :: buffer(:)
       integer :: I
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf)
+         IF(iDP + nbuf.GT. nDP)call increaselsmpibufferDP(nbuf*i8)
          DO I=1,nbuf
             lsmpibufferDP(iDP+I) = buffer(I)
          ENDDO
@@ -2115,7 +2115,7 @@ contains
       integer :: ierr,cnt,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf1*nbuf2.GT. nDP)call increaselsmpibufferDP(nbuf1*nbuf2)
+         IF(iDP + nbuf1*nbuf2.GT. nDP)call increaselsmpibufferDP((i8*nbuf1)*nbuf2)
          DO J=1,nbuf2
             offset = iDP+(J-1)*nbuf1
             DO I=1,nbuf1
@@ -2143,7 +2143,7 @@ contains
       integer :: ierr,cnt,datatype,I,J,K,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iDP + nbuf1*nbuf2*nbuf3.GT. nDP)call increaselsmpibufferDP(nbuf1*nbuf2*nbuf3)
+         IF(iDP + nbuf1*nbuf2*nbuf3.GT. nDP)call increaselsmpibufferDP(((i8*nbuf1)*nbuf2)*nbuf3)
          DO K=1,nbuf3
             DO J=1,nbuf2
                offset = iDP+(J-1)*nbuf1+(K-1)*nbuf1*nbuf2
@@ -2174,7 +2174,7 @@ contains
       integer :: ierr,cnt,datatype
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iLog+1 .GT. nLog)call increaselsmpibufferLog(1)
+         IF(iLog+1 .GT. nLog)call increaselsmpibufferLog(1_long)
          lsmpibufferLog(iLog+1) = buffer
          iLog = iLog + 1
       ELSE
@@ -2192,7 +2192,7 @@ contains
       integer :: ierr,cnt,datatype,I
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iLog + nbuf.GT. nLog)call increaselsmpibufferLog(nbuf)
+         IF(iLog + nbuf.GT. nLog)call increaselsmpibufferLog(i8*nbuf)
          DO I=1,nbuf
             lsmpibufferLog(iLog+I) = buffer(I)
          ENDDO
@@ -2214,7 +2214,7 @@ contains
       integer :: ierr,cnt,datatype,I,J,offset
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iLog + nbuf1*nbuf2.GT. nLog)call increaselsmpibufferLog(nbuf1*nbuf2)
+         IF(iLog + nbuf1*nbuf2.GT. nLog)call increaselsmpibufferLog((i8*nbuf1)*nbuf2)
          DO J=1,nbuf2
             offset = iLog+(J-1)*nbuf1
             DO I=1,nbuf1
@@ -2241,7 +2241,7 @@ contains
       integer :: ierr,cnt,datatype
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iCha+1 .GT. nCha)call increaselsmpibufferCha(1)
+         IF(iCha+1 .GT. nCha)call increaselsmpibufferCha(1_long)
          lsmpibufferCha(iCha+1) = buffer
          iCha = iCha + 1
       ELSE
@@ -2260,7 +2260,7 @@ contains
       integer :: ierr,cnt,datatype,I
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iCha + nbuf.GT. nCha)call increaselsmpibufferCha(nbuf)
+         IF(iCha + nbuf.GT. nCha)call increaselsmpibufferCha(nbuf*i8)
          DO I=1,nbuf
             lsmpibufferCha(iCha+I) = buffer(I:I)
          ENDDO
@@ -2283,7 +2283,7 @@ contains
       integer :: ierr,cnt,datatype,I
       IERR=0
       IF(AddToBuffer)THEN
-         IF(iCha + nbuf.GT. nCha)call increaselsmpibufferCha(nbuf)
+         IF(iCha + nbuf.GT. nCha)call increaselsmpibufferCha(nbuf*i8)
          DO I=1,nbuf
             lsmpibufferCha(iCha+I) = buffer(I)
          ENDDO
@@ -2303,7 +2303,7 @@ contains
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer
       IF(AddToBuffer)THEN
-         IF(iSho+1 .GT. nShort)call increaselsmpibufferSho(1)
+         IF(iSho+1 .GT. nShort)call increaselsmpibufferSho(1_long)
          lsmpibufferSho(iSho+1) = buffer
          iSho = iSho + 1
       ELSE
@@ -2324,7 +2324,7 @@ contains
       integer :: I
 
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf .GT. nShort)call increaselsmpibufferSho(nbuf)
+         IF(iSho+nbuf .GT. nShort)call increaselsmpibufferSho(nbuf*i8)
          DO I=1,nbuf
             lsmpibufferSho(iSho+I) = buffer(I)
          ENDDO
@@ -2349,7 +2349,7 @@ contains
       integer :: I,J,offset
 
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*nbuf2)
+         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*nbuf2*i8)
          DO J=1,nbuf2
             offset = iSho+(J-1)*nbuf1
             DO I=1,nbuf1
@@ -2397,10 +2397,10 @@ contains
       nInteger8 = iInt8
       nLoG = iLog
       nCha = iCha
-      modula = mod(iSho,int_to_short)
-      additional = 0
-      IF (modula.GT.0) additional = int_to_short - modula
-      nShort = iSho + additional
+!      modula = mod(iSho,int_to_short)
+!      additional = 0
+!      IF (modula.GT.0) additional = int_to_short - modula
+      nShort = iSho! + additional
     end subroutine ls_mpiModbuffersizes
     
     subroutine ls_mpiInitBuffer(master,Job,comm,sender,receiver)
@@ -2586,7 +2586,7 @@ contains
          nDP = incremDP+1
          nInteger4 = incremInteger+1
          nInteger8 = incremInteger+1
-         nShort = incremShort+int_to_short
+         nShort = incremShort!+int_to_short
          nCha = incremCha+1
          IF(MemModParamPrintMemory)THEN
             print*,'MemModParamPrintMemory   mynum',mynum
@@ -2635,7 +2635,7 @@ contains
       !> Only for Job=LSMPISENDRECV: rank for receiver
       integer(kind=ls_mpik),intent(in),optional :: receiver
       integer(kind=8) :: ndim(6)
-      integer :: II,additional,modula
+      integer(kind=8) :: II,additional,modula
       integer(kind=ls_mpik) :: mynum  ! Number of node WITHIN group specified by communicator
 
       ! Get rank number within specific communicator
@@ -2668,23 +2668,26 @@ contains
             ndim(2) = iInt4
             ndim(3) = iInt8
 ! Add modula of iSho divided by int_to_short in order to use integer mpibcast for short integer
-            modula = mod(iSho,int_to_short)
-            additional = 0
-            IF (modula.GT.0) additional = int_to_short - modula
-            ndim(4) = iSho + additional
+!            modula = mod(iSho,int_to_short)
+!            additional = 0
+!            IF (modula.GT.0) additional = int_to_short - modula
+            ndim(4) = iSho! + additional
             ndim(5) = iLog
             ndim(6) = iCha
 
             nDP = iDP
             nInteger4 = iInt4
             nInteger8 = iInt8
-            nShort = iSho + additional
+            nShort = iSho !+ additional
             nLoG = iLog
             nCha = iCha
 #ifdef VAR_MPI           
             if(job .eq. LSMPIBROADCAST) then  ! communication via bcast
                call ls_mpibcast(ndim,6,master,COMM)
                IF(ndim(1).GT.0)THEN
+                  print*,'iDP',iDP
+                  print*,'nDP',nDP
+                  print*,'size(lsmpibufferDP)',size(lsmpibufferDP)
                   call ls_mpibcast(lsmpibufferDP(1:ndim(1)),ndim(1),master,COMM)
                ENDIF
                IF(ndim(2).GT.0)THEN
@@ -2728,16 +2731,18 @@ contains
             call nullify_mpibuffer
 
          ELSE ! Receiver - dealloc buffer 
-            modula = mod(iSho,int_to_short)
-            additional = 0
-            IF (modula.GT.0) additional = int_to_short - modula
+!            modula = mod(iSho,int_to_short)
+!            additional = 0
+!            IF (modula.GT.0) additional = int_to_short - modula
             IF ((iDP.NE.nDP).OR.(iInt4.NE.nInteger4).OR.(iInt8.NE.nInteger8)&
-                &.OR.(iSho.NE.(nShort-additional)).OR.&
+!                &.OR.(iSho.NE.(nShort-additional)).OR.&
+                &.OR.(iSho.NE.(nShort)).OR.&
      &          (iLog.NE.nLog).OR.(iCha.NE.nCha)) THEN
               IF(iDP.NE.nDP)                  write(*,*) 'The full Buffer has not been used DP',iDP,nDP
               IF(iInt4.NE.nInteger4)          write(*,*) 'The full Buffer has not been used Int4',iInt4,nInteger4
               IF(iInt8.NE.nInteger8)          write(*,*) 'The full Buffer has not been used Int8',iInt8,nInteger8
-              IF(iSho.NE.(nShort-additional)) write(*,*) 'The full Buffer has not been used Short',iSho,nShort-additional
+!              IF(iSho.NE.(nShort-additional)) write(*,*) 'The full Buffer has not been used Short',iSho,nShort-additional
+              IF(iSho.NE.(nShort)) write(*,*) 'The full Buffer has not been used Short',iSho,nShort!-additional
               IF(iLog.NE.nLog)                write(*,*) 'The full Buffer has not been used Log',iLog,nLog
               IF(iCha.NE.nCha)                write(*,*) 'The full Buffer has not been used Cha',iCha,nCha
             ENDIF
@@ -2745,7 +2750,8 @@ contains
             IF(iDP.NE.nDP)call lsquit('The full Buffer has not been used DP',-1)
             IF(iInt4.NE.nInteger4) call lsquit('The full Buffer has not been used Int4',-1)
             IF(iInt8.NE.nInteger8) call lsquit('The full Buffer has not been used Int8',-1)
-            IF(iSho.NE.(nShort-additional)) call lsquit('The full Buffer has not been used Short',-1)
+!            IF(iSho.NE.(nShort-additional)) call lsquit('The full Buffer has not been used Short',-1)
+            IF(iSho.NE.(nShort)) call lsquit('The full Buffer has not been used Short',-1)
             IF(iLog.NE.nLog) call lsquit('The full Buffer has not been used Log',-1)
             IF(iCha.NE.nCha) call lsquit('The full Buffer has not been used Cha',-1)
             call nullify_mpibuffer
@@ -2925,7 +2931,7 @@ contains
     subroutine increaselsmpibufferSho(add)
       use memory_handling
       implicit none
-      integer :: add
+      integer(kind=8) :: add
       integer(kind=short),pointer :: tmpbuffer(:)
 !
       integer(kind=long) :: i,n
@@ -2947,7 +2953,7 @@ contains
     subroutine increaselsmpibufferLog(add)
       use memory_handling
       implicit none
-      integer :: add
+      integer(kind=8) :: add
       logical,pointer :: tmpbuffer(:)
 !
       integer(kind=long) :: i,n
@@ -2969,7 +2975,7 @@ contains
     subroutine increaselsmpibufferCha(add)
       use memory_handling
       implicit none
-      integer :: add
+      integer(kind=8) :: add
       character,pointer :: tmpbuffer(:)
 !
       integer(kind=long) :: i,n
@@ -2991,7 +2997,7 @@ contains
     subroutine increaselsmpibufferDP(add)
       use memory_handling
       implicit none
-      integer :: add
+      integer(kind=8) :: add
       real(realk),pointer :: tmpbuffer(:)
 !
       integer(kind=long) :: i,n
