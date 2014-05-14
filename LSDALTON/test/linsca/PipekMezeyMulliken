@@ -79,7 +79,7 @@ fi
 # HF ENERGY 
 CRIT1=`$GREP "Final HF energy\: * \-76\.0267" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # KURTOSIS
