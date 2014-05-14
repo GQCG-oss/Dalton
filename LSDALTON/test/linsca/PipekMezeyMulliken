@@ -20,8 +20,8 @@ fi
 cat > PipekMezeyMulliken.info <<'%EOF%'
    Localize orbitals using Pipek-Mezey 
    --------------------------------------
-   Molecule:         5 BH molecules
-   Wave Function:    HF / STO-3G
+   Molecule:         water 
+   Wave Function:    HF / cc-pVDZ
    Test Purpose:     Test Pipek-Mezey localization function 
                      using Mulliken population analysis (Ida-Marie Hoeyvik)
 %EOF%
