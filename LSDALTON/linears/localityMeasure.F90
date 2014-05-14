@@ -1,17 +1,7 @@
 module localityMeasureMod
-!##########################################################
-!#            GENERAL INTERFACE ROUTINES                  #
-!# Below are routine that are kept outside modules.       #
-!# They are interface routines to solvers (precond/       #
-!# linear trans.) and lsdalton main program (optimloc).   #
-!#                                                        #
-!##########################################################
   use TYPEDEF,only: count_ncore
   use precision
-!  use Pipek
   use orbspread_utilMod
-!  use charge_module
-!  use davidson_settings
   use kurtosis
   use matrix_util
   use loc_utils
@@ -56,9 +46,9 @@ subroutine LocalityMeasure(CFG,ls,cmo,ncore,nval,nvirt)
      call orbspread_init(orbspread_input,1,ncore)
      call orbspread_update(orbspread_input,CMOblock)
      write(CFG%lupri,*)
-     write(ls%lupri,'(a)') '%%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%'
+     write(ls%lupri,'(a)') '%LOC%%%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%'
      call LocalityMeasure_print(CFG,orbspread_input,ncore,0)
-     write(ls%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+     write(ls%lupri,'(a)') '%LOC%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
      write(CFG%lupri,*)
      call kurt_freeMO(CFG%PFM_input)
      call orbspread_free(orbspread_input)
@@ -80,9 +70,9 @@ subroutine LocalityMeasure(CFG,ls,cmo,ncore,nval,nvirt)
      indx=minloc(orbspread_input%spread2)
      CFG%mostl_occ = indx(1)+ncore
      write(CFG%lupri,*)
-     write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%'
+     write(CFG%lupri,'(a)') '%LOC%%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%'
      call LocalityMeasure_print(CFG,orbspread_input,nval,ncore)
-     write(CFG%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+     write(CFG%lupri,'(a)') '%LOC%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
      write(CFG%lupri,*)
      call kurt_freeMO(CFG%PFM_input)
      call orbspread_free(orbspread_input)
@@ -105,9 +95,9 @@ subroutine LocalityMeasure(CFG,ls,cmo,ncore,nval,nvirt)
      indx=minloc(orbspread_input%spread2)
      CFG%mostl_virt  = indx(1)+ncore+nval
      write(CFG%lupri,*)
-     write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%'
+     write(CFG%lupri,'(a)') '%LOC%%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%'
      call LocalityMeasure_print(CFG,orbspread_input,nvirt,ncore+nval)
-     write(CFG%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+     write(CFG%lupri,'(a)') '%LOC%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
      write(CFG%lupri,*)
      call kurt_freeMO(CFG%PFM_input)
      call orbspread_free(orbspread_input)
@@ -139,15 +129,15 @@ subroutine LocalityMeasure_print(CFG,inp,ndim,offset)
      write(CFG%lupri,*) '--------------------------------------------------'
      write(CFG%lupri,*)
   end if
-  write(CFG%lupri,'(a,f7.2,i5)') 'Max. sigma_2 and orb.number: ',&
+  write(CFG%lupri,'(a,f7.2,i5)') '%LOC% Max. sigma_2 and orb.number: ',&
        &dsqrt(maxval(inp%spread2)),maxloc(inp%spread2)+offset
   kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(CFG%lupri,'(a,f7.2,i5)') 'Max. sigma_4 and orb.number: ',&
+  write(CFG%lupri,'(a,f7.2,i5)') '%LOC% Max. sigma_4 and orb.number: ',&
        &maxval(kurtvec),maxloc(kurtvec)+offset
-  write(CFG%lupri,'(a,f7.2,i5)') 'Min. sigma_2 and orb.number: ',&
+  write(CFG%lupri,'(a,f7.2,i5)') '%LOC% Min. sigma_2 and orb.number: ',&
        &dsqrt(minval(inp%spread2)),minloc(inp%spread2)+offset
   kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(CFG%lupri,'(a,f7.2,i5)') 'Min. sigma_4 and orb.number: ',&
+  write(CFG%lupri,'(a,f7.2,i5)') '%LOC% Min. sigma_4 and orb.number: ',&
        &minval(kurtvec),minloc(kurtvec)+offset
   call mem_dealloc(kurtvec)
 
