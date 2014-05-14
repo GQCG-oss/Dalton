@@ -231,8 +231,10 @@ module lsmpi_type
   real(realk),pointer         :: lsmpibufferDP(:)
   integer(kind=4),pointer     :: lsmpibufferInt4(:)
   integer(kind=8),pointer     :: lsmpibufferInt8(:)
-  integer(kind=short),pointer :: lsmpibufferSho(:) !note this is needed because the
-                                                   !reduction is different for short int 
+  !note lsmpibufferSho is needed because the reduction is different for short integer
+  !then for integer. lsmpi_int_reduction is used for lsmpibufferInt4 which uses MPI_SUM
+  !lsmpi_sho_reduction is used for lsmpibufferSho which uses MPI_MAX
+  integer(kind=short),pointer :: lsmpibufferSho(:) 
   logical,pointer             :: lsmpibufferLog(:)
   character,pointer           :: lsmpibufferCha(:)
   integer,parameter           :: incremLog=169,incremDP=100,incremInteger=626
@@ -2734,7 +2736,6 @@ contains
          ENDIF
          IF(iSho.GT.0)THEN
             call lsmpi_barrier(comm)
-!            print*,'reduction:',lsmpibufferSho(1:iSho)
             call lsmpi_sho_reduction(lsmpibufferSho(1:iSho),iSho,master,comm)
          ENDIF
 #endif
