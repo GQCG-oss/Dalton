@@ -220,19 +220,6 @@ module lsmpi_type
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 !integer conversion factor!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
-#ifdef VAR_INT64
-#ifdef VAR_MPI
-#ifdef VAR_MPI_32BIT_INT
-  integer,parameter :: int_to_short = 4 !int64,mpi & mpi32
-#else
-  integer,parameter :: int_to_short = 8 !int64,mpi nompi32
-#endif
-#else
-  integer,parameter :: int_to_short = 8 !int64 nompi
-#endif
-#else
-  integer,parameter :: int_to_short = 4 !no int64
-#endif
   integer,parameter :: MaxIncreaseSize = 50000000 !0.4 GB
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1819,7 +1806,7 @@ contains
       integer(kind=ls_mpik) :: master
       IF(AddToBuffer)THEN
          IF(iInt4+1 .GT. nInteger4)call increaselsmpibufferInt4(1_long)
-         IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
+         IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('error1TK',-1)
          lsmpibufferInt4(iInt4+1) = buffer
          iInt4 = iInt4 + 1
       ELSE
@@ -1897,10 +1884,9 @@ contains
       integer :: I
       IF(AddToBuffer)THEN
          IF(iInt4+nbuf .GT. nInteger4) THEN
-           call increaselsmpibufferInt4(nbuf)
+            call increaselsmpibufferInt4(nbuf)
          ENDIF
          DO I=1,nbuf
-            IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
             lsmpibufferInt4(iInt4+I) = buffer(I)
          ENDDO
          iInt4 = iInt4 + nbuf
@@ -2293,10 +2279,9 @@ contains
     end subroutine ls_mpi_buffer_characV2
 
     subroutine ls_mpi_buffer_shortinteger(buffer,master)
-
       implicit none
       integer(kind=ls_mpik) :: master
-      integer(kind=short) :: buffer
+      integer(kind=short) :: buffer      
       IF(AddToBuffer)THEN
          IF(iInt4+1 .GT. nInteger4)call increaselsmpibufferInt4(1_long)
          lsmpibufferInt4(iInt4+1) = buffer
@@ -2306,7 +2291,7 @@ contains
            write(*,*) 'ls_mpi_buffer_shortinteger',iInt4,nInteger4
            call lsquit('ls_mpi_buffer_shortinteger: error using buffer',-1)
          ENDIF
-         buffer = lsmpibufferInt4(iInt4+1)
+         buffer = INT(lsmpibufferInt4(iInt4+1),kind=short)
          iInt4 = iInt4 + 1_long
       ENDIF
     end subroutine ls_mpi_buffer_shortinteger
@@ -2316,13 +2301,12 @@ contains
       integer :: nbuf
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:)
-      integer :: I
+      integer(kind=8) :: I
       IF(AddToBuffer)THEN
          IF(iInt4+nbuf .GT. nInteger4) THEN
            call increaselsmpibufferInt4(nbuf*i8)
          ENDIF
          DO I=1,nbuf
-            IF(iInt4+1.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
             lsmpibufferInt4(iInt4+I) = buffer(I)
          ENDDO
          iInt4 = iInt4 + nbuf
@@ -2332,7 +2316,7 @@ contains
            call lsquit('ls_mpi_buffer_integer4V: error using buffer',-1)
          ENDIF
          DO I=1,nbuf
-            buffer(I) = lsmpibufferInt4(iInt4+I)
+            buffer(I) = INT(lsmpibufferInt4(iInt4+I),kind=short)
          ENDDO
          iInt4 = iInt4 + nbuf
       ENDIF
@@ -2343,7 +2327,7 @@ contains
       integer :: nbuf1,nbuf2
       integer(kind=ls_mpik) :: master
       integer(kind=short) :: buffer(:,:)
-      integer :: I,J,offset
+      integer(kind=8) :: I,J,offset
       IF(AddToBuffer)THEN
          IF(iInt4+nbuf1*nbuf2 .GT. nInteger4) THEN
             call increaselsmpibufferInt4(nbuf1*nbuf2*i8)
@@ -2353,8 +2337,8 @@ contains
             DO I=1,nbuf1               
                lsmpibufferInt4(offset+I) = buffer(I,J)
             ENDDO
-            iInt4 = iInt4 + nbuf1*nbuf2
          ENDDO
+         iInt4 = iInt4 + nbuf1*nbuf2
       ELSE
          IF(iInt4+nbuf1*nbuf2 .GT. nInteger4) THEN
             write(*,*) 'ls_mpi_buffer_shortintegerM:',iInt4,nbuf1,nbuf2,nInteger4
@@ -2363,7 +2347,7 @@ contains
          DO J=1,nbuf2
             offset = iInt4+(J-1)*nbuf1
             DO I=1,nbuf1               
-               buffer(I,J) = lsmpibufferInt4(offset+I)
+               buffer(I,J) = INT(lsmpibufferInt4(offset+I),kind=short)
             ENDDO
          ENDDO
          iInt4 = iInt4 + nbuf1*nbuf2
@@ -2836,8 +2820,8 @@ contains
       call mem_dealloc(lsmpibufferInt4)
       nInteger4 = nInteger4 + MIN(MAX(incremInteger,add,nInteger4),MaxIncreaseSize)
       call mem_alloc(lsmpibufferInt4,nInteger4)
+      IF(n+add.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
       DO i=1,n
-         IF(i.GT.size(lsmpibufferInt4,kind=long))call lsquit('errorTK',-1)
          lsmpibufferInt4(i) = tmpbuffer(i)
       ENDDO
       call mem_dealloc(tmpbuffer)
