@@ -508,7 +508,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          DO 750 IVEC = 1,NBX
             IBV    = (IVEC-1)*KZYVAR + KBVECS
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
-            IF (IPRRSP.GT.10) THEN
+            IF (IPRRSP.GT.1) THEN
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,3A,/A,1P,D14.6)')
      &            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
@@ -2485,7 +2485,7 @@ C
       IPRRSP = IPREXM
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (DOESA .OR. EXMTES) THEN
+         IF (DOESA .OR. EXMTES .OR. ISPINB.NE.ISPINC) THEN
             MSYMBE = NSYM
          ELSE
             MSYMBE = MSYMC
@@ -2553,7 +2553,8 @@ C
                   END IF
                   IF (DOESA) THEN
                      IBE = 1
-                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
+                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC
+     &                           .OR. ISPINB.NE.ISPINC) THEN
                      IBE = NPPCNV(MSYMB)
                   ELSE
                      IBE = IC

@@ -1198,7 +1198,7 @@ C
          DO 220 IW = 1,NASHT
             IX = ISX(NISHT+IW)
             DO 230 JW = 1,NASHT
-               JX = ISX(NISHT+JW)
+               JX  = ISX(NISHT+JW)
                IJW = (IW-1) * NASHT + JW
                WRK(KFCAC-1+IJW) = FC(IX,JX)
  230        CONTINUE
@@ -1224,14 +1224,9 @@ C           WRITE(LUPRI,'(/2(A,I5),/3(A,I5))')
 C    *      ' NUMBER OF REFERENCE DETERMINANTS ,NDREF:',NDREF,
 C    *      ' CALCULATED NUMBER ,NCDET:',NCDET,
 C    *      ' NUMBER OF DETERMINANTS FOR SYMMETRY',KSYMOP,
-C    *      '  IS:',KZCONF,'  CALCULATED NUMBER,NHCDET:',NHCDET
-C        CALL QUIT(' H2XSIG,INCORRECT CALCULATION OF DETERMINANTS')
+C    *      '  IS:',KZCONF,'  CALCULATED NUMBER, NHCDET:',NHCDET
+C        CALL QUIT(' H2XSIG, INCORRECT CALCULATION OF DETERMINANTS')
 C        END IF
-         IF (IREFSY .EQ. KSYMST) THEN
-C           ... remove CREF component of E[2] vector
-            T1 = DDOT(KZCONF,WRK(KREFCO),1,GP(1),1)
-            CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,GP(1),1)
-         END IF
          IF (IPRHSO.GT.IPRLOC) THEN
             WRITE(LUPRI,'(/A)')
      *        ' CSF part of spin-orbit property vector: Z part'
@@ -1277,11 +1272,6 @@ C    *                               WRK(KHSQTR),N2ASHX)
      *               GP(KZVAR+1),
      *               WRK(KFCAC), WRK(KHSQTR), .FALSE., .FALSE.,
      *               XINDX, ISPIN1, ISPIN2, WRK(KFREE), LFREE)
-            IF (IREFSY .EQ. KSYMST) THEN
-C              ... remove CREF component of E[2] vector
-               T1 = DDOT(KZCONF,WRK(KREFCO),1,GP(1+KZVAR),1)
-               CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,GP(1+KZVAR),1)
-            END IF
             CALL DSCAL(KZCONF,DM1,GP(1+KZVAR),1)
             IF (IPRHSO.GT.IPRLOC) THEN
                WRITE(LUPRI,'(/A)')
