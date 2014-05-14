@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > PipekMezeyMull.info <<'%EOF%'
+cat > PipekMezeyMulliken.info <<'%EOF%'
    Localize orbitals using Pipek-Mezey 
    --------------------------------------
    Molecule:         5 BH molecules
@@ -29,7 +29,7 @@ cat > PipekMezeyMull.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > PipekMezeyMull.mol <<'%EOF%'
+cat > PipekMezeyMulliken.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
@@ -44,7 +44,7 @@ H    -3.30256970  -0.78553700  -1.43043210
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > PipekMezeyMull.dal <<'%EOF%'
+cat > PipekMezeyMulliken.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -65,8 +65,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >PipekMezeyMull.check
-cat >>PipekMezeyMull.check <<'%EOF%'
+echo $CHECK_SHELL >PipekMezeyMulliken.check
+cat >>PipekMezeyMulliken.check <<'%EOF%'
 
 log=$1
 
