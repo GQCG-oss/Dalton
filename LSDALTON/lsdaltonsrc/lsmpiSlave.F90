@@ -15,7 +15,6 @@ subroutine lsmpi_init(OnMaster)
    nDP       = 0
    nInteger4 = 0
    nInteger8 = 0
-   nShort    = 0
    nCha      = 0
 
 #ifdef VAR_CHEMSHELL
