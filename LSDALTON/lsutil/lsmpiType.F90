@@ -2734,7 +2734,7 @@ contains
          ENDIF
          IF(iSho.GT.0)THEN
             call lsmpi_barrier(comm)
-            print*,'reduction:',lsmpibufferSho(1:iSho)
+!            print*,'reduction:',lsmpibufferSho(1:iSho)
             call lsmpi_sho_reduction(lsmpibufferSho(1:iSho),iSho,master,comm)
          ENDIF
 #endif
