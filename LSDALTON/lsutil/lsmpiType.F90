@@ -2635,9 +2635,6 @@ contains
             if(job .eq. LSMPIBROADCAST) then  ! communication via bcast
                call ls_mpibcast(ndim,6,master,COMM)
                IF(ndim(1).GT.0)THEN
-                  print*,'iDP',iDP
-                  print*,'nDP',nDP
-                  print*,'size(lsmpibufferDP)',size(lsmpibufferDP)
                   call ls_mpibcast(lsmpibufferDP(1:ndim(1)),ndim(1),master,COMM)
                ENDIF
                IF(ndim(2).GT.0)THEN
