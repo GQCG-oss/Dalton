@@ -15,7 +15,6 @@ subroutine lsmpi_init(OnMaster)
    nDP       = 0
    nInteger4 = 0
    nInteger8 = 0
-   nShort    = 0
    nCha      = 0
 
 #ifdef VAR_CHEMSHELL
@@ -160,6 +159,8 @@ subroutine lsmpi_slave(comm)
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
          call rpa_res_slave
+      case(RPAGETFOCK);
+         call rpa_fock_slave
 #ifdef MOD_UNRELEASED
       case(CCSDPTSLAVE);
          call ccsdpt_slave

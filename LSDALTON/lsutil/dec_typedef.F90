@@ -171,6 +171,7 @@ module dec_typedef_module
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
      logical :: noPNOtrafo, noPNOtrunc
+     logical :: noFAtrafo, noFAtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
      real(realk) :: simplePNOthr
@@ -777,22 +778,6 @@ module dec_typedef_module
      !> Virt-virt block of Fock matrix in local MO basis
      real(realk), pointer :: qqfockLOC(:,:) => null()
 
-
-     !> Integral program input
-     type(lsitem) :: mylsitem
-
-     ! End of EXPENSIVE BOX
-     ! ==============================================================
-
-     
-     ! Information for local orbitals
-     ! ******************************
-     !> Number of local occupied orbitals in fragment
-     integer,pointer :: noccLOC
-     !> Number of local unoccupied orbitals in fragment
-     integer,pointer :: nunoccLOC
-     
-
      ! Information used for fragment-adapted orbitals
      ! **********************************************
      !> Correlation density matrices in local AOS basis
@@ -826,6 +811,33 @@ module dec_typedef_module
      real(realk), pointer :: ppfockFA(:,:) => null()
      !> Virt-virt block of Fock matrix in FO basis
      real(realk), pointer :: qqfockFA(:,:) => null()
+
+     ! Information used for pair-natural orbitals (this only applies to virtual
+     ! oribtals, the occupied orbitals will be kept in the local basis)
+     ! ******************************************
+     !> use PNO information?
+     logical :: PNOset
+     !> collection of transformation matrices from LO space to PNO space
+     type(PNOSpaceInfo), pointer :: CLocPNO(:)
+     !> number of spaces to consider
+     integer :: nspaces
+    
+
+     !> Integral program input
+     type(lsitem) :: mylsitem
+
+     ! End of EXPENSIVE BOX
+     ! ==============================================================
+
+     
+     ! Information for local orbitals
+     ! ******************************
+     !> Number of local occupied orbitals in fragment
+     integer,pointer :: noccLOC
+     !> Number of local unoccupied orbitals in fragment
+     integer,pointer :: nunoccLOC
+     
+
 
 
      !> Information used only for the CC2 and CCSD models to describe
@@ -1170,5 +1182,25 @@ module dec_typedef_module
   type(DECsettings) :: DECinfo
 
 
+  !> Space information specifically designed to keep PNO spaces nicely together
+  !> IMPORTANT:
+  !> if you modify this structure, also modify bufferadd_PNOSpaceInfo_struct in decmpi.F90
+  type PNOSpaceInfo
+
+    integer              :: rpd                    ! corresponding dimension of the (restricted) pair space [i(<=)j], read reduced pair dimension
+    
+    integer              :: n                      ! number of occ orbitals in the corresponding space
+    integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space
+
+    logical              :: s_associated           ! indicate whether s matrices are associated, i.e. a SVD  d = s1 d_new  s2^T  
+    integer              :: ns1,ns2,red1,red2      ! dimensions, depending on s_associated
+    real(realk), pointer :: d(:,:)  => null()      ! density matrix or overlap matrix. if s_associated d = d_new, either (ns1,ns2) or (red1,red2)
+    real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
+    real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
+
+    logical              :: allocd                 ! logical to show the allocation status
+    logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
+    logical              :: PS                     ! save wheter it is a triangular pair space
+  end type PNOSpaceInfo
 
 end module dec_typedef_module

@@ -1271,10 +1271,10 @@ C
             CALL DGETRN(WRK(KURXAC),NASHT,NASHT)
             CALL DSCAL(N2ASHX,DM1,WRK(KURXAC),1)
             IF (IPRRSP.GT.100) THEN
-               WRITE(LUPRI,*)' Y PART,RXAC MATRIX, SCALED WITH -1.0
-     *         ICSIM=', ICSIM
+               WRITE(LUPRI,*)' Y PART, -RXAC MATRIX, '//
+     *         ' ICSIM=', ICSIM
                CALL OUTPUT(WRK(KURXAC),1,NASHT,1,NASHT,
-     *                                 NASHT,NASHT,1,LUPRI)
+     *                                 NASHT,NASHT,-1,LUPRI)
             END IF
             JSPIN1 = 0
             JSPIN2 = 0
@@ -1367,10 +1367,10 @@ C           not needed because of this projection)
             IF (TRPLET) THEN
 C              CALL DSCAL(N2ASHX,D2,RXAC(1,IOSIM+NOSIM),1)
                IF (IPRRSP.GT.100) THEN
-                  WRITE(LUPRI,*)' Z PART triplet,RXAC MATRIX,
-     *            IOSIM=', IOSIM
+                  WRITE(LUPRI,*)' Z PART triplet, RXAC MATRIX, '//
+     *            'IOSIM=', IOSIM
                   CALL OUTPUT(RXAC(1,IOSIM+NOSIM),1,NASHT,1,NASHT,
-     *                                 NASHT,NASHT,1,LUPRI)
+     *                                 NASHT,NASHT,-1,LUPRI)
                END IF
 C
 C Z PART OF LINEAR TRANSFORMATION
@@ -1389,22 +1389,6 @@ C
                   CALL OUTPUT(SVECS(1,IOSIM),1,KZCONF,1,1,KZCONF,1,
      *                                                    1,LUPRI)
                END IF
-C           Remove CREF component of SVECS (inactive contribution
-C           not needed because of this projection)
-!edh + JK: This is not needed for triplet     
-!               IF (IREFSY .EQ. KSYMST) THEN
-!                  FAC = DDOT(KZCONF,SVECS(1,IOSIM),1,CREF,1)
-!edh              CALL DAXPY(KZCONF,(-FAC),CREF,1,SVECS(1,IOSIM),1)
-!                 IF (IPRRSP.GT.101) THEN
-!                    WRITE(LUPRI,*)
-!    *               ' TXO+TYO Z CONF  TRIPLET PART OF',
-!    *               ' LINEAR TRANSFORMED',
-!    *               'ORB TRIAL VECTOR'
-!                    WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
-!                    CALL OUTPUT(SVECS(1,IOSIM),1,KZCONF,1,1,KZCONF,1,
-!     *                                                      1,LUPRI)
-!                  END IF
-!               END IF
             END IF
 C
 C Y PART OF LINEAR TRANSFORMATION
@@ -1421,7 +1405,7 @@ C           now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
             JSPIN1 = 0
             JSPIN2 = 0
             CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,CREF,
-     &      SVECS(KZVAR+1,IOSIM),
+     &               SVECS(KZVAR+1,IOSIM),
      &               RXAC(1,IOSIM),DUMMY,
      &               .TRUE.,.FALSE.,XNDXCI,JSPIN1,JSPIN2,
      &                WRK(KW1),LW1)
@@ -1439,7 +1423,7 @@ C           not needed because of this projection)
                IF (IPRRSP.GT.101) THEN
                   WRITE(LUPRI,*)
      *            ' TXO+TYO Y CONF  PART OF LINEAR TRANSFORMED',
-     *            'ORB TRIAL VECTOR'
+     *            ' ORB TRIAL VECTOR'
                   WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
                   CALL OUTPUT(SVECS(1+KZVAR,IOSIM),
      *                        1,KZCONF,1,1,KZCONF,1,1,LUPRI)
@@ -1459,7 +1443,7 @@ C              now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
                JSPIN1 = 1
                JSPIN2 = 0
                CALL CISIGD(IREFSY,KSYMST,NCREF,KZCONF,CREF,
-     &         SVECS(KZVAR+1,IOSIM),
+     &               SVECS(KZVAR+1,IOSIM),
      &               RXAC(1,IOSIM+NOSIM),DUMMY,
      &               .TRUE.,.FALSE.,XNDXCI,JSPIN1,JSPIN2,
      &               WRK(KW1),LW1)
@@ -1470,22 +1454,6 @@ C              now SVECS(NA) = SVECS(NA) + <NA | 2*RXY | CREF >
                CALL OUTPUT(SVECS(1+KZVAR,IOSIM),1,KZCONF,1,1,
      *                                          KZCONF,1,1,LUPRI)
                END IF
-C              Remove CREF component of SVECS (inactive contribution
-C              not needed because of this projection)
-! edh + JK: Not neccesary for triplet!
-!               IF (IREFSY .EQ. KSYMST) THEN
-!                  FAC = DDOT(KZCONF,SVECS(1+KZVAR,IOSIM),1,CREF,1)
-!edh              CALL DAXPY(KZCONF,(-FAC),CREF,1,
-!    *                                     SVECS(1+KZVAR,IOSIM),1)
-!                 IF (IPRRSP.GT.101) THEN
-!                    WRITE(LUPRI,*)
-!    *               'TXO+TYO Y CONF TRIPLET PART ',
-!    *               'OF LINEAR TRANSFORMED ORB TRIAL VECTOR'
-!                    WRITE(LUPRI,*)' REFERENCE COMPONENT PROJECTED OUT'
-!                    CALL OUTPUT(SVECS(1+KZVAR,IOSIM),
-!    *                           1,KZCONF,1,1,KZCONF,1,1,LUPRI)
-!                 END IF
-!              END IF
             END IF
    22    CONTINUE
       END IF

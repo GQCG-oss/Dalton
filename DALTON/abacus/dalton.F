@@ -271,6 +271,8 @@ C
      &  '(DALTON; geometry optimizer, symmetry detection)',
      *'Radovan Bast,','KTH Stockholm,','Sweden',
      &  '(DALTON installation and execution frameworks)',
+     *'Pablo Baudin,','University of Valencia,','Spain',
+     &  '(Cholesky excitation energies)',
      *'Linus Boman,','NTNU,', 'Norway',
      &  '(Cholesky decomposition and subsystems)',
      *'Ove Christiansen,','Aarhus University,','Denmark',

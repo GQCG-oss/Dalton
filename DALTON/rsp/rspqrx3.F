@@ -2191,7 +2191,7 @@ C
 C
 C        If we are testing, control for the CREF component
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC,1,WRK(KTRS),1)
                IF( IPRRSP .GT.  200) THEN
@@ -2277,7 +2277,7 @@ C
      *                 1,WRK(KTRS),1)
          END IF
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
 C
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC(ICOFF),1,WRK(KTRS),1)
@@ -3972,7 +3972,7 @@ C
      *              OTRS,1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ( LREFST .AND. (ISYMCI .EQ .ISYMJ) ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Z part of linear transformation',
@@ -4026,13 +4026,13 @@ C
      *            NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),
      *            LFREE)
 C
-      IF (ISYMCI .EQ. ISYMJ .AND..NOT.TRPLET) THEN
+      IF (ISYMCI .EQ. ISYMJ .AND. .NOT.TRPLET) THEN
          IF ( NISHT .GT. 0 )
      *      CALL DAXPY(NZCVEC,OPINAC,VEC(ICOFF),1,
      *                 OTRS(ISOFF),1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ((IREFSY .EQ .ISYMJ).AND. LREFST ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Y part of linear transformation',

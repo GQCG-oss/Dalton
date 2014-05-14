@@ -250,8 +250,6 @@ if (CFG%PFM) then
       call PMLowdin_LinTra(G,HX,X,CFG%PM_input)
  elseif (CFG%PM_input%PipekMezeyMull) then
       call PMMull_LinTra(G,HX,X,CFG%PM_input) 
- elseif (CFG%PM_input%ChargeLocMulliken .or. CFG%PM_input%ChargeLocLowdin) then
-      call CLLinearTrans(G,HX,X,CFG%PM_input)
  end if
 
 

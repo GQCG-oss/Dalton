@@ -78,10 +78,12 @@ contains
     DECinfo%use_pnos             = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
-    DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%simplePNOthr         = 1.0E-7_realk
+    DECinfo%EOSPNOthr            = 1.0E-5_realk
+    DECinfo%noFAtrunc            = .false.
+    DECinfo%noFAtrafo            = .false.
     DECinfo%noPNOoverlaptrunc    = .false.
-    DECinfo%PNOoverlapthr        = 1.0E-5
+    DECinfo%PNOoverlapthr        = 1.0E-5_realk
     DECinfo%PNOtriangular        = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
@@ -467,6 +469,8 @@ contains
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
+       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
        case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
@@ -714,6 +718,18 @@ contains
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
        DECinfo%CCSDnosaferun = .true.
+    endif
+
+    if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
+      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+            & does not make sense, please change input!',-1)
+
     endif
 
 

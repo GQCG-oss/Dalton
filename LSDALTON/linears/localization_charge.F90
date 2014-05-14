@@ -40,11 +40,7 @@ call mat_to_full(S,1.0_realk,Smat)
 call lowdin_diag(nbas,Smat,Smat_sqrt,Smat_minussqrt,6)
 
 
-if (CFG%PM_input%ChargeLocMulliken) then
-     CFG%PM_input%SU=S
-elseif(CFG%PM_input%ChargeLocLowdin) then
-     call mat_set_from_full(Smat_sqrt,1d0,CFG%PM_input%SU)
-elseif (CFG%PM_input%PipekMezeyLowdin) then
+if (CFG%PM_input%PipekMezeyLowdin) then
      call mat_set_from_full(Smat_sqrt,1.0_realk,CFG%PM_input%SU)
 elseif (CFG%PM_input%PipekMezeyMull) then
      call mat_copy(1d0,S,CFG%PM_input%SU)
@@ -52,6 +48,7 @@ end if
 
 call mat_free(S)
 call mat_free(Sminussqrt)
+
 end subroutine get_correct_S
 
 
@@ -86,7 +83,7 @@ integer     :: minel_pos(2)
   call mat_init(CMOsav,CMO%nrow,CMO%ncol)
   call initialize_OrbLoc(CMO,CFG%PM_input,ls,dble(m))
   call update_OrbLoc(CFG%PM_input,CMO,ls)
-  call Gradient_ChargeLoc(G,CFG%PM_input)
+  call ComputeGrad_PipekMezey(CFG%PM_input,G)
   call Precond_ChargeLoc(P,CFG%PM_input)
   CFG%PM_input%P => P
   CFG%P=>CFG%PM_input%P
@@ -112,7 +109,6 @@ integer     :: minel_pos(2)
    call davidson_solver(CFG,G,X)
    if (CFG%PM_input%PipekMezeyMull) call mat_scal(-1d0,X)
    if (CFG%PM_input%PipekMezeyLowdin) call mat_scal(-1d0,X)
-   if (CFG%PM_input%ChargeLocMulliken) call mat_scal(-1d0,X)
 
    !Dynamic convergence thresh
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
@@ -152,7 +148,7 @@ integer     :: minel_pos(2)
     end if
 
     !new gradient
-    call Gradient_ChargeLoc(G,CFG%PM_input)
+    call ComputeGrad_PipekMezey(CFG%PM_input,G)
     call Precond_ChargeLoc(P,CFG%PM_input)
     CFG%PM_input%P => P
     CFG%P=>CFG%PM_input%P
