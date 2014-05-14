@@ -460,12 +460,19 @@ module cc_debug_routines_module
        endif
 
 
+       !do ii = 1,nspaces
+       !   if(pno_cv(ii)%allocd)call print_norm(pno_cv(ii)%d,size(pno_cv(ii)%d,kind=8))
+       !enddo
 
        !GET THE OVERLAP BETWEEN THE PNO SPACES
        call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
        !Get all the overlap matrices necessary
        call get_pno_overlap_matrices(nocc,nvirt,pno_cv,pno_S,nspaces,.true.)
 
+       !print *,"-----------------------------------"
+       !do ii = 1,nspaces * (nspaces - 1)/2 
+       !   if(pno_S(ii)%allocd)call print_norm(pno_S(ii)%d,size(pno_S(ii)%d,kind=8))
+       !enddo
 
      endif set_pno_info
 
@@ -642,7 +649,7 @@ module cc_debug_routines_module
               !  endif
               !endif
      
-              if(iter==1)t2(1)%val = m2%val
+              !if(iter==1)t2(1)%val = m2%val
 
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&

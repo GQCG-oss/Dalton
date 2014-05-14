@@ -78,12 +78,12 @@ contains
     DECinfo%use_pnos             = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
-    DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-5
-    DECinfo%noFAtrunc            = .true.
-    DECinfo%noFAtrafo            = .true.
+    DECinfo%simplePNOthr         = 1.0E-7_realk
+    DECinfo%EOSPNOthr            = 1.0E-5_realk
+    DECinfo%noFAtrunc            = .false.
+    DECinfo%noFAtrafo            = .false.
     DECinfo%noPNOoverlaptrunc    = .false.
-    DECinfo%PNOoverlapthr        = 1.0E-5
+    DECinfo%PNOoverlapthr        = 1.0E-5_realk
     DECinfo%PNOtriangular        = .false.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
@@ -469,7 +469,7 @@ contains
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
-       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
        case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
