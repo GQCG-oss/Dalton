@@ -649,7 +649,7 @@ module cc_debug_routines_module
               !  endif
               !endif
      
-              !if(iter==1)t2(1)%val = m2%val
+              if(iter==1)t2(1)%val = m2%val
 
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
