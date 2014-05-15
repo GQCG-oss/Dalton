@@ -69,16 +69,16 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
 
   
   write(ls%lupri,'(a)') '  %LOC%  '
-  write(ls%lupri,'(a)') '  %LOC% *******  CORE LOCALIZATION  ******* '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',ncore,' CORE ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
   CFG%PFM_input%m=m(1)
   call localization(CMO,m(1),ncore,nbas,0,ls,CFG,inp,.true.)
   write(ls%lupri,'(a)') '  %LOC%  '
-  write(ls%lupri,'(a)') '  %LOC% ******* VALENCE LOCALIZATION ******* '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nval,' VALENCE ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
   call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,inp,.false.)
   write(ls%lupri,'(a)') '  %LOC%  '
-  write(ls%lupri,'(a)') '  %LOC% ******* VIRTUAL LOCALIZATION ******* '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nvirt,' VIRTUAL ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
   CFG%PFM_input%m=m(2)
   call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,inp,.false.)
@@ -150,7 +150,6 @@ call mat_init(MOblock,nbas,norb)
 call mat_retrieve_block(MO,tmp,nbas,norb,1,offset+1)
 
 call mat_set_from_full(tmp,1.0_realk,MOblock)
-call mat_print(MOblock,1,nbas,1,norb,6)
 call mem_dealloc(tmp)
 
 ! if core, make sure m = 1 for orbspread and fourthmoment
