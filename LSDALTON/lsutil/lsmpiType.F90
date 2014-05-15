@@ -2332,7 +2332,7 @@ contains
       integer :: I,J,offset
 
       IF(AddToBuffer)THEN
-         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*nbuf2)
+         IF(iSho+nbuf1*nbuf2 .GT. nShort)call increaselsmpibufferSho(nbuf1*i8*nbuf2)
          DO J=1,nbuf2
             offset = iSho+(J-1)*nbuf1
             DO I=1,nbuf1
