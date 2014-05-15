@@ -136,7 +136,7 @@ type(orbspread_data) :: inp
 if (m == 0) return
 
 
-if (norb < 4)  then
+if (norb < 6)  then
    write(ls%lupri,'(a)') '  %LOC%  Too few orbitals to localize.  ' 
    return 
 endif
