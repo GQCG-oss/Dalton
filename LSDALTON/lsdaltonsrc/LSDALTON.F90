@@ -433,7 +433,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
            if (config%decomp%cfg_mlo ) then
               CALL Print_Memory_info(lupri,'before ORBITAL LOCALIZATION')
-              write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
+              write(ls%lupri,'(a)')'  %LOC%   '
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *'
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   '
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
               if (config%davidOrbLoc%make_orb_plot) then
                  call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
@@ -444,6 +448,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
+           write(ls%lupri,'(a)') '  %LOC%'
+           write(ls%lupri,'(a)') '  %LOC% Localized orbitals written to lcm_orbitals.u'
+           write(ls%lupri,'(a)') '  %LOC%'
            call LSclose(LUN,'KEEP')
 
 
@@ -622,7 +629,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call LSclose(LUN,'KEEP')
            if (config%decomp%cfg_mlo) then
               write(ls%lupri,*)
-              write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
            else
                call lsquit('No localization type was requested',ls%lupri) 
@@ -631,6 +637,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            lun = -1
            CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
+           write(ls%lupri,'(a)') '  %LOC%'
+           write(ls%lupri,'(a)') '  %LOC% Localized orbitals written to localized_orbitals.u'
+           write(ls%lupri,'(a)') '  %LOC%'
            call LSclose(LUN,'KEEP')
            call mat_free(cmo)
            CALL Print_Memory_info(lupri,'after LOCALIZING ORBITALS L3')

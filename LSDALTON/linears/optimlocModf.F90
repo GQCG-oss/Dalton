@@ -68,13 +68,19 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   if (CFG%PFM)   call kurt_initAO(CFG%PFM_input,ls,cmo%ncol)
 
   
-  write(ls%lupri,'(a)') '%LOC% *******  CORE LOCALIZATION  ******* '
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a)') '  %LOC% *******  CORE LOCALIZATION  ******* '
+  write(ls%lupri,'(a)') '  %LOC%  '
   call localization(CMO,m(1),ncore,nbas,0,ls,CFG,inp)
-  write(ls%lupri,'(a)') '%LOC% ******* VALENCE LOCALIZATION ******* '
-  call localization(CMO,m(1),nval,nbas,0,ls,CFG,inp)
-  write(ls%lupri,'(a)') '%LOC% ******* VIRTUAL LOCALIZATION ******* '
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a)') '  %LOC% ******* VALENCE LOCALIZATION ******* '
+  write(ls%lupri,'(a)') '  %LOC%  '
+  call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,inp)
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a)') '  %LOC% ******* VIRTUAL LOCALIZATION ******* '
+  write(ls%lupri,'(a)') '  %LOC%  '
   CFG%PFM_input%m=m(2)
-  call localization(CMO,m(2),nvirt,nbas,0,ls,CFG,inp)
+  call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,inp)
 
   if (CFG%orbspread) call orbspread_propint_free(inp)
   if (CFG%PFM)  call kurt_freeAO(CFG%PFM_input)
@@ -92,7 +98,7 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   call mat_identity(SC)
   call mat_daxpy(-1E0_realk,SC,CSC)
   IF(ABS(mat_sqnorm2(CSC)/CSC%nrow).GT.1.0E-15_realk)THEN
-     write(ls%lupri,*) ' %LOC% WARNING: ORBITALS NOT ORTHONORMAL!!!' 
+     write(ls%lupri,*) '  %LOC% WARNING: ORBITALS NOT ORTHONORMAL!!!' 
   ENDIF
   call mat_free(S)
   call mat_free(SC)
@@ -131,7 +137,7 @@ if (m == 0) return
 
 
 if (norb < 4)  then
-   write(ls%lupri,*) '%LOC%  Too few orbitals to localize.  ' 
+   write(ls%lupri,'(a)') '  %LOC%  Too few orbitals to localize.  ' 
    return 
 endif
 
