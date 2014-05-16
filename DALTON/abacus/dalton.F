@@ -468,7 +468,7 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
 
 #ifdef VAR_OMP
          call getenv('OMP_NUM_THREADS', env_value)
-         read(env_value, '(i)') omp_num_threads
+         read(env_value, '(i6)') omp_num_threads
          if (omp_num_threads > 1) then
             WRITE(LUPRI,'(/A,I0,A)')
      &      " * OpenMP run using ", omp_num_threads, " threads."
