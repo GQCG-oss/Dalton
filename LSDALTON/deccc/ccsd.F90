@@ -5501,7 +5501,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> MPI info:
     integer, pointer :: joblist(:)
     logical :: master
-    integer(kind=ls_mpik) :: tile_master, myrank, nnod, mode
+    integer(kind=ls_mpik) :: tile_master, myrank, nnod
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -5544,7 +5544,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nnod          = 1
     master        = .true.
 #ifdef VAR_MPI
-    mode        = MPI_MODE_NOCHECK
     myrank        = infpar%lg_mynum
     nnod          = infpar%lg_nodtot
     master        = (myrank == infpar%master)
@@ -5698,12 +5697,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      omega2%itype = DENSE
      govov%itype  = DENSE
    end if
-
-   ! lock all windows in PDM integral array for get tiles in main loop
-   if (.not.local_moccsd) then
-     call arr_lock_wins(pgmo_diag,'s',mode)
-     if (Nbat>1) call arr_lock_wins(pgmo_up,'s',mode)
-   end if 
 #endif
     if (iter==1) call array_zero(govov)
     call array_zero(omega2)
@@ -5743,14 +5736,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                          & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
- 
-#ifdef VAR_MPI
-   ! unlock all windows in PDM integral array for get tiles in main loop
-   if (.not.local_moccsd) then
-     call arr_unlock_wins(pgmo_diag)
-     if (Nbat>1) call arr_unlock_wins(pgmo_up)
-   end if 
-#endif
 
     call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
 
