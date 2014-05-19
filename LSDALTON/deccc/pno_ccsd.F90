@@ -2365,11 +2365,13 @@ module pno_ccsd_module
            epc = 2
            do pair1 = 1, paircontribs
 
+              add_contrib = .false.
+
+              i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
 
               if( PS1 )then
 
-                 i = idx(paircontrib(1,pair1))
 
                  if(ns==ns1)then
                     k = j
@@ -2388,12 +2390,12 @@ module pno_ccsd_module
                  if(nidx1/=1)call lsquit("ERROR(get_common_idx_summation_for_current_aibj): &
                     &this should never occur nidx1/=1",-1)
 #endif
-                 i = oidx1(1,3)
                  k = idx1(1)
 
               endif
+
               add_contrib = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                 &.or.(.not. PS1 .and. i/=k)
+                 &.or.(.not. PS1 .and. i==oidx1(1,3)) .or. add_contrib
 
               if(add_contrib     .and.pair1==1)bpc = 1
               if(.not.add_contrib.and.pair1==1)bpc = 2
@@ -2401,22 +2403,17 @@ module pno_ccsd_module
               if(.not.add_contrib.and.pair1==2)epc = 1
            enddo
 
-           bpc = 1
-           epc = 2
-
            !LOOP OVER THE CONTRIBUTIONS
            do pair1 = bpc, epc
+              
 
               i = idx(paircontrib(1,pair1))
               j = idx(paircontrib(2,pair1))
+
               if(pair1==1)then
-                 !p4 => p1
                  call ass_D1to4( w1,    p4, [nv,rpd,nv,rpd1] )
-                 !h4 => w4(1:pnv1*rpd1*rpd*pnv)
               else if(pair1==2)then
-                 !p4 => p3
                  call ass_D1to4( w1(nv*rpd1*rpd*nv+1:2*nv*rpd1*rpd*nv), p4, [nv,rpd,nv,rpd1] )
-                 !h4 => w4(pnv1*rpd1*rpd*pnv+1:2*pnv1*rpd1*rpd*pnv)
               endif
 
               if( PS1 ) then
@@ -2487,9 +2484,9 @@ module pno_ccsd_module
                     endif
 
 
-                    !if(k == l .and. ns1 /= ns2 )then
-                    if( ( ns /= ns1 .and. oidx1(1,3) /= i ) .or. ( ns /= ns2 .and. oidx2(1,3) /= j) &
-                       &.and. .not. (ns == ns1 .and. ns == ns2 ) )then
+                    if(      ( ns /= ns1 .and. oidx1(1,3) /= i )&!.and. .not. ns == ns2) &
+                       &.or. ( ns /= ns2 .and. oidx2(1,3) /= j )&!.and. .not. ns == ns1) &
+                       &.and. .not. (ns == ns1 .and. ns == ns2 ) .and. PS)then
                        !print *,"CYCLE 1  ",ns,ns1,ns2,PS1,PS2,i,j,k,l,"(",idx,")(",idx1,")(",idx2,")",oidx1(1,3),oidx2(1,3)
                        cycle OneIdxSpaceLoop21
                     endif
@@ -2506,10 +2503,17 @@ module pno_ccsd_module
                        cycle OneIdxSpaceLoop21
                     endif
 
+                 else
+
+                    !cycle if the overlapping index corresponds to i
+                    
+                    if((oidx2(1,3) == i .and. ns/=ns2) .or. (oidx1(1,3) /= i.and.ns/=ns1))then
+                       !print*,"CYCLE 3",ns,ns1,ns2,PS1,PS2,i,j,k,l,"(",idx,")(",idx1,")(",idx2,")",oidx2(1,3)
+                       cycle OneIdxSpaceLoop21
+                    endif
+
                  endif
 
-                 !print *,""
-                 !print *,"PAIR CONTRIB LOOP",ns,ns1,ns2,PS1,PS2,i,j,k,l,"(",idx,")(",idx1,")(",idx2,")"
 
                  !Get the integrals kdlc -> ckld and transform c and d to their
                  !corresponding spaces, (iajb -> bija) 
@@ -2578,21 +2582,11 @@ module pno_ccsd_module
 
                  call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1i,ptr2=h2i)
 
-                 !call print_tensor_unfolding_with_labels(w1,&
-                 !   &[pnv1,rpd1],'ck',2,[rpd2,pnv2],'ld',2,'inner pair mat 1')
-                 !call print_tensor_unfolding_with_labels(h1i,&
-                 !   &[rpd2,pnv2],'ld',2,[nidx_h2,pnv],'ja',2,'inner pair mat 2')
-
                  call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1i, rpd2*pnv2, nul, h2i, pnv1*rpd1)
-
-                 !call print_tensor_unfolding_with_labels(h2i,&
-                 !   &[pnv1,rpd1],'ck',2,[nidx_h2,pnv],'ja',2,'inner pair result')
 
                  call ass_D1to4( h2i, p3, [pnv1,rpd1,nidx_h2,pnv] )
                  call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
 
-                 !call print_tensor_unfolding_with_labels(w4,&
-                 !   &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'pair mat 2 - before add')
 
                  if( PS1 )then
 
@@ -2612,25 +2606,9 @@ module pno_ccsd_module
                        enddo
                     enddo
 
-                    !do kc=1,rpd1
-                    !   do c=1,pnv1
-                    !      do a=1,pnv
-                    !         do jc=1,nidx_h2
-                    !            p4(oidx2(jc,1),a,c,kc) = p4(oidx2(jc,1),a,c,kc) + p3(c,kc,jc,a)
-                    !         enddo
-                    !      enddo
-                    !   enddo
-                    !enddo
                  endif
 
-                 !call print_tensor_unfolding_with_labels(w4,&
-                 !   &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'pair mat 2 - after add')
-
               enddo OneIdxSpaceLoop21
-
-              !print *,""
-              !print *,"EXIT PAIR CONTRIB LOOP",pair1
-
 
               !get the amplitudes, extract the necessary indices, 
               !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
@@ -2657,34 +2635,17 @@ module pno_ccsd_module
 
                  call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
 
-                 !call print_tensor_unfolding_with_labels(h1,&
-                 !   &[pnv,rpd],'bi',2,[pnv1,1],'ck',2,'pair mat 1')
-                 !call print_tensor_unfolding_with_labels(w4(1+(kc-1)*pnv1*pnv:),&
-                 !   &[pnv1,1],'ck',2,[rpd,pnv],'ja',2,'pair mat 2')
-
-
                  call dgemm('n','t', pnv, pnv, pnv1, m10, h1, pnv, w4(1+(kc-1)*pnv1*pnv), pnv, nul, h2, pnv)
 
+                 !add_contrib1 = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
+                 !   &.or.(.not. PS1 .and. j/=idx1(kc))
+                 !add_contrib2 = ((PS1 .and. ((i>j.and.oidx1(1,3)==idx(1)).or.(i<j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
+                 !   &.or.(.not. PS1 .and. i/=idx1(kc))
 
-                 !call print_tensor_unfolding_with_labels(h2,&
-                 !   &[pnv],'b',1,[pnv],'a',1,'pair result after adding')
-
-
-                 !call print_tensor_unfolding_with_labels(o,&
-                 !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ - Before')
-
-                 add_contrib1 = ((PS1 .and. ((i<j.and.oidx1(1,3)==idx(1)).or.(i>j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                    &.or.(.not. PS1 .and. j/=idx1(kc))
-                 add_contrib2 = ((PS1 .and. ((i>j.and.oidx1(1,3)==idx(1)).or.(i<j.and.oidx1(1,3)==idx(2)))  ) .or.ns==ns1 ) &
-                    &.or.(.not. PS1 .and. i/=idx1(kc))
-
-                 if(add_contrib1)then
+                 !if(add_contrib1)then
                     call array_reorder_2d(p10,h2,pnv,pnv,paircontrib(:,3-pair1),p10,o)
                     call array_reorder_2d(p05,h2,pnv,pnv,paircontrib(:,pair1),p10,o)
-                 endif
-
-                 !call print_tensor_unfolding_with_labels(o,&
-                 !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+                 !endif
 
               enddo kcounter2
 
@@ -2749,9 +2710,6 @@ module pno_ccsd_module
               rpd2 =  pno_cv(ns2)%rpd
               PS2  =  pno_cv(ns2)%PS
 
-              !print *,""
-              !print *,"RECT CONTRIB LOOP",ns,ns1,ns2,PS1,PS2
-
               !Get the integrals kdlc -> ckld and transform c and d to their
               !corresponding spaces, (iajb -> bija) 
               call ass_D1to4( govov, p2i, [no, nv, no, nv]  )
@@ -2812,18 +2770,7 @@ module pno_ccsd_module
 
               call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
 
-              !call print_tensor_unfolding_with_labels(w1,&
-              !   &[pnv1,rpd1],'ck',2,[rpd2,pnv2],'ld',2,'inner rect mat 1')
-              !call print_tensor_unfolding_with_labels(h1,&
-              !   &[rpd2,pnv2],'ld',2,[nidx2,pnv],'ja',2,'inner rect mat 2')
-
               call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
-
-              !call print_tensor_unfolding_with_labels(h2,&
-              !   &[pnv1,rpd1],'ck',2,[nidx2,pnv],'ja',2,'inner rect result')
-
-              !call print_tensor_unfolding_with_labels(w4,&
-              !   &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'rect mat 2 - before add')
 
               call ass_D1to4( h2, p3, [pnv1,rpd1,nidx2,pnv] )
               call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
@@ -2864,13 +2811,8 @@ module pno_ccsd_module
                     enddo
                  endif
               endif
-              !call print_tensor_unfolding_with_labels(w4,&
-              !   &[rpd,pnv],'ja',2,[pnv1,rpd1],'ck',2,'rect mat 2 - after add')
 
            enddo OneIdxSpaceLoop22
-
-           !print *,""
-           !print *,"EXIT RECT CONTRIB LOOP"
 
            !get the amplitudes, extract the necessary indices, 
            !reorder dkci -> dick :D transform to current space (bick) and do the contraction,
@@ -2898,23 +2840,11 @@ module pno_ccsd_module
 
            call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
-
-           !call print_tensor_unfolding_with_labels(h1,&
-           !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'rect mat 1')
-           !call print_tensor_unfolding_with_labels(w4,&
-           !   &[pnv1,rpd1],'ck',2,[rpd,pnv],'ja',2,'rect mat 2')
-
-
            call dgemm('n','t', pnv*nidx1,rpd*pnv, rpd1*pnv1, m10, h1,pnv*nidx1, w4, pnv*rpd, nul, h2, pnv*nidx1)
-
-           !call print_tensor_unfolding_with_labels(h2,&
-           !   &[pnv,nidx1],'bi',2,[rpd,pnv],'ja',2,'rect result')
-
-           !call print_tensor_unfolding_with_labels(o,&
-           !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ - Before')
 
            call ass_D1to4( h2, p2o, [pnv,nidx1,rpd,pnv ] )
            call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd ] )
+
            do a=1,pnv
               do j=1,pno
                  do i=1,nidx1
@@ -2927,9 +2857,7 @@ module pno_ccsd_module
                  enddo
               enddo
            enddo
-           !print *,ns,"adding",ns1," as symmetrized",pno,pno1,rpd,rpd1
-           !call print_tensor_unfolding_with_labels(o,&
-           !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AIBJ')
+
         endif
 
 
