@@ -70,6 +70,12 @@ C defined parallel calculation types
 
 !     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
       DATA WRKDLM/12345678D0/
+
+      ! we use this to read env variables
+      character*8 :: env_value
+
+      ! number of OMP threads
+      integer :: omp_num_threads
 C
 C
 C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
@@ -448,19 +454,23 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) THEN
-            WRITE(LUPRI,'(/A,I5,A)')
-     &      " * Parallel with MPI: Using", NODTOT+1, " CPUs."
+            WRITE(LUPRI,'(/A,I0,A)')
+     &      " * MPI run using ", NODTOT+1, " processes."
          ELSE
             WRITE(LUPRI,'(/A,I5,A)')
-     &      " * Sequential calculation using 1 CPU"
+     &      " * Sequential calculation."
          END IF
 #endif
 
 #ifdef VAR_OMP
-         write(lupri,'(/A,I5)')
-     &   ' * openMP activated, number of threads:',
-     &   omp_get_num_procs()
+         call getenv('OMP_NUM_THREADS', env_value)
+         read(env_value, '(i)') omp_num_threads
+         if (omp_num_threads > 1) then
+            WRITE(LUPRI,'(/A,I0,A)')
+     &      " * OpenMP run using ", omp_num_threads, " threads."
+         end if
 #endif
+
 !        print content of input file to output
          inquire(file = 'DALTON.INP', exist = file_exists,
      &           opened = file_open)
@@ -675,6 +685,20 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+
+
+      ! radovan: close (hopefully) all open files
+      !          otherwise we run out of units
+      !          if we execute Dalton many times in sequence
+      !          (ChemShell for example)
+      do iunit = 1, 99
+         inquire(iunit, opened=file_open)
+         if (file_open) close(iunit, status='keep')
+      end do
+      ! clear the corresponding table and hope for the best
+      call clear_iuntab()
+
+
       CALL QEXIT('DALTON main')
       END
 

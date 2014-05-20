@@ -110,12 +110,6 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
-      CALL GPINQ('AOPROPER','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
-     &                                  IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUPROP,'DELETE')
-      END IF
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
          WRITE (LUPRI,'(/15X,A)')
@@ -129,7 +123,13 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -461,7 +461,8 @@ C
          ONEPRP = .TRUE.
       END IF
 C
-      CALL TITLER('Output from HERMIT input processing','*',118)
+      CALL TITLER('Output from **INTEGRALS input processing (HERMIT)',
+     &   '*',118)
 C
 C     **** Find Hermit input *****
 C
@@ -478,9 +479,12 @@ C         if reading input from a terminal
       END IF
   910 CONTINUE
          NWARN = NWARN + 1
-         WRITE (LUPRI,*) 'WARNING HERINP: error reading Dalton input'
+         WRITE (LUPRI,'(/A)')
+     &   '   WARNING HERINP: error reading Dalton input file'
   920 CONTINUE
          WORD = '**END O'
+         WRITE (LUPRI,'(/A)')
+     &   ' - Using defaults, no **INTEGRALS input found'
          GOTO 300
   930 CONTINUE
       WORD1 = WORD
@@ -1281,13 +1285,13 @@ cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
 cs            ENDIF
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
-         GO TO 299
+         GO TO 300
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in HERINP.')
       END IF
-  299 CONTINUE
+  300 CONTINUE
 
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
 cLig <>
@@ -1305,7 +1309,7 @@ cLig <>
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
      *    /'both be specified.'
-          CALL QUIT('Error in HERMIT input.')
+          CALL QUIT('Error in **INTEGRALS input.')
       END IF
       IF (HAMILT) THEN
           IF (NOTWO) THEN
@@ -1656,7 +1660,6 @@ cLig <<
 C
 C     **** Process input for various program sections  *****
 C
-  300 CONTINUE
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -2283,8 +2286,16 @@ C     **********************************
 C     ***** One-Electron Integrals *****
 C     **********************************
 C
+C     Both Hamiltionian and property one-electron integrals.
+C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+
+!        Open standard property integral file AOPROPER if LUPROP .le. 0
+!        (if calculating integrals for DKH, then LUPROP is already opened
+!         as AODKHINT)
+         IF (LUPROP .LE. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C           ***** These integrals are used to modify the Hamiltonian ****
 C           ***** thus calculated first of all if requested          ****
@@ -3373,7 +3384,8 @@ C
             END IF
 cLig <<
          END IF
-      END IF
+      END IF  ! (RUNONE)
+      RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0
@@ -4124,7 +4136,7 @@ C     Open Mean-field input file generate in READIN
 C
       LUTMP2   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4134,7 +4146,7 @@ C
       BREIT = .NOT.DKTRAN
 CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
-C     We loop over symmetry-independent center
+C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
@@ -4146,7 +4158,7 @@ C     We should now have all the atomic mean-field SO integrals,
 C     now generate them in symmetry-orbital basis
 C
       REWIND (LUMNFPRP)
-      CALL SYMTRAFO(LUMNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
       CALL GPCLOSE(LUTMP2,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')

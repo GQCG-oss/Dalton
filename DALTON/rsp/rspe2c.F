@@ -1106,7 +1106,7 @@ C    *      '  IS:',KZCONF,'  CALCULATED NUMBER,NHCDET:',NHCDET
 C           CALL QUIT(' H2XSIG,INCORRECT CALCULATION OF DETERMINANTS')
 C        END IF
          CALL DSCAL(KZCONF,DM1,EVECS(1,ISIM),1)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1,ISIM),1)
@@ -1140,7 +1140,7 @@ C
      *               EVECS(1+KZVAR,ISIM),
      *               WRK(KUFCAC),H2XAC(1,1,ISIM),.FALSE.,.FALSE.,
      *               XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
