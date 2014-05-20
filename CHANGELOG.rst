@@ -33,6 +33,7 @@ DALTON
 - Fix for Molden file when exponent greater than 1.0D8.
 - Fix for MNF-SO (amfi) if more than 40 nuclei.
 - Bug fix in quadratic response function using CPP in the tensor contraction routine of the A[2] terms.
+- Added interface to ChemShell.
 
 
 LSDALTON
