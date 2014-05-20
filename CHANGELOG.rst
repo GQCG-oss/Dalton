@@ -35,6 +35,8 @@ DALTON
 - Fix for MNF-SO (amfi) if more than 40 nuclei.
 - Bug fix in quadratic response function using CPP in the tensor contraction routine of the A[2] terms.
 - Added interface to ChemShell.
+- Bugfix for small non-default WORK array sizes. For specific small custom values of the WORK array size,
+  KBLOCK was larger than MXBLCK leading to unpredictable results due to array length mismatch in DALTON/abacus/herrdn.F.
 
 
 LSDALTON
