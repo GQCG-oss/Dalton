@@ -685,6 +685,20 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+
+
+      ! radovan: close (hopefully) all open files
+      !          otherwise we run out of units
+      !          if we execute Dalton many times in sequence
+      !          (ChemShell for example)
+      do iunit = 1, 99
+         inquire(iunit, opened=file_open)
+         if (file_open) close(iunit, status='keep')
+      end do
+      ! clear the corresponding table and hope for the best
+      call clear_iuntab()
+
+
       CALL QEXIT('DALTON main')
       END
 

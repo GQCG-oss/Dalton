@@ -1,5 +1,12 @@
 set(DALTON_LIBS)
 
+if(ENABLE_CHEMSHELL)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
+        )
+endif()
+
 add_library(
     dalton
     ${DALTON_C_SOURCES}
@@ -25,6 +32,7 @@ if(ENABLE_PELIB)
     add_dependencies(dalton pelib)
 endif()
 
+if(NOT ENABLE_CHEMSHELL)
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
@@ -38,6 +46,7 @@ target_link_libraries(
     ${DALTON_LIBS}
     ${EXTERNAL_LIBS}
     )
+endif()
 
 # compile utilities
 
