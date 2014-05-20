@@ -4155,7 +4155,7 @@ C  /* Deck symout */
 C*****************************************************************************
 C
 C     Print routine for symmetry
-C     Extended to write a SYMINFO file for use with mean-field SO integrals
+C     Extended to write a AMFI_SYMINFO.TXT file for use with mean-field SO integrals
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -4188,11 +4188,12 @@ C
 casm
 
 C
-C     Write SYMINFO file
+C     Write AMFI_SYMINFO.TXT file
 C
       LUSYMF = -1
       IDUMMY = -1
-      CALL GPOPEN(LUSYMF,'SYMINFO',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUSYMF,'AMFI_SYMINFO.TXT',' ',' ','FORMATTED',
+     &   IDUMMY,.FALSE.)
       WRITE (LUSYMF,'(A,/A)')
      &     'Symmetry information from Dalton (Hermit module)',
      &     'funct #, unique centre #, L, M , Func.type #, # of '//
@@ -6411,7 +6412,7 @@ C  /* Deck molout */
 C
 C     This routine based on TECORBOUT dumps a MOLECULE.INP file suitable
 C     for direct processing by DALTON
-C     Now also dumps a file MNF.INP for use for SO mean-field approximation
+C     Now also dumps a file AMFI_MNF.INP for use for SO mean-field approximation
 C     Written by K.Ruud 160297
 C
 #include "implicit.h"
@@ -6444,8 +6445,9 @@ C
       LUTMP2 = -1
       LUSHB  = -1
       CALL GPOPEN(
-     &          LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUTMP2, 'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+     &     LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(
+     &     LUTMP2, 'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C

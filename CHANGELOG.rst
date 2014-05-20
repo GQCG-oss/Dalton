@@ -12,6 +12,9 @@ DALTON
 
 - Default DIIS space increased from 5 to 8, often resulting in 1-2 fewer SCF iterations.
 - Removed the maximum of 20 excitations in summary output for second and third order transition moments.
+- aug-cc-pVTZ-lresc basis set added to $BASDIR
+- A Warning is issued when orbitals are deleted due to linear dependencies(before SCF),
+  AngPso (a 0th order LRESC diamagentic corr) is not calculated in this case. 
 - Bugfix for parallel calculations and some type of geometry optimizations with ano basis sets
   (this bug resulted in aborted calculations, not in wrong results).
 - Print irrep names together with symmetry numbers for easier interpretation of output.
@@ -28,6 +31,8 @@ DALTON
 - Corrected input description for transition moments between excited states (\*QUADRA with .DOUBLE RESIDUE).
 - Fix for \*\*RESPONSE .EXMOM .ISPABC=1,0,1 (only half the excited state spin-orbit transition moments were calculated).
 - Fix for Molden file when exponent greater than 1.0D8.
+- Fix for MNF-SO (amfi) if more than 40 nuclei.
+- Bug fix in quadratic response function using CPP in the tensor contraction routine of the A[2] terms.
 
 
 LSDALTON
