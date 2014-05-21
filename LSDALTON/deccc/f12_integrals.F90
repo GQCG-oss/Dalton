@@ -66,8 +66,10 @@ module f12_integrals_module
   public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
 
   private
+#endif
 
 contains
+#ifdef MOD_UNRELEASED 
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013

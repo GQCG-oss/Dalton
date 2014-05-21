@@ -34,8 +34,10 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
+#endif
   
 contains
+#ifdef MOD_UNRELEASED
   function norm1D(A)
     implicit none
     real(realk), intent(in) :: A(:)

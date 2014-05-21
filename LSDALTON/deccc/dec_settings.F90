@@ -500,21 +500,37 @@ contains
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
-       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12')
+#ifdef MOD_UNRELEASED
+          DECinfo%F12=.true.; doF12 = .TRUE.
+#else
+          call lsquit('F12 not released',-1)
+#endif
        case('.F12DEBUG')     
+#ifdef MOD_UNRELEASED
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-          !endif mod_unreleased
+#else
+          call lsquit('F12 not released',-1)
+#endif
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
        case('.INTERACTIONENERGY')     
+#ifdef MOD_UNRELEASED
           !Calculate the Interaction energy (add ref to article) 
           DECinfo%InteractionEnergy       = .true.
+#else
+          call lsquit('.INTERACTIONENERGY not released',-1)
+#endif
        case('.PRINTINTERACTIONENERGY')     
+#ifdef MOD_UNRELEASED
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
           DECinfo%full_print_frag_energies=.true.
+#else
+          call lsquit('.PRINTINTERACTIONENERGY not released',-1)
+#endif
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     

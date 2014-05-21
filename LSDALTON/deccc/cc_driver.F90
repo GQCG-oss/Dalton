@@ -212,6 +212,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    nocc_tot = MyMolecule%nocc
 
    if(ccmodel == MODEL_CCSDpT)then
+#ifdef MOD_UNRELEASED
 
       ccsdpt_t1 = array_init([nvirt,nocc],2)
       ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
@@ -230,7 +231,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             &labeldwcomm = 'MASTER COMM pT: ',&
             &labeldwidle = 'MASTER IDLE pT: ') 
       endif
-
+#else
+      call lsquit('CCSD(T) not released',-1)
+#endif
    else
 
       call array_reorder(t2_final,[1,3,2,4])
@@ -289,6 +292,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    call array_free(VOVO)
 
    if(ccmodel == MODEL_CCSDpT)then
+#ifdef MOD_UNRELEASED
       ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
       e4_mat_tot = array_init([natoms,natoms],2)
       e4_mat_tmp = array_init([natoms,natoms],2)
@@ -330,6 +334,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call array_free(e4_mat_tot)
       call array_free(e4_mat_tmp)
       call array_free(e5_mat_tot)
+#endif
    else
       if(DECinfo%PrintInteractionEnergy)then
          write(DECinfo%output,'(A)') ' '
