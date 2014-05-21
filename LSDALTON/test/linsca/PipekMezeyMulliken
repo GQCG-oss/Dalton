@@ -54,6 +54,8 @@ TRILEVEL
 .LCM
 **LOCALIZE ORBITALS
 .PIPEKM(MULL)
+.MACRO IT
+100
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -83,7 +85,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # KURTOSIS
-CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    3\.4" $log | wc -l`
+CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    3\." $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Kurtosis is not correct"

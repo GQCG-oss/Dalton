@@ -966,7 +966,9 @@ contains
 
       !allocate the arrays correctly
       if( .not. AddToBuffer )then
+
         call mem_alloc(inf%iaos,inf%n)
+
         if (inf%s_associated) then
           call mem_alloc(inf%s1,inf%ns1,inf%red1)
           call mem_alloc(inf%s2,inf%red2,inf%ns2)

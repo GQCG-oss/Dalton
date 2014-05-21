@@ -294,9 +294,11 @@ C   Error message if code is not implemented for parallel calculations.
       IMPLICIT NONE
 
 #include "priunit.h"
-      CHARACTER TEXT*(*)
+      CHARACTER*(*) TEXT
+      CHARACTER*(43) ERROR
       INTEGER LUPRIN
 C
+      ERROR = ' not implemented for parallel calculations.'
 C
       IF (LUPRI .GE. 0) THEN
          LUPRIN = LUPRI
@@ -305,9 +307,8 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
-     & ' not implemented for parallel calculations!'
-      CALL QUIT(TEXT)
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,ERROR
+      CALL QUIT(TEXT//ERROR)
       RETURN
       END
 C  /* Deck parqarn */
@@ -1406,4 +1407,12 @@ C
  9000 CONTINUE
       RETURN
       END
-! -- end of gptrygve.F --
+
+
+      subroutine clear_iuntab()
+#include "implicit.h"
+         common /unitar/ iuntab(1:99)
+         do i = 1, 99
+            iuntab(i) = 0
+         end do
+      end subroutine

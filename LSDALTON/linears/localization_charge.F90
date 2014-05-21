@@ -99,8 +99,8 @@ integer     :: minel_pos(2)
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
     max_loc = fVal/real(norb)
 
-  write (ls%lupri,'(1X,I3,A,ES8.1,A,ES8.1,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
- &i, ' Pred= ',CFG%r_denom,' max_loc = ',max_loc, &
+  write (ls%lupri,'(1X,A,I3,A,ES8.1,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
+ & ' %LOC% ',i, ' max_loc = ',max_loc, &
  & ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region =', CFG%stepsize, ' step =',stepsize
 
 
@@ -127,7 +127,7 @@ integer     :: minel_pos(2)
   r=2.0d0*(orig_eval-old_fVal)/CFG%r_denom
 
   if (r<0.0_realk) then
-       write(ls%lupri,*) 'Step not accepted. Go back'
+       write(ls%lupri,*) ' %LOC% Step not accepted. Go back'
        call mat_copy(1.0d0,CMOsav,CMO)
        call update_OrbLoc(CFG%PM_input,CMO,ls)
        fval = CFG%PM_input%funcVal
@@ -137,14 +137,8 @@ integer     :: minel_pos(2)
    endif
 
    if (CFG%stepsize < 0.0001_realk) then
-         write(CFG%lupri,'(a)') 'WARNING: Too many rejections for localization. We exit..' 
-         write(CFG%lupri,*) ' Cannot proceed with localization due to issues with    '
-         write(CFG%lupri,*) ' solving the level-shifted Newton equations. You may    '
-         write(CFG%lupri,*) ' try to restart calculation and lower the residual norm '
-         write(CFG%lupri,*) ' threshold for the micro iterations as described in     '
-         write(CFG%lupri,*) ' the user manual under section **LOCALIZE ORBITALS      '
-         write(CFG%lupri,*) ' and keyword .MICRO THRESH                              '
-         call lsquit('Cannot converge micro iterations. ', CFG%lupri)
+         write(CFG%lupri,'(a)') ' %LOC% WARNING: Too many rejections for localization. We exit..' 
+         exit
     end if
 
     !new gradient

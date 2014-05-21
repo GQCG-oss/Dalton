@@ -468,7 +468,7 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
 
 #ifdef VAR_OMP
          call getenv('OMP_NUM_THREADS', env_value)
-         read(env_value, '(i)') omp_num_threads
+         read(env_value, '(i6)') omp_num_threads
          if (omp_num_threads > 1) then
             WRITE(LUPRI,'(/A,I0,A)')
      &      " * OpenMP run using ", omp_num_threads, " threads."
@@ -689,6 +689,20 @@ C
          CALL PVMXEXIT
       END IF
 #endif
+
+
+      ! radovan: close (hopefully) all open files
+      !          otherwise we run out of units
+      !          if we execute Dalton many times in sequence
+      !          (ChemShell for example)
+      do iunit = 1, 99
+         inquire(iunit, opened=file_open)
+         if (file_open) close(iunit, status='keep')
+      end do
+      ! clear the corresponding table and hope for the best
+      call clear_iuntab()
+
+
       CALL QEXIT('DALTON main')
       END
 
