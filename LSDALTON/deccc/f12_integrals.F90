@@ -12,6 +12,8 @@
 
 module f12_integrals_module 
 
+#ifdef MOD_UNRELEASED 
+
 #ifdef VAR_MPI   
   use infpar_module
   use lsmpi_type
@@ -1554,6 +1556,13 @@ contains
 
   end subroutine get_mp2f12_pf_E23
 
+#else
+   subroutine dummy_f12_integrals()
+     implicit none
+
+   end subroutine dummy_f12_integrals
+
+#endif
 
 end module f12_integrals_module
 
