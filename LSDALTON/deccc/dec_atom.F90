@@ -87,7 +87,8 @@ contains
 
     ! Use of fragment-adapted orbitals set to false here, they can be set later using
     ! fragment_adapted_transformation_matrices.
-    fragment%fragmentadapted=.false.
+    fragment%fragmentadapted = .false.
+    fragment%PNOset          = .false.
 
     natoms = MyMolecule%natoms
 
