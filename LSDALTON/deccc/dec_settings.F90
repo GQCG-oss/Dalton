@@ -446,7 +446,6 @@ contains
           read(input,*) DECinfo%MPIgroupsize
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
 
 
 #ifndef VAR_MPI
@@ -489,7 +488,7 @@ contains
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
+       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -497,6 +496,8 @@ contains
        case('.FRAGREDMODEL') 
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+#endif
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
@@ -604,7 +605,6 @@ contains
           read(input,*) DECinfo%EerrFactor
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
-#endif
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&

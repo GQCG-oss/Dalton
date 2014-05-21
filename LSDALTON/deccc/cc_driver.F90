@@ -33,12 +33,12 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
-use cc_debug_routines_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldarray_wrapper
 #ifdef MOD_UNRELEASED
+use cc_debug_routines_module
 use ccsdpt_module
 !endif mod_unreleased
 #endif
@@ -110,6 +110,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    if(infpar%lg_nodtot>1)local=.false.
 #endif
 
+#ifdef MOD_UNRELEASED
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
 
@@ -152,7 +153,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
             & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
       endif
-
    else
       ncore = 0
 
@@ -185,6 +185,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    end if
 
+
    !FIXME: remove all array2 and array4 structures from this driver
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    if(DECinfo%use_singles)then
@@ -212,7 +213,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    nocc_tot = MyMolecule%nocc
 
    if(ccmodel == MODEL_CCSDpT)then
-#ifdef MOD_UNRELEASED
 
       ccsdpt_t1 = array_init([nvirt,nocc],2)
       ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
@@ -231,9 +231,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             &labeldwcomm = 'MASTER COMM pT: ',&
             &labeldwidle = 'MASTER IDLE pT: ') 
       endif
-#else
-      call lsquit('CCSD(T) not released',-1)
-#endif
    else
 
       call array_reorder(t2_final,[1,3,2,4])
@@ -292,7 +289,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    call array_free(VOVO)
 
    if(ccmodel == MODEL_CCSDpT)then
-#ifdef MOD_UNRELEASED
       ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
       e4_mat_tot = array_init([natoms,natoms],2)
       e4_mat_tmp = array_init([natoms,natoms],2)
@@ -334,7 +330,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call array_free(e4_mat_tot)
       call array_free(e4_mat_tmp)
       call array_free(e5_mat_tot)
-#endif
    else
       if(DECinfo%PrintInteractionEnergy)then
          write(DECinfo%output,'(A)') ' '
@@ -417,6 +412,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
    endif
 
+   if(ccmodel == MODEL_CCSDpT)then
+      call array_free(ccsdpt_t1)
+      call array_free(ccsdpt_t2)
+   endif
+
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
       ! free amplitude arrays
       call array_free(t1_final)
@@ -424,11 +424,42 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call array_free(t2_final)
 
-   if(ccmodel == MODEL_CCSDpT)then
-      call array_free(ccsdpt_t1)
-      call array_free(ccsdpt_t2)
-   endif
+!else mod unreleased
+#else
+   ! is this a frozen core calculation or not?
+   if (DECinfo%frozencore) then
 
+      ncore = MyMolecule%ncore
+
+      if(.not. present(Co_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
+      end if
+
+      if(.not. present(ppfock_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
+      end if
+
+      call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
+   else
+      ncore = 0
+
+      call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+         & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
+   end if
+
+   !FIXME: remove all array2 and array4 structures from this driver
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   if(DECinfo%use_singles)then
+      call array2_free(t1_final_arr2)
+   endif
+   call array4_free(t2_final_arr4)
+   call array4_free(VOVO_arr4)
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!endif mod unreleased
+#endif
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
@@ -485,6 +516,7 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
       t1 = array2_init(dims,MyFragment%t1)
    end if
 
+#ifdef MOD_UNRELEASED
    if(DECinfo%CCDEBUG)then
       if(DECinfo%use_pnos)then
 
@@ -530,16 +562,18 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
 
       endif
    else
-
+#endif
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
 
+#ifdef MOD_UNRELEASED
       if(DECinfo%CCSDmultipliers)then
          call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
       endif
    endif
+#endif
 
    ! Save singles amplitudes in fragment structure
    if(DECinfo%SinglesPolari) then
@@ -1710,6 +1744,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       else
 
+#ifdef MOD_UNRELEASED
          !============================================================================!
          !                          MO-CCSD initialization                            !
          !____________________________________________________________________________!
@@ -1726,7 +1761,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
          end if
-
          !JOHANNES MODEL_RPA
          if (ccmodel == MODEL_RPA) then
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
@@ -1738,7 +1772,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
          end if
-
+#endif
       end if INTEGRAL
 
 
@@ -2214,19 +2248,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_free(Cv2)
    call array_free(fock)
 
-   ! free memory from MO-based CCSD
-   if(.not. restart_from_converged)then
-      if (mo_ccsd) then
-         if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
-         call array_free(pgmo_diag)
-         call mem_dealloc(MOinfo%dimInd1)
-         call mem_dealloc(MOinfo%dimInd2)
-         call mem_dealloc(MOinfo%StartInd1)
-         call mem_dealloc(MOinfo%StartInd2)
-         call mem_dealloc(MOinfo%dimTot)
-         call mem_dealloc(MOinfo%tileInd)
-      end if
-   endif
 
    !transform back to original basis   
    if(DECinfo%use_singles)then
@@ -2248,6 +2269,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
 #ifdef MOD_UNRELEASED
+   ! free memory from MO-based CCSD
+   if(.not. restart_from_converged)then
+      if (mo_ccsd) then
+         if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
+         call array_free(pgmo_diag)
+         call mem_dealloc(MOinfo%dimInd1)
+         call mem_dealloc(MOinfo%dimInd2)
+         call mem_dealloc(MOinfo%StartInd1)
+         call mem_dealloc(MOinfo%StartInd2)
+         call mem_dealloc(MOinfo%dimTot)
+         call mem_dealloc(MOinfo%tileInd)
+      end if
+   endif
+
    if( .not. fragment_job .and. DECinfo%PL>2 )then
       call array_print_mem_info(DECinfo%output,.true.,.false.)
    endif
@@ -2645,6 +2680,7 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
+#ifdef MOD_UNRELEASED
 !> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
 !
 !> Author:  Pablo Baudin
@@ -2668,6 +2704,7 @@ subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem
   call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
     & nb,no,nv,CCmodel,MOinfo)
  
-  end subroutine wrapper_to_get_real_t1_free_gmo
+end subroutine wrapper_to_get_real_t1_free_gmo
+#endif
 
 end module ccdriver
