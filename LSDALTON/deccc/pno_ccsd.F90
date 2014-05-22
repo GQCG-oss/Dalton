@@ -83,7 +83,7 @@ module pno_ccsd_module
      integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)    :: DecScreen
      real(realk) :: MemFree
-     real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
+     !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
      real(realk), parameter :: m10 = -1.0E0_realk
@@ -413,166 +413,167 @@ module pno_ccsd_module
      call mem_dealloc(iFock)
 
 
-     !DEBUG: A2 term
-     !**************
-     u = p20*t2
-     call array_reorder_4d( m10, t2,   nv, no, nv, no, [1,4,3,2], p10, u  )
-     ref = gvovo
+     !!DEBUG: A2 term
+     !!**************
+     !u = p20*t2
+     !call array_reorder_4d( m10, t2,   nv, no, nv, no, [1,4,3,2], p10, u  )
+     !ref = gvovo
 
-     !A2.2 contribution
-     call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
-     call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
-     call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
-     call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
+     !!A2.2 contribution
+     !call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
+     !call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
+     !call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
 
-     call print_norm(w3,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
+     !call print_norm(w3,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
 
-     !DEBUG: B2 term
-     !**************
-     !ref = 0.0E0_realk
-     call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
-     call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
-     call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
-     ! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
-     call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
-     ! B(ijkl) t(klab) = B2(ijab) 
-     call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
-     call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
+     !!DEBUG: B2 term
+     !!**************
+     !!ref = 0.0E0_realk
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
+     !call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
+     !! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
+     !call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
+     !! B(ijkl) t(klab) = B2(ijab) 
+     !call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
+     !call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
 
-     call print_norm(w1,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !DEBUG: C2 term
-     !**************
-     !ref = 0.0E0_realk
-     call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
-     call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
-     call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
-     !C intermediate w1(ckja) -  0.5 w3(ckld) w2(ldja)
-     call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
-     call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,4,3,2], nul, w2 ) ! bkci -> bick
-     !call print_tensor_unfolding_with_labels(w2,&
-     !  &[nv,no],'bi',2,[nv,no],'ck',2,'FULL T2')
-     !call print_tensor_unfolding_with_labels(w1,&
-     !  &[nv,no],'ck',2,[no,nv],'ja',2,'FULL Goovv')
-     call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m10, w2, no*nv, w1, no*nv, nul, w3, no*nv)
-
-     !call print_tensor_unfolding_with_labels(w3,&
-     !  &[nv,no],'bi',2,[no,nv],'ja',2,'FULL ERG GEMM')
-     !USE THE SYMMETRIZED CONTRIBUTION, i.e. P_{ij}^{ab} (1+0.5P_{ij}) * w3
-     call array_reorder_4d( p10, w3, nv, no, no, nv, [4,2,1,3], nul, w2 ) ! bija -> aibj
-     call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
-     call array_reorder_4d( p10, w3, nv, no, no, nv, [1,3,4,2], p10, w2 ) ! ajib -> aibj
-     call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
-
-     ref = ref + w2(1:o2v2)
-
-     !call print_tensor_unfolding_with_labels(ref,&
-     !  &[nv,no],'ai',2,[nv,no],'bj',2,'FULL ERG C')
-     call print_norm(w2,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write (*,*)' DEBUG C2/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !DEBUG: D2 term
-     !**************
-     call array_reorder_4d( p10, Lvoov, nv, no, no, nv, [4,3,1,2], nul, w1 ) ! aikc -> ckai
-     call array_reorder_4d( p10, u,     nv, no, nv, no, [4,3,1,2], nul, w2 ) ! aidl -> ldai
-     call array_reorder_4d( p20, govov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
-     call array_reorder_4d( m10, govov, no, nv, no, nv, [4,1,3,2], p10, w3 ) ! ldkc -> clkd
-     call dgemm('n','n',nv*no,nv*no,no*nv, p05, w3,nv*no,w2,no*nv, p10, w1, nv*no)
-
-     call dgemm('n','n',nv*no,nv*no,nv*no, p05, u ,nv*no,w1,nv*no, nul, w2, nv*no)
-     w3(1:o2v2) = w2(1:o2v2)
-
-     call array_reorder_4d( p10, w2, nv, no, nv, no, [3,4,1,2], p10, w3 )
-     ref = ref + w3(1:o2v2)
+     !call print_norm(w1,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
 
 
-     call print_norm(w3,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write (*,*)' DEBUG D2/TOT:',sqrt(nnorm),sqrt(norm)
+     !!DEBUG: C2 term
+     !!**************
+     !!ref = 0.0E0_realk
+     !call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
+     !!C intermediate w1(ckja) -  0.5 w3(ckld) w2(ldja)
+     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,4,3,2], nul, w2 ) ! bkci -> bick
+     !!call print_tensor_unfolding_with_labels(w2,&
+     !!  &[nv,no],'bi',2,[nv,no],'ck',2,'FULL T2')
+     !!call print_tensor_unfolding_with_labels(w1,&
+     !!  &[nv,no],'ck',2,[no,nv],'ja',2,'FULL Goovv')
+     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m10, w2, no*nv, w1, no*nv, nul, w3, no*nv)
+
+     !!call print_tensor_unfolding_with_labels(w3,&
+     !!  &[nv,no],'bi',2,[no,nv],'ja',2,'FULL ERG GEMM')
+     !!USE THE SYMMETRIZED CONTRIBUTION, i.e. P_{ij}^{ab} (1+0.5P_{ij}) * w3
+     !call array_reorder_4d( p10, w3, nv, no, no, nv, [4,2,1,3], nul, w2 ) ! bija -> aibj
+     !call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
+     !call array_reorder_4d( p10, w3, nv, no, no, nv, [1,3,4,2], p10, w2 ) ! ajib -> aibj
+     !call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
+
+     !ref = ref + w2(1:o2v2)
+
+     !!call print_tensor_unfolding_with_labels(ref,&
+     !!  &[nv,no],'ai',2,[nv,no],'bj',2,'FULL ERG C')
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG C2/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!DEBUG: D2 term
+     !!**************
+     !call array_reorder_4d( p10, Lvoov, nv, no, no, nv, [4,3,1,2], nul, w1 ) ! aikc -> ckai
+     !call array_reorder_4d( p10, u,     nv, no, nv, no, [4,3,1,2], nul, w2 ) ! aidl -> ldai
+     !call array_reorder_4d( p20, govov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
+     !call array_reorder_4d( m10, govov, no, nv, no, nv, [4,1,3,2], p10, w3 ) ! ldkc -> clkd
+     !call dgemm('n','n',nv*no,nv*no,no*nv, p05, w3,nv*no,w2,no*nv, p10, w1, nv*no)
+
+     !call dgemm('n','n',nv*no,nv*no,nv*no, p05, u ,nv*no,w1,nv*no, nul, w2, nv*no)
+     !w3(1:o2v2) = w2(1:o2v2)
+
+     !call array_reorder_4d( p10, w2, nv, no, nv, no, [3,4,1,2], p10, w3 )
+     !ref = ref + w3(1:o2v2)
 
 
-     !DEBUG: E2 term
-     !**************
-     !part 1 vv
-     call ass_D2to1(vvf,h1,[nv,nv])
-     w1(1:nv**2) = h1(1:nv**2)
-     h1 => null()
-     call array_reorder_4d( p10, govov, no, nv, no, nv, [3,2,1,4], nul, w3 )
-     call dgemm('n','n',nv,nv,no*nv*no, m10, u,nv,w3,no*nv*no, p10, w1, nv)
-     call array_reorder_4d( p10, t2, nv, no, nv, no, [3,4,1,2], nul, w2)
-     call dgemm( 'n','n',nv,no*nv*no,nv,p10,w1,nv,w2,nv,nul,w3,nv)
-     w2(1:o2v2) = w3(1:o2v2)
-     call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
-
-     ref = ref + w2(1:o2v2)
-
-     call print_norm(w2,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !part 2
-     call ass_D2to1(oof,h1,[no,no])
-     w1(1:no**2) = h1(1:no**2)
-     h1 => null()
-     call array_reorder_4d( p10, govov, no, nv, no, nv, [1,4,3,2], nul, w2)
-     call dgemm('n','n',no,no,nv*no*nv, p10, w2,no,u,nv*no*nv, p10, w1, no)
-     call dgemm('n','n',nv*no*nv,no,no, m10, t2, nv*no*nv,w1,no, nul, w2, nv*no*nv)
-     w3(1:o2v2) = w2(1:o2v2)
-     call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
-
-     ref = ref + w2(1:o2v2)
-
-     call print_norm(w2,o2v2,nnorm,.true.)
-     call print_norm(ref,o2v2,norm,.true.)
-     write (*,*)' DEBUG E22/TOT:',sqrt(nnorm),sqrt(norm)
+     !call print_norm(w3,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG D2/TOT:',sqrt(nnorm),sqrt(norm)
 
 
-     ref1 = vof
+     !!DEBUG: E2 term
+     !!**************
+     !!part 1 vv
+     !call ass_D2to1(vvf,h1,[nv,nv])
+     !w1(1:nv**2) = h1(1:nv**2)
+     !h1 => null()
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [3,2,1,4], nul, w3 )
+     !call dgemm('n','n',nv,nv,no*nv*no, m10, u,nv,w3,no*nv*no, p10, w1, nv)
+     !call array_reorder_4d( p10, t2, nv, no, nv, no, [3,4,1,2], nul, w2)
+     !call dgemm( 'n','n',nv,no*nv*no,nv,p10,w1,nv,w2,nv,nul,w3,nv)
+     !w2(1:o2v2) = w3(1:o2v2)
+     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
 
-     !DEBUG SINGLES A1
-     !****************
-     call array_reorder_4d( p10, u, nv, no, nv, no, [3,2,1,4], nul, w1) ! ckdi -> dkci
-     call dgemm( 'n','n',nv, no, nv**2*no, p10,gvvov,nv,w1,nv**2*no,nul,w2,nv)
+     !ref = ref + w2(1:o2v2)
 
-     ref1 = ref1 + w2(1:nv*no)
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
 
-     call print_norm(w2,i8*nv*no,nnorm,.true.)
-     call print_norm(ref1,i8*nv*no,norm,.true.)
-     write (*,*)' DEBUG A1/TOT:',sqrt(nnorm),sqrt(norm)
+     !!part 2
+     !call ass_D2to1(oof,h1,[no,no])
+     !w1(1:no**2) = h1(1:no**2)
+     !h1 => null()
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [1,4,3,2], nul, w2)
+     !call dgemm('n','n',no,no,nv*no*nv, p10, w2,no,u,nv*no*nv, p10, w1, no)
+     !call dgemm('n','n',nv*no*nv,no,no, m10, t2, nv*no*nv,w1,no, nul, w2, nv*no*nv)
+     !w3(1:o2v2) = w2(1:o2v2)
+     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
+
+     !ref = ref + w2(1:o2v2)
+
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG E22/TOT:',sqrt(nnorm),sqrt(norm)
 
 
-     !DEBUG SINGLES B1
-     !****************
-     call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
-     call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
+     !ref1 = vof
 
-     ref1 = ref1 + w2(1:nv*no)
+     !!DEBUG SINGLES A1
+     !!****************
+     !call array_reorder_4d( p10, u, nv, no, nv, no, [3,2,1,4], nul, w1) ! ckdi -> dkci
+     !call dgemm( 'n','n',nv, no, nv**2*no, p10,gvvov,nv,w1,nv**2*no,nul,w2,nv)
 
-     call print_norm(w2,i8*nv*no,nnorm,.true.)
-     call print_norm(ref1,i8*nv*no,norm,.true.)
-     write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
+     !ref1 = ref1 + w2(1:nv*no)
 
-     !DEBUG SINGLES C1
-     !****************
-     call array_reorder_2d( p10, ovf, no, nv, [2,1], nul, w2)
-     call dgemv('n',no*nv,no*nv,p10,u,no*nv,w2,1, nul,w1,1)
+     !call print_norm(w2,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG A1/TOT:',sqrt(nnorm),sqrt(norm)
 
-     ref1 = ref1 + w1(1:nv*no)
 
-     call print_norm(w1,i8*nv*no,nnorm,.true.)
-     call print_norm(ref1,i8*nv*no,norm,.true.)
-     write (*,*)' DEBUG C1/TOT:',sqrt(nnorm),sqrt(norm)
+     !!DEBUG SINGLES B1
+     !!****************
+     !call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
+     !call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
+
+     !ref1 = ref1 + w2(1:nv*no)
+
+     !call print_norm(w2,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!DEBUG SINGLES C1
+     !!****************
+     !call array_reorder_2d( p10, ovf, no, nv, [2,1], nul, w2)
+     !call dgemv('n',no*nv,no*nv,p10,u,no*nv,w2,1, nul,w1,1)
+
+     !ref1 = ref1 + w1(1:nv*no)
+
+     !call print_norm(w1,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG C1/TOT:',sqrt(nnorm),sqrt(norm)
 
 
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! ref is not written after this point!
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
      call mem_dealloc( w3 )
@@ -587,7 +588,7 @@ module pno_ccsd_module
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
      !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-     !$OMP nc,nc2,rpd,PS,ref) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+     !$OMP nc,nc2,rpd,PS,) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
      !$OMP vvf,goooo,Lvoov,pno_o2,govov,&
      !$OMP oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
@@ -653,7 +654,7 @@ module pno_ccsd_module
         !pair index, this could in principle also be solved with if statements
         !in the previous full loop and only doing the following work in a subset
         call get_common_idx_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,&
-           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces,ref,nv)
+           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces)
 
 
 
@@ -2392,7 +2393,7 @@ module pno_ccsd_module
 
 
   subroutine get_common_idx_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o2_space,&
-        &w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces,reference,yep)
+        &w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces)
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
@@ -2429,15 +2430,15 @@ module pno_ccsd_module
      real(realk), parameter :: m10 = -1.0E0_realk
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      ! DEBUG VARIABLES, REMOVE FOR WORKING CODE
-     integer, intent(in) :: yep
-     real(realk), intent(in) :: reference(yep,no,yep,no)
+     !integer, intent(in) :: yep
+     !real(realk), intent(in) :: reference(yep,no,yep,no)
+     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      real(realk), pointer :: check_ref(:,:,:,:), phelp(:,:,:,:)
      integer :: diff11,diff12,diff21,diff22, id(2),kcount
      integer :: bpc,epc
      !reduce the no
      logical :: add_contrib,add_contrib1,add_contrib2,FAspace,FAspace1,PS,PS1,PS2
      real(realk) :: pref
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
      nv      =  pno_cv(ns)%ns1
      d       => pno_cv(ns)%d
