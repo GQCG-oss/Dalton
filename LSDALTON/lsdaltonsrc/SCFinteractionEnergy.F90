@@ -107,8 +107,8 @@ CONTAINS
 
     IF(config%decomp%nactive.NE.0)call lsquit('counter poise require closed shell',-1)
     
+    nbast = D(1)%nrow
     IF(config%SubSystemDensity)THEN
-       nbast = D(1)%nrow
        call mem_alloc(Dfull,nbast,nbast)
        call mem_alloc(D1full,nbast,nbast)
        call mat_to_full(D(1),1.0E0_realk,Dfull)
@@ -196,14 +196,19 @@ CONTAINS
        config%diag%CFG_restart = .TRUE.
        config%diag%CFG_purifyrestart = .TRUE.
        !Get Energy
+    ELSE
+       !restart density should not be used - this is the full density
+       CFG_restart = config%diag%CFG_restart
+       CFG_purifyrestart = config%diag%CFG_purifyrestart
+       config%diag%CFG_restart = .FALSE.
+       config%diag%CFG_purifyrestart = .FALSE.
     ENDIF
 
     call Get_Energy(Esub,Etmp,config,H1,F,D1,S,ls,CMO,Natoms,lupri,luerr)
 
+    config%diag%CFG_restart = CFG_restart
+    config%diag%CFG_purifyrestart = CFG_purifyrestart
     IF(config%SubSystemDensity)THEN
-       config%diag%CFG_restart = CFG_restart
-       config%diag%CFG_purifyrestart = CFG_purifyrestart
-
        !Revert the dens.restart
        IF(dens_exsist)THEN
           restart_lun = -1  !initialization
