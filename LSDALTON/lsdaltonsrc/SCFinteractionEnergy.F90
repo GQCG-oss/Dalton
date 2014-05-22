@@ -64,14 +64,13 @@ CONTAINS
     integer :: I,J,R,jcharge,jtype,norbJ,nOrbI,itype,icharge,iOrb,jOrb
     integer :: restart_lun,dens_lun
     logical :: CFG_restart,CFG_purifyrestart,dens_exsist,OnMaster,gcbasis
-    logical :: MakeSubSetDensity
     type(matrix) :: D1(1),TMP
     real(realk),pointer :: Dfull(:,:),D1full(:,:)
     Character(len=80) :: SubIndexString(2)
 
     !Get SubSystem1 Density matrix as part of full D
     !or build new from scratch
-    MakeSubSetDensity = .TRUE.
+    !config%SubSystemDensity
     !The SubSetDensity does seem to be closer to the right 
     !Density - better energy and smaller gradient 
     !but for some reason it converges in more iterations
@@ -108,7 +107,7 @@ CONTAINS
 
     IF(config%decomp%nactive.NE.0)call lsquit('counter poise require closed shell',-1)
     
-    IF(MakeSubSetDensity)THEN
+    IF(config%SubSystemDensity)THEN
        nbast = D(1)%nrow
        call mem_alloc(Dfull,nbast,nbast)
        call mem_alloc(D1full,nbast,nbast)
@@ -163,7 +162,7 @@ CONTAINS
        call mat_init(D1(1),nbast,nbast)
     ENDIF
 
-    IF(MakeSubSetDensity)THEN
+    IF(config%SubSystemDensity)THEN
        INQUIRE(file='dens.restart',EXIST=dens_exsist) 
        IF(dens_exsist)THEN
           restart_lun = -1  !initialization
@@ -201,7 +200,7 @@ CONTAINS
 
     call Get_Energy(Esub,Etmp,config,H1,F,D1,S,ls,CMO,Natoms,lupri,luerr)
 
-    IF(MakeSubSetDensity)THEN
+    IF(config%SubSystemDensity)THEN
        config%diag%CFG_restart = CFG_restart
        config%diag%CFG_purifyrestart = CFG_purifyrestart
 

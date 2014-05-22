@@ -71,6 +71,8 @@ type ConfigItem
    logical              :: SCFinteractionEnergy
    !> Same SubSystems in SCF interaction energies
    logical              :: SameSubSystems
+   !> Construct SubSystems Density matrix in SCF interaction energies
+   logical              :: SubSystemDensity
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt

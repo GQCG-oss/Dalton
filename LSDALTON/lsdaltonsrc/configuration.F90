@@ -131,6 +131,7 @@ implicit none
   config%doDEC = .false.
   config%SCFinteractionEnergy = .false.
   config%SameSubSystems = .false.
+  config%SubSystemDensity = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
   config%noDecEnergy = .false.
@@ -1041,6 +1042,8 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
            config%SCFinteractionEnergy = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
+        CASE('.SUBSYSTEMDENSITY')
+           config%SubSystemDensity = .true.
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
 #ifdef VAR_MPI
