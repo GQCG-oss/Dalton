@@ -3324,7 +3324,7 @@ integer :: ncore, i, icharge,nAtoms
   nAtoms= ls%setting%MOLECULE(1)%p%nAtoms
 
   do i=1,nAtoms
-  
+    if(ls%setting%MOLECULE(1)%p%ATOM(i)%Phantom)CYCLE
     icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge)
   
     if (icharge.gt. 2)  ncore = ncore + 1

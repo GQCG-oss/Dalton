@@ -110,12 +110,6 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
-      CALL GPINQ('AOPROPER','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
-     &                                  IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUPROP,'DELETE')
-      END IF
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
          WRITE (LUPRI,'(/15X,A)')
@@ -129,7 +123,13 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -179,7 +179,16 @@ C      the case if DIRCAL and DOMP2))
 
       IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPCLOSE(LUINTA,'DELETE')
+Casm
+C     Let's give a chance to the user who konows what he does
+C
+C     CALL GPCLOSE(LUINTA,'DELETE')
+      IF (RMAOTWO) THEN
+         CALL GPCLOSE(LUINTA,'DELETE')
+      ELSE
+         CALL GPCLOSE(LUINTA,'KEEP')
+      END IF
+C
       IF (DOSRIN) THEN
          IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AO2SRINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -308,7 +317,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 143)
+      PARAMETER (NDIR = 9, NTABLE = 144)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -426,11 +435,13 @@ C     Bin Gao, Oct. 3, 2011
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
      &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
-!                    241        242        243
-     &             '.S2MKET', '.S2MMIX', '.LRINTS'/
+!                    241        242        243        244
+     &             '.S2MKET', '.S2MMIX', '.LRINTS', '.NORMAO'/
 C
 C
       CALL QENTER('HERINP')
+C
+      RMAOTWO = .TRUE.
 C
       IPRDEF = IPRUSR + 1
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -516,7 +527,7 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,
-     &                241,242,243), I
+     &                241,242,243,244), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -1302,6 +1313,9 @@ cs              WRITE(LUPRI,*) 'Error in reading (GAGORG(I),I=1,3)!'
 cs              WRITE(LUPRI,*) '(GAGORG(I),I=1,3):', (GAGORG(I),I=1,3)
 cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
 cs            ENDIF
+            GO TO 100
+  244    CONTINUE
+            RMAOTWO = .FALSE.
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -2318,8 +2332,16 @@ C     **********************************
 C     ***** One-Electron Integrals *****
 C     **********************************
 C
+C     Both Hamiltionian and property one-electron integrals.
+C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+
+!        Open standard property integral file AOPROPER if LUPROP .le. 0
+!        (if calculating integrals for DKH, then LUPROP is already opened
+!         as AODKHINT)
+         IF (LUPROP .LE. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C           ***** These integrals are used to modify the Hamiltonian ****
 C           ***** thus calculated first of all if requested          ****
@@ -3479,7 +3501,8 @@ C
             END IF
 cLig <<
          END IF
-      END IF
+      END IF  ! (RUNONE)
+      RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0
@@ -4230,7 +4253,7 @@ C     Open Mean-field input file generate in READIN
 C
       LUTMP2   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4240,7 +4263,7 @@ C
       BREIT = .NOT.DKTRAN
 CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
-C     We loop over symmetry-independent center
+C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
@@ -4252,7 +4275,7 @@ C     We should now have all the atomic mean-field SO integrals,
 C     now generate them in symmetry-orbital basis
 C
       REWIND (LUMNFPRP)
-      CALL SYMTRAFO(LUMNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
       CALL GPCLOSE(LUTMP2,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')

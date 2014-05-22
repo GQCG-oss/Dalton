@@ -23,10 +23,10 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-
+#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-
+#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
@@ -80,6 +80,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
@@ -91,6 +92,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -143,6 +145,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -150,6 +153,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -616,9 +620,39 @@ contains
        
        call mem_alloc(molecule%AtomCenters,3,nAtoms)
        call getAtomicCenters(mylsitem%setting,molecule%AtomCenters,nAtoms)
+
+       !> Distances between Occ Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomOcc,nocc,nAtoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomOcc,nocc,natoms,&
+            & Molecule%carmomocc,molecule%AtomCenters) 
+       !> Distances between Virtual Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomVirt,nvirt,natoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
+            & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
   end subroutine molecule_get_carmom
 
+
+  subroutine GetOrbAtomDistances(DistanceTableOrbAtom,nocc,natoms,&
+       & Carmom,AtomCenters) 
+    implicit none
+    integer,intent(in) :: nocc,natoms
+    real(realk),intent(inout) :: DistanceTableOrbAtom(nocc,natoms)
+    real(realk),intent(in) :: AtomCenters(3,nAtoms)
+    real(realk),intent(in) :: Carmom(3,nocc)
+    !local variables
+    integer :: iatom,i
+    real(realk) :: Xa,Ya,Za
+    do iatom=1,nAtoms
+     Xa = -AtomCenters(1,iatom)
+     Ya = -AtomCenters(2,iatom)
+     Za = -AtomCenters(3,iatom)
+     do i=1,nocc
+      DistanceTableOrbAtom(i,iatom)=&
+ & sqrt((Xa+Carmom(1,i))*(Xa+Carmom(1,i))+(Ya+Carmom(2,i))*(Ya+Carmom(2,i))+(Za+Carmom(3,i))*(Za+Carmom(3,i)))
+     end do
+    end do
+  end subroutine GetOrbAtomDistances
 
   !> \brief Destroy fullmolecule structure
   !> \param molecule Full molecular info
@@ -729,6 +763,14 @@ contains
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
     end if
+
+    if(associated(molecule%DistanceTableOrbAtomOcc)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomOcc)
+    endif
+
+    if(associated(molecule%DistanceTableOrbAtomVirt)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomVirt)
+    endif
 
     if(associated(molecule%PhantomAtom)) then
        call mem_dealloc(molecule%PhantomAtom)
@@ -903,6 +945,7 @@ contains
     type(fullmolecule), intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: MyLsitem
     type(matrix), intent(in) :: D
+#ifdef MOD_UNRELEASED
     
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
     
@@ -967,6 +1010,7 @@ contains
       print *,'-------------------------------------------' 
     end if
 
+#endif
   end subroutine molecule_mo_f12
 
 

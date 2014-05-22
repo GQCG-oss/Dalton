@@ -127,6 +127,12 @@ subroutine pdm_array_slave(comm)
      CASE(JOB_ARRAY_SCALE)
        call ls_mpibcast(AF,infpar%master,infpar%lg_comm)
        call array_scale_td(A,AF)
+     CASE(JOB_GET_RPA_ENERGY)
+       write(*,*) 'Johannes RPA ene'
+       AF = get_rpa_energy_parallel(A,B)
+     CASE(JOB_GET_SOS_ENERGY)
+       write(*,*) 'Johannes SOS ene'
+       AF = get_sosex_cont_parallel(A,B)
    END SELECT
 #endif
 end subroutine pdm_array_slave

@@ -425,14 +425,12 @@ Do
                     Call lsquit('.LINE S not implemented in LSDALTON',lupri)
 !                    optinfo%LnSearch = .TRUE.
                  Case('.SADDLE')
-                    Call lsquit('.SADDLE not implemented in LSDALTON',lupri)
-!                    optinfo%Saddle = .TRUE.
+                     optinfo%Saddle = .TRUE.
                  Case('.MODE  ')
                     Call lsquit('.MODE not implemented in LSDALTON',lupri)
 !                    Read(lucmd,*)optinfo%NSPMod 
                  Case('.BOFILL')
-                    Call lsquit('.BOFILL not implemented in LSDALTON',lupri)
-!                    optinfo%Bofill = .TRUE.
+                    optinfo%Bofill = .TRUE.
                  Case('.NOAUX ')
                     Call lsquit('.NOAUX not implemented in LSDALTON',lupri)
 !                    optinfo%NoAux = .TRUE.

@@ -22,9 +22,13 @@ should always end with *END OF INPUT.
 
 \section{**GENERAL}\label{sec:general}
 
-This input module defines the way the integrals should be calculated.
+This input module contains general settings.
 \begin{description}
 
+\item[\Key{SCFINTERACTIONENERGY}] Calculation of the Counter Poise Corrected Interaction energy (Hartree-Fock and DFT). \newline
+NB: Requires the use of SubSystem labels in the MOLECULE.INP file
+\item[\Key{SAMESUBSYSTEMS}] Assumes that the two subsystems of the Counter Poise Corrected Interaction energy calculation is identical.
+\item[\Key{SUBSYSTEMDENSITY}] Constructs a density matrix for the subsystems of the Counter Poise Corrected Interaction energy calculation using the full system density matrix.  
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
 NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices

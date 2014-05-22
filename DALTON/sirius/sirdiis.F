@@ -251,16 +251,20 @@ C       estimate quite big to be on the safe side /960627-hjaaj
          MXERRV = NEVC
       END IF
 C
-      LBMAT = (MXERRV+1)*MXERRV / 2
+      LBMAT = MXERRV*MXERRV
+      ! was LBMAT = (MXERRV+1)*MXERRV / 2
+      ! but in opt-solvers the square matrix is used
+      ! and memory requirement is small so no case testing here ...
       CALL MEMGET2('REAL','BMAT',KBMAT ,LBMAT, WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','CVEC',KCVEC ,MXERRV+1,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GVEC',KGVEC ,MXERRV+1,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','FSAV',KFSAV ,NDMAT*MXERRV*NNBAST,
      &   WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','EVSAV',KEVSAV,MXERRV*NNORBT,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','EGSAV',KEGSAV,MXERRV*2     ,WRK,KFREE,LFREE)
       CALL MEMGET2('REAL','DV',KDV,NNASHX,WRK,KFREE,LFREE)
       CALL DCOPY(NCMOT,CMO,1,WRK(KCMO1),1)
-      CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KBMAT),WRK(KH1AO),
+      CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KGVEC),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
      &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK,KFREE,
@@ -273,9 +277,9 @@ C
       RETURN
       END
 C  /* Deck DIIS_CTL */
-      SUBROUTINE DIIS_CTL(CMO,CMO1,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,MXERRV,
-     *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
-     *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
+      SUBROUTINE DIIS_CTL(CMO,CMO1,GVEC,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,
+     *                    MXERRV,C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,
+     *                    CVEC,TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
 !#define USE_XCINT
@@ -290,7 +294,7 @@ C
 C
 #include "implicit.h"
 #include "dummy.h"
-      DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
+      DIMENSION CMO(*), CMO1(*), GVEC(*), BMAT(*), H1AO(*)
       DIMENSION FAOSAV(NNBAST,MXERRV,2), EVCSAV(NNORBT,MXERRV)
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
@@ -891,12 +895,14 @@ C
          IF (PEQM) THEN
            CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
+#ifdef BUILD_PELIB
            IF (NASHT == 0 .OR. HSFOCK) THEN
              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
      &                        WRK(KEPE))
            END IF
+#endif
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
      &                          + WRK(KFPE:KFPE+NNBASX-1)
@@ -1027,15 +1033,17 @@ C
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
 C
-         IF (GRDNRM .LE. THDIIS) THEN
+         IF (GRDNRM .LE. THDIIS .and. SHFTLVL .EQ. D0) THEN
+         ! do not accept as converged if non-zero level shift
+         ! because then the orbital energies are not correct /hjaaj
             IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
             ICONV = 1
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
 C
-Cholesky
             IF (IPR_DIIS .GE. -1) THEN
               IF (CHOINT .AND. (IPR_DIIS .GE. 3)) THEN
+              !  Cholesky
                  WRITE(LUPRI,4116) 'Coulomb part ',CSIRF
                  WRITE(LUPRI,4116) 'Exchange part',XSIRF
                  WRITE(LUPRI,4116) 'Cholesky I/O ',RSIRF
@@ -1055,7 +1063,6 @@ Cholesky
                  WRITE(LUW4,4115) TSIRF
               END IF
             END IF
-Cholesky
 C           Save converged CMO
             WRITE (CMOLBL,'(A4,I4)') 'DIIS',ITDIIS
             CALL NEWORB(CMOLBL,CMO,LNEWOCC)
@@ -1109,6 +1116,13 @@ C        -- if we have tightened screening threshold we must
 C           calculate w/o DIFDEN or the error in the Fock matrix
 C           would correspond to the previous screening threshold.
 C
+#ifdef USE_OPT-SOLVERS
+         CALL  DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,
+     &                     DAOSAV,FAOSAV,EVCSAV,
+     &                     INDEVC,NEVC,GVEC,BMAT,CVEC,MXERRV,
+     &                     WRK,KFREE,LFREE, WRK(KPFROZ))
+
+#else    /* i.e. do not USE_OPT-SOLVERS */
 C
 C        Test if convergence is stopping because of numerical problems
 C        (EMCDIF test should make sure we are in local region)
@@ -1275,14 +1289,18 @@ c            and slow down  the level shifting annealing...
          ELSE
              SHFTLVL =  SHFTLVL*SHFTFAC
 c            make sure we get right HOMO-LUMO gap in the end.
-             IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
          END IF
   300    CONTINUE
-C hjaaj 22-Jun-2005-B
+#endif    /* USE_OPT-SOLVER */
+
 C        Level shift is only working for closed shell calculations ...
-C          (open shell problems reported by users ...)
-         IF (NASHT .GT. 0) SHFTLVL = 0.0D0
-C hjaaj 22-Jun-2005-E
+C          (open shell problems reported by users ...) / hjaaj 22-Jun-2005
+         IF ( NASHT .GT. 0 ) SHFTLVL = 0.0D0
+
+C        No level shift at convergence, otherwise orbital energies
+C        for e.g. CC will not be correct
+         IF ( GRDNRM .LE. 100.00*THDIIS ) SHFTLVL = 0.D0
+
          GRDNRM_OLD = GRDNRM
 C
 C        Iteration accepted; save current CMO for restart
@@ -1555,11 +1573,13 @@ C
 C
       END IF
       IF (PEQM) THEN
+#ifdef BUILD_PELIB
         IF (NASHT == 0 .OR. HSFOCK) THEN
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
             CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
         END IF
+#endif
       END IF
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

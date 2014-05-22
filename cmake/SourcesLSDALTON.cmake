@@ -79,6 +79,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
     LSDALTON/deccc/ccsd.F90
+    LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
@@ -94,7 +95,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/dec_main.F90
     LSDALTON/deccc/dec_settings.F90
     LSDALTON/deccc/dec_utils.F90
-    LSDALTON/deccc/dec_workarounds.F90
+    LSDALTON/deccc/dec_tools.F90
     LSDALTON/deccc/full_driver_f12contractions.F90
     LSDALTON/deccc/fullmolecule.F90
     LSDALTON/deccc/mp2_gradient.F90
@@ -179,12 +180,10 @@ set(SOLVERUTIL_SOURCES
     LSDALTON/SolverUtilities/rsp_precond.F90
     LSDALTON/SolverUtilities/rsp_utilities.F90
     )
-if(DEVELOPMENT_CODE)
-    set(RSP_PROPERTIES_SOURCES	
-        LSDALTON/rsp_properties/molecular_hessian.F90
-        LSDALTON/rsp_properties/test_molHessian.F90
-        )
-endif()
+set(RSP_PROPERTIES_SOURCES	
+    LSDALTON/rsp_properties/molecular_hessian.F90
+    LSDALTON/rsp_properties/test_molHessian.F90
+    )
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
     LSDALTON/pbc2/pbc-matop.F90
@@ -518,6 +517,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90
     LSDALTON/lsutil/lspdm_tensor_operations.F90
+    LSDALTON/lsutil/dec_workarounds.F90
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90

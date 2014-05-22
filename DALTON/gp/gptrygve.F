@@ -276,6 +276,10 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL our_own_traceback
+
+#if defined(SYS_T3D)
+      CALL STOP_ALL()
+#endif
 #if defined(VAR_IFORT)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
@@ -290,9 +294,11 @@ C   Error message if code is not implemented for parallel calculations.
       IMPLICIT NONE
 
 #include "priunit.h"
-      CHARACTER TEXT*(*)
+      CHARACTER*(*) TEXT
+      CHARACTER*(43) ERROR
       INTEGER LUPRIN
 C
+      ERROR = ' not implemented for parallel calculations.'
 C
       IF (LUPRI .GE. 0) THEN
          LUPRIN = LUPRI
@@ -301,9 +307,8 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
-     & ' not implemented for parallel calculations!'
-      CALL QUIT(TEXT)
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,ERROR
+      CALL QUIT(TEXT//ERROR)
       RETURN
       END
 C  /* Deck parqarn */
@@ -392,21 +397,17 @@ C
 C     ERROR HANDLING (JAA 1997-06-06)
 C
  301     IF (IOS .GT. 0) THEN
-            WRITE(102,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
-            WRITE(102,*) '    FILE=',NAME,', UNIT=',LUDX,
+            WRITE(lupri,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
+            WRITE(lupri,*) '    FILE=',NAME,', UNIT=',LUDX,
      $           ', IOSTAT=',IOS
             IF (IOS .LT. 1000) THEN
-               WRITE(102,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
+               WRITE(lupri,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
             ELSE IF (IOS .LT. 6000) THEN
-               WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
+               WRITE(lupri,'(A,I4,A)') '    (try explain lib-',IOS,')'
             ENDIF
-            CALL FLUSH(102,IOS)
+            CALL FLUSH(lupri,IOS)
             CALL TRBK()
-#if defined(SYS_T3D)
-            CALL STOP_ALL()
-#else
             CALL QUIT('OPENDX: new file open failed')
-#endif
          ENDIF
   600 CONTINUE
 #endif
@@ -804,6 +805,12 @@ C
          FIRST = .FALSE.
       END IF
 
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+
       IF (MYNUM .GT. 0) THEN
          IF (MYNUM .GT. 9999) THEN
             CALL QUIT('Reprogram GPOPEN to allow more than 9999 nodes')
@@ -906,8 +913,8 @@ C
 #endif
          LENOUT = LNBLNK(OUTFIL)
          if (LENOUT .EQ. max_filename_length) then
-            write (lupri,*) 'max_filename_length is too short'
-            write (lupri,*) OUTFIL
+            write (lugppri,*) 'max_filename_length is too short'
+            write (lugppri,*) OUTFIL
             call quit('file name too long')
          end if
          if (LENOUT .gt. 0) then
@@ -925,8 +932,8 @@ c43         CONTINUE
 #endif
             LENWRK = lnblnk(WRKDIR)
             if (LENWRK .EQ. max_filename_length) then
-               write (lupri,*) 'max_filename_length is too short'
-               write (lupri,*) WRKDIR
+               write (lugppri,*) 'max_filename_length is too short'
+               write (lugppri,*) WRKDIR
                call quit('GPOPEN: work directory name too long')
             end if
 c           LENWRK = 0
@@ -937,8 +944,8 @@ c           END DO
 c44         CONTINUE
             FILELN = LENWRK + LENOUT + 1
             if (FILELN .EQ. max_filename_length) then
-               write (lupri,*) 'max_filename_length is too short'
-               write (lupri,*) WRKDIR(1:LENWRK)//'/'//
+               write (lugppri,*) 'max_filename_length is too short'
+               write (lugppri,*) WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
                call quit('GPOPEN: file name too long')
             end if
@@ -1061,58 +1068,45 @@ C
 C error branches
 C
  9001 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILE NUMBERS!',
      &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
      &   'FILES OR', 
      &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) NO MORE FILE NUMBERS')
 C
  9002 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I3/A//2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO OPEN UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED '//
      &   'UNIT NUMBER',
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
-      WRITE (LUGPPRI,'(//A/A//A,I5/2A//A)')
-     &   '--> ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
-     &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT IS '//
-     &   'ALREADY IN USE',
-     &   '--> Offending UNIT number: ',LUNIT,
+      WRITE (LUGPPRI,'(//A//A,I5/2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO USE A FILE NUMBER ALREADY IN USE'
+     &  ,'--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
+      INQUIRE(UNIT=LUNIT,OPENED=FEXST)
+      IF (FEXST) THEN
+         INQUIRE(UNIT=LUNIT,NAME=FILENM)
+         WRITE (LUGPPRI,'(/2A)')
+     &   '--> Name of file already opened for this unit: ',FILENM
+      ELSE
+         WRITE (LUGPPRI,'(/A)')
+     &   '--> No file is opened with that unit number ...'
+      END IF
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE')
 C
  9004 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A,I3/2A/A,I7)')
      &   '--> ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',LUNIT,
      &   '--> with filename ',FILENM(1:FILELN),
@@ -1121,50 +1115,35 @@ C
       CALL QUIT('ERROR (GPOPEN) UPON OPENING A FILE')
 C
  9005 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
      &   '--> ENTRY INDICATES THAT IT DOES NOT EXIST',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
 C
  9006 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
-     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING NEW FILE',
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING FILE AS NEW',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE NEW, BUT THE TABLE',
-     &   '--> ENTRY INDICATES THAT IT ALREADY EXISTS',
+     &   '--> ENTRY INDICATES THAT THE UNIT IS ALREADY IN USE',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
      &          'FILE AS NEW')
 C
  9007 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD,',
      &   '--> BUT THE FILE DOES NOT EXIST',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
@@ -1203,6 +1182,13 @@ C
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
 #include "chrnos.h"
+
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+
 C
 C     We first deal with the unit number
 C
@@ -1218,10 +1204,10 @@ C
 C
       INQUIRE(UNIT=LUNIT,EXIST=FEXIST,OPENED=OPND)
       IF (.NOT. FEXIST .OR. .NOT. OPND) THEN
-         WRITE (LUPRI,'(/A/A,I3)')
+         WRITE (LUGPPRI,'(/A/A,I3)')
      &     ' WARNING: Tried to close a non-existent or already '//
      &     'closed file', ' Unit number was: ',LUNIT
-         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUGPPRI)
       END IF
       IF (DISP .EQ. 'KEEP') THEN
          IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
@@ -1234,8 +1220,7 @@ C
          IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
 #else
-         INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
-         INQUIRE(UNIT=LUNIT,NAME=FNNAME)
+         INQUIRE(UNIT=LUNIT,DIRECT=IODIR,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
             INQUIRE(UNIT=LUNIT,RECL=LRECL)
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
@@ -1296,44 +1281,29 @@ C
 C error branches
 C
  9001 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I15/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO CLOSE UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS UNIT NUMBER',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) ILLEGAL FILE NUMBER REQUESTED')
 C
  9002 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I15//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
      &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT HAS '//
      &   'NOT BEEN USED :',LUNIT,
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE')
 C
  9003 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO KEEP A SCRATCH FILE',
      &   '--> A FILE HAS BEEN INDICATED TO BE CLOSED AND KEPT,',
      &   '--> BUT IT APPEARS THE FILE IS A SCRATCH FILE',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A SCRATCH FILE ')
 C
@@ -1373,6 +1343,8 @@ C
 #include "implicit.h"
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
+      PARAMETER (LEN_NODEID = 6)
+      CHARACTER*(LEN_NODEID) F_NODEID
       INTEGER FILELN
       LOGICAL VALUE
 #include "chrnos.h"
@@ -1381,11 +1353,13 @@ C
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
-         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
-     &                        '#'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-         FILELN = FILELN + 4
+         F_NODEID = '.n' //
+     &             CHRNOS(    MYNUM/1000    ) //
+     &             CHRNOS(MOD(MYNUM/ 100,10)) //
+     &             CHRNOS(MOD(MYNUM/  10,10)) //
+     &             CHRNOS(MOD(MYNUM     ,10))
+         FILTMP(1:FILELN+LEN_NODEID) = FILENM(1:FILELN)//F_NODEID
+         FILELN = FILELN + LEN_NODEID
       ELSE
          FILTMP(1:FILELN) = FILENM(1:FILELN)
       END IF
@@ -1433,4 +1407,12 @@ C
  9000 CONTINUE
       RETURN
       END
-! -- end of gptrygve.F --
+
+
+      subroutine clear_iuntab()
+#include "implicit.h"
+         common /unitar/ iuntab(1:99)
+         do i = 1, 99
+            iuntab(i) = 0
+         end do
+      end subroutine

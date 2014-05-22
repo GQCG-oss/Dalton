@@ -245,7 +245,7 @@ C
      *                  WRK(KUFCAC),DUMMY,.TRUE.,.TRUE.,
      *                  XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
 C
-            IF (IREFSY .EQ. KSYMST) THEN
+            IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of S[2] vector
                T1 = DDOT(KZCONF,WRK(KCREF),1,
      *                   SVEC(KCVETO+1+(ISIM-1)*KZYVAR),1)
@@ -291,7 +291,7 @@ C ELECTRON OPERATOR
      *                  SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),
      *                  WRK(KUFCAC),DUMMY,.TRUE.,.TRUE.,
      *                  XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
-            IF (IREFSY .EQ. KSYMST) THEN
+            IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C     
                T1 = DDOT(KZCONF,WRK(KCREF),1,
      *                   SVEC(KCVETO+1+(ISIM-1)*KZYVAR+KZVAR),1)
@@ -586,7 +586,6 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 #include "mxcent.h"
-#include "wavpcm.h"
 C
       CALL QENTER('RSPELI')
 C
@@ -663,7 +662,7 @@ C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
 C EMBEDDING = (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM .OR. .OR. QMNPMM
 C
-      IF (EMBEDDING .OR. WAVPCM) THEN
+      IF (EMBEDDING) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

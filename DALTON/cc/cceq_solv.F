@@ -172,36 +172,30 @@ C
 C
 Cholesky
 C
-C     Check that this is N-R for Cholesky CC2: Eigenvalue equations
-C     are non-linear and cannot be determined here...
-C
-      IF ((CHOINT .AND. CC2) .AND. (.NOT. LINQCC)) THEN
-         WRITE(LUPRI,'(//,A)')
-     &   'CCEQ_SOL: Cholesky CC2 eigenvalues not available:'
-         WRITE(LUPRI,'(A,A,/,A,/)')
-     &  'The eigenvalue equations for Cholesky CC2 are ',
-     &  'non-linear and thus outside the scope of CCEQ_SOL'
-        CALL QUIT('CCEQ_SOL: no eigenvalues for Cholesky CC2')
-      ENDIF
-C
 C     Check that all frequencies in EIVAL are identical for Cholesky CC2.
 C
       IF (CHOINT .AND. CC2.AND. (NVEC.GT.0)) THEN
-         ICOUN = 0
-         REFRQ = EIVAL(1)
-         DO I = 2,NVEC
-            DIFF = DABS(EIVAL(I) - REFRQ)
-            IF (DIFF .GT.  TOL) ICOUN = ICOUN + 1
-         ENDDO
-         IF (ICOUN .GT. 0) THEN
-            WRITE(LUPRI,'(//,A)')
-     &      'CCEQ_SOL: frequencies MUST be identical for all',
-     &      ' perturbations for Cholesky CCC2.'
-            WRITE(LUPRI,'(A)')
-     &      'Frequencies passed to CCEQ_SOL in EIVAL array:'
-            WRITE(LUPRI,'(4D20.12)') (EIVAL(I), I = 1,NVEC)
-            CALL QUIT('CCEQ_SOL: frequency error for Cholesky CC2')
-         ENDIF
+         IF (.NOT. CHOEXC) THEN
+            ICOUN = 0
+            REFRQ = EIVAL(1)
+            DO I = 2,NVEC
+               DIFF = DABS(EIVAL(I) - REFRQ)
+               IF (DIFF .GT.  TOL) ICOUN = ICOUN + 1
+            ENDDO
+            IF (ICOUN .GT. 0) THEN
+               WRITE(LUPRI,'(//,A)')
+     &            'CCEQ_SOL: frequencies MUST be identical for all',
+     &            ' perturbations for Cholesky CCC2.'
+               WRITE(LUPRI,'(A)')
+     &            'Frequencies passed to CCEQ_SOL in EIVAL array:'
+               WRITE(LUPRI,'(4D20.12)') (EIVAL(I), I = 1,NVEC)
+               CALL QUIT('CCEQ_SOL: frequency error for Cholesky CC2')
+            ENDIF
+         ELSE
+            DO I = 1,NVEC
+               EIVAL(I) = ECURR
+            END DO
+         END IF
       ENDIF
 C
 Cholesky

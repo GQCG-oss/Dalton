@@ -262,7 +262,7 @@ C
             K1 = IST
 C
             IF (IPRINT .GT. 5 ) THEN
-               IF (CHOINT) THEN
+               IF (CHOINT .AND. CC2) THEN
                   WRITE(LUPRI,'(A24,I3,A37)')
      *            ' CC_TRDRV: Transforming ',
      *            NSIMTR,' vectors in one call to CC_CHOATR.'
@@ -529,7 +529,7 @@ C
 C
             ENDIF
 C
-          END IF    ! Cholesky
+          END IF 
 C
          ELSE
 C
@@ -581,8 +581,18 @@ C               ---------------------
                 IF (TRIPLET) THEN
                  CALL QUIT('CC_TRDRV: Triplet Cholesky not implemented')
                 ELSE
-                   CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),FREQ,
+                   IF (CHEXDI) THEN
+c                     DO III = 1,NSIMTR
+c                        write(lupri,*) 'cc_trdrv. freq :',iii,freq(iii)
+c                        FREQ(III) = ECURR
+c                     END DO
+c                     CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),FREQ,
+                      CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),ecurr,
      &                            WORK(KEND1),LWRK1,ISYMTR,NSIMTR,ISIDE)
+                   ELSE
+                      CALL CC_CHOATR(WORK(KRHO1),WORK(KC1AM),FREQ,
+     &                            WORK(KEND1),LWRK1,ISYMTR,NSIMTR,ISIDE)
+                   END IF
                 ENDIF
 
                 GOTO 1234

@@ -17,6 +17,8 @@ module dec_fragment_utils
   use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
+  use tensor_interface_module
+  use array4_simple_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
 #ifdef VAR_MPI
@@ -35,16 +37,6 @@ module dec_fragment_utils
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
 
-  !> Maximum number of files to be opened at the same time
-  ! NOTE: If you change this number, you have to change
-  ! max_file accordingly in crayio.c.
-  integer, parameter :: max_number_files=250
-  !> Number of opened files using C file handling
-  integer,save :: files_opened=0
-  !> Keeping control of which file units are available
-  logical,save :: available_file_units(max_number_files)=.true.
-
-
   !> Read 64 bit integer(s) from file and convert to 32 bit
   interface read_64bit_to_32bit
      module procedure read_64bit_to_32bit_singleinteger
@@ -58,6 +50,14 @@ module dec_fragment_utils
      module procedure read_32bit_to_64bit_singlelogical
      module procedure read_32bit_to_64bit_vectorlogical
   end interface read_32bit_to_64bit
+  interface get_combined_SingleDouble_amplitudes
+     module procedure get_combined_SingleDouble_amplitudes_newarr
+     module procedure get_combined_SingleDouble_amplitudes_oldarr
+  end interface get_combined_SingleDouble_amplitudes
+  interface remove_core_orbitals_from_last_index
+     module procedure remove_core_orbitals_from_last_index_oldarr
+     module procedure remove_core_orbitals_from_last_index_newarr
+  end interface remove_core_orbitals_from_last_index
 
 contains
 !> \brief Get maximum batch dimension encountered in integral program.
@@ -914,225 +914,6 @@ end function max_batch_dimension
 
 
 
-  !> \brief Open file using C routine to be able to access arbitrary address in file.
-  !> \author Kasper Kristensen
-  !> \date September 2010
-  subroutine openfile(funit,filename)
-    implicit none
-    !> File unit number
-    integer, intent(in) :: funit
-    !> Name of file
-    character(*), intent(in) :: filename
-    integer :: length,io_err,status
-    logical :: is_open
-
-    status=0
-    io_err=0
-
-    ! Length of file (avoid blank spaces)
-    length = len(trim(filename))
-
-    ! If file is opened in fortran, then close it
-    inquire(file=filename,opened=is_open)
-    if(is_open) close(funit,status='KEEP')
-
-    ! Open file using C routine
-    call wopen(funit,filename(1:length),length,status,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC openfile: Something wrong when opening file'
-       write(DECinfo%output,*) 'Filename:', filename(1:length)
-       write(DECinfo%output,*) 'File unit:', funit
-       write(DECinfo%output,*) 'Total number of opened files:', files_opened
-       CALL lsQUIT('DEC openfile: Something went wrong when opening file!',DECinfo%output)
-    end if
-
-    files_opened = files_opened+1
-
-  end subroutine openfile
-
-
-  !> \brief Find available file unit for opening file
-  !> using C file handling routine.
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  subroutine get_available_file_unit(funit)
-    implicit none
-    !> File unit
-    integer, intent(inout) :: funit
-    integer :: i
-
-    funit=0
-
-    do i=1,max_number_files
-
-       ! Avoid numbers 5 and 6 and output file unit.
-       ! (I am quite sure this is redundant as these file units
-       !  would only be problematic if the array4 file handling
-       !  was done using Fortran. However, just in case,
-       ! we omit these numbers here...)
-       if(i==5 .or. i==6 .or. i==DECinfo%output) cycle
-
-       if(available_file_units(i)) then ! File unit i is available
-          funit=i
-          exit
-       end if
-
-
-    end do
-
-    ! Check that an available file unit was found
-    if(funit == 0) then
-       call lsquit('get_available_file_unit: &
-            & No available file unit was found for opening file using &
-            & C file handling. Try increasing max_number_files &
-            & in dec_utils.f90.',DECinfo%output)
-    end if
-
-    ! Now funit is no longer available to open another file
-    available_file_units(funit) = .false.
-
-  end subroutine get_available_file_unit
-
-
-
-
-  !> \brief Close file using C routine.
-  !> \author Kasper Kristensen
-  !> \date September 2010
-  subroutine closefile(funit,keep_or_delete)
-    implicit none
-    !> File unit number
-    integer, intent(in) :: funit
-    !> Status for file? 'KEEP' or 'DELETE'
-    character(*), intent(in) :: keep_or_delete
-    integer ::io_err, status_for_file
-
-    io_err=0
-
-    ! The integer status_for_file is set to:
-    ! 0 if the file is to be deleted
-    ! 1 if the file is to be kept
-    ! In this way the communication with C routine wclose is consistent
-    if(keep_or_delete=='delete' .or. keep_or_delete=='DELETE') then
-       status_for_file=0
-    elseif(keep_or_delete=='keep' .or. keep_or_delete=='KEEP') then
-       status_for_file=1
-    else
-       CALL lsQUIT('DEC closefile: keep_or_delete can only be KEEP or DELETE!',DECinfo%output)
-    end if
-
-    ! Close file using C routine
-    call wclose(funit,io_err,status_for_file)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC closefile: Something wrong when closing file unit:', funit
-       CALL lsQUIT('DEC closefile: Something went wrong when closing file!',DECinfo%output)
-    end if
-
-    files_opened = files_opened-1
-    ! Now funit is again available to open another file
-    available_file_units(funit) = .true.
-
-
-  end subroutine closefile
-
-  !> \brief Writes vector to file at given address using C routine
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  !> Note: The input is a VECTOR and elements are written in "Fortran order".
-  !> I.e. if one inputs an two-dimensional real array as the "vector"
-  !> then it is written to file column by column.
-  subroutine writevector(funit,begin_add,nelements,vector)
-    implicit none
-    !> Logical unit number for file
-    integer, intent(in) :: funit
-    !> Begin address (where we start writing the vector elements)
-    integer(kind=long), intent(in) :: begin_add
-    !> Number of elements to write
-    integer(kind=long), intent(in) :: nelements
-    !> Real elements to write to file
-    real(realk), dimension(nelements) :: vector
-    integer :: io_err
-
-    io_err=0
-
-    ! Call C routine to write to file at begin_add
-    call putwa(funit,vector,begin_add,nelements,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC writevector Something wrong &
-            &when writing to file unit:', funit
-       CALL lsQUIT('DEC writevector: Something went wrong when writing to file!',DECinfo%output)
-    end if
-
-  end subroutine writevector
-
-
-  !> \brief Reads vector from file at given address using C routine
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  !> Note: The output is a VECTOR and elements are read in Fortran order.
-  !> I.e. if one inputs an two-dimensional real array as the "vector" ,
-  !> then the elements in the file is read into the vector column by column.
-  subroutine readvector(funit,begin_add,nelements,vector)
-    implicit none
-    !> Logical unit number for file
-    integer, intent(in) :: funit
-    !> Begin address (where we start reading the vector elements)
-    integer(kind=long), intent(in) :: begin_add
-    !> Number of elements to read
-    integer(kind=long), intent(in) :: nelements
-    !> Real elements to read from file
-    real(realk), dimension(nelements) :: vector
-    integer :: io_err
-
-    io_err=0
-
-    ! Call C routine to write to file at begin_add
-    call getwa(funit,vector,begin_add,nelements,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC readvector Something wrong &
-            &when reading from file unit:', funit
-       CALL lsQUIT('DEC readvector: Something went wrong &
-            & when reading from file! &
-            & Perhaps the file has not been opened before reading...',DECinfo%output)
-    end if
-
-  end subroutine readvector
-
-
-
-  !> \brief Copy file using C routine.
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  subroutine copyfile(source_file, destination_file)
-    implicit none
-    !> Name of (old) source file to copy
-    character(*), intent(in) :: source_file
-    !> Name of (new) destination file
-    character(*), intent(in) :: destination_file
-    integer :: source_length, destination_length
-
-    ! Length of source file (avoid blank spaces)
-    source_length = len(trim(source_file))
-
-    ! Length of destination file (avoid blank spaces)
-    destination_length = len(trim(destination_file))
-
-    ! Copy file using C routine
-    call filecopy_c(source_file(1:source_length),source_length, &
-         & destination_file(1:destination_length),destination_length )
-
-  end subroutine copyfile
-
-
-
   !> \brief Simple function for getting the position in memory
   !> of the (a,b)th element of a matrix -
   !> i.e. idx = nrow*(b-1) + a
@@ -1233,75 +1014,6 @@ end function max_batch_dimension
 
 
 
-  !> \brief Solve eigenvalue problem: F*C = S*C*eival
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine solve_eigenvalue_problem(n,F,S,eival,C)
-    implicit none
-
-    !> Dimension of matrices (Number of eigenvalues)
-    integer,intent(in) :: n
-    !> F matrix in eigenvalue problem (typically Fock matrix)
-    real(realk),intent(in) :: F(n,n)
-    !> Overlap matrix
-    real(realk),intent(in) :: S(n,n)
-    !> Eigenvectors
-    real(realk),intent(inout) :: C(n,n)
-    real(realk),intent(inout) :: eival(n)
-    real(realk), pointer :: tmp(:,:)
-
-    ! We must use temporary matrix as overlap matrix input because it is overwritten
-    call mem_alloc(tmp,n,n)
-    tmp(1:n,1:n) = S(1:n,1:n)
-
-    ! Copy F elements to C, then use C as "F input".
-    ! At the end, C is then overwritten by the eigenvectors.
-    C(1:n,1:n) = F(1:n,1:n)
-
-    ! Solve eigenvalue problem
-    call my_DSYGV(N,C,tmp,eival,"DEC_SOLVE_EIGENVALUE")
-
-    ! Free stuff
-    call mem_dealloc(tmp)
-
-  end subroutine solve_eigenvalue_problem
-
-
-
-  !> \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
-    implicit none
-
-    !> Dimension of matrices (Number of eigenvalues)
-    integer,intent(in) :: n
-    !> F matrix in eigenvalue problem (typically Fock matrix)
-    real(realk),intent(in) :: F(n,n)
-    !> Eigenvectors
-    real(realk),intent(inout) :: C(n,n)
-    real(realk),intent(inout) :: eival(n)
-    real(realk), pointer :: tmp(:,:)
-    integer :: i
-
-    ! Overlap matrix is unit matrix
-    call mem_alloc(tmp,n,n)
-    tmp = 0.0_realk
-    do i=1,n
-       tmp(i,i) = 1.0_realk
-    end do
-
-    ! Copy F elements to C, then use C as "F input".
-    ! At the end, C is then overwritten by the eigenvectors.
-    C(1:n,1:n) = F(1:n,1:n)
-
-    ! Solve eigenvalue problem
-    call my_DSYGV(n,C,tmp,eival,"DEC_SOLVE_EIGENVALU2")
-
-    ! Free stuff
-    call mem_dealloc(tmp)
-
-  end subroutine solve_eigenvalue_problem_unitoverlap
 
 
   subroutine ExcludeIfNoOrbs(Track,NewTrack,natoms,norb_per_atom)
@@ -1566,46 +1278,6 @@ end function max_batch_dimension
 
   end subroutine dec_read_mat_from_file
 
-
-
-  !> \brief Print all elements of four-dimensional array to LSDALTON.OUT.
-  !> Only to be used for testing purposes!
-  !> \author Kasper Kristensen
-  !> \date November 2011
-  subroutine print_4_dimensional_array(dims,A,label)
-
-    implicit none
-    !> Dimensions of 4-dimensional array
-    integer,dimension(4),intent(in) :: dims
-    !> 4-dimensional array to be printed
-    real(realk),intent(in) :: A(dims(1),dims(2),dims(3),dims(4))
-    !> Label for array
-    character(*), intent(in) :: label
-    integer :: i,j,k,l
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '***********************************************************'
-    write(DECinfo%output,*) '             ARRAY LABEL: ', label
-    write(DECinfo%output,*) '***********************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a,8X,a,8X,a,8X,a,12X,a)') 'i','j','k','l', 'value'
-
-    do i=1,dims(1)
-       do j=1,dims(2)
-          do k=1,dims(3)
-             do l=1,dims(4)
-                write(DECinfo%output,'(4i9,5X,g18.10)') i,j,k,l,A(i,j,k,l)
-             end do
-          end do
-       end do
-    end do
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-  end subroutine print_4_dimensional_array
 
 
 
@@ -2494,24 +2166,24 @@ end function max_batch_dimension
   !> \brief Get list of atoms sorted according to distance from "MyAtom".
   !> \author Ida-Marie Hoeyvik
   subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
-       & natoms,MyAtom)
+       & n1,natoms,MyAtom)
     implicit none
-    integer,intent(in)     :: natoms,MyAtom
-    real(realk),intent(in) :: ToSort(natoms,natoms)
-    real(realk)            :: ListMyAtom(natoms), TempList(natoms)
-    integer                :: ListTrack(natoms), TempTrack(natoms)
+    integer,intent(in)     :: n1,natoms,MyAtom
+    real(realk),intent(in) :: ToSort(n1,natoms)
+    real(realk)            :: ListMyAtom(n1), TempList(n1)
+    integer                :: ListTrack(n1), TempTrack(n1)
     integer                :: counter,i
 
     ListMyAtom(:)=ToSort(:,MyAtom)
     ! Sort large--> small
-    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,natoms)
+    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
 
     TempList = 0.0E0_realk
     TempTrack = 0
     counter = 1
 
     ! change to small-->large
-    do i=natoms,1,-1
+    do i=n1,1,-1
        TempList(counter) = ListMyAtom(i)
        TempTrack(counter)= ListTrack(i)
        counter = counter + 1
@@ -4474,11 +4146,13 @@ end function max_batch_dimension
        end if
     else
        IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
           write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
           ! skip error print for full calculation (0 by definition)
           if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
              write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
           end if
+#endif
        ELSE
           IF(.NOT.DECinfo%DFTreference)THEN
              write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
@@ -4530,8 +4204,10 @@ end function max_batch_dimension
           call lsquit('InteractionEnergy and first_order not implemented',-1)
        ENDIF
     else
+#ifdef MOD_UNRELEASED
        write(lupri,'(15X,a,f20.10)') 'I: Interaction Correlation energy  :', Ecorr
        write(lupri,'(15X,a,f20.10)') 'I: Estimated Interaction DEC error :', Eerr
+#endif
     end if
     write(lupri,*)
   end subroutine print_interaction_energy_lupri
@@ -4561,8 +4237,12 @@ end function max_batch_dimension
     write(DECinfo%output,*) '============================================================================='
 
     IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
        CorrEnergyString = 'interaction correlation energy'
        iCorrLen = 30
+#else
+       call lsquit('interaction correlation energy feature not released',-1)
+#endif
     ELSE
        CorrEnergyString = 'correlation energy            '
        iCorrLen = 18
@@ -4804,6 +4484,7 @@ end function max_batch_dimension
 
        write(DECinfo%output,*)
        IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
           if(.not.DECinfo%onlyvirtpart) then  
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied Interaction correlation energy : ', energies(FRAGMODEL_OCCpT)
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order Interaction energy   : ', energies(FRAGMODEL_OCCpT4)
@@ -4814,6 +4495,7 @@ end function max_batch_dimension
              write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT4)
              write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT5)
           end if
+#endif
        ELSE
           if(.not.DECinfo%onlyvirtpart) then  
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
@@ -5354,5 +5036,191 @@ end function max_batch_dimension
     allocate(fragment%nunoccFA)
 
   end subroutine fragment_init_dimension_pointers
+
+  !> \brief Calculate combined single+double amplitudes:
+  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+  !> \author Kasper Kristensen
+  !> \date January 2012
+  subroutine get_combined_SingleDouble_amplitudes_oldarr(t1,t2,u)
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(array2),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(array4),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(array4),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt
+
+     ! Number of occupied/virtual orbitals assuming index ordering given above
+     nocc=t1%dims(2)
+     nvirt=t1%dims(1)
+
+     ! Init combined amplitudes
+     u = array4_init(t2%dims)
+
+     if(DECinfo%use_singles)then
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nocc
+                 do a=1,nvirt
+                    u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
+                 end do
+              end do
+           end do
+        end do
+     else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(u%val,'=',t2%val,t2%nelements)
+#else
+        !$OMP WORKSHARE
+        u%val = t2%val
+        !$OMP END WORKSHARE
+#endif
+     endif
+
+
+  end subroutine get_combined_SingleDouble_amplitudes_oldarr
+
+  !> \brief Calculate combined single+double amplitudes:
+  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+  !> \author Patrick Ettenhuber adapted from Kasper Kristensen
+  !> \date January 2014
+  subroutine get_combined_SingleDouble_amplitudes_newarr(t1,t2,u)
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(array),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(array),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(array),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt
+
+     ! Number of occupied/virtual orbitals assuming index ordering given above
+     nocc  = t2%dims(2)
+     nvirt = t2%dims(1)
+
+     if(t2%itype == DENSE)then
+        ! Init combined amplitudes
+        u = array_init(t2%dims,4)
+
+        if(DECinfo%use_singles)then
+           do j=1,nocc
+              do b=1,nvirt
+                 do i=1,nocc
+                    do a=1,nvirt
+                       u%elm4(a,i,b,j) = t2%elm4(a,i,b,j) + t1%elm2(a,i)*t1%elm2(b,j)
+                    end do
+                 end do
+              end do
+           end do
+        else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+           call assign_in_subblocks(u%elm1,'=',t2%elm1,t2%nelms)
+#else
+           !$OMP WORKSHARE
+           u%elm1 = t2%elm1
+           !$OMP END WORKSHARE
+#endif
+        endif
+     else
+        call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr) no PDM version implemented yet",-1)
+     endif
+
+
+  end subroutine get_combined_SingleDouble_amplitudes_newarr
+
+  !> Assuming that the last index in the array A contains core+valence indices,
+  !> remove the core indices. Only to be used for frozen core approx.
+  !> Assumes core indices are placed BEFORE valence indices!
+  !> \author Kasper Kristensen
+  !> \date December 2012
+  subroutine remove_core_orbitals_from_last_index_oldarr(MyFragment,A,B)
+    implicit none
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Original array
+    type(array4),intent(in) :: A
+    !> New array where core indices for the last index are removed
+    type(array4),intent(inout) :: B
+    integer :: dims(4), i,j,k,l
+
+    ! Sanity check 1: Frozen core.
+    if(.not. DECinfo%frozencore) then
+       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
+    end if
+
+    ! Sanity check 2: Correct dimensions
+    if(A%dims(4) /= MyFragment%nocctot) then
+       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
+       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
+    end if
+
+    ! Init with new dimensions - same as before, except for last index which is only valence indices
+    dims(1) = A%dims(1)
+    dims(2) = A%dims(2)
+    dims(3) = A%dims(3)
+    dims(4) = MyFragment%noccAOS
+    B = array4_init_standard(dims) 
+
+
+    ! Copy elements from A to B, but only valence for last index
+    do l=1,B%dims(4)
+       do k=1,B%dims(3)
+          do j=1,B%dims(2)
+             do i=1,B%dims(1)
+                B%val(i,j,k,l) = A%val(i,j,k,l+MyFragment%ncore)
+             end do
+          end do
+       end do
+    end do
+
+
+  end subroutine remove_core_orbitals_from_last_index_oldarr
+  !> Assuming that the last index in the array A contains core+valence indices,
+  !> remove the core indices. Only to be used for frozen core approx.
+  !> Assumes core indices are placed BEFORE valence indices!
+  !> \author Kasper Kristensen
+  !> \date December 2012
+  subroutine remove_core_orbitals_from_last_index_newarr(MyFragment,A,B)
+    implicit none
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Original array
+    type(array),intent(in) :: A
+    !> New array where core indices for the last index are removed
+    type(array),intent(inout) :: B
+    integer :: dims(4), i,j,k,l
+
+    ! Sanity check 1: Frozen core.
+    if(.not. DECinfo%frozencore) then
+       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
+    end if
+
+    ! Sanity check 2: Correct dimensions
+    if(A%dims(4) /= MyFragment%nocctot) then
+       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
+       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
+    end if
+
+    ! Init with new dimensions - same as before, except for last index which is only valence indices
+    dims(1) = A%dims(1)
+    dims(2) = A%dims(2)
+    dims(3) = A%dims(3)
+    dims(4) = MyFragment%noccAOS
+
+    if( A%itype == DENSE )then
+       B = array_init(dims,4) 
+
+       ! Copy elements from A to B, but only valence for last index
+       do l=1,B%dims(4)
+           B%elm4(:,:,:,l) = A%elm4(:,:,:,l+MyFragment%ncore)
+       end do
+    else
+       call lsquit("ERROR(remove_core_orbitals_from_last_index_newarr)NO PDM VERSION",-1)
+    endif
+
+
+ end subroutine remove_core_orbitals_from_last_index_newarr
+
 
 end module dec_fragment_utils
