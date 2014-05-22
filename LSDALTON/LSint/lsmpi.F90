@@ -1257,15 +1257,15 @@ ENDIF
         nAtoms(iAO) = 1
         noPart(iAO) = .TRUE.
       ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
       ELSE IF (AO(iAO).EQ.AORegular) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
       ELSE IF (AO(iAO).EQ.AOVAL) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
       ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%CABS
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-        bas(iAO)%p => setting%basis(iAO)%p%JK
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
@@ -1705,15 +1705,15 @@ DO iAO=1,4
     nAtoms(iAO) = 1
     noPart(iAO) = .TRUE.
   ELSE IF (AO(iAO).EQ.AOdfAux) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%AUXILIARY
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(AuxBasParam)
   ELSE IF (AO(iAO).EQ.AORegular) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%REGULAR
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(RegBasParam)
   ELSE IF (AO(iAO).EQ.AOVAL) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%VALENCE
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ValBasParam)
   ELSE IF (AO(iAO).EQ.AOdfCABS) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%CABS
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
-    bas(iAO)%p => setting%basis(iAO)%p%JK
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.
@@ -2045,7 +2045,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoA)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoA)%p,Setting%fragment(aoA)%p,&
-     &                Setting%basis(aoA)%p,aux,cabs,jk,task%row_atoms,task%nrow,lupri)
+     &                Setting%basis(aoA)%p,task%row_atoms,task%nrow,lupri)
   Setting%fragBuild(aoA) = .TRUE.
 ENDIF
 
@@ -2065,7 +2065,7 @@ ELSE
     ALLOCATE(Setting%fragment(aoB)%p)
   ENDIF
   CALL BUILD_FRAGMENT(Setting%molecule(aoB)%p,Setting%fragment(aoB)%p,&
-     &                Setting%basis(aoB)%p,aux,cabs,jk,task%col_atoms,task%ncol,lupri)
+     &                Setting%basis(aoB)%p,task%col_atoms,task%ncol,lupri)
   Setting%fragBuild(aoB) = .TRUE.
 ENDIF
 

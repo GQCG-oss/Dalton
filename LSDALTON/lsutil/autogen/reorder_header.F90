@@ -912,8 +912,8 @@
     implicit none
 
     integer,intent(in) ::        d1,d2,d3
-    real(realk), intent(in)::    array_in(i8*d1*d2*d3),pre1,pre2
-    real(realk), intent(inout):: array_out(i8*d1*d2*d3)
+    real(realk), intent(in)::    array_in((i8*d1)*d2*d3),pre1,pre2
+    real(realk), intent(inout):: array_out((i8*d1)*d2*d3)
     integer, dimension(3), intent(in) :: order
     integer(kind=acc_handle_kind), optional :: async_id
 
@@ -1062,34 +1062,32 @@
   !> \brief 2d array reordering routine, for debugging and testing
   !> \author Patrick Ettenhuber
   subroutine array_reorder_2d(pre1,array_in,d1,d2,order,pre2,array_out)
-    implicit none
-    integer,intent(in) ::        d1,d2
-    real(realk), intent(in)::    array_in(i8*d1*d2),pre1,pre2
-    real(realk), intent(inout):: array_out(i8*d1*d2)
-    integer, dimension(2), intent(in) :: order
-    if (order(1) == 1 .and. order(2) == 2 )then
-      if (pre2 .ne. 0.0E0_realk) then
-        call dscal(d1*d2,pre2,array_out,1)
-        call daxpy(d1*d2,pre1,array_in,1,array_out,1)
-      else
-        call dcopy(d1*d2,array_in,1,array_out,1)
-        if (pre1 .ne. 1.0E0_realk) then
-          call dscal(d1*d2,pre1,array_out,1)
+     implicit none
+     integer,intent(in) ::        d1,d2
+     real(realk), intent(in)::    array_in((i8*d1)*d2),pre1,pre2
+     real(realk), intent(inout):: array_out((i8*d1)*d2)
+     integer, dimension(2), intent(in) :: order
+     if (order(1) == 1 .and. order(2) == 2 )then
+        if (pre2 .ne. 0.0E0_realk) then
+           !call dscal(d1*d2,pre2,array_out,1)
+           !call daxpy(d1*d2,pre1,array_in,1,array_out,1)
+           array_out = pre2 * array_out + pre1*array_in
+        else
+           array_out = pre1*array_in
         endif
-      endif
-    elseif (order(1) == 2 .and. order(2) == 1) then
-      call mat_transpose(d1,d2,pre1,array_in,pre2,array_out)
-    else
-      call lsquit("ERROR(array_reorder_2d): reordering not defined",-1)
-    endif
+        elseif (order(1) == 2 .and. order(2) == 1) then
+        call mat_transpose(d1,d2,pre1,array_in,pre2,array_out)
+     else
+        call lsquit("ERROR(array_reorder_2d): reordering not defined",-1)
+     endif
   end subroutine array_reorder_2d
   !\>  \brief another transposition routine, intended to replace the others
   !\>  \> author Patrick Ettenhuber
   subroutine mat_transpose(r,c,p1,x,p2,y)
     implicit none
     integer,intent(in) ::        r,c
-    real(realk), intent(in)::    x(i8*r*c),p1,p2
-    real(realk), intent(inout):: y(i8*c*r)
+    real(realk), intent(in)::    x((i8*r)*c),p1,p2
+    real(realk), intent(inout):: y((i8*c)*r)
 
     integer, dimension(2) :: dims
     integer :: block_size

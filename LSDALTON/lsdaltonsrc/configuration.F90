@@ -176,8 +176,8 @@ implicit none
 
    !read the MOLECULE.INP and set input
    call read_molfile_and_build_molecule(lupri,config%molecule,config%LIB,&
-        &.FALSE.,0,config%integral%DoSpherical,config%integral%Auxbasis,&
-        & config%integral%CABSbasis,config%integral%JKbasis,config%latt_config)
+        & .FALSE.,0,config%integral%DoSpherical,config%integral%basis,&
+        & config%latt_config)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
    !read the LSDALTON.INP and set input
@@ -879,7 +879,7 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%auxbasis))then
+     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%basis(AuxBasParam)))then
         WRITE(config%LUPRI,'(/A)') &
              &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
         CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
@@ -3402,25 +3402,25 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 ! Check integral input:
 !======================
 
-   if(config%integral%densfit .AND. (.NOT. config%integral%auxbasis))then
+   if(config%integral%densfit .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .DENSFIT in the dalton input but not supplied a fitting basis set'
       CALL lsQUIT('Density fitting input inconsitensy: add fitting basis set',config%lupri)
    endif
-   if(config%doF12 .AND. (.NOT. config%integral%cabsbasis))then
+   if(config%doF12 .AND. (.NOT. config%integral%basis(CABBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified .F12 in the dalton input but not supplied a CABS basis set'
       CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
    endif
 !ADMM basis input
-   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%JKbasis))then
+   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%basis(JKBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            &     'You have specified an ADMM-JK calculation in the dalton input but not supplied a JK fitting basis set as required'
       WRITE(config%LUPRI,'(/A)') &
            &     'Please read the ADMM part in the manual and supply JK basis set'
       CALL lsQUIT('ADMM fitting input inconsitensy: add JK fitting basis set',config%lupri)
    endif
-   if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%auxbasis))then
+   if(config%integral%ADMM_DFBASIS .AND. (.NOT. config%integral%basis(AuxBasParam)))then
       WRITE(config%LUPRI,'(/A)') &
            & 'You have specified an ADMM-DF calculation in the dalton input but not supplied an aux fitting basis set as required'
       WRITE(config%LUPRI,'(/A)') &
@@ -3478,11 +3478,11 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    IF(config%decomp%cfg_gcbasis)THEN
       IF(config%INTEGRAL%FORCEGCBASIS)THEN
          !do nothing
-         IF(ls%input%basis%REGULAR%DunningsBasis)THEN
+         IF(ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
             WRITE(config%lupri,*)'We have detected a Dunnings Basis but the ' 
             WRITE(config%lupri,*)'FORCEGCBASIS keyword is in effect.'
          ENDIF
-      ELSEIF(ls%input%basis%REGULAR%DunningsBasis)THEN
+      ELSEIF(ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
          WRITE(config%lupri,*)'We have detected a Dunnings Basis set so we deactivate the' 
          WRITE(config%lupri,*)'use of the Grand Canonical basis, which is normally default.'
          WRITE(config%lupri,*)'The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword' 
@@ -3512,7 +3512,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          ls%setting%integraltransformGC = .FALSE.
       ELSE!default
          WRITE(config%lupri,'(A)')' '
-         IF(.NOT.ls%input%basis%REGULAR%Gcont)THEN
+         IF(.NOT.ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
             WRITE(lupri,'(A)')'Since the input basis set is a segmented contracted basis we'
             WRITE(lupri,'(A)')'perform the integral evaluation in the more efficient'
             WRITE(lupri,'(A)')'standard input basis and then transform to the Grand '

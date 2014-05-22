@@ -339,15 +339,13 @@ END SUBROUTINE DETERMINE_NELECTRONS
 !> \param ATOMS List of atoms to be included in the fragment
 !> \param nATOMS The number of atoms to be included
 !> \param lupri Default output unit
-SUBROUTINE BUILD_FRAGMENT(DALMOL,FRAGMOL,FRAGBASIS,AUXBASIS,CABSBASIS,JKBASIS,&
-     & ATOMS,nATOMS,lupri)
+SUBROUTINE BUILD_FRAGMENT(DALMOL,FRAGMOL,FRAGBASIS,ATOMS,nATOMS,lupri)
 implicit none
 INTEGER,intent(IN)                    :: NATOMS,lupri
 INTEGER,intent(IN)                    :: ATOMS(NATOMS)
 TYPE(MOLECULEINFO),intent(IN)         :: DALMOL
 TYPE(MOLECULEINFO),intent(INOUT)      :: FRAGMOL
 TYPE(BASISINFO),intent(INOUT)         :: FRAGBASIS
-LOGICAL,intent(in)                    :: AUXBASIS,CABSBASIS,JKBASIS 
 !
 INTEGER            :: I,nelectrons
 Character(len=22)  :: FRAGMENTNAME
@@ -384,16 +382,12 @@ ELSE
    NULLIFY(FRAGMOL%SubSystemLabel)
 ENDIF
 
-CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%REGULAR)
-IF(AUXBASIS)THEN
-   CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%AUXILIARY)
-ENDIF
-IF(CABSBASIS)THEN
-   CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%CABS)
-ENDIF
-IF(JKBASIS)THEN
-   CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%JK)
-ENDIF
+do I=1,nBasisBasParam
+   IF(FRAGBASIS%WBASIS(I))THEN
+      CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(I))
+   ENDIF
+enddo
+CALL DETERMINE_NBAST(FRAGMOL,FRAGBASIS%BINFO(RegBasParam))
 END SUBROUTINE BUILD_FRAGMENT
 
 !!$!> \brief 
@@ -430,7 +424,7 @@ SUBROUTINE freeDaltonFragments(SETTING)
 implicit none
 Type(LSSETTING),intent(inout) :: SETTING
 !
-Integer :: indAO
+Integer :: indAO,I
 
 CALL freeFragments(SETTING%FRAGMENT,SETTING%fragBuild,setting%nAO)
 
@@ -438,13 +432,10 @@ CALL freeFragments(SETTING%FRAGMENT,SETTING%fragBuild,setting%nAO)
 DO indAO=1,setting%nAO
  setting%fragment(indAO)%p => setting%molecule(indAO)%p
  IF (associated(setting%fragment(indAO)%p)) THEN
-   call DETERMINE_NBAST(setting%MOLECULE(indAO)%p,setting%BASIS(indAO)%p%REGULAR,&
-        & setting%scheme%DoSpherical,setting%scheme%uncont)
-   IF(setting%BASIS(indAO)%p%AUXILIARY%nAtomtypes.GT.0)THEN
-    call DETERMINE_NBAST(setting%MOLECULE(indAO)%p,&
-         & setting%BASIS(indAO)%p%AUXILIARY,setting%scheme%DoSpherical,&
-         & setting%scheme%uncont)
-   ENDIF
+   DO I=1,nBasisBasParam
+      call DETERMINE_NBAST(setting%MOLECULE(indAO)%p,setting%BASIS(indAO)%p%BINFO(I),&
+           & setting%scheme%DoSpherical,setting%scheme%uncont)
+   ENDDO
  ENDIF
 ENDDO
 !Set up fragments
@@ -484,93 +475,94 @@ INTEGER             :: I,TOTcont,TOTprim,R,K,type,lupri,TEMP1,TEMP2,icharge
 LOGICAL,OPTIONAL    :: spherical,UNCONTRACTED
 !
 Logical :: spher, uncont,REG,AUX,VAL,JKAUX,CABS
-!
-! Defaults
-spher  = .true.
-uncont = .false.
-! Optional settings
-IF (present(spherical)) spher = spherical
-IF (present(UNCONTRACTED)) uncont = UNCONTRACTED
-REG = .FALSE.
-AUX = .FALSE.
-CABS = .FALSE.
-JKAUX = .FALSE.
-VAL = .FALSE.
-IF(BASINFO%label(1:9) .EQ. 'REGULAR  ') REG = .TRUE.
-IF(BASINFO%label(1:9) .EQ. 'AUXILIARY') AUX = .TRUE.
-IF(BASINFO%label(1:9) .EQ. 'CABS     ') CABS = .TRUE.
-IF(BASINFO%label(1:9) .EQ. 'JKAUX    ') JKAUX = .TRUE.
-IF(BASINFO%label(1:9) .EQ. 'VALENCE  ') VAL = .TRUE.
-IF(.NOT.MOLECULE%pointMolecule)THEN
-   TOTcont=0
-   TOTprim=0
-   R = BASINFO%Labelindex
-   DO I=1,MOLECULE%nAtoms
-      IF(R.EQ. 0)THEN
-         icharge = INT(MOLECULE%ATOM(I)%charge)
-         type = BASINFO%chargeindex(icharge) 
-      ELSE
-         type=MOLECULE%ATOM(I)%IDtype(R)
-      ENDIF
-      IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
-         IF(uncont)THEN
-            TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnprim
-            IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim
-            TOTprim=TOTcont
-         ELSE !DEFAULT
-            TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnorb      
-            TOTprim=TOTprim+BASINFO%ATOMTYPE(type)%Totnprim      
-            IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=BASINFO%ATOMTYPE(type)%Totnprim      
-            IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim      
-            IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
-            IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim      
-            IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=BASINFO%ATOMTYPE(type)%Totnorb      
-            IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=BASINFO%ATOMTYPE(type)%Totnorb      
-            IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=BASINFO%ATOMTYPE(type)%Totnorb      
-            IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=BASINFO%ATOMTYPE(type)%Totnorb      
-            IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=BASINFO%ATOMTYPE(type)%Totnorb      
-         ENDIF
-      ELSE
-         IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=0
-         IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=0
-         IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=0
-         IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=0
-         IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=0
-         IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=0
-         IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=0
-         IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=0
-         IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=0
-         IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=0
-      ENDIF
-   ENDDO
-   BASINFO%nbast=TOTcont
-   BASINFO%nprimbast=TOTprim
-   IF(REG)MOLECULE%nbastREG=TOTcont
-   IF(REG)MOLECULE%nprimbastREG=TOTprim
-   
-   IF(AUX)MOLECULE%nbastAUX=TOTcont
-   IF(AUX)MOLECULE%nprimbastAUX=TOTprim
-   
-   IF(CABS)MOLECULE%nbastCABS=TOTcont
-   IF(CABS)MOLECULE%nprimbastCABS=TOTprim
-   
-   IF(JKAUX)MOLECULE%nbastJK=TOTcont
-   IF(JKAUX)MOLECULE%nprimbastJK=TOTprim
-   
-   IF(VAL)MOLECULE%nbastVAL=TOTcont
-   IF(VAL)MOLECULE%nprimbastVAL=TOTprim
-ENDIF
 
+IF(BASINFO%natomtypes.NE.0)THEN
+   ! Defaults
+   spher  = .true.
+   uncont = .false.
+   ! Optional settings
+   IF (present(spherical)) spher = spherical
+   IF (present(UNCONTRACTED)) uncont = UNCONTRACTED
+   REG = .FALSE.
+   AUX = .FALSE.
+   CABS = .FALSE.
+   JKAUX = .FALSE.
+   VAL = .FALSE.
+   IF(BASINFO%label(1:9) .EQ. 'REGULAR  ') REG = .TRUE.
+   IF(BASINFO%label(1:9) .EQ. 'AUXILIARY') AUX = .TRUE.
+   IF(BASINFO%label(1:9) .EQ. 'CABS     ') CABS = .TRUE.
+   IF(BASINFO%label(1:9) .EQ. 'JKAUX    ') JKAUX = .TRUE.
+   IF(BASINFO%label(1:9) .EQ. 'VALENCE  ') VAL = .TRUE.
+   IF(.NOT.MOLECULE%pointMolecule)THEN
+      TOTcont=0
+      TOTprim=0
+      R = BASINFO%Labelindex
+      DO I=1,MOLECULE%nAtoms
+         IF(R.EQ. 0)THEN
+            icharge = INT(MOLECULE%ATOM(I)%charge)
+            type = BASINFO%chargeindex(icharge) 
+         ELSE
+            type=MOLECULE%ATOM(I)%IDtype(R)
+         ENDIF
+         IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
+            IF(uncont)THEN
+               TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnprim
+               IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim
+               TOTprim=TOTcont
+            ELSE !DEFAULT
+               TOTcont=TOTcont+BASINFO%ATOMTYPE(type)%Totnorb      
+               TOTprim=TOTprim+BASINFO%ATOMTYPE(type)%Totnprim      
+               IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=BASINFO%ATOMTYPE(type)%Totnprim      
+               IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=BASINFO%ATOMTYPE(type)%Totnprim      
+               IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=BASINFO%ATOMTYPE(type)%Totnprim
+               IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=BASINFO%ATOMTYPE(type)%Totnprim      
+               IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=BASINFO%ATOMTYPE(type)%Totnorb      
+               IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=BASINFO%ATOMTYPE(type)%Totnorb      
+               IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=BASINFO%ATOMTYPE(type)%Totnorb      
+               IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=BASINFO%ATOMTYPE(type)%Totnorb      
+               IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=BASINFO%ATOMTYPE(type)%Totnorb      
+            ENDIF
+         ELSE
+            IF(REG) MOLECULE%ATOM(I)%nprimOrbREG=0
+            IF(AUX) MOLECULE%ATOM(I)%nprimOrbAUX=0
+            IF(CABS) MOLECULE%ATOM(I)%nprimOrbCABS=0
+            IF(JKAUX) MOLECULE%ATOM(I)%nprimOrbJK=0
+            IF(VAL) MOLECULE%ATOM(I)%nprimOrbVAL=0
+            IF(REG) MOLECULE%ATOM(I)%ncontOrbREG=0
+            IF(AUX) MOLECULE%ATOM(I)%ncontOrbAUX=0
+            IF(CABS) MOLECULE%ATOM(I)%ncontOrbCABS=0
+            IF(JKAUX) MOLECULE%ATOM(I)%ncontOrbJK=0
+            IF(VAL) MOLECULE%ATOM(I)%ncontOrbVAL=0
+         ENDIF
+      ENDDO
+      BASINFO%nbast=TOTcont
+      BASINFO%nprimbast=TOTprim
+      IF(REG)MOLECULE%nbastREG=TOTcont
+      IF(REG)MOLECULE%nprimbastREG=TOTprim
+      
+      IF(AUX)MOLECULE%nbastAUX=TOTcont
+      IF(AUX)MOLECULE%nprimbastAUX=TOTprim
+      
+      IF(CABS)MOLECULE%nbastCABS=TOTcont
+      IF(CABS)MOLECULE%nprimbastCABS=TOTprim
+      
+      IF(JKAUX)MOLECULE%nbastJK=TOTcont
+      IF(JKAUX)MOLECULE%nprimbastJK=TOTprim
+      
+      IF(VAL)MOLECULE%nbastVAL=TOTcont
+      IF(VAL)MOLECULE%nprimbastVAL=TOTprim
+   ENDIF
+ENDIF
 
 END SUBROUTINE DETERMINE_NBAST
 

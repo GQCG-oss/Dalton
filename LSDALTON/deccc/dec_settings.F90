@@ -84,7 +84,7 @@ contains
     DECinfo%noFAtrafo            = .false.
     DECinfo%noPNOoverlaptrunc    = .false.
     DECinfo%PNOoverlapthr        = 1.0E-5_realk
-    DECinfo%PNOtriangular        = .false.
+    DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
@@ -472,7 +472,7 @@ contains
        case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 
