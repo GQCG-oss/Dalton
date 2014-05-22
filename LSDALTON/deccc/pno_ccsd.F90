@@ -588,8 +588,8 @@ module pno_ccsd_module
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
      !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-     !$OMP nc,nc2,rpd,PS,) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
-     !$OMP vvf,goooo,Lvoov,pno_o2,govov,&
+     !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+     !$OMP vvf,goooo,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
      !$OMP oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
      call init_threadmemvar()
