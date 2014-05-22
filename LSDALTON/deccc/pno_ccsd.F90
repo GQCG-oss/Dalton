@@ -531,10 +531,10 @@ module pno_ccsd_module
      call print_norm(w2,o2v2,nnorm,.true.)
      call print_norm(ref,o2v2,norm,.true.)
      write (*,*)' DEBUG E22/TOT:',sqrt(nnorm),sqrt(norm)
-!
-!
-!     ref1 = vof
-!
+
+
+     ref1 = vof
+
 !     !DEBUG SINGLES A1
 !     !****************
 !     call array_reorder_4d( p10, u, nv, no, nv, no, [3,2,1,4], nul, w1) ! ckdi -> dkci
@@ -547,16 +547,16 @@ module pno_ccsd_module
 !     !write (*,*)' DEBUG A1/TOT:',sqrt(nnorm),sqrt(norm)
 !
 !
-!     !DEBUG SINGLES B1
-!     !****************
-!     call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
-!     call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
-!
-!     ref1 = ref1 + w2(1:nv*no)
-!
-!     call print_norm(w2,i8*nv*no,nnorm,.true.)
-!     call print_norm(ref1,i8*nv*no,norm,.true.)
-!     !write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
+     !DEBUG SINGLES B1
+     !****************
+     call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
+     call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
+
+     ref1 = ref1 + w2(1:nv*no)
+
+     call print_norm(w2,i8*nv*no,nnorm,.true.)
+     call print_norm(ref1,i8*nv*no,norm,.true.)
+     write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
 !
 !     !DEBUG SINGLES C1
 !     !****************
@@ -656,39 +656,72 @@ module pno_ccsd_module
 
 
 
-!        !!!!!!!!!!!!!!!!!!!!!!!!!
-!        !!!  B1 Term !!!!!!!!!!!!
-!        !!!!!!!!!!!!!!!!!!!!!!!!!
-!
-!
-!        !get gooov(kilc) as klic and transform c to pno basis
-!        call ass_D1to4( w3,    p3, [pno,pno,no, nv] )
-!        call ass_D1to4( gooov, p2, [no, no, no, nv] )
-!        do b=1,nv
-!           do i=1,no
-!              do j=1,pno
-!                 do a=1,pno
-!                    p3(a,j,i,b) = p2(idx(a), i, idx(j),b)
-!                 enddo
-!              enddo
-!           enddo
-!        enddo
-!
-!        ! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
-!        call dgemm('t','t',pnv,pno**2*no,nv,p10,d,nv,w3,pno**2*no,nul,w1,pnv)
-!
-!        !get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
-!        call array_reorder_4d( p20, t, pnv,pno,pnv,pno, [1,3,2,4], nul,w2)
-!        call array_reorder_4d( m10, t, pnv,pno,pnv,pno, [1,3,4,2], p10,w2)
-!
-!
-!        ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
-!        call dgemm('n','n',pnv,no,pnv*pno**2,m10,w2,pnv,w1,pnv*pno**2, nul, w3,pnv)
-!        !transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
-!        !$OMP CRITICAL
-!        call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
-!        !$OMP END CRITICAL
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!  B1 Term !!!!!!!!!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!
+        !get gooov(kilc) as klic and transform c to pno basis
+        call ass_D1to4( w3,    p3, [rpd,rpd,no, nv] )
+        call ass_D1to4( gooov, p2, [no, no, no, nv] )
 
+        if( PS )then
+
+
+           do pair = 1, 2
+
+              k = idx(paircontrib(1,pair))
+              l = idx(paircontrib(2,pair))
+
+              p3(1,1,:,:) = p2(k, :, l ,:)
+
+              ! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
+              call dgemm('t','t',pnv,rpd**2*no,nv,p10,d,nv,w3,rpd**2*no,nul,w1,pnv)
+
+              !get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
+              if( k > l )then
+                 call array_reorder_2d( p20, t, pnv,pnv, [2,1], nul,w2)
+                 call array_reorder_2d( m10, t, pnv,pnv, [1,2], p10,w2)
+              else
+                 call array_reorder_2d( p20, t, pnv,pnv, [1,2], nul,w2)
+                 call array_reorder_2d( m10, t, pnv,pnv, [2,1], p10,w2)
+              endif
+
+              ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
+              call dgemm('n','n',pnv,no,pnv*rpd**2,m10,w2,pnv,w1,pnv*rpd**2, nul, w3,pnv)
+              !transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
+              !$OMP CRITICAL
+              call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
+              !$OMP END CRITICAL
+           enddo
+
+        else
+
+           do b=1,nv
+              do i=1,no
+                 do j=1,pno
+                    do a=1,pno
+                       p3(a,j,i,b) = p2(idx(a), i, idx(j),b)
+                    enddo
+                 enddo
+              enddo
+           enddo
+
+
+           ! transform c such that d(c\bar{c})^T w(kli,c)^T = w1(\bar{c}kli)
+           call dgemm('t','t',pnv,rpd**2*no,nv,p10,d,nv,w3,rpd**2*no,nul,w1,pnv)
+
+           !get u from current amplitudes contract and transform back to local basis, as u(\bar{a}\bar{c}kl) from akcl
+           call array_reorder_4d( p20, t, pnv,rpd,pnv,rpd, [1,3,2,4], nul,w2)
+           call array_reorder_4d( m10, t, pnv,rpd,pnv,rpd, [1,3,4,2], p10,w2)
+
+
+           ! carry out w2(\bar{a}\bar{c} kl) w1(\bar{c} kl i) = omega1{\bar{a}i}
+           call dgemm('n','n',pnv,no,pnv*rpd**2,m10,w2,pnv,w1,pnv*rpd**2, nul, w3,pnv)
+           !transform d(a\bar{a}) omega1{\bar{a} i} -> o1(a,i)
+           !$OMP CRITICAL
+           call dgemm('n','n',nv, no,pnv, p10,d, nv, w3, pnv, p10,o1,nv)
+           !$OMP END CRITICAL
+
+        endif
 
         d   => null()
         t   => null()
