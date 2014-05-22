@@ -1223,6 +1223,8 @@ logical :: slave
 integer(kind=ls_mpik) :: master
 
 call LS_MPI_BUFFER(dalton%contang,Master)
+call LS_MPI_BUFFER(dalton%NOGCINTEGRALTRANSFORM,Master)
+call LS_MPI_BUFFER(dalton%FORCEGCBASIS,Master)
 call LS_MPI_BUFFER(dalton%noOMP,Master)
 call LS_MPI_BUFFER(dalton%UNRES,Master)
 call LS_MPI_BUFFER(dalton%CFG_LSDALTON,Master)
