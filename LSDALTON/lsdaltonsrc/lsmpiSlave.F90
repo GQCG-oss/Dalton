@@ -143,10 +143,6 @@ subroutine lsmpi_slave(comm)
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(MP2INAMPRI);
          call MP2_RI_EnergyContribution_slave
-      case(CCGETGMO);
-         call cc_gmo_data_slave
-      case(MOCCSDDATA);
-         call moccsd_data_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
@@ -159,7 +155,13 @@ subroutine lsmpi_slave(comm)
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
          call rpa_res_slave
+      case(RPAGETFOCK);
+         call rpa_fock_slave
 #ifdef MOD_UNRELEASED
+      case(CCGETGMO);
+         call cc_gmo_data_slave
+      case(MOCCSDDATA);
+         call moccsd_data_slave
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif

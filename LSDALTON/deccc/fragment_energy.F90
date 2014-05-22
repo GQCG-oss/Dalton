@@ -1849,7 +1849,7 @@ contains
        call print_pair_fragment_energies(natoms,energy_matrix,orbitals_assigned,&
             & MyMolecule%DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
     end if
-
+#ifdef MOD_UNRELEASED
     IF(DECinfo%PrintInteractionEnergy)THEN
      lupri=6
      write(lupri,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
@@ -1857,7 +1857,7 @@ contains
      write(DECinfo%output,'(a)')' '
      write(DECinfo%output,'(15X,a,f20.10)')'Interaction Correlation energy  :',InteractionEcorr
     ENDIF
-
+#endif
     call mem_dealloc(ppfock)
 
     do i=1,nOcc

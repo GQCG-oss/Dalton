@@ -313,7 +313,7 @@ real(realk),pointer    ::  bCMO(:,:),bD(:,:),occ(:), Fmat(:), Smat(:)
 integer, pointer       ::  perm(:), iperm(:), basis_size(:)
 
 
-  nAngmom = BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
+  nAngmom = BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
 
   call trilevel_set_basis_size(BASIS,itype,basis_size) !size of basis for a given angmom
 
@@ -336,7 +336,7 @@ integer, pointer       ::  perm(:), iperm(:), basis_size(:)
      !diagonal angular block => bCMO
      call trilevel_diag_per_ang(ang,basis_size,bCMO,F%elms,S%elms,nbast,nb)
      !set occupation numbers based on element table in ecdata
-     call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%REGULAR%ATOMTYPE(itype)%Charge)
+     call trilevel_set_occ(occ(ipos:nbast),ang,BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge)
      !Build full MO coefficient matrix from the bCMO blocks
      call trilevel_mdiag(CMO%elms,ipos,nbast,bCMO,nb,kmult)
 
@@ -457,10 +457,10 @@ integer          :: itype
 !
 integer                          :: i
 
-call mem_alloc(basis_size,BASIS%REGULAR%ATOMTYPE(itype)%nAngmom)
+call mem_alloc(basis_size,BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom)
 
-do i=1, BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
-   basis_size(i)= BASIS%REGULAR%ATOMTYPE(itype)%SHELL(i)%norb
+do i=1, BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
+   basis_size(i)= BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%SHELL(i)%norb
 enddo
 
 end subroutine trilevel_set_basis_size
@@ -593,12 +593,12 @@ type(segment),pointer :: GCtransSegment
 integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 
   itype = ai%UATOMTYPE(iatom) !type of distinct atom in full
-  nAngmom = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
+  nAngmom = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
 
   call trilevel_set_basis_size(ls%setting%BASIS(1)%p,itype,basis_size)
 
  do ang=0, nAngmom-1
-   shell2 => ls%input%BASIS%REGULAR%&
+   shell2 => ls%input%BASIS%BINFO(REGBASPARAM)%&
                 &ATOMTYPE(itype)%SHELL(ang+1)
    nb=basis_size(ang+1)
    if (nb.eq. 0) cycle
@@ -618,21 +618,21 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
 !   WRITE(lupri,*)'The Original block:'
 !   call output(shell2%segment(1)%elms,1,shell2%nprim,1,shell2%norb,&
 !        &shell2%nprim,shell2%norb,1,lupri)
-   IF(.NOT. ls%input%BASIS%GCtransAlloc)THEN
+   IF(.NOT. ls%input%BASIS%wbasis(gctbasparam))THEN
       call lsquit('GCtrans basis not call mem_allocd in trilevel_convert_ao2gcao',lupri)
    ENDIF
    !We always save the transformation matrix in GCtrans
    !so that we transform back and forth between 
    !AO and GCAO in the integral routine
-   GCtransSegment => ls%input%BASIS%GCtrans%&
+   GCtransSegment => ls%input%BASIS%binfo(gctbasparam)%&
         &ATOMTYPE(itype)%SHELL(ang+1)%segment(1)
    call dcopy(nb*nb,bCMO,1,GCtransSegment%elms,1)
 
 
    IF(ls%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
       !we transform the input basis
-      ls%input%basis%REGULAR%GCbasis = .TRUE.
-      IF(ls%input%basis%REGULAR%Gcont)THEN         
+      ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .TRUE.
+      IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN         
          !General contracted Case or no integraltransform
          !we transform the input basis - so that 
          !we do not need to transform back and forth
@@ -703,7 +703,7 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
          call mem_dealloc(CCtmp) 
       ENDIF
    ELSE
-      IF(ls%input%basis%REGULAR%Gcont)THEN
+      IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
          !General contracted Case 
          !we transform the input basis - so that 
          !we do not need to transform back and forth
@@ -717,11 +717,11 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
          !      WRITE(6,*)'The transformed block:'
          !      call output(shell2%segment(1)%UCCelms,1,shell2%nprim,1,shell2%norb,&
          !           &shell2%nprim,shell2%norb,1,6)
-         ls%input%basis%REGULAR%GCbasis = .TRUE.
+         ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .TRUE.
       ELSE
          !Segmented contracted Case
          !so we transform back and forth. which means that we do nothing
-         ls%input%basis%REGULAR%GCbasis = .FALSE.
+         ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .FALSE.
       ENDIF
    ENDIF
    call mem_dealloc(bCMO)
@@ -731,7 +731,7 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
  call mem_dealloc(basis_size)
 
 ! print*,'print BASIS  after ao2gcao'
-! call print_basissetinfo(6,ls%input%BASIS%REGULAR)
+! call print_basissetinfo(6,ls%input%BASIS%BINFO(REGBASPARAM))
 
 end subroutine trilevel_convert_ao2gcao
 
@@ -934,26 +934,26 @@ Write(ls%lupri,*)''
 !atomic calc is always done in AO basis and not transformed
 integraltransformGC = ls%setting%integraltransformGC
 ls%setting%integraltransformGC = .FALSE.
-! We call mem_alloc and initiate the ls%input%BASIS%GCtrans in this routine
-! and set ls%input%basis%GCtransAlloc = .TRUE. 
+! We call mem_alloc and initiate the ls%input%BASIS%binfo(gctbasparam) in this routine
 ! This is needed whenever we go from AO to GC baiss and back.
-ls%input%basis%GCtransAlloc = .TRUE.
-CALL trilevel_ALLOC_SYNC_GCTRANS(ls%input%BASIS%GCtrans,ls%input%basis%REGULAR)
+ls%input%basis%WBASIS(GCTBasParam) = .TRUE.
+CALL trilevel_ALLOC_SYNC_GCTRANS(ls%input%BASIS%BINFO(GCTBasParam),&
+     & ls%input%basis%BINFO(RegBasParam))
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
    IF(ls%input%molecule%atom(ai%NATOM(i))%pointcharge)CYCLE
    call io_free(ls%setting%IO)
    call io_init(ls%setting%IO)
    !print statements
-   len = len_trim(ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME)
+   len = len_trim(ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME)
    write(lupri,*)
    write (lupri,'(1X,A,1X,A,1X,A,1X,I3)') 'Level 1 atomic calculation on', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
    write(lupri,*) '================================================'
    write (*,'(1X,A,1X,A,1X,A,1X,I3)') 'Level 1 atomic calculation on', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
-  & ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME(1:len), 'Charge', &
+  & ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
  
    nbast = ls%input%molecule%atom(ai%NATOM(i))%nContOrbREG
    CALL mat_init(F(1),nbast,nbast)
@@ -1026,7 +1026,7 @@ TYPE(lsitem) :: ls
 INTEGER             :: LUPRI,IPRINT,I
 
 ai%LUPRI = LUPRI
-ai%ND = ls%input%BASIS%REGULAR%nAtomtypes
+ai%ND = ls%input%BASIS%BINFO(REGBASPARAM)%nAtomtypes
 ai%NA = ls%input%MOLECULE%Natoms
 CALL MEM_ALLOC(ai%NATOM,ai%ND)
 CALL MEM_ALLOC(ai%UATOMTYPE,ai%ND)
@@ -1059,28 +1059,28 @@ TYPE(BASISINFO) :: lsBASIS
 !
 integer :: I,J,K,L,nangmom1,nAngmom2,nsegments
 
-DO J=1,lsBASIS%VALENCE%natomtypes
-   nangmom1=lsBASIS%VALENCE%ATOMTYPE(J)%nAngmom
-   nangmom2=lsBASIS%REGULAR%ATOMTYPE(J)%nAngmom
+DO J=1,lsBASIS%BINFO(VALBASPARAM)%natomtypes
+   nangmom1=lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%nAngmom
+   nangmom2=lsBASIS%BINFO(REGBASPARAM)%ATOMTYPE(J)%nAngmom
    DO K=nAngmom1+1,nAngmom2
-      nsegments=lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%nsegments
+      nsegments=lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%nsegments
       IF(nsegments .NE. 0)THEN
          DO L=1,nsegments
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)) then
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO1 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)) then
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%elms)
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO1 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)
-            if (.not.ASSOCIATED(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)) then
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms)
+            if (.not.ASSOCIATED(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)) then
                print*,'memory previously released!!'
                call lsquit('Error in FREE_BASISSETINFO2 - memory previously released',-1)
             endif
-            CALL MEM_DEALLOC(lsBASIS%VALENCE%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)
+            CALL MEM_DEALLOC(lsBASIS%BINFO(VALBASPARAM)%ATOMTYPE(J)%SHELL(K)%segment(L)%Exponents)
          ENDDO
       ENDIF
    ENDDO
@@ -1107,24 +1107,26 @@ integer             :: nbast,itype,nAngmom,charge,ang,nb,nocc
 integer             :: icharge,jatom,nsegments,tmpindex,seg,iprim
 integer, pointer    :: basis_size(:)
 integer :: len
-CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%VALENCE,ls%input%basis%REGULAR,&
-     &ls%input%basis%GCtrans,ls%setting%integraltransformGC,ls%input%basis%GCtransAlloc,&
-     &ls%input%basis%REGULAR%GCbasis,lupri)
+CALL trilevel_ALLOC_SYNC_VBASIS(ls%input%basis%BINFO(VALBasParam),&
+     & ls%input%basis%BINFO(RegBasParam),ls%input%basis%BINFO(GCTBasParam),&
+     & ls%setting%integraltransformGC,ls%input%basis%wbasis(gctbasparam),&
+     & ls%input%basis%BINFO(RegBasParam)%GCbasis,lupri)
+ls%input%basis%WBASIS(VALBasParam) = .TRUE.
 do i=1, ai%ND
    itype = ai%UATOMTYPE(i)
    !points to function which calculates the size of the basis
    call trilevel_set_basis_size(ls%setting%BASIS(1)%p,itype,basis_size)
    jatom = ai%NATOM(i) !an atom in the full input molecule
-   nAngmom = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
-   charge  = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%Charge
+   nAngmom = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
+   charge  = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%Charge
    
-   ls%input%basis%VALENCE%ATOMTYPE(itype)%ToTnorb = &
+   ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%ToTnorb = &
         & ElementTable(charge)%nocc_s + ElementTable(charge)%nocc_p &
         &+ElementTable(charge)%nocc_d + ElementTable(charge)%nocc_f
-   if (ElementTable(charge)%nocc_s .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 1
-   if (ElementTable(charge)%nocc_p .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 2
-   if (ElementTable(charge)%nocc_d .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 3
-   if (ElementTable(charge)%nocc_f .gt. 0 ) ls%input%basis%VALENCE%ATOMTYPE(itype)%nAngmom = 4
+   if (ElementTable(charge)%nocc_s .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 1
+   if (ElementTable(charge)%nocc_p .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 2
+   if (ElementTable(charge)%nocc_d .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 3
+   if (ElementTable(charge)%nocc_f .gt. 0 ) ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%nAngmom = 4
    
    do ang=0, nAngmom-1
       
@@ -1140,22 +1142,22 @@ do i=1, ai%ND
       end select
       IF(ls%setting%integraltransformGC)CALL LSQUIT('the Valence basis must be transformed to GCbasis',-1)
       !the Valence basis is a GCbasis 
-      ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%norb = nocc
-      ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%ncol = nocc
+      ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%norb = nocc
+      ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%ncol = nocc
       if (nocc.eq. 0) then
-         ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%nprim = 0
-         ls%input%basis%VALENCE%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%nrow = 0
+         ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%nprim = 0
+         ls%input%basis%BINFO(VALBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%segment(1)%nrow = 0
       endif
    enddo
    call mem_dealloc(basis_size)
 enddo
-call determine_nbast(ls%input%MOLECULE,ls%input%basis%VALENCE,&
+call determine_nbast(ls%input%MOLECULE,ls%input%basis%BINFO(VALBASPARAM),&
       &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
 
 !print*,'trilevel_full2valence vbasis MERGE'
-!call print_basissetinfo(6,ls%input%basis%VALENCE)
-!print*,'trilevel_full2valence REGULAR'
-!call print_basissetinfo(6,ls%input%basis%REGULAR)
+!call print_basissetinfo(6,ls%input%basis%BINFO(VALBASPARAM))
+!print*,'trilevel_full2valence BINFO(REGBASPARAM)'
+!call print_basissetinfo(6,ls%input%basis%BINFO(REGBASPARAM))
 
 END SUBROUTINE trilevel_full2valence
 
@@ -1339,6 +1341,7 @@ end module trilevel_module
 !> \param opt optItem containing info about scf optimization
 !> \param ls lsitem structure containing integral,molecule,basis info
 SUBROUTINE trilevel_basis(opt,ls)
+use basis_typetype
 use trilevel_module
 use typedeftype, only: lsitem
 use io, only: io_free, io_init
@@ -1360,7 +1363,7 @@ TYPE(trilevel_atominfo) :: ai
 integer                 :: CFG_averaging_sav, matrix_sav,nbast
 logical                 :: unres_sav
 
-  IF(ls%input%basis%REGULAR%GCbasis)THEN
+  IF(ls%input%basis%BINFO(REGBASPARAM)%GCbasis)THEN
      !the atomic calculation
      WRITE(ls%LUPRI,'(A)')' Skipping gcbasis calculation'
      WRITE(ls%LUPRI,'(A)')' This have already been done and input basis transformed.'
@@ -1414,6 +1417,7 @@ END SUBROUTINE trilevel_basis
 !> \param H1 one electron contribution to the fock matrix
 !> \param ls lsitem structure containing all info about integrals,basis,..
 SUBROUTINE atoms_start(config,D,H1,S,ls,ndmatalloc)
+use basis_typetype
 use configurationType
 use trilevel_module
 use typedeftype, only: lssetting, lsitem
@@ -1442,9 +1446,9 @@ real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 ndmat = 1
 !a diagonal matrix with occupation numbers on the diagonal
-call trilevel_ATOMS_density(D(1),ls,ls%input%basis%regular)
+call trilevel_ATOMS_density(D(1),ls,ls%input%basis%binfo(RegBasParam))
 
-nbast = ls%input%BASIS%REGULAR%nbast
+nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast
 
 CALL mat_init(F(1),nbast,nbast)
 CALL mat_init(Cmo,nbast,nbast)
@@ -1589,12 +1593,12 @@ type(LowAccuracyStartType)  :: LAStype
 
   IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
      DO iAO=1,ls%SETTING%nAO
-        IF(ls%SETTING%BASIS(iAO)%p%VALENCE%nAtomtypes.NE.0)THEN
+        IF(ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM)%nAtomtypes.NE.0)THEN
            call lsquit('this should not happen setting valence basis non zero',-1)
-           call free_basissetinfo(ls%SETTING%BASIS(iAO)%p%VALENCE)
+           call free_basissetinfo(ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM))
         ENDIF
-        call copy_basissetinfo(ls%input%basis%valence,ls%SETTING%BASIS(iAO)%p%VALENCE)
-        call determine_nbast(ls%setting%MOLECULE(iAO)%p,ls%SETTING%BASIS(iAO)%p%VALENCE,&
+        call copy_basissetinfo(ls%input%basis%binfo(valbasparam),ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM))
+        call determine_nbast(ls%setting%MOLECULE(iAO)%p,ls%SETTING%BASIS(iAO)%p%BINFO(VALBASPARAM),&
              &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
      ENDDO
   ENDIF
@@ -1614,11 +1618,11 @@ type(LowAccuracyStartType)  :: LAStype
   Write(ls%lupri,'(A)')' '
   write(config%lupri,'(A)') '  The 2. Level Basis'
   CALL PRINT_LEVEL2BASIS(config%lupri,&
-       & ls%input%MOLECULE,ls%input%basis%VALENCE)
+       & ls%input%MOLECULE,ls%input%basis%BINFO(VALBASPARAM))
 !  call print_basissetinfo(config%LUPRI,ls%input%basis%VALENCE)
   ls%optlevel = 2
 
-  nbast = ls%input%basis%VALENCE%nbast !nbast for valence basis
+  nbast = ls%input%basis%BINFO(VALBASPARAM)%nbast !nbast for valence basis
   call set_matop_timer_optlevel(2)
   call mat_init(Dval(1),nbast,nbast)
 
@@ -1637,7 +1641,7 @@ type(LowAccuracyStartType)  :: LAStype
      call trilevel_readdens(Dval(1),config%lupri)
   else
      !default option
-     call trilevel_ATOMS_density(Dval(1),ls,ls%input%BASIS%VALENCE)
+     call trilevel_ATOMS_density(Dval(1),ls,ls%input%BASIS%BINFO(VALBASPARAM))
   endif
 
   CALL mat_init(F(1),nbast,nbast)
@@ -1827,7 +1831,11 @@ type(LowAccuracyStartType)  :: LAStype
       ls%setting%integraltransformGC = .false.
       call leastchange_lcv(config%decomp,Cmo,nocc,ls)
       if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%PFM_input%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
-          write(ls%lupri,'(a)') 'Pred= ***** LEVEL 2 ORBITAL LOCALIZATION ****'
+              write(ls%lupri,'(a)')'  %LOC%   '
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *'
+              write(ls%lupri,'(a)')'  %LOC%   ********************************************'
+              write(ls%lupri,'(a)')'  %LOC%   '
           call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
       endif
       ls%setting%integraltransformGC = integraltransformGC
@@ -1840,7 +1848,7 @@ type(LowAccuracyStartType)  :: LAStype
   endif
 
   ! create integer list for conversion to full basis
-  call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%VALENCE)
+  call typedef_setlist_valence2full(list,vlist,len,ls,ls%input%BASIS%BINFO(VALBASPARAM))
   !Due to the construction of Vbasis from regular basis we need to free some space
   !that is not used in the valence basis - But we do not actually free the basis
   IF(.NOT.ASSOCIATED(ls%SETTING%BASIS(1)%p,ls%input%basis))THEN
@@ -1851,7 +1859,7 @@ type(LowAccuracyStartType)  :: LAStype
   call freeVbasis(ls%input%BASIS)
 
   ! initialize decomp%lcv_CMO
-  nbast = ls%input%BASIS%REGULAR%nbast !full basis nbast 
+  nbast = ls%input%BASIS%BINFO(REGBASPARAM)%nbast !full basis nbast 
   !set setting basis to the full basis
   call set_default_AOs(AORegular,AOdfAux)
 
@@ -1884,7 +1892,7 @@ type(LowAccuracyStartType)  :: LAStype
   CALL typedef_setIntegralSchemeFromInput(LS%INPUT%DALTON,LS%SETTING%SCHEME)
 
   IF(.NOT.config%decomp%cfg_gcbasis)then
-     IF(.NOT.ls%input%basis%REGULAR%DunningsBasis)THEN
+     IF(.NOT.ls%input%basis%BINFO(REGBASPARAM)%DunningsBasis)THEN
         WRITE(config%lupri,*)'Warning: You use trilevel without a GCbasis. This is not'
         WRITE(config%lupri,*)'         recommended and you may be doing something wrong'
         print*,'Warning: You use trilevel without a GCbasis. This is not'
@@ -1897,14 +1905,14 @@ type(LowAccuracyStartType)  :: LAStype
         !we transform the input basis to GCbasis
         ls%setting%integraltransformGC = .FALSE.              
      ELSE
-        IF(ls%input%basis%REGULAR%Gcont)THEN
+        IF(ls%input%basis%BINFO(REGBASPARAM)%Gcont)THEN
            !we transform the input basis to GCbasis
            ls%setting%integraltransformGC = .FALSE.     
         ELSE
            !Segmented contracted Case
            !so we transform back and forth.
            ls%setting%integraltransformGC = .TRUE.
-           IF(.NOT.ls%input%basis%GCtransAlloc)THEN
+           IF(.NOT.ls%input%basis%wbasis(gctbasparam))THEN
               call lsquit('GCtrans not call mem_allocd in trilevel_start',-1)
            ENDIF
         ENDIF
@@ -1913,7 +1921,7 @@ type(LowAccuracyStartType)  :: LAStype
   IF(ls%setting%integraltransformGC.NEQV.integraltransformGC)&
        & CALL LSQUIT('ERROR in integraltransformGC',-1)  
   !This should be obsolete 
-  call determine_nbast(ls%input%MOLECULE,ls%input%BASIS%REGULAR,&
+  call determine_nbast(ls%input%MOLECULE,ls%input%BASIS%BINFO(REGBASPARAM),&
       &ls%setting%scheme%DoSpherical,ls%setting%scheme%uncont)
 
   call io_free(ls%setting%IO)

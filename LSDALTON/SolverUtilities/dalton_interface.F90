@@ -17,6 +17,7 @@ MODULE dal_interface
    use TYPEDEF, only: typedef_setlist_valence2full,getNbasis, &
 		& GCAO2AO_transform_matrixD2,&
                 & ao2gcao_transform_matrixf
+   use basis_typetype,only:VALBasParam
    use dec_typedef_module, only: batchTOorb,DecAObatchinfo
    use Integralparameters
    use AO_TypeType, only: AOITEM
@@ -2164,7 +2165,7 @@ CONTAINS
          IF(incremental_scheme)THEN
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
          ENDIF
-         IF (ls%input%dalton%ADMM_GCBASIS.AND.(ls%input%basis%valence%nAtomtypes.EQ.0)) THEN
+         IF (ls%input%dalton%ADMM_GCBASIS.AND.(ls%input%basis%WBASIS(VALBasParam))) THEN
            call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
          ENDIF
 

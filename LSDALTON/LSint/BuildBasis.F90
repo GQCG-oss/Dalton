@@ -43,7 +43,8 @@ contains
 !> THE BASISSETINFO CAN BE PRINTED WITH 'PRINT_BASISSETINFO'
 !>
 SUBROUTINE Build_BASIS(LUPRI,IPRINT,MOLECULE,BASINFO,BASISSETLIBRARY,&
-     &BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,BASISSETNAME)
+     & BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,iBAS,&
+     & BASISSETNAME)
 implicit none
 !> the logical unit number for the output file
 INTEGER            :: LUPRI
@@ -54,7 +55,7 @@ TYPE(MOLECULEINFO) :: MOLECULE
 !> the basisinfo to be build
 TYPE(BASISSETINFO) :: BASINFO
 !> the basissetlibrary contains info on basisset from molecule file.
-TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
+TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY(nBasisBasParam)
 !> label 'REGULAR  ' or 'AUXILIARY' or 'CABS     ' or 'JKAUX    '
 CHARACTER(len=9)   :: BASISLABEL
 !> if the AOitem should be uncontracted
@@ -65,6 +66,8 @@ LOGICAL            :: SINGLESEGMENT
 LOGICAL            :: doprint
 !> if you want to use spherical basis function (default) or cartesian
 LOGICAL            :: dospherical
+! which basis in BASISSETLIBRARY(nBasisBasParam)
+INTEGER :: iBAS
 !> if you want to disregard the input basis and use own basis use this option
 CHARACTER(len=80),OPTIONAL  :: BASISSETNAME
 !
@@ -73,10 +76,10 @@ REAL(REALK),pointer         :: CHARGES(:)
 LOGICAL,pointer    :: uCHARGES(:)
 TYPE(CAR200),pointer :: BASISDIR(:)
 INTEGER,pointer    :: LEN_BASISDIR(:)
-INTEGER            :: LUBAS,NEND,i,j,k,IPOLST,IAUG,NBASDIR,IBAS,IPOS
+INTEGER            :: LUBAS,NEND,i,j,k,IPOLST,IAUG,NBASDIR,IPOS,iBAS2
 LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge,BASIS_EXIST
 TYPE(CAR200),pointer :: STRING(:)
-INTEGER,pointer  :: BINDEXES(:)
+!INTEGER,pointer  :: BINDEXES(:)
 real(realk)        :: tstart,tend
 integer            :: IT,II,natomtypes,atomtype,MaxCharge,iatom,icharge
 logical,pointer    :: POINTCHARGES(:)
@@ -92,36 +95,33 @@ BASINFO%GCbasis = .FALSE.
 BASINFO%SPHERICAL = DOSPHERICAL
 IF(present(BASISSETNAME))THEN
  BASINFO%Labelindex = 0
- call mem_alloc(BINDEXES,1)
- BINDEXES(1)=1
+! call mem_alloc(BINDEXES,1)
+! BINDEXES(1)=1
  J=1
  BASINFO%DunningsBasis = .FALSE.
  IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
-ELSEIF(BASISSETLIBRARY%nbasissets == 1)THEN
- !This is the case of BASIS OR ALL BASISSETS USING ATOMBASIS IS THE SAME
- BASINFO%Labelindex = 0
- call mem_alloc(BINDEXES,1)
- BINDEXES(1)=1
- J=1
- BASINFO%DunningsBasis = BASISSETLIBRARY%DunningsBasis
- IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
+!ELSEIF(BASISSETLIBRARY(iBas)%nbasissets == 1)THEN
+! !This is the case of BASIS OR ALL BASISSETS USING ATOMBASIS IS THE SAME
+! BASINFO%Labelindex = 0
+!! call mem_alloc(BINDEXES,1)
+!! BINDEXES(1)=1
+! J=1
+! BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
+! IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
 ELSE
- !This is the case of BASIS AND AUXBASIS OR ATOMBASIS
- call mem_alloc(BINDEXES,BASISSETLIBRARY%nbasissets)
- J = BASISSETLIBRARY%nbasissets
- BASINFO%DunningsBasis = .FALSE.
+! call mem_alloc(BINDEXES,BASISSETLIBRARY(iBas)%nbasissets)
+ BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
  SELECT CASE(BASISLABEL)
  CASE('REGULAR  ')
-    BASINFO%Labelindex = 1
-    BASINFO%DunningsBasis = BASISSETLIBRARY%DunningsBasis
+    BASINFO%Labelindex = RegBasParam
  CASE('AUXILIARY')
-    BASINFO%Labelindex = 2
+    BASINFO%Labelindex = AUXBasParam
  CASE('CABS     ')
-    BASINFO%Labelindex = 3
+    BASINFO%Labelindex = CABBasParam
  CASE('JKAUX    ')
-    BASINFO%Labelindex = 4
+    BASINFO%Labelindex = JKBasParam
  CASE('VALENCE  ')
-    BASINFO%Labelindex = 5
+    BASINFO%Labelindex = VALBasParam
     call LSQUIT('VALENCE no legal keyword in Build_Basis.',lupri)  
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
@@ -129,11 +129,11 @@ ELSE
     WRITE (LUPRI,'(a80)') ' maybe it is not implemented yet.'
     CALL LSQUIT('Illegal keyword in Build_Basis.',lupri)  
  END SELECT
- CALL UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEXES,J)
+ J = BASISSETLIBRARY(iBas)%nbasissets
  IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
  IF(IPRINT .GT. 5)THEN
   DO I=1,J  
-   WRITE(LUPRI,'(A18,2X,A20)')'BUILD BASIS FOR ',BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))
+   WRITE(LUPRI,'(A18,2X,A20)')'BUILD BASIS FOR ',BASISSETLIBRARY(iBas)%BASISSETNAME(I)
   ENDDO
  ENDIF
 ENDIF
@@ -168,7 +168,7 @@ DO I=1,J
     ENDDO
     call mem_dealloc(uCHARGES)    
  ELSE
-   k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+   k=BASISSETLIBRARY(iBas)%nCharges(I)
  ENDIF
  natomtypes = natomtypes + k
 ENDDO
@@ -179,8 +179,8 @@ atomtype = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
 !  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
-!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY(iBas),CHARGES,k)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY(iBas),CHARGES,k)
   DO II=1,k
    BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETNAME
   ENDDO
@@ -191,14 +191,14 @@ DO I=1,J
    ENDDO
   ENDIF
  ELSE
-  k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+  k=BASISSETLIBRARY(iBas)%nCharges(I)
   DO II=1,k
-   BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))
+   BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETLIBRARY(iBas)%BASISSETNAME(I)
   ENDDO
   IF(IPRINT .GT. 5)THEN 
    WRITE(LUPRI,*)'UNIQUE CHARGES FOR BASISSET',BASINFO%ATOMTYPE(atomtype+k)%NAME
    DO IT=1,K
-    WRITE(LUPRI,*)'CHARGE(IT):',BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+    WRITE(LUPRI,*)'CHARGE(IT):',BASISSETLIBRARY(iBas)%CHARGES(I,IT)
    ENDDO
   ENDIF
  ENDIF
@@ -206,8 +206,8 @@ DO I=1,J
   CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETNAME,IAUG)
   CALL DETERMINE_POLARIZATION(LUPRI,BASISSETNAME,POLFUN,IPOLST)
   NEND = INDEX(BASISSETNAME,' ') - 1
-  DO IBAS=1,NBASDIR
-    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETNAME(1:NEND)//' '
+  DO IBAS2=1,NBASDIR
+    STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETNAME(1:NEND)//' '
   ENDDO
   IF(BASISSETNAME(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
@@ -215,13 +215,13 @@ DO I=1,J
      pointcharge=.FALSE.
   ENDIF
  ELSE
-  CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),IAUG)
-  CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),POLFUN,IPOLST)
-  NEND = INDEX(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),' ') - 1
-  DO IBAS=1,NBASDIR
-    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:NEND)//' '
+  CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),IAUG)
+  CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),POLFUN,IPOLST)
+  NEND = INDEX(BASISSETLIBRARY(iBas)%BASISSETNAME(I),' ') - 1
+  DO IBAS2=1,NBASDIR
+    STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:NEND)//' '
   ENDDO
-  IF(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:11).EQ.'pointcharge')THEN
+  IF(BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
   ELSE
      pointcharge=.FALSE.
@@ -235,7 +235,7 @@ DO I=1,J
        ENDDO
     ELSE
        DO II=1,k
-          BASINFO%ATOMTYPE(atomtype+II)%Charge = NINT(BASISSETLIBRARY%CHARGES(BINDEXES(I),II))
+          BASINFO%ATOMTYPE(atomtype+II)%Charge = NINT(BASISSETLIBRARY(iBas)%CHARGES(I,II))
           BASINFO%ATOMTYPE(atomtype+II)%nAngmom=0
        ENDDO
     ENDIF
@@ -243,7 +243,7 @@ DO I=1,J
   NEND= INDEX(STRING(1)%p(1:),' ') - 1
   LUBAS=-1
   IF(STRING(1)%p(NEND-10:NEND).EQ.'USERDEFINED')THEN
-     IBAS = 1
+     IBAS2 = 1
      CALL LSOPEN(LUBAS,'MOLECULE.INP','OLD','FORMATTED')
      call FIND_BASIS_IN_MOLFILE(LUPRI,LUBAS) 
   ELSE
@@ -253,19 +253,19 @@ DO I=1,J
        INQUIRE (FILE = STRING(II)%p(1:NEND), EXIST = FILE_EXIST)
        IF (FILE_EXIST) THEN
          BASIS_EXIST = .TRUE.
-         IBAS = II
+         IBAS2 = II
          EXIT
        ENDIF
      ENDDO
      IF(BASIS_EXIST) THEN
-        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(IBAS)%p(1:NEND)
-        CALL LSOPEN(LUBAS,STRING(IBAS)%p(1:NEND),'OLD','FORMATTED')
+        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(IBAS2)%p(1:NEND)
+        CALL LSOPEN(LUBAS,STRING(IBAS2)%p(1:NEND),'OLD','FORMATTED')
      ELSE
         IPOS = INDEX(STRING(1)%p,'/',.TRUE.)+1
         WRITE (LUPRI,'(/,3A)')'Basis "',STRING(1)%p(IPOS:NEND),&
      &    '" doesn''t exist in any of the provided basis-set libraries:'
-        DO IBAS=1,NBASDIR
-          WRITE(LUPRI,'(3X,A)') BASISDIR(IBAS)%p
+        DO IBAS2=1,NBASDIR
+          WRITE(LUPRI,'(3X,A)') BASISDIR(IBAS2)%p
         ENDDO
         CALL LSQUIT('Non-existing basis set in Linsca Integral',lupri)
      ENDIF
@@ -277,22 +277,22 @@ DO I=1,J
      ENDDO
   ELSE
      DO IT=1,k
-        POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
+        POINTCHARGES(IT) = BASISSETLIBRARY(iBas)%POINTCHARGES(I,IT)
      ENDDO     
   ENDIF
   IF(present(BASISSETNAME))THEN
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
+        &CONTRACTED,STRING(IBAS2)%p,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
         &k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ELSE
    call mem_alloc(CHARGES,k)
    DO IT=1,k
-    CHARGES(IT) = BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+    CHARGES(IT) = BASISSETLIBRARY(iBas)%CHARGES(I,IT)
 !    BASINFO%ATOMTYPE(atomtype+IT)%Charge = CHARGES(IT)
    ENDDO
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,&
+        &CONTRACTED,STRING(IBAS2)%p,IAUG,POLFUN,IPOLST,BASINFO,&
         &CHARGES,k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ENDIF
@@ -302,12 +302,12 @@ DO I=1,J
  ENDIF
 ENDDO
 BASINFO%nChargeindex = 0  
-CALL ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY)
+CALL ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY(iBas))
 CALL DETERMINE_NBAST(MOLECULE,BASINFO,DOSPHERICAL,.FALSE.)
 
 IF(IPRINT .GT. 5) CALL PRINT_BASISSETINFO(LUPRI,BASINFO)
 
-call mem_dealloc(BINDEXES)
+!call mem_dealloc(BINDEXES)
 
 CALL DETERMINE_FAMILYTYPEBASISSET(lupri,iprint,BASINFO)
 
@@ -421,7 +421,7 @@ TYPE(MOLECULEINFO)        :: MOLECULE
 TYPE(BASISSETINFO)        :: BASINFO
 !> contains all info about the input basis from the molecule input file
 TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
-INTEGER                   :: R,itype,J,I,MAXCHARGE,icharge
+INTEGER                   :: R,itype,J,I,MAXCHARGE,icharge,IR
 IF(BASINFO%Labelindex .EQ. 0)THEN
 !  labelindex=0 indicate charge based indexing which means that all atoms 
 !  share the same basisset like 6-31G or cc-pVTZ - this is the case when 
@@ -451,14 +451,23 @@ ELSE
    R = BASINFO%Labelindex
    DO I=1,MOLECULE%natoms
       MOLECULE%ATOM(I)%IDtype(R) = 0
+      IR = MOLECULE%ATOM(I)%basisindex(R)
       IF(MOLECULE%ATOM(I)%pointcharge)THEN
          MOLECULE%ATOM(I)%IDtype(R) = -56
-      ELSE
+      ELSE       
          DO J=1,BASINFO%natomtypes
+!            print*,'iatomtype=',J,'basisindex=IR=',IR,'IATOM=',I
+!            print*,'BASINFO%ATOMTYPE(J)%NAME',BASINFO%ATOMTYPE(J)%NAME
+!            print*,'BASISSETLIBRARY%BASISSETNAME(IR)',BASISSETLIBRARY%BASISSETNAME(IR)
+!            print*,'BASINFO%ATOMTYPE(J)%NAME .EQ.BASISSETLIBRARY%BASISSETNAME(IR)',&
+!                 &BASINFO%ATOMTYPE(J)%NAME .EQ.BASISSETLIBRARY%BASISSETNAME(IR)
             IF(BASINFO%ATOMTYPE(J)%NAME .EQ. &
-                 &BASISSETLIBRARY%BASISSETNAME(MOLECULE%ATOM(I)%basisindex(R))) THEN
+                 &BASISSETLIBRARY%BASISSETNAME(IR)) THEN
+!               print*,'BASINFO%ATOMTYPE(J)%Charge',BASINFO%ATOMTYPE(J)%Charge
+!               print*,'INT(Molecule%Atom(I)%Charge)',INT(Molecule%Atom(I)%Charge)
                IF(BASINFO%ATOMTYPE(J)%Charge .EQ. INT(Molecule%Atom(I)%Charge))THEN
                   MOLECULE%ATOM(I)%IDtype(R) = J
+!                  print*,'MOLECULE%ATOM(I)%IDtype(R) = J = ',J
                ENDIF
             ENDIF
          ENDDO
@@ -562,65 +571,6 @@ DO IBAS=1,NBASDIR
   IF (doprint) WRITE(LUPRI,'(3X,A)') BASDIR(IBAS)%p
 ENDDO
 END SUBROUTINE GET_BASISSET_LIBS
-
-!> \brief DETERMINE NAMES OF AND NUMBER OF UNIQUE BASISSETS 
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEX,b)
-implicit none
-TYPE(MOLECULEINFO) :: MOLECULE
-CHARACTER(len=9)   :: BASISLABEL
-INTEGER            :: I,J,LUPRI,BINDEX(:),K,b
-LOGICAL            :: NEWBASIS
-
-K=0
-SELECT CASE(BASISLABEL)
-CASE('REGULAR  ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'REGULAR  ') K=I
-   ENDDO
-CASE('AUXILIARY')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'AUXILIARY') K=I
-   ENDDO
-CASE('CABS     ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'CABS     ') K=I
-   ENDDO
-CASE('JKAUX    ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'JKAUX    ') K=I
-   ENDDO
-CASE DEFAULT
-   WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
-   WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
-   WRITE (LUPRI,'(a80)') ' maybe it is not implemented yet.'
-   CALL LSQUIT('Illegal keyword in Build_Basis.',lupri)  
-END SELECT
-
-IF(K==0)THEN
-   print*,'BASISLABEL',BASISLABEL
-   write(lupri,*)'BASISLABEL',BASISLABEL
-   CALL LSQUIT('Something wrong in Unique_basissets TK',lupri)
-ENDIF
-
-DO I=1,MOLECULE%nAtoms
-   IF(I == 1) THEN
-     BINDEX(1)=MOLECULE%ATOM(I)%basisindex(K)
-     b=1
-   ELSE
-      NEWBASIS=.TRUE.
-      DO J=1,b 
-         IF(MOLECULE%ATOM(I)%basisindex(K) == BINDEX(J)) NEWBASIS=.FALSE.
-      ENDDO
-      IF(NEWBASIS) THEN
-         b=b+1
-         BINDEX(b)=MOLECULE%ATOM(I)%basisindex(K)
-      ENDIF
-   ENDIF
-ENDDO
-       
-END SUBROUTINE UNIQUE_BASISSETS
 
 !> \brief DETERMINE NUMBER OF UNIQUE CHARGES
 !> \author T. Kjaergaard

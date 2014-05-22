@@ -446,7 +446,6 @@ contains
           read(input,*) DECinfo%MPIgroupsize
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
 
 
 #ifndef VAR_MPI
@@ -489,7 +488,7 @@ contains
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
+       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -497,24 +496,42 @@ contains
        case('.FRAGREDMODEL') 
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+#endif
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
-       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12')
+#ifdef MOD_UNRELEASED
+          DECinfo%F12=.true.; doF12 = .TRUE.
+#else
+          call lsquit('F12 not released',-1)
+#endif
        case('.F12DEBUG')     
+#ifdef MOD_UNRELEASED
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-          !endif mod_unreleased
+#else
+          call lsquit('F12 not released',-1)
+#endif
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
        case('.INTERACTIONENERGY')     
+#ifdef MOD_UNRELEASED
           !Calculate the Interaction energy (add ref to article) 
           DECinfo%InteractionEnergy       = .true.
+#else
+          call lsquit('.INTERACTIONENERGY not released',-1)
+#endif
        case('.PRINTINTERACTIONENERGY')     
+#ifdef MOD_UNRELEASED
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
           DECinfo%full_print_frag_energies=.true.
+#else
+          call lsquit('.PRINTINTERACTIONENERGY not released',-1)
+#endif
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     
@@ -588,7 +605,6 @@ contains
           read(input,*) DECinfo%EerrFactor
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
-#endif
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&

@@ -966,7 +966,9 @@ contains
 
       !allocate the arrays correctly
       if( .not. AddToBuffer )then
+
         call mem_alloc(inf%iaos,inf%n)
+
         if (inf%s_associated) then
           call mem_alloc(inf%s1,inf%ns1,inf%red1)
           call mem_alloc(inf%s2,inf%red2,inf%ns2)
@@ -1145,7 +1147,7 @@ contains
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
-
+#ifdef MOD_UNRELEASED
   !> Purpose: Get job list to have a good load balance in the
   !           main loop of the MO-CCSD residual calculations
   !
@@ -1250,7 +1252,7 @@ contains
     call mem_dealloc(work_in_node)
 
   end subroutine get_mo_ccsd_joblist
-
+#endif
 
   !> \brief get a suitable job distribution in mpi calculations
   !> \author Patrick Ettenhuber
@@ -1922,6 +1924,7 @@ contains
 
   end subroutine mpibcast_dec_settings
 
+#ifdef MOD_UNRELEASED
   !> Purpose: Communicate data to the slaves needed to get MO integral.
   !           get_packed_gmo routine.
   !
@@ -2096,7 +2099,7 @@ contains
     endif
 
   end subroutine mpi_communicate_moccsd_data
-
+#endif
 
   !> \brief Copy DEC setting structure to buffer (master)
   !> or read from buffer (slave)

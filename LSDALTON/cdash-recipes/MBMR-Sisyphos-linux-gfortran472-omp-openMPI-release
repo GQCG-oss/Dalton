@@ -22,11 +22,13 @@ export MATH_ROOT=/lib64/atlas
 
 cd build
 make release
-#this creates a tar file named DALTON-2013.1-Source.tar.gz
-tar -zxvf DALTON-2013.1-Source.tar.gz
-cd DALTON-2013.1-Source
+#this creates a tar file named DALTON-2013.2-Source.tar.gz
+if [[ -e  DALTON-2013.2-Source.tar.gz ]]; then
+ tar -zxvf DALTON-2013.2-Source.tar.gz
+ cd DALTON-2013.2-Source
 
-./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
-cd build
-ctest -D Nightly -L linsca
+ ./setup --fc=mpif90 --cc=mpicc --cxx=mpic++ --omp --mpi --timing -D BUILDNAME="MBMR-Sisyphos-linux-gfortran472-omp-openMPI-release" build
+ cd build
+ ctest -D Nightly -L linsca
+fi
 exit 0

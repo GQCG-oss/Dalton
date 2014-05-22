@@ -427,21 +427,21 @@ C
 C        Starting Calculations depending on angpso or not
 C        
          KJ = KJ+1 
-         IF (KEY.EQ.'ANGP') THEN 
+         IF (KEY.EQ.'ANGP') THEN
             CALL ANGPSO(WORK(KCMO),LWORK,JIMPRT,LISTA1(IDIP),
-     $                 LISTA1(IDIP+3),SNDPRP)
+     $      LISTA1(IDIP+3),SNDPRP)
             IF (JIMPRT.GE.2) THEN
                WRITE (LUPRI,'(1A,I2,5A,F20.12)')
-     &      '#',KJ,' Expectation Value for Operator : < ',LISTA1(IDIP),
-     &         '.',LISTA1(IDIP+3),' > = ',SNDPRP
+     &         '#',KJ,' Expectation Value for Operator : < ',
+     &         LISTA1(IDIP), '.',LISTA1(IDIP+3),' > = ',SNDPRP
             ENDIF
          ELSE 
             CALL PRP1AVE(LISTA1(IDIP),SNDPRP,WORK(KCMO),WORK(KUDV),
-     $                   WORK(KWRKG1),LWRKG1,JIMPRT)
+     $      WORK(KWRKG1),LWRKG1,JIMPRT)
             IF (JIMPRT.GE.2) THEN
                WRITE (LUPRI,'(1A,I2,3A,F20.12)')
-     &      '#',KJ,' Expectation Value for Operator : < ',LISTA1(IDIP),
-     &         ' > = ',SNDPRP
+     &         '#',KJ,' Expectation Value for Operator : < ',
+     &         LISTA1(IDIP), ' > = ',SNDPRP
             ENDIF
          ENDIF
 C

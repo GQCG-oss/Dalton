@@ -289,7 +289,8 @@ C this is for print section
 #include "nuclei.h"
 C
 C
-
+      LOGICAL PING
+      PING=.FALSE.
 cv      write(lupri,*)'@ LRSCDRV : '
 
       IF (LRESCALL) THEN
@@ -306,7 +307,13 @@ C
       IF (SIGMAD0S) THEN
          CALL AVELRSC('FCAV',WORK,LWORK) ! ANDA
          CALL AVELRSC('DIAK',WORK,LWORK) ! ANDA 
-         CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+         IF(NORBT.NE.NBAST) Then 
+            PING = .TRUE.
+            write(lupri,*)' WARNING : @ANGPSO (NORBT.NE.NBAST) :',
+     &      ' AngPso not computed due to basis set dependencies'
+         ELSE
+            CALL AVELRSC('ANGP',WORK,LWORK) ! ANGPSO testing ! should work!
+         ENDIF
       END IF
 
 C 
@@ -531,8 +538,13 @@ c         WRITE(LUPRI,'(/721A1/)')('=',I=1,35)
               WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
      &       'DiaKin :',LRDIAK(1,1),LRDIAK(2,2),LRDIAK(3,3),aa,' [ppm]'
               aa = (LRANGP(1,1) + LRANGP(2,2) + LRANGP(3,3))/3.0
-              WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
-     &       'AngPso :',LRANGP(1,1),LRANGP(2,2),LRANGP(3,3),aa,' [ppm]'
+              IF (PING) THEN 
+              WRITE (LUPRI,'(10X,A,15X,A,6X,A,6X,A,6X,A)')
+     &        'AngPso :','not calc','not calc','not calc','see WARNING'
+              ELSE 
+               WRITE (LUPRI,'(10X,A,9X,F13.5,X,F13.5,X,F13.5,F13.5,A)')
+     &        'AngPso :',LRANGP(1,1),LRANGP(2,2),LRANGP(3,3),aa,' [ppm]'
+              ENDIF
             ENDIF
          ENDIF
          IF(SIGMAD1S) THEN 

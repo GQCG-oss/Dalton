@@ -221,6 +221,7 @@ IMPLICIT NONE
 TYPE(MOLECULEINFO),intent(INOUT)  :: MOLECULE
 !
 character(len=22) :: label
+integer :: i
 
 call mem_alloc(molecule%ATOM,1)
 molecule%nAtoms=1
@@ -254,13 +255,11 @@ molecule%ATOM(1)%CENTER(2)=0_realk
 molecule%ATOM(1)%CENTER(3)=0_realk
 molecule%ATOM(1)%Atomic_number=0
 molecule%ATOM(1)%Charge=0_realk
-molecule%ATOM(1)%nbasis=0
-molecule%ATOM(1)%basislabel(1)='None'
-molecule%ATOM(1)%basislabel(2)='None'
-molecule%ATOM(1)%Basisindex(1)=0
-molecule%ATOM(1)%Basisindex(2)=0
-molecule%ATOM(1)%IDtype(1)=0
-molecule%ATOM(1)%IDtype(2)=0
+do i=1,nBasisBasParam
+   molecule%ATOM(1)%basislabel(i)='None'
+   molecule%ATOM(1)%Basisindex(i)=0
+   molecule%ATOM(1)%IDtype(i)=0
+enddo
 molecule%ATOM(1)%phantom=.FALSE.
 molecule%ATOM(1)%Pointcharge=.FALSE.
 molecule%ATOM(1)%molecularIndex=0
@@ -291,7 +290,7 @@ TYPE(MOLECULEINFO),intent(INOUT) :: pointmolecule
 integer,intent(in) :: lupri,N
 real(realk) :: R(3,N)
 !
-Integer :: I
+Integer :: I,J
 
 call mem_alloc(pointmolecule%ATOM,N)
 pointmolecule%nAtoms=N
@@ -325,13 +324,11 @@ DO I=1,N
    pointmolecule%ATOM(I)%CENTER(3)=R(3,I)
    pointmolecule%ATOM(I)%Atomic_number=0
    pointmolecule%ATOM(I)%Charge=-1.d0
-   pointmolecule%ATOM(I)%nbasis=0
-   pointmolecule%ATOM(I)%basislabel(1)='XXXXXXXXX'
-   pointmolecule%ATOM(I)%basislabel(2)='XXXXXXXXX'
-   pointmolecule%ATOM(I)%Basisindex(1)=0
-   pointmolecule%ATOM(I)%Basisindex(2)=0
-   pointmolecule%ATOM(I)%IDtype(1)=0
-   pointmolecule%ATOM(I)%IDtype(2)=0
+   do j=1,nBasisBasParam
+      pointmolecule%ATOM(I)%basislabel(j)='XXXXXXXXX'
+      pointmolecule%ATOM(I)%Basisindex(j)=0
+      pointmolecule%ATOM(I)%IDtype(j)=0
+   enddo
    pointmolecule%ATOM(I)%phantom=.FALSE.
    pointmolecule%ATOM(I)%Pointcharge=.FALSE.
    pointmolecule%ATOM(I)%molecularIndex=1
@@ -363,7 +360,7 @@ TYPE(MOLECULEINFO),intent(INOUT) :: molecule
 integer,intent(in) :: lupri,N
 real(realk) :: coord(3,N),charge(N)
 !
-Integer :: I
+Integer :: I,j
 character(len=22) :: string22
 character(len=9) :: stringA9,stringB9
 character(len=4) :: string4
@@ -386,13 +383,14 @@ DO I=1,N
    molecule%ATOM(I)%CENTER(3)=coord(3,I)
    molecule%ATOM(I)%Atomic_number=0
    molecule%ATOM(I)%Charge=charge(I)
-   molecule%ATOM(I)%nbasis=1
-   molecule%ATOM(I)%basislabel(1)=stringA9
-   molecule%ATOM(I)%basislabel(2)=stringB9
-   molecule%ATOM(I)%Basisindex(1)=1
-   molecule%ATOM(I)%Basisindex(2)=0
-   molecule%ATOM(I)%IDtype(1)=0
-   molecule%ATOM(I)%IDtype(2)=0
+   do j=1,nBasisBasParam
+      molecule%ATOM(I)%basislabel(j)=stringB9
+      molecule%ATOM(I)%Basisindex(j)=1
+      molecule%ATOM(I)%IDtype(j)=0
+   enddo
+   molecule%ATOM(I)%basislabel(RegBasParam)=stringA9
+   molecule%ATOM(I)%Basisindex(RegBasParam)=1
+   molecule%ATOM(I)%IDtype(RegBasParam)=0
    molecule%ATOM(I)%phantom=.FALSE.
    molecule%ATOM(I)%Pointcharge=.FALSE.
    molecule%ATOM(I)%molecularIndex=I
@@ -492,8 +490,7 @@ FRAGMENT%ATOM(J)%CENTER(2)=MOLECULE%ATOM(I)%CENTER(2)
 FRAGMENT%ATOM(J)%CENTER(3)=MOLECULE%ATOM(I)%CENTER(3)
 FRAGMENT%ATOM(J)%Atomic_number=MOLECULE%ATOM(I)%Atomic_number
 FRAGMENT%ATOM(J)%Charge=MOLECULE%ATOM(I)%Charge
-FRAGMENT%ATOM(J)%nbasis=MOLECULE%ATOM(I)%nbasis
-do K = 1,MOLECULE%ATOM(I)%nbasis
+do K = 1,nBasisBasParam
    FRAGMENT%ATOM(J)%basislabel(K)=MOLECULE%ATOM(I)%basislabel(K)
    FRAGMENT%ATOM(J)%Basisindex(K)=MOLECULE%ATOM(I)%Basisindex(K)
    FRAGMENT%ATOM(J)%IDtype(K)=MOLECULE%ATOM(I)%IDtype(K)

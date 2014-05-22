@@ -808,6 +808,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #endif
 
+#ifdef MOD_UNRELEASED
     if (mo_ccsd) then 
        call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
             & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,fock,ppfock,&
@@ -817,6 +818,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
             & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
     end if
+#else
+    call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
+         & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+         & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
+#endif
 
   end subroutine ccsd_residual_wrapper
 
@@ -4228,6 +4234,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     if (DECinfo%MOCCSD) mo_ccsd = .true.
     if (DECinfo%force_scheme) scheme=DECinfo%en_mem
 
+#ifdef MOD_UNRELEASED
     ! The two if statments are necessary as mo_ccsd might become false
     ! after the first statement (if not enought memory).
     if (mo_ccsd) then
@@ -4236,6 +4243,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            & MyFragment%MyLsItem,mpi_split)
       ntasks = nMObatch*(nMObatch+1)/2
     end if
+#endif
 
     if (.not.mo_ccsd) then 
       iter=1
@@ -5429,7 +5437,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
   end subroutine print_ccsd_full_occ
 
-
+#ifdef MOD_UNRELEASED
   !============================================================================!
   !                   MO-based CCSD residual subroutines                       !
   !============================================================================!
@@ -5501,7 +5509,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> MPI info:
     integer, pointer :: joblist(:)
     logical :: master
-    integer(kind=ls_mpik) :: tile_master, myrank, nnod, mode
+    integer(kind=ls_mpik) :: tile_master, myrank, nnod
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -5544,7 +5552,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     nnod          = 1
     master        = .true.
 #ifdef VAR_MPI
-    mode        = MPI_MODE_NOCHECK
     myrank        = infpar%lg_mynum
     nnod          = infpar%lg_nodtot
     master        = (myrank == infpar%master)
@@ -5698,12 +5705,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      omega2%itype = DENSE
      govov%itype  = DENSE
    end if
-
-   ! lock all windows in PDM integral array for get tiles in main loop
-   if (.not.local_moccsd) then
-     call arr_lock_wins(pgmo_diag,'s',mode)
-     if (Nbat>1) call arr_lock_wins(pgmo_up,'s',mode)
-   end if 
 #endif
     if (iter==1) call array_zero(govov)
     call array_zero(omega2)
@@ -5743,14 +5744,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                          & govov%elm1,gvoov,gvvoo,govoo,gvooo,tmp0,tmp1,tmp2)
 
     end do BatchPQ
- 
-#ifdef VAR_MPI
-   ! unlock all windows in PDM integral array for get tiles in main loop
-   if (.not.local_moccsd) then
-     call arr_unlock_wins(pgmo_diag)
-     if (Nbat>1) call arr_unlock_wins(pgmo_up)
-   end if 
-#endif
 
     call LSTIMER('MO-CCSD main loop',tcpu1,twall1,DECinfo%output)
 
@@ -6862,6 +6855,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call mem_dealloc(tmp1)
 
   end subroutine get_E2_and_permute
+#endif
 
   subroutine ccsd_debug_print(ccmodel,print_nr,master,local,&
         &scheme,print_debug,o2v2,w1,omega2,govov,gvvooa,gvoova)
@@ -7212,6 +7206,7 @@ subroutine get_master_comm_proc_to_wrapper
 end subroutine get_master_comm_proc_to_wrapper
 
 
+#ifdef MOD_UNRELEASED
 !> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO-CCSD residual.
@@ -7321,4 +7316,5 @@ subroutine moccsd_data_slave()
     call memory_deallocate_array_dense(govov)
   end if
 end subroutine moccsd_data_slave
+#endif
 #endif

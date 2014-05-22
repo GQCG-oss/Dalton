@@ -1084,10 +1084,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -1188,10 +1188,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -1233,10 +1233,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -2365,15 +2365,15 @@ INTEGER,pointer   :: UATOM(:)
 TYPE(BASISSETINFO),pointer :: BASIS
 
 IF(AORdefault.EQ.AOregular)THEN
-   BASIS => SETTING%BASIS(1)%p%REGULAR
+   BASIS => SETTING%BASIS(1)%p%BINFO(RegBasParam)
 ELSEIF(AORdefault.EQ.AOVAL)THEN
-   BASIS => SETTING%BASIS(1)%p%VALENCE
+   BASIS => SETTING%BASIS(1)%p%BINFO(VALBasParam)
 ELSEIF(AORdefault.EQ.AOdfAux)THEN
-   BASIS => SETTING%BASIS(1)%p%AUXILIARY
+   BASIS => SETTING%BASIS(1)%p%BINFO(AuxBasParam)
 ELSEIF(AORdefault.EQ.AOdfJK)THEN
-   BASIS => SETTING%BASIS(1)%p%JK
+   BASIS => SETTING%BASIS(1)%p%BINFO(JKBasParam)
 ELSEIF(AORdefault.EQ.AOdfCABS)THEN
-   BASIS => SETTING%BASIS(1)%p%CABS
+   BASIS => SETTING%BASIS(1)%p%BINFO(CABBasParam)
 ELSE
    CALL LSQUIT('ERROR in BASINF unknown AO',-1)
 ENDIF
@@ -2407,15 +2407,15 @@ ENDDO
 
 MAXNSHELL=0
 MXPRIM=0
-BAS%spherical = SETTING%BASIS(1)%p%REGULAR%spherical
-R = SETTING%BASIS(1)%p%REGULAR%Labelindex
+BAS%spherical = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%spherical
+R = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%Labelindex
 IF(R.EQ. 0)THEN
    I=0
    DO J=1,SETTING%MOLECULE(1)%p%nAtoms
       IF(SETTING%MOLECULE(1)%p%ATOM(J)%pointcharge)CYCLE
       I=I+1
       ICHARGE = INT(SETTING%MOLECULE(1)%p%ATOM(J)%Charge)
-      type = SETTING%BASIS(1)%p%REGULAR%Chargeindex(ICHARGE)
+      type = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%Chargeindex(ICHARGE)
       ATOMtype(I)=type
       !determine MAXNSHELL = number of shells 
       DO K=1,BASIS%ATOMTYPE(type)%nAngmom
