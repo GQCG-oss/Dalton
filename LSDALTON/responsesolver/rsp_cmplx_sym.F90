@@ -7,6 +7,7 @@ module COMPLEXSYMSOLVER
   use RSPSOLVER
   use RSPSYMSOLVER
   use COMPLEXSOLVER
+  use COMPLEXNEWSYMSOLVER
   use rsp_util
   use files
   !use configuration
@@ -75,7 +76,7 @@ contains
     type(Matrix), intent(inout) :: XSOL(rsp_number_of_sols) !output solution vectors
     type(Matrix), intent(inout) :: XSOLimg(rsp_number_of_sols) !output img solution vectors
     logical                     :: conv
-    integer                     :: i
+    integer                     :: i,nfreqs
 
 write(molcfg%lupri,*) 'Entering the complex sym rsp solver, gamma=', molcfg%solver%rsp_gamma
 if ((abs(molcfg%solver%rsp_gamma) .LT. 1E-8_realk) .and. (.not. gd_complex)) then
@@ -98,9 +99,16 @@ if ((abs(molcfg%solver%rsp_gamma) .LT. 1E-8_realk) .and. (.not. gd_complex)) the
        call mat_zero(xsolimg(i))
     enddo
 else
-    call symcomplex_solver(molcfg,F,D,S,1,GD,GDI,EIVAL,XSOL,XSOLimg,gd_complex)
+   if (molcfg%solver%rsp_cmplxnew) then
+      call symcomplex_solver(molcfg,F,D,S,1,GD,GDI,EIVAL,XSOL,XSOLimg,gd_complex)
  !  call complex_solver_check(F,D,S,gd(1),XSOLimg(1),XSOL(1),EIVAL(ifreq),&
   !                         & gd_complex,conv,gdi(1))
+   elseif (molcfg%solver%rsp_cpp) then
+      nfreqs=rsp_number_of_omegas
+      call new_symcomplex_solver(molcfg,F,D,S,1,nfreqs,GD,GDI,EIVAL,XSOL,XSOLimg,gd_complex)
+   else
+      write(molcfg%solver%rsp_cpp,*) 'The code should terminate'
+   endif
 endif
     
     end subroutine rsp_sym_complex_solver   
