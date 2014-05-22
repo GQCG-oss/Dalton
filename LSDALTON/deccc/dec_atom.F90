@@ -35,8 +35,9 @@ module atomic_fragment_operations
   ! F12 DEPENDENCIES 
   ! *****************************************
   use CABS_operations
+#ifdef MOD_UNRELEASED
   use f12_routines_module
-
+#endif
 contains
 
 
@@ -432,6 +433,7 @@ contains
   subroutine atomic_fragment_init_f12(fragment, MyMolecule)
     type(fullmolecule), intent(in) :: MyMolecule
     type(decfrag), intent(inout) :: fragment
+#ifdef MOD_UNRELEASED
 
     !> F12 Specific Variables
     integer :: nbasis, noccEOS, nunoccEOS, noccfull, nocvAOS, nvirtAOS, ncabsAO, ncabsMO
@@ -563,6 +565,7 @@ contains
        print *,"norm2D(fragment%Fcp)" , norm2D(fragment%Fcp) 
        print *, "---------------------------------------"
     endif
+#endif
 
   end subroutine atomic_fragment_init_f12
 

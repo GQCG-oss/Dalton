@@ -738,6 +738,7 @@ contains
   end subroutine get_AO_K
 
 
+#ifdef MOD_UNRELEASED
   !> Purpose: calculate AO int. in batches and transform them to
   !           full MO basis (non T1-transformed)
   !           The batches are then packed using permutational
@@ -2103,6 +2104,7 @@ contains
     end if
   
   end subroutine unpack_gmo
+#endif
 
   subroutine get_mo_integral_par(integral,trafo1,trafo2,trafo3,trafo4,mylsitem,local,collective,order)
      implicit none
@@ -2478,7 +2480,8 @@ contains
   end module ccintegrals
 
 #ifdef VAR_MPI
-  !> Purpose: Intermediate routine for the slaves, they get data
+#ifdef MOD_UNRELEASED
+!> Purpose: Intermediate routine for the slaves, they get data
 !           from the local master and then call the routine to 
 !           calculate MO integrals (non-T1 transformed)
 !
@@ -2533,6 +2536,7 @@ subroutine cc_gmo_data_slave()
   end if
 
 end subroutine cc_gmo_data_slave
+#endif
 
 subroutine get_mo_integral_par_slave()
    use dec_typedef_module

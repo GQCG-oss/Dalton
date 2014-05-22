@@ -3,6 +3,9 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module f12_routines_module
+
+#ifdef MOD_UNRELEASED
+
   use fundamental
   use precision
   use typedeftype!, only:lsitem
@@ -16,12 +19,9 @@ module f12_routines_module
   ! *****************************************
   use CABS_operations
 
-#ifdef MOD_UNRELEASED
   use full_f12contractions
-#endif 
   use ccintegrals  
  
-
   public :: MO_transform_AOMatrix, get_F12_mixed_MO_Matrices_real, get_F12_mixed_MO_Matrices, free_F12_mixed_MO_Matrices, &
        & free_F12_mixed_MO_Matrices_real, norm1D, norm2D, norm4D,&
        & F12_RI_transform_realMat, F12_CABS_transform_realMat, get_mp2f12_MO ! atomic_fragment_free_f12, atomic_fragment_init_f12
@@ -34,8 +34,10 @@ module f12_routines_module
      integer :: n1
      integer :: n2
   END TYPE ctype
+#endif
   
 contains
+#ifdef MOD_UNRELEASED
   function norm1D(A)
     implicit none
     real(realk), intent(in) :: A(:)
@@ -1023,5 +1025,14 @@ contains
     call mem_dealloc(batch2orbAlpha)
 
   end subroutine free_batch
+
+#else
+
+   subroutine dummy_f12_routines()
+     implicit none
+ 
+   end subroutine dummy_f12_routines
+
+#endif 
 
 end module f12_routines_module

@@ -12,6 +12,8 @@
 
 module f12_integrals_module 
 
+#ifdef MOD_UNRELEASED 
+
 #ifdef VAR_MPI   
   use infpar_module
   use lsmpi_type
@@ -64,8 +66,10 @@ module f12_integrals_module
   public :: get_f12_fragment_energy, matrix_print_4d, matrix_print_2d, get_mp2f12_sf_E21
 
   private
+#endif
 
 contains
+#ifdef MOD_UNRELEASED 
   !> Brief: Gives the single fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
@@ -1554,6 +1558,13 @@ contains
 
   end subroutine get_mp2f12_pf_E23
 
+#else
+   subroutine dummy_f12_integrals()
+     implicit none
+
+   end subroutine dummy_f12_integrals
+
+#endif
 
 end module f12_integrals_module
 

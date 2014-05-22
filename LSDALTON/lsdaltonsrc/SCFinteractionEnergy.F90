@@ -64,14 +64,13 @@ CONTAINS
     integer :: I,J,R,jcharge,jtype,norbJ,nOrbI,itype,icharge,iOrb,jOrb
     integer :: restart_lun,dens_lun
     logical :: CFG_restart,CFG_purifyrestart,dens_exsist,OnMaster,gcbasis
-    logical :: MakeSubSetDensity
     type(matrix) :: D1(1),TMP
     real(realk),pointer :: Dfull(:,:),D1full(:,:)
     Character(len=80) :: SubIndexString(2)
 
     !Get SubSystem1 Density matrix as part of full D
     !or build new from scratch
-    MakeSubSetDensity = .TRUE.
+    !config%SubSystemDensity
     !The SubSetDensity does seem to be closer to the right 
     !Density - better energy and smaller gradient 
     !but for some reason it converges in more iterations
@@ -104,28 +103,28 @@ CONTAINS
 
     WRITE(lupri,*)'Subsystem ',TRIM(SubIndexString(SubIndex))
     CALL PRINT_MOLECULEINFO(LUPRI,ls%input%MOLECULE,ls%input%BASIS,ls%input%DALTON%MOLPRINT)
-    CALL PRINT_MOLECULE_AND_BASIS(LUPRI,ls%input%MOLECULE,ls%input%BASIS%REGULAR)
+    CALL PRINT_MOLECULE_AND_BASIS(LUPRI,ls%input%MOLECULE,ls%input%BASIS%BINFO(REGBASPARAM))
 
     IF(config%decomp%nactive.NE.0)call lsquit('counter poise require closed shell',-1)
     
-    IF(MakeSubSetDensity)THEN
-       nbast = D(1)%nrow
+    nbast = D(1)%nrow
+    IF(config%SubSystemDensity)THEN
        call mem_alloc(Dfull,nbast,nbast)
        call mem_alloc(D1full,nbast,nbast)
        call mat_to_full(D(1),1.0E0_realk,Dfull)
        call ls_dzero(D1full,nbast*nbast)
        !Get SubSystem1 Density matrix as part of full D
-       R = ls%input%basis%regular%labelindex
+       R = ls%input%basis%binfo(RegBasParam)%labelindex
        nbast2 = 0
        do j=1, nAtoms
           IF(ls%input%MOLECULE%ATOM(j)%pointcharge)CYCLE
           IF(R.EQ.0)THEN
              jcharge = INT(ls%input%MOLECULE%ATOM(j)%charge) 
-             jtype = ls%input%basis%regular%chargeindex(jcharge)
+             jtype = ls%input%basis%binfo(RegBasParam)%chargeindex(jcharge)
           ELSE
              jtype = ls%input%MOLECULE%ATOM(j)%IDtype(1)
           ENDIF
-          norbJ = ls%input%basis%regular%ATOMTYPE(jtype)%ToTnorb
+          norbJ = ls%input%basis%binfo(RegBasParam)%ATOMTYPE(jtype)%ToTnorb
           IF(ls%input%Molecule%Atom(j)%SubSystemIndex.EQ.subIndex)THEN
              
              nbast1 = 0
@@ -133,11 +132,11 @@ CONTAINS
                 IF(ls%input%MOLECULE%ATOM(i)%pointcharge)CYCLE
                 IF(R.EQ.0)THEN
                    icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
-                   itype = ls%input%basis%regular%chargeindex(icharge)
+                   itype = ls%input%basis%binfo(RegBasParam)%chargeindex(icharge)
                 ELSE
                    itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
                 ENDIF
-                norbI = ls%input%basis%regular%ATOMTYPE(itype)%ToTnorb
+                norbI = ls%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%ToTnorb
                 IF(ls%input%Molecule%Atom(i)%SubSystemIndex.EQ.subIndex)THEN
                    
                    do jOrb=1, nOrbJ
@@ -163,7 +162,7 @@ CONTAINS
        call mat_init(D1(1),nbast,nbast)
     ENDIF
 
-    IF(MakeSubSetDensity)THEN
+    IF(config%SubSystemDensity)THEN
        INQUIRE(file='dens.restart',EXIST=dens_exsist) 
        IF(dens_exsist)THEN
           restart_lun = -1  !initialization
@@ -197,14 +196,19 @@ CONTAINS
        config%diag%CFG_restart = .TRUE.
        config%diag%CFG_purifyrestart = .TRUE.
        !Get Energy
+    ELSE
+       !restart density should not be used - this is the full density
+       CFG_restart = config%diag%CFG_restart
+       CFG_purifyrestart = config%diag%CFG_purifyrestart
+       config%diag%CFG_restart = .FALSE.
+       config%diag%CFG_purifyrestart = .FALSE.
     ENDIF
 
     call Get_Energy(Esub,Etmp,config,H1,F,D1,S,ls,CMO,Natoms,lupri,luerr)
 
-    IF(MakeSubSetDensity)THEN
-       config%diag%CFG_restart = CFG_restart
-       config%diag%CFG_purifyrestart = CFG_purifyrestart
-
+    config%diag%CFG_restart = CFG_restart
+    config%diag%CFG_purifyrestart = CFG_purifyrestart
+    IF(config%SubSystemDensity)THEN
        !Revert the dens.restart
        IF(dens_exsist)THEN
           restart_lun = -1  !initialization

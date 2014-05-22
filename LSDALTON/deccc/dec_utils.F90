@@ -4146,11 +4146,13 @@ end function max_batch_dimension
        end if
     else
        IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
           write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
           ! skip error print for full calculation (0 by definition)
           if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
              write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
           end if
+#endif
        ELSE
           IF(.NOT.DECinfo%DFTreference)THEN
              write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
@@ -4202,8 +4204,10 @@ end function max_batch_dimension
           call lsquit('InteractionEnergy and first_order not implemented',-1)
        ENDIF
     else
+#ifdef MOD_UNRELEASED
        write(lupri,'(15X,a,f20.10)') 'I: Interaction Correlation energy  :', Ecorr
        write(lupri,'(15X,a,f20.10)') 'I: Estimated Interaction DEC error :', Eerr
+#endif
     end if
     write(lupri,*)
   end subroutine print_interaction_energy_lupri
@@ -4233,8 +4237,12 @@ end function max_batch_dimension
     write(DECinfo%output,*) '============================================================================='
 
     IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
        CorrEnergyString = 'interaction correlation energy'
        iCorrLen = 30
+#else
+       call lsquit('interaction correlation energy feature not released',-1)
+#endif
     ELSE
        CorrEnergyString = 'correlation energy            '
        iCorrLen = 18
@@ -4476,6 +4484,7 @@ end function max_batch_dimension
 
        write(DECinfo%output,*)
        IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
           if(.not.DECinfo%onlyvirtpart) then  
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied Interaction correlation energy : ', energies(FRAGMODEL_OCCpT)
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order Interaction energy   : ', energies(FRAGMODEL_OCCpT4)
@@ -4486,6 +4495,7 @@ end function max_batch_dimension
              write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT4)
              write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT5)
           end if
+#endif
        ELSE
           if(.not.DECinfo%onlyvirtpart) then  
              write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)

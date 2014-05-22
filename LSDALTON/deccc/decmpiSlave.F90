@@ -67,10 +67,6 @@ subroutine dec_lsmpi_slave(comm)
          call MP2_RI_EnergyContribution_slave
       case(CCSDDATA);
          call ccsd_data_preparation
-      case(CCGETGMO);
-         call cc_gmo_data_slave
-      case(MOCCSDDATA);
-         call moccsd_data_slave
       case(MO_INTEGRAL_SIMPLE);
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);
@@ -80,6 +76,10 @@ subroutine dec_lsmpi_slave(comm)
       case(RPAGETFOCK);
          call rpa_fock_slave
 #ifdef MOD_UNRELEASED 
+      case(CCGETGMO);
+         call cc_gmo_data_slave
+      case(MOCCSDDATA);
+         call moccsd_data_slave
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif
