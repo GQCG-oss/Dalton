@@ -132,10 +132,7 @@ LOGICAL     :: MM_NOSCREEN
 Integer     :: MMunique_ID1
 !*BASIS PARAMETERS
 LOGICAL  :: ATOMBASIS
-LOGICAL  :: BASIS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -283,9 +280,7 @@ INTEGER     :: LU_LUINTR
 INTEGER     :: LU_LUINDM
 INTEGER     :: LU_LUINDR
 !*BASIS PARAMETERS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -418,7 +413,12 @@ Integer,pointer :: fragmentIndex(:)  !Index giving the fragment of each atom
 Integer,pointer :: nAtoms(:) !atoms in each fragment
 Integer,pointer :: AtomicIndex(:,:) !list of atoms in each fragment
 ! First dimension numFragments, second dimension for different basis sets:
-!    1: Regular, 2: DF-Aux, 3: CABS 4: JK 5: VALENCE
+!               (see BasisinfoType.F90)
+!    1: Regular (RegBasParam=1)
+!    2: DF-Aux  (AUXBasParam=2)
+!    3: CABS    (CABBasParam=3)
+!    4: JK      (JKBasParam=4)
+!    5: VALENCE (VALBasParam=5)
 Integer,pointer :: nContOrb(:,:)
 Integer,pointer :: nPrimOrb(:,:)
 Integer,pointer :: nStartContOrb(:,:)

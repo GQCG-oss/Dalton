@@ -132,23 +132,23 @@ end if
     ! basindex = 1 or 2 (2 for auxillary basis sets)
     ! set: integer for describing which basis set is used for atom I.
     ! type: integer for describing the atomtype of atom I.
-    IF(LS%setting%basis(1)%p%regular%labelindex .EQ. 0)THEN
+    IF(LS%setting%basis(1)%p%BINFO(RegBasParam)%labelindex .EQ. 0)THEN
        icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge) 
-       itype = ls%setting%basis(1)%p%regular%chargeindex(icharge)
+       itype = ls%setting%basis(1)%p%BINFO(RegBasParam)%chargeindex(icharge)
     ELSE
        itype = ls%setting%MOLECULE(1)%p%ATOM(i)%IDtype(1)
     ENDIF
-    nAngmom = LS%setting%BASIS(1)%p%REGULAR%ATOMTYPE(itype)%nAngmom
+    nAngmom = LS%setting%BASIS(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%nAngmom
     DO J =1,nAngmom ! Loop over angular moments
-       nsegments=LS%setting%BASIS(1)%p%REGULAR%ATOMTYPE(itype)%SHELL(J)%nsegments
+       nsegments=LS%setting%BASIS(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%SHELL(J)%nsegments
        DO K = 1,nsegments ! Loop over segments in basis set
-          nEXPONENTS = LS%setting%BASIS(1)%p%REGULAR%ATOMTYPE(itype)%SHELL(J)%segment(K)%nrow
-          nORBJ = LS%setting%BASIS(1)%p%REGULAR%ATOMTYPE(itype)%SHELL(J)%segment(K)%ncol
+          nEXPONENTS = LS%setting%BASIS(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%SHELL(J)%segment(K)%nrow
+          nORBJ = LS%setting%BASIS(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%SHELL(J)%segment(K)%ncol
           DO L = 1,nORBJ 
              DO M = 1,nEXPONENTS 
-                coeff = LS%setting%basis(1)%p%REGULAR%ATOMTYPE(itype)%SHELL(J)&
+                coeff = LS%setting%basis(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%SHELL(J)&
                      &%segment(K)%elms(M+(L-1)*nEXPONENTS)
-                exponent = LS%setting%basis(1)%p%REGULAR%ATOMTYPE(itype)%SHELL(J)&
+                exponent = LS%setting%basis(1)%p%BINFO(RegBasParam)%ATOMTYPE(itype)%SHELL(J)&
                      &%segment(K)%exponents(M)
                 GAO(orbnr)=GAO(orbnr)+coeff*EXP(-exponent*R2)
              ENDDO

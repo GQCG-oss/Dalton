@@ -4,6 +4,7 @@
 !> \date 2010-02-21
 MODULE molecule_typetype
 use precision
+use basis_typetype
 !*****************************************
 !*
 !* OBJECT CONTAINING INFORMATION ABOUT THE MOLECULE
@@ -18,10 +19,13 @@ real(realk)       :: Frag    ! Assigned fragment
 real(realk)       :: CENTER(3)
 Integer           :: Atomic_number !Atomic number
 real(realk)       :: Charge        !Atomic Charge
-integer           :: nbasis
-Character(len=9)  :: basislabel(5) !REGULAR,AUXILIARY,CABS,JK,VALENCE
-INTEGER           :: Basisindex(5) !which set in the BASISSETLIBRARY
-INTEGER           :: IDtype(5) !A unique identifier - identifying the type
+!integer           :: nbasis
+!REGULAR,AUXILIARY,CABS,JK,VALENCE,...
+Character(len=9)  :: basislabel(nBasisBasParam) 
+!which set in the BASISSETLIBRARY
+INTEGER           :: Basisindex(nBasisBasParam) 
+!A unique identifier - identifying the type
+INTEGER           :: IDtype(nBasisBasParam) 
 LOGICAL           :: Phantom !true if basisfunction but no actual atom 
 LOGICAL           :: Pointcharge !true if no basis functions
 ! THE FOLLOWING ARE ADDED AFTER BUILD BASIS TO DO PARALLELIZATION

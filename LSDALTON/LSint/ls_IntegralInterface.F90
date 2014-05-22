@@ -16,7 +16,8 @@ MODULE ls_Integral_Interface
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
   use ao_typetype, only: aoitem
   use ao_type, only: free_aoitem
-  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO
+  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO, RegBasParam, &
+       & AUXBasParam,CABBasParam,JKBasParam,VALBasParam,GCTBasParam
   use molecule_typetype, only: MOLECULE_PT, MOLECULEINFO
   use lstensor_typetype, only: lstensor
   use lstensor_operationsmod, only: lstensor_nullify, &
@@ -3720,15 +3721,15 @@ ENDIF
 emptyAO = .false.
 SELECT CASE(AO)
 CASE (AORegular)
-   AObasis => Basis%REGULAR
+   AObasis => Basis%BINFO(RegBasParam)  !Regular Basis
 CASE (AOdfAux)
-   AObasis => Basis%AUXILIARY
+   AObasis => Basis%BINFO(AUXBasParam)  !AUXILIARY Basis
 CASE (AOdfCABS)
-   AObasis => Basis%CABS
+   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis
 CASE (AOdfJK)
-   AObasis => Basis%JK
+   AObasis => Basis%BINFO(JKBasParam)   !JK Basis
 CASE (AOVAL)
-   AObasis => Basis%VALENCE
+   AObasis => Basis%BINFO(VALBasParam)  !VALENCE Basis
 CASE (AOEmpty)
    emptyAO = .true.
    CALL BUILD_EMPTY_AO(AObatch,LUPRI)

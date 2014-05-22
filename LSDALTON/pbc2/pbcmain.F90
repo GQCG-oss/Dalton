@@ -55,11 +55,11 @@ SUBROUTINE set_pbc_molecules(INPUT,SETTING,lupri,luerr,nbast,Dmat,lattice)
 
 
 !!!!!!!!!!!!Information for me
-!!!!! input%Basis%regular%atomtype(:)%shell(:)%segment(1)%exponents(:)
-write(lupri,*) 'shells ',input%Basis%regular%atomtype(1)%nangmom
-write(lupri,*) 'Number of atom species ',input%Basis%regular%natomtypes
-write(lupri,*) 'Exponents ',(input%Basis%regular%atomtype(1)%shell(1)%segment(1)%exponents)
-!  call screening_ovl(input%Basis%regular)
+!!!!! input%Basis%binfo(regbasparam)%atomtype(:)%shell(:)%segment(1)%exponents(:)
+write(lupri,*) 'shells ',input%Basis%binfo(regbasparam)%atomtype(1)%nangmom
+write(lupri,*) 'Number of atom species ',input%Basis%binfo(regbasparam)%natomtypes
+write(lupri,*) 'Exponents ',(input%Basis%binfo(regbasparam)%atomtype(1)%shell(1)%segment(1)%exponents)
+!  call screening_ovl(input%Basis%binfo(regbasparam))
   call build_lvec_list(lattice,nbast) 
 
   write(*,*) 'nearest neighbour in pbcmain', lattice%nneighbour
