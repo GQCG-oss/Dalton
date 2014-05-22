@@ -107,7 +107,7 @@ else
       nfreqs=rsp_number_of_omegas
       call new_symcomplex_solver(molcfg,F,D,S,1,nfreqs,GD,GDI,EIVAL,XSOL,XSOLimg,gd_complex)
    else
-      write(molcfg%solver%rsp_cpp,*) 'The code should terminate'
+      write(molcfg%lupri,*) 'The code should terminate'
    endif
 endif
     
