@@ -736,7 +736,7 @@ safety threshold -- stop if the charge integration error becomes larger then thi
 \item[DFTHRI] threshold for screening product of gaussian atomic orbitals
 \item[RHOTHR] threshold for screening of the electron density 
 \end{description}
-\item[\Key{DISPER}] defaults to .DFT-D3 (see below)
+\item[\Key{DISPER}] defaults to .DFT-D3BJ (see below)
 \item[\Key{DFT-D2}] switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. Analytic gradient contributions are available.
 \item[\Key{D2PAR}] \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\ 
 using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override any values defined within the code.
