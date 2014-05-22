@@ -1734,6 +1734,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*GAMMA')
            config%response%tasks%doGAMMA=.true.
            config%response%tasks%doResponse=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -1841,6 +1843,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*DAMPED_TPA')
            config%response%tasks%doResponse=.true.
            config%response%tasks%doDTPA=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle
@@ -2017,13 +2021,16 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_thresh
                CASE('.SYM_SOLVER')
                   config%response%rspsolverinput%rsp_stdnew = .true.
+                  config%response%rspsolverinput%rsp_cmplxnew = .true.
+                  config%response%rspsolverinput%rsp_cpp = .false.
                CASE('.PAIR_SOLVER')
                   config%response%rspsolverinput%rsp_cmplxnew = .false.
+                  config%response%rspsolverinput%rsp_cpp = .false.
                CASE('.MAXIT')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_maxit 
                  config%response%rspsolverinput%rsp_maxred=2*config%response%rspsolverinput%rsp_maxit 
                CASE('.MAXRED')
-                  READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred 
+                  READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred
                CASE('.CONVDYN')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_convdyn_type
                   config%response%rspsolverinput%rsp_convdyn =.true.
@@ -2108,6 +2115,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        CASE('*QUASIMCD')
            config%response%tasks%doResponse=.true.
            config%response%tasks%doMCD=.true.
+           config%response%rspsolverinput%rsp_cmplxnew = .true.
+           config%response%rspsolverinput%rsp_cpp = .false.
            do
               READ(LUCMD,'(A40)') word
               if(word(1:1) == '!' .or. word(1:1) == '#') cycle

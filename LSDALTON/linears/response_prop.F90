@@ -1954,7 +1954,7 @@ Contains
 
 
     ! Initializing complex solver
-    if (molcfg%solver%rsp_cmplxnew) then
+    if (molcfg%solver%rsp_cmplxnew .or. molcfg%solver%rsp_cpp) then
        call rsp_sym_complex_init(1, 1, 1, 1, 1)
     else 
        call rsp_complex_init(1, 1, 1, 1, 1)
@@ -2034,7 +2034,7 @@ Contains
 
              ! Complex second order RHS is constructed.
              ! Solve 2nd order equations for Kth component
-             if (molcfg%solver%rsp_cmplxnew) then
+             if (molcfg%solver%rsp_cmplxnew .or. molcfg%solver%rsp_cpp) then
                 call rsp_sym_complex_solver(molcfg, F, D, S, 1, &
                      & (/mat_get_part(RHS(K), imag=.false.)/),  &
                      & w, 1, Xreal(1:1), Ximag(1:1), .true.,    &
@@ -2074,7 +2074,7 @@ Contains
           ! Problems with solver if RHS = 0
           if (normRHS > 1e-9) then
 
-             if (molcfg%solver%rsp_cmplxnew) then
+             if (molcfg%solver%rsp_cmplxnew .or. molcfg%solver%rsp_cpp) then
                 call rsp_sym_complex_solver(molcfg, F, D, S, 1, &
                      & (/mat_get_part(RHS(K), imag=.false.)/),  &  ! Real part of RHS
                      & w(1), 1, Xreal(1), Ximag(1), .true.,     &

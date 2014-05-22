@@ -164,6 +164,7 @@ set(LINEARS_SOURCES
     )
 set(RSPSOLVER_SOURCES	
     LSDALTON/responsesolver/rsp_cmplx_sym.F90
+    LSDALTON/responsesolver/rsp_cmplx_sym_new.F90
     LSDALTON/responsesolver/rsp_complex.F90
     LSDALTON/responsesolver/rsp_solver.F90
     LSDALTON/responsesolver/rsp_std_sym.F90
