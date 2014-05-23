@@ -3695,7 +3695,7 @@ module pno_ccsd_module
                     if(ns==ns2)then
                        l = idx2(paircontrib(1,pair1))
                     else
-                       l = oidx2(nidx2+diff21+1,3)
+                       l = oidx2(nidx2+1+1,3)
                     endif
 
 

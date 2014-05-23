@@ -1266,6 +1266,8 @@ ENDIF
         bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
       ELSE IF (AO(iAO).EQ.AOdfJK) THEN
         bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+      ELSE IF (AO(iAO).EQ.AOadmm) THEN
+        bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
       ELSE IF (AO(iAO).EQ.AOpCharge) THEN
         nAtoms(iAO) = mol(iAO)%p%nAtoms
         noPart(iAO) = .TRUE.
@@ -1714,6 +1716,8 @@ DO iAO=1,4
     bas(iAO)%p => setting%basis(iAO)%p%BINFO(CABBasParam)
   ELSE IF (AO(iAO).EQ.AOdfJK) THEN
     bas(iAO)%p => setting%basis(iAO)%p%BINFO(JKBasParam)
+  ELSE IF (AO(iAO).EQ.AOadmm) THEN
+    bas(iAO)%p => setting%basis(iAO)%p%BINFO(ADMBasParam)
   ELSE IF (AO(iAO).EQ.AOpCharge) THEN
     nAtoms(iAO) = mol(iAO)%p%nAtoms
     noPart(iAO) = .TRUE.
@@ -2125,7 +2129,7 @@ ELSE
       ELSE
         iatomfull = task%row_atoms(iatom)
       ENDIF
-      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK)) THEN
+      IF ((AOA.EQ.AOdfAux).OR.(AOA.EQ.AOdfCABS).OR.(AOA.EQ.AOdfJK).OR.(AOA.EQ.AOadmm)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF ((AOA.EQ.AORegular).OR.(AOA.EQ.AOVAL)) THEN
         nbastA = nbastA + orbInfo(iA)%numAtomicOrbitalsReg(iatomfull)
@@ -2155,7 +2159,7 @@ ELSE
       ENDIF
       IF ((AOB.EQ.AORegular).OR.(AOB.EQ.AOVAL)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsReg(iatomfull)
-      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK)) THEN
+      ELSE IF ((AOB.EQ.AOdfAux).OR.(AOB.EQ.AOdfCABS).OR.(AOB.EQ.AOdfJK).OR.(AOB.EQ.AOadmm)) THEN
         nBastB = nBastB + orbInfo(iB)%numAtomicOrbitalsAux(iatomfull)
       ELSE IF (AOB.EQ.AOpCharge) THEN
         nbastB = nbastB + 1

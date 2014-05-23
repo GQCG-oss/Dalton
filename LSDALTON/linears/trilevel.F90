@@ -888,6 +888,7 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
      GCtrans%chargeindex(0:REGULAR%nchargeindex) = &
           &REGULAR%chargeindex(0:REGULAR%nchargeindex)
   ENDIF
+  GCtrans%label = 'GCTRANS  '
 
 end subroutine trilevel_ALLOC_SYNC_GCTRANS
 !> \brief loop over all atoms and construct the grand canonical basis 
@@ -1174,7 +1175,7 @@ TYPE(basissetinfo) :: REGbasis
 Type(Matrix) :: D
 real(realk),pointer  :: occ(:), tmp(:,:)
 integer :: nAtoms, nAngmom, norb, ipos, charge,icharge
-integer :: itype, ang, i, nbast, kmult
+integer :: itype, ang, i, nbast, kmult,R
 
  nbast = REGBASIS%nbast
  call mem_alloc(occ,nbast)
@@ -1182,7 +1183,7 @@ integer :: itype, ang, i, nbast, kmult
  occ = 0E0_realk;
 
  nAtoms = ls%input%MOLECULE%nAtoms
-
+ R = REGBASIS%Labelindex
  ipos = 1
  do i=1, nAtoms
     IF(ls%input%MOLECULE%ATOM(i)%phantom)CYCLE
@@ -1191,7 +1192,7 @@ integer :: itype, ang, i, nbast, kmult
        icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
        itype = REGBASIS%chargeindex(icharge)
     ELSE
-       itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
+       itype = ls%input%MOLECULE%ATOM(i)%IDtype(R)
     ENDIF
     nAngmom = REGBASIS%ATOMTYPE(itype)%nAngmom
     charge  = REGBASIS%ATOMTYPE(itype)%Charge

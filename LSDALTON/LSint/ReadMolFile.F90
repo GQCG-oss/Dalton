@@ -21,9 +21,7 @@ contains
 !> \param doprint if the information should be printet
 !> \param iprint the printlevel integer, determining how much output should be generated
 !> \param DoSpherical if the basis should be a Spherical or cartesian basis
-!> \param auxbasis if an auxilliary basis is specified in mol file
-!> \param cabsbasis if an Complementary auxilliary basis is specified in molfile
-!> \param JKbasis if an JK auxilliary basis is specified in mol file
+!> \param basis if an regular,auxilliary,CABS,JK,ADMM basis is specified in mol file
 !>
 !> THIS IS THE MAIN DRIVER ROUTINE WHICH READS THE MOLECULE INPUT FILE
 !> AND BUILDS THE MOLECULE OBJECT 
@@ -443,6 +441,20 @@ IF (IPOS .NE. 0) THEN
    ENDDO
    LEN = IPOS3-(IPOS+IPOS2)
    BASISSET(JKBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ENDIF
+
+IPOS = INDEX(WORD,'ADMM')
+IF (IPOS .NE. 0) THEN
+   BASIS(ADMBasParam)=.TRUE.
+   IPOS2 = INDEX(WORD(IPOS:80),'=')
+   DO I=IPOS+IPOS2,80
+      IF(WORD(I:I).EQ.' ')THEN
+         IPOS3=I
+         EXIT
+      ENDIF
+   ENDDO
+   LEN = IPOS3-(IPOS+IPOS2)
+   BASISSET(ADMBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
 ENDIF
 
 IF (IPRINT .GT. 1) THEN
@@ -1312,6 +1324,22 @@ IF (ATOMBASIS) THEN
       ENDIF
    ENDIF
 
+   !ADMM basisset
+   IPOS = INDEX(TEMPLINE,'ADMM')
+   IF (IPOS .NE. 0) THEN
+      BASIS(ADMBasParam)=.TRUE.
+      IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
+         WRITE (LUPRI,*) 'Incorrect input for choice of ADMM atomic basis set'
+         WRITE (LUPRI,*) ' Format is "ADMM=? ? ?"'
+         CALL LSQUIT('Incorrect input for choice of ADMM atomic basis set',lupri)
+      ELSE
+         IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
+         call StringInit80(AtomicBasisset(ADMBasParam))
+         AtomicBasisset(ADMBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+      ENDIF
+   ENDIF
+
    IF(pointcharge)THEN
       do ipos=1,nBasisBasParam
          call StringInit80(AtomicBasisset(ipos))
@@ -1395,19 +1423,10 @@ END SUBROUTINE DETERMINE_UNIQUE_CHARGE
 !> \param lupri the logical unit number for the output file
 !> \param moleclue the molecule structure
 !> \param I the atom index in the molecule structure
-!> \param basissetnumber1 the basisindex
-!> \param auxbasissetnumber2 the auxilliary basisindex
-!> \param CABSbasissetnumber2 the complementary auxilliary basisindex
-!> \param JKbasissetnumber2 the JK auxilliary basisindex
-!> \param unique1 basis index 
-!> \param auxunique2 auxilliary basis index
-!> \param CABSunique2 complementary auxilliary basis index
-!> \param JKunique2 JK auxilliary basis index
-!> \param basis if BASIS keyword is given in line 1
+!> \param unique2 basis index 
+!> \param basissetnumber2 the basisnumber
+!> \param basis if the regular,auxbasis,CABSbasis,JKbasis,admm basis given in 1. line
 !> \param atombasis if ATOMBASIS keyword is given in line 1
-!> \param auxbasis if the auxilliary basis given in 1. line
-!> \param CABSbasis if the complementary auxilliary basis given in 1. line
-!> \param JKbasis if the JK auxilliary basis given in 1. line
 !>
 !> IF YOU ADD MORE BASISSET TO MOLECULE FILE YOU NEED TO 
 !> INCREASE THE SIZE IN THE ATOM DERIVED TYPE IN TYPE-DEF.f90. 
