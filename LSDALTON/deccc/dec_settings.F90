@@ -99,6 +99,8 @@ contains
     DECinfo%simple_mulliken_threshold    = .false.
     DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
+    DECinfo%check_Occ_SubSystemLocality  = .false.
+    DECinfo%force_Occ_SubSystemLocality  = .false.
     DECinfo%use_canonical                = .false.
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
@@ -580,6 +582,8 @@ contains
 
           ! Check that input orbitals are orthogonal (debug)
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
+       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
+       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
 
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SKIPFULL') 
@@ -853,6 +857,8 @@ contains
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
+    write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
+    write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output

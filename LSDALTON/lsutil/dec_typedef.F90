@@ -268,6 +268,10 @@ module dec_typedef_module
      logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
+     !> Check the the Occupied Subsystem locality
+     logical :: check_Occ_SubSystemLocality
+     !> Enforce a zero Occupied Subsystem locality
+     logical :: force_Occ_SubSystemLocality
      !> Debug print level
      integer :: PL
      !> only do fragment part of density or gradient calculation 

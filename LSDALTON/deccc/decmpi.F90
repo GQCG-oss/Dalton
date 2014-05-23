@@ -2188,6 +2188,8 @@ contains
     call ls_mpi_buffer(DECitem%array_test,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
+    call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
+    call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
     call ls_mpi_buffer(DECitem%full_print_frag_energies,Master)
