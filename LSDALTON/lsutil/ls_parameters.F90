@@ -11,6 +11,7 @@ MODULE Integralparameters
   integer,parameter :: AOdfJK = 7
   integer,parameter :: AOVAL = 8
   integer,parameter :: AOelField = 9
+  integer,parameter :: AOadmm = 10  !ADMM basis
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2
@@ -282,7 +283,6 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
   implicit none
   Character(len=8),intent(inout)     :: AO1
   integer,intent(in)     :: AO1param
-
   SELECT CASE(AO1param)
   CASE(AORegular) 
      AO1 = 'Regular '
@@ -294,8 +294,16 @@ subroutine param_AO_Stringfromparam(AO1,AO1param)
      AO1 = 'Nuclear '
   CASE(AOpCharge) 
      AO1 = 'pCharge '
+  CASE(AOdfCABS) 
+     AO1 = 'CABS    '
+  CASE(AOdfJK) 
+     AO1 = 'JKAUX   '
+  CASE(AOVAL) 
+     AO1 = 'VALENCE '
   CASE(AOelField) 
      AO1 = 'elField '
+  CASE(AOadmm) 
+     AO1 = 'ADMM    '
   CASE DEFAULT
      WRITE(6,'(1X,2A)') 'Unknown AO string =',AO1param
      CALL LSQUIT('Unknown Operator II_determineOperatorparameter',-1)

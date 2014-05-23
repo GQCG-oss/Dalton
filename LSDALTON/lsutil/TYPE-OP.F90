@@ -80,6 +80,9 @@ ELSEIF (AOtype.EQ.AOdfCABS) THEN
 ELSEIF (AOtype.EQ.AOdfJK) THEN
   nc = MOLECULE%nbastJK
   np = MOLECULE%nprimbastJK
+ELSEIF (AOtype.EQ.AOadmm) THEN
+  nc = MOLECULE%nbastADMM
+  np = MOLECULE%nprimbastADMM
 ELSEIF (AOtype.EQ.AOVAL) THEN
   nc = MOLECULE%nbastVAL
   np = MOLECULE%nprimbastVAL
@@ -539,6 +542,8 @@ END SUBROUTINE PRINT_LSSETTING
 !!$   READ(LUI,*)Setting2%BASIS(IAO)%p%CABS%nChargeindex
 !!$   READ(LUI,*)Setting2%BASIS(IAO)%p%JK%natomtypes
 !!$   READ(LUI,*)Setting2%BASIS(IAO)%p%JK%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%ADMM%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%ADMM%nChargeindex
 !!$   READ(LUI,*)Setting2%BASIS(IAO)%p%VALENCE%natomtypes
 !!$   READ(LUI,*)Setting2%BASIS(IAO)%p%VALENCE%nChargeindex
 !!$      
@@ -620,14 +625,33 @@ WRITE(LUPRI,'(A)')'THE MOLECULE'
 WRITE(LUPRI,*) '--------------------------------------------------------------------'
 WRITE(LUPRI,'(A38,2X,F8.4)')'Molecular Charge                    :',MOLECULE%charge
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Regular basisfunctions             :',MOLECULE%nbastREG
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Auxiliary basisfunctions           :',MOLECULE%nbastAUX
-WRITE(LUPRI,'(2X,A38,2X,I7)')'CABS basisfunctions                :',MOLECULE%nbastCABS
-WRITE(LUPRI,'(2X,A38,2X,I7)')'JK-fit basisfunctions              :',MOLECULE%nbastJK
+IF(BASIS%WBASIS(AuxBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Auxiliary basisfunctions           :',MOLECULE%nbastAUX
+ENDIF
+IF(BASIS%WBASIS(CABBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'CABS basisfunctions                :',MOLECULE%nbastCABS
+ENDIF
+IF(BASIS%WBASIS(JKBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'JK-fit basisfunctions              :',MOLECULE%nbastJK
+ENDIF
+IF(BASIS%WBASIS(ADMBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'ADMM basisfunctions                :',MOLECULE%nbastADMM
+ENDIF
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Valence basisfunctions             :',MOLECULE%nbastVAL
+
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Regular basisfunctions   :',MOLECULE%nprimbastREG
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%nprimbastAUX
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
+IF(BASIS%WBASIS(AuxBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%nprimbastAUX
+ENDIF
+IF(BASIS%WBASIS(CABBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
+ENDIF
+IF(BASIS%WBASIS(JKBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
+ENDIF
+IF(BASIS%WBASIS(ADMBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive ADMM basisfunctions      :',MOLECULE%nprimbastADMM
+ENDIF
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Valence basisfunctions   :',MOLECULE%nprimbastVAL
 WRITE(LUPRI,*) '--------------------------------------------------------------------'
 WRITE(LUPRI,*) '                     '
@@ -1104,7 +1128,7 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 INTEGER,intent(in)            :: LUPRI,nbast
 integer,intent(inout) ::  Atom_for_each_bas(nbast)
 !
-integer :: ibasis,I,Icharge,type,J
+integer :: ibasis,I,Icharge,type,J,R
 iF(MOLECULE%nbastREG.NE.nbast)call lsquit('dim mismatch in Atom_for_each_basisfunc',-1)
 ibasis = 0 
 DO I=1,MOLECULE%nAtoms
@@ -1112,7 +1136,8 @@ DO I=1,MOLECULE%nAtoms
       ICHARGE = INT(MOLECULE%ATOM(I)%charge) 
       type= basInfo%Chargeindex(ICHARGE)
    ELSE
-      type=MOLECULE%ATOM(I)%IDtype(basInfo%labelindex)
+      R = basInfo%labelindex
+      type=MOLECULE%ATOM(I)%IDtype(R)
    ENDIF
    IF(MOLECULE%ATOM(I)%pointcharge)CYCLE   
    DO J = 1, basInfo%ATOMTYPE(type)%Totnorb
@@ -1400,7 +1425,7 @@ implicit none
 TYPE(FRAGMENTINFO) :: FRAGMENT
 INTEGER            :: I,LABEL
 INTEGER            :: LUPRI
-CHARACTER(len=7)   :: STRING(5)
+CHARACTER(len=7)   :: STRING(6)
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,'(A)')'THE FRAGMENTINFO'
 WRITE(LUPRI,*) '                     '
@@ -1416,6 +1441,7 @@ STRING(2) = 'DF-Aux '
 STRING(3) = 'CABS   '
 STRING(4) = 'JKAux  '
 STRING(5) = 'Valence'
+STRING(6) = 'ADMM   '
 DO I=1,FRAGMENT%numFragments
    WRITE(LUPRI,'(2X,I3,6X,A7,6X,I3,7X,I3,12X,I3,12X,I3,4X,I3)') I, STRING(LABEL), &
         & FRAGMENT%nPrimOrb(I,LABEL),& 
