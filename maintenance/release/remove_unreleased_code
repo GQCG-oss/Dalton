@@ -30,7 +30,9 @@ do
     $SCRIPT_DIR/cppp.py $delete_flags $file
 done
 
-TEMP_FILE=`mktemp`
+# radovan: sadly not portable
+# TEMP_FILE=`mktemp`
+TEMP_FILE="deleteme"
 
 if [ -f $SCRIPT_DIR/paths_to_exclude ]
 then

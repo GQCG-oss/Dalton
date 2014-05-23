@@ -76,11 +76,13 @@ WRITE(LUPRI,'(2X,A38,2X,I7)')'Regular basisfunctions             :',MOLECULE%nba
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Auxiliary basisfunctions           :',MOLECULE%nbastAUX
 WRITE(LUPRI,'(2X,A38,2X,I7)')'CABS basisfunctions                :',MOLECULE%nbastCABS
 WRITE(LUPRI,'(2X,A38,2X,I7)')'JK-fit basisfunctions              :',MOLECULE%nbastJK
+WRITE(LUPRI,'(2X,A38,2X,I7)')'ADMM basisfunctions                :',MOLECULE%nbastADMM
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Valence basisfunctions             :',MOLECULE%nbastVAL
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Regular basisfunctions   :',MOLECULE%nprimbastREG
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%nprimbastAUX
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
+WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive ADMM basisfunctions      :',MOLECULE%nprimbastADMM
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Valence basisfunctions   :',MOLECULE%nprimbastVAL
 IF(MOLECULE%nSubSystems.NE.0)THEN
    WRITE(LUPRI,'(2X,A38,2X,I7)')'number of Subsystem Labels         :',MOLECULE%nSubSystems
@@ -135,11 +137,13 @@ MOLECULE%nbastREG = 0
 MOLECULE%nbastAUX = 0
 MOLECULE%nbastCABS = 0
 MOLECULE%nbastJK = 0
+MOLECULE%nbastADMM = 0
 MOLECULE%nbastVAL = 0
 MOLECULE%nprimbastREG = 0
 MOLECULE%nprimbastAUX = 0
 MOLECULE%nprimbastCABS = 0
 MOLECULE%nprimbastJK = 0
+MOLECULE%nprimbastADMM = 0
 MOLECULE%nprimbastVAL = 0
 MOLECULE%pointmolecule = .false.
 MOLECULE%nSubSystems = 0
@@ -200,6 +204,8 @@ atomicmolecule%nbastCABS     = 0
 atomicmolecule%nPrimbastCABS = 0
 atomicmolecule%nbastJK     = 0
 atomicmolecule%nPrimbastJK = 0
+atomicmolecule%nbastADMM     = 0
+atomicmolecule%nPrimbastADMM = 0
 atomicmolecule%nbastVAL     = 0
 atomicmolecule%nPrimbastVAL = 0
 
@@ -237,6 +243,8 @@ molecule%nbastCABS     = 0
 molecule%nPrimbastCABS = 0
 molecule%nbastJK     = 0
 molecule%nPrimbastJK = 0
+molecule%nbastADMM     = 0
+molecule%nPrimbastADMM = 0
 molecule%nbastVAL     = 0
 molecule%nPrimbastVAL = 0
 molecule%nelectrons=0
@@ -272,6 +280,8 @@ molecule%ATOM(1)%nContOrbCABS=0
 molecule%ATOM(1)%nPrimOrbCABS=0
 molecule%ATOM(1)%nContOrbJK=0
 molecule%ATOM(1)%nPrimOrbJK=0
+molecule%ATOM(1)%nContOrbADMM=0
+molecule%ATOM(1)%nPrimOrbADMM=0
 molecule%ATOM(1)%nContOrbVAL=0
 molecule%ATOM(1)%nPrimOrbVAL=0
 
@@ -304,6 +314,8 @@ pointmolecule%nbastCABS     = 0
 pointmolecule%nPrimbastCABS = 0
 pointmolecule%nbastJK     = 0
 pointmolecule%nPrimbastJK = 0
+pointmolecule%nbastADMM     = 0
+pointmolecule%nPrimbastADMM = 0
 pointmolecule%nbastVAL     = 0
 pointmolecule%nPrimbastVAL = 0
 pointmolecule%nelectrons=0
@@ -341,6 +353,8 @@ DO I=1,N
    pointmolecule%ATOM(I)%nPrimOrbCABS=0
    pointmolecule%ATOM(I)%nContOrbJK=0
    pointmolecule%ATOM(I)%nPrimOrbJK=0
+   pointmolecule%ATOM(I)%nContOrbADMM=0
+   pointmolecule%ATOM(I)%nPrimOrbADMM=0
    pointmolecule%ATOM(I)%nContOrbVAL=0
    pointmolecule%ATOM(I)%nPrimOrbVAL=0
 enddo
@@ -403,6 +417,8 @@ DO I=1,N
    molecule%ATOM(I)%nPrimOrbCABS=0
    molecule%ATOM(I)%nContOrbJK=0
    molecule%ATOM(I)%nPrimOrbJK=0
+   molecule%ATOM(I)%nContOrbADMM=0
+   molecule%ATOM(I)%nPrimOrbADMM=0
    molecule%ATOM(I)%nContOrbVAL=0
    molecule%ATOM(I)%nPrimOrbVAL=0
 enddo
@@ -430,11 +446,13 @@ newMOLECULE%nbastREG = 0
 newMOLECULE%nbastAUX = 0
 newMOLECULE%nbastCABS = 0
 newMOLECULE%nbastJK = 0
+newMOLECULE%nbastADMM = 0
 newMOLECULE%nbastVAL = 0
 newMOLECULE%nprimbastREG = 0
 newMOLECULE%nprimbastAUX = 0
 newMOLECULE%nprimbastCABS = 0
 newMOLECULE%nprimbastJK = 0
+newMOLECULE%nprimbastADMM = 0
 newMOLECULE%nprimbastVAL = 0
 
 call mem_alloc(newMOLECULE%ATOM,newMOLECULE%nAtoms)
@@ -507,6 +525,8 @@ FRAGMENT%ATOM(J)%nContOrbCABS=MOLECULE%ATOM(I)%nContOrbCABS
 FRAGMENT%ATOM(J)%nPrimOrbCABS=MOLECULE%ATOM(I)%nPrimOrbCABS
 FRAGMENT%ATOM(J)%nContOrbJK=MOLECULE%ATOM(I)%nContOrbJK
 FRAGMENT%ATOM(J)%nPrimOrbJK=MOLECULE%ATOM(I)%nPrimOrbJK
+FRAGMENT%ATOM(J)%nContOrbADMM=MOLECULE%ATOM(I)%nContOrbADMM
+FRAGMENT%ATOM(J)%nPrimOrbADMM=MOLECULE%ATOM(I)%nPrimOrbADMM
 FRAGMENT%ATOM(J)%nContOrbVAL=MOLECULE%ATOM(I)%nContOrbVAL
 FRAGMENT%ATOM(J)%nPrimOrbVAL=MOLECULE%ATOM(I)%nPrimOrbVAL
 
@@ -518,6 +538,8 @@ FRAGMENT%nbastCABS     = FRAGMENT%nbastCABS     + MOLECULE%ATOM(I)%nContOrbCABS
 FRAGMENT%nPrimbastCABS = FRAGMENT%nPrimbastCABS + MOLECULE%ATOM(I)%nPrimOrbCABS
 FRAGMENT%nbastJK     = FRAGMENT%nbastJK     + MOLECULE%ATOM(I)%nContOrbJK
 FRAGMENT%nPrimbastJK = FRAGMENT%nPrimbastJK + MOLECULE%ATOM(I)%nPrimOrbJK
+FRAGMENT%nbastADMM     = FRAGMENT%nbastADMM     + MOLECULE%ATOM(I)%nContOrbADMM
+FRAGMENT%nPrimbastADMM = FRAGMENT%nPrimbastADMM + MOLECULE%ATOM(I)%nPrimOrbADMM
 FRAGMENT%nbastVAL     = FRAGMENT%nbastVAL     + MOLECULE%ATOM(I)%nContOrbVAL
 FRAGMENT%nPrimbastVAL = FRAGMENT%nPrimbastVAL + MOLECULE%ATOM(I)%nPrimOrbVAL
 

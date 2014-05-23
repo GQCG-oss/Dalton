@@ -20,7 +20,7 @@ real(realk)       :: CENTER(3)
 Integer           :: Atomic_number !Atomic number
 real(realk)       :: Charge        !Atomic Charge
 !integer           :: nbasis
-!REGULAR,AUXILIARY,CABS,JK,VALENCE,...
+!REGULAR,AUXILIARY,CABS,JK,ADMM,VALENCE,...
 Character(len=9)  :: basislabel(nBasisBasParam) 
 !which set in the BASISSETLIBRARY
 INTEGER           :: Basisindex(nBasisBasParam) 
@@ -41,6 +41,8 @@ INTEGER           :: nContOrbCABS !# contracted orbitals
 INTEGER           :: nPrimOrbCABS !# primitives orbitals
 INTEGER           :: nContOrbJK !# contracted orbitals
 INTEGER           :: nPrimOrbJK !# primitives orbitals
+INTEGER           :: nContOrbADMM !# contracted orbitals
+INTEGER           :: nPrimOrbADMM !# primitives orbitals
 INTEGER           :: nContOrbVAL !# contracted orbitals for valence basis
 INTEGER           :: nPrimOrbVAL !# primitives orbitals for valence basis
 INTEGER           :: molecularIndex !# consecutive atomic index (for full the molecule)
@@ -58,11 +60,13 @@ INTEGER              :: nbastREG
 INTEGER              :: nbastAUX
 INTEGER              :: nbastCABS
 INTEGER              :: nbastJK
+INTEGER              :: nbastADMM
 INTEGER              :: nbastVAL
 INTEGER              :: nprimbastREG
 INTEGER              :: nprimbastAUX
 INTEGER              :: nprimbastCABS
 INTEGER              :: nprimbastJK
+INTEGER              :: nprimbastADMM
 INTEGER              :: nprimbastVAL
 logical              :: pointMolecule
 INTEGER              :: nSubSystems
