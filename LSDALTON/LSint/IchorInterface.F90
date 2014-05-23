@@ -12,6 +12,7 @@ MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
   use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory
+  use basis_typetype,only: RegBasParam,CABBasParam
   use dec_typedef_module, only: DecAObatchinfo
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
@@ -35,10 +36,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -72,10 +73,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -146,10 +147,10 @@ integer,intent(inout)     :: nAObatches
 TYPE(BASISSETINFO),pointer :: AObasis
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -208,10 +209,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -339,10 +340,10 @@ IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Inte
 !A
 IF (intSpec(1).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(intspec(1).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -376,10 +377,10 @@ call build_TypeInfo2(setting%MOLECULE(1)%p,AObasis,nTypesA,&
 !B
 IF (intSpec(2).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(2)%p%regular
+   AObasis => setting%basis(2)%p%BINFO(RegBasParam)
 ELSEIF(intspec(2).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(2)%p%CABS   
+   AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -414,10 +415,10 @@ call build_TypeInfo2(setting%MOLECULE(2)%p,AObasis,nTypesB,&
 !C
 IF (intSpec(3).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(3)%p%regular
+   AObasis => setting%basis(3)%p%BINFO(RegBasParam)
 ELSEIF(intspec(3).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(3)%p%CABS   
+   AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -452,10 +453,10 @@ call build_TypeInfo2(setting%MOLECULE(3)%p,AObasis,nTypesC,&
 !D
 IF (intSpec(4).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(4)%p%regular
+   AObasis => setting%basis(4)%p%BINFO(RegBasParam)
 ELSEIF(intspec(4).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(4)%p%CABS   
+   AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -679,10 +680,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    !A
    IF (intSpec(1).EQ.'R') THEN
       !   The regular AO-basis
-      AObasis => setting%basis(1)%p%regular
+      AObasis => setting%basis(1)%p%BINFO(RegBasParam)
    ELSEIF(intspec(1).EQ.'C')THEN
       !   The CABS AO-type basis
-      AObasis => setting%basis(1)%p%CABS   
+      AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
    ELSE
       call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
    ENDIF
@@ -709,10 +710,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    !B
    IF (intSpec(2).EQ.'R') THEN
       !   The regular AO-basis
-      AObasis => setting%basis(2)%p%regular
+      AObasis => setting%basis(2)%p%BINFO(RegBasParam)
    ELSEIF(intspec(2).EQ.'C')THEN
       !   The CABS AO-type basis
-      AObasis => setting%basis(2)%p%CABS   
+      AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
    ELSE
       call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
    ENDIF
@@ -815,10 +816,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       !C
       IF (intSpec(3).EQ.'R') THEN
          !   The regular AO-basis
-         AObasis => setting%basis(3)%p%regular
+         AObasis => setting%basis(3)%p%BINFO(RegBasParam)
       ELSEIF(intspec(3).EQ.'C')THEN
          !   The CABS AO-type basis
-         AObasis => setting%basis(3)%p%CABS   
+         AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
       ELSE
          call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
       ENDIF
@@ -845,10 +846,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       !D
       IF (intSpec(4).EQ.'R') THEN
          !   The regular AO-basis
-         AObasis => setting%basis(4)%p%regular
+         AObasis => setting%basis(4)%p%BINFO(RegBasParam)
       ELSEIF(intspec(4).EQ.'C')THEN
          !   The CABS AO-type basis
-         AObasis => setting%basis(4)%p%CABS   
+         AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
       ELSE
          call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
       ENDIF
