@@ -10,16 +10,18 @@ MODULE basis_typetype
  INTEGER, PARAMETER      :: maxBasisSetInLIB=10
  INTEGER, PARAMETER      :: maxNumberOfChargesinLIB=10
 
- Integer,parameter :: nBasisBasParam=6
+ Integer,parameter :: nBasisBasParam=7
  Integer,parameter :: RegBasParam=1
  Integer,parameter :: AUXBasParam=2
  Integer,parameter :: CABBasParam=3
  Integer,parameter :: JKBasParam=4
  Integer,parameter :: VALBasParam=5
  Integer,parameter :: GCTBasParam=6
+ Integer,parameter :: ADMBasParam=7
 
  character(len=9),parameter :: BasParamLABEL(nBasisBasParam) = &
-      & (/'REGULAR  ','AUXILIARY','CABS     ','JKAUX    ','VALENCE  ','GCTRANS  '/)
+      & (/'REGULAR  ','AUXILIARY','CABS     ','JKAUX    ',&
+      & 'VALENCE  ','GCTRANS  ','ADMM     '/)
 
 TYPE segment
 INTEGER                 :: nrow

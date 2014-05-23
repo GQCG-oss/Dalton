@@ -499,6 +499,8 @@ DO I=1,nAtoms
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbJK
    case(AOVAL)
      nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbVAL
+   case(AOadmm)
+     nOrb = setting%molecule(1)%p%ATOM(I)%nContOrbADMM
    case default
      CALL LSQUIT('Non-valid AORdefault in II_get_xc_geoderiv_molgrad',-1)
    end select

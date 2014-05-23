@@ -56,7 +56,7 @@ TYPE(MOLECULEINFO) :: MOLECULE
 TYPE(BASISSETINFO) :: BASINFO
 !> the basissetlibrary contains info on basisset from molecule file.
 TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY(nBasisBasParam)
-!> label 'REGULAR  ' or 'AUXILIARY' or 'CABS     ' or 'JKAUX    '
+!> label 'REGULAR  ' or 'AUXILIARY' or 'CABS     ' or 'JKAUX    ' or 'ADMM     '
 CHARACTER(len=9)   :: BASISLABEL
 !> if the AOitem should be uncontracted
 LOGICAL            :: UNCONTRACTED
@@ -112,17 +112,22 @@ ELSE
 ! call mem_alloc(BINDEXES,BASISSETLIBRARY(iBas)%nbasissets)
  BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
  SELECT CASE(BASISLABEL)
- CASE('REGULAR  ')
+ CASE('REGULAR  ') !identical to BasParamLABEL(RegBasParam)
     BASINFO%Labelindex = RegBasParam
- CASE('AUXILIARY')
+ CASE('AUXILIARY') !identical to BasParamLABEL(AUXBasParam)
     BASINFO%Labelindex = AUXBasParam
- CASE('CABS     ')
+ CASE('CABS     ') !identical to BasParamLABEL(CABBasParam)
     BASINFO%Labelindex = CABBasParam
- CASE('JKAUX    ')
+ CASE('JKAUX    ') !identical to BasParamLABEL(JKBasParam)
     BASINFO%Labelindex = JKBasParam
- CASE('VALENCE  ')
-    BASINFO%Labelindex = VALBasParam
+ CASE('ADMM     ') !identical to BasParamLABEL(ADMBasParam)
+    BASINFO%Labelindex = ADMBasParam
+ CASE('VALENCE  ') !identical to BasParamLABEL(VALBasParam)
+    !build as subset of regular in trilevel algorithm
     call LSQUIT('VALENCE no legal keyword in Build_Basis.',lupri)  
+ CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
+    !build as a transformation basis in trilevel algorithm
+    call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
@@ -407,10 +412,11 @@ END SUBROUTINE DETERMINE_GENERALCONTRACTED
 !> BASINFO%Labelindex = n:
 !> for n>0 indicate MoleculeSpecific ordering which means that 
 !> the molecule%ATOM(iatom)%IDtype(n) determines which ATOMTYPE the given atom has
-!> labelindex=1 is for regularMoleculeSpecific ordering 
-!> labelindex=2 is for auxiliaryMoleculeSpecific ordering
-!> labelindex=3 is for cabs MoleculeSpecific ordering
-!> labelindex=4 is for JKaux MoleculeSpecific ordering
+!> labelindex=RegBasParam is for regular MoleculeSpecific ordering 
+!> labelindex=AuxBasParam is for auxiliary MoleculeSpecific ordering
+!> labelindex=CABBasParam is for cabs MoleculeSpecific ordering
+!> labelindex=JKBasParam is for JK MoleculeSpecific ordering
+!> labelindex=ADMBasParam is for ADMM MoleculeSpecific ordering
 !> This is the case when ATOMBASIS is used in MOLECULE.INP
 !>
 SUBROUTINE ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY)
@@ -443,10 +449,11 @@ IF(BASINFO%Labelindex .EQ. 0)THEN
 ELSE
 !  labelindex=n for n>0 indicate MoleculeSpecific ordering which means that 
 !  the molecule%ATOM(iatom)%IDtype(n) determines which ATOMTYPE the given atom has
-!  labelindex=1 is for regularMoleculeSpecific ordering 
-!  labelindex=2 is for auxiliaryMoleculeSpecific ordering
-!  labelindex=3 is for cabsMoleculeSpecific ordering
-!  labelindex=4 is for JKauxMoleculeSpecific ordering
+!  labelindex=RegBasParam is for regular MoleculeSpecific ordering 
+!  labelindex=AuxBasParam is for auxiliary MoleculeSpecific ordering
+!  labelindex=CABBasParam is for cabs MoleculeSpecific ordering
+!  labelindex=JKBasParam is for JKaux MoleculeSpecific ordering
+!  labelindex=ADMBasParam is for ADMM aux MoleculeSpecific ordering
 !  This is the case when ATOMBASIS is used in MOLECULE.INP
    R = BASINFO%Labelindex
    DO I=1,MOLECULE%natoms
