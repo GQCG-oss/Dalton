@@ -236,7 +236,7 @@ subroutine LinearTransformations(CFG,X,HX,G)
  end if
 
  if (CFG%orbspread) then
-       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_input)
+       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_inp)
        return
  end if
 
@@ -367,7 +367,7 @@ if (CFG%PFM) then
 end if
 
 if (CFG%orbspread) then
-   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_input)
+   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_inp)
 elseif (CFG%PM) then
    call charge_precond(b_current,res,CFG%mu,CFG%PM_input)
 end if
