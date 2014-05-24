@@ -1646,7 +1646,7 @@ contains
   subroutine force_Occupied_SubSystemLocality(MyMolecule,MyLsitem)
     implicit none
     !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
+    type(fullmolecule), intent(inout) :: MyMolecule
     !> LSDALTON info
     type(lsitem), intent(inout) :: MyLsitem
     !
