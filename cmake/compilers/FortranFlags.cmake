@@ -84,7 +84,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_OMP)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -openmp -parallel"
+            "${CMAKE_Fortran_FLAGS} -openmp"
             )
     endif()
     if(ENABLE_64BIT_INTEGERS)

@@ -120,15 +120,15 @@ real(realk),pointer :: CCtmp(:,:),bCMO(:,:)
 integer :: J,K,iprim,nrow2,ncol2
 integer :: iCont,iseg,iContLoc,ic1,ip1,nprim,norb,ielm,iprimLoc
 type(SHELL),pointer :: shell2
-DO J=1,BASIS%REGULAR%nAtomtypes
- DO K=1,BASIS%REGULAR%ATOMTYPE(J)%nAngmom
-  shell2 => BASIS%REGULAR%ATOMTYPE(J)%SHELL(K)
+DO J=1,BASIS%BINFO(RegBasParam)%nAtomtypes
+ DO K=1,BASIS%BINFO(RegBasParam)%ATOMTYPE(J)%nAngmom
+  shell2 => BASIS%BINFO(RegBasParam)%ATOMTYPE(J)%SHELL(K)
 
-  nrow2 = BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%nprim
+  nrow2 = BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%nprim
   if (nrow2.eq. 0) cycle
-  ncol2 = BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%norb
+  ncol2 = BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%norb
   call mem_alloc(bCMO,nrow2,ncol2)
-  bCMO = reshape(BASIS%GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
+  bCMO = reshape(BASIS%BINFO(GCTBasParam)%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
 
   nprim     = shell2%nprim
   norb      = shell2%norb
@@ -201,38 +201,13 @@ implicit none
 TYPE(BASISINFO),intent(in)    :: BASIS
 INTEGER,intent(in)            :: lun
 !
-INTEGER :: ZERO
-ZERO=0
-IF(BASIS%REGULAR%natomtypes.NE. 0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%REGULAR)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%AUXILIARY%natomtypes.NE. 0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%AUXILIARY)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%GCtransAlloc)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%GCTRANS)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%CABS%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%CABS)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%JK%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%JK)
-ELSE
-   write(lun)ZERO
-ENDIF
-IF(BASIS%VALENCE%natomtypes.NE.0)THEN
-   CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%VALENCE)
-ELSE
-   write(lun)ZERO
-ENDIF
+integer :: i
+DO I=1,nBasisBasParam
+   write(lun) BASIS%WBASIS(I)
+   IF(BASIS%WBASIS(I))THEN
+      CALL WRITE_BASISSETINFO_TO_DISK(lun,BASIS%BINFO(I))
+   ENDIF
+ENDDO
 END SUBROUTINE write_basisinfo_to_disk
 
 !> \brief read the atomtype structure from disk
@@ -284,7 +259,7 @@ TYPE(BASISSETINFO),intent(inout)    :: BASISSET
 INTEGER,intent(in)               :: lun
 !
 INTEGER :: I
-
+call nullifybasisset(BASISSET)
 read(lun)BASISSET%natomtypes
 IF(BASISSET%natomtypes.GT. 0)THEN
    read(lun)BASISSET%DunningsBasis
@@ -317,18 +292,15 @@ SUBROUTINE read_basisinfo_from_disk(lun,BASIS)
 implicit none
 TYPE(BASISINFO),intent(inout)    :: BASIS
 INTEGER,intent(in)            :: lun
-
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%REGULAR)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%AUXILIARY)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%GCTRANS)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%CABS)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%JK)
-CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%VALENCE)
-IF(BASIS%GCTRANS%natomtypes.GT.0)THEN
-   BASIS%GCtransAlloc=.TRUE.
-ELSE
-   BASIS%GCtransAlloc=.FALSE.
-ENDIF
+!
+integer :: I
+call nullifyMainbasis(BASIS)
+DO I=1,nBasisBasParam
+   read(lun)BASIS%WBASIS(I)
+   IF(BASIS%WBASIS(I))THEN
+      CALL READ_BASISSETINFO_FROM_DISK(lun,BASIS%BINFO(I))
+   ENDIF
+ENDDO
 
 END SUBROUTINE read_basisinfo_from_disk
 
@@ -486,7 +458,8 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   TYPE(BASISSETINFO),intent(inout) :: NEWBAS
 !
   INTEGER            :: I,J,K,nrow,ncol
-  
+
+  call nullifyBasisset(NEWBAS)
   NEWBAS%natomtypes = OLDBAS%natomtypes
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis

@@ -7,7 +7,8 @@ module lsmpi_op
        & lsintscheme, integralconfig
   use typedef, only: integral_set_default_config, typedef_init_setting,&
        & init_reduced_screen_info, typedef_free_setting
-  use basis_typetype, only: BASISSETINFO
+  use basis_typetype, only: BASISSETINFO,nBasisBasParam,nullifyMainBasis,&
+       & nullifyBasisset
   use basis_type, only: lsmpi_alloc_basissetinfo
   use lstiming, only: lstimer
   use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
@@ -117,16 +118,14 @@ contains
 SUBROUTINE LSMPI_ALLOC_DALTONINPUT(DALTON)
 IMPLICIT NONE
 TYPE(DALTONINPUT) :: DALTON
+integer :: I
 ! THE MOLECULE
 NULLIFY(DALTON%MOLECULE%ATOM)
 call mem_alloc(DALTON%MOLECULE%ATOM,DALTON%MOLECULE%nAtoms)
 !THE BASISSET
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%REGULAR)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%AUXILIARY)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%CABS)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%JK)
-CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%VALENCE)
-
+do I=1,nBasisBasParam
+   CALL LSMPI_ALLOC_BASISSETINFO(DALTON%BASIS%BINFO(I))
+enddo
 END SUBROUTINE LSMPI_ALLOC_DALTONINPUT
 
 !> \brief mpi copy the lsitem structure - highly discouraged this should not be necessary
@@ -162,6 +161,7 @@ integer(kind=ls_mpik),intent(in) :: comm  ! communicator
 #ifdef VAR_MPI
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
+integer :: I
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
 call get_rank_for_comm(comm, mynum)
 CALL get_size_for_comm(comm, nodtot)
@@ -181,28 +181,18 @@ IF(SLAVE)THEN
    NULLIFY(input%BASIS)
    ALLOCATE(input%Molecule)
    ALLOCATE(input%Basis)
+   call nullifyMainBasis(input%Basis)
    CALL io_init(input%IO)
    call integral_set_default_config(input%dalton)
 ENDIF
 call mpicopy_integralconfig(input%dalton,Slave,Master)
 call mpicopy_molecule(input%Molecule,Slave,Master)
-call mpicopy_basissetinfo(input%basis%REGULAR,Slave,Master)
-call mpicopy_basissetinfo(input%basis%AUXILIARY,Slave,Master)
-call mpicopy_basissetinfo(input%basis%CABS,Slave,Master)
-call mpicopy_basissetinfo(input%basis%JK,Slave,Master)
-call mpicopy_basissetinfo(input%basis%VALENCE,Slave,Master)
-call LS_MPI_BUFFER(input%basis%GCtransAlloc,Master)
-IF(input%basis%GCtransAlloc)THEN
-   call mpicopy_basissetinfo(input%basis%GCtrans,Slave,Master)
-ELSE
-   IF(SLAVE)THEN
-      input%basis%GCtrans%nAtomtypes=0
-      input%basis%GCtrans%labelindex=0
-      input%basis%GCtrans%nChargeindex=0
-      nullify(input%basis%GCtrans%ATOMTYPE)
+call LS_MPI_BUFFER(input%basis%WBASIS,nBasisBasParam,Master)
+do I=1,nBasisBasParam
+   IF(input%basis%WBASIS(I))THEN
+      call mpicopy_basissetinfo(input%basis%BINFO(I),Slave,Master)
    ENDIF
-ENDIF
-
+enddo
 #endif
 END SUBROUTINE mpicopy_daltoninput
 
@@ -217,7 +207,7 @@ SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   logical,intent(in) :: rankslave
   !
   integer :: lupri
-  integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO
+  integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO,J
   logical :: SLAVE,nonemptyMolecule,DsymRHSassociated,DsymLHSassociated
   logical :: LHS_GAB,RHS_GAB
 
@@ -284,27 +274,18 @@ SUBROUTINE mpicopy_setting(setting,comm,rankslave)
         IF(SLAVE)THEN
            allocate(setting%Molecule(I)%p)
            allocate(setting%Basis(I)%p)
+           call nullifyMainBasis(setting%Basis(I)%p)
         ENDIF
         call mpicopy_molecule(setting%Molecule(I)%p,Slave,Master)              !LSSETTING005
-        call mpicopy_basissetinfo(setting%basis(I)%p%REGULAR,Slave,Master)     !LSSETTING006
-        call mpicopy_basissetinfo(setting%basis(I)%p%AUXILIARY,Slave,Master) 
-        call mpicopy_basissetinfo(setting%basis(I)%p%CABS,Slave,Master)
-        call mpicopy_basissetinfo(setting%basis(I)%p%JK,Slave,Master)
-        call mpicopy_basissetinfo(setting%basis(I)%p%VALENCE,Slave,Master)
-        call LS_MPI_BUFFER(setting%basis(I)%p%GCtransAlloc,Master)
-        IF(setting%basis(I)%p%GCtransAlloc)THEN
-           call mpicopy_basissetinfo(setting%basis(I)%p%GCtrans,Slave,Master) 
-        ELSE
-           IF(SLAVE)THEN
-              setting%basis(I)%p%GCtrans%nAtomtypes=0
-              setting%basis(I)%p%GCtrans%labelindex=0
-              setting%basis(I)%p%GCtrans%nChargeindex=0
-              nullify(setting%basis(I)%p%GCtrans%ATOMTYPE)
+        call LS_MPI_BUFFER(setting%basis(I)%p%WBASIS,nBasisBasParam,Master)
+        DO J=1,nBasisBasParam
+           IF(setting%basis(I)%p%WBASIS(J))THEN
+              call mpicopy_basissetinfo(setting%basis(I)%p%BINFO(J),Slave,Master) 
            ENDIF
-        ENDIF
+        ENDDO
      ELSE
         setting%molBuild(I) = .FALSE.                                            !LSSETTING018
-        setting%basBuild(I) = .FALSE.                                            !LSSETTING019     
+        setting%basBuild(I) = .FALSE.                                            !LSSETTING019
      ENDIF
   enddo
   call LS_MPI_BUFFER(setting%Batchindex,nAO,Master)                           !LSSETTING011
@@ -1242,6 +1223,8 @@ logical :: slave
 integer(kind=ls_mpik) :: master
 
 call LS_MPI_BUFFER(dalton%contang,Master)
+call LS_MPI_BUFFER(dalton%NOGCINTEGRALTRANSFORM,Master)
+call LS_MPI_BUFFER(dalton%FORCEGCBASIS,Master)
 call LS_MPI_BUFFER(dalton%noOMP,Master)
 call LS_MPI_BUFFER(dalton%UNRES,Master)
 call LS_MPI_BUFFER(dalton%CFG_LSDALTON,Master)
@@ -1334,10 +1317,7 @@ call LS_MPI_BUFFER(dalton%MM_NOSCREEN,Master)
 call LS_MPI_BUFFER(dalton%MMunique_ID1,Master)
 !*BASIS PARAMETERS
 call LS_MPI_BUFFER(dalton%ATOMBASIS,Master)
-call LS_MPI_BUFFER(dalton%BASIS,Master)
-call LS_MPI_BUFFER(dalton%AUXBASIS,Master)
-call LS_MPI_BUFFER(dalton%CABSBASIS,Master)
-call LS_MPI_BUFFER(dalton%JKBASIS,Master)
+call LS_MPI_BUFFER(dalton%BASIS,nBasisBasParam,Master)
 call LS_MPI_BUFFER(dalton%NOFAMILY,Master)
 call LS_MPI_BUFFER(dalton%Hermiteecoeff,Master)
 call LS_MPI_BUFFER(dalton%DoSpherical,Master)
@@ -1480,7 +1460,7 @@ call LS_MPI_BUFFER(scheme%LU_LUINTR,Master)
 call LS_MPI_BUFFER(scheme%LU_LUINDM,Master)
 call LS_MPI_BUFFER(scheme%LU_LUINDR,Master)
 !*BASIS PARAMETERS
-call LS_MPI_BUFFER(scheme%AUXBASIS,Master)
+call LS_MPI_BUFFER(scheme%BASIS,nBasisBasParam,Master)
 call LS_MPI_BUFFER(scheme%NOFAMILY,Master)
 call LS_MPI_BUFFER(scheme%Hermiteecoeff,Master)
 call LS_MPI_BUFFER(scheme%DoSpherical,Master)
@@ -1668,11 +1648,13 @@ IF(SLAVE)THEN
    MOLECULE%nbastAUX = 0
    MOLECULE%nbastCABS = 0
    MOLECULE%nbastJK = 0
+   MOLECULE%nbastADMM = 0
    MOLECULE%nbastVAL = 0
    MOLECULE%nprimbastREG = 0
    MOLECULE%nprimbastAUX = 0
    MOLECULE%nprimbastCABS = 0
    MOLECULE%nprimbastJK = 0
+   MOLECULE%nprimbastADMM = 0
    MOLECULE%nprimbastVAL = 0
    call mem_alloc(MOLECULE%ATOM,MOLECULE%nAtoms)
 ENDIF
@@ -1728,8 +1710,8 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%SubsystemIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
-call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
-do K = 1,MOLECULE%ATOM(I)%nbasis
+!call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
+do K = 1,nBasisBasParam!MOLECULE%ATOM(I)%nbasis
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%basislabel(K),len(MOLECULE%ATOM(I)%basislabel(K)),Master)
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%basisindex(K),Master)
    call LS_MPI_BUFFER(MOLECULE%ATOM(I)%IDtype(K),Master)
@@ -1745,6 +1727,8 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbCABS,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbCABS,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbJK,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbJK,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbADMM,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbADMM,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nContOrbVAL,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nPrimOrbVAL,Master)
 IF(SLAVE)THEN
@@ -1756,6 +1740,8 @@ IF(SLAVE)THEN
    MOLECULE%nPrimbastCABS= MOLECULE%nPrimbastCABS+ MOLECULE%ATOM(I)%nPrimOrbCABS
    MOLECULE%nbastJK      = MOLECULE%nbastJK     + MOLECULE%ATOM(I)%nContOrbJK
    MOLECULE%nPrimbastJK = MOLECULE%nPrimbastJK + MOLECULE%ATOM(I)%nPrimOrbJK
+   MOLECULE%nbastADMM     = MOLECULE%nbastADMM   + MOLECULE%ATOM(I)%nContOrbADMM
+   MOLECULE%nPrimbastADMM= MOLECULE%nPrimbastADMM+ MOLECULE%ATOM(I)%nPrimOrbADMM
    MOLECULE%nbastVAL     = MOLECULE%nbastVAL     + MOLECULE%ATOM(I)%nContOrbVAL
    MOLECULE%nPrimbastVAL = MOLECULE%nPrimbastVAL + MOLECULE%ATOM(I)%nPrimOrbVAL
 ENDIF
@@ -1775,18 +1761,20 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
 !
   INTEGER            :: I,J,K,nrow,ncol,nsize1,nsize2
 
+  IF(slave)THEN
+     call nullifyBasisset(BAS)
+  ENDIF
   call LS_MPI_BUFFER(BAS%natomtypes,Master)
+  call LS_MPI_BUFFER(BAS%label,len(BAS%label),Master)
+  call LS_MPI_BUFFER(BAS%labelindex,Master)
+  call LS_MPI_BUFFER(BAS%nChargeindex,Master)
+  call LS_MPI_BUFFER(BAS%nbast,Master)
+  call LS_MPI_BUFFER(BAS%nprimbast,Master)
+  call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
+  call LS_MPI_BUFFER(BAS%GCbasis,Master)
+  call LS_MPI_BUFFER(BAS%Spherical,Master)
+  call LS_MPI_BUFFER(BAS%Gcont,Master)     
   IF(BAS%natomtypes.NE. 0)THEN
-     call LS_MPI_BUFFER(BAS%labelindex,Master)
-     call LS_MPI_BUFFER(BAS%nChargeindex,Master)
-     call LS_MPI_BUFFER(BAS%nbast,Master)
-     call LS_MPI_BUFFER(BAS%nprimbast,Master)
-     call LS_MPI_BUFFER(BAS%label,len(BAS%label),Master)
-     call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
-     call LS_MPI_BUFFER(BAS%GCbasis,Master)
-     call LS_MPI_BUFFER(BAS%Spherical,Master)
-     call LS_MPI_BUFFER(BAS%Gcont,Master)
-     
      IF(slave)THEN
         call mem_alloc(BAS%ATOMTYPE,BAS%natomtypes)
      ENDIF
@@ -1841,19 +1829,14 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
            ENDDO
         ENDDO
      ENDDO
-     IF(BAS%nChargeindex .NE. 0)THEN
-        IF(SLAVE)THEN
-           call mem_alloc(BAS%Chargeindex,BAS%nChargeindex,.TRUE.)
-        ENDIF
-        DO I = 0,BAS%nChargeindex
-           call LS_MPI_BUFFER(BAS%Chargeindex(I),Master)
-        ENDDO
-     ELSE
-        BAS%nChargeindex=0
+  ENDIF
+  IF(BAS%nChargeindex .NE. 0)THEN
+     IF(SLAVE)THEN
+        call mem_alloc(BAS%Chargeindex,BAS%nChargeindex,.TRUE.)
      ENDIF
-  ELSE
-     call LS_MPI_BUFFER(BAS%labelindex,Master)
-     call LS_MPI_BUFFER(BAS%nChargeindex,Master)
+     DO I = 0,BAS%nChargeindex
+        call LS_MPI_BUFFER(BAS%Chargeindex(I),Master)
+     ENDDO
   ENDIF
 
 END SUBROUTINE mpicopy_basissetinfo

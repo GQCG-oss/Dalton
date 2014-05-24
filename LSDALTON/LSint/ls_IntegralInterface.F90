@@ -16,7 +16,8 @@ MODULE ls_Integral_Interface
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
   use ao_typetype, only: aoitem
   use ao_type, only: free_aoitem
-  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO
+  use basis_typetype, only: BASISINFO, BASIS_PT, BASISSETINFO, RegBasParam, &
+       & AUXBasParam,CABBasParam,JKBasParam,VALBasParam,GCTBasParam,ADMBasParam
   use molecule_typetype, only: MOLECULE_PT, MOLECULEINFO
   use lstensor_typetype, only: lstensor
   use lstensor_operationsmod, only: lstensor_nullify, &
@@ -283,6 +284,7 @@ END SUBROUTINE addSubGradient2
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS      AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK        AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 !>
@@ -1758,6 +1760,7 @@ END SUBROUTINE ls_get_coulomb_and_exchange_mat
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS'     AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK'       AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 SUBROUTINE ls_jengine(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
@@ -2010,6 +2013,7 @@ END SUBROUTINE ls_jengine
 !>     DF-Aux       AOdfAux         Auxiliary basis for density-fitting
 !>     DF-CABS'     AOdfCABS        Complementary Auxiliary basis for F12
 !>     DF-JK'       AOdfJK          Density-fitting basis set for Fock matrix for F12
+!>     ADMM         AOadmm          Auxiliary Density matrix method basis set
 !>     VALENCE      AOVAL           Regular Level 2  or Valence basis 
 !>     Empty        AOEmpty         Empty, used for two and three-center integrals
 SUBROUTINE ls_jengine_memdist(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
@@ -3707,6 +3711,7 @@ Integer,intent(IN)                :: LUPRI,LUERR
 TYPE(BASISSETINFO),pointer :: AObasis
 Logical :: uncont,intnrm,emptyAO
 integer :: AObatchdim
+Character(len=8)     :: AOstring
 uncont = scheme%uncont
 IF (intType.EQ.Primitiveinttype) THEN
   intnrm = .TRUE.
@@ -3720,15 +3725,17 @@ ENDIF
 emptyAO = .false.
 SELECT CASE(AO)
 CASE (AORegular)
-   AObasis => Basis%REGULAR
+   AObasis => Basis%BINFO(RegBasParam)  !Regular Basis
 CASE (AOdfAux)
-   AObasis => Basis%AUXILIARY
+   AObasis => Basis%BINFO(AUXBasParam)  !AUXILIARY Basis
 CASE (AOdfCABS)
-   AObasis => Basis%CABS
+   AObasis => Basis%BINFO(CABBasParam)  !CABS Basis
 CASE (AOdfJK)
-   AObasis => Basis%JK
+   AObasis => Basis%BINFO(JKBasParam)   !JK Basis
 CASE (AOVAL)
-   AObasis => Basis%VALENCE
+   AObasis => Basis%BINFO(VALBasParam)  !VALENCE Basis
+CASE (AOadmm)
+   AObasis => Basis%BINFO(ADMBasParam)  !ADMM Basis
 CASE (AOEmpty)
    emptyAO = .true.
    CALL BUILD_EMPTY_AO(AObatch,LUPRI)
@@ -3746,9 +3753,10 @@ CASE (AOelField)
    CALL BUILD_EMPTY_ELFIELD_AO(AObatch,Molecule,LUPRI)
    nDim = 3
 CASE DEFAULT
-   print*,'case: ',AO
-   WRITE(lupri,*) 'case: ',AO
-   WRITE(luerr,*) 'case: ',AO
+   print*,'Programming error: Not a case in SetAObatch: case: ',AO
+   WRITE(lupri,*) 'Programming error: Not a case in SetAObatch: case: ',AO
+   call param_AO_Stringfromparam(AOstring,AO)
+   WRITE(luerr,*) 'Programming error: Not a case in SetAObatch: case: ',AOstring
    CALL LSQuit('Programming error: Not a case in SetAObatch!',lupri)
 END SELECT
 IF (.not.emptyAO) THEN

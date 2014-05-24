@@ -805,19 +805,19 @@ contains
     call mem_alloc(molecule%atom_size,natoms)
     molecule%atom_size=0
 
-    r = mylsitem%input%basis%regular%labelindex
+    r = mylsitem%input%basis%binfo(RegBasParam)%labelindex
 
     ! loop over atoms
     do i=1,natoms
 
        if(r == 0) then
           icharge = int(mylsitem%input%molecule%atom(i)%charge)
-          itype = mylsitem%input%basis%regular%chargeindex(icharge)
+          itype = mylsitem%input%basis%binfo(RegBasParam)%chargeindex(icharge)
        else
           itype = mylsitem%input%molecule%atom(i)%idtype(1)
        end if
 
-       molecule%atom_size(i) = mylsitem%input%basis%regular%&
+       molecule%atom_size(i) = mylsitem%input%basis%binfo(RegBasParam)%&
             atomtype(itype)%TotNOrb
 
     end do
@@ -843,17 +843,18 @@ contains
      call mem_alloc(molecule%atom_cabssize,natoms)
      molecule%atom_cabssize=0
 
-     r = mylsitem%input%basis%cabs%labelindex
+     r = mylsitem%input%basis%binfo(CABBasParam)%labelindex
        
      ! loop over atoms
      do i=1,natoms
       if(r == 0) then
          icharge = int(mylsitem%input%molecule%atom(i)%charge)
-         itype = mylsitem%input%basis%cabs%chargeindex(icharge)
+         itype = mylsitem%input%basis%binfo(CABBasParam)%chargeindex(icharge)
       else
          itype = mylsitem%input%molecule%atom(i)%idtype(r)
       end if
-      molecule%atom_cabssize(i) = mylsitem%input%basis%cabs%atomtype(itype)%TotNOrb
+      molecule%atom_cabssize(i) = &
+           & mylsitem%input%basis%binfo(CABBasParam)%atomtype(itype)%TotNOrb
      end do
 
      ! get first and last index of an atom in ao matrix

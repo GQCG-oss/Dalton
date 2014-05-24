@@ -151,8 +151,10 @@ module response_wrapper_type_module
      real(realk) :: rsp_gamma
      !> standard response solver with symmetriazed trial vectors
      logical :: rsp_stdnew
-     !> standard response solver with paired trial vectors
+     !> complex response solver with symmetrixed trial vectors
      logical :: rsp_cmplxnew
+     !cpp solver
+     logical :: rsp_cpp
      !> dynamic convergence requested
      logical :: rsp_convdyn
      !> Olsen algorithm requested for the eigenvalue equation
@@ -423,7 +425,8 @@ Contains
 
     rspsolverinput%rsp_complex = .false.
     rspsolverinput%rsp_gamma=0E0_realk
-    rspsolverinput%rsp_cmplxnew = .true.
+    rspsolverinput%rsp_cpp = .true.
+    rspsolverinput%rsp_cmplxnew = .false.
     rspsolverinput%rsp_stdnew = .false.
     rspsolverinput%rsp_convdyn = .false.   
     rspsolverinput%rsp_olsen = .false.

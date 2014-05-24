@@ -159,12 +159,19 @@ contains
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
 
-
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
     if(DECinfo%check_lcm_orbitals) then
        call check_lcm_against_canonical(molecule,MyLsitem)
        return
     end if
+
+    if(DECinfo%force_Occ_SubSystemLocality)then
+       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
+    if(DECinfo%check_Occ_SubSystemLocality)then
+       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
 
 
     ! Actual DEC calculation

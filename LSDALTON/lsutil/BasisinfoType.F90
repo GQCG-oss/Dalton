@@ -10,6 +10,19 @@ MODULE basis_typetype
  INTEGER, PARAMETER      :: maxBasisSetInLIB=10
  INTEGER, PARAMETER      :: maxNumberOfChargesinLIB=10
 
+ Integer,parameter :: nBasisBasParam=7
+ Integer,parameter :: RegBasParam=1
+ Integer,parameter :: AUXBasParam=2
+ Integer,parameter :: CABBasParam=3
+ Integer,parameter :: JKBasParam=4
+ Integer,parameter :: VALBasParam=5
+ Integer,parameter :: GCTBasParam=6
+ Integer,parameter :: ADMBasParam=7
+
+ character(len=9),parameter :: BasParamLABEL(nBasisBasParam) = &
+      & (/'REGULAR  ','AUXILIARY','CABS     ','JKAUX    ',&
+      & 'VALENCE  ','GCTRANS  ','ADMM     '/)
+
 TYPE segment
 INTEGER                 :: nrow
 INTEGER                 :: ncol
@@ -72,14 +85,10 @@ TYPE BASISSET_PT
 TYPE(BASISSETINFO),pointer :: p
 END TYPE BASISSET_PT
 
+!todo change to BASIS(nBasis) using Regularbasis=1,GCtransbasis=2,..
 TYPE BASISINFO
-LOGICAL                   :: GCtransAlloc 
-TYPE(BASISSETINFO)        :: REGULAR
-TYPE(BASISSETINFO)        :: GCtrans
-TYPE(BASISSETINFO)        :: AUXILIARY
-TYPE(BASISSETINFO)        :: CABS
-TYPE(BASISSETINFO)        :: JK
-TYPE(BASISSETINFO)        :: VALENCE 
+LOGICAL                 :: WBASIS(nBasisBasParam)!Which basis is used/allocated
+TYPE(BASISSETINFO)      :: BINFO(nBasisBasParam)
 END TYPE BASISINFO
 
 TYPE BASIS_PT
@@ -110,7 +119,7 @@ INTEGER,pointer     :: CHARGE(:)!size natoms
 END TYPE BASINF
 
 contains
-subroutine nullifyBasis(BAS)
+subroutine nullifyBasisset(BAS)
   implicit none
   TYPE(BASISSETINFO) :: BAS
   BAS%DunningsBasis = .FALSE.
@@ -125,7 +134,17 @@ subroutine nullifyBasis(BAS)
   BAS%nbast = -1
   BAS%nprimbast = -1
   BAS%label = 'Empty Bas'
-end subroutine nullifyBasis
+end subroutine nullifyBasisset
+
+subroutine nullifyMainBasis(BAS)
+  implicit none
+  TYPE(BASISINFO) :: BAS
+  integer :: I
+  BAS%WBASIS = .FALSE.
+  DO I=1,nBasisBasParam
+     call nullifyBasisset(BAS%BINFO(I))
+  ENDDO
+end subroutine nullifyMainBasis
 
 END MODULE basis_typetype
 

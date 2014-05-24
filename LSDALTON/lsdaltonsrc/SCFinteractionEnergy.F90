@@ -103,7 +103,7 @@ CONTAINS
 
     WRITE(lupri,*)'Subsystem ',TRIM(SubIndexString(SubIndex))
     CALL PRINT_MOLECULEINFO(LUPRI,ls%input%MOLECULE,ls%input%BASIS,ls%input%DALTON%MOLPRINT)
-    CALL PRINT_MOLECULE_AND_BASIS(LUPRI,ls%input%MOLECULE,ls%input%BASIS%REGULAR)
+    CALL PRINT_MOLECULE_AND_BASIS(LUPRI,ls%input%MOLECULE,ls%input%BASIS%BINFO(REGBASPARAM))
 
     IF(config%decomp%nactive.NE.0)call lsquit('counter poise require closed shell',-1)
     
@@ -114,17 +114,17 @@ CONTAINS
        call mat_to_full(D(1),1.0E0_realk,Dfull)
        call ls_dzero(D1full,nbast*nbast)
        !Get SubSystem1 Density matrix as part of full D
-       R = ls%input%basis%regular%labelindex
+       R = ls%input%basis%binfo(RegBasParam)%labelindex
        nbast2 = 0
        do j=1, nAtoms
           IF(ls%input%MOLECULE%ATOM(j)%pointcharge)CYCLE
           IF(R.EQ.0)THEN
              jcharge = INT(ls%input%MOLECULE%ATOM(j)%charge) 
-             jtype = ls%input%basis%regular%chargeindex(jcharge)
+             jtype = ls%input%basis%binfo(RegBasParam)%chargeindex(jcharge)
           ELSE
              jtype = ls%input%MOLECULE%ATOM(j)%IDtype(1)
           ENDIF
-          norbJ = ls%input%basis%regular%ATOMTYPE(jtype)%ToTnorb
+          norbJ = ls%input%basis%binfo(RegBasParam)%ATOMTYPE(jtype)%ToTnorb
           IF(ls%input%Molecule%Atom(j)%SubSystemIndex.EQ.subIndex)THEN
              
              nbast1 = 0
@@ -132,11 +132,11 @@ CONTAINS
                 IF(ls%input%MOLECULE%ATOM(i)%pointcharge)CYCLE
                 IF(R.EQ.0)THEN
                    icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
-                   itype = ls%input%basis%regular%chargeindex(icharge)
+                   itype = ls%input%basis%binfo(RegBasParam)%chargeindex(icharge)
                 ELSE
                    itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
                 ENDIF
-                norbI = ls%input%basis%regular%ATOMTYPE(itype)%ToTnorb
+                norbI = ls%input%basis%binfo(RegBasParam)%ATOMTYPE(itype)%ToTnorb
                 IF(ls%input%Molecule%Atom(i)%SubSystemIndex.EQ.subIndex)THEN
                    
                    do jOrb=1, nOrbJ
