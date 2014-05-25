@@ -636,13 +636,13 @@ C
       END IF
       KDTOTAO = KDTVAO + NCSIM*N2BASX
 
-#ifdef DEBUG_RSPOLI
+!ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
       write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
      &                        KDTOTAO,kfree',
      &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
-#endif
+!endif
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
@@ -1165,7 +1165,7 @@ C
                CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                IF (DOFXV) THEN
-                  WRITE(LUPRI,'(/2A,I5)')
+                  WRITE(LUPRI,'(/A,I5)')
      *         ' FVX total contribution for vector',IOSIM
                   CALL OUTPUT(FVX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
