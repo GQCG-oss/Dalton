@@ -158,7 +158,13 @@ module pno_ccsd_module
 
      !zero the relevant quatnities
      !$OMP WORKSHARE
-     Gai = 0.0E0_realk
+     Gai   = 0.0E0_realk
+     goooo = 0.0E0_realk
+     govov = 0.0E0_realk !remove this integral since it may be provided by MP2
+     goovv = 0.0E0_realk
+     Lvoov = 0.0E0_realk
+     gvvov = 0.0E0_realk
+     gooov = 0.0E0_realk
      !$OMP END WORKSHARE
 
      maxsize=nb**4
@@ -209,8 +215,8 @@ module pno_ccsd_module
         call get_currently_available_memory(MemFree)
         !call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
         !   &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
-        MaxAllowedDimAlpha = nb
-        MaxAllowedDimGamma = nb
+        MaxAllowedDimAlpha = nb/2
+        MaxAllowedDimGamma = nb/2
      endif
      ! ************************************************
      ! * Determine batch information for Gamma batch  *
@@ -311,6 +317,7 @@ module pno_ccsd_module
            !of the mpi and non mpi schemes, this is accounted for, because static,
            !and dynamic load balancing are enabled
            if(alphaB>nbatchesAlpha) exit
+           print *,"JOB ",alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
            la = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
            fa = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
@@ -327,38 +334,38 @@ module pno_ccsd_module
               & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),la,nb,lg,nb,INTSPEC,fullRHS)
 
            w3 = w1
-           !!gvvvv
-           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-           !call dcopy(nv**4,w1,1,gvvvv,1)
+
            !goooo
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-           call dcopy(no**4,w1,1,goooo,1)
+           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
+           !call dcopy(no**4,w1,1,goooo,1)
+           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yo,no,w2,fa,la,fg,lg,goooo)
            !govov
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-           call dcopy(nv**2*no**2,w1,1,govov,1)
+           !call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
+           !call dcopy(nv**2*no**2,w1,1,govov,1)
+           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,govov)
            !goovv
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2)
-           call dcopy(nv**2*no**2,w1,1,goovv,1)
+           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2)
+           !call dcopy(nv**2*no**2,w1,1,goovv,1)
+           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2,fa,la,fg,lg,goovv)
            !Lvoov = 2gvoov - gvvoo
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
-           call array_reorder_4d( p20, w1, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
-           call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
+           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
+           call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,Lvoov)
+           !call array_reorder_4d( p20, w1, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
+           !call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
            !gvvov
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-           call dcopy(nv**3*no,w1,1,gvvov,1)
+           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
+           !call dcopy(nv**3*no,w1,1,gvvov,1)
+           call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,gvvov)
            !gooov
            w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
-           call dcopy(nv*no**3,w1,1,gooov,1)
-           !!gvovo
-           !w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yo,no,w2)
-           !call dcopy(nv**2*no**2,w1,1,gvovo,1)
+           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
+           !call dcopy(nv*no**3,w1,1,gooov,1)
+           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,gooov)
 
 
            w1 = w3
@@ -658,6 +665,11 @@ module pno_ccsd_module
      ! -> Fvv
      call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
      call mem_dealloc(iFock)
+
+
+     Lvoov = p20 * Lvoov
+     call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
+
 
 
      !!DEBUG: A2 term
@@ -4272,10 +4284,26 @@ module pno_ccsd_module
   end subroutine get_common_idx_summation_for_current_aibj
 
 
+  subroutine successive_4ao_mo_trafo_exch(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ,fa,la,fg,lg,res)
+     implicit none
+     integer, intent(in) :: ao,w,x,y,z,fa,la,fg,lg
+     real(realk), intent(inout) :: WXYZ(la*ao*lg*ao),WRKWXYZ(max(z*la*ao*lg,x*y*z*la)),res(w*x*y*z)
+     real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
+
+     !ZZ(ao,z)^T    WXYZ(la ao lg, ao)^T -> WRKWXYZ (z, la ao lg)
+     call dgemm('t','t',z,la*ao*lg,ao,1.0E0_realk,ZZ,ao,WXYZ,la*ao*lg,0.0E0_realk,WRKWXYZ,z)
+     !YY(ao,y)^T WRKWXYZ (z la ao, lg)^T ->    WXYZ(y, z la ao)
+     call dgemm('t','t',y,z*la*ao,lg,1.0E0_realk,YY(fg,1),ao,WRKWXYZ,z*la*ao,0.0E0_realk,WXYZ,y)
+     !XX(ao,x)^T    WXYZ(y z la, ao)^T   -> WRKWXYZ (x y z la)
+     call dgemm('t','t',x,y*z*la,ao,1.0E0_realk,XX,ao,WXYZ,y*z*la,0.0E0_realk,WRKWXYZ,x)
+     !WW(ao,w)^T    WXYZ(x y z, la)^T   -+>  res(w x y z)
+     call dgemm('t','t',w,x*y*z,la,1.0E0_realk,WW(fa,1),ao,WRKWXYZ,x*y*z,1.0E0_realk,res,w)
+
+  end subroutine successive_4ao_mo_trafo_exch
   subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
      implicit none
      integer, intent(in) :: ao,w,x,y,z
-     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(ao*ao*ao*w)
+     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(w*ao*ao*ao)
      real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
      !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
      call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
