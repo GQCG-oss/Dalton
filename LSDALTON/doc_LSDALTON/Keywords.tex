@@ -22,9 +22,13 @@ should always end with *END OF INPUT.
 
 \section{**GENERAL}\label{sec:general}
 
-This input module defines the way the integrals should be calculated.
+This input module contains general settings.
 \begin{description}
 
+\item[\Key{SCFINTERACTIONENERGY}] Calculation of the Counter Poise Corrected Interaction energy (Hartree-Fock and DFT). \newline
+NB: Requires the use of SubSystem labels in the MOLECULE.INP file
+\item[\Key{SAMESUBSYSTEMS}] Assumes that the two subsystems of the Counter Poise Corrected Interaction energy calculation is identical.
+\item[\Key{SUBSYSTEMDENSITY}] Constructs a density matrix for the subsystems of the Counter Poise Corrected Interaction energy calculation using the full system density matrix.  
 \item[\Key{SCALAPACK}] Use SCALAPACK matrices. \newline
 NB: Requires linking to the scalapack lib (provided by MKL) and the use of the --scalapack keyword during installation.
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
@@ -732,10 +736,15 @@ safety threshold -- stop if the charge integration error becomes larger then thi
 \item[DFTHRI] threshold for screening product of gaussian atomic orbitals
 \item[RHOTHR] threshold for screening of the electron density 
 \end{description}
-\item[\Key{DISPER}] 
-Activates the addition of the empirical dispersion correction following S. Grimme.~\cite{dft-disp:Grimme1,dft-disp:Grimme2} The S6 factors and van der Waals radii of Ref.~\cite{dft-disp:Grimme2} are used.
-Implemented for the functionals BP86, BLYP, PBE, B3LYP for energies and gradients. 
-Does not work when functionals are defined with the \verb|combine| command.
+\item[\Key{DISPER}] defaults to .DFT-D3BJ (see below)
+\item[\Key{DFT-D2}] switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+\item[\Key{D2PAR}] \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\ 
+using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override any values defined within the code.
+\item[\Key{DFT-D3}] switches on Grimmes DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+\item[\Key{DFT-D3BJ}] switches on Grimmes DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}.  The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional.  Analytic gradient contributions are available. This is the presently recommended version.
+\item[\Key{3BODY}] keyword for adding 3-body terms to the DFT-D3 dispersion energy. Note that gradients are not implemented for these corrections
+\item[\Key{D3PAR}] \kw{READ (LUINP,*) D3\_s6\_inp, D3\_alp\_inp, D3\_rs6\_inp, D3\_rs18\_inp, D3\_s18\_inp} \\
+  keyword for specifying the $s_6$, $\alpha$, $s_{r,6}$, $s_{r,8}$ and $s_8$ parameters of the DFT-D3 methods. Note, take care to match the parameter values to the correct version of the DFT-D3 correction.
 \item[\Key{FINE}]
 Shortcut keyword for radial integration accuracy $10^{-13}$ and angular expansion order equal to $42$.
 \item[\Key{GRID TYPE}] \verb||\newline

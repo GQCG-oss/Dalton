@@ -235,7 +235,7 @@ C
 C     Analyse the diagonal.
 C     ---------------------
 C
-      IF (IPRINT .GT. 2) THEN
+      IF (IPRINT .GT. 1) THEN
          WRITE(LUPRI,'(//,A,/)') '>>> Checking initial diagonal'
          CALL CC_ANADI(DIAG,.TRUE.)
       END IF
@@ -850,6 +850,7 @@ C
          IF (IPRINT .EQ. 1) THEN
             WRITE(LUPRI,'(I4,I9,8X,I3,I7,I13,D24.9)') ICHOV2,ICHOV,
      &                                 NUMINT,NINT2,NQTOT,DIMAX
+            CALL FLSHFO(LUPRI)
          ELSE
             WRITE(LUPRI,'(/,A,2I6)')
      &           'Number of Cholesky vectors so far  : ',ICHOV2,ICHOV
@@ -1406,6 +1407,11 @@ C
 #include "eribuf.h"
 C
 C
+      CALL QENTER('CHODRV')
+      CALL GETTIM(TIMCPU,TIMWAL)
+      CHOCPU = TIMCPU
+      CHOWAL = TIMWAL
+C
 C------------------------------------------
 C     Suggest to use 64 bit integer version
 C------------------------------------------
@@ -1595,7 +1601,7 @@ C
       END IF
 C
   777 CONTINUE
-      IF (SKIP) RETURN
+      IF (SKIP) GOTO 9999
 C
 C
          CALL CC_CHOLESKY(WORK(KDIAG),WORK(KOLD),WORK(KIND),
@@ -1633,7 +1639,20 @@ C
          CALL SYSTEM('rm -f AOTWOINT')
       END IF
 C
-      WRITE(LUPRI,'(//)')
+ 9999 CONTINUE
+C
+      CALL GETTIM(TIMCPU,TIMWAL)
+      CHOCPU = TIMCPU - CHOCPU
+      CHOWAL = TIMWAL - CHOWAL
+C
+      WRITE(LUPRI,'(//,A,F10.2,A)') 
+     &            ' >>>> Total CPU  time used in CHOLESKY :',
+     &            CHOCPU, ' seconds'
+      WRITE(LUPRI,'(A,F10.2,A,///)') 
+     &            ' >>>> Total wall time used in CHOLESKY :',
+     &            CHOWAL, ' seconds'
+C
+      CALL QEXIT('CHODRV')
 C
       RETURN
       END

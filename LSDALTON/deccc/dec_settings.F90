@@ -78,11 +78,13 @@ contains
     DECinfo%use_pnos             = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
-    DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%simplePNOthr         = 1.0E-7_realk
+    DECinfo%EOSPNOthr            = 1.0E-5_realk
+    DECinfo%noFAtrunc            = .false.
+    DECinfo%noFAtrafo            = .false.
     DECinfo%noPNOoverlaptrunc    = .false.
-    DECinfo%PNOoverlapthr        = 1.0E-5
-    DECinfo%PNOtriangular        = .false.
+    DECinfo%PNOoverlapthr        = 1.0E-5_realk
+    DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
@@ -97,6 +99,8 @@ contains
     DECinfo%simple_mulliken_threshold    = .false.
     DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
+    DECinfo%check_Occ_SubSystemLocality  = .false.
+    DECinfo%force_Occ_SubSystemLocality  = .false.
     DECinfo%use_canonical                = .false.
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
@@ -444,7 +448,6 @@ contains
           read(input,*) DECinfo%MPIgroupsize
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
 
 
 #ifndef VAR_MPI
@@ -467,9 +470,11 @@ contains
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
+       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
        case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 
@@ -479,13 +484,13 @@ contains
 
 
 
-       !OTHER STUFF
+       !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
        case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
+       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -493,15 +498,16 @@ contains
        case('.FRAGREDMODEL') 
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
-       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12')
+          DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-          !endif mod_unreleased
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
        case('.INTERACTIONENERGY')     
@@ -576,6 +582,8 @@ contains
 
           ! Check that input orbitals are orthogonal (debug)
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
+       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
+       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
 
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SKIPFULL') 
@@ -716,6 +724,18 @@ contains
        DECinfo%CCSDnosaferun = .true.
     endif
 
+    if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
+      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+            & does not make sense, please change input!',-1)
+
+    endif
+
 
   end subroutine check_dec_input
 
@@ -837,6 +857,8 @@ contains
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
+    write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
+    write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output

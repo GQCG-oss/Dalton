@@ -399,6 +399,9 @@ DO IAO=1,4
   ELSEIF (AOstring(IAO).EQ.AOdfJK) THEN
     Filename(iFilename:iFilename+1) = 'jk'
     iFilename = iFilename + 2
+  ELSEIF (AOstring(IAO).EQ.AOadmm) THEN
+    Filename(iFilename:iFilename) = 'a'
+    iFilename = iFilename + 1
   ELSEIF (AOstring(IAO).EQ.AOVAL) THEN
     Filename(iFilename:iFilename) = 'v'
     iFilename = iFilename + 1

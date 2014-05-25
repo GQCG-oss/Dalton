@@ -14,7 +14,8 @@ use lattice_type, only: lvec_list_t
  use lattice_vectors, only: pbc_setup_default
 #endif
 use basis_type, only: copy_basissetinfo, free_basissetinfo
-use basis_typetype,only: nullifyBasis
+use basis_typetype,only: nullifyBasisset,nullifyMainBasis,&
+     & BasParamLABEL,nBasisBasParam,GCTBasParam
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
 use READMOLEFILE, only: read_molfile_and_build_molecule
@@ -103,7 +104,7 @@ logical              :: doDEC
 LOGICAL              :: doprint
 TYPE(lvec_list_t)    :: latt_config
 !
-TYPE(BASISSETLIBRARYITEM) :: LIBRARY
+TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
 integer              :: LUCME,IDUMMY,I
 CHARACTER(len=80)    :: BASISSETNAME
 CHARACTER(len=9)     :: BASISLABEL
@@ -120,6 +121,7 @@ NULLIFY(intinp%MOLECULE)
 NULLIFY(intinp%BASIS)
 ALLOCATE(intinp%MOLECULE)
 ALLOCATE(intinp%BASIS)
+call nullifyMainBasis(intinp%BASIS)
 
 IF (doprint) THEN
    !CALL PRINT_INTRO(LUPRI)
@@ -149,10 +151,10 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 !*************************************************
 #ifdef MOD_UNRELEASED
   call pbc_setup_default(latt_config)
-#endif
-CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
-     & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%auxbasis,&
-     & intinp%dalton%CABSbasis,intinp%dalton%JKbasis,latt_config)
+#endif  
+  CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
+       & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
+       & latt_config)
 
 integral%nelectrons = intinp%MOLECULE%nelectrons 
 integral%molcharge = INT(intinp%MOLECULE%charge)
@@ -178,12 +180,6 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ MOLFILE',TIM1,TIM2,LUPRI)
 !*
 !*************************************************
 
-IF (doprint) THEN
-  WRITE(LUPRI,'(2X,A)')' '
-  WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS'
-  WRITE(LUPRI,'(2X,A)')' '
-ENDIF
-BASISLABEL='REGULAR  '
 IF(doDEC)intinp%DALTON%NOFAMILY=.TRUE.
 !this is due to the ordering of basisfunctions in the batches and the 
 !minAObatch sizes calculation. 
@@ -195,99 +191,45 @@ IF(doDEC)intinp%DALTON%NOGCINTEGRALTRANSFORM=.TRUE.
 !added complications if the 2int screening matrix should be calculated. 
 !it needs to be possible for a single integral to change basis in the integral call
 
-CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%REGULAR,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
+IF (doprint) THEN
+   do i=1,nBasisBasParam
+      IF(intinp%DALTON%BASIS(i))THEN
+         WRITE(lupri,*)'BASISSETLIBRARY  : ',BasParamLABEL(i)
+         CALL PRINT_BASISSETLIBRARY(LUPRI,LIBRARY(i))
+      ENDIF
+   enddo
+ENDIF
 
 IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD BASIS',TIM1,TIM2,LUPRI)
 
-IF (doprint) THEN
-  CALL PRINT_BASISSETLIBRARY(LUPRI,LIBRARY)
-ENDIF
-
-IF(intinp%DALTON%AUXBASIS)THEN
-
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
+call nullifyMainBasis(intinp%BASIS)
+intinp%BASIS%WBASIS = intinp%DALTON%BASIS
+do i=1,nBasisBasParam
+   IF(intinp%BASIS%WBASIS(I))THEN
+      IF (doprint) THEN
+         WRITE(LUPRI,'(2X,A)')' '
+         WRITE(LUPRI,'(2X,3A)')'CALLING BUILD BASIS WITH DEFAULT ',BasParamLABEL(i),' BASIS'
+         WRITE(LUPRI,'(2X,A)')' '
+      ENDIF
+      CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
+           & intinp%MOLECULE,intinp%BASIS%BINFO(I),LIBRARY,&
+           & BasParamLABEL(I),intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
+           & doprint,intinp%DALTON%DOSPHERICAL,I)
+      IF(i.EQ.1)THEN
+         !regular basis
+         nbast = getNbasis(AORdefault,Contractedinttype,intinp%MOLECULE,LUPRI)
+      ENDIF
+      IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD '//BasParamLABEL(I),TIM1,TIM2,LUPRI)
    ENDIF
-   BASISLABEL='AUXILIARY'
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%AUXILIARY,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD AUXBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%AUXILIARY)
-   ENDIF
-   
-ELSE
-intinp%BASIS%AUXILIARY%natomtypes = 0
-intinp%BASIS%AUXILIARY%nChargeindex = 0  
-intinp%BASIS%AUXILIARY%labelindex = 0  
-nullify(intinp%BASIS%AUXILIARY%Chargeindex)
-ENDIF
+ENDDO
 
-IF(intinp%DALTON%CABSBASIS)THEN
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH COMPLEMENTARY AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
-   ENDIF
-   BASISLABEL='CABS     '
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%CABS,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD CABSBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%CABS)
-   ENDIF
-ELSE
-   intinp%BASIS%CABS%natomtypes = 0
-   intinp%BASIS%CABS%nChargeindex = 0  
-   intinp%BASIS%CABS%labelindex = 0  
-   nullify(intinp%BASIS%CABS%Chargeindex)
-ENDIF
-
-IF(intinp%DALTON%JKBASIS)THEN
-   IF (doprint) THEN
-      WRITE(LUPRI,'(2X,A)')' '
-      WRITE(LUPRI,'(2X,A)')'CALLING BUILD BASIS WITH COMPLEMENTARY AUXILIARY BASIS'
-      WRITE(LUPRI,'(2X,A)')' '
-   ENDIF
-   BASISLABEL='JKAUX    '
-   CALL Build_basis(LUPRI,intinp%DALTON%BASPRINT,&
-     &intinp%MOLECULE,intinp%BASIS%JK,LIBRARY,&
-     &BASISLABEL,intinp%DALTON%UNCONT,intinp%DALTON%NOSEGMENT,&
-     &doprint,intinp%DALTON%DOSPHERICAL)
-   IF(intinp%DALTON%TIMINGS) CALL LSTIMER('BUILD JKAUXBASIS',TIM1,TIM2,LUPRI)
-   IF (doprint) THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%JK)
-   ENDIF
-ELSE
-   intinp%BASIS%JK%natomtypes = 0
-   intinp%BASIS%JK%nChargeindex = 0  
-   intinp%BASIS%JK%labelindex = 0  
-   nullify(intinp%BASIS%JK%Chargeindex)
-ENDIF
-
-intinp%BASIS%VALENCE%natomtypes = 0
-intinp%BASIS%VALENCE%nChargeindex = 0  
-intinp%BASIS%VALENCE%labelindex = 0  
-nullify(intinp%BASIS%VALENCE%Chargeindex)
-
-nullify(intinp%BASIS%GCtrans%ATOMTYPE)
-intinp%BASIS%GCtrans%natomtypes = 0
-intinp%BASIS%GCtrans%labelindex = 0
-intinp%BASIS%GCtrans%nChargeindex = 0
-intinp%BASIS%GCtransAlloc = .FALSE.
 IF (doprint) THEN
    CALL PRINT_MOLECULEINFO(LUPRI,intinp%MOLECULE,intinp%BASIS,intinp%DALTON%MOLPRINT)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%REGULAR)
+   do i=1,nBasisBasParam
+      IF(intinp%BASIS%WBASIS(I))THEN
+         CALL PRINT_MOLECULE_AND_BASIS(LUPRI,intinp%MOLECULE,intinp%BASIS%BINFO(I))
+      ENDIF
+   enddo
 ENDIF
 
 intinp%DO_DFT = dodft
@@ -313,55 +255,24 @@ TYPE(DALTONINPUT)    :: intinp
 integer   :: LUPRI
 !> the logical unit number for the error file
 integer   :: LUERR
+integer :: ibas
 
 call free_Moleculeinfo(intinp%MOLECULE)
-IF(intinp%BASIS%REGULAR%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%REGULAR)
-ENDIF
-IF(intinp%BASIS%AUXILIARY%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%AUXILIARY)
-ENDIF
-IF(intinp%BASIS%CABS%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%CABS)
-ENDIF
-IF(intinp%BASIS%JK%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%JK)
-ENDIF
-IF(intinp%BASIS%VALENCE%natomtypes .NE. 0)THEN
-   call free_basissetinfo(intinp%BASIS%VALENCE)
-ENDIF
-IF(intinp%BASIS%GCtransAlloc)THEN
-   IF(intinp%BASIS%GCtrans%natomtypes .NE. 0)THEN
-      call free_basissetinfo(intinp%BASIS%GCtrans)
+DO ibas=1,nBasisBasParam
+   IF(intinp%BASIS%WBASIS(ibas))THEN
+      IF(intinp%BASIS%BINFO(ibas)%natomtypes .NE. 0)THEN
+         call free_basissetinfo(intinp%BASIS%BINFO(ibas))
+      ELSE
+         call lsquit('Error in dalton_finalize',-1)
+      ENDIF
    ENDIF
-ENDIF
+ENDDO
 DEALLOCATE(intinp%MOLECULE)
 DEALLOCATE(intinp%BASIS)
 call io_free(intinp%io)
 
 END SUBROUTINE dalton_finalize
 
-!!$!> \brief free the daltoninput structure
-!!$!> \author T. Kjaergaard
-!!$!> \date 2010
-!!$SUBROUTINE dalton_free(intinp)
-!!$implicit none
-!!$!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
-!!$TYPE(DALTONINPUT) :: intinp
-!!$
-!!$call free_Moleculeinfo(intinp%MOLECULE)
-!!$call free_basissetinfo(intinp%BASIS%REGULAR)
-!!$IF(intinp%DALTON%AUXBASIS)THEN
-!!$   call free_basissetinfo(intinp%BASIS%AUXILIARY)
-!!$ENDIF
-!!$DEALLOCATE(intinp%MOLECULE)
-!!$DEALLOCATE(intinp%BASIS)
-!!$NULLIFY(intinp%MOLECULE)
-!!$NULLIFY(intinp%BASIS)
-!!$call io_free(intinp%io)
-!!$
-!!$END SUBROUTINE dalton_free
- 
 !> \brief print dalton file
 !> \author T. Kjaergaard
 !> \date 2010
@@ -573,7 +484,7 @@ integer            :: LUPRI
 !> the printlevel integer, determining how much output should be generated
 integer            :: IPRINT
 !
-integer            :: IAO
+integer            :: IAO,I
 CHARACTER(len=9)   :: BASISLABEL
 
 FRAGMENT%lupri = lsfull%lupri
@@ -588,54 +499,41 @@ FRAGMENT%INPUT%DALTON%DFT = lsfull%INPUT%DALTON%DFT
 
 NULLIFY(FRAGMENT%INPUT%BASIS)
 ALLOCATE(FRAGMENT%INPUT%BASIS)
-CALL Copy_basissetinfo(lsfull%INPUT%BASIS%REGULAR,fragment%INPUT%BASIS%REGULAR)
+call nullifyMainBasis(FRAGMENT%INPUT%BASIS)
+FRAGMENT%INPUT%BASIS%WBASIS = lsfull%INPUT%BASIS%WBASIS
+do i=1,nBasisBasParam
+ IF(lsfull%INPUT%BASIS%WBASIS(I))THEN
+  CALL Copy_basissetinfo(lsfull%INPUT%BASIS%BINFO(i),fragment%INPUT%BASIS%BINFO(I))
+ ENDIF
+enddo
+IF(.NOT.lsfull%input%DALTON%NOGCINTEGRALTRANSFORM)THEN
+   CALL LSQUIT('NOGCINTEGRALTRANSFORM false in build_ccfragmentlsitem',-1)
+ENDIF
 
 !The values of daltonitem which are set in readmolfile
-fragment%input%DALTON%AUXBASIS = lsfull%input%DALTON%AUXBASIS
-fragment%input%DALTON%CABSBASIS = lsfull%input%DALTON%CABSBASIS
-fragment%input%DALTON%JKBASIS = lsfull%input%DALTON%JKBASIS
 FRAGMENT%input%dalton%DoSpherical  = lsfull%input%DALTON%DoSpherical 
 FRAGMENT%input%numFragments  = lsfull%input%numFragments 
-FRAGMENT%input%DALTON%NOGCINTEGRALTRANSFORM=.TRUE. 
 
-IF(FRAGMENT%INPUT%DALTON%AUXBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%AUXILIARY,fragment%input%BASIS%AUXILIARY)
-ELSE
-   call nullifyBasis(fragment%input%BASIS%AUXILIARY)
-ENDIF
-
-IF(FRAGMENT%INPUT%DALTON%CABSBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%CABS,fragment%input%BASIS%CABS)
-ELSE
-   call nullifyBasis(fragment%input%BASIS%CABS)
-ENDIF
-
-IF(FRAGMENT%INPUT%DALTON%JKBASIS)THEN
-   CALL Copy_basissetinfo(lsfull%input%BASIS%JK,fragment%input%BASIS%JK)
-ELSE
-   call nullifyBasis(fragment%input%BASIS%JK)
-ENDIF
-
-call nullifyBasis(fragment%input%BASIS%VALENCE)
-call nullifyBasis(fragment%input%BASIS%GCtrans)
-fragment%INPUT%BASIS%GCtransAlloc = .FALSE.
 
 NULLIFY(FRAGMENT%INPUT%MOLECULE)
 ALLOCATE(FRAGMENT%INPUT%MOLECULE)
-CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,fragment%input%BASIS,&
-     &FRAGMENT%INPUT%DALTON%AUXBASIS,FRAGMENT%INPUT%DALTON%CABSBASIS,&
-     &FRAGMENT%INPUT%DALTON%JKBASIS,ATOMS,nATOMS,LUPRI)
+CALL BUILD_FRAGMENT(lsfull%input%MOLECULE,FRAGMENT%input%MOLECULE,&
+     & fragment%input%BASIS,ATOMS,nATOMS,LUPRI)
 
 IF(IPRINT .GT. 0)THEN
    CALL PRINT_MOLECULEINFO(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS,IPRINT)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%REGULAR)
-   IF(FRAGMENT%INPUT%DALTON%AUXBASIS)THEN
-      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%AUXILIARY)
-   ENDIF
+   do i=1,nBasisBasParam
+    IF(lsfull%input%BASIS%WBASIS(I))THEN
+     CALL PRINT_MOLECULE_AND_BASIS(LUPRI,FRAGMENT%input%MOLECULE,FRAGMENT%input%BASIS%BINFO(I))
+    ENDIF
+   enddo
 ENDIF
 
 CALL typedef_init_setting(FRAGMENT%setting)
 CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)
+IF(FRAGMENT%SETTING%IntegralTransformGC)THEN
+   CALL LSQUIT('IntegralTransformGC true in build_ccfragmentlsitem',-1)
+ENDIF
 FRAGMENT%SETTING%IntegralTransformGC =.FALSE.
 
 ! Set setting communicator to be local group communicator

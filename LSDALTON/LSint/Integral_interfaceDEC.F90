@@ -21,7 +21,7 @@ MODULE IntegralInterfaceDEC
   use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO
   use lstiming
   use memory_handling,only: mem_alloc, mem_dealloc
-  use basis_typetype, only: BASISSETINFO
+  use basis_typetype, only: BASISSETINFO,RegBasParam,CABBasParam
   PUBLIC:: II_precalc_DECScreenMat,II_getBatchOrbitalScreen,&
        & II_getBatchOrbitalScreen2,II_getBatchOrbitalScreenK,&
        & II_getBatchOrbitalScreen2K,II_GET_DECPACKED4CENTER_J_ERI,&
@@ -225,9 +225,9 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
 
    SELECT CASE(AO(3))
    CASE (AORegular)
-      AObasis1 => setting%basis(3)%p%REGULAR
+      AObasis1 => setting%basis(3)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
-      AObasis1 => setting%basis(3)%p%CABS
+      AObasis1 => setting%basis(3)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(3)
       WRITE(luerr,*) 'case: ',AO(3)
@@ -236,9 +236,9 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
    
    SELECT CASE(AO(4))
    CASE (AORegular)
-      AObasis2 => setting%basis(4)%p%REGULAR
+      AObasis2 => setting%basis(4)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
-      AObasis2 => setting%basis(4)%p%CABS
+      AObasis2 => setting%basis(4)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(4)
       WRITE(luerr,*) 'case: ',AO(4)
@@ -371,9 +371,9 @@ AOT1batch1 = 0
 
 SELECT CASE(AOspec)
 CASE (AORegular)
-   AObasis => setting%basis(1)%p%REGULAR
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
-   AObasis => setting%basis(1)%p%CABS
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
    WRITE(lupri,*) 'case: ',AOspec
@@ -425,9 +425,9 @@ ENDIF
 
 SELECT CASE(AOspec)
 CASE (AORegular)
-   AObasis => setting%basis(1)%p%REGULAR
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
-   AObasis => setting%basis(1)%p%CABS
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
    WRITE(lupri,*) 'case: ',AOspec

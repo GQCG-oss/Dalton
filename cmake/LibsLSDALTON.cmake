@@ -358,27 +358,29 @@ target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
-add_executable(
-    lsdalton.x
-    ${CMAKE_SOURCE_DIR}/LSDALTON/lsdaltonsrc/lsdalton_wrapper.f90
-    ${LINK_FLAGS}
-    )
+if(NOT ENABLE_CHEMSHELL)
+    add_executable(
+        lsdalton.x
+        ${CMAKE_SOURCE_DIR}/LSDALTON/lsdaltonsrc/lsdalton_wrapper.f90
+        ${LINK_FLAGS}
+        )
 
-add_executable(
-    lslib_tester.x
-    ${LSLIB_SOURCES}
-    ${LINK_FLAGS}
-    )
+    add_executable(
+        lslib_tester.x
+        ${LSLIB_SOURCES}
+        ${LINK_FLAGS}
+        )
 
-# we always want to compile lslib_tester.x along with lsdalton.x
-add_dependencies(lsdalton.x lslib_tester.x)
+    # we always want to compile lslib_tester.x along with lsdalton.x
+    add_dependencies(lsdalton.x lslib_tester.x)
 
-if(MPI_FOUND)
-    # Simen's magic fix for Mac/GNU/OpenMPI
-    if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-        if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-            SET_TARGET_PROPERTIES(lsdalton.x     PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-            SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+    if(MPI_FOUND)
+        # Simen's magic fix for Mac/GNU/OpenMPI
+        if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+            if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+                SET_TARGET_PROPERTIES(lsdalton.x     PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+                SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+            endif()
         endif()
     endif()
 endif()
@@ -444,12 +446,14 @@ target_link_libraries(
     ${EXTERNAL_LIBS}
     )
 
-target_link_libraries(
-    lsdalton.x
-    lsdalton
-    ) 
+if(NOT ENABLE_CHEMSHELL)
+    target_link_libraries(
+        lsdalton.x
+        lsdalton
+        )
 
-target_link_libraries(
-    lslib_tester.x
-    lsdalton
-    ) 
+    target_link_libraries(
+        lslib_tester.x
+        lsdalton
+        )
+endif()

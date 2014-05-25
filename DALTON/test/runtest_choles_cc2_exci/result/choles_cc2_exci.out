@@ -1,0 +1,5306 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Mon May 12 21:24:01 2014
+     Host name              : macasm.local                            
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/alfredo/Dalton/dalton_master/DALTON/test/2014-05-12T21_24-testjob-pid-23391
+   2) /Users/alfredo/Dalton/dalton_master/build/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | alfredo
+ Host                     | macasm.local
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /usr/local/bin/gfortran
+ C compiler               | /usr/local/bin/gcc
+ C compiler version       | gcc (GCC) 4.9.0 20131215 (experimental)
+ C++ compiler             | /usr/local/bin/g++
+ C++ compiler version     | g++ (GCC) 4.9.0 20131215 (experimental)
+ BLAS                     | /usr/lib/libblas.dylib
+ LAPACK                   | /usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 77c20c6de8b65edf4d99d81a849dd028caf5532b
+ Configuration time       | 2014-05-12 20:14:18.310338
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON                                          
+.RUN WAVE                                         
+.CHOLES                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+**CHOLESKY                                        
+.REDUCE                                           
+.SPANDI                                           
+  1.0d-3                                          
+.THRCOM                                           
+ 1.0D-6                                           
+!.RSTDIA                                          
+!.RSTCHO                                          
+**WAVE FUNCTION                                   
+.CC                                               
+*SCF INPUT                                        
+.THRESH                                           
+ 1.0D-8                                           
+.MAX DIIS                                         
+  100                                             
+*ORBITAL                                          
+.MOSTART                                          
+ HUCKEL                                           
+.NOSUPSYM                                         
+*CC INP                                           
+.PRINT                                            
+  1                                               
+.FREEZE                                           
+  1   0                                           
+.CCS                                              
+.CC2                                              
+*CCEXCI                                           
+.NCCEXCI                                          
+  2   2   2   2                                   
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+aug-cc-pVDZ                                                                    
+Geometry optimization calculations                                             
+for H2O                                                                        
+    2    2  X  Y  Z   1.00D-15                                                 
+        1.0   1                                                                
+H     0.0000000000000000  1.427450200000000   0.986437000000000       *        
+        8.0   1                                                                
+O     0.0000000000000000  0.000000000000000   -0.1243090000000        *        
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Cholesky decomposition-based calculation will be done
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: Geometry optimization calculations                                      
+ 2: for H2O                                                                 
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/alfredo/Dalton/dalton_master/build/basis/aug-cc-pVDZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   8 :
+     "/Users/alfredo/Dalton/dalton_master/build/basis/aug-cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+     E  |  E   C2z  Oxz  Oyz
+    C2z | C2z   E   Oyz  Oxz
+    Oxz | Oxz  Oyz   E   C2z
+    Oyz | Oyz  Oxz  C2z   E 
+
+   * Character table
+
+        |  E   C2z  Oxz  Oyz
+   -----+--------------------
+    A1  |   1    1    1    1
+    B1  |   1   -1    1   -1
+    B2  |   1   -1   -1    1
+    A2  |   1    1   -1   -1
+
+   * Direct product table
+
+        | A1   B1   B2   A2 
+   -----+--------------------
+    A1  | A1   B1   B2   A2 
+    B1  | B1   A1   A2   B2 
+    B2  | B2   A2   A1   B1 
+    A2  | A2   B2   B1   A1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           H   _1      1.007825
+                           H   _2      1.007825
+                           O          15.994915
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    3
+
+  Basis set used is "aug-cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  H           2    1.0000    11     9      [5s2p|3s2p]                                        
+  O           1    8.0000    35    23      [10s5p2d|4s3p2d]                                   
+  ----------------------------------------------------------------------
+  total:      3   10.0000    57    41
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    9
+  H   / 1 :     1  x   0.0000000000    2  y   1.4274502000    3  z   0.9864370000
+  H   / 2 :     4  x   0.0000000000    5  y  -1.4274502000    6  z   0.9864370000
+  O       :     7  x   0.0000000000    8  y   0.0000000000    9  z  -0.1243090000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     3    2    3    1
+
+  Symmetry  A1  ( 1)
+
+    1   H     y    [  2  -    5 ]/2
+    2   H     z    [  3  +    6 ]/2
+    3   O     z    9
+
+  Symmetry  B1  ( 2)
+
+    4   H     x    [  1  +    4 ]/2
+    5   O     x    7
+
+  Symmetry  B2  ( 3)
+
+    6   H     y    [  2  +    5 ]/2
+    7   H     z    [  3  -    6 ]/2
+    8   O     y    8
+
+  Symmetry  A2  ( 4)
+
+    9   H     x    [  1  -    4 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            H   _1      H   _2      O     
+            ------      ------      ------
+ H   _1:    0.000000
+ H   _2:    1.510748    0.000000
+ O     :    0.957119    0.957119    0.000000
+
+
+  Max    interatomic separation is    1.5107 Angstrom (    2.8549 Bohr)
+  between atoms    2 and    1, "H   _2" and "H   _1".
+
+  Min HX interatomic separation is    0.9571 Angstrom (    1.8087 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          H   _1       0.957119
+  bond distance:  O          H   _2       0.957119
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H   _1     O          H   _2       104.225
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.618446          0.000000    1.000000    0.000000
+   IB       1.150110          0.000000    0.000000    1.000000
+   IC       1.768555          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is planar.
+
+               A                   B                   C
+
+         817176.1690         439418.0341         285758.0791 MHz
+           27.258063           14.657408            9.531864 cm-1
+
+
+@  Nuclear repulsion energy :    9.196441218324 Hartree
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          18    7   12    4
+
+
+  Symmetry  A1 ( 1)
+
+    1     H        1s         1 +    2
+    2     H        1s         3 +    4
+    3     H        1s         5 +    6
+    4     H        2py        9 -   10
+    5     H        2pz       11 +   12
+    6     H        2py       15 -   16
+    7     H        2pz       17 +   18
+    8     O        1s        19
+    9     O        1s        20
+   10     O        1s        21
+   11     O        1s        22
+   12     O        2pz       25
+   13     O        2pz       28
+   14     O        2pz       31
+   15     O        3d0       34
+   16     O        3d2+      36
+   17     O        3d0       39
+   18     O        3d2+      41
+
+
+  Symmetry  B1 ( 2)
+
+   19     H        2px        7 +    8
+   20     H        2px       13 +   14
+   21     O        2px       23
+   22     O        2px       26
+   23     O        2px       29
+   24     O        3d1+      35
+   25     O        3d1+      40
+
+
+  Symmetry  B2 ( 3)
+
+   26     H        1s         1 -    2
+   27     H        1s         3 -    4
+   28     H        1s         5 -    6
+   29     H        2py        9 +   10
+   30     H        2pz       11 -   12
+   31     H        2py       15 +   16
+   32     H        2pz       17 -   18
+   33     O        2py       24
+   34     O        2py       27
+   35     O        2py       30
+   36     O        3d1-      33
+   37     O        3d1-      38
+
+
+  Symmetry  A2 ( 4)
+
+   38     H        2px        7 -    8
+   39     H        2px       13 -   14
+   40     O        3d2-      32
+   41     O        3d2-      37
+
+  Symmetries of electric field:  B1 (2)  B2 (3)  A1 (1)
+
+  Symmetries of magnetic field:  B2 (3)  B1 (2)  A2 (4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.000000008311
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                     .---------------------------------------.
+                     | Starting in Cholesky Integral Section |
+                     `---------------------------------------'
+
+
+
+
+================================================================================
+
+                                      INFO
+
+  Full advantage of Cholesky decomposition based-methods is accomplished only 
+  if 64-bit integers are used.
+
+  Therefore, if you plan an intensive use of Cholesky routines, rebuild Dalton 
+  code with -DVAR_INT64 directive and -i8 option.
+  (Remember to link to the proper 64-bit libraries)
+
+  Note, however, that some other functionalities do not work in this mode.
+
+================================================================================
+
+
+
+
+
+                          +------------------------------+
+                          ! Output from **CHOLESKY input !
+                          +------------------------------+
+
+Cholesky vectors written in reduced set
+Default first screening threshold on diagonal                  1.0000D+00
+Default second screening threshold on diagonal                 1.0000D+03
+Cholesky vectors are not compressed
+Convergence threshold defined by user                          1.0000D-06
+Default buffer length:  250000
+Span factor:                                                   1.0000D-03
+File size (Gb; words) :   16         17179868881
+Number of shells:    5
+
+
+
+         Diagonal information
+         --------------------
+
+      ISAB         NNBST        NREDUC
+        1             287             287
+        2             174             174
+        3             244             244
+        4             156             156
+
+    Total             861             861
+
+End of Cholesky initializations
+
+
+
+
+    Vectors          Distributions     Qualified      Max. diagonal
+  72       72          2      2           88         0.349370726D+01
+  54      126          2      4           73         0.406292105D-01
+  34      160          2      6           64         0.232696913D-01
+  38      198          1      7           90         0.398423362D-02
+  43      241          2      9           86         0.641582202D-03
+  66      307          1     10          108         0.235449788D-03
+  13      320          6     16           32         0.562644661D-05
+
+
+                       +-----------------------------------+
+                       ! Summary of Cholesky decomposition !
+                       +-----------------------------------+
+
+
+         Number of vectors
+         -----------------
+
+      ISAB         Maximum          Actual
+        1             287             114
+        2             174              68
+        3             244              85
+        4             156              53
+
+
+Largest absolute element in diagonal:    0.99539D-06
+Number of distributions (total and actual):        15        16
+
+
+
+
+         Time statistics
+         ---------------
+
+
+      Initialization time :       0.03
+      Diagonal time       :       0.38
+      Integral time       :       0.25
+      Decomposition time  :       0.22
+
+      Total time          :       0.88
+
+
+Cholesky decomposition completed
+
+
+
+
+Poor man check of decomposition
+
+
+
+
+                          +-----------------------------+
+                          ! Summary of Cholesky restart !
+                          +-----------------------------+
+
+
+Check information for symmetry  1
+
+Number of vectors      :     114
+
+Maximum diagonal       :    0.85189053D-06
+Minimum diagonal       :   -0.24286129D-16
+
+Maximum absolute error :    0.85189053D-06    0.78006220D-01
+
+Converged   diagonals :     287
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  2
+
+Number of vectors      :      68
+
+Maximum diagonal       :    0.99539161D-06
+Minimum diagonal       :   -0.83266727D-16
+
+Maximum absolute error :    0.99539161D-06    0.78355135D-01
+
+Converged   diagonals :     174
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  3
+
+Number of vectors      :      85
+
+Maximum diagonal       :    0.79082188D-06
+Minimum diagonal       :   -0.34694470D-16
+
+Maximum absolute error :    0.79082188D-06    0.10185171D+00
+
+Converged   diagonals :     244
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+Check information for symmetry  4
+
+Number of vectors      :      53
+
+Maximum diagonal       :    0.94685401D-06
+Minimum diagonal       :   -0.72858386D-16
+
+Maximum absolute error :    0.94685401D-06    0.16521433D-01
+
+Converged   diagonals :     156
+Zeroed neg  diagonals :       0
+Unconverged diagonals :       0
+
+
+
+ >>>> Total CPU  time used in CHOLESKY :      0.89 seconds
+ >>>> Total wall time used in CHOLESKY :     14.74 seconds
+
+
+
+
+
+                        .----------------------------------.
+                        | End of Cholesky Integral Section |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+ NCCEXCI for singlet:           2           2           2           2
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    4    1    2    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.705645      -1.506715      -0.670857      -0.292091
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.616200
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.730874      -0.257517
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Mon May 12 21:24:16 2014
+     Host name              : macasm.local                            
+
+ Title lines from ".mol" input file:
+     Geometry optimization calculations                                      
+     for H2O                                                                 
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    (Integral direct) CC calculation.
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+
+ Fock matrices are calculated directly without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option
+
+     Wave function specification
+     ============================
+
+     For the specification of the Coupled Cluster: see later.
+
+@    Wave function type        >>> CC <<<
+@    Number of closed shell electrons          10
+@    Number of electrons in active shells       0
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
+                                       --- |  ---  ---  ---  ---
+     Total number of orbitals           41 |   18    7   12    4
+     Number of basis functions          41 |   18    7   12    4
+
+      ** Automatic occupation of RHF orbitals **
+
+      -- Initial occupation of symmetries is determined from extended Huckel guess.           
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               5 |    3    1    1    0
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations    100
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-08
+
+
+ Changes of defaults for CC:
+ ---------------------------
+
+
+ -This is a direct atomic orbital integral based
+  calculation for coupled cluster wave function
+
+ -Implicit frozen core calculation
+ -Excitation energies calculated
+  
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+     (using Cholesky decomposed integrals)
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Automatic occupation of symmetries with  10 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    SCF occupation
+ -----------------------------------------------------------------------------
+@  1  -75.8084970765       2.35D+00  -7.58D+01     3   1   1   0
+      Virial theorem: -V/T =      1.997172
+@      MULPOP H   _1  0.19; H   _2  0.19; O      -0.37; 
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    2    F  3.38D-03  3.00D-03
+@  2  -76.0322988292       3.67D-01  -2.24D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001426
+@      MULPOP H   _1  0.12; H   _2  0.12; O      -0.24; 
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    3    F  3.37D-03  3.00D-03
+@  3  -76.0406074352       8.37D-02  -8.31D-03     3   1   1   0
+      Virial theorem: -V/T =      2.001694
+@      MULPOP H   _1  0.14; H   _2  0.14; O      -0.27; 
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  3.46D-03  4.00D-03
+@  4  -76.0413744397       1.66D-02  -7.67D-04     3   1   1   0
+      Virial theorem: -V/T =      2.001443
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.29; 
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  3.44D-03  4.00D-03
+@  5  -76.0414130342       3.72D-03  -3.86D-05     3   1   1   0
+      Virial theorem: -V/T =      2.001493
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    6    F  3.37D-03  3.00D-03
+@  6  -76.0414152118       1.51D-03  -2.18D-06     3   1   1   0
+      Virial theorem: -V/T =      2.001462
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  3.48D-03  3.00D-03
+@  7  -76.0414153628       3.03D-04  -1.51D-07     3   1   1   0
+      Virial theorem: -V/T =      2.001492
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -11    8    F  3.43D-03  4.00D-03
+@  8  -76.0414153774       4.44D-05  -1.45D-08     3   1   1   0
+      Virial theorem: -V/T =      2.001491
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+   9  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -12    9    F  3.37D-03  4.00D-03
+@  9  -76.0414153777       7.98D-06  -3.10D-10     3   1   1   0
+      Virial theorem: -V/T =      2.001491
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+  10  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -12   10    F  3.48D-03  4.00D-03
+@ 10  -76.0414153777       1.72D-06  -1.03D-11     3   1   1   0
+      Virial theorem: -V/T =      2.001491
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+  11  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   11    F  3.57D-03  3.00D-03
+@ 11  -76.0414153777       2.68D-07  -5.26D-13     3   1   1   0
+      Virial theorem: -V/T =      2.001491
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+  12  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   12    F  3.31D-03  4.00D-03
+@ 12  -76.0414153777       2.38D-08  -2.84D-14     3   1   1   0
+      Virial theorem: -V/T =      2.001491
+@      MULPOP H   _1  0.15; H   _2  0.15; O      -0.30; 
+ -----------------------------------------------------------------------------
+  13  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -13   13    F  3.53D-03  4.00D-03
+@ 13  -76.0414153777       5.55D-09  -7.11D-14     3   1   1   0
+
+@ *** DIIS converged in  13 iterations !
+@     Converged SCF energy, gradient:    -76.041415377671    5.55D-09
+    - total time used in SIRFCK :              0.04 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   10
+ Orbital occupations :    3    1    1    0
+
+ Sym       Hartree-Fock orbital energies
+
+1 A1    -20.57736986    -1.35690883    -0.58623512     0.03541569     0.17393482
+          0.22270382     0.33192053     0.40356858
+
+2 B1     -0.50953420     0.19670201     0.43341955     1.10120890     1.48290019
+          2.11012782
+
+3 B2     -0.71879100     0.05795378     0.23151913     0.29067995     0.53951792
+          0.65829870
+
+4 A2      0.38597628     1.14890071     2.01093521     3.70301592
+
+    E(LUMO) :     0.03541569 au (symmetry 1)
+  - E(HOMO) :    -0.50953420 au (symmetry 2)
+  ------------------------------------------
+    gap     :     0.54494989 au
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.054       0.055
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
+@    Total charge of molecule:    0
+
+@    Final HF energy:             -76.041415377671                 
+@    Nuclear repulsion:             9.196441218324
+@    Electronic energy:           -85.237856595995
+
+@    Final gradient norm:           0.000000005546
+
+ 
+     Date and time (Linux)  : Mon May 12 21:24:16 2014
+     Host name              : macasm.local                            
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 H   :1s     0.0005   0.3515   0.3613   0.0320  -0.0249
+   2 H   :1s     0.0033  -0.2018  -0.1232   0.4628  -1.7615
+   3 H   :1s     0.0003  -0.0019   0.0036   0.8368  -0.6251
+   4 H   :2py    0.0004  -0.0372  -0.0309   0.0045   0.0340
+   5 H   :2pz    0.0003  -0.0225  -0.0009   0.0022   0.0237
+   6 H   :2py   -0.0012   0.0048  -0.0020  -0.0830   0.3271
+   7 H   :2pz   -0.0010   0.0079   0.0133  -0.0777   0.1522
+   8 O   :1s     1.0010  -0.0059  -0.0013   0.0040  -0.0299
+   9 O   :1s     0.0043   0.8810  -0.2994  -0.1036  -0.1607
+  10 O   :1s    -0.0071  -0.1305  -0.1483  -0.1626   0.4588
+  11 O   :1s    -0.0045   0.0575  -0.0766  -1.5617   4.1071
+  12 O   :2pz    0.0024   0.1148   0.7994  -0.0861  -0.2578
+  13 O   :2pz   -0.0026  -0.0720  -0.0448  -0.0919   0.1118
+  14 O   :2pz   -0.0007   0.0113   0.0389  -0.2139   1.9192
+  15 O   :3d0    0.0000   0.0028   0.0147  -0.0026  -0.0114
+  17 O   :3d0    0.0000  -0.0060   0.0159   0.0017   0.0397
+  18 O   :3d2+   0.0003   0.0197   0.0114   0.0103  -0.0480
+
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 H   :2px    0.0263  -0.0092  -0.0017
+   2 H   :2px    0.0159   0.2834  -1.1976
+   3 O   :2px    0.9158   0.2542   0.2196
+   4 O   :2px    0.0284   0.1283   0.5554
+   5 O   :2px    0.0688  -1.4426   1.1647
+   6 O   :3d1+   0.0139   0.0172  -0.0234
+   7 O   :3d1+   0.0192  -0.0585   0.0726
+
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
+
+    Orbital         1        2        3
+   1 H   :1s     0.5957  -0.0017  -0.1359
+   2 H   :1s    -0.2170   0.5523  -2.6102
+   3 H   :1s    -0.0045   2.9741  -2.7077
+   4 H   :2py   -0.0258   0.0006   0.0385
+   5 H   :2pz   -0.0347   0.0041   0.0221
+   6 H   :2py   -0.0046  -0.1028   0.5925
+   7 H   :2pz   -0.0014  -0.1293   0.5596
+   8 O   :2py    0.7283  -0.0962  -0.2437
+   9 O   :2py   -0.1426  -0.0939   0.3727
+  10 O   :2py    0.0190  -0.8297   3.1086
+  11 O   :3d1-   0.0288  -0.0012  -0.0087
+  12 O   :3d1-  -0.0313  -0.0186   0.0982
+
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
+
+    Orbital         1        2
+   1 H   :2px   -0.0026  -0.0356
+   2 H   :2px   -1.1428   0.7378
+   3 O   :3d2-  -0.0394   0.0180
+   4 O   :3d2-   0.1307  -1.2371
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.06 seconds
+ >>>> Total wall time used in SIRIUS :      0.06 seconds
+
+ 
+     Date and time (Linux)  : Mon May 12 21:24:16 2014
+     Host name              : macasm.local                            
+
+ NOTE:    1 informational messages have been issued.
+ Check output, result, and error files for "INFO".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                    .------------------------------------------.
+                    | Starting in Coupled Cluster Section (CC) |
+                    `------------------------------------------'
+
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                    START OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+  I am freezing!
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            1
+  MIN AND MAX IN SELECTED SUPSPACE   -20.577369856771377       -20.577369856771377     
+ Freezing HF-orbital   1 of symmetry   1 and with orbital energy  -20.5774
+ In total frozen-core per symmetry-class:  1  0  0  0
+ 
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        47
+          Number of t2 amplitudes                 :      2810
+          Total number of amplitudes in ccsd      :      2857
+
+
+
+          CCS CALC. - NO WAVEFUNCTION OPTIMIZATION
+ IN CC_EXCI after Reinit
+ NEXCI:            8
+ Singlet:            2           2           2           2
+ Triplet:            0           0           0           0
+ ISYOFE:           0           2           4           6
+ ITROFE:           0           2           4           6
+ ISYEXC:           1           1           2           2           3           3           4           4
+ IMULTE:           1           1           1           1           1           1           1           1
+ EIGVAL:   1000008.0000000000        1000008.0000000000        1000008.0000000000        1000008.0000000000        1000008.0000000000        1000008.0000000000        1000008.0000000000        1000008.0000000000     
+ minscr T
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                    +-----------------------------------------+
+                    !  Cholesky-based CCS Excitation Energies !
+                    +-----------------------------------------+
+
+ minscr T
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        47
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Start vector guessed from diagonal
+ ... selected element no. 16
+ Start vector guessed from diagonal
+ ... selected element no. 31
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.44308603
+       2       0.50073006
+    ==== End of matrix output ====
+      1       2         0.00     0.14E+00
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40792952
+       2       0.48299462
+    ==== End of matrix output ====
+      2       2         0.00     0.61E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40529484
+       2       0.47585715
+    ==== End of matrix output ====
+      3       2         0.00     0.33E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40505609
+       2       0.47400273
+    ==== End of matrix output ====
+      4       2         0.00     0.17E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500585
+       2       0.47363210
+    ==== End of matrix output ====
+      5       2         0.00     0.85E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500172
+       2       0.47350008
+    ==== End of matrix output ====
+      6       2         0.00     0.56E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500105
+       2       0.47345455
+    ==== End of matrix output ====
+      7       2         0.00     0.33E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500098
+       2       0.47344620
+    ==== End of matrix output ====
+      8       2         0.00     0.72E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500098
+       2       0.47344573
+    ==== End of matrix output ====
+      9       1         0.00     0.19E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500098
+       2       0.47344569
+    ==== End of matrix output ====
+     10       1         0.00     0.11E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40500098
+       2       0.47344568
+    ==== End of matrix output ====
+     11       1         0.00     0.30E-04
+    --------------------------------------
+    converged in 11 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.18 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.17 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4050009806
+    2   0.4734456802
+
+
+ SYMMETRY CLASS NR.    1
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.4050009806       11.0206372889
+         2            0.4734456802       12.8831123064
+
+
+ Total excited state energies for states of symmetry/spin    1    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    1    1           -75.636414397058459
+@@    1    2           -75.567969697473018
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            11.0206 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       2     |       16          |              |    0.849258  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8493
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            12.8831 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |       31          |              |    0.906439  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9064
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        31
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.84145472347746886     
+ Start vector guessed from diagonal
+ ... selected element no. 13
+ Start vector guessed from diagonal
+ ... selected element no. 14
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.35146643
+       2       0.46978507
+    ==== End of matrix output ====
+      1       2         0.00     0.81E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32098953
+       2       0.44924991
+    ==== End of matrix output ====
+      2       2         0.00     0.46E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31918205
+       2       0.44668386
+    ==== End of matrix output ====
+      3       2         0.00     0.19E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31909746
+       2       0.44630256
+    ==== End of matrix output ====
+      4       2         0.00     0.62E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31908402
+       2       0.44626402
+    ==== End of matrix output ====
+      5       2         0.00     0.14E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31908381
+       2       0.44626197
+    ==== End of matrix output ====
+      6       2         0.00     0.64E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31908380
+       2       0.44626100
+    ==== End of matrix output ====
+      7       1         0.00     0.54E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31908380
+       2       0.44626062
+    ==== End of matrix output ====
+      8       1         0.00     0.18E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31908379
+       2       0.44626059
+    ==== End of matrix output ====
+      9       1         0.00     0.73E-04
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.13 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.12 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3190837949
+    2   0.4462605913
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3190837949        8.6827117384
+         2            0.4462605913       12.1433684072
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1           -75.722331582762990
+@@    2    2           -75.595154786387738
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             8.6827 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |       13          |              |    0.839084  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8391
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            12.1434 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   2       1     |       14          |              |    0.867493  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8675
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        41
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.89272581857826927     
+ Start vector guessed from diagonal
+ ... selected element no. 12
+ Start vector guessed from diagonal
+ ... selected element no. 27
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.49673968
+       2       0.57190283
+    ==== End of matrix output ====
+      1       2         0.00     0.74E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46823108
+       2       0.53244857
+    ==== End of matrix output ====
+      2       2         0.00     0.58E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46642105
+       2       0.52882457
+    ==== End of matrix output ====
+      3       2         0.00     0.22E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46605589
+       2       0.52812351
+    ==== End of matrix output ====
+      4       2         0.00     0.14E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46594981
+       2       0.52788878
+    ==== End of matrix output ====
+      5       2         0.00     0.46E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46592998
+       2       0.52785691
+    ==== End of matrix output ====
+      6       2         0.00     0.28E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46592899
+       2       0.52784921
+    ==== End of matrix output ====
+      7       2         0.00     0.98E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46592894
+       2       0.52784804
+    ==== End of matrix output ====
+      8       2         0.00     0.59E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46592894
+       2       0.52784755
+    ==== End of matrix output ====
+      9       1         0.00     0.34E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.46592894
+       2       0.52784747
+    ==== End of matrix output ====
+     10       1         0.00     0.80E-04
+    --------------------------------------
+    converged in 10 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.16 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.15 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4659289385
+    2   0.5278474709
+
+
+ SYMMETRY CLASS NR.    3
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.4659289385       12.6785713593
+         2            0.5278474709       14.3634603354
+
+
+ Total excited state energies for states of symmetry/spin    3    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    3    1           -75.575486439200503
+@@    3    2           -75.513567906753650
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            12.6786 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       2     |       12          |              |    0.861728  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8617
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            14.3635 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   3   |   1       1     |       27          |              |    0.843938  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8439
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        25
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.97221139799405032     
+ Start vector guessed from diagonal
+ ... selected element no.  9
+ Start vector guessed from diagonal
+ ... selected element no. 10
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40463957
+       2       0.53921580
+    ==== End of matrix output ====
+      1       2         0.00     0.73E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38378768
+       2       0.50131768
+    ==== End of matrix output ====
+      2       2         0.00     0.13E+00
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38105826
+       2       0.48644694
+    ==== End of matrix output ====
+      3       2         0.00     0.23E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099426
+       2       0.48595995
+    ==== End of matrix output ====
+      4       2         0.00     0.70E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099158
+       2       0.48590891
+    ==== End of matrix output ====
+      5       2         0.00     0.25E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099140
+       2       0.48590341
+    ==== End of matrix output ====
+      6       2         0.00     0.79E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099139
+       2       0.48590266
+    ==== End of matrix output ====
+      7       2         0.00     0.33E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099139
+       2       0.48590255
+    ==== End of matrix output ====
+      8       1         0.00     0.10E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.38099139
+       2       0.48590255
+    ==== End of matrix output ====
+      9       1         0.00     0.13E-04
+    --------------------------------------
+    converged in  9 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.14 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.14 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3809913895
+    2   0.4859025493
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CCS        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3809913895       10.3673030802
+         2            0.4859025493       13.2220809574
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -75.660423988176859
+@@    4    2           -75.555512828377260
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            10.3673 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   1       1     |        9          |              |    0.816084  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8161
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            13.2221 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   1       1     |        9          |              |    0.519141  |
+ | 3   2   |   3       1     |       11          |              |    0.799178  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9530
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+
+
+ CCR12 ANSATZ =   0
+
+ CCR12 APPROX =   0
+
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER ENERGY PROGRAM  >>>>>>>>>>*
+ *<<<<<<<<<<                                             >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+             The Direct Coupled Cluster Energy Program
+             -----------------------------------------
+
+
+          Number of t1 amplitudes                 :        47
+          Number of t2 amplitudes                 :      2810
+          Total number of amplitudes in ccsd      :      2857
+
+
+
+                              Output from CC_CHOECC2
+                              ----------------------
+
+     Cholesky based optimization of the CC2 wave function:
+     Threshold for energy         :    1.000000D-08
+     Threshold for vector function:    1.000000D-06
+     Maximum number of iterations :              40
+
+ Iter.  1: Coupled cluster MP2   energy :    -76.2607634548268152
+ Iter.  2: Coupled cluster CC2   energy :    -76.2624029765779170
+ Iter.  3: Coupled cluster CC2   energy :    -76.2629926963630282
+ Iter.  4: Coupled cluster CC2   energy :    -76.2630362129242627
+ Iter.  5: Coupled cluster CC2   energy :    -76.2630339665149251
+ Iter.  6: Coupled cluster CC2   energy :    -76.2630346938611012
+ Iter.  7: Coupled cluster CC2   energy :    -76.2630346356685465
+ Iter.  8: Coupled cluster CC2   energy :    -76.2630346528915481
+ Iter.  9: Coupled cluster CC2   energy :    -76.2630346473199694
+
+ CC2 energy converged to within 0.1000D-07 is    -76.263034647
+ - the CC2 correlation energy contribution is     -0.221619270
+ Final norm of the CC2 vector function is           1.8816D-08
+ Total time used for CC2 optimization is                  0.11 seconds
+
+
+
+
+
+                       +------------------------------------+
+                       ! Calculating Intermediates for CCLR !
+                       +------------------------------------+
+
+
+
+            E-intermediates calculated
+ >>>> Total CPU  time used in CC_CHOECC2:   0.12 seconds
+ >>>> Total wall time used in CC_CHOECC2:   0.15 seconds
+
+
+             +-------------------------------------------------------+
+             ! Final results from the Coupled Cluster energy program !
+             +-------------------------------------------------------+
+
+
+            Total SCF   energy:                   -76.0414153777
+            Total CC2   energy:                   -76.2630346473
+ IN CC_EXCI after Reinit
+ NEXCI:            8
+ Singlet:            2           2           2           2
+ Triplet:            0           0           0           0
+ ISYOFE:           0           2           4           6
+ ITROFE:           0           2           4           6
+ ISYEXC:           1           1           2           2           3           3           4           4
+ IMULTE:           1           1           1           1           1           1           1           1
+ EIGVAL:  0.40500098061260670       0.47344568019805705       0.31908379490807870       0.44626059128334095       0.46592893847057554       0.52784747091741835       0.38099138949421518       0.48590254929380478     
+ minscr T
+   
+
+ *******************************************************************
+ *                                                                 *
+ *<<<<<<<<<< OUTPUT FROM COUPLED CLUSTER LINEAR RESPONSE >>>>>>>>>>*
+ *                                                                 *
+ *<<<<<<<<<<     CALCULATION OF EXCITATION ENERGIES      >>>>>>>>>>*
+ *                                                                 *
+ *******************************************************************
+
+
+
+                    +-----------------------------------------+
+                    !  Cholesky-based CC2 Excitation Energies !
+                    +-----------------------------------------+
+
+ minscr T
+
+ --------------------------
+ Symmetry class Nr.:     1
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        47
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Start vector guessed from diagonal
+ ... selected element no. 16
+ Start vector guessed from diagonal
+ ... selected element no. 31
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.00000
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+
+                              +----------------------+
+                              ! Output from CC_DECMO !
+                              +----------------------+
+
+          Cholesky decomposition of CC2 am.:
+          Decomposition threshold:    1.000000D-06
+          Span factor            :    1.000000D-03
+          No zeroing of diagonals.
+          Max. number of diagonals qualified:         50
+          Max. number of prev. vectors read :        200
+
+
+
+                         Summary of CC2 am. decomposition
+                         --------------------------------
+
+     Symmetry        Min. Diag.           Max. Diag.            RMS Error   
+     --------------------------------------------------------------------
+         1        -3.382711D-17         8.424017D-07         1.228769D-07
+         2        -1.387779D-17         1.127570D-17         4.327840D-18
+         3        -1.647987D-17         1.830173D-07         2.858250D-08
+         4        -1.088268D-17         3.252607D-18         2.688284D-18
+     --------------------------------------------------------------------
+
+     Symmetry      NDIM        NTOVEC   %Saving(*)    NUMCHO
+     -------------------------------------------------------
+         1            47           46      2.13          114
+         2            31           31      0.00           68
+         3            41           40      2.44           85
+         4            25           25      0.00           53
+     -------------------------------------------------------
+     (*) (NDIM-NTOVEC)/NDIM
+
+     Original MO Cholesky vectors held in core for the following symmetries:
+      1 2 3 4
+
+
+
+                         Timing of CC2 am. decomposition
+                         -------------------------------
+
+     Diagonal time     :       0.00 seconds
+     Integral time     :       0.00 seconds (  99.25% integrals calculated)
+     Decomposition time:       0.00 seconds
+
+     Total time        :       0.00 seconds
+
+     - End of CC_DECMO
+
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40195676
+       2       0.45830340
+    ==== End of matrix output ====
+      1       2         0.00     0.11E+00
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.37280901
+       2       0.44817315
+    ==== End of matrix output ====
+      2       2         0.00     0.60E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36789424
+       2       0.44503960
+    ==== End of matrix output ====
+      3       2         0.00     0.26E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36774231
+       2       0.44397883
+    ==== End of matrix output ====
+      4       2         0.00     0.16E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36768220
+       2       0.44365347
+    ==== End of matrix output ====
+      5       2         0.00     0.91E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36767544
+       2       0.44355670
+    ==== End of matrix output ====
+      6       2         0.00     0.61E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36767405
+       2       0.44351733
+    ==== End of matrix output ====
+      7       2         0.00     0.40E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36767369
+       2       0.44350615
+    ==== End of matrix output ====
+      8       2         0.00     0.86E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36767368
+       2       0.44350753
+    ==== End of matrix output ====
+      9       1         0.00     0.21E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.36767368
+       2       0.44350780
+    ==== End of matrix output ====
+     10       1         0.00     0.71E-04
+    --------------------------------------
+    converged in 10 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.27 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.52 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3676736802
+    2   0.4435077995
+
+
+ SYMMETRY CLASS NR.    1
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3676736802       10.0049097754
+         2            0.4435077995       12.0684611320
+
+
+ Total excited state energies for states of symmetry/spin    1    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    1    1           -75.895360967133328
+@@    1    2           -75.819526847829650
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            10.0049 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       2     |       16          |              |    0.870272  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8703
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            12.0685 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |       31          |              |    0.943971  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9440
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.44351
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.44351
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34236077
+       2       0.41695518
+    ==== End of matrix output ====
+      1       2         0.00     0.14E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34144105
+       2       0.41641910
+    ==== End of matrix output ====
+      2       2         0.00     0.89E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34139395
+       2       0.41631563
+    ==== End of matrix output ====
+      3       2         0.00     0.46E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34139310
+       2       0.41627739
+    ==== End of matrix output ====
+      4       2         0.00     0.28E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34139166
+       2       0.41626721
+    ==== End of matrix output ====
+      5       2         0.00     0.10E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34139186
+       2       0.41626643
+    ==== End of matrix output ====
+      6       2         0.00     0.46E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34139185
+       2       0.41626683
+    ==== End of matrix output ====
+      7       1         0.00     0.95E-04
+    --------------------------------------
+    converged in  7 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.17 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.34 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3413918516
+    2   0.4162668327
+
+
+ CC2        excitation energies with Omega=   0.443508
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.341392            9.289745
+         2            0.416267           11.327197
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.41627
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.41627
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34365953
+       2       0.41832721
+    ==== End of matrix output ====
+      1       2         0.00     0.70E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34365983
+       2       0.41832861
+    ==== End of matrix output ====
+      2       2         0.00     0.58E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34365957
+       2       0.41832889
+    ==== End of matrix output ====
+      3       2         0.00     0.35E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34365961
+       2       0.41832840
+    ==== End of matrix output ====
+      4       1         0.00     0.12E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34365959
+       2       0.41832882
+    ==== End of matrix output ====
+      5       1         0.00     0.55E-04
+    --------------------------------------
+    converged in  5 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.21 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3436595900
+    2   0.4183288187
+
+
+ CC2        excitation energies with Omega=   0.416267
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.343660            9.351453
+         2            0.418329           11.383306
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.41833
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.41833
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34347972
+       2       0.41816157
+    ==== End of matrix output ====
+      1       2         0.00     0.86E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3434797200
+    2   0.4181615726
+
+
+ CC2        excitation energies with Omega=   0.418329
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.343480            9.346559
+         2            0.418162           11.378755
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.80893893483705359     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  2 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.41816
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.41816
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34349441
+       2       0.41817502
+    ==== End of matrix output ====
+      1       2         0.00     0.82E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.04 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3434944106
+    2   0.4181750155
+
+
+ CC2        excitation energies with Omega=   0.418162
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.343494            9.346958
+         2            0.418175           11.379121
+
+ Converged root to diff. -0.000013  for root   2 in   5 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   1  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    1    2           -75.844859631855925
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.3470 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       2     |       16          |              |    0.906554  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9066
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           1  0.36767368018663610     
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            11.3791 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 2   2   |   1       1     |       31          |              |    0.968081  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9681
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           2  0.44350779949032371     
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.77674477591613278     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.34349
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.34349
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970658
+    ==== End of matrix output ====
+      1       1         0.00     0.19E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970692
+    ==== End of matrix output ====
+      2       1         0.00     0.94E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970518
+    ==== End of matrix output ====
+      3       1         0.00     0.54E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970510
+    ==== End of matrix output ====
+      4       1         0.00     0.23E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970527
+    ==== End of matrix output ====
+      5       1         0.00     0.20E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34970510
+    ==== End of matrix output ====
+      6       1         0.00     0.97E-04
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.10 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.21 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3497051021
+
+
+ CC2        excitation energies with Omega=   0.343494
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.349705            9.515960
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.77674477591613278     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.34971
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.34971
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34921412
+    ==== End of matrix output ====
+      1       1         0.00     0.18E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34921367
+    ==== End of matrix output ====
+      2       1         0.00     0.12E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34921340
+    ==== End of matrix output ====
+      3       1         0.00     0.72E-04
+    --------------------------------------
+    converged in  3 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3492133965
+
+
+ CC2        excitation energies with Omega=   0.349705
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.349213            9.502580
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.62165081136145184       0.77674477591613278     
+ Vector nr.  1 of symmetry  1 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.34921
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.34921
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.34925236
+    ==== End of matrix output ====
+      1       1         0.00     0.76E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.02 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3492523604
+
+
+ CC2        excitation energies with Omega=   0.349213
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.349252            9.503640
+
+ Converged root to diff. -0.000039  for root   1 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   1  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    1    1           -75.913782286870585
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             9.5036 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   1   |   1       2     |       16          |              |    0.903992  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9040
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           1  0.34349441056198371     
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     2
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        31
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.84145472347746886     
+ Start vector guessed from diagonal
+ ... selected element no. 13
+ Start vector guessed from diagonal
+ ... selected element no. 14
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.34921
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.27223284
+       2       0.40941330
+    ==== End of matrix output ====
+      1       2         0.00     0.62E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25477895
+       2       0.39892888
+    ==== End of matrix output ====
+      2       2         0.00     0.34E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25390968
+       2       0.39757908
+    ==== End of matrix output ====
+      3       2         0.00     0.14E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25386552
+       2       0.39737425
+    ==== End of matrix output ====
+      4       2         0.00     0.44E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25385620
+       2       0.39735414
+    ==== End of matrix output ====
+      5       2         0.00     0.11E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25385591
+       2       0.39735212
+    ==== End of matrix output ====
+      6       2         0.00     0.39E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25385590
+       2       0.39735172
+    ==== End of matrix output ====
+      7       1         0.00     0.25E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.25385589
+       2       0.39735196
+    ==== End of matrix output ====
+      8       1         0.00     0.69E-04
+    --------------------------------------
+    converged in  8 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.20 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.38 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2538558890
+    2   0.3973519550
+
+
+ SYMMETRY CLASS NR.    2
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.2538558890        6.9077701300
+         2            0.3973519550       10.8124967150
+
+
+ Total excited state energies for states of symmetry/spin    2    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    2    1           -76.009178758302014
+@@    2    2           -75.865682692285944
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             6.9078 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |       13          |              |    0.905711  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9057
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            10.8125 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   2       1     |       14          |              |    0.924329  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9243
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.84145472347746886     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.39735
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.39735
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24908403
+       2       0.39375271
+    ==== End of matrix output ====
+      1       2         0.00     0.14E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24907742
+       2       0.39375035
+    ==== End of matrix output ====
+      2       2         0.00     0.53E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24907535
+       2       0.39375063
+    ==== End of matrix output ====
+      3       2         0.00     0.34E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24907468
+       2       0.39375118
+    ==== End of matrix output ====
+      4       2         0.00     0.13E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24907462
+       2       0.39375106
+    ==== End of matrix output ====
+      5       1         0.00     0.37E-04
+    --------------------------------------
+    converged in  5 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.25 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2490746230
+    2   0.3937510615
+
+
+ CC2        excitation energies with Omega=   0.397352
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.249075            6.777665
+         2            0.393751           10.714511
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.84145472347746886     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.39375
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.39375
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24942656
+       2       0.39402299
+    ==== End of matrix output ====
+      1       2         0.00     0.12E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24942564
+       2       0.39402304
+    ==== End of matrix output ====
+      2       1         0.00     0.10E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24942564
+       2       0.39402302
+    ==== End of matrix output ====
+      3       1         0.00     0.77E-04
+    --------------------------------------
+    converged in  3 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.05 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.10 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2494256384
+    2   0.3940230186
+
+
+ CC2        excitation energies with Omega=   0.393751
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.249426            6.787217
+         2            0.394023           10.721912
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.84145472347746886     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  4 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.39402
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.39402
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.24940062
+       2       0.39400260
+    ==== End of matrix output ====
+      1       2         0.00     0.77E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.05 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2494006207
+    2   0.3940025987
+
+
+ CC2        excitation energies with Omega=   0.394023
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.249401            6.786536
+         2            0.394003           10.721356
+
+ Converged root to diff.  0.000020  for root   2 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   2  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    2    2           -75.869032048652414
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             6.7865 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |       13          |              |    0.905449  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9054
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           3  0.25385588901796008     
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            10.7214 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   2       1     |       14          |              |    0.924713  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9247
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           4  0.39735195503403059     
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.78293712777499480     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.24940
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.24940
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26197002
+    ==== End of matrix output ====
+      1       1         0.00     0.35E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26194841
+    ==== End of matrix output ====
+      2       1         0.00     0.20E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26194337
+    ==== End of matrix output ====
+      3       1         0.00     0.78E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26194228
+    ==== End of matrix output ====
+      4       1         0.00     0.16E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26194249
+    ==== End of matrix output ====
+      5       1         0.00     0.96E-04
+    --------------------------------------
+    converged in  5 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.11 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2619424898
+
+
+ CC2        excitation energies with Omega=   0.249401
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.261942            7.127818
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.78293712777499480     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.26194
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.26194
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26095606
+    ==== End of matrix output ====
+      1       1         0.00     0.31E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26095453
+    ==== End of matrix output ====
+      2       1         0.00     0.21E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26095470
+    ==== End of matrix output ====
+      3       1         0.00     0.48E-04
+    --------------------------------------
+    converged in  3 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2609546964
+
+
+ CC2        excitation energies with Omega=   0.261942
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.260955            7.100939
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.54494989057404108       0.78293712777499480     
+ Vector nr.  3 of symmetry  2 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.26095
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.26095
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.26103277
+    ==== End of matrix output ====
+      1       1         0.00     0.54E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.02 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.2610327663
+
+
+ CC2        excitation energies with Omega=   0.260955
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.261033            7.103063
+
+ Converged root to diff. -0.000078  for root   1 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   2  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    2    1           -76.002001881045132
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             7.1031 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   2   |   1       1     |       13          |              |    0.899786  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8998
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           3  0.24940062070088859     
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     3
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        41
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.89272581857826927     
+ Start vector guessed from diagonal
+ ... selected element no. 12
+ Start vector guessed from diagonal
+ ... selected element no. 27
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.26095
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.44035862
+       2       0.54749386
+    ==== End of matrix output ====
+      1       2         0.00     0.68E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.42411968
+       2       0.51497754
+    ==== End of matrix output ====
+      2       2         0.00     0.54E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41891748
+       2       0.51295762
+    ==== End of matrix output ====
+      3       2         0.00     0.21E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41880337
+       2       0.51251319
+    ==== End of matrix output ====
+      4       2         0.00     0.10E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41876157
+       2       0.51235946
+    ==== End of matrix output ====
+      5       2         0.00     0.64E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874346
+       2       0.51227732
+    ==== End of matrix output ====
+      6       2         0.00     0.54E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874115
+       2       0.51224464
+    ==== End of matrix output ====
+      7       2         0.00     0.34E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874097
+       2       0.51223840
+    ==== End of matrix output ====
+      8       2         0.00     0.17E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874097
+       2       0.51223689
+    ==== End of matrix output ====
+      9       1         0.00     0.57E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874097
+       2       0.51223691
+    ==== End of matrix output ====
+     10       1         0.00     0.16E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.41874098
+       2       0.51223684
+    ==== End of matrix output ====
+     11       1         0.00     0.59E-04
+    --------------------------------------
+    converged in 11 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.29 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.51 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4187409795
+    2   0.5122368362
+
+
+ SYMMETRY CLASS NR.    3
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.4187409795       11.3945216782
+         2            0.5122368362       13.9386733574
+
+
+ Total excited state energies for states of symmetry/spin    3    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    3    1           -75.844293667799775
+@@    3    2           -75.750797811079551
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            11.3945 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       2     |       12          |              |    0.913856  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9139
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            13.9387 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   3   |   1       1     |       27          |              |    0.871609  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8716
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.89272581857826927     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  6 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.51224
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.51224
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39976807
+       2       0.50052851
+    ==== End of matrix output ====
+      1       2         0.00     0.81E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39949579
+       2       0.50036246
+    ==== End of matrix output ====
+      2       2         0.00     0.49E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946607
+       2       0.50035714
+    ==== End of matrix output ====
+      3       2         0.00     0.17E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946553
+       2       0.50035008
+    ==== End of matrix output ====
+      4       2         0.00     0.13E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946520
+       2       0.50034530
+    ==== End of matrix output ====
+      5       2         0.00     0.72E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946513
+       2       0.50034476
+    ==== End of matrix output ====
+      6       2         0.00     0.39E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946513
+       2       0.50034456
+    ==== End of matrix output ====
+      7       1         0.00     0.14E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.39946512
+       2       0.50034441
+    ==== End of matrix output ====
+      8       1         0.00     0.50E-04
+    --------------------------------------
+    converged in  8 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.23 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.53 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3994651206
+    2   0.5003444118
+
+
+ CC2        excitation energies with Omega=   0.512237
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.399465           10.869999
+         2            0.500344           13.615064
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.89272581857826927     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  6 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.50034
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.50034
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40051538
+       2       0.50102160
+    ==== End of matrix output ====
+      1       2         0.00     0.35E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40051609
+       2       0.50102181
+    ==== End of matrix output ====
+      2       2         0.00     0.24E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40051646
+       2       0.50102113
+    ==== End of matrix output ====
+      3       2         0.00     0.27E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40051657
+       2       0.50102099
+    ==== End of matrix output ====
+      4       2         0.00     0.81E-04
+    --------------------------------------
+    converged in  4 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.25 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4005165711
+    2   0.5010209939
+
+
+ CC2        excitation energies with Omega=   0.500344
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.400517           10.898610
+         2            0.501021           13.633475
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.89272581857826927     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  6 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.50102
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.50102
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40044937
+       2       0.50097903
+    ==== End of matrix output ====
+      1       2         0.00     0.81E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.03 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.06 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4004493691
+    2   0.5009790342
+
+
+ CC2        excitation energies with Omega=   0.501021
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.400449           10.896782
+         2            0.500979           13.632333
+
+ Converged root to diff.  0.000042  for root   2 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   3  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    3    2           -75.762055613083405
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            10.8968 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       2     |       12          |              |    0.933012  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9330
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           5  0.41874097952019984     
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            13.6323 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 1   3   |   1       1     |       27          |              |    0.889599  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8896
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           6  0.51223683624041338     
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.87691506496354321     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.40045
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.40045
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40956348
+    ==== End of matrix output ====
+      1       1         0.00     0.26E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40955921
+    ==== End of matrix output ====
+      2       1         0.00     0.14E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40955474
+    ==== End of matrix output ====
+      3       1         0.00     0.57E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40955404
+    ==== End of matrix output ====
+      4       1         0.00     0.22E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40955393
+    ==== End of matrix output ====
+      5       1         0.00     0.79E-04
+    --------------------------------------
+    converged in  5 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.06 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.12 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4095539292
+
+
+ CC2        excitation energies with Omega=   0.400449
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.409554           11.144529
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.87691506496354321     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.40955
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.40955
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40878668
+    ==== End of matrix output ====
+      1       1         0.00     0.24E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40878556
+    ==== End of matrix output ====
+      2       1         0.00     0.15E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40878553
+    ==== End of matrix output ====
+      3       1         0.00     0.86E-04
+    --------------------------------------
+    converged in  3 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.08 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4087855275
+
+
+ CC2        excitation energies with Omega=   0.409554
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.408786           11.123620
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.64418889249513001       0.87691506496354321     
+ Vector nr.  5 of symmetry  3 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.40879
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.40879
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.40885053
+    ==== End of matrix output ====
+      1       1         0.00     0.91E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.02 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.03 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.4088505289
+
+
+ CC2        excitation energies with Omega=   0.408786
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.408851           11.125389
+
+ Converged root to diff. -0.000065  for root   1 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   3  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    3    1           -75.854184118393448
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                            11.1254 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   1   |   1       2     |       12          |              |    0.929409  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9294
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           5  0.40044936907482254     
+ minscr T
+
+
+ *******************************************************************************
+
+ --------------------------
+ Symmetry class Nr.:     4
+ Multiplicity      :     1
+ --------------------------
+
+ Length of Excitation vectors in this class is:        25
+ Converging for  2 roots.
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.97221139799405032     
+ Start vector guessed from diagonal
+ ... selected element no.  9
+ Start vector guessed from diagonal
+ ... selected element no. 10
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.40879
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32309914
+       2       0.47509834
+    ==== End of matrix output ====
+      1       2         0.00     0.61E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31515657
+       2       0.45924286
+    ==== End of matrix output ====
+      2       2         0.00     0.82E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31412336
+       2       0.44308027
+    ==== End of matrix output ====
+      3       2         0.00     0.26E-01
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31410835
+       2       0.44261277
+    ==== End of matrix output ====
+      4       2         0.00     0.64E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31410766
+       2       0.44254882
+    ==== End of matrix output ====
+      5       2         0.00     0.22E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31410767
+       2       0.44254606
+    ==== End of matrix output ====
+      6       2         0.00     0.53E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31410768
+       2       0.44254625
+    ==== End of matrix output ====
+      7       1         0.00     0.21E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31410768
+       2       0.44254608
+    ==== End of matrix output ====
+      8       1         0.00     0.62E-04
+    --------------------------------------
+    converged in  8 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.22 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.51 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3141076802
+    2   0.4425460765
+
+
+ SYMMETRY CLASS NR.    4
+ MULTIPLICITY          1
+
+
+ CC2        right excitation energies:
+ ====================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV 
+ --------------       -------               --
+         1            0.3141076802        8.5473047697
+         2            0.4425460765       12.0422913182
+
+
+ Total excited state energies for states of symmetry/spin    4    1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@    4    1           -75.948926967101926
+@@    4    2           -75.820488570823130
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             8.5473 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   1       1     |        9          |              |    0.925566  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9256
+
+          Printed all single excitations greater than 0.500000
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            12.0423 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   3       1     |       11          |              |    0.858015  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8580
+
+          Printed all single excitations greater than 0.500000
+ ===================================
+
+ About to enter self-consistent loop
+
+ ===================================
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.97221139799405032     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  8 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.44255
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.44255
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054919
+       2       0.43641166
+    ==== End of matrix output ====
+      1       2         0.00     0.30E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054700
+       2       0.43635745
+    ==== End of matrix output ====
+      2       2         0.00     0.34E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054807
+       2       0.43631399
+    ==== End of matrix output ====
+      3       2         0.00     0.38E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054800
+       2       0.43628940
+    ==== End of matrix output ====
+      4       2         0.00     0.56E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054800
+       2       0.43628881
+    ==== End of matrix output ====
+      5       1         0.00     0.21E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31054799
+       2       0.43628875
+    ==== End of matrix output ====
+      6       1         0.00     0.43E-04
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.12 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.26 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3105479948
+    2   0.4362887475
+
+
+ CC2        excitation energies with Omega=   0.442546
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.310548            8.450441
+         2            0.436289           11.872021
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.97221139799405032     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  8 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.43629
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.43629
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31118130
+       2       0.43671583
+    ==== End of matrix output ====
+      1       2         0.00     0.51E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31118132
+       2       0.43670725
+    ==== End of matrix output ====
+      2       2         0.00     0.58E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31118132
+       2       0.43670612
+    ==== End of matrix output ====
+      3       1         0.00     0.23E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31118132
+       2       0.43670598
+    ==== End of matrix output ====
+      4       1         0.00     0.48E-04
+    --------------------------------------
+    converged in  4 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.15 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3111813203
+    2   0.4367059812
+
+
+ CC2        excitation energies with Omega=   0.436289
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.311181            8.467674
+         2            0.436706           11.883374
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            5
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.97221139799405032     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+ Vector nr.  8 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  2 with present energy : 0.43671
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.43671
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31113915
+       2       0.43668086
+    ==== End of matrix output ====
+      1       2         0.00     0.12E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31113917
+       2       0.43668067
+    ==== End of matrix output ====
+      2       1         0.00     0.32E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31113917
+       2       0.43667993
+    ==== End of matrix output ====
+      3       1         0.00     0.15E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.31113917
+       2       0.43667975
+    ==== End of matrix output ====
+      4       1         0.00     0.40E-04
+    --------------------------------------
+    converged in  4 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.08 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.13 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3111391658
+    2   0.4366797528
+
+
+ CC2        excitation energies with Omega=   0.436706
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.311139            8.466527
+         2            0.436680           11.882661
+
+ Converged root to diff.  0.000026  for root   2 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   4  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    4    2           -75.826354894555678
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             8.4665 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   1       1     |        9          |              |    0.925017  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9250
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           7  0.31410768021805024     
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  2
+ -------------------------------------------------------------
+
+          Excitation Energy :                            11.8827 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   3       1     |       11          |              |    0.882983  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.8830
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           8  0.44254607649683569     
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.91549301119599757     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.31114
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.31114
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32275389
+    ==== End of matrix output ====
+      1       1         0.00     0.29E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32273583
+    ==== End of matrix output ====
+      2       1         0.00     0.17E-02
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32272743
+    ==== End of matrix output ====
+      3       1         0.00     0.70E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32272745
+    ==== End of matrix output ====
+      4       1         0.00     0.21E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32272763
+    ==== End of matrix output ====
+      5       1         0.00     0.15E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32272760
+    ==== End of matrix output ====
+      6       1         0.00     0.28E-04
+    --------------------------------------
+    converged in  6 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.11 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.17 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3227276042
+
+
+ CC2        excitation energies with Omega=   0.311139
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.322728            8.781865
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.91549301119599757     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.32273
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.32273
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32174883
+    ==== End of matrix output ====
+      1       1         0.00     0.26E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32174696
+    ==== End of matrix output ====
+      2       1         0.00     0.16E-03
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32174722
+    ==== End of matrix output ====
+      3       1         0.00     0.86E-04
+    --------------------------------------
+    converged in  3 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.04 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.07 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3217472152
+
+
+ CC2        excitation energies with Omega=   0.322728
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.321747            8.755187
+  >> output from FNDMN3 <<
+  NUMBER OF ELEMENTS OBTAINED IN FNDMN3            4
+  MIN AND MAX IN SELECTED SUPSPACE   0.56748797170771925       0.91549301119599757     
+ Vector nr.  7 of symmetry  4 found on file - RESTART SUCCESS
+ Start vector is a CC2       RE  vector
+Calculating state :  1 with present energy : 0.32175
+
+
+
+ >>>>> COUPLED CLUSTER RESPONSE SOLVER <<<<<
+
+ Frequnecy :     0.32175
+
+    Iter  #Vectors  time (min)   residual
+    --------------------------------------
+
+ REDUCED EIGENVALUES real part:
+
+               Column   1
+       1       0.32183038
+    ==== End of matrix output ====
+      1       1         0.00     0.88E-04
+    --------------------------------------
+    converged in  1 iterations
+    threshold:    0.10E-03
+
+
+         Routine          Time (min)
+         ---------------------------
+         CC_TRDRV            0.00
+         CCRED               0.00
+         CCNEX               0.00
+         ---------------------------
+         Total time          0.00
+
+
+ >>>> Total CPU  time used in CCEQ_SOLV:   0.01 seconds
+ >>>> Total wall time used in CCEQ_SOLV:   0.02 seconds
+
+
+ >>>>>>>>>>>>>>>>>>>>> <<<<<<<<<<<<<<<<<<<<<
+
+
+
+  Final eigenvalues :
+ =====================
+ (convergence threshold:  1.00D-04)
+
+    1   0.3218303770
+
+
+ CC2        excitation energies with Omega=   0.321747
+ =====================================================
+ (conversion factor used: 1 au = 27.2113957 eV)
+
+ Excitation no.       Hartree               eV
+ --------------       -------               --
+
+         1            0.321830            8.757450
+
+ Converged root to diff. -0.000083  for root   1 in   4 iterations
+
+
+
+ Total excited state energies for states of symmetry/spin   4  1
+ Excitation no.       Energy (Hartree) 
+ ------------------------------------- 
+@@@    4    1           -75.941204270298357
+
+
+ Analysis of the Coupled Cluster Excitation Vector Number :  1
+ -------------------------------------------------------------
+
+          Excitation Energy :                             8.7575 eV
+
+          Norm of Total Amplitude Vector :               1.0000
+
+
+ +=============================================================================+
+ | symmetry|  orbital index  |   Excitation Numbers             |   Amplitude  |
+ |  Index  |   a   b   i   j |      NAI      NBJ |     NAIBJ    |              |
+ +=============================================================================+
+ | 3   2   |   1       1     |        9          |              |    0.918889  |
+ +=============================================================================+
+
+
+          Norm of Printed Amplitude Vector :             0.9189
+
+          Printed all single excitations greater than 0.500000
+ cc_exci. eigval :           7  0.31113916580531220     
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                   SUMMARY OF COUPLED CLUSTER CALCULATION                    *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+                                                                                
+            Total SCF   energy:                   -76.0414153777                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CCS        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A1  |    1   |     0.4050010  |      11.02064  |     88887.440  | 100.00  |
+ | ^1A1  |    2   |     0.4734457  |      12.88311  |    103909.315  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1  |    1   |     0.3190838  |       8.68271  |     70030.798  | 100.00  |
+ | ^1B1  |    2   |     0.4462606  |      12.14337  |     97942.878  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B2  |    1   |     0.4659289  |      12.67857  |    102259.581  | 100.00  |
+ | ^1B2  |    2   |     0.5278475  |      14.36346  |    115849.128  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1A2  |    1   |     0.3809914  |      10.36730  |     83617.944  | 100.00  |
+ | ^1A2  |    2   |     0.4859025  |      13.22208  |    106643.282  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1A1       -75.6364143971                                        
+             2 ^1A1       -75.5679696975                                        
+             1 ^1B1       -75.7223315828                                        
+             2 ^1B1       -75.5951547864                                        
+             1 ^1B2       -75.5754864392                                        
+             2 ^1B2       -75.5135679068                                        
+             1 ^1A2       -75.6604239882                                        
+             2 ^1A2       -75.5555128284                                        
+                                                                                
+            Total SCF   energy:                   -76.0414153777                
+            Total CC2   energy:                   -76.2630346473                
+                                                                                
+                                                                                
+ +=============================================================================+
+ |  sym. | Exci.  |        CC2        Excitation energies            | ||T1||  |
+ |(spin, |        +------------------------------------------------------------+
+ | spat) |        |     Hartree    |       eV.      |     cm-1       |    %    |
+ +=============================================================================+
+ | ^1A1  |    1   |     0.3492524  |       9.50364  |     76652.032  | 100.00  |
+ | ^1A1  |    2   |     0.4181750  |      11.37912  |     91778.807  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B1  |    1   |     0.2610328  |       7.10306  |     57290.070  | 100.00  |
+ | ^1B1  |    2   |     0.3940026  |      10.72136  |     86473.574  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1B2  |    1   |     0.4088505  |      11.12539  |     89732.318  | 100.00  |
+ | ^1B2  |    2   |     0.5009790  |      13.63233  |    109952.188  | 100.00  |
+ +-----------------------------------------------------------------------------+
+ | ^1A2  |    1   |     0.3218304  |       8.75745  |     70633.603  | 100.00  |
+ | ^1A2  |    2   |     0.4366798  |      11.88266  |     95840.127  | 100.00  |
+ +=============================================================================+
+                                                                                
+                                                                                
+     Total energies in Hartree:                                                 
+             1 ^1A1       -75.9137822869                                        
+             2 ^1A1       -75.8448596319                                        
+             1 ^1B1       -76.0020018810                                        
+             2 ^1B1       -75.8690320487                                        
+             1 ^1B2       -75.8541841184                                        
+             2 ^1B2       -75.7620556131                                        
+             1 ^1A2       -75.9412042703                                        
+             2 ^1A2       -75.8263548946                                        
+
+  1 a.u. =        27.21138 eV.  
+  1 a.u. =    219474.62934 cm-1.
+  
+
+ *******************************************************************************
+ *******************************************************************************
+ *                                                                             *
+ *                                                                             *
+ *                      END OF COUPLED CLUSTER CALCULATION                     *
+ *                                                                             *
+ *                                                                             *
+ *******************************************************************************
+ *******************************************************************************
+
+
+ >>>> CPU and wall time for CC :       3.472       6.107
+
+ 
+     Date and time (Linux)  : Mon May 12 21:24:22 2014
+     Host name              : macasm.local                            
+
+
+                      .-------------------------------------.
+                      | End of Coupled Cluster Section (CC) |
+                      `-------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   4.45 seconds
+ >>>> Total wall time used in DALTON:  20.94 seconds
+
+ 
+     Date and time (Linux)  : Mon May 12 21:24:22 2014
+     Host name              : macasm.local                            

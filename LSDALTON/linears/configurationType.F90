@@ -71,6 +71,8 @@ type ConfigItem
    logical              :: SCFinteractionEnergy
    !> Same SubSystems in SCF interaction energies
    logical              :: SameSubSystems
+   !> Construct SubSystems Density matrix in SCF interaction energies
+   logical              :: SubSystemDensity
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt
@@ -90,7 +92,7 @@ type ConfigItem
    !> Used to store info about molecule
    type(moleculeinfo)   :: molecule
    !> Used to store info about which atoms have which basisset
-   type(basissetlibraryitem):: lib
+   type(basissetlibraryitem):: lib(nBasisBasParam)
    !> Used to store info about response calculation
    type(responseitem) :: response
    !> Used to store info about geometry optimization

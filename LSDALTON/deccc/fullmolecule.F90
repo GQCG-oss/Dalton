@@ -23,10 +23,10 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-
+#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-
+#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
@@ -80,6 +80,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
@@ -91,6 +92,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -143,6 +145,7 @@ contains
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        IF(DECinfo%full_molecular_cc)THEN
           call dec_get_CABS_orbitals(molecule,mylsitem)
           call dec_get_RI_orbitals(molecule,mylsitem)
@@ -150,6 +153,7 @@ contains
           !> F12 Fock matrices in MO basis
           call molecule_mo_f12(molecule,mylsitem,D)
        ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -801,19 +805,19 @@ contains
     call mem_alloc(molecule%atom_size,natoms)
     molecule%atom_size=0
 
-    r = mylsitem%input%basis%regular%labelindex
+    r = mylsitem%input%basis%binfo(RegBasParam)%labelindex
 
     ! loop over atoms
     do i=1,natoms
 
        if(r == 0) then
           icharge = int(mylsitem%input%molecule%atom(i)%charge)
-          itype = mylsitem%input%basis%regular%chargeindex(icharge)
+          itype = mylsitem%input%basis%binfo(RegBasParam)%chargeindex(icharge)
        else
           itype = mylsitem%input%molecule%atom(i)%idtype(1)
        end if
 
-       molecule%atom_size(i) = mylsitem%input%basis%regular%&
+       molecule%atom_size(i) = mylsitem%input%basis%binfo(RegBasParam)%&
             atomtype(itype)%TotNOrb
 
     end do
@@ -839,17 +843,18 @@ contains
      call mem_alloc(molecule%atom_cabssize,natoms)
      molecule%atom_cabssize=0
 
-     r = mylsitem%input%basis%cabs%labelindex
+     r = mylsitem%input%basis%binfo(CABBasParam)%labelindex
        
      ! loop over atoms
      do i=1,natoms
       if(r == 0) then
          icharge = int(mylsitem%input%molecule%atom(i)%charge)
-         itype = mylsitem%input%basis%cabs%chargeindex(icharge)
+         itype = mylsitem%input%basis%binfo(CABBasParam)%chargeindex(icharge)
       else
          itype = mylsitem%input%molecule%atom(i)%idtype(r)
       end if
-      molecule%atom_cabssize(i) = mylsitem%input%basis%cabs%atomtype(itype)%TotNOrb
+      molecule%atom_cabssize(i) = &
+           & mylsitem%input%basis%binfo(CABBasParam)%atomtype(itype)%TotNOrb
      end do
 
      ! get first and last index of an atom in ao matrix
@@ -940,6 +945,7 @@ contains
     type(fullmolecule), intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: MyLsitem
     type(matrix), intent(in) :: D
+#ifdef MOD_UNRELEASED
     
     integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
     
@@ -1004,6 +1010,7 @@ contains
       print *,'-------------------------------------------' 
     end if
 
+#endif
   end subroutine molecule_mo_f12
 
 

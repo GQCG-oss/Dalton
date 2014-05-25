@@ -246,8 +246,10 @@ contains
 
        call time_start_phase(PHASE_COMM)
 
-       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master)
-       call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master)
+       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
+       call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
+       !FIXME: Please introduce SPLIT_MSG_REC here, otherwise buffers may beocme
+       !too big
        call lsmpi_local_reduction(ccsdpt_doubles_2%val,nvirt,nocc,nvirt,nocc,infpar%master)
 
        call time_start_phase(PHASE_WORK)
@@ -6280,8 +6282,8 @@ contains
 
        ! now, reduce o^2v^2 and o^3v integrals onto master
        call time_start_phase(PHASE_COMM)
-       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm)
-       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm) 
+       call lsmpi_allreduce(dummy1,o2v2,infpar%lg_comm,SPLIT_MSG_REC )
+       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
        call time_start_phase(PHASE_WORK)
 
     end if

@@ -13,6 +13,7 @@ use memory_handling, only: mem_alloc,mem_dealloc
 use scfloop_module, only: scfloop
 use matrix_operations, only: mat_init, mat_free, mat_diag_f, mat_assign
 use basis_type, only: free_basissetinfo
+use basis_typetype, only: VALBasParam,GCTBasParam
 use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
 use decompMod, only: decomp_shutdown, decomp_init, decomposition
 use initial_guess, only: get_initial_dens
@@ -102,14 +103,14 @@ contains
             &.or.config%decomp%cfg_gcbasis) then
           !     Not working properly for geometry-optimization
           !     config%diag%cfg_restart = .FALSE.
-          IF(ls%input%BASIS%GCtransAlloc)THEN
-             IF(ls%input%BASIS%GCtrans%natomtypes .NE. 0)THEN
-                call free_basissetinfo(ls%input%BASIS%GCtrans)
-             ENDIF
+          IF(ls%input%BASIS%WBASIS(GCTBasParam))THEN
+             call free_basissetinfo(ls%input%BASIS%BINFO(GCTBasParam))
           ENDIF
-          IF(ls%input%BASIS%VALENCE%natomtypes .NE. 0)THEN
-             call free_basissetinfo(ls%input%BASIS%VALENCE)
+          ls%input%BASIS%WBASIS(GCTBasParam) = .FALSE.
+          IF(ls%input%BASIS%WBASIS(VALBasParam))THEN
+             call free_basissetinfo(ls%input%BASIS%BINFO(VALBasParam))
           ENDIF
+          ls%input%BASIS%WBASIS(VALBasParam) = .FALSE.
           if(config%decomp%cfg_gcbasis) call trilevel_basis(config%opt,ls)
        endif
        ls%setting%integraltransformGC = integraltransformGC

@@ -474,7 +474,7 @@ contains
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
     character(ARR_MSG_LEN) :: msg
-    logical :: master
+    logical :: master,trafo1,trafo2,trafoi
 
     master=.true.
 #ifdef VAR_MPI
@@ -516,8 +516,8 @@ contains
 
     !Setting transformation variables for each rank
     !**********************************************
-    call mo_work_dist(v2o,fai1,tl1)
-    call mo_work_dist(o2v,fai2,tl2)
+    call mo_work_dist(v2o,fai1,tl1,trafo1)
+    call mo_work_dist(o2v,fai2,tl2,trafo2)
 
 
     w3size = max(tl1*no,tl2*nv)
@@ -529,7 +529,7 @@ contains
     call time_start_phase(PHASE_COMM, at = tw)
     call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
     do nod=1,nnod-1
-    call mo_work_dist(nv*nv*no,fri,tri,nod)
+    call mo_work_dist(nv*nv*no,fri,tri,trafoi,nod)
     if(me==0)then
       do i=1,no
       call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
@@ -550,7 +550,9 @@ contains
     !print *,me,"contraction done",omega2%tdim
     call lsmpi_barrier(infpar%lg_comm)
 
-    call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
+    if(trafo1)then
+       call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,pfock%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
+    endif
     call time_start_phase(PHASE_COMM, at = tw)
     call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
     call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
@@ -564,7 +566,7 @@ contains
     call time_start_phase(PHASE_COMM, at = tw)
     call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
     do nod=1,nnod-1
-    call mo_work_dist(nv*no*no,fri,tri,nod)
+    call mo_work_dist(nv*no*no,fri,tri,trafoi,nod)
     if(me==0)then
       do i=1,tri
       call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
@@ -583,7 +585,9 @@ contains
     w_o2v2=0.0E0_realk
 
 
-    call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+    if(trafo2)then
+       call dgemm('n','n',nv,tl2,nv,1.0E0_realk,qfock%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
+    endif
     call time_start_phase(PHASE_COMM, at = tw)
     call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
     call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
@@ -641,7 +645,7 @@ contains
     real(realk) :: tw,tc
     integer(kind=ls_mpik) me,mode,nod, nnod
     character(ARR_MSG_LEN) :: msg
-    logical :: master,lock_outside,lock_safe,local
+    logical :: master,lock_outside,lock_safe,local,trafo1,trafo2,trafo
 
     master=.true.
 #ifdef VAR_MPI
@@ -674,11 +678,11 @@ contains
 
     !Setting transformation variables for each rank
     !**********************************************
-    call mo_work_dist(v2o,fai1,tl1)
-    call mo_work_dist(o2v,fai2,tl2)
+    call mo_work_dist(v2o,fai1,tl1,trafo1)
+    call mo_work_dist(o2v,fai2,tl2,trafo2)
 
 
-    call mo_work_dist(nv*nv*no,fri,tri)
+    call mo_work_dist(nv*nv*no,fri,tri,trafo)
     !call mem_alloc(w2,nv2*no,no)
     !call mem_alloc(w_o2v2,nv2*no,no)
     call mem_alloc(w_o2v2,tl1*no)
@@ -1085,7 +1089,7 @@ contains
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
     character(ARR_MSG_LEN) :: msg
-    logical :: master
+    logical :: master,trafo
 
     master=.true.
 #ifdef VAR_MPI
@@ -1108,7 +1112,7 @@ contains
     !call array_cp_tiled2dense()
 
 
-    call mo_work_dist(nvirt*nocc,fai,tl)
+    call mo_work_dist(nvirt*nocc,fai,tl,trafo)
 
     t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
     call array_convert(u2%elm4,t_par)

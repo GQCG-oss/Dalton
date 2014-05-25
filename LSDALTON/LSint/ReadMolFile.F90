@@ -1,6 +1,8 @@
 !> @file
 !> Read molecule input
 MODULE READMOLEFILE
+  use BUILDBASISSET
+  use ls_util
   use fundamental
   use precision
   use TYPEDEF
@@ -19,9 +21,7 @@ contains
 !> \param doprint if the information should be printet
 !> \param iprint the printlevel integer, determining how much output should be generated
 !> \param DoSpherical if the basis should be a Spherical or cartesian basis
-!> \param auxbasis if an auxilliary basis is specified in mol file
-!> \param cabsbasis if an Complementary auxilliary basis is specified in molfile
-!> \param JKbasis if an JK auxilliary basis is specified in mol file
+!> \param basis if an regular,auxilliary,CABS,JK,ADMM basis is specified in mol file
 !>
 !> THIS IS THE MAIN DRIVER ROUTINE WHICH READS THE MOLECULE INPUT FILE
 !> AND BUILDS THE MOLECULE OBJECT 
@@ -36,31 +36,29 @@ contains
 !>    AND READS THE X,Y,Z COORDINATES OF THE INDIVIDUAL ATOMS
 !>
 SUBROUTINE READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,MOLECULE,&
-     &BASISSETLIBRARY,doprint,iprint,DoSpherical,auxbasis,&
-	 &cabsbasis,jkbasis,latt_config)
+     &BASISSETLIBRARY,doprint,iprint,DoSpherical,basis,&
+	 &latt_config)
 implicit none
 INTEGER,intent(in)               :: LUPRI,iprint
 TYPE(MOLECULEINFO),intent(inout) :: MOLECULE
-LOGICAL,intent(inout) :: AUXBASIS,DoSpherical
+LOGICAL,intent(inout) :: BASIS(nBasisBasParam),DoSpherical
 LOGICAL,intent(in) :: doprint
-TYPE(BASISSETLIBRARYITEM),intent(inout) :: BASISSETLIBRARY
+TYPE(BASISSETLIBRARYITEM),intent(inout) :: BASISSETLIBRARY(nBasisBasParam)
 TYPE(lvec_list_t),INTENT(INOUT) :: latt_config
 !
 integer            :: LUINFO
 logical            :: PRINTATOMCOORD,file_exist,Angstrom,Symmetry,dopbc
-logical            :: ATOMBASIS,BASIS,CABSBASIS,JKBASIS,Subsystems
-CHARACTER(len=80)  :: BASISSET,AUXBASISSET,CABSBASISSET,JKBASISSET
+logical            :: ATOMBASIS,Subsystems
+CHARACTER(len=80)  :: BASISSET(nBasisBasParam)
 integer            :: MolecularCharge,Atomtypes,Totalnatoms,I,IPOS
 
 IF (doprint) WRITE(LUPRI,'(2X,A18,2X,I6)')'MOLPRINT IS SET TO',IPRINT
 BASIS=.FALSE.
+BASIS(RegBasParam) = .TRUE. !a regular basis is required at all times
 ATOMBASIS=.FALSE.
-AUXBASIS=.FALSE.
-CABSBASIS=.FALSE.
-JKBASIS=.FALSE.
-call StringInit80(AUXBASISSET)
-call StringInit80(CABSBASISSET)
-call StringInit80(JKBASISSET)
+DO I=1,nBasisBasParam
+   call StringInit80(BASISSET(I))
+ENDDO
 
 INQUIRE(file='MOLECULE.INP',EXIST=file_exist) 
 IF(file_exist)THEN
@@ -76,39 +74,20 @@ CALL init_MoleculeInfo(Molecule,Totalnatoms,'INPUT-Molecule________')
 
 PRINTATOMCOORD = .FALSE.
 IF(Totalnatoms .LE. 11)PRINTATOMCOORD = .TRUE.
-CALL READ_LINE1(LUPRI,LUINFO,BASIS,ATOMBASIS)
+CALL READ_LINE1(LUPRI,LUINFO,ATOMBASIS)
 
-IF(BASIS)THEN
-  CALL READ_LINE2(LUPRI,LUINFO,IPRINT,BASISSET,AUXBASISSET,AUXBASIS,&
-       &CABSBASISSET,CABSBASIS,JKBASISSET,JKBASIS)
-ENDIF
+IF(.NOT.ATOMBASIS)CALL READ_LINE2(LUPRI,LUINFO,IPRINT,BASISSET,BASIS)
 
 BASISSETLIBRARY%DunningsBasis = .FALSE.
-IF(BASIS)THEN
-   BASISSETLIBRARY%BASISSETNAME(1)=BASISSET
-   IPOS = INDEX(BASISSET,'cc-pV')
-   IF (IPOS .NE. 0) THEN 
-      BASISSETLIBRARY%DunningsBasis = .TRUE.
-   ENDIF
-   BASISSETLIBRARY%BASISSETNAME(2)=AUXBASISSET
-   BASISSETLIBRARY%BASISSETNAME(3)=CABSBASISSET
-   BASISSETLIBRARY%BASISSETNAME(4)=JKBASISSET
-   BASISSETLIBRARY%nbasissets=1
-   IF(AUXBASIS) THEN
-      BASISSETLIBRARY%nbasissets=2
-   ENDIF
-   IF(CABSBASIS) THEN
-      IF(.NOT.AUXBASIS)THEN
-         CALL LSQUIT('Aux is required When supplying a CABS basis set, even if not used',-1)
+IF(.NOT.ATOMBASIS)THEN
+   DO I=1,nBasisBasParam
+      BASISSETLIBRARY(I)%nbasissets=1
+      BASISSETLIBRARY(I)%BASISSETNAME(1)=BASISSET(I)
+      IPOS = INDEX(BASISSET(I),'cc-pV')
+      IF (IPOS .NE. 0) THEN 
+         BASISSETLIBRARY(I)%DunningsBasis = .TRUE.
       ENDIF
-      BASISSETLIBRARY%nbasissets=3
-   ENDIF
-   IF(JKBASIS) THEN
-      IF(.NOT.CABSBASIS)THEN
-         CALL LSQUIT('CABS is required When supplying a JK basis set, even if not used',-1)
-      ENDIF
-      BASISSETLIBRARY%nbasissets=4
-   ENDIF
+   ENDDO
 ELSE !ATOMBASIS
    !We dont know yet 
 ENDIF
@@ -134,7 +113,7 @@ ENDIF
 DOPBC=.FALSE.
 
 CALL READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
-     &ATOMBASIS,BASIS,AUXBASIS,CABSBASIS,JKBASIS,Angstrom,MOLECULE,&
+     &ATOMBASIS,BASIS,Angstrom,MOLECULE,&
      &PRINTATOMCOORD,doprint,latt_config,Subsystems)
 
 CALL DETERMINE_NELECTRONS(Molecule,Molecule%charge,Molecule%nelectrons)
@@ -149,12 +128,18 @@ END SUBROUTINE READ_MOLFILE_AND_BUILD_MOLECULE
 
 subroutine StringInit80(AUXBASISSET)
 character(len=80),intent(inout) :: AUXBASISSET
-!
 integer :: I 
 do I=1,80
    AUXBASISSET(I:I)=' '
 enddo
 end subroutine StringInit80
+subroutine StringInit120(AUXBASISSET)
+character(len=120),intent(inout) :: AUXBASISSET
+integer :: I 
+do I=1,120
+   AUXBASISSET(I:I)=' '
+enddo
+end subroutine StringInit120
 
 !> \brief determine the total number of atoms
 !> \author T. Kjaergaard
@@ -210,7 +195,7 @@ ENDIF
 
 IF(BASIS) THEN
    DO
-      READ (LUINFO,'(a80)') LINE120  !BASISSETLINE
+      READ (LUINFO,'(a120)') LINE120  !BASISSETLINE
       call TestLength(LINE120,120,LINE,80)
       IF (LINE(1:1) == '!' .or. LINE(1:1) == '#') CYCLE
       EXIT
@@ -223,7 +208,7 @@ Totalnatoms=0
 FOUND=.FALSE.
 DO   
   IF (FOUND) EXIT
-  READ (LUINFO,'(a80)') LINE120
+  READ (LUINFO,'(a120)') LINE120
   call TestLength(LINE120,120,LINE,80)
   IPOS = INDEX(LINE,'Atomtypes')
   IF (IPOS .EQ. 0) IPOS = INDEX(LINE,'AtomTypes')
@@ -256,7 +241,7 @@ ENDDO
 numbertypes=1
 DO 
   IF(numbertypes>Atomtypes) EXIT
-  READ (LUINFO,'(a80)') LINE120
+  READ (LUINFO,'(a120)') LINE120
   call TestLength(LINE120,120,LINE,80)
   IPOS = INDEX(LINE,'Atoms')
   IF (IPOS .NE. 0) THEN
@@ -271,7 +256,7 @@ DO
     ENDIF
     Totalnatoms=Totalnatoms+nAtoms
     DO J=1,nAtoms
-       READ (LUINFO, '(a80)') LINE120
+       READ (LUINFO, '(a120)') LINE120
        call TestLength(LINE120,120,LINE,80)
     ENDDO
   ELSE !OLD INPUT
@@ -284,7 +269,7 @@ DO
      numbertypes=numbertypes+1
      Totalnatoms=Totalnatoms+nAtoms
      DO J=1,nAtoms
-        READ (LUINFO, '(a80)') LINE120
+        READ (LUINFO, '(a120)') LINE120
         call TestLength(LINE120,120,LINE,80)
      ENDDO
   ENDIF
@@ -327,22 +312,21 @@ end subroutine TestLength
 !> \param luinfo the logical unit number for the molecule input file
 !> \param basis if the BASIS is used
 !> \param atombasis if the ATOMBASIS is used
-SUBROUTINE READ_LINE1(LUPRI,LUINFO,BASIS,ATOMBASIS)
+SUBROUTINE READ_LINE1(LUPRI,LUINFO,ATOMBASIS)
 implicit none
 CHARACTER(len=80)  :: WORD
 CHARACTER(len=120)  :: WORD120
-LOGICAL            :: BASIS,ATOMBASIS
+LOGICAL            :: ATOMBASIS
 INTEGER            :: LUINFO,IPOS,IPOS2,LUPRI
 
 rewind(LUINFO)
 DO
-  READ (LUINFO,'(a80)') WORD120
+  READ (LUINFO,'(a120)') WORD120
   call TestLength(WORD120,120,WORD,80)
   IF(WORD(1:1) == '!' .OR. WORD(1:1) == '#') CYCLE
   EXIT
 ENDDO
 
-BASIS=.FALSE.
 ATOMBASIS=.FALSE.
 
 IPOS = INDEX(WORD,'ATOM')
@@ -359,9 +343,7 @@ IF (IPOS .NE. 0) THEN !ATOMBASIS
   ENDIF
 ELSE
   IPOS2 = INDEX(WORD,'BASIS')
-  IF (IPOS2 .NE. 0) THEN
-     BASIS=.TRUE.
-  ELSE
+  IF (IPOS2 .EQ. 0) THEN
      WRITE (LUPRI,'(2X,a10,a70)') ' Keyword ',WORD
      WRITE (LUPRI,'(2X,a80)') ' not recognized in READ_MOLECULE_FILE.'
      WRITE (LUPRI,'(2X,a80)') ' maybe it is not implemented yet.'
@@ -381,104 +363,107 @@ END SUBROUTINE READ_LINE1
 !> \param basisset the name of the basisset 
 !> \param auxbasisset the name of the auxilliary basisset 
 !> \param auxbasis if an auxilliary basisset is given
-SUBROUTINE READ_LINE2(LUPRI,LUINFO,IPRINT,BASISSET,AUXBASISSET,AUXBASIS,&
-     & CABSBASISSET,CABSBASIS,JKBASISSET,JKBASIS)
+SUBROUTINE READ_LINE2(LUPRI,LUINFO,IPRINT,BASISSET,BASIS)
 implicit none
-CHARACTER(len=80)  :: WORD,BASISSET,AUXBASISSET,CABSBASISSET,JKBASISSET
+CHARACTER(len=80)  :: WORD,BASISSET(nBasisBasParam)
 CHARACTER(len=120)  :: WORD120
 INTEGER            :: N,I,K,Itmp,M,L
-LOGICAL            :: NEXT,AUXBASIS,CABSBASIS,JKBASIS
-INTEGER            :: LUINFO
-INTEGER            :: LUPRI,IPRINT,BAS
-AUXBASIS=.FALSE.
-CABSBASIS=.FALSE.
-JKBASIS=.FALSE.
-N=0
-DO I=1,80
-  BASISSET(I:I) = ' '
-  AUXBASISSET(I:I) = ' '
+LOGICAL            :: NEXT
+LOGICAL,intent(inout) :: BASIS(nBasisBasParam)
+INTEGER            :: LUINFO,LEN
+INTEGER            :: LUPRI,IPRINT,BAS,J,IPOS,IPOS2,IPOS3
+
+DO J=1,nBasisBasParam
+   DO I=1,80
+      BASISSET(J)(I:I) = ' '
+   ENDDO
 ENDDO
-READ (LUINFO, '(a80)') WORD120
+READ (LUINFO, '(a120)') WORD120
 call TestLength(WORD120,120,WORD,80)
-BAS=0
+
+!the first word is the regular
 NEXT = .FALSE.
+N=0
+BASIS(RegBasParam)=.TRUE.
 DO I=1,80
-  IF (WORD(I:I) .NE. ' ' .AND. .NOT. NEXT) THEN
-    NEXT=.TRUE.  !INSIDE WORD
-    k=i          !Start of word
-  ELSEIF(WORD(I:I) .EQ. ' ' .AND. NEXT) THEN
-    L=I-1        !end of WORD
-    NEXT=.FALSE. !OUT OF WORD
-    N=N+1
-    IF(N==1)THEN
-      BASISSET(1:I-K)=WORD(K:L) !FOUND BASISSET
-    ELSE !FOUND ANOTHER BASISSET
-       IF(WORD(K:K+2) .EQ. 'Aux')THEN
-          AUXBASIS=.TRUE.
-          Itmp = K + 3
-          BAS=2
-       ELSEIF(WORD(K:K+3) .EQ. 'CABS')THEN
-          CABSBASIS=.TRUE.
-          Itmp = K + 4
-          BAS=3
-       ELSEIF(WORD(K:K+1) .EQ. 'JK')THEN
-          JKBASIS=.TRUE.
-          Itmp = K + 2
-          BAS=4
-       ELSEIF(WORD(K:K) .EQ. '!')THEN !comment
-          EXIT
-       ELSEIF(WORD(K:K) .EQ. '#')THEN !comment
-          EXIT
-       ENDIF
-       !     Read a portion of the form "Aux = AUXBASNAM", with arbitrarily many blanks
-       !     or a portion of the form "CABS = AUXBASNAM", with arbitrarily many blanks
-       !     or a portion of the form "JK = AUXBASNAM", with arbitrarily many blanks
-       !     1. find '='
-       DO WHILE (WORD(Itmp:Itmp) .ne. '=' .and. Itmp .lt. 80)
-          Itmp = itmp + 1
-       ENDDO
-       Itmp = Itmp + 1
-       IF (Itmp .ge. 80)THEN
-          IF(BAS.EQ.2)CALL LSquit('"Aux" given but no basis provided!',lupri)
-          IF(BAS.EQ.3)CALL LSquit('"CABS" given but no basis provided!',lupri)
-          IF(BAS.EQ.4)CALL LSquit('"JK" given but no basis provided!',lupri)
-       ENDIF
-       !     2. find non-blank
-       DO WHILE (WORD(Itmp:Itmp) .eq. ' ' .and. itmp .lt. 80)
-          Itmp = Itmp + 1
-       ENDDO
-       If (itmp .ge. 80) CALL LSquit('"Aux" given but no basis provided!',lupri)
-       !     3. copy to next blank
-       M = 1
-       DO WHILE(WORD(itmp:itmp) .ne. ' ' .and. itmp .lt. 80)
-          IF(BAS.EQ.2)AUXBASISSET(M:M) = WORD(itmp:itmp)
-          IF(BAS.EQ.3)CABSBASISSET(M:M) = WORD(itmp:itmp)
-          IF(BAS.EQ.4)JKBASISSET(M:M) = WORD(itmp:itmp)
-          M=M+1
-          Itmp = Itmp + 1
-       ENDDO
-    ENDIF
-    IF(N>4)THEN !only Basis,Aux,CABS,JK is implemented
-        WRITE (LUPRI,'(/A)') ' Found string"'//WORD(K:L)&
-        &//'" but not correct format in MOLECULE.INP.'
-    ENDIF
-  ENDIF
+   IF (WORD(I:I) .NE. ' ' .AND. .NOT. NEXT) THEN
+      NEXT=.TRUE.  !INSIDE WORD
+      k=i          !Start of word
+   ELSEIF(WORD(I:I) .EQ. ' ' .AND. NEXT) THEN
+      L=I-1        !end of WORD
+      NEXT=.FALSE. !OUT OF WORD
+      N=N+1
+      IF(N==1)THEN
+         BASISSET(RegBasParam)(1:I-K) = WORD(K:L)
+      ELSE !FOUND ANOTHER BASISSET
+         EXIT
+      ENDIF
+   ENDIF
 ENDDO
+
+IPOS = INDEX(WORD,'Aux')
+IF (IPOS .NE. 0) THEN
+   BASIS(AUXBasParam)=.TRUE.
+   IPOS2 = INDEX(WORD(IPOS:80),'=')
+   DO I=IPOS+IPOS2,80
+      IF(WORD(I:I).EQ.' ')THEN
+         IPOS3=I
+         EXIT
+      ENDIF
+   ENDDO
+   LEN = IPOS3-(IPOS+IPOS2)
+   BASISSET(AUXBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ENDIF
+
+IPOS = INDEX(WORD,'CABS')
+IF (IPOS .NE. 0) THEN
+   BASIS(CABBasParam)=.TRUE.
+   IPOS2 = INDEX(WORD(IPOS:80),'=')
+   DO I=IPOS+IPOS2,80
+      IF(WORD(I:I).EQ.' ')THEN
+         IPOS3=I
+         EXIT
+      ENDIF
+   ENDDO
+   LEN = IPOS3-(IPOS+IPOS2)
+   BASISSET(CABBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ENDIF
+
+IPOS = INDEX(WORD,'JK')
+IF (IPOS .NE. 0) THEN
+   BASIS(JKBasParam)=.TRUE.
+   IPOS2 = INDEX(WORD(IPOS:80),'=')
+   DO I=IPOS+IPOS2,80
+      IF(WORD(I:I).EQ.' ')THEN
+         IPOS3=I
+         EXIT
+      ENDIF
+   ENDDO
+   LEN = IPOS3-(IPOS+IPOS2)
+   BASISSET(JKBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ENDIF
+
+IPOS = INDEX(WORD,'ADMM')
+IF (IPOS .NE. 0) THEN
+   BASIS(ADMBasParam)=.TRUE.
+   IPOS2 = INDEX(WORD(IPOS:80),'=')
+   DO I=IPOS+IPOS2,80
+      IF(WORD(I:I).EQ.' ')THEN
+         IPOS3=I
+         EXIT
+      ENDIF
+   ENDDO
+   LEN = IPOS3-(IPOS+IPOS2)
+   BASISSET(ADMBasParam)(1:LEN) = WORD(IPOS+IPOS2:IPOS3)
+ENDIF
+
 IF (IPRINT .GT. 1) THEN
-  WRITE (LUPRI,'(/A)') ' Basis set "'//BASISSET(1:I-K)&
-        &//'" from the basis set library will be used.'
-  IF(AUXBASIS)THEN
-     WRITE (LUPRI,'(/A)') ' AuxBasis set "'//AUXBASISSET(1:M)&
-          &//'" from the basis set library will be used.'
-  ENDIF
-  IF(CABSBASIS)THEN
-     WRITE (LUPRI,'(/A)') ' CABSBasis set "'//CABSBASISSET(1:M)&
-          &//'" from the basis set library will be used.'
-  ENDIF
-  IF(JKBASIS)THEN
-     WRITE (LUPRI,'(/A)') ' JKBasis set "'//JKBASISSET(1:M)&
-          &//'" from the basis set library will be used.'
-  ENDIF
+   DO J=1,nBasisBasParam
+      IF(BASIS(J))THEN
+         WRITE (LUPRI,'(/A)') TRIM(BasParamLABEL(J))//' Basis set "'//TRIM(BASISSET(J))&
+              &//'" from the basis set library will be used.'
+      ENDIF
+   ENDDO
 END IF
 END SUBROUTINE READ_LINE2
 
@@ -567,7 +552,7 @@ INTEGER          :: LUPRI
 CHARACTER(len=3) :: pbc_check
 LOGICAL,INTENT(INOUT) :: setup_pbclatt
 
-READ (LUINFO, '(a80)') LINE120
+READ (LUINFO, '(a120)') LINE120
 call TestLength(LINE120,120,LINE,80)
   ! Number of different atom types
   IPOS = INDEX(LINE,'Ato')
@@ -769,419 +754,256 @@ END SUBROUTINE READ_LINE4
 !> 3. IF THE FILE IS WRITTEN IN ANGSTROM WE CONVERT TO ATOMIC UNIT 
 !>
 SUBROUTINE READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
-     &ATOMBASIS,BASIS,AUXBASIS,CABSBASIS,JKBASIS,Angstrom,MOLECULE,PRINTATOMCOORD,doprint,&
+     &ATOMBASIS,BASIS,Angstrom,MOLECULE,PRINTATOMCOORD,doprint,&
      &latt_config,Subsystems)
-  use ls_util
-implicit none
-TYPE(MOLECULEINFO) :: MOLECULE
-TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
-TYPE(lvec_list_t)  :: latt_config
-INTEGER            :: Atomtypes,LUINFO,IPOS,atomnumber
-INTEGER            :: I,J,natoms
-CHARACTER(len=4)   :: StringFormat
-LOGICAL            :: ATOMBASIS,BASIS,Angstrom,dopbc,AUXBASIS,doprint
-LOGICAL            :: CABSBASIS,JKBASIS,Subsystems
-real(realk)        :: AtomicCharge
-CHARACTER(len=80)  :: LINE,Atomicbasisset,Auxbasisset,Cabsbasisset,JKbasisset  
-CHARACTER(len=80)  :: SubsystemLabels(Atomtypes)
-CHARACTER(len=80)  :: SubsystemLabel
-CHARACTER(len=120) :: LINE120
-CHARACTER(len=1)   :: CHRXYZ(3)=(/'x','y','z'/)
-INTEGER            :: LUPRI,basissetnumber,basissetnumber1,basissetnumber2
-INTEGER            :: unique1,unique2,uniqueCharge,IPRINT
-LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
-LOGICAL            :: UniqueLabel
-INTEGER :: auxunique2,auxbasissetnumber2,cabsunique2,cabsbasissetnumber2
-INTEGER :: jkunique2,jkbasissetnumber2,nSubsystemLabels,iSubsystemLabels
+  implicit none
+  TYPE(MOLECULEINFO) :: MOLECULE
+  TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY(nBasisBasParam)
+  TYPE(lvec_list_t)  :: latt_config
+  INTEGER            :: Atomtypes,LUINFO,IPOS,atomnumber
+  INTEGER            :: I,J,natoms
+  CHARACTER(len=4)   :: StringFormat
+  LOGICAL            :: ATOMBASIS,BASIS(nBasisBasParam),Angstrom,dopbc,doprint
+  LOGICAL            :: Subsystems
+  real(realk)        :: AtomicCharge
+  CHARACTER(len=80)  :: LINE,Atomicbasisset(nBasisBasParam)
+  CHARACTER(len=80)  :: SubsystemLabels(Atomtypes)
+  CHARACTER(len=80)  :: SubsystemLabel
+  CHARACTER(len=120) :: LINE120
+  CHARACTER(len=1)   :: CHRXYZ(3)=(/'x','y','z'/)
+  INTEGER            :: LUPRI
+  INTEGER            :: unique1(nBasisBasParam),unique2,uniqueCharge,IPRINT
+  LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
+  LOGICAL            :: UniqueLabel
+  INTEGER :: basunique2(nBasisBasParam),basissetnumber2(nBasisBasParam)
+  INTEGER :: basissetnumber(nBasisBasParam),basissetnumber1(nBasisBasParam)
+  INTEGER :: nSubsystemLabels,iSubsystemLabels,iBas
 
-call StringInit80(SubsystemLabel)
-atomnumber=0
-basissetnumber=0
+  call StringInit80(SubsystemLabel)
+  atomnumber=0
+  basissetnumber=0
 
-DunningsBasis = .TRUE.
-nSubsystemLabels = 0 
-DO I=1,Atomtypes
- CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
-      & BASIS,AUXBASIS,AUXBASISSET,CABSBASIS,CABSbasisset,JKBASIS,JKbasisset,&
-      & pointcharge,phantom,Subsystems,SubsystemLabel)
- IF(Subsystems)THEN
-    Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
-         & nSubsystemLabels,iSubsystemLabels)
-    IF(UniqueLabel)THEN
-       nSubsystemLabels = nSubsystemLabels + 1 
-       iSubsystemLabels = nSubsystemLabels
-       SubsystemLabels(nSubsystemLabels) = SubsystemLabel
-    ENDIF
- ELSE
-    iSubsystemLabels = -1
- ENDIF
- IF(ATOMBASIS)THEN
-    CALL DETERMINE_UNIQUE_BASIS(BASISSETLIBRARY,ATOMICBASISSET,&
-                                             &unique1,basissetnumber)
-    IPOS = INDEX(ATOMICBASISSET,'cc-pV')
-    IF (IPOS .EQ. 0) THEN 
-       DunningsBasis = .FALSE.
-       !Not all atomic basis sets are Dunning basis sets
-    ENDIF
-
-    IF(unique1 == 0)THEN !found new basisset
-       basissetnumber=basissetnumber+1
-       IF(basissetnumber .GT. maxBasisSetInLIB) THEN
-          WRITE(LUPRI,*)'You use many different basisset (which is okay),&
-               & but you need to increase maxBasisSetInLIB in TYPE-DEF.f90&
-               & to a number equal to or greater than the number of different&
-               & basissets (including auxiliary basissets). At the moment it&
-               & is set to ', maxBasisSetInLIB,'Which is clearly not enough for you.&
-               & Thomas Kjaergaard'
-          CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
-       ENDIF
-       BASISSETLIBRARY%BASISSETNAME(basissetnumber)=ATOMICBASISSET       
-       BASISSETLIBRARY%Charges(basissetnumber,1)=AtomicCharge
-       BASISSETLIBRARY%pointcharges(basissetnumber,1)=pointcharge
-       BASISSETLIBRARY%phantom(basissetnumber,1)=phantom
-       BASISSETLIBRARY%nCharges(basissetnumber)=1 
-       basissetnumber1=basissetnumber
-       BASISSETLIBRARY%nbasissets=basissetnumber
-    ELSE !old basisset
-       CALL DETERMINE_UNIQUE_CHARGE(BASISSETLIBRARY,unique1,AtomicCharge,uniqueCharge,pointcharge)
-       IF(uniqueCharge /= 0)THEN !found new charge
-          IF(uniqueCharge .GT. maxNumberOfChargesinLIB) THEN
-             WRITE(LUPRI,*)'You use many different charges (which is okay),&
-                  & but you need to increase maxNumberOfChargesinLIB in TYPE-DEF.f90&
-                  & to a number equal to or greater than the number of different&
-                  & charges in the same basisset. So if you have 18 different atoms&
-                  & with 6-31G basis and 15 different atoms with STO-3G you need&
-                  & to increase maxNumberOfChargesinLIB to 18 or higher. &
-                  & maxNumberOfChargesinLIB is set to ', maxNumberOfChargesinLIB,&
-                  &'Which is clearly not enough for you.&
-                  & Thomas Kjaergaard'
-             CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
-          ENDIF
-
-          BASISSETLIBRARY%Charges(unique1,uniqueCharge)=AtomicCharge
-          BASISSETLIBRARY%pointcharges(unique1,uniqueCharge)=pointcharge
-          BASISSETLIBRARY%phantom(unique1,uniqueCharge)=phantom
-          BASISSETLIBRARY%nCharges(unique1)=uniqueCharge
-!       ELSE
-       ENDIF !old basisset old charge
-    ENDIF
-    IF(AUXBASIS)THEN
-       CALL DETERMINE_UNIQUE_AND_SET_BASIS(LUPRI,BASISSETLIBRARY,AUXBASISSET,&
-                &basissetnumber,AtomicCharge,uniqueCharge,auxunique2,pointcharge,phantom)
-       auxbasissetnumber2=basissetnumber
-    ENDIF
-    IF(CABSBASIS)THEN
-       IF(.NOT.AUXBASIS)THEN
-          CALL LSQUIT('Aux is required When supplying a CABS basis set, even if not used',-1)
-       ENDIF
-       CALL DETERMINE_UNIQUE_AND_SET_BASIS(LUPRI,BASISSETLIBRARY,CABSBASISSET,&
-                &basissetnumber,AtomicCharge,uniqueCharge,cabsunique2,pointcharge,phantom)
-       cabsbasissetnumber2=basissetnumber
-    ENDIF
-    IF(JKBASIS)THEN
-       IF(.NOT.CABSBASIS)THEN
-          CALL LSQUIT('CABS is required When supplying a JK basis set, even if not used',-1)
-       ENDIF
-       CALL DETERMINE_UNIQUE_AND_SET_BASIS(LUPRI,BASISSETLIBRARY,JKBASISSET,&
-                &basissetnumber,AtomicCharge,uniqueCharge,jkunique2,pointcharge,phantom)
-       jkbasissetnumber2=basissetnumber
-    ENDIF
- ENDIF
-
-
- IF(BASIS)THEN
-    unique1=1
+  DunningsBasis = .TRUE.
+  nSubsystemLabels = 0 
+  DO I=1,Atomtypes
+   CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
+        & BASIS,pointcharge,phantom,Subsystems,SubsystemLabel)
+   IF(Subsystems)THEN
+      Call DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
+           & nSubsystemLabels,iSubsystemLabels)
+      IF(UniqueLabel)THEN
+         nSubsystemLabels = nSubsystemLabels + 1 
+         iSubsystemLabels = nSubsystemLabels
+         SubsystemLabels(nSubsystemLabels) = SubsystemLabel
+      ENDIF
+   ELSE
+      iSubsystemLabels = -1
+   ENDIF
+   IF(ATOMBASIS)THEN
+    DO iBas = 1,nBasisBasParam
+     IF(BASIS(iBas))THEN
+      CALL DETERMINE_UNIQUE_BASIS(BASISSETLIBRARY(iBas),&
+           & ATOMICBASISSET(iBas),unique1(iBas),basissetnumber(iBas))
+      IPOS = INDEX(ATOMICBASISSET(iBas),'cc-pV')
+      IF (IPOS .EQ. 0) THEN 
+         DunningsBasis = .FALSE.
+         !Not all atomic basis sets are Dunning basis sets
+      ENDIF
+      IF(unique1(iBas) == 0)THEN !found new basisset
+         basissetnumber(iBas)=basissetnumber(iBas) + 1
+         IF(basissetnumber(iBas) .GT. maxBasisSetInLIB) THEN
+            WRITE(LUPRI,*)'You use many different basisset (which is okay),&
+                 & but you need to increase maxBasisSetInLIB in TYPE-DEF.f90&
+                 & to a number equal to or greater than the number of different&
+                 & basissets (including auxiliary basissets). At the moment it&
+                 & is set to ', maxBasisSetInLIB,'Which is clearly not enough for you.&
+                 & Thomas Kjaergaard'
+            CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
+         ENDIF         
+         BASISSETLIBRARY(iBas)%BASISSETNAME(basissetnumber(iBas))=ATOMICBASISSET(iBas)
+         BASISSETLIBRARY(iBas)%Charges(basissetnumber(iBas),1)=AtomicCharge
+         BASISSETLIBRARY(iBas)%pointcharges(basissetnumber(iBas),1)=pointcharge
+         BASISSETLIBRARY(iBas)%phantom(basissetnumber(iBas),1)=phantom
+         BASISSETLIBRARY(iBas)%nCharges(basissetnumber(iBas))=1 
+         basissetnumber1(iBas)=basissetnumber(iBas)
+         BASISSETLIBRARY(iBas)%nbasissets=basissetnumber(iBas)
+      ELSE !old basisset
+         CALL DETERMINE_UNIQUE_CHARGE(BASISSETLIBRARY(iBas),unique1(iBas),&
+              & AtomicCharge,uniqueCharge,pointcharge)
+         IF(uniqueCharge /= 0)THEN !found new charge
+            IF(uniqueCharge .GT. maxNumberOfChargesinLIB) THEN
+               WRITE(LUPRI,*)'You use many different charges (which is okay),&
+                    & but you need to increase maxNumberOfChargesinLIB in TYPE-DEF.f90&
+                    & to a number equal to or greater than the number of different&
+                    & charges in the same basisset. So if you have 18 different atoms&
+                    & with 6-31G basis and 15 different atoms with STO-3G you need&
+                    & to increase maxNumberOfChargesinLIB to 18 or higher. &
+                    & maxNumberOfChargesinLIB is set to ', maxNumberOfChargesinLIB,&
+                    &'Which is clearly not enough for you.&
+                    & Thomas Kjaergaard'
+               CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
+            ENDIF
+            BASISSETLIBRARY(iBas)%Charges(unique1(iBas),uniqueCharge)=AtomicCharge
+            BASISSETLIBRARY(iBas)%pointcharges(unique1(iBas),uniqueCharge)=pointcharge
+            BASISSETLIBRARY(iBas)%phantom(unique1(iBas),uniqueCharge)=phantom
+            BASISSETLIBRARY(iBas)%nCharges(unique1(iBas))=uniqueCharge
+         ENDIF
+      ENDIF !old basisset old charge
+     ENDIF
+    ENDDO
+   ELSE ! BASIS used in input
+    unique1 = 1
     basissetnumber1=1
-    unique2=2
-    basissetnumber2=2
-    IF(AUXBASIS)THEN
-       auxunique2 = unique2
-       auxbasissetnumber2=basissetnumber2
-       unique2=unique2+1
-       basissetnumber2=basissetnumber2+1
-    ENDIF
-    IF(CABSBASIS)THEN
-       CABSunique2 = unique2
-       CABSbasissetnumber2=basissetnumber2
-       unique2=unique2+1
-       basissetnumber2=basissetnumber2+1
-    ENDIF
-    IF(JKBASIS)THEN
-       JKunique2 = unique2
-       JKbasissetnumber2=basissetnumber2
-    ENDIF
-    IF(I==1)THEN
-       BASISSETLIBRARY%Charges(unique1,1)=AtomicCharge
-       BASISSETLIBRARY%pointcharges(unique1,1)=pointcharge
-       BASISSETLIBRARY%phantom(unique1,1)=phantom
-       BASISSETLIBRARY%nCharges(unique1)=1
-       IF(AUXBASIS)THEN
-          BASISSETLIBRARY%Charges(auxunique2,1)=AtomicCharge
-          BASISSETLIBRARY%pointcharges(auxunique2,1)=pointcharge
-          BASISSETLIBRARY%phantom(auxunique2,1)=phantom
-          BASISSETLIBRARY%nCharges(auxunique2)=1
-       ENDIF
-       IF(CABSBASIS)THEN
-          BASISSETLIBRARY%Charges(cabsunique2,1)=AtomicCharge
-          BASISSETLIBRARY%pointcharges(cabsunique2,1)=pointcharge
-          BASISSETLIBRARY%phantom(cabsunique2,1)=phantom
-          BASISSETLIBRARY%nCharges(cabsunique2)=1
-       ENDIF
-       IF(JKBASIS)THEN
-          BASISSETLIBRARY%Charges(jkunique2,1)=AtomicCharge
-          BASISSETLIBRARY%pointcharges(jkunique2,1)=pointcharge
-          BASISSETLIBRARY%phantom(jkunique2,1)=phantom
-          BASISSETLIBRARY%nCharges(jkunique2)=1
-       ENDIF
+    IF(I.EQ.1)THEN
+       DO iBas = 1,nBasisBasParam       
+          BASISSETLIBRARY(iBas)%Charges(1,1)=AtomicCharge
+          BASISSETLIBRARY(iBas)%pointcharges(1,1)=pointcharge
+          BASISSETLIBRARY(iBas)%phantom(1,1)=phantom
+          BASISSETLIBRARY(iBas)%nCharges(1)=1
+       ENDDO
     ELSE
-       CALL DETERMINE_UNIQUE_CHARGE(BASISSETLIBRARY,unique1,AtomicCharge,uniqueCharge,pointcharge)
-       IF(uniqueCharge /= 0)THEN !found new charge
-          IF(uniqueCharge .GT. maxNumberOfChargesinLIB) THEN
-             WRITE(LUPRI,*)'You use many different atoms/charges (which is okay),&
-                  & but you need to increase maxNumberOfChargesinLIB in TYPE-DEF.f90&
-                  & to a number equal to or greater than the number of different&
-                  & charges. So if you have 18 different atoms&
-                  & with 6-31G basis, you need&
-                  & to increase maxNumberOfChargesinLIB to 18 or higher. &
-                  & maxNumberOfChargesinLIB is set to ', maxNumberOfChargesinLIB,&
-                  &'Which is clearly not enough for you.&
-                  & Thomas Kjaergaard'
-             CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
-          ENDIF
-          BASISSETLIBRARY%Charges(unique1,uniqueCharge)=AtomicCharge
-          BASISSETLIBRARY%pointcharges(unique1,uniqueCharge)=pointcharge
-          BASISSETLIBRARY%phantom(unique1,uniqueCharge)=phantom
-          BASISSETLIBRARY%nCharges(unique1)=uniqueCharge
-          IF(AUXBASIS)THEN
-             BASISSETLIBRARY%Charges(auxunique2,uniqueCharge)=AtomicCharge
-             BASISSETLIBRARY%pointcharges(auxunique2,uniqueCharge)=pointcharge
-             BASISSETLIBRARY%phantom(auxunique2,uniqueCharge)=phantom
-             BASISSETLIBRARY%nCharges(auxunique2)=uniqueCharge
-          ENDIF
-          IF(CABSBASIS)THEN
-             BASISSETLIBRARY%Charges(cabsunique2,uniqueCharge)=AtomicCharge
-             BASISSETLIBRARY%pointcharges(cabsunique2,uniqueCharge)=pointcharge
-             BASISSETLIBRARY%phantom(cabsunique2,uniqueCharge)=phantom
-             BASISSETLIBRARY%nCharges(cabsunique2)=uniqueCharge
-          ENDIF
-          IF(JKBASIS)THEN
-             BASISSETLIBRARY%Charges(jkunique2,uniqueCharge)=AtomicCharge
-             BASISSETLIBRARY%pointcharges(jkunique2,uniqueCharge)=pointcharge
-             BASISSETLIBRARY%phantom(jkunique2,uniqueCharge)=phantom
-             BASISSETLIBRARY%nCharges(jkunique2)=uniqueCharge
-          ENDIF
-       ENDIF
+     DO iBas = 1,nBasisBasParam       
+      CALL DETERMINE_UNIQUE_CHARGE(BASISSETLIBRARY(iBas),unique1(iBas),AtomicCharge,uniqueCharge,pointcharge)
+      IF(uniqueCharge /= 0)THEN !found new charge
+         IF(uniqueCharge .GT. maxNumberOfChargesinLIB) THEN
+            WRITE(LUPRI,*)'You use many different atoms/charges (which is okay),&
+                 & but you need to increase maxNumberOfChargesinLIB in TYPE-DEF.f90&
+                 & to a number equal to or greater than the number of different&
+                 & charges. So if you have 18 different atoms&
+                 & with 6-31G basis, you need&
+                 & to increase maxNumberOfChargesinLIB to 18 or higher. &
+                 & maxNumberOfChargesinLIB is set to ', maxNumberOfChargesinLIB,&
+                 &'Which is clearly not enough for you.&
+                 & Thomas Kjaergaard'
+            CALL LSQUIT('Increase maxBasisSetInLIB in TYPE-DEF.f90',lupri)
+         ENDIF
+         BASISSETLIBRARY(iBas)%Charges(1,uniqueCharge)=AtomicCharge
+         BASISSETLIBRARY(iBas)%pointcharges(1,uniqueCharge)=pointcharge
+         BASISSETLIBRARY(iBas)%phantom(1,uniqueCharge)=phantom
+         BASISSETLIBRARY(iBas)%nCharges(1)=uniqueCharge
+      ENDIF
+     ENDDO
     ENDIF
-
- ENDIF
- DO J=1,nAtoms
-    atomnumber=atomnumber+1
-    MOLECULE%ATOM(atomnumber)%phantom = phantom
-    MOLECULE%ATOM(atomnumber)%pointCharge = pointCharge
-    MOLECULE%ATOM(atomnumber)%Charge=AtomicCharge
-    CALL ATTACH_BASISINDEX_AND_BASISLABEL(LUPRI,MOLECULE,&
-         &atomnumber,basissetnumber1,auxbasissetnumber2,CABSbasissetnumber2,&
-         &JKbasissetnumber2,unique1,auxunique2,CABSunique2,JKunique2,&
-         &BASIS,ATOMBASIS,AUXBASIS,CABSBASIS,JKBASIS)
-    ! Set atomic numbers, isotopes and masses
-    MOLECULE%ATOM(atomnumber)%Isotope = 1
-    MOLECULE%ATOM(atomnumber)%Atomic_number = NINT(AtomicCharge)
-    MOLECULE%ATOM(atomnumber)%Mass = &
-    Isotopes(MOLECULE%ATOM(Atomnumber)%Atomic_number, &
-    MOLECULE%ATOM(AtomNumber)%Isotope,'MASS',LUPRI)
-    MOLECULE%ATOM(AtomNumber)%molecularIndex = AtomNumber
-    MOLECULE%ATOM(AtomNumber)%SubSystemIndex = iSubsystemLabels
-    !READ_ATOMCOORD 
-
-    READ (LUINFO, '(a80)') LINE120
-    call TestLength(LINE120,120,LINE,80)
-
-    IPOS = INDEX(LINE,' ')
-    IF (IPOS .LT. 2) THEN
-      print*, 'Atom name must start in the first column'
-      WRITE (LUPRI,*) 'Atom name must start in the first column'
-      CALL LSQUIT('Error in placement of atom name. See output',lupri)
-    ELSEIF (IPOS .EQ. 2) THEN
-      StringFormat = '(A1)'
-    ELSEIF (IPOS .EQ. 3) THEN
-      StringFormat = '(A2)'
-    ELSEIF (IPOS .EQ. 4) THEN
-      StringFormat = '(A3)'
-    ELSE!IF (IPOS .EQ. 5) THEN
-      StringFormat = '(A4)'
-!    ELSE
-!      print*, 'Atom name must be less then 5 letters'
-      WRITE (LUPRI,*) 'Note: Atom name must be less then 5 characters'
-!      CALL LSQUIT('Error in atom name. See output',lupri)
-    END IF
-
-    READ (LINE,StringFormat) MOLECULE%ATOM(atomnumber)%Name
-
-!Read x,y and z coordinate 
-    READ (LINE(IPOS:80),*) MOLECULE%ATOM(atomnumber)%CENTER(1), &
-    & MOLECULE%ATOM(atomnumber)%CENTER(2), MOLECULE%ATOM(atomnumber)%CENTER(3)
-
-!#if defined(SYS_CRAY) && defined (VAR_NOFREE) && defined (SYS_T3D) && defined (SYS_T90)
-!         READ (LINE(IPOS:80),*,ERR=101) &
-!                & MOLECULE%ATOM(atomnumber)%CENTER(1)&  !X
-!                & MOLECULE%ATOM(atomnumber)%CENTER(2)&  !Y
-!                & MOLECULE%ATOM(atomnumber)%CENTER(3)   !Z
-!         GOTO 104
-!  101    READ (LINE(IPOS:80),'(BN,3F20.0)',ERR=102) & 
-!                & MOLECULE%ATOM(atomnumber)%CENTER(1)&  !X
-!                & MOLECULE%ATOM(atomnumber)%CENTER(2)&  !Y
-!                & MOLECULE%ATOM(atomnumber)%CENTER(3)   !Z
-!         GO TO 104
-!  102    READ (LINE(IPOS:80),'(BN,3F10.0)',ERR=103)& 
-!                & MOLECULE%ATOM(atomnumber)%CENTER(1)&  !X
-!                & MOLECULE%ATOM(atomnumber)%CENTER(2)&  !Y
-!                & MOLECULE%ATOM(atomnumber)%CENTER(3)   !Z
-!         GO TO 104
-!  103    CONTINUE
-!            WRITE(LUPRI,'(/A,I5/A,I5,A)')&
-!     &      ' ERROR: Unable to read Cartesian coordinates of atom no.',&
-!     &      atomnumber,' from the following line in the MOLECULE input file:'
-!            WRITE(LUPRI,'(A)') LINE
-!         CALL QUIT('ERROR reading atomic coordinates in MOLECULE input')
-!  104    CONTINUE
-!#else
-!    CALL FREFRM(LINE,IPOS,IDUMMY,MOLECULE%ATOM(atomnumber)%CENTER(1),'REA',IERR)
-!    CALL FREFRM(LINE,IPOS,IDUMMY,MOLECULE%ATOM(atomnumber)%CENTER(2),'REA',IERR)
-!    CALL FREFRM(LINE,IPOS,IDUMMY,MOLECULE%ATOM(atomnumber)%CENTER(3),'REA',IERR)
-!#endif
-
-    IF (dopbc) THEN
-      write(LUPRI,*) 'debug: read atom position'
-      write(LUPRI,*) 'PBC not implemented'
-!     Here we need to do two things: First, check that
-!     the given atom position is within the cell. Second,
-!     if the position was given in lattice coordinates we
-!     need to transform to standard coordinates, since
-!     subsequent calculations assume standard coordinates.
-!     ErikT
-
-!     call pbc_transf_atom_coord(NUCIND,CORD(1,NUCIND),atom_coord_lat)
-    ENDIF
-
-    IPOS = INDEX(LINE,'Isotope=')
-    IF (IPOS .NE. 0) THEN
-      IPOS = IPOS + 8
-      READ (LINE(IPOS:80),'(I3)') MOLECULE%ATOM(atomnumber)%Isotope
-    ELSE
+   ENDIF
+   DO J=1,nAtoms
+      atomnumber=atomnumber+1
+      MOLECULE%ATOM(atomnumber)%phantom = phantom
+      MOLECULE%ATOM(atomnumber)%pointCharge = pointCharge
+      MOLECULE%ATOM(atomnumber)%Charge=AtomicCharge
+      CALL ATTACH_BASISINDEX_AND_BASISLABEL(LUPRI,MOLECULE,&
+           &atomnumber,unique1,basissetnumber,BASIS,ATOMBASIS)
+      ! Set atomic numbers, isotopes and masses
       MOLECULE%ATOM(atomnumber)%Isotope = 1
-    END IF
+      MOLECULE%ATOM(atomnumber)%Atomic_number = NINT(AtomicCharge)
+      MOLECULE%ATOM(atomnumber)%Mass = &
+           Isotopes(MOLECULE%ATOM(Atomnumber)%Atomic_number, &
+           MOLECULE%ATOM(AtomNumber)%Isotope,'MASS',LUPRI)
+      MOLECULE%ATOM(AtomNumber)%molecularIndex = AtomNumber
+      MOLECULE%ATOM(AtomNumber)%SubSystemIndex = iSubsystemLabels
+      !READ_ATOMCOORD 
+      
+      READ (LUINFO, '(a120)') LINE120
+      call TestLength(LINE120,120,LINE,80)
+      
+      IPOS = INDEX(LINE,' ')
+      IF (IPOS .LT. 2) THEN
+         print*, 'Atom name must start in the first column'
+         WRITE (LUPRI,*) 'Atom name must start in the first column'
+         CALL LSQUIT('Error in placement of atom name. See output',lupri)
+      ELSEIF (IPOS .EQ. 2) THEN
+         StringFormat = '(A1)'
+      ELSEIF (IPOS .EQ. 3) THEN
+         StringFormat = '(A2)'
+      ELSEIF (IPOS .EQ. 4) THEN
+         StringFormat = '(A3)'
+      ELSE!IF (IPOS .EQ. 5) THEN
+         StringFormat = '(A4)'
+         !    ELSE
+         !      print*, 'Atom name must be less then 5 letters'
+         WRITE (LUPRI,*) 'Note: Atom name must be less then 5 characters'
+         !      CALL LSQUIT('Error in atom name. See output',lupri)
+      END IF
+      
+      READ (LINE,StringFormat) MOLECULE%ATOM(atomnumber)%Name
+      
+      !Read x,y and z coordinate 
+      READ (LINE(IPOS:80),*) MOLECULE%ATOM(atomnumber)%CENTER(1), &
+           & MOLECULE%ATOM(atomnumber)%CENTER(2), MOLECULE%ATOM(atomnumber)%CENTER(3)
+      
+      IF (dopbc) THEN
+         write(LUPRI,*) 'debug: read atom position'
+         write(LUPRI,*) 'PBC not implemented'
+         !     Here we need to do two things: First, check that
+         !     the given atom position is within the cell. Second,
+         !     if the position was given in lattice coordinates we
+         !     need to transform to standard coordinates, since
+         !     subsequent calculations assume standard coordinates.
+         !     ErikT
+         
+         !     call pbc_transf_atom_coord(NUCIND,CORD(1,NUCIND),atom_coord_lat)
+      ENDIF
 
-    IF(Angstrom) THEN
-      MOLECULE%ATOM(atomnumber)%CENTER(1) = MOLECULE%ATOM(atomnumber)%CENTER(1)/bohr_to_angstrom 
-      MOLECULE%ATOM(atomnumber)%CENTER(2) = MOLECULE%ATOM(atomnumber)%CENTER(2)/bohr_to_angstrom 
-      MOLECULE%ATOM(atomnumber)%CENTER(3) = MOLECULE%ATOM(atomnumber)%CENTER(3)/bohr_to_angstrom 
-    ENDIF
-
-! IF(ABS(CORDinates).GT.CORMAX) THEN
-!        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
-!     &    ' Atomic coordinate ',CORD(J,NUCIND),
-!     &    ' too large in CNTINP.',
-!     &    ' Note: Program is unstable for large coordinates.',
-!     &    ' Maximum coordinate value:',CORMAX
-!        CALL QUIT('*** ERROR: Atomic coordinate too large in CNTINP')
-!ENDIF
-
-!IF(IPRINT) THEN
-!  WRITE(LUPRI,'(6X,A4,3F20.15)') NAMN(NUCIND),(CORD(J,NUCIND), J = 1,3)
-!ENDIF
-
-!!$C
-!!$C     To avoid problems in later stages, we now rewrite the coordinates
-!!$C     of the nuclei in traditional Dalton format, with 4 characters for the
-!!$C     name of the atom
-!!$C
-!!$         IF (IPOS .EQ. 0) THEN
-!!$            WRITE (MLINE(NMLINE),'(A4,3F20.10,2X,A14)') NAMN(NUCIND),
-!!$     &           (CORD(J,NUCIND),J = 1, 3), '                '
-!!$         ELSE
-!!$            IF (MASSNM .LT. 10) THEN
-!!$               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I1,A5)') 
-!!$     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
-!!$     &              '  Isotope=', MASSNM, '     '
-!!$            ELSE IF (MASSNM .LT. 100) THEN
-!!$               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I2,A4)') 
-!!$     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
-!!$     &              '  Isotope=', MASSNM, '    '
-!!$            ELSE
-!!$               WRITE (MLINE(NMLINE),'(A4,3F20.10,A10,I3,A3)') 
-!!$     &              NAMN(NUCIND),(CORD(J,NUCIND),J = 1, 3), 
-!!$     &              '  Isotope=', MASSNM, '   '
-!!$            END IF
-!!$         END IF
-
-
-!C*****************************************************************************
-!C       MULBSI  - basis-set identifier (WK/UniKA/04-11-2002).
-!C       CHARGE  - charge of center
-!C       NOORBT  - TRUE: no orbitals on this center
-!C       GNUEXP  - exponent of Gaussian nuclear charge distribution
-!C*****************************************************************************
-
-!         MULBSI(NUCIND) = MAX(MBSI,1)
-!         IF (MBSI .GT. 1) THEN
-!            CHARGE(NUCIND) = D0
-!            IZATOM(NUCIND) = -1
-!C           ... code -1 to tell MBSI (value of 0 is floating orbitals)
-!            GNUEXP(NUCIND) = D0
-!         ELSE
-!            CHARGE(NUCIND) = Q
-!            IZATOM(NUCIND) = NQ
-!C           ... if point charge this is reset outside to -2
-!C               to tell this is a point charge /hjaaj Nov 2003
-!            GNUEXP(NUCIND) = GEXP
-!         END IF
-  ENDDO
-ENDDO
-
-IF(Subsystems)THEN
-   MOLECULE%nSubSystems = nSubsystemLabels
-   call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
-   DO I=1,nSubsystemLabels
-      MOLECULE%SubSystemLabel(I) = SubsystemLabels(I)
+      IPOS = INDEX(LINE,'Isotope=')
+      IF (IPOS .NE. 0) THEN
+         IPOS = IPOS + 8
+         READ (LINE(IPOS:80),'(I3)') MOLECULE%ATOM(atomnumber)%Isotope
+      ELSE
+         MOLECULE%ATOM(atomnumber)%Isotope = 1
+      END IF
+      
+      IF(Angstrom) THEN
+         MOLECULE%ATOM(atomnumber)%CENTER(1) = MOLECULE%ATOM(atomnumber)%CENTER(1)/bohr_to_angstrom 
+         MOLECULE%ATOM(atomnumber)%CENTER(2) = MOLECULE%ATOM(atomnumber)%CENTER(2)/bohr_to_angstrom 
+         MOLECULE%ATOM(atomnumber)%CENTER(3) = MOLECULE%ATOM(atomnumber)%CENTER(3)/bohr_to_angstrom 
+      ENDIF      
    ENDDO
-ELSE
-   MOLECULE%nSubSystems = 0
-   NULLIFY(MOLECULE%SubSystemLabel)
-ENDIF
-
-J=0
-DO I = 1,MOLECULE%natoms
-   IF(MOLECULE%ATOM(I)%pointCharge)CYCLE
-   J=J+1
 ENDDO
-MOLECULE%natomsNPC = J
 
-IF ((IPRINT .GT. 0).AND.doprint) THEN
-   WRITE (LUPRI,'(2X,A,I3)')' Total number of atoms:',MOLECULE%natoms
-   IF(MOLECULE%natomsNPC.NE.MOLECULE%natoms)&
-        &WRITE (LUPRI,'(2X,A,I3)')' Total number of atoms NOT including PointCharges:',MOLECULE%natomsNPC
-ENDIF
+  IF(Subsystems)THEN
+     MOLECULE%nSubSystems = nSubsystemLabels
+     call mem_alloc(MOLECULE%SubSystemLabel,nSubsystemLabels)
+     DO I=1,nSubsystemLabels
+        MOLECULE%SubSystemLabel(I) = SubsystemLabels(I)
+     ENDDO
+  ELSE
+     MOLECULE%nSubSystems = 0
+     NULLIFY(MOLECULE%SubSystemLabel)
+  ENDIF
 
-IF(IPRINT .GT. -1 .AND. PRINTATOMCOORD.AND.DOPRINT) THEN
-   CALL LSHEADER(LUPRI,'Cartesian Coordinates Linsca (au)')
-   CALL PRINT_GEOMETRY(MOLECULE,LUPRI)
-ENDIF
+  J=0
+  DO I = 1,MOLECULE%natoms
+     IF(MOLECULE%ATOM(I)%pointCharge)CYCLE
+     J=J+1
+  ENDDO
+  MOLECULE%natomsNPC = J
+
+  IF ((IPRINT .GT. 0).AND.doprint) THEN
+     WRITE (LUPRI,'(2X,A,I3)')' Total number of atoms:',MOLECULE%natoms
+     IF(MOLECULE%natomsNPC.NE.MOLECULE%natoms)&
+          &WRITE (LUPRI,'(2X,A,I3)')' Total number of atoms NOT including PointCharges:',MOLECULE%natomsNPC
+  ENDIF
+
+  IF(IPRINT .GT. -1 .AND. PRINTATOMCOORD.AND.DOPRINT) THEN
+     CALL LSHEADER(LUPRI,'Cartesian Coordinates Linsca (au)')
+     CALL PRINT_GEOMETRY(MOLECULE,LUPRI)
+  ENDIF
 #ifdef MOD_UNRELEASED
-IF(latt_config%setup_pbclatt) THEN
-  !READ lattice vectors
-  CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config, angstrom)
-ENDIF
+  IF(latt_config%setup_pbclatt) THEN
+     !READ lattice vectors
+     CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config, angstrom)
+  ENDIF
 #endif
 
-IF(ATOMBASIS)THEN
-   IF(DunningsBasis)THEN
-      BASISSETLIBRARY%DunningsBasis = .TRUE.
-   ELSE
-      BASISSETLIBRARY%DunningsBasis = .FALSE.
-   ENDIF
-!ELSE
-!do nothing already set
-ENDIF
+  IF(ATOMBASIS)THEN
+     IF(DunningsBasis)THEN
+        !all basis sets used for all atoms are Dunnings
+        BASISSETLIBRARY%DunningsBasis = .TRUE.
+     ELSE
+        BASISSETLIBRARY%DunningsBasis = .FALSE.
+     ENDIF
+     !ELSE
+     !do nothing already set
+  ENDIF
 
 END SUBROUTINE READ_GEOMETRY
 
@@ -1281,21 +1103,25 @@ END SUBROUTINE DETERMINE_UNIQUE_AND_SET_BASIS
 !> \param auxbasis is the auxilliary basis given in 1. line
 !> \param auxbasisset the auxilliary basisset for this atom
 SUBROUTINE READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,&
-     &ATOMBASIS,BASIS,AuxBASIS,Auxbasisset,CABSBASIS,CABSbasisset,&
-     &JKBASIS,JKbasisset,pointcharge,phantom,Subsystems,SubsystemLabel)
+     &ATOMBASIS,BASIS,pointcharge,phantom,Subsystems,SubsystemLabel)
 implicit none
-real(realk)        :: AtomicCharge
-INTEGER            :: IPOS,IPOS2,IPOS3,nAtoms,LUINFO
-CHARACTER(len=80)  :: TEMPLINE,Atomicbasisset,Auxbasisset,CABSbasisset,JKbasisset
-CHARACTER(len=80)  :: SubsystemLabel
-CHARACTER(len=120)  :: LINE120
-LOGICAL            :: ATOMBASIS,BASIS,AUXBASIS,pointcharge,phantom,CABSBASIS,JKBASIS
-LOGICAL,intent(in) :: Subsystems
+INTEGER,intent(in)    :: LUPRI,LUINFO
+INTEGER,intent(inout) :: nAtoms
+LOGICAL,intent(in)    :: Subsystems
+real(realk),intent(inout)        :: AtomicCharge
+CHARACTER(len=80),intent(inout)  :: Atomicbasisset(nBasisBasParam)
+CHARACTER(len=80),intent(inout)  :: SubsystemLabel
+LOGICAL,intent(inout) :: ATOMBASIS,BASIS(nBasisBasParam),pointcharge,phantom
+!
+CHARACTER(len=120) :: LINE120
+CHARACTER(len=80)  :: TEMPLINE
+INTEGER            :: IPOS,IPOS2,IPOS3,ios,I
 CHARACTER(len=5)   :: StringFormat
-INTEGER            :: LUPRI,ios,I
-
-READ (LUINFO, '(a80)') LINE120
+call StringInit120(LINE120)
+call StringInit80(TEMPLINE)
+READ (LUINFO, '(A120)') LINE120
 call TestLength(LINE120,120,TEMPLINE,80)
+
 IPOS = INDEX(TEMPLINE,'Cha')
 IF (IPOS .NE. 0 ) THEN
    IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
@@ -1330,20 +1156,22 @@ pointcharge = .FALSE.
 IPOS = INDEX(TEMPLINE,'pointcharge')
 IF (IPOS .NE. 0) THEN
    pointcharge = .TRUE.
-ENDIF
-IPOS = INDEX(TEMPLINE,'Pointcharge')
-IF (IPOS .NE. 0) THEN
-   pointcharge = .TRUE.
+ELSE
+   IPOS = INDEX(TEMPLINE,'Pointcharge')
+   IF (IPOS .NE. 0) THEN
+      pointcharge = .TRUE.
+   ENDIF
 ENDIF
 
 phantom = .FALSE.
 IPOS = INDEX(TEMPLINE,'phantom')
 IF (IPOS .NE. 0) THEN
    phantom = .TRUE.
-ENDIF
-IPOS = INDEX(TEMPLINE,'Phantom')
-IF (IPOS .NE. 0) THEN
-   phantom = .TRUE.
+ELSE
+   IPOS = INDEX(TEMPLINE,'Phantom')
+   IF (IPOS .NE. 0) THEN
+      phantom = .TRUE.
+   ENDIF
 ENDIF
 
 IF (SubSystems) THEN
@@ -1385,34 +1213,23 @@ ENDIF
 !      END IF
 !    END IF
 !  END IF
-! Read in basis set information
-! Integral ignored for now
-IF (.NOT. (BASIS .OR. ATOMBASIS)) THEN
-   IPOS = INDEX(TEMPLINE,'Blo')
-   IF (IPOS .NE. 0) THEN
-      IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
-      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
-         WRITE (LUPRI,'(2X,A40)') 'Incorrect input for # of integral blocks'
-         WRITE (LUPRI,'(2X,A40)') 'Format is "Blocks=? ? ?"'
-         CALL LSQUIT('Incorrect input for # of integral blocks',lupri)
-      ELSE
-         !        ISTART = IPOS + IPOS2
-         !        CALL FREFRM(TEMPLINE,ISTART,IQM,DUMMY,'INT',IERR)
-         !        DO IQMLOP = 1, IQM
-         !          CALL FREFRM(TEMPLINE,ISTART,JCO(IQMLOP),DUMMY,'INT',IERR)
-         !        END DO
-         WRITE(LUPRI,*) 'integral blocks not implemented'
-         CALL LSQUIT('# of integral blocks not implemented',lupri)       
-      END IF
-   END IF
+
+IPOS = INDEX(TEMPLINE,'Blocks')
+IF (IPOS .NE. 0) THEN
+   IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
+!   IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 7)) THEN
+!      WRITE (LUPRI,'(2X,A40)') 'Incorrect input for # of integral blocks'
+!      WRITE (LUPRI,'(2X,A40)') 'Format is "Blocks=? ? ?"'
+!      CALL LSQUIT('Incorrect input for # of integral blocks',lupri)
+!   ELSE
+   print*,'Integral blocks not implemented'
+   CALL LSQUIT('Integral blocks not implemented',lupri)       
 ENDIF
 
 IF (ATOMBASIS) THEN
-   AUXBASIS=.FALSE.
-   CABSBASIS=.FALSE.
-   JKBASIS=.FALSE.
    IPOS = INDEX(TEMPLINE,'Bas')
    IF (IPOS .NE. 0) THEN
+      BASIS(RegBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 6)) THEN
          WRITE (LUPRI,'(2X,A40)') 'Incorrect input for choice of atomic basis set'
@@ -1420,19 +1237,18 @@ IF (ATOMBASIS) THEN
          CALL LSQUIT('Incorrect input for choice of atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-         IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-         ELSE
-            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-         ENDIF
-         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset
+!         IF (IPOS3 .LT. 10) THEN
+!            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+!         ELSE
+!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+!         ENDIF
+!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(RegBasParam)
+         call StringInit80(AtomicBasisset(RegBasParam))
+         AtomicBasisset(RegBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
       ENDIF
    ELSE
       IF(pointcharge)THEN
-         DO I=1,80
-            AtomicBasisset(I:I)=' '
-         ENDDO
-         AtomicBasisset(1:11)='pointcharge'
+         !This is ok
       ELSE
          WRITE (LUPRI,*) 'ATOMBASIS selected, but no atomic basis&
               & set specified for one atom type'
@@ -1444,7 +1260,7 @@ IF (ATOMBASIS) THEN
    !Auxiliary basisset
    IPOS = INDEX(TEMPLINE,'Aux')
    IF (IPOS .NE. 0) THEN
-      AUXBASIS=.TRUE.
+      BASIS(AuxBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 4)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of auxiliary atomic basis set'
@@ -1452,19 +1268,21 @@ IF (ATOMBASIS) THEN
          CALL LSQUIT('Incorrect input for choice of auxiliary atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-         IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-         ELSE
-            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-         ENDIF
-         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AuxBasisset
+!         IF (IPOS3 .LT. 10) THEN
+!            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+!         ELSE
+!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+!         ENDIF
+!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(AuxBasParam)
+         call StringInit80(AtomicBasisset(AuxBasParam))
+         AtomicBasisset(AuxBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
       ENDIF
    ENDIF
 
    !CABS basisset - Complementary Auxiliary basis set
    IPOS = INDEX(TEMPLINE,'CABS')
    IF (IPOS .NE. 0) THEN
-      CABSBASIS=.TRUE.
+      BASIS(CABBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of Complementary auxiliary atomic basis set'
@@ -1472,19 +1290,22 @@ IF (ATOMBASIS) THEN
          CALL LSQUIT('Incorrect input for choice of Complementary auxiliary atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-         IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
-         ELSE
-            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-         ENDIF
-         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) CABSBasisset
+!         IF (IPOS3 .LT. 10) THEN
+!            WRITE (StringFormat,'(A2,I1,A1,1X)') '(A',IPOS3 - 1,')'
+!         ELSE
+!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+!         ENDIF
+!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(CABBasParam)
+         call StringInit80(AtomicBasisset(CABBasParam))
+         AtomicBasisset(CABBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+
       ENDIF
    ENDIF
    
    !JK basisset
    IPOS = INDEX(TEMPLINE,'JK')
    IF (IPOS .NE. 0) THEN
-      JKBASIS=.TRUE.
+      BASIS(JKBasParam)=.TRUE.
       IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
       IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 3)) THEN
          WRITE (LUPRI,*) 'Incorrect input for choice of JK atomic basis set'
@@ -1492,13 +1313,38 @@ IF (ATOMBASIS) THEN
          CALL LSQUIT('Incorrect input for choice of JK atomic basis set',lupri)
       ELSE
          IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
-         IF (IPOS3 .LT. 10) THEN
-            WRITE (StringFormat,'(A2,I1,A1)') '(A', IPOS3 - 1 ,')'
-         ELSE
-            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
-         ENDIF
-         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) JKBasisset
+!         IF (IPOS3 .LT. 10) THEN
+!            WRITE (StringFormat,'(A2,I1,A1)') '(A', IPOS3 - 1 ,')'
+!         ELSE
+!            WRITE (StringFormat,'(A2,I2,A1)') '(A',(IPOS3 - 1),')'
+!         ENDIF
+!         READ (TEMPLINE((IPOS + IPOS2):),StringFormat) AtomicBasisset(JKBasParam)
+         call StringInit80(AtomicBasisset(JKBasParam))
+         AtomicBasisset(JKBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
       ENDIF
+   ENDIF
+
+   !ADMM basisset
+   IPOS = INDEX(TEMPLINE,'ADMM')
+   IF (IPOS .NE. 0) THEN
+      BASIS(ADMBasParam)=.TRUE.
+      IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
+      IF (IPOS2 .EQ. 0 .OR. (IPOS2 .GT. 5)) THEN
+         WRITE (LUPRI,*) 'Incorrect input for choice of ADMM atomic basis set'
+         WRITE (LUPRI,*) ' Format is "ADMM=? ? ?"'
+         CALL LSQUIT('Incorrect input for choice of ADMM atomic basis set',lupri)
+      ELSE
+         IPOS3 = INDEX(TEMPLINE((IPOS+IPOS2):),' ')
+         call StringInit80(AtomicBasisset(ADMBasParam))
+         AtomicBasisset(ADMBasParam)(1:IPOS3) = TEMPLINE((IPOS + IPOS2):(IPOS + IPOS2+IPOS3-1))
+      ENDIF
+   ENDIF
+
+   IF(pointcharge)THEN
+      do ipos=1,nBasisBasParam
+         call StringInit80(AtomicBasisset(ipos))
+         AtomicBasisset(ipos)(1:11)='pointcharge'
+      enddo
    ENDIF
 
    !ECP 
@@ -1507,6 +1353,7 @@ IF (ATOMBASIS) THEN
       call lsquit('LSDALTON do not support effective core potentials (ECP)',lupri)
    ENDIF
 ENDIF
+
 END SUBROUTINE READ_LINE5
 
 !> \brief determine if the basis is unique
@@ -1576,93 +1423,46 @@ END SUBROUTINE DETERMINE_UNIQUE_CHARGE
 !> \param lupri the logical unit number for the output file
 !> \param moleclue the molecule structure
 !> \param I the atom index in the molecule structure
-!> \param basissetnumber1 the basisindex
-!> \param auxbasissetnumber2 the auxilliary basisindex
-!> \param CABSbasissetnumber2 the complementary auxilliary basisindex
-!> \param JKbasissetnumber2 the JK auxilliary basisindex
-!> \param unique1 basis index 
-!> \param auxunique2 auxilliary basis index
-!> \param CABSunique2 complementary auxilliary basis index
-!> \param JKunique2 JK auxilliary basis index
-!> \param basis if BASIS keyword is given in line 1
+!> \param unique2 basis index 
+!> \param basissetnumber2 the basisnumber
+!> \param basis if the regular,auxbasis,CABSbasis,JKbasis,admm basis given in 1. line
 !> \param atombasis if ATOMBASIS keyword is given in line 1
-!> \param auxbasis if the auxilliary basis given in 1. line
-!> \param CABSbasis if the complementary auxilliary basis given in 1. line
-!> \param JKbasis if the JK auxilliary basis given in 1. line
 !>
 !> IF YOU ADD MORE BASISSET TO MOLECULE FILE YOU NEED TO 
 !> INCREASE THE SIZE IN THE ATOM DERIVED TYPE IN TYPE-DEF.f90. 
 !>
 SUBROUTINE ATTACH_BASISINDEX_AND_BASISLABEL(LUPRI,MOLECULE,&
-     &I,basissetnumber1,auxbasissetnumber2,CABSbasissetnumber2,&
-     &JKbasissetnumber2,unique1,auxunique2,CABSunique2,JKunique2,&
-     &BASIS,ATOMBASIS,AUXBASIS,CABSBASIS,JKBASIS)
+     &I,unique2,basissetnumber2,BASIS,ATOMBASIS)
 implicit none
 TYPE(MOLECULEINFO) :: MOLECULE 
-LOGICAL            :: BASIS,ATOMBASIS,AUXBASIS,CABSBASIS,JKBASIS
-INTEGER            :: unique1,I,LUPRI,auxbasissetnumber2 !I=atomnumber
-INTEGER            :: basissetnumber1,CABSbasissetnumber2,JKbasissetnumber2
-INTEGER            :: auxunique2,CABSunique2,JKunique2
+LOGICAL            :: BASIS(nBasisBasParam),ATOMBASIS
+INTEGER            :: I,LUPRI,J
+INTEGER            :: unique2(nBasisBasParam),basissetnumber2(nBasisBasParam)
 
-IF(BASIS)THEN
-   MOLECULE%ATOM(I)%basisindex(1)=1
-   MOLECULE%ATOM(I)%basislabel(1)='REGULAR  '
-   MOLECULE%ATOM(I)%nbasis=1
-   IF(AUXBASIS)THEN
-      MOLECULE%ATOM(I)%basisindex(2)=2
-      MOLECULE%ATOM(I)%basislabel(2)='AUXILIARY'
-      MOLECULE%ATOM(I)%nbasis=2
-   ENDIF
-   IF(CABSBASIS)THEN
-      MOLECULE%ATOM(I)%basisindex(3)=3
-      MOLECULE%ATOM(I)%basislabel(3)='CABS     '
-      MOLECULE%ATOM(I)%nbasis=3
-   ENDIF
-   IF(JKBASIS)THEN
-      MOLECULE%ATOM(I)%basisindex(4)=4
-      MOLECULE%ATOM(I)%basislabel(4)='JKAUX    '
-      MOLECULE%ATOM(I)%nbasis=4
-   ENDIF   
-   
+IF(.NOT.ATOMBASIS)THEN
+   DO J=1,nBasisBasParam
+      IF(BASIS(J))THEN
+         MOLECULE%ATOM(I)%basisindex(J)=1
+         MOLECULE%ATOM(I)%basislabel(J)=BasParamLABEL(J)
+      ENDIF
+   ENDDO
+!   MOLECULE%ATOM(I)%nbasis=COUNT(Basis)
 ELSEIF(ATOMBASIS)THEN
-   IF(unique1 /= 0)THEN
-      MOLECULE%ATOM(I)%basisindex(1)=unique1
-      MOLECULE%ATOM(I)%basislabel(1)='REGULAR  '
-   ELSE
-      MOLECULE%ATOM(I)%basisindex(1)=basissetnumber1
-      MOLECULE%ATOM(I)%basislabel(1)='REGULAR  '
-   ENDIF
-   MOLECULE%ATOM(I)%nbasis=1
-   IF(AUXBASIS)THEN
-      IF(AUXunique2 /= 0)THEN
-         MOLECULE%ATOM(I)%basisindex(2)=AUXunique2
-         MOLECULE%ATOM(I)%basislabel(2)='AUXILIARY'
+   DO J=1,nBasisBasParam
+      IF(BASIS(J))THEN   
+         IF(unique2(J).EQ.0)THEN
+            MOLECULE%ATOM(I)%basisindex(J)=basissetnumber2(J)
+            MOLECULE%ATOM(I)%basislabel(J)=BasParamLABEL(J)
+         ELSE
+            MOLECULE%ATOM(I)%basisindex(J)=unique2(J)
+            MOLECULE%ATOM(I)%basislabel(J)=BasParamLABEL(J)
+         ENDIF
       ELSE
-         MOLECULE%ATOM(I)%basisindex(2)=AUXbasissetnumber2
-         MOLECULE%ATOM(I)%basislabel(2)='AUXILIARY'
+         MOLECULE%ATOM(I)%basisindex(J)=-1
+         MOLECULE%ATOM(I)%basislabel(J)='         '
       ENDIF
-      MOLECULE%ATOM(I)%nbasis=2
-   ENDIF
-   IF(CABSBASIS)THEN
-      IF(CABSunique2 /= 0)THEN
-         MOLECULE%ATOM(I)%basisindex(3)=CABSunique2
-         MOLECULE%ATOM(I)%basislabel(3)='CABS     '
-      ELSE
-         MOLECULE%ATOM(I)%basisindex(3)=CABSbasissetnumber2
-         MOLECULE%ATOM(I)%basislabel(3)='CABS     '
-      ENDIF
-      MOLECULE%ATOM(I)%nbasis=3
-   ENDIF
-   IF(JKBASIS)THEN
-      IF(JKunique2 /= 0)THEN
-         MOLECULE%ATOM(I)%basisindex(4)=JKunique2
-         MOLECULE%ATOM(I)%basislabel(4)='JKAUX    '
-      ELSE
-         MOLECULE%ATOM(I)%basisindex(4)=JKbasissetnumber2
-         MOLECULE%ATOM(I)%basislabel(4)='JKAUX    '
-      ENDIF
-      MOLECULE%ATOM(I)%nbasis=4
-   ENDIF
+   ENDDO
+!   MOLECULE%ATOM(I)%nbasis=COUNT(Basis)
 ELSE
    CALL LSQUIT('Something wrong in determining basisetsets in READ_GEOMETRY',-1)
 ENDIF
@@ -1680,8 +1480,6 @@ END SUBROUTINE ATTACH_BASISINDEX_AND_BASISLABEL
 !> \param ls contains molecule and basis structure
 !> \param iprint the printlevel, determining how much output should be generate
 SUBROUTINE BUILD_DISTINCT_ATOMS(LUPRI,NDATOMS,NATOMS,NATOMLIST,UATOMTYPE,LS,IPRINT)
-use BUILDBASISSET
-use molecule_module
 IMPLICIT NONE
 
 INTEGER  :: LUPRI,NDATOMS,NATOMS,IPRINT,I
@@ -1693,8 +1491,8 @@ INTEGER             :: itype,TYPEN(NDATOMS),icharge
 INTEGER             :: R
 INTEGER,pointer :: NEWATOM(:)
 
-R = LS%INPUT%BASIS%REGULAR%Labelindex
-call mem_alloc(NEWATOM,LS%INPUT%BASIS%REGULAR%natomtypes)
+R = LS%INPUT%BASIS%BINFO(REGBASPARAM)%Labelindex
+call mem_alloc(NEWATOM,LS%INPUT%BASIS%BINFO(REGBASPARAM)%natomtypes)
 NEWATOM=0
 NDATOMS2 = 0
 IF(R.EQ. 0)THEN
@@ -1702,14 +1500,14 @@ IF(R.EQ. 0)THEN
       IF(LS%INPUT%MOLECULE%ATOM(I)%pointcharge)CYCLE
       IF(LS%INPUT%MOLECULE%ATOM(I)%phantom)CYCLE
       icharge = INT(LS%INPUT%MOLECULE%ATOM(I)%Charge)
-      itype = LS%INPUT%BASIS%REGULAR%Chargeindex(icharge)
+      itype = LS%INPUT%BASIS%BINFO(REGBASPARAM)%Chargeindex(icharge)
       IF(NEWATOM(itype).EQ. 0)THEN
          NEWATOM(itype)=1
 
          NDATOMS2 = NDATOMS2+1
          TYPEN(NDATOMS2) = itype
          CHARGE(NDATOMS2) = icharge
-         NAME(NDATOMS2)= LS%INPUT%BASIS%REGULAR%ATOMTYPE(itype)%NAME
+         NAME(NDATOMS2)= LS%INPUT%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME
          NATOMLIST(NDATOMS2) = I
          UATOMTYPE(NDATOMS2) = itype
 !         UATOMLIST(I)=NDATOMS2
@@ -1727,7 +1525,7 @@ ELSE
          NDATOMS2 = NDATOMS2+1
          TYPEN(NDATOMS2) = itype
          CHARGE(NDATOMS2) = icharge
-         NAME(NDATOMS2)= LS%INPUT%BASIS%REGULAR%ATOMTYPE(itype)%NAME
+         NAME(NDATOMS2)= LS%INPUT%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%NAME
          NATOMLIST(NDATOMS2) = I
          UATOMTYPE(NDATOMS2) = itype
 !         UATOMLIST(I)=NDATOMS2        

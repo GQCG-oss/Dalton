@@ -3,7 +3,7 @@ MODULE ProfileIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use Integralparameters
@@ -43,7 +43,7 @@ integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
 integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest,perm
 logical :: dirac,doprint,debug
 real(realk)         :: TIMSTR,TIMEND,normII,normIchorNoscreen,normIchorScreen
-TYPE(BASISSETLIBRARYITEM) :: LIBRARY
+TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
 CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
@@ -74,15 +74,15 @@ IF(config%prof%IchorProfInputBasis)THEN
       BASISSETNAME(1:20) = config%prof%IchorProfInputBasisString(A)
       WRITE(lupri,*)'Using Input Basis:',BASISSETNAME(1:20)
       CALL Build_basis(LUPRI,IPRINT,&
-           &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%REGULAR,LIBRARY,&
-           &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,BASISSETNAME)
+           &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
+           &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
       SETTING%BASIS(A)%p => UNITTESTBASIS(A)
-      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%REGULAR,spherical,.FALSE.,nbast(A))
+      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ELSE
    do A = 1,4       
-      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%REGULAR,spherical,.FALSE.,nbast(A))
+      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ENDIF
@@ -169,10 +169,10 @@ call mem_dealloc(integralsII)
 ENDIF
 
 IF(config%prof%IchorProfInputBasis)THEN
-   call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(2)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(3)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(4)%REGULAR)
+   call free_basissetinfo(UNITTESTBASIS(1)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(2)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(3)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(4)%BINFO(RegBasParam))
 endif
 deallocate(UNITTESTBASIS)
 SETTING%BASIS(1)%p => originalBasis

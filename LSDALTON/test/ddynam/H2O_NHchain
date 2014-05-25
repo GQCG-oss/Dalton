@@ -74,7 +74,7 @@ cat > H2O_NHchain.dal <<'%EOF%'
 .DFT
  PBE
 *DFT INPUT
-.DISPER
+.DFT-D2
 *DENSOPT
 .MAXIT
 300
