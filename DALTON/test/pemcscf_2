@@ -17,45 +17,42 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehsrohf_wft.info <<'%EOF%'
-   pehsrohf_wft
+cat > pemcscf_2.info <<'%EOF%'
+   pemcscf_2
    -----------
-   Molecule:         Formaldehyde and two classical water molecules
-   Wave Function:    PE-HSROHF / STO-3G
-   Test Purpose:     Testing high-spin restricted open-shell
-                     wavefunction using the PE library
+   Molecule:         CH2O(DFT)/2 H2O(MM)
+   Wave Function:    CASSCF(4,6) / 6-31G
+   Test Purpose:     Test of energy, dipole moment and excitation energy through ABACUS
 %EOF%
 #######################################################################
-#  MOLECULE INPUT
+#  INTEGRAL INPUT
 #######################################################################
-cat > pehsrohf_wft.mol <<'%EOF%'
-BASIS
-STO-3G
-Formaldehyde
+cat > pemcscf_2.mol <<'%EOF%'
+ATOMBASIS
+CH2O PLUS 2 WATERS
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
-Charge=6.0 Atoms=1
+        6.0   1    Basis=6-31G
 C           -1.588367    -.770650     .029109
-Charge=8.0 Atoms=1
+        8.0   1    Basis=6-31G
 O           -1.657083     .436069    -.009750
-Charge=1.0 Atoms=2
+        1.0   2    Basis=6-31G
 H           -.620668   -1.294822      .054251
 H           -2.508043   -1.382001     .040282
 %EOF%
 #######################################################################
-#  POTENTIAL INPUT
+#  QM/MM INTERACTION INPUT
 #######################################################################
-cat > pehsrohf_wft.pot <<'%EOF%'
-! Two water molecules
+cat > pemcscf_2.pot <<'%EOF%'
 @COORDINATES
 6
 AA
-O     0.975536     1.507219    -0.082590
-H     0.023200     1.300096    -0.088063
-H     1.113831     2.040431     0.704778
-O     1.633705    -1.233280    -0.078786
-H     1.600739    -0.258639    -0.086953
-H     2.303878    -1.461228     0.570065
+X     0.975536     1.507219    -0.082590
+X     0.023200     1.300096    -0.088063
+X     1.113831     2.040431     0.704778
+X     1.633705    -1.233280    -0.078786
+X     1.600739    -0.258639    -0.086953
+X     2.303878    -1.461228     0.570065
 @MULTIPOLES
 ORDER 0
 6
@@ -90,38 +87,60 @@ ORDER 1 1
  4     5.555285     0.085929    -0.120805     5.451407     0.074565     5.566247
  5     1.509477    -0.036783    -0.366362     3.554625     0.100598     1.528430
  6     2.658086    -0.248537     0.746655     1.223737    -0.356653     2.608086
-EXCLISTS
-6 3
- 1 2 3
- 2 1 3
- 3 1 2
- 4 5 6
- 5 4 6
- 6 4 5
+exclists
+6  3
+1  2 3
+2  1 3
+3  1 2
+4  5 6
+5  4 6
+6  4 5
 %EOF%
+#
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehsrohf_wft.dal <<'%EOF%'
+cat > pemcscf_2.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
 .PEQM
-*PEQM
-.VERBOSE
 **WAVE FUNCTIONS
 .HF
+.MCSCF
+*OPTIMIZATION
+.THRESH
+1.0D-10
 *SCF INPUT
-.DOUBLY OCCUPIED
-7
-.SINGLY OCCUPIED
-2
+.THRESH
+ 1.0D-10
+*CONFIGURATION INPUT
+.SYMMETRY
+ 1
+.SPIN MUL
+ 1
+.INACTIVE
+ 6
+.ELECTRONS
+ 4
+.CAS SPACE
+ 6
+**PROPERTIES
+.EXCITA
+*EXCITA
+.NEXCIT
+ 2
+.DIPSTR
+.THRESH
+ 1.0D-7
 **END OF
 %EOF%
+#
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehsrohf_wft.check
-cat >> pehsrohf_wft.check <<'%EOF%'
+#
+echo $CHECK_SHELL >pemcscf_2.check
+cat >>pemcscf_2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -131,59 +150,44 @@ else
 fi
 
 #
-# Potential readin
+# General and Energy Tests
 #
-CRIT1=`$GREP "Number of classical sites: * 6" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 2nd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Iterative solver for induced moments will be used" $log | wc -l`
-CRIT5=`$GREP "with convergence threshold: 1\.0E\-08" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
-ERROR[1]="INCORRECT POTENTIAL"
+CRIT1=`$GREP "Optimization control: MCSCF converged" $log | wc -l`
+CRIT2=`$GREP "Monopoles * \-0*\.016986" $log | wc -l`
+CRIT3=`$GREP "Dipoles * 0*\.005971" $log | wc -l`
+CRIT4=`$GREP "Quadrupoles * \-0*\.009142" $log | wc -l`
+CRIT5=`$GREP "Electronic * \-0*\.069879" $log | wc -l`
+CRIT6=`$GREP "Nuclear * 0*\.065533" $log | wc -l`
+CRIT7=`$GREP "Multipole * \-0*\.0056076" $log | wc -l`
+CRIT8=`$GREP "Total PE energy: * \-0*\.030111" $log | wc -l`
+CRIT9=`$GREP "Final MCSCF energy: * \-113\.919807" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
+CTRL[1]=9
+ERROR[1]="GENERAL PEQM or PEQM ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
-# Energies
+# Test of PEQM dipole moment
 #
-CRIT1=`$GREP "Monopoles   * \-0*\.00499(89|90)....." $log | wc -l`
-CRIT2=`$GREP "Dipoles     *   0*\.001184[78]....." $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * \-0*\.001767[78]....." $log | wc -l`
-CRIT4=`$GREP "Electronic  * \-0*\.01723[01]......" $log | wc -l`
-CRIT5=`$GREP "Nuclear     *   0*\.016434[5-9]....." $log | wc -l`
-CRIT6=`$GREP "Multipole   * \-0*\.0044812....." $log | wc -l`
-CRIT7=`$GREP "Total PE energy: *  \-0*\.010859[56]....." $log | wc -l`
-CRIT8=`$GREP "Final HF energy: * \-112\.2875293....." $log | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
-CTRL[2]=8
-ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
+CRIT1=`$GREP "x * 0*\.147419" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.280423" $log | wc -l`
+CRIT3=`$GREP "z * 0*\.037581" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[2]=3
+ERROR[2]="PEQM DIPOLE MOMENT NOT CORRECT"
 
 #
-# Induced dipole moments in environment
+# Test of PEQM excitation energies
 #
-CRIT1=`$GREP "1 * \-0*\.086353.. * 0*\.133806.. * \-0*\.006226.." $log | wc -l`
-CRIT2=`$GREP "2 * \-0*\.06285[89].. * 0*\.011291.. * \-0*\.00296[67].." $log | wc -l`
-CRIT3=`$GREP "3 * \-0*\.005140.. * 0*\.026227.. *   0*\.017853.." $log | wc -l`
-CRIT4=`$GREP "4 *   0*\.032913.. * 0*\.064224.. * \-0*\.006332.." $log | wc -l`
-CRIT5=`$GREP "5 * \-0*\.005124.. * 0*\.151178.. *   0*\.005064.." $log | wc -l`
-CRIT6=`$GREP "6 * \-0*\.00096[89].. * 0*\.008300.. * \-0*\.007212.." $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
-CTRL[3]=6
-ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
-
-#
-# dipole moment of formaldehyde
-#
-CRIT1=`$GREP "x *   0*\.05261[5-7].." $log | wc -l`
-CRIT2=`$GREP "y * \-0*\.429856.." $log | wc -l`
-CRIT3=`$GREP "z *   0*\.012363.." $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
-CTRL[4]=3
-ERROR[4]="DIPOLE MOMENT NOT CORRECT"
+CRIT1=`$GREP "1 * 1 * 0*\.15593" $log | wc -l`
+CRIT2=`$GREP "1 * 2 * 0*\.35375" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 `
+CTRL[3]=2
+ERROR[3]="PEQM EXCITATION ENERGIES NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
-   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
      PASSED=0
    fi
@@ -198,5 +202,5 @@ else
   exit 1
 fi
 %EOF%
-chmod +x pehsrohf_wft.check
+chmod +x pemcscf_2.check
 #######################################################################

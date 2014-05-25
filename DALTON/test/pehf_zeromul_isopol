@@ -17,18 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_1pa.info <<'%EOF%'
-   pehf_1pa
+cat > pehf_zeromul_isopol.info <<'%EOF%'
+   pehf_zeromul_isopol
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / STO-3G
-   Test Purpose:     Test of one-photon absorption properties through
-                     RESPONSE using the PE library
+   Test Purpose:     Testing options to zero higher order multipoles
+                     and use isotropic polarizabilities in PE library
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_1pa.mol <<'%EOF%'
+cat > pehf_zeromul_isopol.mol <<'%EOF%'
 BASIS
 STO-3G
 Acrolein
@@ -49,7 +49,7 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_1pa.pot <<'%EOF%'
+cat > pehf_zeromul_isopol.pot <<'%EOF%'
 ! Two water molecules
 @COORDINATES
 10
@@ -138,10 +138,14 @@ EXCLISTS
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_1pa.dal <<'%EOF%'
+cat > pehf_zeromul_isopol.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
 .PEQM
+*PEQM
+.ISOPOL
+.ZEROMU
+1
 **WAVE FUNCTIONS
 .HF
 **RESPONSE
@@ -155,8 +159,8 @@ cat > pehf_1pa.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_1pa.check
-cat >> pehf_1pa.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_zeromul_isopol.check
+cat >> pehf_zeromul_isopol.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -166,26 +170,43 @@ else
 fi
 
 #
+# Energies
+#
+CRIT1=`$GREP "Monopoles * \-0*\.0150300....." $log | wc -l`
+CRIT2=`$GREP "Dipoles * " $log | wc -l`
+CRIT3=`$GREP "Quadrupoles * " $log | wc -l`
+CRIT4=`$GREP "Octopoles * " $log | wc -l`
+CRIT5=`$GREP "Electronic * \-0*\.027446......" $log | wc -l`
+CRIT6=`$GREP "Nuclear * 0*\.026862......" $log | wc -l`
+CRIT7=`$GREP "Multipole * 0*\.000081......" $log | wc -l`
+CRIT8=`$GREP "Total PE energy: * \-0*\.015532......" $log | wc -l`
+CRIT9=`$GREP "Final HF energy: * \-188\.314193......" $log | wc -l`
+CRIT10=`$GREP "Embedding energy: * \-0*\.0155329....." $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
+CTRL[1]=7
+ERROR[1]="ENERGY CONTRIBUTIONS NOT CORRECT"
+
+#
 # Test of PE-HF one-photon absorption properties
 #
- CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*[12]\.[09].......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.92271... * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.3[78]......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*1\.[12].......E\-05 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
- CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.[5-7].......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*1\.59365.. * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.8.......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*6\.[67].......E\-05 \*ENERGY\(eV\)\: * 10\.3593.." $log | wc -l`
- CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*5\.953.....E\-03 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
-CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*2\.50......E\-04 \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
-CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*0*\.151991.. * \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
-CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*4\.159.....E\-03 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
-CTRL[1]=12
-ERROR[1]="ONE-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
+ CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*[4-8]\.........E\-06 \*ENERGY\(eV\)\: * 4\.1172..." $log | wc -l`
+ CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0\.91732[89].. * \*ENERGY\(eV\)\: * 8\.4248..." $log | wc -l`
+ CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.7[7-9]......E\-04 \*ENERGY\(eV\)\: * 8\.7112..." $log | wc -l`
+ CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*3\.1.......E\-05 \*ENERGY\(eV\)\: * 10\.358..." $log | wc -l`
+ CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.8.......E\-05 \*ENERGY\(eV\)\: * 4\.1172..." $log | wc -l`
+ CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*1\.59418.. * \*ENERGY\(eV\)\: * 8\.4248..." $log | wc -l`
+ CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*4\.[56].......E\-04 \*ENERGY\(eV\)\: * 8\.7112..." $log | wc -l`
+ CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*7\.........E\-05 \*ENERGY\(eV\)\: * 10\.3582.." $log | wc -l`
+ CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*5\.061.....E\-03 \*ENERGY\(eV\)\: * 4\.1172..." $log | wc -l`
+CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*2\.46......E\-04 \*ENERGY\(eV\)\: * 8\.4248..." $log | wc -l`
+CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*0*\.155236.. * \*ENERGY\(eV\)\: * 8\.7112..." $log | wc -l`
+CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*2\.472.....E\-03 \*ENERGY\(eV\)\: * 10\.358..." $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
+CTRL[2]=12
+ERROR[2]="ONE-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
 
 PASSED=1
-for i in 1
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -202,5 +223,5 @@ else
   exit 1
 fi
 %EOF%
-chmod +x pehf_1pa.check
+chmod +x pehf_zeromul_isopol.check
 #######################################################################

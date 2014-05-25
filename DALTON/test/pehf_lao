@@ -17,18 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_trplt_1pa.info <<'%EOF%'
-   pehf_trplt_1pa
+cat > pehf_lao.info <<'%EOF%'
+   pehf_lao
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / STO-3G
-   Test Purpose:     Test of one-photon absorption properties through
-                     RESPONSE using the PE library
+   Test Purpose:     Test of nuclear magnetic shieldings through
+                     ABACUS using LAOs and the PE library
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_trplt_1pa.mol <<'%EOF%'
+cat > pehf_lao.mol <<'%EOF%'
 BASIS
 STO-3G
 Acrolein
@@ -49,7 +49,7 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_trplt_1pa.pot <<'%EOF%'
+cat > pehf_lao.pot <<'%EOF%'
 ! Two water molecules
 @COORDINATES
 10
@@ -67,12 +67,12 @@ X   1.6874280   2.8198310   0.0017045
 @MULTIPOLES
 ORDER 0
 6
-1    -0.7423294438  
-2     0.3699305781  
-3     0.3723988657  
-6    -0.7424407021  
-7     0.3699635356  
-8     0.3724771666  
+1    -0.7423294438
+2     0.3699305781
+3     0.3723988657
+6    -0.7424407021
+7     0.3699635356
+8     0.3724771666
 ORDER 1
 10
 1        0.0303539300        0.3280749969        0.0000894127
@@ -138,26 +138,21 @@ EXCLISTS
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_trplt_1pa.dal <<'%EOF%'
+cat > pehf_lao.dal <<'%EOF%'
 **DALTON
-.RUN RESPONSE
+.RUN PROPERTIES
 .PEQM
 **WAVE FUNCTIONS
 .HF
-**RESPONSE
-.TRPFLG
-*LINEAR
-.DIPLEN
-.SINGLE RESIDUE
-.ROOTS
-4
+**PROPERTIES
+.SHIELD
 **END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_trplt_1pa.check
-cat >> pehf_trplt_1pa.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_lao.check
+cat >> pehf_lao.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -167,26 +162,43 @@ else
 fi
 
 #
-# Test of PE-HF one-photon absorption properties
+# Potential readin test
 #
- CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: *  4\.........E\-06 * \*ENERGY\(eV\)\: * 3\.2366..." $log | wc -l`
- CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: *  1\.88......E\-04 * \*ENERGY\(eV\)\: * 7\.2850..." $log | wc -l`
- CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-6\.6.......E\-05 * \*ENERGY\(eV\)\: * 9\.7637..." $log | wc -l`
- CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-2\.5.......E\-05 * \*ENERGY\(eV\)\: * 9\.8832..." $log | wc -l`
- CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-4\.3.......E\-05 * \*ENERGY\(eV\)\: * 3\.2366..." $log | wc -l`
- CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: *  3\.6.......E\-05 * \*ENERGY\(eV\)\: * 7\.2850..." $log | wc -l`
- CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-5\.5.......E\-05 * \*ENERGY\(eV\)\: * 9\.7637..." $log | wc -l`
- CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-3\.........E\-06 * \*ENERGY\(eV\)\: * 9\.8832..." $log | wc -l`
- CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: *  5\.94......E\-04 * \*ENERGY\(eV\)\: * 3\.2366..." $log | wc -l`
-CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * ( |0)\.295972.. * \*ENERGY\(eV\)\: * 7\.2850..." $log | wc -l`
-CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-4\.1890....E\-02 * \*ENERGY\(eV\)\: * 9\.7637..." $log | wc -l`
-CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * (\-|\-0)\.133875.. * \*ENERGY\(eV\)\: * 9\.8832..." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
-CTRL[1]=12
-ERROR[1]="ONE-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
+CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
+CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
+CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
+CRIT4=`$GREP "Iterative solver for induced moments" $log | wc -l`
+CRIT5=`$GREP "convergence threshold: 1.0E-08" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
+CTRL[1]=5
+ERROR[1]="INCORRECT POTENTIAL"
+#
+# Test of PE-HF shielding constants.
+#
+CRIT1=`$GREP "\@1 London orbitals \(GIAOs\) has been used." $log | wc -l`
+CRIT2=`$GREP "\@1 C * 84\.5805 * 333\.0741 * \-248\.4936 * \-0*\.4788 * 229\.5172 * 144\.6624 * 1\.7597" $log | wc -l`
+CRIT3=`$GREP "\@1 C * 122\.5803 * 354\.6802 * \-232\.0999 * \-0*\.1844 * 212\.0123 * 149\.2346 * 1\.2620" $log | wc -l`
+CRIT4=`$GREP "\@1 C * 116\.9358 * 354\.7204 * \-237\.7845 * \-0*\.1631 * 222\.9230 * 158\.1007 * 1\.2300" $log | wc -l`
+CRIT5=`$GREP "\@1 O * \-274\.5590 * 509\.0414 * \-783\.6003 * 0*\.1959 *1440\.0158 *1150\.5471 * 0*\.7548" $log | wc -l`
+CRIT6=`$GREP "\@1 H * 22\.1074 * 34\.8646 * \-12\.7572 * \-0*\.2014 * 5\.0301 * 3\.5193 * 1\.2878" $log | wc -l`
+CRIT7=`$GREP "\@1 H * 25\.4607 * 34\.4225 * \-8\.9618 * 0*\.4682 * 6\.6194 * 5\.7394 * 0*\.4600" $log | wc -l`
+CRIT8=`$GREP "\@1 H * 26\.5725 * 32\.6185 * \-6\.0460 * 0*\.0747 * 7\.6197 * 5\.8570 * 0*\.9029" $log | wc -l`
+CRIT9=`$GREP "\@1 H * 26\.2828 * 20\.3861 * 5\.8967 * 0*\.0337 * 6\.6044 * 5\.0090 * 0*\.9555" $log | wc -l`
 
-PASSED=1 
-for i in 1
+#CRIT2=`$GREP "\@1 C * 84\.676[3-5] * 333\.142[1-2] * \-248\.465[6-8] * \-0*\.4929 * 230\.517[2-7] * 144\.484[1-4] * 1\.786[3-4]" $log | wc -l`
+#CRIT3=`$GREP "\@1 C * 122\.562[3-4] * 354\.6627 * \-232\.100[3-4] * \-0*\.1852 * 212\.219[5-9] * 149\.3[3-4].. * 1\.2632" $log | wc -l`
+#CRIT4=`$GREP "\@1 C * 117\.010[2-4] *  354\.7206 * \-237\.710[2-4] * \-0*\.1643 * 222\.834[0-6] * 157\.975[4-8] * 1\.2317" $log | wc -l`
+#CRIT5=`$GREP "\@1 O * \-285\.(199|200).. * 508\.867[5-7] * \-794\.06[5-8]. * 0*\.1812 * 1469\.5[3-4].. * 1168\.71[1-5]. * 0*\.7722" $log | wc -l`
+#CRIT6=`$GREP "\@1 H * 22\.0459 * 34\.8890 * \-12\.8431 * \-0*\.1643 * 5\.1122 * 3\.6242 * 1\.2317" $log | wc -l`
+#CRIT7=`$GREP "\@1 H * 25\.4466 * 34\.4174 * \-8\.9708 * 0*\.4629 * 6\.6647 * 5\.7697 * 0*\.465[3-4]" $log | wc -l`
+#CRIT8=`$GREP "\@1 H * 26\.5789 * 32\.6268 * \-6\.0479 * 0*\.0762 * 7\.6162 * 5\.8572 * 0*\.9009" $log | wc -l`
+#CRIT9=`$GREP "\@1 H * 26\.2839 * 20\.3984 * 5\.8856 * 0*\.0334 * 6\.5958 * 5\.0020 * 0*\.9559" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=9
+ERROR[2]="PE-HF MAGNETIC PROPERTIES NOT CORRECT"
+
+PASSED=1
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -201,7 +213,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
-chmod +x pehf_trplt_1pa.check
+chmod +x pehf_lao.check
 #######################################################################

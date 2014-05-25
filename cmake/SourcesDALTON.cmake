@@ -429,7 +429,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
     DALTON/dft/dft_aos.F
-    DALTON/dft/dft_ac.F 
+    DALTON/dft/dft_ac.F
     DALTON/dft/dft_aux.F
     DALTON/dft/dft_den.F
     DALTON/dft/dft_exp.F

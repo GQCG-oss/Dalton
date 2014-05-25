@@ -2594,7 +2594,7 @@ C
 
          CALL PRICAR(WORK,LWORK)
 
-         if (PEQM) THEN
+         IF (PEQM) THEN
 #if defined(BUILD_PELIB)
             CALL PE_IFC_INIT()
 #endif

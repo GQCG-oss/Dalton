@@ -17,18 +17,19 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_1pa.info <<'%EOF%'
-   pehf_1pa
+cat > pehf_cpp.info <<'%EOF%'
+   pehf_cpp
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / STO-3G
-   Test Purpose:     Test of one-photon absorption properties through
-                     RESPONSE using the PE library
+   Test Purpose:     Test of frequency dependent complex
+                     polarizabilities through RESPONSE using the
+                     PE library
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_1pa.mol <<'%EOF%'
+cat > pehf_cpp.mol <<'%EOF%'
 BASIS
 STO-3G
 Acrolein
@@ -49,7 +50,7 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_1pa.pot <<'%EOF%'
+cat > pehf_cpp.pot <<'%EOF%'
 ! Two water molecules
 @COORDINATES
 10
@@ -138,25 +139,27 @@ EXCLISTS
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_1pa.dal <<'%EOF%'
+cat > pehf_cpp.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
+.DIRECT
 .PEQM
 **WAVE FUNCTIONS
 .HF
 **RESPONSE
-*LINEAR
-.DIPLEN
-.SINGLE RESIDUE
-.ROOTS
-4
+*ABSORPTION
+.ALPHA
+.DAMPING
+ 0.0045566
+.FREQ INTERVAL
+ 0.1 0.2 0.1
 **END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_1pa.check
-cat >> pehf_1pa.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_cpp.check
+cat >> pehf_cpp.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -166,23 +169,42 @@ else
 fi
 
 #
-# Test of PE-HF one-photon absorption properties
+# Frequency dependent polarizability tensors 
 #
- CRIT1=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*[12]\.[09].......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT2=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*0*\.92271... * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT3=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.3[78]......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT4=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*1\.[12].......E\-05 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
- CRIT5=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*1\.[5-7].......E\-05 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
- CRIT6=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*1\.59365.. * \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
- CRIT7=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*3\.8.......E\-04 \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
- CRIT8=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*6\.[67].......E\-05 \*ENERGY\(eV\)\: * 10\.3593.." $log | wc -l`
- CRIT9=`$GREP "\@ STATE NO\: * 1 \*TRANSITION MOMENT\: * \-*5\.953.....E\-03 \*ENERGY\(eV\)\: * 4\.2515..." $log | wc -l`
-CRIT10=`$GREP "\@ STATE NO\: * 2 \*TRANSITION MOMENT\: * \-*2\.50......E\-04 \*ENERGY\(eV\)\: * 8\.3970..." $log | wc -l`
-CRIT11=`$GREP "\@ STATE NO\: * 3 \*TRANSITION MOMENT\: * \-*0*\.151991.. * \*ENERGY\(eV\)\: * 8\.7613..." $log | wc -l`
-CRIT12=`$GREP "\@ STATE NO\: * 4 \*TRANSITION MOMENT\: * \-*4\.159.....E\-03 \*ENERGY\(eV\)\: * 10\.359..." $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 `
+#  1   XDIPLEN   XDIPLEN    0.100000       21.889007        0.087761
+#  2   YDIPLEN   YDIPLEN    0.100000       35.726910        0.221713
+#  3   ZDIPLEN   ZDIPLEN    0.100000        4.678586        0.009109
+#  4   XDIPLEN   YDIPLEN    0.100000       -9.770390       -0.112158
+#  5   XDIPLEN   ZDIPLEN    0.100000       -0.007963       -0.000023
+#  6   YDIPLEN   ZDIPLEN    0.100000       -0.000789        0.000022
+#
+#      Averaged value       0.100000       20.764834        0.106194
+#
+#  7   XDIPLEN   XDIPLEN    0.200000       25.985198        0.362055
+#  8   YDIPLEN   YDIPLEN    0.200000       46.572526        0.993228
+#  9   ZDIPLEN   ZDIPLEN    0.200000        5.015170        0.023834
+# 10   XDIPLEN   YDIPLEN    0.200000      -15.477325       -0.537649
+# 11   XDIPLEN   ZDIPLEN    0.200000       -0.009000       -0.000089
+# 12   YDIPLEN   ZDIPLEN    0.200000        0.000422        0.000119
+#
+#      Averaged value       0.200000       25.857631        0.459706
+
+CRIT1=`$GREP " XDIPLEN   XDIPLEN    0\.100000       21\.889...        0\.087..." $log | wc -l`
+CRIT2=`$GREP " YDIPLEN   YDIPLEN    0\.100000       35\.726...        0\.221..." $log | wc -l`
+CRIT3=`$GREP " ZDIPLEN   ZDIPLEN    0\.100000        4\.678...        0\.009..." $log | wc -l`
+CRIT4=`$GREP " XDIPLEN   YDIPLEN    0\.100000       \-9\.770...       \-0\.112..." $log | wc -l`
+CRIT5=`$GREP " XDIPLEN   ZDIPLEN    0\.100000       \-0\.0079..       \-0\.00002." $log | wc -l`
+CRIT6=`$GREP " YDIPLEN   ZDIPLEN    0\.100000       \-0\.0007..        0\.00002." $log | wc -l`
+CRIT7=`$GREP " XDIPLEN   XDIPLEN    0\.200000       25\.985198        0\.362055" $log | wc -l`
+CRIT8=`$GREP " YDIPLEN   YDIPLEN    0\.200000       46\.572526        0\.993228" $log | wc -l`
+CRIT9=`$GREP " ZDIPLEN   ZDIPLEN    0\.200000        5\.015170        0\.023834" $log | wc -l`
+CRIT10=`$GREP " XDIPLEN   YDIPLEN    0\.200000      \-15\.477325       \-0\.537649" $log | wc -l`
+CRIT11=`$GREP " XDIPLEN   ZDIPLEN    0\.200000       \-0\.009000       \-0\.000089" $log | wc -l`
+CRIT12=`$GREP " YDIPLEN   ZDIPLEN    0\.200000        0\.000422        0\.000119" $log | wc -l`
+TEST[1]=`expr   $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+                $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
 CTRL[1]=12
-ERROR[1]="ONE-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
+ERROR[1]="Polarizability is NOT CORRECT"
 
 PASSED=1
 for i in 1
@@ -202,5 +224,5 @@ else
   exit 1
 fi
 %EOF%
-chmod +x pehf_1pa.check
+chmod +x pehf_cpp.check
 #######################################################################

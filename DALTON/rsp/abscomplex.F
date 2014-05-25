@@ -1262,6 +1262,11 @@ c
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
        ENDDO
 C
+      IF (PEQM) THEN
+         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+     &               XTMP,WRK(KFREE),LFREE)
+      ENDIF
+C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)
          CALL DCOPY(KZVAR,XTMP(1,I),1,VECS(1,I),1)

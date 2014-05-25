@@ -893,21 +893,21 @@ C            Now the PCM part ...
          END IF
 C
          IF (PEQM) THEN
+#ifdef BUILD_PELIB
            CALL MEMGET2('REAL','fpe', KFPE, NNBASX, WRK, KFREE, LFREE)
            CALL MEMGET2('REAL','epe', KEPE, 1, WRK, KFREE, LFREE)
-#ifdef BUILD_PELIB
            IF (NASHT == 0 .OR. HSFOCK) THEN
              CALL PE_IFC_FOCK(DAOSAV(:,1), WRK(KFPE), 1, WRK(KEPE))
            ELSE
              CALL PE_IFC_FOCK((DAOSAV(:,1)+DAOSAV(:,2)), WRK(KFPE), 1,
      &                        WRK(KEPE))
            END IF
-#endif
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
      &                          + WRK(KFPE:KFPE+NNBASX-1)
            CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
      &                 KFREE, LFREE)
+#endif
          END IF
 C
          EMCDIF = EMCSCF

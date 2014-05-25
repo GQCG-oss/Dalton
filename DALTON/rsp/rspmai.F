@@ -4349,6 +4349,23 @@ Cjje
       END IF
 Cjje
 C
+      IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
+         write(lupri,*) 'MCSCF detected (NCONRF > 1) in QMMM calc.'
+         write(lupri,*) 'NCONRF...........................', NCONRF
+         write(lupri,*) '=> Subtracting QMMM Fock matrix (PCM-like)'
+         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+         ENDDO
+      END IF
+C
+      IF (PEQM .AND. .NOT. TDHF) THEN
+        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
+        CALL READT (LUSIFC, NNORBT, WRK)
+        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
+       ENDIF
+C
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN

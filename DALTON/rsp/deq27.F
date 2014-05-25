@@ -88,7 +88,7 @@ C
 C     MAERKE 931116; mjp+hjaaj
 C      IF (SOPPA) THEN
 C     JJE 2013-07-20: allow for entry into deq27 if SOPRPA == .true.
-C                     due to PE module
+C                     due to PE library
       IF (SOPPA .and. (.not. SOPRPA)) THEN
          CALL QDUMP(LUPRI)
          CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
@@ -431,7 +431,6 @@ C
 C
       END IF
 C
-      CALL MEMREL('DEQ27MO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEQ27MO')
       RETURN
 C
