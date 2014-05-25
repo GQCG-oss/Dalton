@@ -205,7 +205,7 @@ C
      *                    WRK(JE2OFF+KZVAR+KZCONF),1)
                DO I=0,KZCONF-1
                   WRK(JE2OFF+I) = WRK(JDIAE+I) * WRK(JBCOFF+I)
-               ENDDO
+               END DO
                CALL DZERO(WRK(JE2OFF+KZVAR),KZCONF)
             ELSE
 #if defined (VAR_SPLITFILES)
@@ -215,7 +215,7 @@ C
 #else
                CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
 #endif
-            ENDIF
+            END IF
             CALL DCOPY(KZVAR,WRK(JE2OFF+KZVAR),1,
      *                 WRK(JE2OFF+KZDIM*KZYVAR),1)
             CALL DCOPY(KZVAR,WRK(JE2OFF),1,
@@ -226,28 +226,28 @@ C
      *                 WRK(JS2OFF+KZDIM*KZYVAR+KZVAR),1)
             CALL DSCAL(KZYVAR,DM1,WRK(JS2OFF+KZDIM*KZYVAR),1)
             JBCOFF = JBCOFF + KZYCON
-         ENDIF
+         END IF
          JE2OFF = JE2OFF + KZYVAR
          JS2OFF = JS2OFF + KZYVAR
  15   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
          CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
          CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,-1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                              KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,-1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                              KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
       JBOOFF = KBOVEC + JOTOT
@@ -277,32 +277,32 @@ C
          END IF
  20   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,-1,
-     &               LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,-1,
-     &               LUPRI)
+         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,-1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                  KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,-1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                  KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
 C
       IF ( NOTOT.GT.0) THEN
-         IJ = 0
+         IJ   = 0
          XMAX = D0
          IMAX = 0
          JMAX = 0
@@ -311,20 +311,20 @@ C
             DO 40 J = 1,I
                IJ = IJ + 1
                JOFF = KBOVEC+(J-1)*KZYWOP
-               XIJ = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
+               XIJ  = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
                WRK(KWRK1-1+IJ) = XIJ
                IF ((ABS(XIJ).GT.XMAX).AND.(I.NE.J)) THEN
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  40         CONTINUE
  30      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR ORBITAL TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NOTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NOTOT,-1,LUPRI)
       END IF
       IF ( NCTOT.GT.0 ) THEN
          IJ = 0
@@ -342,21 +342,21 @@ C
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  60         CONTINUE
  50      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR CONFIGURATION TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NCTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NCTOT,-1,LUPRI)
       END IF
 C
 C SET UP REDUCED E2 AND S2 MATRICES
 C
       JBOVEC = KBOVEC
       JBCVEC = KBCVEC
-      DO 70 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          JCHK = J
          IF ( J.GT.KZDIM ) THEN
             JCHK = JCHK - KZDIM
@@ -376,7 +376,7 @@ C
             JBVEC  = JBOVEC
             JBOVEC = JBOVEC + KZYWOP
          END IF
-         DO 80 I = 1,KZYDIM
+         DO I = 1,KZYDIM
             X1 = DDOT(JZVAR,WRK(JBVEC),1,
      *                WRK(KE2LIN+(I-1)*KZYVAR+JZOFF),1)
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
@@ -387,11 +387,11 @@ C
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
      *                WRK(KS2LIN+(I-1)*KZYVAR+JYOFF),1)
             WRK(KS2MAT-1+(I-1)*KZYDIM+J) = X1 + X2
- 80      CONTINUE
- 70   CONTINUE
-      WRITE(LUPRI,'(A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
+         END DO  !  I = 1,KZYDIM
+      END DO  !  J = 1,KZYDIM
+      WRITE(LUPRI,'(/A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
       CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
+      WRITE(LUPRI,'(/A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
       CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
 C
 C CHECK BLOCK STRUCTURE OF E2 AND S2 AND WRITE OUT LARGEST DEVIATIONS
@@ -462,50 +462,70 @@ C
       JZ=JA
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IA),IBTYP(JA)
       IZ=IB
       JZ=JB
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZBMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF ( ZBMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IB),IBTYP(JB)
       IZ=IS
       JZ=JS
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZSMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
-      IF ( ZSMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IS),IBTYP(JS)
       IZ=ID
       JZ=JD
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZDMAX
-      IF ( ZDMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+      IF ( ZDMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(ID),IBTYP(JD)
 C
 C CHECK EIGENVALUES OF E2
 C
@@ -518,30 +538,31 @@ C
       KJBIG  = KBIG  + KZYDIM
       KWRK1  = KJBIG + KZYDIM
 C
-      WRITE(LUPRI,'(/A,/A)')' ********************************',
+      WRITE(LUPRI,'(/A/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH JACO ROUTINE '
-      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A,/A)')
+      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A/A)')
      *' *** E2 *** HAVE TWO ZERO EIGENVALUES BECAUSE REFERENCE STATE',
      *'            IS INCLUDED IN REDUCED SPACE'
       IJ = 0
-      DO 500 J = 1,KZYDIM
-         DO 600 I = 1,J
+      DO J = 1,KZYDIM
+         DO I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
- 600     CONTINUE
- 500  CONTINUE
+         END DO
+      END DO
       CALL JACO(WRK(KE2),WRK(KEIVEC),KZYDIM,KZYDIM,0,
      *          WRK(KBIG),WRK(KJBIG))
 C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
-      DO 610 I = 1,KZYDIM
- 610     WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      DO I = 1,KZYDIM
+         WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      END DO
       CALL ORDER(WRK(KEIVEC),WRK(KEIVAL),KZYDIM,0)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of E2 :'
-      DO 620 I = 1,KZYDIM,2
+      DO I = 1,KZYDIM,2
          WRITE(LUPRI,'(1P,2(I10,D20.10))')
      *      I,WRK(KEIVAL-1+I), I+1, WRK(KEIVAL+I)
- 620  CONTINUE
+      END DO
 C
 C CHECK EIGENVALUES OF S2
 C
@@ -2760,7 +2781,7 @@ C        CALL RSPES2(GD,REDGD,REDE,REDS,EIVAL,EIVEC,
 C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *               XINDX,WRK,LWRK)
          WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTRUCTED : STOP'
-         CALL QUIT('RSPCTL: ABCHK FINISHED')
+         CALL QUIT('RSPCTL: .ABCHK FINISHED')
       END IF
 C
 C     Initialize micro iteration counter
@@ -4918,9 +4939,9 @@ C
          CALL DCOPY(KZVAR,WRK(KS2+JTOT+KZVAR),1,WRK(KS2+JTOT+KTOT),1)
          CALL DSCAL(KZYVAR,-1.0D0,WRK(KS2+JTOT+KTOT),1)
  105  CONTINUE
-      WRITE(LUPRI,'(A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
+      WRITE(LUPRI,'(/A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
       CALL OUTPUT(WRK(KE2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
+      WRITE(LUPRI,'(/A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
       CALL OUTPUT(WRK(KS2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
       ZAMAX = D0
       IA    = 0
@@ -4988,50 +5009,66 @@ C
       JZ=JA
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
       IZ=IB
       JZ=JB
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZBMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF (ZBMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
       IZ=IS
       JZ=JS
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZSMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
-      IF(ZSMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
+      END IF
       IZ=ID
       JZ=JD
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZDMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
-      IF(ZDMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
       IF ( KZYVAR.GT.MAXRM ) RETURN
       KZYRED = KZYVAR
       KZRED  = KZVAR
@@ -5060,7 +5097,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYVAR
+      DO J = 1,KZYVAR
          DO 600 I = 1,J
             IJ = IJ + 1
             IF (I.EQ.J) THEN
@@ -5069,7 +5106,7 @@ C
                REDS(IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5297,7 +5334,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.90) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
@@ -5446,7 +5483,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          DO 600 I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
@@ -5456,7 +5493,7 @@ C
                WRK(KS2-1+IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       ICTL = 2
       NSIM = 0
       KZSAV = KZRED
@@ -5656,7 +5693,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.130) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
