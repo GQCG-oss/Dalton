@@ -256,7 +256,7 @@ module cc_debug_routines_module
 
      ! prevent if explicitly requested or if PNOs are requested
 
-     if(u_pnos.or.DECinfo%CCSDpreventcanonical)then
+     if(DECinfo%CCSDpreventcanonical)then
        !nocc diagonalization
        Co_d    = Co_f
        Cv_d    = Cv_f

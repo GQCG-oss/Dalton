@@ -13,6 +13,7 @@ module pno_ccsd_module
   use IntegralInterfaceDEC
   
   
+  use cc_tools_module
   use dec_fragment_utils
   
   public :: get_ccsd_residual_pno_style, &
@@ -46,29 +47,37 @@ module pno_ccsd_module
      !INTERNAL VARIABLES
      type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
      integer :: ns,c,nc,nc2
+     integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
      real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
-     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:)
+     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
+     real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
+     real(realk),pointer :: r1(:,:),r2(:,:)
      real(realk),pointer :: gvvvv(:), gvovo(:), govov(:), goooo(:), goovv(:), gvvov(:), gooov(:)
-     integer :: i, j, a, b, i_idx, la, lg, fa, fg
+     real(realk),pointer :: xo_pair(:,:),xv_pair(:,:),yo_pair(:,:),yv_pair(:,:)
+     real(realk),pointer :: Gai(:,:)
+     integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
      character(ARR_MSG_LEN) :: msg
      real(realk),pointer :: d(:,:), d1(:,:), d2(:,:),t(:), t22(:), t21(:), o(:),vof(:),ovf(:)
-     real(realk),pointer :: Lvoov(:)  
+     real(realk),pointer :: Lvoov(:), tpl(:),tmi(:), sio4(:)
      real(realk) :: nnorm, norm 
      integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
      integer, pointer :: s_idx(:,:,:), s_nidx(:)
-     integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax,bpc,epc,ic,jc
+     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,k,l,nidx1,nidx2,spacemax,maxvirt,bpc,epc,ic,jc,pno_comb
+     integer :: max_pnor,max_pnvr,beg1,beg2
      logical :: skiptrafo,skiptrafo2,save_gvvvv_is,cyc,use_triangular,PS,add_contrib
      real(realk), pointer :: iFock(:,:), Dens(:,:)
      integer(kind=8) :: maxsize, myload
      integer :: pair,paircontribs,paircontrib(2,2),rpd
+     integer :: goffs,aoffs,tlen,tred,nor,nvr
+     type(array):: o2_dummy
      integer :: order1(4)
      integer :: suborder(2)
      logical :: master
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
-     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
+     integer :: GammaStart,  AlphaStart
      integer :: iorb,nthreads
      type(batchtoorb), pointer :: batch2orbAlpha(:)
      type(batchtoorb), pointer :: batch2orbGamma(:)
@@ -82,7 +91,7 @@ module pno_ccsd_module
      integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
      integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
      TYPE(DECscreenITEM)    :: DecScreen
-     real(realk) :: MemFree
+     real(realk) :: MemFree,tw,tc
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -91,6 +100,8 @@ module pno_ccsd_module
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
   
+     tw = 0.0E0_realk
+     tc = 0.0E0_realk
   
      o2v2 = (i8*no**2)*nv**2
      use_triangular = .true.
@@ -102,11 +113,33 @@ module pno_ccsd_module
 
      if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
 
+     ! if  we have a fragment job the basis of the atomic (pair) site has to be
+     ! treated in a special way, either LO or FNO basis, this will be element 1
+     ! in all the array arrays
+     spacemax = 2
+     if(present(f))spacemax = max(f%noccEOS,spacemax)
+     maxvirt = 0
+     do ns = 1, nspaces
+        maxvirt = max(pno_cv(ns)%ns2,maxvirt)
+     enddo
+
+     call mem_alloc( xo_pair, nb, spacemax )
+     call mem_alloc( yo_pair, nb, spacemax )
+     call mem_alloc( xv_pair, nb, maxvirt  )
+     call mem_alloc( yv_pair, nb, maxvirt  )
+
+     max_pnor = spacemax * (spacemax+1)/2
+     max_pnvr = maxvirt  * (maxvirt +1)/2
+
+     call mem_alloc( tpl, max_pnor*max_pnvr)
+     call mem_alloc( tmi, max_pnor*max_pnvr)
+
+     call mem_alloc( sio4, max_pnor*spacemax**2)
 
      call mem_alloc( pno_t2, nspaces  )
      call mem_alloc( pno_o2, nspaces  )
-     call mem_alloc( gvvvv,  nv**4    )
-     call mem_alloc( gvovo,  o2v2     )
+     !call mem_alloc( gvvvv,  nv**4    )
+     !call mem_alloc( gvovo,  o2v2     )
      call mem_alloc( govov,  o2v2     )
      call mem_alloc( goooo,  no**4    )
      call mem_alloc( goovv,  o2v2     )
@@ -116,21 +149,30 @@ module pno_ccsd_module
      call mem_alloc( p_nidx, nspaces  )
      call mem_alloc( p_idx,  nspaces  , nspaces )
      call mem_alloc( s_nidx, no )
-     call mem_alloc( s_idx,  2       , nspaces , no )
+     call mem_alloc( s_idx,  2        , nspaces , no )
      call mem_alloc( ovf,    no*nv    )
      call mem_alloc( vof,    nv*no    )
 
-     maxsize=nb**4
-     call mem_alloc( w1, maxsize )
-     call mem_alloc( w2, nb**3*max(nv,no) )
-     call mem_alloc( w3, maxsize )
+     call mem_alloc( Gai,    nb       , no      )
 
-     ! if  we have a fragment job the basis of the atomic (pair) site has to be
-     ! treated in a special way, either LO or FNO basis, this will be element 1
-     ! in all the array arrays
-     spacemax = 2
-     if(present(f))spacemax = max(f%noccEOS,spacemax)
-     spacemax = spacemax + 2 + 2
+
+     !zero the relevant quatnities
+     !$OMP WORKSHARE
+     Gai = 0.0E0_realk
+     !$OMP END WORKSHARE
+
+     maxsize=nb**4
+     s1 = maxsize
+     call mem_alloc( w1, s1 )
+     s2 = nb**4!nb**3*max(nv,no)
+     call mem_alloc( w2, s2 )
+     s3 = maxsize
+     call mem_alloc( w3, s3 )
+     s4 = maxsize
+     call mem_alloc( w4, s4 )
+     s5 = maxsize
+     call mem_alloc( w5, s5 )
+
 
      !Get pair interaction space information
      call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
@@ -255,12 +297,9 @@ module pno_ccsd_module
      fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
 
      BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-        !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
+        lg = batchdimGamma(gammaB)                         ! Dimension of gamma batch
+        fg = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+        xg = batch2orbGamma(gammaB)%orbindex(lg)
 
 
         BatchAlpha: do alphaB = 1, nbatchesAlpha
@@ -273,13 +312,11 @@ module pno_ccsd_module
            !and dynamic load balancing are enabled
            if(alphaB>nbatchesAlpha) exit
 
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
+           la = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
+           fa = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+           xa = batch2orbAlpha(alphaB)%orbindex(la)
 
            !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
            myload     = myload + la * lg
 
            IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
@@ -287,12 +324,12 @@ module pno_ccsd_module
 
            call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
               & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
+              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),la,nb,lg,nb,INTSPEC,fullRHS)
 
            w3 = w1
-           !gvvvv
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-           call dcopy(nv**4,w1,1,gvvvv,1)
+           !!gvvvv
+           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
+           !call dcopy(nv**4,w1,1,gvvvv,1)
            !goooo
            w1 = w3
            call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
@@ -318,27 +355,226 @@ module pno_ccsd_module
            w1 = w3
            call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
            call dcopy(nv*no**3,w1,1,gooov,1)
-           !gvovo
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yo,no,w2)
-           call dcopy(nv**2*no**2,w1,1,gvovo,1)
+           !!gvovo
+           !w1 = w3
+           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yo,no,w2)
+           !call dcopy(nv**2*no**2,w1,1,gvovo,1)
 
-           if(fa<=fg+lg-1)then
-              do ns = 1, nspaces
-                 !  no_pair
-                 !  nv_pair
-                 !  xo_pair
-                 !  xv_pair
-                 !  yo_pair
-                 !  yv_pair
-                 !  call get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl(ns),tmi(ns),no_pair,nv_pair,nb,fa,fg,la,lg,&
-                 !    &xo_pair,yo_pair,xv_pair,yv_pair,omega2(ns),sio4(ns),4,[w0%n,w1%n,w2%n,w3%n],.false.,.false.,.false.)
+
+           w1 = w3
+
+           !$OMP PARALLEL DO DEFAULT(NONE) SCHEDULE(DYNAMIC)
+           do ns = 1, nspaces
+
+              if(.not.pno_cv(ns)%allocd)then
+
+                 cycle 
+
+              endif
+
+              d   => pno_cv(ns)%d
+              t   => pno_t2(ns)%elm1
+              idx => pno_cv(ns)%iaos
+              pnv =  pno_cv(ns)%ns2
+              pno =  pno_cv(ns)%n
+              rpd =  pno_cv(ns)%rpd
+              PS  =  pno_cv(ns)%PS
+
+              o   => pno_o2(ns)%elm1
+
+              !Get the transformation matrices
+              !  xo_pair 
+              do i = 1, pno
+                 xo_pair(:,i) = xo(:,idx(i))
               enddo
+              !  xv_pair
+              call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+              !  yo_pair
+              do i = 1, pno
+                 yo_pair(:,i) = yo(:,idx(i))
+              enddo
+              !  yv_pair
+              call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+
+              !gvovo contribution
+              if( PS )then
+                 beg1 = 2
+                 beg2 = 1
+                 pno_comb = rpd
+              else
+                 beg1 = 1
+                 beg2 = 1
+                 pno_comb = pno**2
+              endif
+              call dgemm('t','t',rpd,la*nb*lg,nb,p10,yo_pair(1,beg1),nb,w1,la*nb*lg,nul,w2,rpd)
+              call dgemm('t','t',pnv,rpd*la*nb,lg,p10,xv_pair(fg,1),nb,w2,rpd*la*nb,nul,w3,pnv)
+              call dgemm('t','t',rpd,pnv*rpd*la,nb,p10,yo_pair(1,beg2),nb,w3,pnv*rpd*la,nul,w2,rpd)
+              call dgemm('t','t',pnv,pnv*pno_comb,la,p10,xv_pair(fa,1),nb,w2,pnv*pno_comb,p10,o,pnv)
+
+              !Get G_{\alpha i}
+              !u{cldj}(dclj)
+              !call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[3,1,2,4],nul,w4)
+              !call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[1,3,2,4],p10,w4)
+
+              !!\alpha \beta \gamma \delta -> \delta \gamma \alpha \beta
+              !call array_reorder_4d(p10,w1,la,nb,lg,nb,[4,3,1,2],nul,w2)
+
+              !! make I(\delta \gamma \alpha d) and I(\gamma \alpha d c)
+              !call dgemm('n','n',nb*lg*la,pnv,nb,p10,w2,nb*lg*la,yv_pair,nb,nul,w3,nb*la*lg)
+              !call dgemm('t','n',lg*la*pnv,pnv,nb,p10,w3,nb,yv_pair,nb,nul,w2,lg*la*pnv)
+              !if( PS )then
+              !   do pair = 1,2
+              !      call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,w2,lg,xo_pair(fg,pair),nb,nul,w3,la*pnv*pnv)
+
+              !      call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,w3,la,w4,pnv*pnv*rpd,p10,w2,la)
+
+              !      call ass_D1to2(w2,r1,[la,rpd])
+
+              !      !$OMP CRITICAL
+              !      Gai(fa:xa,idx(pair)) = Gai(fa:xa,idx(pair)) + r1(:,1)
+              !      !$OMP END CRITICAL
+              !   enddo
+              !else
+              !   call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,w2,lg,xo_pair(fg,1),nb,nul,w3,la*pnv*pnv)
+
+              !   call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,w3,la,w4,pnv*pnv*rpd,p10,w2,la)
+
+              !   call ass_D1to2(w2,r1,[la,rpd])
+
+              !   !$OMP CRITICAL
+              !   do ic = 1, rpd
+              !      Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
+              !   enddo
+              !   !$OMP END CRITICAL
+
+              !endif
+
+              !get H_(b
+           enddo
+           !$OMP END PARALLEL DO
+
+           !ADD THE gvvvv contribution, note that we destroy the original
+           !integrals in w1 and replace them by those with restricted indices in
+           !alpha and gamma -- the following code is copied from
+           !get_a22_and_prepb22_terms_ex, where more info can be found
+           if(fa<=fg+lg-1)then
+
+              goffs=0
+              if(fa-fg>0)goffs=fa-fg
+              aoffs=0
+              if(fg-fa>0)aoffs=fg-fa
+              tred=0
+              tlen=min(min(min(la,lg),fg+lg-fa),fa+la-fg)
+
+              if(fa+la-1>=fg)tred= tlen*(tlen+1)/2
+              if(fa>=fg.and.fg+lg-fa-tlen>0)tred=tred+(fg+lg-fa-tlen)*la
+              if(fa<fg)tred=tred+lg*aoffs
+              if(fa<fg.and.fa+la>fg) tred=tred+(lg-tlen)*(la-aoffs)
+              if(tlen<=0)then
+                 tlen=0
+                 aoffs=0
+                 goffs=0
+                 tred=la*lg
+              endif
+              call get_I_plusminus_le(w4,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
+              call get_I_plusminus_le(w5,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
+
+              !$OMP PARALLEL DO DEFAULT(NONE) SCHEDULE(DYNAMIC)
+              do ns = 1, nspaces
+
+                 if(.not.pno_cv(ns)%allocd)then
+
+                    cycle 
+
+                 endif
+
+                 d   => pno_cv(ns)%d
+                 t   => pno_t2(ns)%elm1
+                 idx => pno_cv(ns)%iaos
+                 pnv =  pno_cv(ns)%ns2
+                 pno =  pno_cv(ns)%n
+                 rpd =  pno_cv(ns)%rpd
+                 PS  =  pno_cv(ns)%PS
+
+                 o   => pno_o2(ns)%elm1
+
+                 nor=pno*(pno+1)/2
+                 nvr=pnv*(pnv+1)/2
+
+                 !Get the transformation matrices
+                 !  xo_pair 
+                 do i = 1, pno
+                    xo_pair(:,i) = xo(:,idx(i))
+                 enddo
+                 !  xv_pair
+                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+                 !  yo_pair
+                 do i = 1, pno
+                    yo_pair(:,i) = yo(:,idx(i))
+                 enddo
+                 !  yv_pair
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+
+                 ! get tpl and tmi
+                 if( PS )then
+                    h1 => t
+                 else
+                    call array_reorder_4d(p10,t,pnv,pno,pnv,pno,[1,3,2,4],nul,w2)
+                    h1 => w2(1:pnv**2*pno**2)
+                 endif
+                 call get_tpl_and_tmi(h1,pnv,rpd,tpl,tmi)
+                 !call print_norm(tpl, i8*(pnv*(pnv+1)/2)*(rpd*(rpd+1)/2),'tpl norm:')
+                 !call print_norm(tmi, i8*(pnv*(pnv+1)/2)*(rpd*(rpd+1)/2),'tmi norm:')
+
+                 call ass_D2to1(xo_pair,h1,[nb,pno])
+                 call ass_D2to1(yo_pair,h2,[nb,pno])
+                 call ass_D2to1(xv_pair,h3,[nb,pnv])
+                 call ass_D2to1(yv_pair,h4,[nb,pnv])
+
+                 !call print_norm(w2,i8*nb**4,'w1')
+                 !call print_norm(w1,i8*nb**4,'w1')
+                 call dgemm('n','n',nb*tred,pnv,nb,1.0E0_realk,w4,nb*tred,yv_pair,nb,0.0E0_realk,w2,nb*tred)
+                 !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+                 call dgemm('t','n',tred*pnv,pnv,nb,1.0E0_realk,w2,nb,yv_pair,nb,0.0E0_realk,w1,pnv*tred)
+                 !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+                 call get_I_cged(w2,w1,tred,pnv)
+                 !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
+                 call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
+
+
+
+                 call dgemm('n','n',nb*tred,pnv,nb,1.0E0_realk,w5,nb*tred,yv_pair,nb,0.0E0_realk,w2,nb*tred)
+                 !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+                 call dgemm('t','n',tred*pnv,pnv,nb,1.0E0_realk,w2,nb,yv_pair,nb,0.0E0_realk,w1,pnv*tred)
+                 !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
+                 call get_I_cged(w2,w1,tred,pnv)
+                 !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
+                 call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+
+
+                 if( PS )then
+                    !call get_a22_and_prepb22_terms_ex(w2,w1,w3,w4,tpl,tmi,pno,pnv,nb,fa,fg,la,lg,&
+                    !   &h1,h2,h3,h4,pno_o2(ns),sio4,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2 = .true.)
+                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
+                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true.)  
+                 else
+                    !call get_a22_and_prepb22_terms_ex(w2,w1,w3,w4,tpl,tmi,pno,pnv,nb,fa,fg,la,lg,&
+                    !   &h1,h2,h3,h4,pno_o2(ns),sio4,4,[s1,s2,s3,s4],.false.,tw,tc, order = [1,3,2,4] )
+                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
+                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])  
+                 endif
+
+                 !call print_tensor_unfolding_with_labels(o,&
+                 !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA')
+
+
+              enddo
+              !$OMP END PARALLEL DO
            endif
+
         enddo BatchAlpha
      enddo BatchGamma
      
-
      ! Free integral stuff
      ! *******************
      nullify(Mylsitem%setting%LST_GAB_LHS)
@@ -370,8 +606,19 @@ module pno_ccsd_module
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
      call mem_dealloc( w3 )
+     call mem_dealloc( w4 )
+     call mem_dealloc( w5 )
+
+     call mem_dealloc( xo_pair )
+     call mem_dealloc( yo_pair )
+     call mem_dealloc( xv_pair )
+     call mem_dealloc( yv_pair )
+
+     call mem_dealloc( tpl )
+     call mem_dealloc( tmi )
 
 
+     !SWITCH TO MO PART
      maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
      call mem_alloc( w1, maxsize )
      call mem_alloc( w2, maxsize )
@@ -423,10 +670,11 @@ module pno_ccsd_module
      !call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
      !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
      !call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
-     !call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
+     !!call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
 
      !call print_norm(w3,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
+     !norm = 0.0E0_realk
+     !!call print_norm(ref,o2v2,norm,.true.)
      !write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
 
      !!DEBUG: B2 term
@@ -580,9 +828,15 @@ module pno_ccsd_module
      call mem_dealloc( w4 )
      call mem_dealloc( w5 )
 
+     ! D1 term
      call ass_D2to1(o1,h1,[nv,no])
      h1 = vof
      h1 => null()
+     ! A1 term
+     call dgemm('t','n',nv,no,nb,p10,xv,nb,Gai,nb,p10,o1,nv)
+     call mem_dealloc( Gai )
+
+     spacemax = spacemax + 2 + 2
 
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
@@ -623,20 +877,17 @@ module pno_ccsd_module
 
         o   => pno_o2(ns)%elm1
 
-        o = 0.0E0_realk
-
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  A2 Term !!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         !A2.1
         !Get the integral contribution, sort it first like the integrals then transform it
-        call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
-           &pno_cv(ns)%n,PS)
+        !call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
+        !   &pno_cv(ns)%n,PS)
 
         !A2.2
-        call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
-
+        !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
@@ -991,7 +1242,7 @@ module pno_ccsd_module
 
      !call print_norm(o2,o2v2)
      !call print_norm(o1,i8*no*nv)
-
+     
      do ns = 1, nspaces
 
         if(  pno_cv(ns)%allocd )then
@@ -1003,8 +1254,8 @@ module pno_ccsd_module
 
      call mem_dealloc( pno_t2 )
      call mem_dealloc( pno_o2 )
-     call mem_dealloc( gvvvv )
-     call mem_dealloc( gvovo )
+     !call mem_dealloc( gvvvv )
+     !call mem_dealloc( gvovo )
      call mem_dealloc( govov )
      call mem_dealloc( goooo )
      call mem_dealloc( goovv )
@@ -1017,6 +1268,7 @@ module pno_ccsd_module
      call mem_dealloc( s_idx )
      call mem_dealloc( vof )
      call mem_dealloc( ovf )
+
 
      !o2 = 0.0E0_realk
      !o1 = 0.0E0_realk
@@ -1677,6 +1929,7 @@ module pno_ccsd_module
         if(cv(nn)%allocd)then
 
            o2(nn) = array_init([pnv,rpd,pnv,rpd],4)
+           call array_zero(o2(nn))
 
         endif
      enddo
@@ -4058,65 +4311,6 @@ module pno_ccsd_module
   end subroutine  free_PNOSpaceInfo
 
 
-  subroutine print_tensor_unfolding_with_labels(mat,d1,l1,m1,d2,l2,m2,label)
-     implicit none
-     integer, intent(in) :: m1,m2
-     integer, intent(in) :: d1(m1),d2(m2)
-     character,intent(in) :: l1(m1),l2(m2)
-     real(realk), intent(in) :: mat(*)
-     character*(*), intent(in) :: label
-     integer :: i,a,b,id1(m1),id2(m2),cd1,cd2
-
-     print *,label(1:len(label))
-     write (*,'("(")',advance='no') 
-     cd1 = 1
-     do i=1,m1
-        if(i>1)write (*,'(X)',advance='no')
-        write (*,'(A)',advance='no') l1(i)
-        cd1 = cd1 * d1(i)
-     enddo
-     write (*,'(")  /  (")',advance='no') 
-     cd2 = 1
-     do i=1,m2
-        if(i>1)write (*,'(X)',advance='no')
-        write (*,'(A)',advance='no') l2(i)
-        cd2 = cd2 * d2(i)
-     enddo
-     write (*,'(")  ")',advance='no') 
-
-     do b = 1, cd2
-        call get_midx(b,id2,d2,m2)
-        write (*,'(12X,"(")',advance='no')
-        do i = 1, m2
-           if(i>1)write (*,'("/")',advance='no')
-           write (*,'(I4)',advance='no') id2(i)
-        enddo
-        write (*,'(")")',advance='no')
-     enddo
-     write(*,*)
-
-     do a = 1, cd1
-        call get_midx(a,id1,d1,m1)
-        write (*,'(" (")',advance='no') 
-        do i = 1, m1
-           if(i>1)write (*,'("/")',advance='no')
-           write (*,'(I4)',advance='no') id1(i)
-        enddo
-        write (*,'(") ")',advance='no') 
-        do b = 1, cd2
-           write (*,'(g18.5)',advance='no') mat(a+(b-1)*cd1)
-           if(b<cd2)write (*,'(",",X)',advance='no')
-        enddo
-        if(a<cd1)then
-           write (*,'(";")')
-        else
-           write (*,*)
-        endif
-     enddo
-
-
-
-  end subroutine print_tensor_unfolding_with_labels
 
 
 end module pno_ccsd_module
