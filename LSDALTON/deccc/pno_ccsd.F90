@@ -320,7 +320,7 @@ module pno_ccsd_module
            !of the mpi and non mpi schemes, this is accounted for, because static,
            !and dynamic load balancing are enabled
            if(alphaB>nbatchesAlpha) exit
-           print *,"JOB ",alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+           !print *,"JOB ",alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
            la = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
            fa = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
@@ -847,7 +847,7 @@ module pno_ccsd_module
      h1 = vof
      h1 => null()
      ! A1 term
-     call dgemm('t','n',nv,no,nb,p10,xv,nb,Gai,nb,p10,o1,nv)
+     !call dgemm('t','n',nv,no,nb,p10,xv,nb,Gai,nb,p10,o1,nv)
      call mem_dealloc( Gai )
 
      spacemax = spacemax + 2 + 2

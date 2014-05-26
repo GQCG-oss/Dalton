@@ -563,7 +563,7 @@ module cc_tools_module
 
          ! add up contributions in the residual with keeping track of i<j
          !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-         !$OMP PRIVATE(i,j,pos1,pos2)
+         !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
          do j=no,1,-1
             !$OMP DO 
             do i=j,1,-1
@@ -599,9 +599,9 @@ module cc_tools_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
 #else
-               !$OMP WORKSHARE
+               !OMP WORKSHARE
                omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-               !$OMP END WORKSHARE
+               !OMP END WORKSHARE
 #endif
             endif
          else if(s==2)then
@@ -654,7 +654,7 @@ module cc_tools_module
 
          if(.not.rest_occ)then
             !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-            !$OMP PRIVATE(i,j,pos1,pos2)
+            !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
             do j=no,1,-1
                !$OMP DO 
                do i=j,1,-1
@@ -689,9 +689,9 @@ module cc_tools_module
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                   call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
 #else
-                  !$OMP WORKSHARE
+                  !OMP WORKSHARE
                   omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-                  !$OMP END WORKSHARE
+                  !OMP END WORKSHARE
 #endif
                endif
             else if(s==2)then
