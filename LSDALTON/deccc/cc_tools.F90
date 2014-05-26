@@ -828,10 +828,18 @@ module cc_tools_module
       character, intent(in) :: op
       integer :: i,alpha,beta,gamm,delta,cagc,cagi,bs,bctr
       integer :: alpha_b,beta_b,gamm_b,delta_b,elements,aleg
-      integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb
+      integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb,omp_level
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb
+#ifdef VAR_OMP
+      integer, external :: omp_get_level
+#endif
+      omp_level = 0
+#ifdef VAR_OMP
+      omp_level = omp_get_level()
+#endif
+      print *,"OMP LEVEL",omp_level
       bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
       !bs=5
       !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk

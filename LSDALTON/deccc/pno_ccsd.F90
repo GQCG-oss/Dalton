@@ -73,7 +73,7 @@ module pno_ccsd_module
      type(array):: o2_dummy
      integer :: order1(4)
      integer :: suborder(2)
-     logical :: master
+     logical :: master, I_PLUS_MINUS_DONE
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
@@ -99,6 +99,9 @@ module pno_ccsd_module
      real(realk), parameter :: m05 = -0.5E0_realk
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
+#ifdef VAR_OMP
+     call omp_set_nested(.true.)
+#endif
   
      tw = 0.0E0_realk
      tc = 0.0E0_realk
@@ -326,6 +329,8 @@ module pno_ccsd_module
            !short hand notation
            myload     = myload + la * lg
 
+           I_PLUS_MINUS_DONE = .false.
+
            IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
            IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
 
@@ -337,40 +342,31 @@ module pno_ccsd_module
 
            !goooo
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-           !call dcopy(no**4,w1,1,goooo,1)
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yo,no,w2,fa,la,fg,lg,goooo)
            !govov
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-           !call dcopy(nv**2*no**2,w1,1,govov,1)
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,govov)
            !goovv
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2)
-           !call dcopy(nv**2*no**2,w1,1,goovv,1)
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2,fa,la,fg,lg,goovv)
            !Lvoov = 2gvoov - gvvoo
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
            call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,Lvoov)
-           !call array_reorder_4d( p20, w1, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
-           !call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
            !gvvov
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-           !call dcopy(nv**3*no,w1,1,gvvov,1)
            call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,gvvov)
            !gooov
            w1 = w3
-           !call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
-           !call dcopy(nv*no**3,w1,1,gooov,1)
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,gooov)
-
 
            w1 = w3
 
-           !$OMP PARALLEL DO DEFAULT(NONE) SCHEDULE(DYNAMIC)
+           !OMP PARALLEL DEFAULT(NONE) &
+           !OMP SHARED(I_PLUS_MINUS_DONE,nspaces,xv_pair_t,pno_cv,pno_t2,pno_o2,&
+           !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5) &
+           !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
+           !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred)
+           !OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
 
               if(.not.pno_cv(ns)%allocd)then
@@ -458,7 +454,7 @@ module pno_ccsd_module
 
               !get H_(b
            enddo
-           !$OMP END PARALLEL DO
+           !OMP END DO NOWAIT
 
            !ADD THE gvvvv contribution, note that we destroy the original
            !integrals in w1 and replace them by those with restricted indices in
@@ -483,10 +479,19 @@ module pno_ccsd_module
                  goffs=0
                  tred=la*lg
               endif
-              call get_I_plusminus_le(w4,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
-              call get_I_plusminus_le(w5,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
 
-              !$OMP PARALLEL DO DEFAULT(NONE) SCHEDULE(DYNAMIC)
+
+
+              !OMP CRITICAL
+              if(.not.I_PLUS_MINUS_DONE)then
+                 call get_I_plusminus_le(w4,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
+                 call get_I_plusminus_le(w5,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
+                 I_PLUS_MINUS_DONE = .true.
+              endif
+              !OMP END CRITICAL
+
+
+              !OMP DO SCHEDULE(DYNAMIC)
               do ns = 1, nspaces
 
                  if(.not.pno_cv(ns)%allocd)then
@@ -560,13 +565,9 @@ module pno_ccsd_module
 
 
                  if( PS )then
-                    !call get_a22_and_prepb22_terms_ex(w2,w1,w3,w4,tpl,tmi,pno,pnv,nb,fa,fg,la,lg,&
-                    !   &h1,h2,h3,h4,pno_o2(ns),sio4,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2 = .true.)
                     call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
                        &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true.)  
                  else
-                    !call get_a22_and_prepb22_terms_ex(w2,w1,w3,w4,tpl,tmi,pno,pnv,nb,fa,fg,la,lg,&
-                    !   &h1,h2,h3,h4,pno_o2(ns),sio4,4,[s1,s2,s3,s4],.false.,tw,tc, order = [1,3,2,4] )
                     call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
                        &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])  
                  endif
@@ -576,8 +577,9 @@ module pno_ccsd_module
 
 
               enddo
-              !$OMP END PARALLEL DO
+              !OMP END DO
            endif
+           !OMP END PARALLEL
 
         enddo BatchAlpha
      enddo BatchGamma
