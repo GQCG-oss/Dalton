@@ -211,7 +211,7 @@ type(Matrix) :: CMOsav
 type(Matrix), target  ::  X, P, G
 integer :: norb, i,imx,idamax,iter_number
 real(realk) :: nrmG, oVal,old_oVal
-real(realk) :: nrm_thresh,stepsize,orig_Eval
+real(realk) :: nrm_thresh,stepsize
 real(realk),pointer :: max_orbspreads(:)  
 
   norb=CMO%ncol
@@ -292,7 +292,8 @@ real(realk),pointer :: max_orbspreads(:)
     call linesearch_orbspread(CFG,cmo,X,stepsize,oVal)
     call orbspread_value(oVal,CFG%orbspread_inp)
 
-    if (orig_Eval-old_oVal > 0.0_realk) then
+
+    if (oVal-old_oVal > 0.0_realk) then
        write(ls%lupri,'(a)') '  %LOC% Step not accepted. Go back'
        call mat_copy(1.0d0,CMOsav,CMO)
        call orbspread_update(CFG%orbspread_inp,CMO)
@@ -322,7 +323,7 @@ real(realk),pointer :: max_orbspreads(:)
            write(CFG%lupri,'(a)') '  %LOC% the user manual under section **LOCALIZE ORBITALS      '
            write(CFG%lupri,'(a)') '  %LOC% and keyword .LOOSE MICRO THRESH                              ' 
            call lsquit('%LOC% Cannot converge micro iterations. ', CFG%lupri)
-   elseif (orig_Eval-old_oVal > 0.0_realk) then
+   elseif (oval-old_oVal > 0.0_realk) then
             cycle
    endif
     !new gradient
