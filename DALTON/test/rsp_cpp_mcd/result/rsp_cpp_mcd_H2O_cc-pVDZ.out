@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -49,7 +49,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,7 +58,8 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -104,7 +105,7 @@
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
@@ -119,6 +120,7 @@
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -128,47 +130,45 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon Oct 21 15:22:33 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Mon May 26 14:46:40 2014
+     Host name              : stallo-1.local                          
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/release_dalton/DALTON/test/2013-10-21T15_22-testjob-pid-54575
-   2) /home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis
+   1) /home/arnfinn/dalton/DALTON/test/runtest_rsp_cpp_mcd
+   2) /home/arnfinn/dalton/build-master/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | arnfinn
- Host                     | stallo-2.local
+ Host                     | c30-5.local
  System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/ifort
- C compiler               | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/icc
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ Fortran compiler version | ifort (IFORT) 13.0.1 20121010
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
  C compiler version       | icc (ICC) 13.0.1 20121010
- C++ compiler             | /global/apps/intel/composer_xe_2011_sp1.8.273/bin/
-                          | intel64/icpc
- C++ compiler version     | icpc (ICC) 13.0.1 20121010
- BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
-                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
-                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
-                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
-                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
-                          | mp;-Wl,--end-group
- LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
-                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
-                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
-                          | nmp;-Wl,--end-group
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
+                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
+                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
+                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
+                          | read.so;/usr/lib64/libm.so
+ LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
+                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
+                          | ntel64/libmkl_intel_lp64.so
  Static linking           | OFF
- Last Git revision        | 9e5bb7f558e1ee66d0614a37cb4fb8c71086ba4e
- Configuration time       | 2013-10-15 12:56:50.249803
+ Last Git revision        | a0c3a826074d228d55a8eceb26895df0796f9159
+ Configuration time       | 2014-05-26 14:21:48.292867
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -246,7 +246,7 @@ FINISH
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/cc-pVDZ"
+     "/home/arnfinn/dalton/build-master/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
@@ -254,13 +254,15 @@ FINISH
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/release_dalton/build-RB-intel12.1.2-release/basis/cc-pVDZ"
+     "/home/arnfinn/dalton/build-master/basis/cc-pVDZ"
 
 
                          SYMGRP: Point group information
                          -------------------------------
 
-Point group: C2v
+@    Point group: C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
 
    * The point group was generated by:
 
@@ -410,7 +412,7 @@ Point group: C2v
  Rotational constants
  --------------------
 
- The molecule is planar.
+@    The molecule is planar.
 
                A                   B                   C
 
@@ -477,6 +479,12 @@ Point group: C2v
 
 
 
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
@@ -504,7 +512,7 @@ Point group: C2v
      ************************************************************************
 
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.99 seconds
+ >>>> Total wall time used in HERMIT:   0.13 seconds
 
 
                         .----------------------------------.
@@ -538,8 +546,8 @@ Point group: C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon Oct 21 15:22:34 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Mon May 26 14:46:40 2014
+     Host name              : stallo-1.local                          
 
  Title lines from ".mol" input file:
      magnet                                                                  
@@ -558,14 +566,14 @@ Point group: C2v
 
      Wave function specification
      ============================
-@    For the wave function of type :      >>> KS-DFT <<<
+@    Wave function type        >>> KS-DFT <<<
 @    Number of closed shell electrons          10
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
 
 @    Spin multiplicity and 2 M_S                1         0
-     Total number of symmetries                 4
-@    Reference state symmetry                   1
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
  
      This is a DFT calculation of type: Camb3lyp
  CAM-B3LYP w/ alpha=0.190 beta=0.460 mu=0.330 VwnWeight=0.190 LypWeight=0.810
@@ -573,6 +581,7 @@ Point group: C2v
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
                                        --- |  ---  ---  ---  ---
      Total number of orbitals           24 |   11    4    7    2
      Number of basis functions          24 |   11    4    7    2
@@ -592,62 +601,64 @@ Point group: C2v
  CAM-B3LYP w/ alpha=0.190 beta=0.460 mu=0.330 VwnWeight=0.190 LypWeight=0.810
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =    5
+ C1-DIIS algorithm; max error vectors =    8
 
  Automatic occupation of symmetries with  10 electrons.
 
  Iter     Total energy    Error norm  Delta(E)    SCF occupation
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    1    F  1.70D-02  1.80D-02
       K-S energy, electrons, error :     -6.752791155174   9.9999996421   -3.58D-07
 @  1  -76.1872892932       2.27D+00  -7.62D+01     3   1   1   0
       Virial theorem: -V/T =      2.004836
 @      MULPOP O      -0.43; H   _1  0.22; H   _2  0.22; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, DIFDEN)   -6    F
-      K-S energy, electrons, error :     -6.865650929453   9.9999996710   -3.29D-07
-@  2  -76.3813733566       5.23D-01  -1.94D-01     3   1   1   0
-      Virial theorem: -V/T =      2.001318
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  1.60D-02  1.80D-02
+      K-S energy, electrons, error :     -6.865548940367   9.9999996710   -3.29D-07
+@  2  -76.3813384359       5.25D-01  -1.94D-01     3   1   1   0
+      Virial theorem: -V/T =      2.001336
 @      MULPOP O      -0.25; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, DIFDEN)   -7    F
-      K-S energy, electrons, error :     -6.802473109536   9.9999996721   -3.28D-07
-@  3  -76.3905546070       1.70D-01  -9.18D-03     3   1   1   0
-      Virial theorem: -V/T =      2.008577
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  1.70D-02  1.80D-02
+      K-S energy, electrons, error :     -6.802672479853   9.9999996720   -3.28D-07
+@  3  -76.3905622970       1.70D-01  -9.22D-03     3   1   1   0
+      Virial theorem: -V/T =      2.008565
 @      MULPOP O      -0.24; H   _1  0.12; H   _2  0.12; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, DIFDEN)   -8    F
-      K-S energy, electrons, error :     -6.844407304881   9.9999996705   -3.30D-07
-@  4  -76.3914208111       9.86D-02  -8.66D-04     3   1   1   0
-      Virial theorem: -V/T =      2.003594
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    4    F  1.60D-02  1.80D-02
+      K-S energy, electrons, error :     -6.844256683999   9.9999996705   -3.30D-07
+@  4  -76.3914278501       9.77D-02  -8.66D-04     3   1   1   0
+      Virial theorem: -V/T =      2.003612
 @      MULPOP O      -0.29; H   _1  0.15; H   _2  0.15; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
-      K-S energy, electrons, error :     -6.828482910392   9.9999996717   -3.28D-07
-@  5  -76.3918499101       6.62D-03  -4.29D-04     3   1   1   0
-      Virial theorem: -V/T =      2.005453
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -8    5    F  1.70D-02  1.80D-02
+      K-S energy, electrons, error :     -6.828409325096   9.9999996717   -3.28D-07
+@  5  -76.3918495978       7.13D-03  -4.22D-04     3   1   1   0
+      Virial theorem: -V/T =      2.005462
 @      MULPOP O      -0.27; H   _1  0.14; H   _2  0.14; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
-      K-S energy, electrons, error :     -6.829314223719   9.9999996717   -3.28D-07
-@  6  -76.3918521433       2.58D-04  -2.23D-06     3   1   1   0
-      Virial theorem: -V/T =      2.005344
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  1.70D-02  1.80D-02
+      K-S energy, electrons, error :     -6.829318290517   9.9999996717   -3.28D-07
+@  6  -76.3918521420       2.62D-04  -2.54D-06     3   1   1   0
+      Virial theorem: -V/T =      2.005343
 @      MULPOP O      -0.28; H   _1  0.14; H   _2  0.14; 
  -----------------------------------------------------------------------------
-   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
-      K-S energy, electrons, error :     -6.829331327742   9.9999996717   -3.28D-07
-@  7  -76.3918521549       3.88D-05  -1.17D-08     3   1   1   0
+   7  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    7    F  1.70D-02  1.80D-02
+      K-S energy, electrons, error :     -6.829329865454   9.9999996717   -3.28D-07
+@  7  -76.3918521548       4.84D-05  -1.28D-08     3   1   1   0
       Virial theorem: -V/T =      2.005341
 @      MULPOP O      -0.28; H   _1  0.14; H   _2  0.14; 
  -----------------------------------------------------------------------------
-   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
-      K-S energy, electrons, error :     -6.829332674491   9.9999996717   -3.28D-07
-@  8  -76.3918521553       3.39D-06  -3.74D-10     3   1   1   0
+   8  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)  -10    8    F  1.60D-02  1.80D-02
+      K-S energy, electrons, error :     -6.829332502992   9.9999996717   -3.28D-07
+@  8  -76.3918521553       3.77D-06  -5.27D-10     3   1   1   0
 
 @ *** DIIS converged in   8 iterations !
-@     Converged SCF energy, gradient:    -76.391852155311    3.39D-06
+@     Converged SCF energy, gradient:    -76.391852155311    3.77D-06
     - total time used in SIRFCK :              0.00 seconds
 
 
@@ -660,24 +671,24 @@ Point group: C2v
 
  Sym       Kohn-Sham orbital energies
 
-  1    -19.19631734    -1.06717058    -0.43169127     0.09698668     0.66844299
-         0.96948169     1.27472027     1.66380482
+1 A1    -19.19631769    -1.06717070    -0.43169137     0.09698665     0.66844294
+          0.96948162     1.27472023     1.66380474
 
-  2     -0.35645395     0.98768256     1.49547169     2.98735659
+2 B1     -0.35645408     0.98768246     1.49547165     2.98735648
 
-  3     -0.57595135     0.17209852     0.61706731     1.05902251     1.72820136
-         2.16007129
+3 B2     -0.57595145     0.17209849     0.61706726     1.05902244     1.72820134
+          2.16007121
 
-  4      1.29980983     3.03149682
+4 A2      1.29980979     3.03149672
 
-    E(LUMO) :     0.09698668 au (symmetry 1)
-  - E(HOMO) :    -0.35645395 au (symmetry 2)
+    E(LUMO) :     0.09698665 au (symmetry 1)
+  - E(HOMO) :    -0.35645408 au (symmetry 2)
   ------------------------------------------
-    gap     :     0.45344064 au
+    gap     :     0.45344073 au
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       2.055       2.105
+ >>>> CPU and wall time for SCF :       1.731       1.802
 
 
                        .-----------------------------------.
@@ -686,23 +697,23 @@ Point group: C2v
 
 
 @    Spin multiplicity:           1
-@    Spatial symmetry:            1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
 @    Total charge of molecule:    0
 
 @    Final DFT energy:            -76.391852155311                 
 @    Nuclear repulsion:             9.055004525638
 @    Electronic energy:           -85.446856680949
 
-@    Final gradient norm:           0.000003386883
+@    Final gradient norm:           0.000003770379
 
  
-     Date and time (Linux)  : Mon Oct 21 15:22:37 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Mon May 26 14:46:43 2014
+     Host name              : stallo-1.local                          
 
  (Only coefficients >0.0100 are printed.)
 
- Molecular orbitals for symmetry species  1
- ------------------------------------------
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
 
     Orbital         1        2        3        4        5
    1 O   :1s     1.0026  -0.0069   0.0073   0.0355   0.0697
@@ -717,8 +728,8 @@ Point group: C2v
   10 H   :2py    0.0009  -0.0362  -0.0250  -0.0035  -0.2492
   11 H   :2pz    0.0008  -0.0184   0.0143  -0.0082  -0.0520
 
- Molecular orbitals for symmetry species  2
- ------------------------------------------
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
 
     Orbital         1        2        3
    1 O   :2px    0.9272  -1.4050  -0.0311
@@ -726,8 +737,8 @@ Point group: C2v
    3 O   :3d1+   0.0194  -0.0020  -0.1702
    4 H   :2px    0.0322   0.0361  -0.7602
 
- Molecular orbitals for symmetry species  3
- ------------------------------------------
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
 
     Orbital         1        2        3
    1 O   :2py    0.7328  -0.5190   0.4420
@@ -738,8 +749,8 @@ Point group: C2v
    6 H   :2py   -0.0164  -0.0082  -0.0610
    7 H   :2pz   -0.0283  -0.0034  -0.1354
 
- Molecular orbitals for symmetry species  4
- ------------------------------------------
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
 
     Orbital         1        2
    1 O   :3d2-  -0.1401   1.0599
@@ -747,12 +758,12 @@ Point group: C2v
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.07 seconds
- >>>> Total wall time used in SIRIUS :      2.14 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.75 seconds
+ >>>> Total wall time used in SIRIUS :      2.45 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:22:37 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Mon May 26 14:46:43 2014
+     Host name              : stallo-1.local                          
 
 
                      .---------------------------------------.
@@ -790,8 +801,8 @@ Point group: C2v
  Print level in absorption modules        : IPRABSLRS    =   0
 
 
-   SCF energy         :      -76.391852155311099
- -- inactive part     :      -85.446856680948997
+   SCF energy         :      -76.391852155311483
+ -- inactive part     :      -85.446856680949381
  -- nuclear repulsion :        9.055004525637894
 
 
@@ -846,21 +857,21 @@ Point group: C2v
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator ZDIPLEN  of symmetry 1 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
-ITER, IVEC:   1   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3603337D+00  0.9823314D+00
-ITER, IVEC:   1   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.4432294D+00  0.8087108D+00
-ITER, IVEC:   1   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.4586695D+00  0.8393529D+00
-ITER, IVEC:   2   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.2326985D-01  0.6082079D-01
+ITER, IVEC:   1   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3603336D+00  0.9823312D+00
+ITER, IVEC:   1   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.4432290D+00  0.8087099D+00
+ITER, IVEC:   1   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.4586692D+00  0.8393520D+00
+ITER, IVEC:   2   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.2326986D-01  0.6082083D-01
 ITER, IVEC:   2   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.4304227D-01  0.7182683D-01
 ITER, IVEC:   2   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.4494005D-01  0.7452781D-01
-ITER, IVEC:   3   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1036029D-02  0.2707483D-02
-ITER, IVEC:   3   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.1824827D-02  0.3043381D-02
-ITER, IVEC:   3   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.1902477D-02  0.3152938D-02
-ITER, IVEC:   4   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3817878D-04  0.9977358D-04
-ITER, IVEC:   4   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.6117912D-04  0.1020323D-03
-ITER, IVEC:   4   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.6640903D-04  0.1100584D-03
-ITER, IVEC:   5   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3159411D-06  0.8256569D-06
-ITER, IVEC:   5   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.1581576D-05  0.2637694D-05
-ITER, IVEC:   5   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.1675374D-05  0.2776565D-05
+ITER, IVEC:   3   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.1036030D-02  0.2707484D-02
+ITER, IVEC:   3   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.1824826D-02  0.3043379D-02
+ITER, IVEC:   3   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.1902476D-02  0.3152937D-02
+ITER, IVEC:   4   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3817877D-04  0.9977356D-04
+ITER, IVEC:   4   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.6117893D-04  0.1020320D-03
+ITER, IVEC:   4   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.6640885D-04  0.1100581D-03
+ITER, IVEC:   5   1  ZDIPLEN   0.0000   RESID, RESID/X:  0.3159410D-06  0.8256568D-06
+ITER, IVEC:   5   2  ZDIPLEN   0.5050   RESID, RESID/X:  0.1581580D-05  0.2637700D-05
+ITER, IVEC:   5   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.1675378D-05  0.2776571D-05
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  25  25
 
@@ -874,18 +885,18 @@ ITER, IVEC:   5   3  ZDIPLEN   0.5100   RESID, RESID/X:  0.1675374D-05  0.277656
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator XDIPLEN  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
-ITER, IVEC:   1   1  XDIPLEN   0.0000   RESID, RESID/X:  0.5635328D-01  0.1481831D+00
-ITER, IVEC:   1   2  XDIPLEN   0.5050   RESID, RESID/X:  0.1068615D+00  0.2709304D+00
-ITER, IVEC:   1   3  XDIPLEN   0.5100   RESID, RESID/X:  0.1068198D+00  0.2717393D+00
-ITER, IVEC:   2   1  XDIPLEN   0.0000   RESID, RESID/X:  0.7579862D-03  0.1994171D-02
-ITER, IVEC:   2   2  XDIPLEN   0.5050   RESID, RESID/X:  0.3024731D-02  0.7661373D-02
-ITER, IVEC:   2   3  XDIPLEN   0.5100   RESID, RESID/X:  0.3020914D-02  0.7676054D-02
-ITER, IVEC:   3   1  XDIPLEN   0.0000   RESID, RESID/X:  0.9429161D-05  0.2480698D-04
-ITER, IVEC:   3   2  XDIPLEN   0.5050   RESID, RESID/X:  0.2722860D-04  0.6896769D-04
-ITER, IVEC:   3   3  XDIPLEN   0.5100   RESID, RESID/X:  0.2755928D-04  0.7002739D-04
+ITER, IVEC:   1   1  XDIPLEN   0.0000   RESID, RESID/X:  0.5635332D-01  0.1481832D+00
+ITER, IVEC:   1   2  XDIPLEN   0.5050   RESID, RESID/X:  0.1068615D+00  0.2709305D+00
+ITER, IVEC:   1   3  XDIPLEN   0.5100   RESID, RESID/X:  0.1068199D+00  0.2717394D+00
+ITER, IVEC:   2   1  XDIPLEN   0.0000   RESID, RESID/X:  0.7579880D-03  0.1994176D-02
+ITER, IVEC:   2   2  XDIPLEN   0.5050   RESID, RESID/X:  0.3024733D-02  0.7661379D-02
+ITER, IVEC:   2   3  XDIPLEN   0.5100   RESID, RESID/X:  0.3020917D-02  0.7676059D-02
+ITER, IVEC:   3   1  XDIPLEN   0.0000   RESID, RESID/X:  0.9429185D-05  0.2480705D-04
+ITER, IVEC:   3   2  XDIPLEN   0.5050   RESID, RESID/X:  0.2722867D-04  0.6896785D-04
+ITER, IVEC:   3   3  XDIPLEN   0.5100   RESID, RESID/X:  0.2755936D-04  0.7002757D-04
 ITER, IVEC:  4  1  XDIPLEN   0.0000 RESID, RESID/X:TT
-ITER, IVEC:   4   2  XDIPLEN   0.5050   RESID, RESID/X:  0.2048354D-14  0.5188305D-14
-ITER, IVEC:   4   3  XDIPLEN   0.5100   RESID, RESID/X:  0.2022272D-14  0.5138540D-14
+ITER, IVEC:   4   2  XDIPLEN   0.5050   RESID, RESID/X:  0.2277840D-14  0.5769571D-14
+ITER, IVEC:   4   3  XDIPLEN   0.5100   RESID, RESID/X:  0.2343351D-14  0.5954390D-14
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  19  19
 
@@ -893,9 +904,9 @@ ITER, IVEC:   4   3  XDIPLEN   0.5100   RESID, RESID/X:  0.2022272D-14  0.513854
  ABSLRS -- for operator YANGMOM  of symmetry 2 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
  Use ABS_READIN_RED           19          19
-ITER, IVEC:   1   1  YANGMOM   0.0000   RESID, RESID/X:  0.1917464D-14  0.2661354D-14
-ITER, IVEC:   1   2  YANGMOM   0.5050   RESID, RESID/X:  0.1840337D-14  0.2527772D-14
-ITER, IVEC:   1   3  YANGMOM   0.5100   RESID, RESID/X:  0.1910278D-14  0.2633979D-14
+ITER, IVEC:   1   1  YANGMOM   0.0000   RESID, RESID/X:  0.1368945D-14  0.1900034D-14
+ITER, IVEC:   1   2  YANGMOM   0.5050   RESID, RESID/X:  0.2538141D-14  0.3486231D-14
+ITER, IVEC:   1   3  YANGMOM   0.5100   RESID, RESID/X:  0.2406421D-14  0.3318083D-14
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  19  19
 
@@ -909,21 +920,21 @@ ITER, IVEC:   1   3  YANGMOM   0.5100   RESID, RESID/X:  0.1910278D-14  0.263397
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator XANGMOM  of symmetry 3 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
-ITER, IVEC:   1   1  XANGMOM   0.0000   RESID, RESID/X:  0.3620152D-01  0.7906832D-01
-ITER, IVEC:   1   2  XANGMOM   0.5050   RESID, RESID/X:  0.7135481D+00  0.3798230D+00
-ITER, IVEC:   1   3  XANGMOM   0.5100   RESID, RESID/X:  0.1138702D+01  0.5274082D+00
-ITER, IVEC:   2   1  XANGMOM   0.0000   RESID, RESID/X:  0.4769770D-03  0.1041142D-02
-ITER, IVEC:   2   2  XANGMOM   0.5050   RESID, RESID/X:  0.5800230D-01  0.2772315D-01
-ITER, IVEC:   2   3  XANGMOM   0.5100   RESID, RESID/X:  0.7732629D-01  0.3520081D-01
-ITER, IVEC:   3   1  XANGMOM   0.0000   RESID, RESID/X:  0.1399273D-04  0.3054322D-04
-ITER, IVEC:   3   2  XANGMOM   0.5050   RESID, RESID/X:  0.2257719D-02  0.1078818D-02
-ITER, IVEC:   3   3  XANGMOM   0.5100   RESID, RESID/X:  0.3100773D-02  0.1411480D-02
-ITER, IVEC:   4   1  XANGMOM   0.0000   RESID, RESID/X:  0.2968532D-06  0.6479684D-06
-ITER, IVEC:   4   2  XANGMOM   0.5050   RESID, RESID/X:  0.8931204D-04  0.4267641D-04
-ITER, IVEC:   4   3  XANGMOM   0.5100   RESID, RESID/X:  0.1173196D-03  0.5340420D-04
+ITER, IVEC:   1   1  XANGMOM   0.0000   RESID, RESID/X:  0.3620158D-01  0.7906846D-01
+ITER, IVEC:   1   2  XANGMOM   0.5050   RESID, RESID/X:  0.7135448D+00  0.3798223D+00
+ITER, IVEC:   1   3  XANGMOM   0.5100   RESID, RESID/X:  0.1138701D+01  0.5274064D+00
+ITER, IVEC:   2   1  XANGMOM   0.0000   RESID, RESID/X:  0.4769779D-03  0.1041145D-02
+ITER, IVEC:   2   2  XANGMOM   0.5050   RESID, RESID/X:  0.5800222D-01  0.2772317D-01
+ITER, IVEC:   2   3  XANGMOM   0.5100   RESID, RESID/X:  0.7732691D-01  0.3520111D-01
+ITER, IVEC:   3   1  XANGMOM   0.0000   RESID, RESID/X:  0.1399288D-04  0.3054355D-04
+ITER, IVEC:   3   2  XANGMOM   0.5050   RESID, RESID/X:  0.2257726D-02  0.1078823D-02
+ITER, IVEC:   3   3  XANGMOM   0.5100   RESID, RESID/X:  0.3100814D-02  0.1411500D-02
+ITER, IVEC:   4   1  XANGMOM   0.0000   RESID, RESID/X:  0.2968583D-06  0.6479798D-06
+ITER, IVEC:   4   2  XANGMOM   0.5050   RESID, RESID/X:  0.8931215D-04  0.4267655D-04
+ITER, IVEC:   4   3  XANGMOM   0.5100   RESID, RESID/X:  0.1173209D-03  0.5340482D-04
 ITER, IVEC:  5  1  XANGMOM   0.0000 RESID, RESID/X:TT
-ITER, IVEC:   5   2  XANGMOM   0.5050   RESID, RESID/X:  0.2640819D-05  0.1261875D-05
-ITER, IVEC:   5   3  XANGMOM   0.5100   RESID, RESID/X:  0.3481076D-05  0.1584595D-05
+ITER, IVEC:   5   2  XANGMOM   0.5050   RESID, RESID/X:  0.2640835D-05  0.1261886D-05
+ITER, IVEC:   5   3  XANGMOM   0.5100   RESID, RESID/X:  0.3481132D-05  0.1584622D-05
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  24  24
 
@@ -931,12 +942,12 @@ ITER, IVEC:   5   3  XANGMOM   0.5100   RESID, RESID/X:  0.3481076D-05  0.158459
  ABSLRS -- for operator YDIPLEN  of symmetry 3 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
  Use ABS_READIN_RED           24          24
-ITER, IVEC:   1   1  YDIPLEN   0.0000   RESID, RESID/X:  0.2635673D-01  0.6973707D-01
-ITER, IVEC:   1   2  YDIPLEN   0.5050   RESID, RESID/X:  0.4925803D-01  0.1562056D-01
-ITER, IVEC:   1   3  YDIPLEN   0.5100   RESID, RESID/X:  0.4977615D-01  0.1510856D-01
-ITER, IVEC:   2   1  YDIPLEN   0.0000   RESID, RESID/X:  0.6463577D-14  0.1710189D-13
-ITER, IVEC:   2   2  YDIPLEN   0.5050   RESID, RESID/X:  0.2008387D-12  0.6368937D-13
-ITER, IVEC:   2   3  YDIPLEN   0.5100   RESID, RESID/X:  0.2532956D-12  0.7688287D-13
+ITER, IVEC:   1   1  YDIPLEN   0.0000   RESID, RESID/X:  0.2635571D-01  0.6973437D-01
+ITER, IVEC:   1   2  YDIPLEN   0.5050   RESID, RESID/X:  0.4925720D-01  0.1562035D-01
+ITER, IVEC:   1   3  YDIPLEN   0.5100   RESID, RESID/X:  0.4977532D-01  0.1510834D-01
+ITER, IVEC:   2   1  YDIPLEN   0.0000   RESID, RESID/X:  0.3614950D-14  0.9564749D-14
+ITER, IVEC:   2   2  YDIPLEN   0.5050   RESID, RESID/X:  0.2523557D-12  0.8002654D-13
+ITER, IVEC:   2   3  YDIPLEN   0.5100   RESID, RESID/X:  0.3184278D-12  0.9665264D-13
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  28  28
 
@@ -950,18 +961,18 @@ ITER, IVEC:   2   3  YDIPLEN   0.5100   RESID, RESID/X:  0.2532956D-12  0.768828
  ABSLRS -- Solving linear response equations( E[2] - {w-iW}*S[2] ) N = B[1]  
  ABSLRS -- for operator ZANGMOM  of symmetry 4 at frequencies:
  ABSLRS --  0.00000000  0.50500000  0.51000000
-ITER, IVEC:   1   1  ZANGMOM   0.0000   RESID, RESID/X:  0.3515501D-01  0.5972656D-01
-ITER, IVEC:   1   2  ZANGMOM   0.5050   RESID, RESID/X:  0.5724105D-01  0.7649219D-01
-ITER, IVEC:   1   3  ZANGMOM   0.5100   RESID, RESID/X:  0.5571100D-01  0.7511315D-01
-ITER, IVEC:   2   1  ZANGMOM   0.0000   RESID, RESID/X:  0.4501325D-03  0.7640239D-03
-ITER, IVEC:   2   2  ZANGMOM   0.5050   RESID, RESID/X:  0.2950204D-02  0.3951995D-02
-ITER, IVEC:   2   3  ZANGMOM   0.5100   RESID, RESID/X:  0.2891049D-02  0.3906755D-02
-ITER, IVEC:   3   1  ZANGMOM   0.0000   RESID, RESID/X:  0.1093894D-06  0.1856701D-06
-ITER, IVEC:   3   2  ZANGMOM   0.5050   RESID, RESID/X:  0.1696102D-04  0.2272046D-04
-ITER, IVEC:   3   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1665445D-04  0.2250566D-04
+ITER, IVEC:   1   1  ZANGMOM   0.0000   RESID, RESID/X:  0.3515509D-01  0.5972671D-01
+ITER, IVEC:   1   2  ZANGMOM   0.5050   RESID, RESID/X:  0.5724114D-01  0.7649231D-01
+ITER, IVEC:   1   3  ZANGMOM   0.5100   RESID, RESID/X:  0.5571109D-01  0.7511327D-01
+ITER, IVEC:   2   1  ZANGMOM   0.0000   RESID, RESID/X:  0.4501349D-03  0.7640280D-03
+ITER, IVEC:   2   2  ZANGMOM   0.5050   RESID, RESID/X:  0.2950221D-02  0.3952017D-02
+ITER, IVEC:   2   3  ZANGMOM   0.5100   RESID, RESID/X:  0.2891065D-02  0.3906776D-02
+ITER, IVEC:   3   1  ZANGMOM   0.0000   RESID, RESID/X:  0.1093890D-06  0.1856694D-06
+ITER, IVEC:   3   2  ZANGMOM   0.5050   RESID, RESID/X:  0.1696106D-04  0.2272051D-04
+ITER, IVEC:   3   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1665448D-04  0.2250570D-04
 ITER, IVEC:  4  1  ZANGMOM   0.0000 RESID, RESID/X:TT
-ITER, IVEC:   4   2  ZANGMOM   0.5050   RESID, RESID/X:  0.1560989D-14  0.2091053D-14
-ITER, IVEC:   4   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1525413D-14  0.2061336D-14
+ITER, IVEC:   4   2  ZANGMOM   0.5050   RESID, RESID/X:  0.1188004D-14  0.1591413D-14
+ITER, IVEC:   4   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1240144D-14  0.1675844D-14
 
  *** ABSCTL: REQUESTED   3 SOLUTION VECTORS CONVERGED IN RED SPACES OF  15  15
 
@@ -975,99 +986,99 @@ ITER, IVEC:   4   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1525413D-14  0.206133
  A operator, symmetry, frequency:   ZDIPLEN    1 -0.505000
  B operator, symmetry, frequency:   XDIPLEN    2  0.505000
  C operator, symmetry, frequency:   YANGMOM    2  0.000000
- Na X[2] Ny          -7.423309       0.293012      -7.423309       0.293012
- Nx A[2] Ny           1.883615      -0.044893      -5.539694       0.248119
+ Na X[2] Ny          -7.423319       0.293013      -7.423319       0.293013
+ Nx A[2] Ny           1.883403      -0.044893      -5.539917       0.248120
  DFT-QR computed in a linearly-scaling fashion.
 
- Na T[3] NbNc         0.010388       0.021105      -6.067053       0.237757
+ Na T[3] NbNc         0.010388       0.021105      -6.067276       0.237758
 
  Quadratic response function no   2 of  12.
  A operator, symmetry, frequency:   ZDIPLEN    1 -0.505000
  B operator, symmetry, frequency:   YDIPLEN    3  0.505000
  C operator, symmetry, frequency:   XANGMOM    3  0.000000
- Na X[2] Ny        -485.527573    -611.086932    -485.527573    -611.086932
- Nx A[2] Ny          10.538886       4.799061    -474.988687    -606.287870
- Na T[3] NbNc         0.995927       1.359906    -474.181762    -604.970677
+ Na X[2] Ny        -485.529370    -611.079295    -485.529370    -611.079295
+ Nx A[2] Ny          10.603382       4.799049    -474.925988    -606.280247
+ Na T[3] NbNc         0.995917       1.359895    -474.119056    -604.963064
 
  Quadratic response function no   3 of  12.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.505000
  B operator, symmetry, frequency:   ZDIPLEN    1  0.505000
  C operator, symmetry, frequency:   YANGMOM    2  0.000000
- Na X[2] Ny           4.834440      -0.249392       4.834440      -0.249392
- Nx A[2] Ny           0.704250      -0.053675       5.538689      -0.303067
- Na T[3] NbNc         0.031555       0.040889       6.066222      -0.272478
+ Na X[2] Ny           4.834447      -0.249392       4.834447      -0.249392
+ Nx A[2] Ny           0.704131      -0.053675       5.538578      -0.303067
+ Na T[3] NbNc         0.031555       0.040889       6.066111      -0.272479
 
  Quadratic response function no   4 of  12.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.505000
  B operator, symmetry, frequency:   YDIPLEN    3  0.505000
  C operator, symmetry, frequency:   ZANGMOM    4  0.000000
- Na X[2] Ny         137.110283     155.783883     137.110283     155.783883
- Nx A[2] Ny          10.963105      15.176566     148.073388     170.960449
- Na T[3] NbNc        -4.579517      -4.715761     144.369859     166.253681
+ Na X[2] Ny         137.110723     155.781893     137.110723     155.781893
+ Nx A[2] Ny          10.995956      15.176358     148.106679     170.958251
+ Na T[3] NbNc        -4.579458      -4.715701     144.403138     166.251542
 
  Quadratic response function no   5 of  12.
  A operator, symmetry, frequency:   YDIPLEN    3 -0.505000
  B operator, symmetry, frequency:   ZDIPLEN    1  0.505000
  C operator, symmetry, frequency:   XANGMOM    3  0.000000
- Na X[2] Ny         466.828973     605.871171     466.828973     605.871171
- Nx A[2] Ny           8.352494      -0.063339     475.181467     605.807831
- Na T[3] NbNc        -0.061795       0.005514     474.165401     604.712768
+ Na X[2] Ny         466.830695     605.863546     466.830695     605.863546
+ Nx A[2] Ny           8.352327      -0.063339     475.183023     605.800206
+ Na T[3] NbNc        -0.061795       0.005514     474.166976     604.705180
 
  Quadratic response function no   6 of  12.
  A operator, symmetry, frequency:   YDIPLEN    3 -0.505000
  B operator, symmetry, frequency:   XDIPLEN    2  0.505000
  C operator, symmetry, frequency:   ZANGMOM    4  0.000000
- Na X[2] Ny        -145.118432    -171.063988    -145.118432    -171.063988
- Nx A[2] Ny          -2.855668       0.065964    -147.974100    -170.998024
- Na T[3] NbNc         0.027042       0.016563    -144.198486    -166.365891
+ Na X[2] Ny        -145.118902    -171.061790    -145.118902    -171.061790
+ Nx A[2] Ny          -2.855395       0.065964    -147.974298    -170.995826
+ Na T[3] NbNc         0.027042       0.016562    -144.198669    -166.363749
 
  Quadratic response function no   7 of  12.
  A operator, symmetry, frequency:   ZDIPLEN    1 -0.510000
  B operator, symmetry, frequency:   XDIPLEN    2  0.510000
  C operator, symmetry, frequency:   YANGMOM    2  0.000000
- Na X[2] Ny          -7.105147       0.265677      -7.105147       0.265677
- Nx A[2] Ny           1.852294      -0.043152      -5.252853       0.222525
- Na T[3] NbNc         0.010249       0.020907      -5.803067       0.211206
+ Na X[2] Ny          -7.105156       0.265678      -7.105156       0.265678
+ Nx A[2] Ny           1.852090      -0.043152      -5.253067       0.222526
+ Na T[3] NbNc         0.010249       0.020907      -5.803280       0.211207
 
  Quadratic response function no   8 of  12.
  A operator, symmetry, frequency:   ZDIPLEN    1 -0.510000
  B operator, symmetry, frequency:   YDIPLEN    3  0.510000
  C operator, symmetry, frequency:   XANGMOM    3  0.000000
- Na X[2] Ny         278.773399    -950.421225     278.773399    -950.421225
- Nx A[2] Ny           3.457446       8.005444     282.230845    -942.415781
- Na T[3] NbNc         1.605053       1.997979     281.615533    -940.599063
+ Na X[2] Ny         278.762733    -950.428161     278.762733    -950.428161
+ Nx A[2] Ny           3.559140       8.005589     282.321872    -942.422572
+ Na T[3] NbNc         1.605067       1.997999     281.706577    -940.605834
 
  Quadratic response function no   9 of  12.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.510000
  B operator, symmetry, frequency:   ZDIPLEN    1  0.510000
  C operator, symmetry, frequency:   YANGMOM    2  0.000000
- Na X[2] Ny           4.593179      -0.223139       4.593179      -0.223139
- Nx A[2] Ny           0.658733      -0.052913       5.251912      -0.276052
- Na T[3] NbNc         0.032300       0.041544       5.802274      -0.244684
+ Na X[2] Ny           4.593186      -0.223140       4.593186      -0.223140
+ Nx A[2] Ny           0.658626      -0.052913       5.251812      -0.276053
+ Na T[3] NbNc         0.032300       0.041544       5.802173      -0.244685
 
  Quadratic response function no  10 of  12.
  A operator, symmetry, frequency:   XDIPLEN    2 -0.510000
  B operator, symmetry, frequency:   YDIPLEN    3  0.510000
  C operator, symmetry, frequency:   ZANGMOM    4  0.000000
- Na X[2] Ny         -58.398827     242.551689     -58.398827     242.551689
- Nx A[2] Ny          -7.842334      23.651608     -66.241161     266.203297
- Na T[3] NbNc        -7.157325      -7.307257     -64.141315     258.964380
+ Na X[2] Ny         -58.396077     242.553401     -58.396077     242.553401
+ Nx A[2] Ny          -7.791272      23.651749     -66.187349     266.205150
+ Na T[3] NbNc        -7.157375      -7.307308     -64.087584     258.966181
 
  Quadratic response function no  11 of  12.
  A operator, symmetry, frequency:   YDIPLEN    3 -0.510000
  B operator, symmetry, frequency:   ZDIPLEN    1  0.510000
  C operator, symmetry, frequency:   XANGMOM    3  0.000000
- Na X[2] Ny        -290.303779     942.316071    -290.303779     942.316071
- Nx A[2] Ny           8.377613      -0.039473    -281.926166     942.276599
- Na T[3] NbNc         0.018517      -0.088683    -281.636289     940.419889
+ Na X[2] Ny        -290.293191     942.322858    -290.293191     942.322858
+ Nx A[2] Ny           8.377558      -0.039473    -281.915633     942.283385
+ Na T[3] NbNc         0.018516      -0.088684    -281.625784     940.426698
 
  Quadratic response function no  12 of  12.
  A operator, symmetry, frequency:   YDIPLEN    3 -0.510000
  B operator, symmetry, frequency:   XDIPLEN    2  0.510000
  C operator, symmetry, frequency:   ZANGMOM    4  0.000000
- Na X[2] Ny          69.203400    -266.144914      69.203400    -266.144914
- Nx A[2] Ny          -2.809088       0.063464      66.394312    -266.081449
- Na T[3] NbNc        -0.012144       0.041771      64.406850    -258.826129
+ Na X[2] Ny          69.200377    -266.146768      69.200377    -266.146768
+ Nx A[2] Ny          -2.808828       0.063464      66.391550    -266.083304
+ Na T[3] NbNc        -0.012143       0.041771      64.404168    -258.827929
 
 
       **********************************************************************
@@ -1084,32 +1095,32 @@ ITER, IVEC:   4   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1525413D-14  0.206133
  No    A-oper    B-oper   Frequency       Real part       Imag part
  ------------------------------------------------------------------
 
-  1   XDIPLEN   XDIPLEN    0.000000        3.170762       -0.000000
+  1   XDIPLEN   XDIPLEN    0.000000        3.170762        0.000000
   2   YDIPLEN   YDIPLEN    0.000000        7.464412        0.000000
-  3   ZDIPLEN   ZDIPLEN    0.000000        5.473075        0.000000
+  3   ZDIPLEN   ZDIPLEN    0.000000        5.473077        0.000000
   4   XDIPLEN   YDIPLEN    0.000000        0.000000        0.000000
   5   XDIPLEN   ZDIPLEN    0.000000        0.000000        0.000000
   6   YDIPLEN   ZDIPLEN    0.000000        0.000000        0.000000
 
-      Averaged value       0.000000        5.369416        0.000000
+      Averaged value       0.000000        5.369417        0.000000
 
-  7   XDIPLEN   XDIPLEN    0.505000        2.281348        0.017485
-  8   YDIPLEN   YDIPLEN    0.505000       94.704605      113.102051
-  9   ZDIPLEN   ZDIPLEN    0.505000        4.022583        0.186800
+  7   XDIPLEN   XDIPLEN    0.505000        2.281347        0.017485
+  8   YDIPLEN   YDIPLEN    0.505000       94.704863      113.100555
+  9   ZDIPLEN   ZDIPLEN    0.505000        4.022578        0.186800
  10   XDIPLEN   YDIPLEN    0.505000        0.000000        0.000000
  11   XDIPLEN   ZDIPLEN    0.505000        0.000000        0.000000
  12   YDIPLEN   ZDIPLEN    0.505000        0.000000        0.000000
 
-      Averaged value       0.505000       33.669512       37.768778
+      Averaged value       0.505000       33.669596       37.768280
 
  13   XDIPLEN   XDIPLEN    0.510000        2.300400        0.017263
- 14   YDIPLEN   YDIPLEN    0.510000      -46.298750      175.830444
- 15   ZDIPLEN   ZDIPLEN    0.510000        4.229491        0.191601
+ 14   YDIPLEN   YDIPLEN    0.510000      -46.296748      175.831595
+ 15   ZDIPLEN   ZDIPLEN    0.510000        4.229486        0.191601
  16   XDIPLEN   YDIPLEN    0.510000        0.000000        0.000000
  17   XDIPLEN   ZDIPLEN    0.510000        0.000000        0.000000
  18   YDIPLEN   ZDIPLEN    0.510000        0.000000        0.000000
 
-      Averaged value       0.510000      -13.256286       58.679769
+      Averaged value       0.510000      -13.255621       58.680153
  
  ------------------------------------------------------------------
  Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
@@ -1123,36 +1134,36 @@ ITER, IVEC:   4   3  ZANGMOM   0.5100   RESID, RESID/X:  0.1525413D-14  0.206133
  No    A-oper    B-oper    C-oper    A-freq    B-freq    C-freq       Real part       Imag part
  ----------------------------------------------------------------------------------------------
  
-  1  ZDIPLEN   XDIPLEN   YANGMOM  -0.505000  0.505000  0.000000       -0.237757        6.067053
-  2  ZDIPLEN   YDIPLEN   XANGMOM  -0.505000  0.505000  0.000000      604.970677      474.181762
-  3  XDIPLEN   ZDIPLEN   YANGMOM  -0.505000  0.505000  0.000000        0.272478       -6.066222
-  4  XDIPLEN   YDIPLEN   ZANGMOM  -0.505000  0.505000  0.000000     -166.253681     -144.369859
-  5  YDIPLEN   ZDIPLEN   XANGMOM  -0.505000  0.505000  0.000000     -604.712768     -474.165401
-  6  YDIPLEN   XDIPLEN   ZANGMOM  -0.505000  0.505000  0.000000      166.365891      144.198486
-     Orientational average        -0.505000  0.505000  0.000000     1542.813253     1224.782234
+  1  ZDIPLEN   XDIPLEN   YANGMOM  -0.505000  0.505000  0.000000       -0.237758        6.067276
+  2  ZDIPLEN   YDIPLEN   XANGMOM  -0.505000  0.505000  0.000000      604.963064      474.119056
+  3  XDIPLEN   ZDIPLEN   YANGMOM  -0.505000  0.505000  0.000000        0.272479       -6.066111
+  4  XDIPLEN   YDIPLEN   ZANGMOM  -0.505000  0.505000  0.000000     -166.251542     -144.403138
+  5  YDIPLEN   ZDIPLEN   XANGMOM  -0.505000  0.505000  0.000000     -604.705180     -474.166976
+  6  YDIPLEN   XDIPLEN   ZANGMOM  -0.505000  0.505000  0.000000      166.363749      144.198669
+     Orientational average        -0.505000  0.505000  0.000000     1542.793771     1224.754453
  
-  7  ZDIPLEN   XDIPLEN   YANGMOM  -0.510000  0.510000  0.000000       -0.211206        5.803067
-  8  ZDIPLEN   YDIPLEN   XANGMOM  -0.510000  0.510000  0.000000      940.599063     -281.615533
-  9  XDIPLEN   ZDIPLEN   YANGMOM  -0.510000  0.510000  0.000000        0.244684       -5.802274
- 10  XDIPLEN   YDIPLEN   ZANGMOM  -0.510000  0.510000  0.000000     -258.964380       64.141315
- 11  YDIPLEN   ZDIPLEN   XANGMOM  -0.510000  0.510000  0.000000     -940.419889      281.636289
- 12  YDIPLEN   XDIPLEN   ZANGMOM  -0.510000  0.510000  0.000000      258.826129      -64.406850
-     Orientational average        -0.510000  0.510000  0.000000     2399.265351     -703.405328
+  7  ZDIPLEN   XDIPLEN   YANGMOM  -0.510000  0.510000  0.000000       -0.211207        5.803280
+  8  ZDIPLEN   YDIPLEN   XANGMOM  -0.510000  0.510000  0.000000      940.605834     -281.706577
+  9  XDIPLEN   ZDIPLEN   YANGMOM  -0.510000  0.510000  0.000000        0.244685       -5.802173
+ 10  XDIPLEN   YDIPLEN   ZANGMOM  -0.510000  0.510000  0.000000     -258.966181       64.087584
+ 11  YDIPLEN   ZDIPLEN   XANGMOM  -0.510000  0.510000  0.000000     -940.426698      281.625784
+ 12  YDIPLEN   XDIPLEN   ZANGMOM  -0.510000  0.510000  0.000000      258.827929      -64.404168
+     Orientational average        -0.510000  0.510000  0.000000     2399.282534     -703.429567
  
  ----------------------------------------------------------------------------------------------
  Damping parameter equals  0.004556 au = 0.1240 eV =  999.9 cm-1
 
- >>>> Total CPU  time used in RESPONSE:  39.13 seconds
- >>>> Total wall time used in RESPONSE:  42.15 seconds
+ >>>> Total CPU  time used in RESPONSE:  32.24 seconds
+ >>>> Total wall time used in RESPONSE:  33.40 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  41.23 seconds
- >>>> Total wall time used in DALTON:  45.46 seconds
+ >>>> Total CPU  time used in DALTON:  34.03 seconds
+ >>>> Total wall time used in DALTON:  36.23 seconds
 
  
-     Date and time (Linux)  : Mon Oct 21 15:23:19 2013
-     Host name              : c10-6.local                             
+     Date and time (Linux)  : Mon May 26 14:47:16 2014
+     Host name              : stallo-1.local                          
