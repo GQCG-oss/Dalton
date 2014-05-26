@@ -354,8 +354,9 @@ add_dalton_test(pesoppa_excit "dalton;peqm;soppa;short")
 endif()
 
 if(ENABLE_QFITLIB)
-add_dalton_runtest(qfit_hf_charges   "dalton;short;qfit;parallel;")
-add_dalton_runtest(qfit_dft_charges  "dalton;short;qfit;parallel;")
+add_dalton_runtest(qfit_hf_charges              "dalton;short;qfit;parallel;")
+add_dalton_runtest(qfit_dft_charges             "dalton;short;qfit;parallel;")
+add_dalton_runtest(qfit_dft_transition_charges  "dalton;short;qfit;parallel;")
 endif()
 
 add_dalton_test(geoopt_cartmin                "dalton;medium")
