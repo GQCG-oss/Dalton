@@ -59,6 +59,7 @@
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
   Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -129,14 +130,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Mon May 26 12:10:04 2014
+     Date and time (Linux)  : Mon May 26 15:12:15 2014
      Host name              : sparta                                  
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/cstein/Development/fortran/dalton-clean/DALTON/test/qfit_dft_transition_charges
-   2) /home/cstein/Development/fortran/dalton-clean/build_master_gcc/basis
+   1) /home/cstein/Development/fortran/dalton-clean/build_master_gcc_noblas_nolapack/test/qfit_dft_transition_charges
+   2) /home/cstein/Development/fortran/dalton-clean/build_master_gcc_noblas_nolapack/basis
 
 
 Compilation information
@@ -155,13 +156,9 @@ Compilation information
  C compiler version       | gcc (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
  C++ compiler             | /usr/bin/g++
  C++ compiler version     | g++ (Ubuntu/Linaro 4.6.3-1ubuntu5) 4.6.3
- BLAS                     | /usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-b
-                          | ase/libcblas.so;/usr/lib/atlas-base/libatlas.so
- LAPACK                   | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-bas
-                          | e/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 78c070488faca38d59c5a6ca913ecde1d0905a5e
- Configuration time       | 2014-05-23 08:03:54.359037
+ Last Git revision        | 00db9acd3576d3d11485f9435dc6f47f34adbe45
+ Configuration time       | 2014-05-26 14:00:26.758144
 
 
    Content of the .dal input file
@@ -248,7 +245,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/cstein/Development/fortran/dalton-clean/build_master_gcc/basis/STO-3G"
+     "/home/cstein/Development/fortran/dalton-clean/build_master_gcc_noblas_nolapack/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -256,7 +253,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/cstein/Development/fortran/dalton-clean/build_master_gcc/basis/STO-3G"
+     "/home/cstein/Development/fortran/dalton-clean/build_master_gcc_noblas_nolapack/basis/STO-3G"
 
 
                          SYMGRP: Point group information
@@ -426,7 +423,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
  **********************************************************************
 
  
-     Date and time (Linux)  : Mon May 26 12:10:04 2014
+     Date and time (Linux)  : Mon May 26 15:12:15 2014
      Host name              : sparta                                  
 
  Title lines from ".mol" input file:
@@ -502,37 +499,37 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Iter      Total energy        Error norm    Delta(E)  DIIS dim.
  -----------------------------------------------------------------------------
-   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  4.00D-03  5.00D-03
+   1  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -5    1    F  0.00D+00  2.00D-03
       K-S energy, electrons, error :     -7.634360493106  10.0000003014    3.01D-07
 @  1    -75.2140113175        7.34684D-01   -7.52D+01    1
       Virial theorem: -V/T =      2.007892
 @      MULPOP O      -0.45; H       0.22; H       0.23; 
  -----------------------------------------------------------------------------
-   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  4.00D-03  5.00D-03
+   2  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -6    2    F  0.00D+00  2.00D-03
       K-S energy, electrons, error :     -7.611976712291  10.0000002802    2.80D-07
 @  2    -75.2529572494        1.01291D-01   -3.89D-02    2
       Virial theorem: -V/T =      2.008970
 @      MULPOP O      -0.37; H       0.19; H       0.18; 
  -----------------------------------------------------------------------------
-   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  4.00D-03  5.00D-03
+   3  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    3    F  4.00D-03  2.00D-03
       K-S energy, electrons, error :     -7.631570486320  10.0000002893    2.89D-07
 @  3    -75.2534941214        5.15297D-02   -5.37D-04    3
       Virial theorem: -V/T =      2.006987
 @      MULPOP O      -0.45; H       0.23; H       0.22; 
  -----------------------------------------------------------------------------
-   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  4.00D-03  5.00D-03
+   4  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -7    4    F  4.00D-03  2.00D-03
       K-S energy, electrons, error :     -7.624618616385  10.0000002862    2.86D-07
 @  4    -75.2537052702        1.71109D-03   -2.11D-04    4
       Virial theorem: -V/T =      2.007647
 @      MULPOP O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  4.00D-03  5.00D-03
+   5  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    5    F  0.00D+00  2.00D-03
       K-S energy, electrons, error :     -7.624812469434  10.0000002863    2.86D-07
 @  5    -75.2537055126        8.99842D-05   -2.42D-07    5
       Virial theorem: -V/T =      2.007624
 @      MULPOP O      -0.42; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  8.00D-03  6.00D-03
+   6  Screening settings (-IFTHRS, JTDIIS, DIFDEN, times)   -9    6    F  4.00D-03  2.00D-03
       K-S energy, electrons, error :     -7.624818042240  10.0000002863    2.86D-07
 @  6    -75.2537055134        8.87533D-06   -8.28D-10    6
 
@@ -560,7 +557,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       2.540       2.549
+ >>>> CPU and wall time for SCF :       0.936       0.940
 
 
                        .-----------------------------------.
@@ -579,7 +576,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @    Final gradient norm:           0.000008875328
 
  
-     Date and time (Linux)  : Mon May 26 12:10:07 2014
+     Date and time (Linux)  : Mon May 26 15:12:16 2014
      Host name              : sparta                                  
 
 
@@ -590,7 +587,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
           Generating surface using  4 layers. Each layer is
           scaled by 1.4 plus  0.2 for each successive layer.
 
-          Point density is 0.28 au^-2.
+          Point density is  0.28 au^-2.
 
           Constraining partial charges to reproduce the
           total molecular charge.
@@ -622,15 +619,15 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @ H      0.3547
 @ H      0.3385
 
-  Sum = total charge:   0.0000
+  Sum = total charge:  -0.0000
 
 
 
- >>>> Total CPU  time used in SIRIUS :      2.61 seconds
- >>>> Total wall time used in SIRIUS :      2.62 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.96 seconds
+ >>>> Total wall time used in SIRIUS :      0.96 seconds
 
  
-     Date and time (Linux)  : Mon May 26 12:10:07 2014
+     Date and time (Linux)  : Mon May 26 15:12:16 2014
      Host name              : sparta                                  
 
 
@@ -669,6 +666,9 @@ H            -0.3600000000    0.8600000000    0.0000000000
   Linear Response single residue calculation
  -------------------------------------------
 
+
+    3 input options by user.
+
  Print level                                    : IPRPP  =   2
  Maximum number of iterations for eigenval.eqs. : MAXITP =  60
  Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
@@ -683,8 +683,8 @@ H            -0.3600000000    0.8600000000    0.0000000000
                ZDIPLEN 
 
 
-   SCF energy         :      -75.253705513401371
- -- inactive part     :      -84.845175316663770
+   SCF energy         :      -75.253705513401343
+ -- inactive part     :      -84.845175316663742
  -- nuclear repulsion :        9.591469803262399
 
 
@@ -715,36 +715,48 @@ H            -0.3600000000    0.8600000000    0.0000000000
 
  Operator symmetry = 1  ( A  ); triplet =   F
 
+ rspoli: ncsim,nosim           0           4
+ rspoli: nfmat,ndmat           4           4
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree         221         417         417         417         417         420
+ rspoli: ncsim,nosim           0           2
+ rspoli: nfmat,ndmat           2           2
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree         123         221         221         221         221         224
+ rspoli: ncsim,nosim           0           2
+ rspoli: nfmat,ndmat           2           2
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree         123         221         221         221         221         224
+ rspoli: ncsim,nosim           0           1
+ rspoli: nfmat,ndmat           1           1
+ rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,                                      KDTOTAO,kfree          74         123         123         123         123         126
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
  Convergence of RSP solution vectors, threshold = 1.00D-03
  ---------------------------------------------------------------
  (dimension of paired reduced space:   18)
- RSP solution vector no.    1; norm of residual   3.92D-15
+ RSP solution vector no.    1; norm of residual   8.41D-15
  RSP solution vector no.    2; norm of residual   2.56D-05
- RSP solution vector no.    3; norm of residual   4.62D-15
+ RSP solution vector no.    3; norm of residual   2.89D-15
  RSP solution vector no.    4; norm of residual   5.64D-07
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -2.57016194E-15 *ENERGY(eV):   12.370485    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.15094446     *ENERGY(eV):   14.260650    
-@ STATE NO:    3 *TRANSITION MOMENT: -2.55413061E-16 *ENERGY(eV):   15.740674    
+@ STATE NO:    1 *TRANSITION MOMENT: -1.53580180E-16 *ENERGY(eV):   12.370485    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.15094446     *ENERGY(eV):   14.260650    
+@ STATE NO:    3 *TRANSITION MOMENT:  1.65447519E-16 *ENERGY(eV):   15.740674    
 @ STATE NO:    4 *TRANSITION MOMENT:  0.34863157     *ENERGY(eV):   18.932274    
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  4.42027281E-15 *ENERGY(eV):   12.370485    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.32238923     *ENERGY(eV):   14.260650    
-@ STATE NO:    3 *TRANSITION MOMENT: -4.12980649E-15 *ENERGY(eV):   15.740674    
+@ STATE NO:    1 *TRANSITION MOMENT:  3.00299056E-16 *ENERGY(eV):   12.370485    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.32238923     *ENERGY(eV):   14.260650    
+@ STATE NO:    3 *TRANSITION MOMENT:  7.23269022E-16 *ENERGY(eV):   15.740674    
 @ STATE NO:    4 *TRANSITION MOMENT: -0.18606357     *ENERGY(eV):   18.932274    
 
 @ Transition operator type:    ZDIPLEN 
 @ STATE NO:    1 *TRANSITION MOMENT: -0.10309836     *ENERGY(eV):   12.370485    
-@ STATE NO:    2 *TRANSITION MOMENT:  3.14982423E-16 *ENERGY(eV):   14.260650    
-@ STATE NO:    3 *TRANSITION MOMENT: -1.40611258E-02 *ENERGY(eV):   15.740674    
-@ STATE NO:    4 *TRANSITION MOMENT:  8.81307243E-17 *ENERGY(eV):   18.932274    
+@ STATE NO:    2 *TRANSITION MOMENT: -2.85539055E-17 *ENERGY(eV):   14.260650    
+@ STATE NO:    3 *TRANSITION MOMENT:  1.40611258E-02 *ENERGY(eV):   15.740674    
+@ STATE NO:    4 *TRANSITION MOMENT:  3.09975943E-19 *ENERGY(eV):   18.932274    
 
 
  **************************************************************************************
@@ -762,10 +774,10 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @ Total energy :      -74.799099     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.00200807E-30  (Transition moment : -2.57016194E-15 )
+@ Oscillator strength (LENGTH)   :  7.14850450E-33  (Transition moment : -1.53580180E-16 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.92165357E-30  (Transition moment :  4.42027281E-15 )
+@ Oscillator strength (LENGTH)   :  2.73308276E-32  (Transition moment :  3.00299056E-16 )
 
 @ Operator type:    ZDIPLEN 
 @ Oscillator strength (LENGTH)   :  3.22142730E-03  (Transition moment : -0.10309836     )
@@ -788,7 +800,7 @@ H            -0.3600000000    0.8600000000    0.0000000000
 @ H     -0.0000
 @ H      0.0000
 
-  Sum = total charge:  -0.0000
+  Sum = total charge:   0.0000
 
 
                               MO Overlap Diagnostic
@@ -825,13 +837,13 @@ Delta_R Diagnostic (Aa):     0.4834
 @ Total energy :      -74.729636     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.96034264E-03  (Transition moment :  0.15094446     )
+@ Oscillator strength (LENGTH)   :  7.96034264E-03  (Transition moment : -0.15094446     )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.63126945E-02  (Transition moment :  0.32238923     )
+@ Oscillator strength (LENGTH)   :  3.63126945E-02  (Transition moment : -0.32238923     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.46633118E-32  (Transition moment :  3.14982423E-16 )
+@ Oscillator strength (LENGTH)   :  2.84858020E-34  (Transition moment : -2.85539055E-17 )
 
 
                     Calculation of Transition Density charges
@@ -839,7 +851,7 @@ Delta_R Diagnostic (Aa):     0.4834
 
 
  Transition Dipole (x,y,z)
-         0.150944    0.322389    0.000000
+        -0.150944   -0.322389   -0.000000
 
 
                         Potential fitted charges (QFITLIB)
@@ -847,11 +859,11 @@ Delta_R Diagnostic (Aa):     0.4834
 
     Charges have been fitted to the molecular electrostatic potential.
 
-@ O     -0.3665
-@ H      0.1681
-@ H      0.1984
+@ O      0.3665
+@ H     -0.1681
+@ H     -0.1984
 
-  Sum = total charge:   0.0000
+  Sum = total charge:  -0.0000
 
 
                               MO Overlap Diagnostic
@@ -874,8 +886,8 @@ Delta_R Diagnostic (Aa):     0.5879
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      3    7  0.088920 -0.023773  0.885984  0.813930  0.012700  0.011252
-      4    6  0.700621  0.025157  0.602172  0.287995  0.456252  0.274742
+      3    7 -0.088920  0.023773  0.885984  0.813930  0.012700  0.011252
+      4    6 -0.700621 -0.025157  0.602172  0.287995  0.456252  0.274742
 
 @ Overlap diagnostic LAMBDA =    0.6114
 
@@ -889,13 +901,13 @@ Delta_R Diagnostic (Aa):     0.5879
 @ Total energy :      -74.675246     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.51575092E-32  (Transition moment : -2.55413061E-16 )
+@ Oscillator strength (LENGTH)   :  1.05560625E-32  (Transition moment :  1.65447519E-16 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  6.57719686E-30  (Transition moment : -4.12980649E-15 )
+@ Oscillator strength (LENGTH)   :  2.01734959E-31  (Transition moment :  7.23269022E-16 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.62468002E-05  (Transition moment : -1.40611258E-02 )
+@ Oscillator strength (LENGTH)   :  7.62468002E-05  (Transition moment :  1.40611258E-02 )
 
 
                     Calculation of Transition Density charges
@@ -903,7 +915,7 @@ Delta_R Diagnostic (Aa):     0.5879
 
 
  Transition Dipole (x,y,z)
-        -0.000000   -0.000000   -0.014061
+         0.000000    0.000000    0.014061
 
 
                         Potential fitted charges (QFITLIB)
@@ -911,9 +923,9 @@ Delta_R Diagnostic (Aa):     0.5879
 
     Charges have been fitted to the molecular electrostatic potential.
 
-@ O      0.0000
-@ H     -0.0000
-@ H     -0.0000
+@ O     -0.0000
+@ H      0.0000
+@ H      0.0000
 
   Sum = total charge:  -0.0000
 
@@ -938,7 +950,7 @@ Delta_R Diagnostic (Aa):     0.3345
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      5    7 -0.706807 -0.011039  0.476759  0.290973  0.484093  0.230796
+      5    7  0.706807  0.011039  0.476759  0.290973  0.484093  0.230796
 
 @ Overlap diagnostic LAMBDA =    0.4768
 
@@ -958,7 +970,7 @@ Delta_R Diagnostic (Aa):     0.3345
 @ Oscillator strength (LENGTH)   :  1.60577083E-02  (Transition moment : -0.18606357     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.60259599E-33  (Transition moment :  8.81307243E-17 )
+@ Oscillator strength (LENGTH)   :  4.45673552E-38  (Transition moment :  3.09975943E-19 )
 
 
                     Calculation of Transition Density charges
@@ -1007,19 +1019,19 @@ Delta_R Diagnostic (Aa):     0.4299
 @ Overlap diagnostic LAMBDA =    0.6771
 
 
- Time used in polarization propagator calculation is      4.78 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      1.71 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   4.78 seconds
- >>>> Total wall time used in RESPONSE:   4.79 seconds
+ >>>> Total CPU  time used in RESPONSE:   1.71 seconds
+ >>>> Total wall time used in RESPONSE:   1.71 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   7.41 seconds
- >>>> Total wall time used in DALTON:   7.43 seconds
+ >>>> Total CPU  time used in DALTON:   2.69 seconds
+ >>>> Total wall time used in DALTON:   2.69 seconds
 
  
-     Date and time (Linux)  : Mon May 26 12:10:11 2014
+     Date and time (Linux)  : Mon May 26 15:12:17 2014
      Host name              : sparta                                  
