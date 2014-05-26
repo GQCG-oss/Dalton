@@ -626,6 +626,8 @@ module pno_ccsd_module
      call mem_dealloc( tpl )
      call mem_dealloc( tmi )
 
+     call mem_dealloc( sio4 )
+
 
      !SWITCH TO MO PART
      maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
