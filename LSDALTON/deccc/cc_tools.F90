@@ -146,8 +146,8 @@ module cc_tools_module
 
       call time_start_phase(PHASE_WORK)
 
-      nor=no*(no+1)/2
-      nvr=nv*(nv+1)/2
+      nor=(no*(no+1))/2
+      nvr=(nv*(nv+1))/2
 
       !Determine the offsets in the alpha and gamma indices, which arise from
       !non uniform batch distributions, e.g. consider:
@@ -218,7 +218,8 @@ module cc_tools_module
       !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
-         &no,nv,nb,goffs,aoffs,s,wszes,lo,twork,tcomm,order=order, rest_occ_om2=rest_occ_om2,scal=scal)  
+         &no,nv,nb,goffs,aoffs,s,wszes,lo,twork,tcomm,order=order, &
+         &rest_occ_om2=rest_occ_om2,scal=scal,rest_occ_sio4=.true.)  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -227,7 +228,7 @@ module cc_tools_module
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal)
+         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,rest_occ_sio4)
       implicit none
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
@@ -267,7 +268,8 @@ module cc_tools_module
       !> size of w0
       integer(kind=8),intent(in)   :: wszes(4)
       integer,optional,intent(in)  :: order(4)
-      logical,optional, intent(in) :: rest_occ_om2
+      !restricted i<=j in the omega2 and or sio4
+      logical,optional, intent(in) :: rest_occ_om2,rest_occ_sio4
       real(realk), optional, intent(in) :: scal
       !timing information
       real(realk) :: twork,tcomm
@@ -284,11 +286,13 @@ module cc_tools_module
       real(realk),pointer   :: source(:,:),drain(:,:)
       integer(kind=ls_mpik) :: mode
       integer(kind=long)    :: o2v2
-      logical               :: rest_occ
+      logical               :: rest_o2_occ, rest_sio4_occ
 
 
-      rest_occ=.false.
-      if(present(rest_occ_om2))rest_occ = rest_occ_om2
+      rest_o2_occ   = .false.
+      rest_sio4_occ = .false.
+      if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
+      if(present(rest_occ_sio4))rest_sio4_occ = rest_occ_sio4
 
       o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
@@ -557,7 +561,7 @@ module cc_tools_module
       call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
 
-      if(.not.rest_occ)then
+      if(.not.rest_o2_occ)then
          !square up the contributions if the residual itself has no restricions
          !in the indices i and j
 
@@ -652,7 +656,7 @@ module cc_tools_module
          !transform alpha -> , order is now sigma[b a i j]
          call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
 
-         if(.not.rest_occ)then
+         if(.not.rest_o2_occ)then
             !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
             !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
             do j=no,1,-1
@@ -726,7 +730,37 @@ module cc_tools_module
       !transform gamma -> l
       call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
       !transform alpha -> a , order is now sigma [ k l i j]
-      call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,1.0E0_realk,sio4,no)
+      if(rest_sio4_occ)then
+
+         call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,1.0E0_realk,sio4,no)
+
+      else
+
+         call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,0.0E0_realk,w2,no)
+
+         do j=no,1,-1
+            do i=j,1,-1
+               pos1=1+((i+j*(j-1)/2)-1)*no*no
+               pos2=1+(i-1)*no*no+(j-1)*no*no*no
+               if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+            enddo
+         enddo
+         do j=no,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*no*no+(j-1)*no*no*no
+               pos2=1+(j-1)*no*no+(i-1)*no*no*no
+               if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+            enddo
+         enddo
+
+         do j=no,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*no*no+(j-1)*no*no*no
+               call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(no*no)/2,st)
+            enddo
+         enddo
+         sio4 = sio4 + w2(1:no**4)
+      endif
 
 
 
@@ -734,6 +768,7 @@ module cc_tools_module
       !sigma [gamma alpha i j] contributions
       if(second_trafo_step)then
          !get the order sigma [gamma i j alpha]
+
          pos2 = 1+full1*full2*nor
          if(case_sel==3.or.case_sel==4)then
             l1=fa
@@ -747,7 +782,38 @@ module cc_tools_module
          !transform gamma -> l
          call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)
          !transform alpha -> k, order is now sigma[k l i j]
-         call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,1.0E0_realk,sio4,no)
+         if(rest_sio4_occ)then
+
+            call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,1.0E0_realk,sio4,no)
+
+         else
+
+            call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,0.0E0_realk,w2,no)
+
+            do j=no,1,-1
+               do i=j,1,-1
+                  pos1=1+((i+j*(j-1)/2)-1)*no*no
+                  pos2=1+(i-1)*no*no+(j-1)*no*no*no
+                  if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+               enddo
+            enddo
+            do j=no,1,-1
+               do i=j,1,-1
+                  pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                  pos2=1+(j-1)*no*no+(i-1)*no*no*no
+                  if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+               enddo
+            enddo
+
+            do j=no,1,-1
+               do i=j,1,-1
+                  pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                  call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(no*no)/2,st)
+               enddo
+            enddo
+            sio4 = sio4 + w2(1:no**4)
+
+         endif
       endif
 
 

@@ -31,7 +31,7 @@ module pno_ccsd_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
-        &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
+        &mylsitem,fj,pno_cv,pno_S,pno_govov,nspaces,oof,vvf,ifo,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
@@ -44,22 +44,23 @@ module pno_ccsd_module
      type(decfrag),intent(in),optional :: f
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
+     type(array), intent(in) :: pno_govov(nspaces)
      !INTERNAL VARIABLES
-     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
+     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
      integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
      real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
      real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
      real(realk),pointer :: r1(:,:),r2(:,:)
-     real(realk),pointer :: gvvvv(:), gvovo(:), govov(:), goooo(:), goovv(:), gvvov(:), gooov(:)
+     real(realk),pointer :: gvvvv(:), gvovo(:), goooo(:), goovv(:), govov(:), gooov(:)
      real(realk),pointer :: xo_pair(:,:),xv_pair(:,:),yo_pair(:,:),yv_pair(:,:)
      real(realk),pointer :: Gai(:,:)
      integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
      character(ARR_MSG_LEN) :: msg
      real(realk),pointer :: d(:,:), d1(:,:), d2(:,:),t(:), t22(:), t21(:), o(:),vof(:),ovf(:)
-     real(realk),pointer :: Lvoov(:), tpl(:),tmi(:), sio4(:)
+     real(realk),pointer :: Lvoov(:), tpl(:),tmi(:)
      real(realk) :: nnorm, norm 
      integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
      integer, pointer :: s_idx(:,:,:), s_nidx(:)
@@ -70,7 +71,8 @@ module pno_ccsd_module
      integer(kind=8) :: maxsize, myload
      integer :: pair,paircontribs,paircontrib(2,2),rpd
      integer :: goffs,aoffs,tlen,tred,nor,nvr
-     type(array):: o2_dummy
+     type(array) :: o2_dummy
+     type(array), pointer :: sio4(:)
      integer :: order1(4)
      integer :: suborder(2)
      logical :: master, I_PLUS_MINUS_DONE
@@ -137,17 +139,13 @@ module pno_ccsd_module
      call mem_alloc( tpl, max_pnor*max_pnvr)
      call mem_alloc( tmi, max_pnor*max_pnvr)
 
-     call mem_alloc( sio4, max_pnor*spacemax**2)
-
      call mem_alloc( pno_t2, nspaces  )
      call mem_alloc( pno_o2, nspaces  )
-     !call mem_alloc( gvvvv,  nv**4    )
-     !call mem_alloc( gvovo,  o2v2     )
+     call mem_alloc( sio4,   nspaces  )
      call mem_alloc( govov,  o2v2     )
      call mem_alloc( goooo,  no**4    )
      call mem_alloc( goovv,  o2v2     )
      call mem_alloc( Lvoov,  o2v2     )
-     !call mem_alloc( gvvov,  nv**3*no )
      call mem_alloc( gooov,  no**3*nv )
      call mem_alloc( p_nidx, nspaces  )
      call mem_alloc( p_idx,  nspaces  , nspaces )
@@ -166,7 +164,6 @@ module pno_ccsd_module
      govov = 0.0E0_realk !remove this integral since it may be provided by MP2
      goovv = 0.0E0_realk
      Lvoov = 0.0E0_realk
-     !gvvov = 0.0E0_realk
      gooov = 0.0E0_realk
      !$OMP END WORKSHARE
 
@@ -190,7 +187,7 @@ module pno_ccsd_module
      call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
 
      !initialize the pno_residual according to the allocated pno_cv
-     call init_pno_residual(pno_cv,pno_o2,nspaces)
+     call init_pno_residual_and_sio4(pno_cv,pno_o2,sio4,nspaces)
 
 
 
@@ -343,21 +340,18 @@ module pno_ccsd_module
            !goooo
            w1 = w3
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yo,no,w2,fa,la,fg,lg,goooo)
+           !gooov
+           w1 = w3
+           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,gooov)
            !govov
            w1 = w3
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,govov)
            !goovv
            w1 = w3
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2,fa,la,fg,lg,goovv)
-           !Lvoov = 2gvoov - gvvoo
+           !Lvoov = 2gvoov - gvvoo, minus part is added outside
            w1 = w3
            call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,Lvoov)
-           !gvvov
-           !w1 = w3
-           !call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2,fa,la,fg,lg,gvvov)
-           !gooov
-           w1 = w3
-           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,gooov)
 
            w1 = w3
 
@@ -414,8 +408,20 @@ module pno_ccsd_module
               call dgemm('t','t',rpd,pnv*rpd*la,nb,p10,yo_pair(1,beg2),nb,w3,pnv*rpd*la,nul,w2,rpd)
               call dgemm('t','t',pnv,pnv*pno_comb,la,p10,xv_pair(fa,1),nb,w2,pnv*pno_comb,p10,o,pnv)
 
-              !Get G_{\alpha i}
 
+              !goooo contribution -> add to sio4 and construct the full contrib, in the mo loop afterwards
+              call dgemm('t','t',rpd,la*nb*lg,nb,p10,yo_pair(1,beg1),nb,w1,la*nb*lg,nul,w2,rpd)
+              call dgemm('t','t',pno,rpd*la*nb,lg,p10,xo_pair(fg,1),nb,w2,rpd*la*nb,nul,w3,pno)
+              call dgemm('t','t',rpd,pno*rpd*la,nb,p10,yo_pair(1,beg2),nb,w3,pno*rpd*la,nul,w2,rpd)
+              !if( PS )then
+              !   call dgemm('t','t',pno,pno*pno_comb,la,p10,xo_pair(fa,1),nb,w2,pno*pno_comb,p10,sio4(ns)%elm1,pno)
+              !else
+              !   call dgemm('t','t',pno,pno*pno_comb,la,p10,xo_pair(fa,1),nb,w2,pno*pno_comb,nul,w3,pno)
+              !   call array_reorder_4d(p10,w3,pno,rpd,pno,rpd,[1,3,2,4],p10,sio4(ns)%elm1)
+              !endif
+
+
+              !Get G_{\alpha i}
               !\alpha \beta \gamma \delta -> \delta \gamma \alpha \beta
               call array_reorder_4d(p10,w1,la,nb,lg,nb,[4,3,1,2],nul,w2)
 
@@ -456,7 +462,6 @@ module pno_ccsd_module
 
               endif
 
-              !get H_(b
            enddo
            !OMP END DO NOWAIT
 
@@ -488,6 +493,7 @@ module pno_ccsd_module
 
               !OMP CRITICAL
               if(.not.I_PLUS_MINUS_DONE)then
+                 print *,"THIS SHOULD ONLY BE PRINTED ONCE PER ALPHA GAMMA BATCH"
                  call get_I_plusminus_le(w4,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
                  call get_I_plusminus_le(w5,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
                  I_PLUS_MINUS_DONE = .true.
@@ -569,11 +575,11 @@ module pno_ccsd_module
 
 
                  if( PS )then
-                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
-                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true.)  
+                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true., rest_occ_sio4 = .true.)  
                  else
-                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4,nor,tlen,tred,fa,fg,la,lg,&
-                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])  
+                    call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])
                  endif
 
                  !call print_tensor_unfolding_with_labels(o,&
@@ -630,7 +636,6 @@ module pno_ccsd_module
      call mem_dealloc( tpl )
      call mem_dealloc( tmi )
 
-     call mem_dealloc( sio4 )
 
 
      !SWITCH TO MO PART
@@ -915,7 +920,7 @@ module pno_ccsd_module
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
-           &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+           &w1,w2,w3,w4,w5,goooo,govov,vvf,sio4(ns),nspaces)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1277,13 +1282,11 @@ module pno_ccsd_module
 
      call mem_dealloc( pno_t2 )
      call mem_dealloc( pno_o2 )
-     !call mem_dealloc( gvvvv )
-     !call mem_dealloc( gvovo )
+     call mem_dealloc( sio4  )
      call mem_dealloc( govov )
      call mem_dealloc( goooo )
      call mem_dealloc( goovv )
      call mem_dealloc( Lvoov )
-     !call mem_dealloc( gvvov )
      call mem_dealloc( gooov )
      call mem_dealloc( p_idx )
      call mem_dealloc( p_nidx )
@@ -1291,10 +1294,6 @@ module pno_ccsd_module
      call mem_dealloc( s_idx )
      call mem_dealloc( vof )
      call mem_dealloc( ovf )
-
-
-     !o2 = 0.0E0_realk
-     !o1 = 0.0E0_realk
 
   end subroutine get_ccsd_residual_pno_style
 
@@ -1937,16 +1936,17 @@ module pno_ccsd_module
 
   end subroutine get_pno_overlap_matrices
 
-  subroutine init_pno_residual(cv,o2,n)
+  subroutine init_pno_residual_and_sio4(cv,o2,sio4,n)
      implicit none
      integer, intent(in) :: n
      type(PNOSpaceInfo),intent(in) :: cv(n)
-     type(array),intent(inout) :: o2(n)
-     integer :: nn, pnv,rpd
+     type(array),intent(inout) :: o2(n),sio4(n)
+     integer :: nn, pnv,pno,rpd,pnor
 
      do nn=1,n
 
         pnv = cv(nn)%ns2
+        pno = cv(nn)%n
         rpd = cv(nn)%rpd
 
         if(cv(nn)%allocd)then
@@ -1954,9 +1954,17 @@ module pno_ccsd_module
            o2(nn) = array_init([pnv,rpd,pnv,rpd],4)
            call array_zero(o2(nn))
 
+           if( cv(nn)%PS )then
+              pnor = (pno*(pno+1))/2
+              sio4(nn) = array_init([pno,pno,pnor],3)
+           else
+              sio4(nn) = array_init([pno,pno,pno,pno],4)
+           endif
+           call array_zero(sio4(nn))
+
         endif
      enddo
-  end subroutine init_pno_residual
+  end subroutine init_pno_residual_and_sio4
 
   subroutine get_pno_amplitudes(t2,cv,pno_t2,n,no,nv)
      implicit none
@@ -2024,21 +2032,29 @@ module pno_ccsd_module
 
      call mem_dealloc(tmp1)
      call mem_dealloc(tmp2)
+
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,g,pno_g,fj,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb, n
-     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
+     real(realk), intent(in) :: t_mp2(nv,no,nv,no),g(nv,no,nv,no)
+     type(array), intent(inout) :: pno_g(n)
      type(PNOSpaceInfo),pointer :: cv(:)
      logical,intent(in) :: fj
      type(decfrag),intent(in),optional :: f
      !INTERNAL
      real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
      integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-     integer :: pno_gvvvv_size,find_pos(no,no)
+     integer :: pno_gvvvv_size,find_pos(no,no),maxocc,maxminocc
      logical :: doit
+     real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
+     integer :: tid
+#ifdef VAR_OMP
+     integer, external :: omp_get_num_threads, omp_get_tread_num
+     integer :: nt_s, nt_n
+#endif
 
      find_pos = -1
 
@@ -2077,11 +2093,45 @@ module pno_ccsd_module
      det_parameters  = 0
      pno_gvvvv_size  = 0
 
+
+     if( fj )then
+        maxocc = f%noccEOS
+        if(DECinfo%PNOtriangular)then
+           maxminocc = 1
+        else
+           maxminocc = 2
+        endif
+     else
+        if(DECinfo%PNOtriangular)then
+           maxocc    = 1
+           maxminocc = 1
+        else
+           maxocc    = 2
+           maxminocc = 2
+        endif
+     endif
+
+
+
      call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
-     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
-     !$OMP PRIVATE(counter,virteival,U,PD,doit)
+     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters&
+     !$OMP ,pno_gvvvv_size)&
+     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,pno_g,g,&
+     !$OMP maxocc,maxminocc)&
+     !$OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
      call init_threadmemvar()
+
+     tid = 0
+#ifdef VAR_OMP
+     tid = omp_get_thread_num()
+#endif
+
+     !if( tid == 0 )then
+     !   call mem_alloc(w1,2*nv*maxocc*nv*maxocc)
+     !else
+     !   call mem_alloc(w1,2*nv*maxminocc*nv*maxminocc)
+     !endif
+
 
      if(fj)then
 
@@ -2090,7 +2140,7 @@ module pno_ccsd_module
         endif
 
 
-        !$OMP SINGLE
+        !$OMP MASTER
         call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
         call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
         call mem_alloc(cv(1)%iaos,f%noccEOS)
@@ -2100,7 +2150,12 @@ module pno_ccsd_module
         cv(1)%is_FA_space  = .true.
         cv(1)%PS           = .false.
         counter            = 1
-        print *,"EOS SPACE WITH",f%noccEOS
+
+        !get pno_g for FA space
+        !call ass_D1to4(w1,p1,[cv(1)%rpd,nv,cv(1)%rpd,nv])
+        !beg2 = cv(1)%rpd*nv*cv(1)%rpd*nv + 1
+        !end2 = beg2 + 
+        !call ass_D1to4(w1(beg2:end2),p1,[cv(1)%rpd,cv(1)%ns2,cv(1)%rpd,cv(1)%ns2])
 
         calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
         det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
@@ -2111,7 +2166,7 @@ module pno_ccsd_module
               & according to the current threshold, skipping this fragment should be&
               & implemented",-1)
         endif
-        !$OMP END SINGLE
+        !$OMP END MASTER
 
         !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doi :do i = 1, no
@@ -2222,6 +2277,8 @@ module pno_ccsd_module
         enddo doiful
         !$OMP END DO NOWAIT
      endif
+
+     !call mem_dealloc(w1)
 
      call collect_thread_memory()
      !$OMP END PARALLEL
@@ -2411,11 +2468,11 @@ module pno_ccsd_module
 
 
   subroutine get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o2_space,&
-        &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+        &w1,w2,w3,w4,w5,goooo,govov,vvf,sio4,nspaces)
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_t2(nspaces)
+     type(array), intent(in) :: pno_t2(nspaces),sio4
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
      real(realk),intent(in) :: goooo(:),govov(:),vvf(:,:)
