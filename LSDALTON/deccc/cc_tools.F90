@@ -839,7 +839,6 @@ module cc_tools_module
 #ifdef VAR_OMP
       omp_level = omp_get_level()
 #endif
-      print *,"OMP LEVEL",omp_level
       bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
       !bs=5
       !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk
