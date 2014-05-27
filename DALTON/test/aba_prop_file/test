@@ -9,9 +9,13 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'TEST STRING',
+f.add(string = 'Final HF energy:',
+      rel_tolerance = 1.0e-12)
+
+f.add(from_string = 'SCF/DFT    properties :',
+      to_string = 'THE_END',
       rel_tolerance = 1.0e-7)
 
-test.run(['aba_prop_file.dal'], ['tmp.mol'], {'out': f})
+test.run(['aba_prop_file.dal'], ['CH2O_STO-3G.mol'], {'out': f})
 
 sys.exit(test.return_code)
