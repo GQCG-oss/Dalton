@@ -609,12 +609,15 @@ module cc_tools_module
 #endif
             endif
          else if(s==2)then
-            call time_start_phase(PHASE_COMM, at=twork)
 #ifdef VAR_MPI
             if( lock_outside )call arr_lock_wins(omega,'s',mode)
-#endif
-            call array_add(omega, scaleitby, w2,wrk=w3,iwrk=wszes(4), order = order)
+            !$OMP WORKSHARE
+            w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+            !$OMP END WORKSHARE
+            call time_start_phase(PHASE_COMM, at=twork)
+            call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
             call time_start_phase(PHASE_WORK, at=tcomm)
+#endif
          endif
       else
 #ifdef VAR_LSDEBUG
@@ -699,8 +702,11 @@ module cc_tools_module
 #endif
                endif
             else if(s==2)then
+               !$OMP WORKSHARE
+               w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
+               !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call array_add(omega,scaleitby,w2,wrk=w3,iwrk=wszes(4), order = order)
+               call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
                call time_start_phase(PHASE_WORK, at=tcomm)
             endif
          else
@@ -898,13 +904,13 @@ module cc_tools_module
       real(realk) ::chk,chk2,el
       real(realk),pointer :: trick(:,:,:)
       logical :: modb
-#ifdef VAR_OMP
-      integer, external :: omp_get_level
-#endif
+!#ifdef VAR_OMP
+!      integer, external :: omp_get_level
+!#endif
       omp_level = 0
-#ifdef VAR_OMP
-      omp_level = omp_get_level()
-#endif
+!#ifdef VAR_OMP
+!      omp_level = omp_get_level()
+!#endif
       bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
       !bs=5
       !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk
