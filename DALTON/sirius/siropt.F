@@ -2938,16 +2938,14 @@ C Write qm/mm solvent part of the Fock matrix to interface file
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
          KPEFCK  = KWRK1
-         KEPE  = KMATMO + NNORBX
+         KEPE  = KPEFCK + NNORBX
          KWRK2 = KEPE + 1
-         LWRK2  = LFREE  - KWRK2 + 1
-
-         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-PEQM',-KWRK2,LFREE)
-
-         CALL PE_FCKMO(CMO, WRK(KPEFCK), WRK(KEPE), DV, WRK(KWRK2),
-     &                 LWRK2)
+         LWRK2  = LFREE - KWRK2 + 1
+         IF (LWRK2 .LT. 0) CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+         CALL PE_FCKMO(CMO, WRK(KPEFCK), WRK(KEPE), DV,
+     &                 WRK(KWRK2), LWRK2)
          WRITE (LUSIFC) LAB123, TABLE(11)
-         CALL WRITT(LUSIFC, MMORBT, WRK(KPEFCK))
+         CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
 #endif
       END IF
 C
