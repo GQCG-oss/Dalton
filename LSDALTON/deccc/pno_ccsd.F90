@@ -520,7 +520,7 @@ module pno_ccsd_module
 
                  o   => pno_o2(ns)%elm1
 
-                 nor=pno*(pno+1)/2
+                 nor=rpd*(rpd+1)/2
                  nvr=pnv*(pnv+1)/2
 
                  !Get the transformation matrices
@@ -576,10 +576,10 @@ module pno_ccsd_module
 
                  if( PS )then
                     call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
-                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true., rest_occ_sio4 = .true.)  
+                       &rpd,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s4],.false.,tw,tc, rest_occ_om2=.true., rest_occ_sio4 = .true.)  
                  else
                     call combine_and_transform_sigma(pno_o2(ns),w1,w2,w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
-                       &pno,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])
+                       &rpd,pnv,nb,goffs,aoffs,4,[s1,s2,s3,s3],.false.,tw,tc,order=[1,3,2,4])
                  endif
 
                  !call print_tensor_unfolding_with_labels(o,&
@@ -1276,6 +1276,7 @@ module pno_ccsd_module
         if(  pno_cv(ns)%allocd )then
            call array_free( pno_t2(ns) )
            call array_free( pno_o2(ns) )
+           call array_free( sio4(ns)   )
         endif
 
      enddo
@@ -1955,7 +1956,7 @@ module pno_ccsd_module
            call array_zero(o2(nn))
 
            if( cv(nn)%PS )then
-              pnor = (pno*(pno+1))/2
+              pnor = (rpd*(rpd+1))/2
               sio4(nn) = array_init([pno,pno,pnor],3)
            else
               sio4(nn) = array_init([pno,pno,pno,pno],4)
