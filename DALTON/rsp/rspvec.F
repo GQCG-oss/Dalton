@@ -1719,6 +1719,8 @@ C
       DIMENSION JWOPSV(2,MAXWOP)
       CHARACTER A1*1, B1*1, CLABEL*8
       LOGICAL LYESGP
+      CHARACTER*8 ALAB, BLAB
+      DOUBLE PRECISION OMEGA_B, OMEGA_C
 C
       IPRRSP = IPRSMO
       LYESGP = .FALSE.
@@ -2084,6 +2086,14 @@ C
                         WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
+
+                        ALAB = ASMLB(MSYMA, IAOP)
+                        BLAB = BSMLB(MSYMB, IBOP)
+                        OMEGA_B = BSMFR(IBFR)
+                        OMEGA_C = EXCITA(MSYMC, IC, ISPINC+1)
+                        CALL PRINT_QR_SINGLE_RESIDUE(LUPRI,
+     &                      ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
+     &                      )
                               IF (PHOSPH .AND.
      &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
      &                        BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN
@@ -3915,4 +3925,18 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE PRINT_QR_SINGLE_RESIDUE(LU,
+     &   ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
+     &   )
+      IMPLICIT NONE
+      INTEGER LU, IC
+      CHARACTER*(*) ALAB, BLAB
+      DOUBLE PRECISION OMEGA_B, OMEGA_C, SMOM
+
+      WRITE(LU, '(/5A, F6.3, A, I1, A, F6.3, A, F10.6)')
+     &   '@    <<', TRIM(ALAB), '; ', TRIM(BLAB), ', wb =', OMEGA_B, 
+     &   ', w', IC, ' =', OMEGA_C, '>> = ', SMOM
+      END
+      
 C -- end of rspvec.F --
