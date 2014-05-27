@@ -1286,7 +1286,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 13, NTABLE = 34, D0 = 0.D0)
+      PARAMETER (NDIR = 13, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1311,7 +1311,7 @@ C
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.QFIT  '/
+     &            '.QFIT  ', '.LSLIB '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1375,7 +1375,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
-      QFIT = .FALSE.
+      QFIT   = .FALSE.
+      USE_LSLIB = .FALSE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1499,7 +1500,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134), I
+     &                131,132,133,134,135), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1628,13 +1629,22 @@ C        '.DOUGLA'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
          GOTO 100
-!        '.QFIT   '
+!        '.QFIT  '
  134     CONTINUE
 #if defined (BUILD_QFITLIB)
          QFIT = .TRUE.
 #else
          WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
          CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+#endif
+         GOTO 100
+!        '.LSLIB '
+ 135     CONTINUE
+#if defined (BUILD_LSLIB)
+         USE_LSLIB  = .TRUE.
+#else
+         WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
+         CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN

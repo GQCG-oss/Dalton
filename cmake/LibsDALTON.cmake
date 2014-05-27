@@ -28,6 +28,7 @@ if(ENABLE_GEN1INT)
 endif()
 
 if(ENABLE_LSLIB)
+    add_definitions( -DBUILD_LSLIB )
     add_dependencies(dalton lsdalton)
     set(DALTON_LIBS
         lsdalton
