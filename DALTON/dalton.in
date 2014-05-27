@@ -56,7 +56,6 @@ PUT_FILES=''
 
 SSH=ssh
 SCP=scp
-export OMP_NUM_THREADS=1
 
 #default values for options
 optd=0
@@ -389,6 +388,14 @@ if [ $optn -gt 1 ] ; then
       exit 1
    fi
 
+   if [ -z "$OMP_NUM_THREADS" ]; then
+      export OMP_NUM_THREADS=1
+      echo
+      echo 'INFO : OMP_NUM_THREADS set to 1 because it was not defined by user'
+      echo 'INFO : and the cores are probably used by MPI'
+      echo
+   fi
+
    if [ -n "$DALTON_USE_GLOBAL_SCRATCH" ] ; then
        echo 'DALTON_USE_GLOBAL_SCRATCH is defined: Dalton will use global scratch dir'
    else
@@ -449,6 +456,7 @@ if [ $optn -gt 1 ] ; then
       fi
    fi
 else
+# not using MPI
    if [ -n "$DALTON_LAUNCHER" ]; then
       $DALTON_LAUNCHER $DALTON_EXECUTABLE
       ierr=$?
