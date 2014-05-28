@@ -1862,23 +1862,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RPA )
            
-            !msg = 'Norm of gmo'
-            !call print_norm(iajb,msg)
-
-            !msg = 'Norm of t2'
-            !call print_norm(t2(iter),msg)
-
-            !msg = 'Norm of omega2'
-            !call print_norm(omega2(iter),msg)
 #ifdef VAR_MPI
            call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #else
            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif
-            !msg = 'Norm of omega2 after computations'
-            !call print_norm(omega2(iter),msg)
 
-            !call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
          end select SelectCoupledClusterModel
@@ -2030,7 +2019,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
          case(MODEL_RPA)
+
            ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+
            if(DECinfo%SOS) then
              ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
            endif
