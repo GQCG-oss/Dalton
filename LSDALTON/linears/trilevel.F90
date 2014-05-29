@@ -753,15 +753,19 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
   ENDIF
   VBASISINFO%natomtypes = BASISINFO%natomtypes
   CALL MEM_ALLOC(VBASISINFO%ATOMTYPE,BASISINFO%natomtypes)
-  VBASISINFO%ATOMTYPE = BASISINFO%ATOMTYPE  
+!  VBASISINFO%ATOMTYPE = BASISINFO%ATOMTYPE  
   maxcharge = 0
   VBASISINFO%nAtomtypes = BASISINFO%nAtomtypes
   DO J=1,BASISINFO%nAtomtypes
      icharge = BASISINFO%ATOMTYPE(J)%charge
      maxcharge = MAX(maxcharge,icharge)
      !NO need to call mem_alloc SHELL
-     VBASISINFO%ATOMTYPE(J)%nAngmom = &
-          &BASISINFO%ATOMTYPE(J)%nAngmom
+     call nullifyAtomType(VBASISINFO%ATOMTYPE(J))
+     VBASISINFO%ATOMTYPE(J)%nAngmom = BASISINFO%ATOMTYPE(J)%nAngmom
+     VBASISINFO%ATOMTYPE(J)%ToTnorb = BASISINFO%ATOMTYPE(J)%ToTnorb
+     VBASISINFO%ATOMTYPE(J)%ToTnprim = BASISINFO%ATOMTYPE(J)%ToTnprim
+     VBASISINFO%ATOMTYPE(J)%Charge = BASISINFO%ATOMTYPE(J)%Charge
+     VBASISINFO%ATOMTYPE(J)%NAME = BASISINFO%ATOMTYPE(J)%NAME
      DO K=1,BASISINFO%ATOMTYPE(J)%nAngmom
         !NO need to call mem_alloc segments
         !we transform the basis so we need to allocate it as if it is general contracted
@@ -855,15 +859,15 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
   GCtrans%nChargeindex = 0
   GCtrans%natomtypes = REGULAR%natomtypes
   CALL MEM_ALLOC(GCtrans%ATOMTYPE,REGULAR%natomtypes)
-  GCtrans%ATOMTYPE = REGULAR%ATOMTYPE  
   maxcharge = 0
   GCtrans%nAtomtypes = REGULAR%nAtomtypes
   DO J=1,REGULAR%nAtomtypes
      icharge = REGULAR%ATOMTYPE(J)%charge
      maxcharge = MAX(maxcharge,icharge)
      !NO need to call mem_alloc SHELL
-     GCtrans%ATOMTYPE(J)%nAngmom = &
-          &REGULAR%ATOMTYPE(J)%nAngmom
+     call nullifyAtomType(GCtrans%ATOMTYPE(J))
+     GCtrans%ATOMTYPE(J)%nAngmom = REGULAR%ATOMTYPE(J)%nAngmom
+     GCtrans%ATOMTYPE(J)%Charge  = REGULAR%ATOMTYPE(J)%Charge
      DO K=1,REGULAR%ATOMTYPE(J)%nAngmom
         !NO need to call mem_alloc segments
         GCtrans%ATOMTYPE(J)%SHELL(K)%nsegments = 1
@@ -875,6 +879,9 @@ INTEGER   :: I,J,K,L,nsize,icharge,maxcharge,ncol,KK
         nsize=ncol*ncol
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,nSIZE)
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%UCCelms,nSIZE)
+        do KK=1,nsize
+           GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%UCCelms(KK) = 0E0_realk
+        enddo
         CALL MEM_ALLOC(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%Exponents,ncol)
         do KK=1,ncol
            GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%Exponents(KK) = 0E0_realk

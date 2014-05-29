@@ -131,6 +131,7 @@ MOLECULE%nAtoms = nAtoms
 MOLECULE%nAtomsNPC = nAtoms
 MOLECULE%nelectrons = 0
 IF (nAtoms.GT. 0) call mem_alloc(MOLECULE%ATOM,nAtoms)
+call nullifyAtoms(MOLECULE%ATOM)
 MOLECULE%label = label
 
 MOLECULE%nbastREG = 0
@@ -149,6 +150,46 @@ MOLECULE%pointmolecule = .false.
 MOLECULE%nSubSystems = 0
 NULLIFY(MOLECULE%SubsystemLabel)
 END SUBROUTINE init_Moleculeinfo
+
+subroutine nullifyAtoms(ATOMS)
+implicit none
+type(atomitem) :: ATOMS(:)
+!
+integer :: n,i
+n=size(ATOMS)
+do i=1,n
+   ATOMS(I)%Isotope = 0 
+   ATOMS(I)%Name = '    '  
+   ATOMS(I)%Mass = 0.0E0_realk 
+   ATOMS(I)%CovRad = 0.0E0_realk 
+   ATOMS(I)%Frag  = 0.0E0_realk  
+   ATOMS(I)%CENTER(1) = 0.0E0_realk 
+   ATOMS(I)%CENTER(2) = 0.0E0_realk 
+   ATOMS(I)%CENTER(3) = 0.0E0_realk 
+   ATOMS(I)%Atomic_number = 0 
+   ATOMS(I)%Charge = 0.0E0_realk        
+   ATOMS(I)%basislabel = '         '
+   ATOMS(I)%Basisindex = 0  
+   ATOMS(I)%IDtype = 0
+   ATOMS(I)%Phantom = .FALSE.
+   ATOMS(I)%Pointcharge = .FALSE.
+   ATOMS(I)%nContOrbREG = 0
+   ATOMS(I)%nPrimOrbREG = 0
+   ATOMS(I)%nContOrbAUX = 0
+   ATOMS(I)%nPrimOrbAUX = 0
+   ATOMS(I)%nContOrbCABS = 0
+   ATOMS(I)%nPrimOrbCABS = 0
+   ATOMS(I)%nContOrbJK = 0
+   ATOMS(I)%nPrimOrbJK = 0
+   ATOMS(I)%nContOrbADMM = 0
+   ATOMS(I)%nPrimOrbADMM = 0
+   ATOMS(I)%nContOrbVAL = 0
+   ATOMS(I)%nPrimOrbVAL = 0
+   ATOMS(I)%molecularIndex = 0
+   ATOMS(I)%SubSystemIndex = 0
+enddo
+
+end subroutine nullifyAtoms
 
 !> \brief Frees the molecular info
 !> \author S. Host
@@ -191,6 +232,7 @@ integer,intent(in) :: iatom,lupri
 character(len=22) :: label
 
 call mem_alloc(atomicmolecule%ATOM,1)
+call nullifyAtoms(atomicmolecule%ATOM)
 atomicmolecule%nAtoms=1
 atomicmolecule%nAtomsNPC=1
 write(label,'(A6,I16)') 'GCATOM',iatom
@@ -230,6 +272,7 @@ character(len=22) :: label
 integer :: i
 
 call mem_alloc(molecule%ATOM,1)
+call nullifyAtoms(molecule%ATOM)
 molecule%nAtoms=1
 molecule%nAtomsNPC=1
 write(label,'(A5,17X)') 'Empty'
@@ -303,6 +346,7 @@ real(realk) :: R(3,N)
 Integer :: I,J
 
 call mem_alloc(pointmolecule%ATOM,N)
+call nullifyAtoms(pointmolecule%ATOM)
 pointmolecule%nAtoms=N
 pointmolecule%nAtomsNPC=0
 pointmolecule%label='Point                 '
@@ -456,6 +500,7 @@ newMOLECULE%nprimbastADMM = 0
 newMOLECULE%nprimbastVAL = 0
 
 call mem_alloc(newMOLECULE%ATOM,newMOLECULE%nAtoms)
+call nullifyAtoms(newmolecule%ATOM)
 do I = 1, newMOLECULE%nAtoms
    call copy_atom(oldMOLECULE,I,newMOLECULE,I,LUPRI)
 enddo
