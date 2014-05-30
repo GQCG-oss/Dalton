@@ -6387,7 +6387,9 @@ C Take out the diagonal elements
 C  /* Deck TRCHAR */
       SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
 c
+#ifdef BUILD_QFITLIB
       use qfit
+#endif
 C
 C
 C     NDIM2 = KZYVAR
@@ -6490,8 +6492,10 @@ C     Memory allocation
 
       allocate( dens( nnbasx ) )
       CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+#ifdef BUILD_QFITLIB
       call qfit_set_transition_dipole( TRDIP )
       call qfit_fit(dens)
+#endif
       deallocate( dens )
       CALL QFITRES
       RETURN
