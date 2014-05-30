@@ -1001,7 +1001,7 @@ max_red=molcfg%solver%rsp_maxred
 
     ndim = S%nrow
     thr_ld=1E-15_realk
-    allocate(lin_depend(Nb_new))
+    allocate(lin_depend(2*Nb_new))
     do i=1,2*Nb_new
       lin_depend(i)=.false.
     enddo    
