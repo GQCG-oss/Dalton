@@ -68,7 +68,7 @@ use molecular_hessian_mod, only: geohessian_set_default_config
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
-     & config_free, set_final_config_and_print, scf_purify
+     & config_free, set_final_config_and_print
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -471,7 +471,6 @@ DO
             !CASE('.DISKQUEUE') ; config%solver%cfg_arh_disk_macro = .true. !Not active - get_from_modFIFO_disk won't work!
             CASE('.DORTH');      config%diag%CFG_lshift = diag_lshift_dorth
                                  config%av%CFG_lshift = diag_lshift_dorth
-            CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
 !removed keyword - no testcase - and naturally it does not seem to work. TK
 !            CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
@@ -3779,62 +3778,6 @@ ENDIF
    write(config%lupri,*)
 
 end subroutine set_final_config_and_print
-
-!> \brief Remove Some of the Rough integral approximations if applied.
-!> \author T. Kjaergaard
-!> \date March 2010
-!>
-!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
-!> 1. Clean up, i.e. change the settings specified by the user to something
-!>    meaningful. Remember to clarify this in output! E.g. \n
-!>    'H1DIAG does not work well with only few saved microvectors for ARH. 
-!>    Resetting max. size of subspace in ARH linear equations to', <something meaningful>. \n
-!> 2. Quit, if there is no logical way to recover. \n
-!> After deciding what the final configuration should be, print selected details
-!> which may be useful for the user.
-!>
-subroutine scf_purify(lupri,ls,config,purify)
-use scf_stats
-implicit none
-!> Contains info, settings and data for entire calculation
-type(configItem), intent(inout) :: config
-!> Logical unit number for LSDALTON.OUT
-integer, intent(in)             :: lupri
-!> Object containing integral settings and molecule
-type(lsitem), intent(inout)     :: ls
-!> if keywords have been changed to obtain a pure SCF energy we need to purify
-logical                         :: purify
-purify = .FALSE.
-write(config%lupri,*) 'Determine if purification is necessary'
-write(config%lupri,*) '======================================'
-IF(ls%Setting%scheme%densfit)THEN
-   Write(Lupri,'(A)') 'Deactivating Density fitting'
-   ls%Setting%scheme%densfit = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%df_k)THEN
-   Write(Lupri,'(A)') 'Deactivating RI-K'
-   ls%Setting%scheme%df_k = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%dalink)THEN
-   Write(Lupri,'(A)') 'Deactivating DaLinK'
-   ls%Setting%scheme%dalink = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%SR_EXCHANGE)THEN
-   Write(Lupri,'(A)') 'Deactivating Short Range Exchange'
-   ls%Setting%scheme%SR_EXCHANGE = .FALSE.
-   purify = .TRUE.
-ENDIF
-IF(ls%Setting%scheme%INCREMENTAL)THEN
-   Write(Lupri,'(A)') 'Deactivating Incremental'
-   call ks_free_incremental_fock()
-   config%opt%cfg_incremental = .FALSE.
-   ls%Setting%scheme%INCREMENTAL = .FALSE.
-   purify = .TRUE.
-ENDIF
-end subroutine scf_purify
 
 SUBROUTINE TRIM_STRING(string,n,words)
   implicit none

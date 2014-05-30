@@ -46,7 +46,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
        & mat_TrAB, mat_print
-  use configuration, only: config_shutdown, config_free,scf_purify
+  use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
   use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
@@ -351,11 +351,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               write (config%lupri, *) 'WARNING: .SOEORST specified but soeosave.out does not exist'
               write (config%lupri, *) '         Making regular optimization to get matrices!'
            endif
-           if (config%opt%purescf) then
-              !We do one or 2 iterations with a fast and app. exchange/coulomb
-              !so we do not need to be converged as hard as level 4
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold*300E0_realk
-           endif
 
            IF(config%integral%LOW_ACCURACY_START)THEN
               call set_Low_accuracy_start_settings(lupri,ls,config,LAStype)
@@ -366,16 +361,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
            call scfloop(H1,F,D,S,E,ls,config)
            CALL Print_Memory_info(lupri,'after scfloop')
-
-           !Level 4
-           if (config%opt%purescf) then
-              Write(lupri,*)'Begin Level 4'
-              print*,'Begin Level 4'
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold
-              call scf_purify(lupri,ls,config,scfpurify)
-              call scfloop(H1,F,D,S,E,ls,config)
-              CALL Print_Memory_info(lupri,'after scfpurify-scfloop')
-           endif
         endif
 
         IF(config%decomp%cfg_DumpDensRestart)THEN !default true
