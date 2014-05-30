@@ -19,6 +19,15 @@ macro(add_restart_test _name _labels)
     endif()
 endmacro()
 
+macro(add_lsdalton_runtest _name _labels)
+    add_test(
+        ${_name}
+        python ${CMAKE_SOURCE_DIR}/LSDALTON/test/${_name}/test --binary-dir=${PROJECT_BINARY_DIR} --work-dir=${PROJECT_BINARY_DIR}/test/${_name} --verbose)
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
 # ALL tests here should contain the label "linsca"
 # (label "lsdalton" will be matched by "ctest -L dalton" and should
 #  therefore not be used.)
@@ -81,7 +90,7 @@ endif()
     add_lslib_test(LSlib/LSlib_cam_reg                            "linsca;lslib")
     add_lslib_test(LSlib/LSlib_cam_dfJ_aK                         "linsca;lslib")
 
-    add_lsdalton_test(linsca/linsca_energy                           "linsca;quick")
+    add_lsdalton_runtest(linsca/linsca_energy                        "linsca;quick")
     add_lsdalton_test(linsca/linsca_counterpoise                     "linsca")
     add_lsdalton_test(linsca/linsca_energy_Si                        "linsca")
     add_restart_test(linsca/linsca_energy_restart                    "linsca;quick;restart")

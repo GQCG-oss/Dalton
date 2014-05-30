@@ -35,7 +35,7 @@ class TestRun(runtest.TestRun):
                 sys.stderr.write('       try also --help\n')
                 sys.exit(-1)
 
-        launcher = '%s %s' % (launch_script, args)
+        launcher = '%s -noarch -nobackup %s' % (launch_script, args)
 
         for inp in inp_files:
             inp_no_suffix = os.path.splitext(inp)[0]
