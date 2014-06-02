@@ -1151,9 +1151,12 @@ C
 c     FLAG(16) MEANS SOLVENT CALCULATION
 C
       IF (FLAG(16) .OR. PCM .OR. QM3) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     &               XTMP,WRK(KFREE),LFREE)
+        CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
+     &              XTMP,WRK(KFREE),LFREE)
       ENDIF
+      IF (PEQM .OR. QMMM) THEN
+        CALL QUIT('ERROR: CPP cannot be used with PEQM or QMMM')
+      END IF
 c
       CALL QEXIT('ABS_LINE2')
       RETURN
