@@ -29,68 +29,59 @@ C  /* Deck zergrd */
       SUBROUTINE ZERGRD
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         GRDMOL(I) = D0
-  100 CONTINUE
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      GRDMOL(:) = 0.0D0
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
-            HESMOL(J,I) = D0
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-      END
-C  /* Deck heszer */
-      SUBROUTINE HESZER(HESS)
-#include "implicit.h"
-#include "mxcent.h"
-      DIMENSION HESS(MXCOOR,MXCOOR)
-#include "nuclei.h"
-      DO 100 I = 1, 3*NUCDEP
-         CALL DZERO(HESS(1,I),3*NUCDEP)
-  100 CONTINUE
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      HESMOL(:,:) = 0.0D0
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
 #include "implicit.h"
 #include "mxcent.h"
-      DIMENSION GRAD(MXCOOR)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
+#include "trkoor.h"
+      REAL*8 GRAD(MXCOOR)
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DO, I = 1, NCOOR
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
-  100 CONTINUE
+      END DO
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
 #include "implicit.h"
 #include "mxcent.h"
+#include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include "taymol.h"
-#include "nuclei.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DO 100 I = 1, NCOOR
+         DO 200 J = 1, NCOOR
             HESMOL(J,I) = HESMOL(J,I) + HESS(J,I)
   200    CONTINUE
   100 CONTINUE
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck prigrd */
@@ -150,25 +141,32 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
+      DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-      INTEGER BEGIN
+      INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
-      IF (KEY .EQ. 'CENTERS') THEN
+      IF (KEY .EQ. 'HESMOL') THEN
          NROW = 3*NUCDEP
+         NROW_DIM = NROW
+         ITYPE = 1
+      ELSE IF (KEY .EQ. 'CENTERS') THEN
+         NROW = 3*NUCDEP
+         NROW_DIM = MXCOOR
          ITYPE = 1
       ELSE IF (KEY .EQ. 'ATOMS') THEN
          NROW = 3*NATOMS
+         NROW_DIM = MXCOOR
          ITYPE = 1
       ELSE IF (KEY .EQ. 'SPNSPN') THEN
          NROW = 3*NUCDEP
+         NROW_DIM = MXCOOR
          ITYPE = 2
       ELSE
          WRITE (LUPRI,'(//A/2A//)') ' >>> ERROR in PRIHES ',
-     &      '     - incorrect specification of keyword:', KEY
+     &      '     - incorrect specification of keyword: ', KEY
          CALL QUIT('Incorrect keyword in PRIHES.')
       END IF
       IF (MAXREP .EQ. 0) THEN
@@ -180,11 +178,11 @@ C
          NCOL = 1
          DO 100 K = BEGIN,NROW
             DO 200 I = 1,NCOL
-               IF (SHESS(K,(BEGIN-1)+I) .NE. D0) GO TO 400
+               IF (SHESS(K+NROW_DIM*(BEGIN-2+I)) .NE. D0) GO TO 400
   200       CONTINUE
             GO TO 300
   400       WRITE (LUPRI,2000) NAMEX(K),
-     &            (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &            (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
             IF (MOD(K,3) .EQ. 0) WRITE (LUPRI,'()')
   300       IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
   100    CONTINUE
@@ -207,7 +205,7 @@ C
                   NCOL = 1
                   DO 40 K = BEGIN, NROW
                      WRITE (LUPRI,2000) NAMEX(IPTCOR(K,ITYPE)),
-     &                     (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &                     (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
                      IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
    40             CONTINUE
                   WRITE (LUPRI,'()')
@@ -224,7 +222,7 @@ C
          NCOOR = 3*NUCDEP
          allocate( CHESS(NCOOR,NCOOR) )
          CALL DZERO(CHESS,NCOOR*NCOOR)
-         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
+         CALL TRAHES(SHESS,NROW_DIM,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
          CALL PR2DER(CHESS,NCOOR,NCOOR,LUPRI)
          deallocate( CHESS )
       END IF
@@ -411,13 +409,12 @@ C
 
       end subroutine
 
-
 C  /* Deck symhes */
-      SUBROUTINE SYMHES(HESS)
+      SUBROUTINE SYMHES(HESS,NROW_HESS)
 #include "implicit.h"
+      DIMENSION HESS(NROW_HESS,NROW_HESS)
       PARAMETER (DP5 = 0.5D0)
 #include "mxcent.h"
-      DIMENSION HESS(MXCOOR,MXCOOR)
 #include "nuclei.h"
 C
       NCOORD = 3*NUCDEP

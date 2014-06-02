@@ -143,9 +143,12 @@ C
       DIMENSION WORK(LWORK)
 #include "abainf.h"
 #include "cbiflt.h"
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       IF (SKIP) RETURN
       IF (.NOT. (MOLHES .OR. DIPDER .OR. POLAR)) RETURN
       CALL QENTER('FLTORB')
@@ -207,11 +210,13 @@ C
          CALL FLTHDP(WORK(KRED),NIND)
       ELSE
          IF (MOLHES) THEN
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             DO 200 I = 1, 3*NUCDEP
                DO 300 J = 1, I
                   HESMOL(J,I) = HESMOL(I,J)
   300          CONTINUE
   200       CONTINUE
+            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          END IF
          IF (DIPDER) THEN
             DO 400 I = 1, 3*NUCDEP
@@ -243,12 +248,15 @@ C  /* Deck fltgmt */
 #include "mxcent.h"
 #include "cbiflt.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "moldip.h"
       DIMENSION GII(NIND,NIND), GID(NIND,NDEP), GDI(NDEP,NIND),
      *          GDD(NDEP,NDEP), IVIND(NIND), IVDEP(NDEP)
-      LOGICAL DEPEND
+      LOGICAL DEPEND_FLT
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       IF (IPRINT .GE. 5) CALL TITLER('Output from FLTGMT','*',103)
 C
 C     Set up address vectors
@@ -256,8 +264,8 @@ C
       IIND = 0
       IDEP = 0
       DO 100 ICOOR = 1, 3*NUCDEP
-         DEPEND = NINT(CHARGE((ICOOR + 2)/3)) .EQ. 0
-         IF (DEPEND) THEN
+         DEPEND_FLT = NINT(CHARGE((ICOOR + 2)/3)) .EQ. 0
+         IF (DEPEND_FLT) THEN
             IDEP = IDEP + 1
             IVDEP(IDEP) = ICOOR
          ELSE
@@ -279,6 +287,7 @@ C
 C
 C     Construct GII
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       DO 200 I = 1, NIND
          DO 210 J = 1, NIND
             II = IVIND(I)
@@ -378,7 +387,6 @@ C  /* Deck flthdp */
 #include "mxcent.h"
 #include "cbiflt.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "moldip.h"
       DIMENSION GRED(NIND,NIND)

@@ -2819,12 +2819,16 @@ C     *******************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
-#include "taymol.h"
 #include "numder.h"
 #include "fcsym.h"
       DIMENSION DERIV(NDERIV), DCOEFF(LDPMTX,IFRSTD)
       DIMENSION KDPMTX(LDPMTX,NSTRDR,IFRSTD), NMIDPC(LDPMTX)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       NSTART = 1
       DO 100 IRDR = 1, NMORDR
          IF (IRDR .EQ. 2) THEN
@@ -2897,6 +2901,7 @@ C
          END IF
  100  CONTINUE
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C
