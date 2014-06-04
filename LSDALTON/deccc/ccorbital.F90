@@ -1216,13 +1216,18 @@ contains
     implicit none
     type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
+    integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
 
-    write(iunit) orb%orbitalnumber
-    write(iunit) orb%centralatom
-    write(iunit) orb%numberofatoms
-    write(iunit) orb%atoms
+    orbitalnumber64 = orb%orbitalnumber
+    centralatom64   = orb%centralatom
+    numberofatoms64 = orb%numberofatoms
+    atoms64         = orb%atoms
 
-    return
+    write(iunit) orbitalnumber64
+    write(iunit) centralatom64
+    write(iunit) numberofatoms64
+    write(iunit) atoms64
+
   end subroutine orbital_write
 
   !> \brief Read orbital from file
@@ -1236,49 +1241,48 @@ contains
     integer(kind=8),pointer :: atoms64(:)
     integer(kind=4),pointer :: atoms32(:)
 
-    ConvertFrom64Bit: if(DECinfo%convert64to32) then
-       ! file uses 64 bit integers but current run uses 32 bit integers
+    !ConvertFrom64Bit: if(DECinfo%convert64to32) then
        read(iunit) orbitalnumber64
        read(iunit) centralatom64
        read(iunit) numberofatoms64
        call mem_alloc(atoms64,numberofatoms64)
        read(iunit) atoms64
-       ! Convert 64 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = int(orbitalnumber64,4)
-       orb%centralatom = int(centralatom64,4)
-       orb%numberofatoms = int(numberofatoms64,4)
+
+       orb%orbitalnumber = int(orbitalnumber64)
+       orb%centralatom   = int(centralatom64)
+       orb%numberofatoms = int(numberofatoms64)
        call mem_alloc(orb%atoms,orb%numberofatoms)
        do i=1,orb%numberofatoms
-          orb%atoms(i) = int(atoms64(i),4)
+          orb%atoms(i) = int(atoms64(i))
        end do
        call mem_dealloc(atoms64)
 
-    elseif(DECinfo%convert32to64)then
+    !elseif(DECinfo%convert32to64)then
 
-       read(iunit) orbitalnumber32
-       read(iunit) centralatom32
-       read(iunit) numberofatoms32
-       call mem_alloc(atoms32,numberofatoms32)
-       read(iunit) atoms32
-       ! Convert 32 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = orbitalnumber32
-       orb%centralatom = centralatom32
-       orb%numberofatoms = numberofatoms32
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       do i=1,orb%numberofatoms
-          orb%atoms(i) = atoms32(i)
-       end do
-       call mem_dealloc(atoms32)
+    !   read(iunit) orbitalnumber32
+    !   read(iunit) centralatom32
+    !   read(iunit) numberofatoms32
+    !   call mem_alloc(atoms32,numberofatoms32)
+    !   read(iunit) atoms32
+    !   ! Convert 32 bit integers to 32 bit and store in decorbital type
+    !   orb%orbitalnumber = orbitalnumber32
+    !   orb%centralatom = centralatom32
+    !   orb%numberofatoms = numberofatoms32
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   do i=1,orb%numberofatoms
+    !      orb%atoms(i) = atoms32(i)
+    !   end do
+    !   call mem_dealloc(atoms32)
 
-    else
+    !else
 
-       read(iunit) orb%orbitalnumber
-       read(iunit) orb%centralatom
-       read(iunit) orb%numberofatoms
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       read(iunit) orb%atoms
+    !   read(iunit) orb%orbitalnumber
+    !   read(iunit) orb%centralatom
+    !   read(iunit) orb%numberofatoms
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   read(iunit) orb%atoms
 
-    end if ConvertFrom64Bit
+    !end if ConvertFrom64Bit
 
   end function orbital_read
 
