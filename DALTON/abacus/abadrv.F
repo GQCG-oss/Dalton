@@ -2027,11 +2027,8 @@ C     Aug. 97/spas+hjaaj
 C
       IF (ABASOP) THEN
          SOPPA = ABASOP
-         KIADR1 = 1
-         KLAST  = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('ABADRV','MP2SET',KLAST,
-     &                                     LWORK)
-         CALL MP2SET(WORK(KIADR1))
+         CALL MP2SET
+         CALL PHADR1(WORK,1) ! to calculate NPHTOT(1) used in RSPACT
          CALL SETSOPPA
          NCONMA = 0
          DO ISYM = 1, NSYM

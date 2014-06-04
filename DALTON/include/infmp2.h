@@ -16,7 +16,6 @@ C     MP2_NO_OCCVIR = .FALSE. ! ignore occ-vir block of MP2 density matrix
 C     SRMP2_SELFCONSISTENT = .FALSE. ! self-consistent iterations on occ-vir block of srMP2 density matrix
 C     SRMP2_SRINTS  = .FALSE. ! calculate both sr-sr and lr-lr MP2 energies - advanced option for study of MP2 energy contributions
 C
-      PARAMETER (MAXVIR = MXCORB)
       DOUBLE PRECISION MP2_SCALEFAC, MP2_LSHIFT
       LOGICAL MP2FRO, MP2_SOS, MP2_SCS, MP2_TDA, MP2_NO_OCCVIR,
      &        MP2_SCALED, SRMP2_SELFCONSISTENT, SRMP2_SRINTS,
