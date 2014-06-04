@@ -29,10 +29,11 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
-    DECinfo%doDEC             = .false.
+    DECinfo%doDEC                  = .false.
     ! Max memory measured in GB. By default set to 2 GB
-    DECinfo%memory            = 2.0E0_realk
-    DECinfo%memory_defined    = .false.
+    DECinfo%memory                 = 2.0E0_realk
+    DECinfo%memory_defined         = .false.
+    DECinfo%use_system_memory_info = .false.
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
@@ -395,7 +396,8 @@ contains
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
 
-          ! Pair distance threshold
+       case('.USE_SYS_MEM_INFO') 
+          DECinfo%use_system_memory_info = .true.
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
@@ -698,10 +700,12 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
-    if(.not. DECinfo%memory_defined) then
-       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
-       write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
-       write(DECinfo%output,*) ''
+    if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
+       & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
+
+       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
+       write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
        write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
 #else
@@ -711,13 +715,15 @@ contains
        write(DECinfo%output,*) '16.0'
        write(DECinfo%output,*) ''
        call lsquit('**DEC or **CC calculation requires specification of available memory using &
-            & .MEMORY keyword!',-1)
+            & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
     ! Use purification of FOs when using fragment-adapted orbitals.
     if(DECinfo%fragadapt) then
        DECinfo%purifyMOs=.true.
     end if
+
+    if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
 
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then

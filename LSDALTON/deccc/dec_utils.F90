@@ -2144,13 +2144,30 @@ end function max_batch_dimension
     !> Currently available memory in GB
     real(realk),intent(inout) :: mem
     real(realk) :: MemInUse
+    logical :: memfound
 
-    ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
-    ! Memory currently in use is mem_allocated_global (see memory.f90)
-    ! Memory available: Total memory - memory in use
-    ! Mem in use in GB
-    MemInUse = 1.0E-9_realk*mem_allocated_global
-    mem = DECinfo%memory - MemInUse
+    if(DECinfo%use_system_memory_info)then
+       ! Use the system available memory information accessible via
+       ! /proc/meminfo or the top command on mac os X. Especially the latter is
+       ! error prone and not recommended. The /proc/meminfo can be preferred
+       ! over the input setting on some systems
+
+       call get_available_memory(DECinfo%output,mem,memfound)
+
+       if(.not.memfound)then
+          call lsquit("ERROR(get_currently_available_memory):system call failed,&
+          & use .MEMORY keyword to specify memory in LSDALTON.INP",-1)
+       endif
+
+    else
+       ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
+       ! Memory currently in use is mem_allocated_global (see memory.f90)
+       ! Memory available: Total memory - memory in use
+       ! Mem in use in GB
+       MemInUse = 1.0E-9_realk*mem_allocated_global
+       mem = DECinfo%memory - MemInUse
+
+    endif
 
     ! Sanity check
     if(mem < 0.0E0_realk) then
