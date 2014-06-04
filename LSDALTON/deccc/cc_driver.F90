@@ -2195,7 +2195,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_convert(iajb,VOVO%val)
    call array_free(iajb)
    call array4_reorder(VOVO,[2,1,4,3])
-   call print_norm(VOVO%val,i8*no*no*nv*nv)
 
    ! deallocate stuff
    if(DECinfo%use_singles) then
