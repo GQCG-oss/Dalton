@@ -360,8 +360,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            ENDIF
 
            if(config%skipscfloop)then              
+              WRITE(config%lupri,*)'The SCF Loop has been skipped!'
+              WRITE(config%lupri,*)'Warning: The use of the .SKIPSCFLOOP keyword assumes that the'
+              WRITE(config%lupri,*)'fock.restart exist and that it is the final Fock/Kohn-Sham matrix'
+              WRITE(config%lupri,*)'of the converged density matrix in dens.restart. Use at own risk.'
               call read_fock_matrix_from_file(F(1))
-              WRITE(config%lupri,*)'The SCF Loop have been skipped'
            else !default
               call scfloop(H1,F,D,S,E,ls,config)
            endif
