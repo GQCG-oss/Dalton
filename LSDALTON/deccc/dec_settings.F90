@@ -164,7 +164,7 @@ contains
     DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
     DECinfo%DFTreference            = .false.
-    DECinfo%ccConvergenceThreshold  = 1e-5
+    DECinfo%ccConvergenceThreshold  = 1e-5_realk
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
     DECinfo%use_preconditioner      = .true.
@@ -188,7 +188,7 @@ contains
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
     DECinfo%kappa_driver_debug=.false.
-    DECinfo%kappaTHR=1e-4
+    DECinfo%kappaTHR=1e-4_realk
     DECinfo%EerrFactor = 1.0_realk
     DECinfo%EerrOLD = 0.0_realk
 

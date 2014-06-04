@@ -857,7 +857,7 @@ subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
                deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
 
                ! Sanity check
-               if( abs(deltaF) < 1e-9 ) then
+               if( abs(deltaF) < 1e-9_realk ) then
                   write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
                   write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
                   write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
@@ -1173,7 +1173,7 @@ subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
                deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
 
                ! Sanity check
-               if( abs(deltaF) < 1e-9 ) then
+               if( abs(deltaF) < 1e-9_realk ) then
                   write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
                   write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
                   write(DECinfo%output,*) 'Delta epsilon value = ', deltaF

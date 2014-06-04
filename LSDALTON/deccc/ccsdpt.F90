@@ -6581,9 +6581,9 @@ contains
         write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
         write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
         write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9_realk
         write(DECinfo%output,*)
 
 

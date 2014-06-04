@@ -1831,7 +1831,7 @@ contains
 
        ! Giga flops for fragment
 #ifdef VAR_PAPI
-       Gflops = jobs%flops(i)*1.0e-9
+       Gflops = jobs%flops(i)*1.0e-9_realk
 #else
        Gflops=-1.0_realk
 #endif
