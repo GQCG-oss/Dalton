@@ -4333,7 +4333,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
-    real(realk) :: energy_tmp_1, energy_tmp_2, energy_res_cou, energy_res_exc
+    real(realk) :: energy_tmp_1, energy_tmp_2
 
     ! *************************************************************
     ! ************** do energy for full molecule ******************
@@ -4343,15 +4343,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !   do CCSD energy part
     ! ***********************
 
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
     !MODIFY FOR NEW MODEL
 
     ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
+    !$OMP REDUCTION(+:eccsdpt_matrix_cou),&
     !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
@@ -4381,7 +4379,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call array_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
+    !$OMP REDUCTION(+:eccsdpt_matrix_exc),&
     !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom

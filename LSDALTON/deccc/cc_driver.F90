@@ -265,6 +265,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! print out ccsd fragment and pair interaction energies
    ccsd_mat_tot = array_init([natoms,natoms],2)
    ccsd_mat_tmp = array_init([natoms,natoms],2)
+   call array_zero(ccsd_mat_tot)
+   call array_zero(ccsd_mat_tmp)
 
    call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
       & ccsd_mat_tot%elm1,ccsd_mat_tmp%elm1)
