@@ -6572,7 +6572,7 @@ C  /* Deck crtest */
 #include "cbieri.h"
 C
       IF (RUNERI.AND.DOCART) THEN
-         NWARN = NWARN + 1
+         NINFO = NINFO + 1
          RUNERI = .FALSE.
          WRITE (LUPRI,'(A)')
      &' INFO: Only spherical-harmonic basis is implemented in ERI.'//
@@ -6843,6 +6843,13 @@ C
 C     Since the number of atom types have not been specified,
 C     assume old input format
 C
+
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//
+     &   'old .mol fixed format input has been detected:',
+     &   LINE4_in, ' WARNING - '//
+     &   'this input format may not be supported in future releases.'
+
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0
