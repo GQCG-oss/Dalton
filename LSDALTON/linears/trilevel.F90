@@ -979,6 +979,7 @@ do i=1, ai%ND
       atomicSetting%fragment(iAO)%p => atomicmolecule
    enddo
    !deactivate density fitting, FMM and screening - provide no speedup and just complicates things
+   atomicSetting%scheme%admm_exchange = .FALSE.
    atomicSetting%scheme%densfit = .FALSE.
    atomicSetting%scheme%df_k = .FALSE.
    atomicSetting%scheme%PARI_J = .FALSE.
