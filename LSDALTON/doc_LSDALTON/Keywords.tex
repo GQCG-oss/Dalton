@@ -986,6 +986,7 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
 \item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{SKIPSCFLOOP}] The code automatically saves the density matrix and the Fock/Kohn-Sham matrix at the end of the SCF iterations in two files called dens.restart and fock.restart. This option reads the files and skips the SCF iterations.
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]

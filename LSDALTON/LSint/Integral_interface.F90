@@ -1035,7 +1035,7 @@ IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 ! so we loosen the screening threshold with a factor 10
 ! and use DaLink to speed up the calculation. 
 OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
-SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1_realk
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
@@ -1224,7 +1224,7 @@ IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 ! so we loosen the screening threshold with a factor 10
 ! and use DaLink to speed up the calculation. 
 OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
-SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1_realk
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
@@ -3905,7 +3905,7 @@ call time_II_operations1()
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 !derivative on the LHS 
 call initIntegralOutputDims(setting%output,nbast,nbast,nbast,nbast,3)
 CALL ls_getIntegrals(AORdefault,AORdefault,AORdefault,AORdefault,&
@@ -4158,12 +4158,12 @@ INTEGER               :: ndmat,idmat
 real(realk) :: KFAC,maxCoor,OLDTHRESH,TS,TE
 Real(realk),pointer   :: DFULLRHS(:,:,:)
 integer      :: Oper
-IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15)RETURN
+IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
 !The size of the magnetic derivative integral will increase with 
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0_realk/maxCoor)
 IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4283,7 +4283,7 @@ type(matrix)          :: Dmat_AO(ndmat)
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4333,7 +4333,7 @@ IF(SETTING%SCHEME%FMM) call lsquit('not tested',-1)
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat

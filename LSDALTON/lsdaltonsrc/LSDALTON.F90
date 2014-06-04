@@ -55,7 +55,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
-  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
+  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
   use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
@@ -359,7 +359,12 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               CALL Print_Memory_info(lupri,'after Low Accuracy Start')
            ENDIF
 
-           call scfloop(H1,F,D,S,E,ls,config)
+           if(config%skipscfloop)then              
+              call read_fock_matrix_from_file(F(1))
+              WRITE(config%lupri,*)'The SCF Loop have been skipped'
+           else !default
+              call scfloop(H1,F,D,S,E,ls,config)
+           endif
            CALL Print_Memory_info(lupri,'after scfloop')
         endif
 

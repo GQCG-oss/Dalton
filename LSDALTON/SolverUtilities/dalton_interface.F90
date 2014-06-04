@@ -2153,7 +2153,7 @@ CONTAINS
 
 !     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
 !     basis as ADMM basis for level 3)
-      ADMMexchange = ls%input%dalton%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
+      ADMMexchange = ls%setting%scheme%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
       IF ((ls%optlevel.EQ.2).AND.ls%input%dalton%ADMM_GCBASIS) ADMMexchange = .FALSE.
 
 ! *********************************************************************************
