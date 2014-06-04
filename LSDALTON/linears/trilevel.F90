@@ -1449,7 +1449,7 @@ TYPE(trilevel_atominfo) :: ai
 real(realk)         :: E(1),trace
 real(realk),pointer :: eival(:) 
 integer      :: nbast,Nelectrons,sz,ndmat
-logical      :: dalink,DiagFmat,McWeeny,purify_failed,CS00
+logical      :: dalink,DiagFmat,McWeeny,purify_failed,CS00,admm_exchange
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 ndmat = 1
@@ -1470,16 +1470,13 @@ CALL mat_init(Cmo,nbast,nbast)
 !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
 ! => bad starting guess. If DaLink is requested, turn it off and then back on after
 ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-dalink = .false.
-if (ls%setting%scheme%DALINK) then
-   ls%setting%scheme%DALINK = .FALSE.
-   dalink = .true.
-endif
-CS00 = .false.
-if (ls%setting%scheme%DFT%CS00) then
-   ls%setting%scheme%DFT%CS00 = .FALSE.
-   CS00 = .true.
-endif
+dalink = ls%setting%scheme%DALINK
+ls%setting%scheme%DALINK = .FALSE.
+CS00 = ls%setting%scheme%DFT%CS00
+ls%setting%scheme%DFT%CS00 = .FALSE.
+!turn off ADMM exchange due missing idempotency 
+ADMM_EXCHANGE = ls%setting%scheme%ADMM_EXCHANGE
+ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
 ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
 ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
 ! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 
@@ -1516,8 +1513,10 @@ ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
 call mem_dealloc(eival)
 
 !Turn DaLink back on, if requested:
-if (dalink) ls%setting%scheme%DALINK = .true.
-if (CS00) ls%setting%scheme%DFT%CS00 = .true.
+ls%setting%scheme%DALINK = dalink
+ls%setting%scheme%DFT%CS00 = cs00
+ls%setting%scheme%ADMM_EXCHANGE = ADMM_EXCHANGE
+
 ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS      
 
 CALL mat_free(F(1))
@@ -1570,7 +1569,7 @@ integer      :: nbast, len, nocc
 integer, pointer :: vlist(:,:), list(:,:)
 integer :: lun, idum, ldum,iAO,sz,ndmat
 integer(8) :: fperm, vperm
-logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists
+logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists,admm_exchange
 logical :: OnMaster,DiagFmat,McWeeny,purify_failed,CS00,integraltransformGC
 type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
@@ -1595,6 +1594,12 @@ type(LowAccuracyStartType)  :: LAStype
   !Level 2 integral eval must be done in the GCbasis 
   integraltransformGC = ls%setting%integraltransformGC
   ls%setting%integraltransformGC = .FALSE.
+
+  !turn off ADMM exchange ass it does not make sense 
+  !Warning it turns out this is redundant as it is turned off in 
+  !SolverUtilities/dalton_interface.F90 if config%opt%optlevel .EQ. 2
+  ADMM_EXCHANGE = ls%setting%scheme%ADMM_EXCHANGE
+  ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
 
   !loops over all distinct atoms and build valensbasis
   call trilevel_full2valence(ls,ai,config%LUPRI)
@@ -1686,16 +1691,11 @@ type(LowAccuracyStartType)  :: LAStype
   !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
   ! => bad starting guess. If DaLink is requested, turn it off and then back on after
   ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-  dalink = .false.
-  if (ls%setting%scheme%DALINK) then
-     ls%setting%scheme%DALINK = .FALSE.
-     dalink = .true.
-  endif
-  CS00 = .false.
-  if (ls%setting%scheme%DFT%CS00) then
-     ls%setting%scheme%DFT%CS00 = .FALSE.
-     CS00 = .true.
-  endif
+  dalink = ls%setting%scheme%DALINK
+  ls%setting%scheme%DALINK = .FALSE.
+  CS00 = ls%setting%scheme%DFT%CS00
+  ls%setting%scheme%DFT%CS00 = .FALSE.
+
   ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
   ! Iteration 0
   ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would give a wrong number of electrons
@@ -1718,8 +1718,9 @@ type(LowAccuracyStartType)  :: LAStype
   endif
   ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS
   !Turn DaLink back on, if requested:
-  if (dalink) ls%setting%scheme%DALINK = .true.
-  if (CS00) ls%setting%scheme%DFT%CS00 = .true.
+  ls%setting%scheme%DALINK = dalink
+  ls%setting%scheme%DFT%CS00 = CS00
+
   !initialize incremental scheme
   if (config%opt%cfg_incremental) call ks_init_incremental_fock(nbast)
   
@@ -1942,7 +1943,8 @@ type(LowAccuracyStartType)  :: LAStype
   call leastchangeOrbspreadStandalone(mx,ls,config%decomp%lcv_Cmo,config%decomp%lupri,config%decomp%luerr)
   write(*,*) 'Orbspread standalone full CMO: ', mx
 
- call trilevel_atominfo_free(ai)
+  call trilevel_atominfo_free(ai)
+  ls%setting%scheme%ADMM_EXCHANGE = ADMM_EXCHANGE
 
 END SUBROUTINE trilevel_start
 
