@@ -122,6 +122,10 @@ module dec_typedef_module
      real(realk) :: memory
      !> Memory defined by input? (If not, use system call).
      logical :: memory_defined
+     !> use system information to determine available memory during a dec
+     !calculation
+     logical :: use_system_memory_info
+
      ! Memory use for full molecule structure
      real(realk) :: fullmolecule_memory
      !> Save array4 on file instead of in memory (debug)

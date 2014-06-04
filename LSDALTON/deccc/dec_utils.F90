@@ -38,6 +38,12 @@ module dec_fragment_utils
   ! *****************************************
 
   !> Read 64 bit integer(s) from file and convert to 32 bit
+  interface read_64bit_to_int
+     module procedure read_64bit_to_32bit_singleinteger
+     module procedure read_64bit_to_32bit_vectorinteger
+     module procedure read_64bit_to_32bit_singlelogical
+     module procedure read_64bit_to_32bit_vectorlogical
+  end interface read_64bit_to_int
   interface read_64bit_to_32bit
      module procedure read_64bit_to_32bit_singleinteger
      module procedure read_64bit_to_32bit_vectorinteger
@@ -2138,13 +2144,30 @@ end function max_batch_dimension
     !> Currently available memory in GB
     real(realk),intent(inout) :: mem
     real(realk) :: MemInUse
+    logical :: memfound
 
-    ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
-    ! Memory currently in use is mem_allocated_global (see memory.f90)
-    ! Memory available: Total memory - memory in use
-    ! Mem in use in GB
-    MemInUse = 1.0E-9_realk*mem_allocated_global
-    mem = DECinfo%memory - MemInUse
+    if(DECinfo%use_system_memory_info)then
+       ! Use the system available memory information accessible via
+       ! /proc/meminfo or the top command on mac os X. Especially the latter is
+       ! error prone and not recommended. The /proc/meminfo can be preferred
+       ! over the input setting on some systems
+
+       call get_available_memory(DECinfo%output,mem,memfound)
+
+       if(.not.memfound)then
+          call lsquit("ERROR(get_currently_available_memory):system call failed,&
+          & use .MEMORY keyword to specify memory in LSDALTON.INP",-1)
+       endif
+
+    else
+       ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
+       ! Memory currently in use is mem_allocated_global (see memory.f90)
+       ! Memory available: Total memory - memory in use
+       ! Mem in use in GB
+       MemInUse = 1.0E-9_realk*mem_allocated_global
+       mem = DECinfo%memory - MemInUse
+
+    endif
 
     ! Sanity check
     if(mem < 0.0E0_realk) then
@@ -2759,7 +2782,7 @@ end function max_batch_dimension
     integer(kind=4) :: myint_long
 
     read(funit) myint_long
-    myint = myint_long
+    myint = int(myint_long)
 
   end subroutine read_32bit_to_64bit_singleinteger
 
@@ -3194,24 +3217,35 @@ end function max_batch_dimension
     type(joblist),intent(in) :: jobs
     !> File unit number to write to (of course assumes that file is open)
     integer,intent(in) :: funit
+    logical(8) :: jobsdone64(jobs%njobs),dofragopt64(jobs%njobs),esti64(jobs%njobs)
+
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    jobsdone64  = jobs%jobsdone
+    dofragopt64 = jobs%dofragopt
+    esti64      = jobs%esti
 
     ! Pair cutoff
     write(funit) DECinfo%pair_distance_threshold
 
-    write(funit) jobs%njobs
-    write(funit) jobs%atom1
-    write(funit) jobs%atom2
-    write(funit) jobs%jobsize
-    write(funit) jobs%jobsdone
-    write(funit) jobs%dofragopt
-    write(funit) jobs%esti
+    write(funit) int(jobs%njobs,kind=8)
+    write(funit) int(jobs%atom1,kind=8)
+    write(funit) int(jobs%atom2,kind=8)
+    write(funit) int(jobs%jobsize,kind=8)
+    write(funit) jobsdone64
+    write(funit) dofragopt64
+    write(funit) esti64
 
     ! MPI fragment statistics
-    write(funit) jobs%nslaves
-    write(funit) jobs%nocc
-    write(funit) jobs%nunocc
-    write(funit) jobs%nbasis
-    write(funit) jobs%ntasks
+    write(funit) int(jobs%nslaves,kind=8)
+    write(funit) int(jobs%nocc,kind=8)
+    write(funit) int(jobs%nunocc,kind=8)
+    write(funit) int(jobs%nbasis,kind=8)
+    write(funit) int(jobs%ntasks,kind=8)
     write(funit) jobs%flops
     write(funit) jobs%LMtime
     write(funit) jobs%workt
@@ -3234,66 +3268,34 @@ end function max_batch_dimension
     integer,intent(in) :: funit
     integer :: njobs
 
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
     ! Pair cutoff
     read(funit) DECinfo%pair_distance_threshold
     write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', DECinfo%pair_distance_threshold
 
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(funit,njobs)
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
-       end if
-       call read_64bit_to_32bit(funit,njobs,jobs%atom1)
-       call read_64bit_to_32bit(funit,njobs,jobs%atom2)
-       call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
-       call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
-       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
-       call read_64bit_to_32bit(funit,njobs,jobs%esti)
-       call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
-       call read_64bit_to_32bit(funit,njobs,jobs%nocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nbasis)
-       call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(funit,njobs)
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
-       end if
-       call read_32bit_to_64bit(funit,njobs,jobs%atom1)
-       call read_32bit_to_64bit(funit,njobs,jobs%atom2)
-       call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
-       call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
-       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
-       call read_32bit_to_64bit(funit,njobs,jobs%esti)
-       call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
-       call read_32bit_to_64bit(funit,njobs,jobs%nocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nbasis)
-       call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
-    else
-       read(funit) njobs
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
-       end if
-       read(funit) jobs%atom1
-       read(funit) jobs%atom2
-       read(funit) jobs%jobsize
-       read(funit) jobs%jobsdone
-       read(funit) jobs%dofragopt
-       read(funit) jobs%esti
-
-       read(funit) jobs%nslaves
-       read(funit) jobs%nocc
-       read(funit) jobs%nunocc
-       read(funit) jobs%nbasis
-       read(funit) jobs%ntasks
+    call read_64bit_to_int(funit,njobs)
+    if(njobs/=jobs%njobs) then
+       print *, 'Number of jobs in job list   : ', jobs%njobs
+       print *, 'Number of jobs read from file: ', njobs
+       call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
     end if
+    call read_64bit_to_int(funit,njobs,jobs%atom1)
+    call read_64bit_to_int(funit,njobs,jobs%atom2)
+    call read_64bit_to_int(funit,njobs,jobs%jobsize)
+    call read_64bit_to_int(funit,njobs,jobs%jobsdone)
+    call read_64bit_to_int(funit,njobs,jobs%dofragopt)
+    call read_64bit_to_int(funit,njobs,jobs%esti)
+    call read_64bit_to_int(funit,njobs,jobs%nslaves)
+    call read_64bit_to_int(funit,njobs,jobs%nocc)
+    call read_64bit_to_int(funit,njobs,jobs%nunocc)
+    call read_64bit_to_int(funit,njobs,jobs%nbasis)
+    call read_64bit_to_int(funit,njobs,jobs%ntasks)
 
     read(funit) jobs%flops
     read(funit) jobs%LMtime

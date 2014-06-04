@@ -2197,7 +2197,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_convert(iajb,VOVO%val)
    call array_free(iajb)
    call array4_reorder(VOVO,[2,1,4,3])
-   call print_norm(VOVO%val,i8*no*no*nv*nv)
 
    ! deallocate stuff
    if(DECinfo%use_singles) then
@@ -2309,12 +2308,13 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
    type(array),intent(inout),optional :: t1
    !> the filenames to check for valid singles amplitudes
    character(3),intent(in), optional :: safefilet11,safefilet12,safefilet1f
+   integer, intent(out) :: iter_start
    integer :: no,nv
-   integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
-   logical :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
-   logical :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
-   logical :: readfile1, readfile2
-   integer :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f,iter_start
+   integer(8) :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
+   logical(8) :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
+   logical(8) :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
+   logical(8) :: readfile1, readfile2
+   integer(8) :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f
    integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22,saved_nel1f,saved_nel2f
    logical :: all_singles, fin1_exists, fin2_exists
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
@@ -2375,7 +2375,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
             fu_t2=fu_t2f
             readfile2=.true.
          endif
-         iter_start = saved_iter2f
+         iter_start = int(saved_iter2f)
       endif
 
       !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
@@ -2463,24 +2463,24 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
          !CHECK WHICH IS THE PREFERRED FILE TO READ
          if(file_status21.and.file_status22)then
             if(saved_iter21>saved_iter22)then
-               iter_start=saved_iter21
+               iter_start=int(saved_iter21)
                fu_t2=fu_t21
                CLOSE(fu_t22)
                readfile2=.true.
             else
-               iter_start=saved_iter22
+               iter_start=int(saved_iter22)
                fu_t2=fu_t22
                CLOSE(fu_t21)
                readfile2=.true.
             endif
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
          else if(file_status21)then
-            iter_start=saved_iter21
+            iter_start=int(saved_iter21)
             fu_t2=fu_t21
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
             readfile2=.true.
          else if(file_status22)then
-            iter_start=saved_iter22
+            iter_start=int(saved_iter22)
             fu_t2=fu_t22
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
             readfile2=.true.
@@ -2549,7 +2549,7 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    character(3),intent(in), optional :: safefilet11,safefilet12
    integer :: fu_t21,fu_t22
    integer :: fu_t11,fu_t12
-   logical :: file_status11,file_status12,file_status21,file_status22
+   logical(8) :: file_status11,file_status12,file_status21,file_status22
    logical :: all_singles
    character(ARR_MSG_LEN) :: msg
 #ifdef SYS_AIX
@@ -2581,8 +2581,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
       if(mod(iter,2)==1)then
          file_status11=.false. 
          OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
-         WRITE(fu_t11)iter
-         WRITE(fu_t11)t1%nelms
+         WRITE(fu_t11)int(iter,kind=8)
+         WRITE(fu_t11)int(t1%nelms,kind=8)
          WRITE(fu_t11)t1%elm1
          WRITE(fu_t11)res_norm
          WRITE(fu_t11)energy
@@ -2601,8 +2601,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
       else if(mod(iter,2)==0)then
          file_status12=.false. 
          OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
-         WRITE(fu_t12)iter
-         WRITE(fu_t12)t1%nelms
+         WRITE(fu_t12)int(iter,kind=8)
+         WRITE(fu_t12)int(t1%nelms,kind=8)
          WRITE(fu_t12)t1%elm1
          WRITE(fu_t12)res_norm
          WRITE(fu_t12)energy
@@ -2629,8 +2629,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    if(mod(iter,2)==1)then
       file_status21=.false. 
       OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t21)iter
-      WRITE(fu_t21)t2%nelms
+      WRITE(fu_t21)int(iter,kind=8)
+      WRITE(fu_t21)int(t2%nelms,kind=8)
       WRITE(fu_t21)t2%elm1
       WRITE(fu_t21)res_norm
       WRITE(fu_t21)energy
@@ -2649,8 +2649,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    else if(mod(iter,2)==0)then
       file_status22=.false. 
       OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t22)iter
-      WRITE(fu_t22)t2%nelms
+      WRITE(fu_t22)int(iter,kind=8)
+      WRITE(fu_t22)int(t2%nelms,kind=8)
       WRITE(fu_t22)t2%elm1
       WRITE(fu_t22)res_norm
       WRITE(fu_t22)energy
