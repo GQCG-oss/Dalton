@@ -70,7 +70,7 @@ contains
     else
        !if(DECinfo%ccModel==MODEL_MP2) then
 
-       !   if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+       !   if(DECinfo%use_canonical ) then
        !      ! simple conventional MP2 calculation, only works for canonical orbitals
        !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
        !   else

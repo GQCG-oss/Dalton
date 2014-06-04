@@ -2192,7 +2192,6 @@ contains
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
-    call ls_mpi_buffer(DECitem%full_print_frag_energies,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

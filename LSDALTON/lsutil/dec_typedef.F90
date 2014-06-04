@@ -276,8 +276,6 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
-     !> Print fragment energies for full CC calculation
-     logical :: full_print_frag_energies
      ! --
 
      !> Output options 

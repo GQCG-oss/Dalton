@@ -86,7 +86,6 @@ contains
     DECinfo%PNOoverlapthr        = 1.0E-5_realk
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
-    DECinfo%full_print_frag_energies = .false.
     DECinfo%MOCCSD               = .false.
     DECinfo%v2o2_free_solver     = .false.
 
@@ -487,7 +486,6 @@ contains
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
-       case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
@@ -516,7 +514,6 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
-          DECinfo%full_print_frag_energies=.true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     
