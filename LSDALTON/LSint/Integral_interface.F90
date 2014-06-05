@@ -5214,7 +5214,7 @@ integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_ADMMQ, scaling_ADMMP, printConstFactor, printLambda
-logical             :: isADMMQ
+logical             :: isADMMQ,DODISP
 logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
@@ -5342,6 +5342,8 @@ call mat_daxpy(fac,TMPF,F)
 CALL lstimer('AUX-EX',ts,te,lupri)
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
 call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
+dodisp = setting%scheme%dft%dodisp
+if(setting%scheme%dft%dodisp) setting%scheme%dft%dodisp = .false.
 !Print the functional used at this stage 
 !call DFTREPORT(lupri) 
 !use this call to add a functional instead of replacing it. 
@@ -5409,6 +5411,7 @@ ENDIF
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+if(dodisp) setting%scheme%dft%dodisp = dodisp
 
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -5703,7 +5706,7 @@ character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
 logical             :: DEBUG_ADMM_CONST,PRINT_EK3
-logical             :: isADMMQ,isADMMS,isADMMP
+logical             :: isADMMQ,isADMMS,isADMMP,DODISP
 integer             :: iAtom,iX
 !
 isADMMQ = setting%scheme%ADMM_CONST_EL
@@ -5795,6 +5798,8 @@ DO idmat=1,ndrhs
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
    call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+   dodisp = setting%scheme%dft%dodisp
+   if(setting%scheme%dft%dodisp) setting%scheme%dft%dodisp = .false.
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5895,6 +5900,7 @@ call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
+if(dodisp) setting%scheme%dft%dodisp = dodisp
 !
 CONTAINS
 
