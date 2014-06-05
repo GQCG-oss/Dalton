@@ -2888,10 +2888,11 @@ C     sufficient, as it will not stop duplication of AOs within a single
 C     block, as for instance may happen if you use Pople-type basis sets
 C     K.Ruud, Nov.-2006
 C
+         NWARN = NWARN + 1
          WRITE (LUPRI,'(//A/A/)')
-     &      ' WARNING GTOINP >>> If primitive exponents'//
+     &      '@ WARNING GTOINP >>> If primitive exponents'//
      &         ' are duplicated in several blocks,',
-     &      ' WARNING GTOINP >>> Douglas-Kroll will not work correctly'
+     &      '@ WARNING GTOINP >>> Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C
@@ -4729,8 +4730,17 @@ C
 C     Print internuclear distances (if not an atom)
 C
          LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL))
-     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,WORK(ISTRT),LWORK)
+         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+            CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
+     &         WORK(ISTRT),LWORK)
+            IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
+               NWARN = NWARN + 1
+               WRITE (LUPRI,'(//A/A/)') '@ WARNING:  No bonds - '//
+     &       ' no atom pairs are within normal bonding distances'
+     &       ,'@ WARNING:  maybe coordinates were in Bohr, '//
+     &        'but Dalton were told they were in Angstrom ?'
+            END IF
+         END IF
 C
 C        As a new default, we (almost) always print a rotational analysis, kr-02
 C
@@ -6855,9 +6865,9 @@ C     assume old input format
 C
 
          NWARN = NWARN + 1
-         WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//
+         WRITE(LUPRI,'(///A/A/A///)') '@ WARNING - deprecated '//
      &   'old .mol fixed format input has been detected:',
-     &   LINE4_in, ' WARNING - '//
+     &   LINE4_in, '@ WARNING - '//
      &   'this input format may not be supported in future releases.'
 
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
