@@ -2048,7 +2048,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL ABAWRITRS
+               CALL ABAWRIT_RESTART
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

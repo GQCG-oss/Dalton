@@ -760,7 +760,6 @@ C  /* Deck numdr1 */
 #include "symmet.h"
 #include "exeinf.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "trkoor.h"
 #include "numder.h"
 #include "prpndr.h"
@@ -1029,12 +1028,11 @@ C
          IF ( ((NAORDR+NMORDR).GT.1) .OR. PRPONL ) THEN
             IF (.NOT.DRYRUN) THEN
                IF (HARMON) THEN
-                  KBKPHS = 2
-                  KTRAMT = KBKPHS + MXCOOR**2
+                  KTRAMT = 2
                   KTMPHS = KTRAMT + NCOOR**2
                   KLAST  = KTMPHS + NCOOR**2
                   LWRK = LWORK - KLAST + 1
-                  CALL HARMAN(SYMCOR,WORK(KBKPHS),WORK(KTRAMT),
+                  CALL HARMAN(SYMCOR,WORK(KTRAMT),
      &                        WORK(KTMPHS),WORK(KLAST),NCOOR,LWRK,
      &                        IPRINT)
                END IF
@@ -1333,7 +1331,6 @@ C
 #include "cbinum.h"
 #include "fcsym.h"
 #include "abainf.h"
-#include "taymol.h"
 #include "pvibav.h"
 #include "prpc.h"
 #include "gnrinf.h"
@@ -1818,7 +1815,6 @@ c#endif
 #include "infpar.h"
 #include "numder.h"
 #include "fcsym.h"
-#include "taymol.h"
 #include "past.h"
 #include "pvibav.h"
 #include "gnrinf.h"
@@ -2639,17 +2635,16 @@ C /* Deck NMNDER */
      &          INDSTP(NTORDR), INDTMP(NTORDR), IDCOMP(NCOOR),
      &          IDDCMP(NCOOR), NCVAL(NCOOR),
      &          KDPMTX(LDPMTX,NSTRDR,IFRSTD), ICRIRP(NCOOR,2)
+
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       CALL QENTER('NMNDER')
 C
       IF (FCCAL) THEN
-         KDIM = MXCOOR**2
-         IF (NAORDR .LT. 1) THEN
-            CALL DZERO(GRDMOL,MXCOOR)
-         END IF
-         IF (NAORDR .LT.2 ) THEN
-            CALL DZERO(HESMOL,  KDIM)
-         END IF
+         GRDMOL(:)   = 0.0D0
+         HESMOL(:,:) = 0.0D0
+      ELSE
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       END IF
       IF (NDERIV .GT. 0) CALL DZERO(DERIV,NDERIV)
 C
@@ -3119,6 +3114,7 @@ C
 C
  100  CONTINUE
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL QEXIT('NMNDER')
       RETURN
       END
@@ -3547,26 +3543,23 @@ C
       END
 C
 C
-C
-      SUBROUTINE HARMAN(SYMCOR,BKPHES,TRAMAT,TMPHES,WORK,NCOOR,LWORK,
-     &                  IPRINT)
+      SUBROUTINE HARMAN(SYMCOR,TRAMAT,TMPHES,WORK,NCOOR,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 C
-#include "taymol.h"
-      DIMENSION BKPHES(MXCOOR,MXCOOR), SYMCOR(NCOOR,NCOOR),
-     &          TMPHES(NCOOR ,NCOOR ), TRAMAT(NCOOR,NCOOR),
+      DIMENSION SYMCOR(NCOOR,NCOOR),
+     &          TMPHES(NCOOR,NCOOR), TRAMAT(NCOOR,NCOOR),
      &          WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-C     *** Backing up hessian for further use after ***
-C     *** harmonic analysis.                       ***
-C
-      KDIM = MXCOOR**2
-      CALL DCOPY(KDIM,HESMOL,1,BKPHES,1)
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     *** Transforming the hessian matrix to cartesian ***
 C     *** coordinates.                                 ***
+C         (as we do not write HESMOL back with ABAWRIT_TAYMOL
+C          it is OK that we modify the content of HESMOL)
 C
       CALL OTRTEN(HESMOL,SYMCOR,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N',
      &            'T')
@@ -3590,11 +3583,6 @@ C
       KSTART = 1
       CALL VIBCTL(WORK(1),LWORK)
 C
-C     *** Restoring old hessian. ***
-C
-      KDIM = MXCOOR**2
-      CALL DCOPY(KDIM,BKPHES,1,HESMOL,1)
-C
       RETURN
       END
 C
@@ -3614,7 +3602,6 @@ C     /* Deck mknrmc */
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (DMTHR = 2.0D-8, D0 = 0.0D0, D1 = 1.0D0)
-#include "taymol.h"
 #include "trkoor.h"
 #include "nuclei.h"
 #include "cbinum.h"
@@ -3630,6 +3617,8 @@ C     /* Deck mknrmc */
      &          CORTMP(NCOOR), WORK(LWORK), ENORMN(NCOOR)
       DIMENSION ICRIRP(NCOOR,2), NATTYP(NATOMS), NMSYSP(NCOOR)
       INTEGER BEGIN
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C     *** Calculating center of mass, and mass of each center ***
 C
@@ -3680,6 +3669,7 @@ C
 C
 C     *** Calculating the mass-weighted Hessian ***
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL DZERO(TM1TMP,KDIM)
       DO 700 IC3 = 1, NCOOR
       DO 700 IC2 = 1, NCOOR
@@ -3980,7 +3970,6 @@ C     /*Deck trafrc*/
 #include "maxorb.h"
 C
 #include "infpar.h"
-#include "taymol.h"
 #include "numder.h"
 #include "cbinum.h"
       CHARACTER*80 TEXT
@@ -3989,10 +3978,13 @@ C
      &          CORNRM(NCOOR,NCOOR), CRTNRM(NCOOR,NCOOR),
      &          SYCART(NCOOR,NCOOR), TNRMDR(NCOOR,NCOOR,NCOOR),
      &          FNRMDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C     *** Transformation of hessians. ***
 C
       IF (NAORDR+NMORDR.GE.2) THEN
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          DO 100 J = 1, NCOOR
          DO 100 I = 1, J
             HESNRM(I,J) = HESMOL(I,J)
@@ -4193,7 +4185,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "taymol.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
 #include "numder.h"
@@ -4206,12 +4197,15 @@ C
      &          RNNORM(NCOOR),
      &          FTMPDR(NCOOR,NCOOR,NCOOR,NCOOR), WORK(LWORK)
       DIMENSION ICRIRP(NCOOR,2)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C     *** We are finished calculating properties. But are ***
 C     *** backing it up for later use.                    ***
 C
       CPRPBK = CNMPRP
       CNMPRP = .FALSE.
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     *** Print gradient ***
 C
@@ -4359,6 +4353,8 @@ C     *** Restoring CNMPRP. ***
 C
       CNMPRP = CPRPBK
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C
@@ -4375,15 +4371,17 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "taymol.h"
 #include "cbiwlk.h"
 #include "numder.h"
       CHARACTER TEXT*(*)
       DIMENSION SYMCOR(NCOOR,NCOOR), CGRAD(NCOOR), ICRIRP(NCOOR,2),
      &          WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       CALL HEADER('Gradient in ' // TEXT(1:LTXT) // ' coordinates',-1)
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       DO 100 ICOOR = 1, NDCOOR
          IF (ICRIRP(ICOOR,1).EQ.1) THEN
             WRITE (LUPRI,'(A,F16.8)') '                               ',
@@ -4441,6 +4439,7 @@ C
  400     CONTINUE
       END IF
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C
@@ -4454,7 +4453,6 @@ C     /*Deck gsphes*/
       PARAMETER (KCOL=6)
 #include "nuclei.h"
 #include "trkoor.h"
-#include "taymol.h"
 #include "cbiwlk.h"
 #include "cbinum.h"
       INTEGER BEGIN, LAST
@@ -4463,11 +4461,15 @@ C     /*Deck gsphes*/
       DIMENSION SYMCOR(NCOOR,NCOOR), SMCINV(NCOOR,NCOOR),
      &          CHESS1(NCOOR,NCOOR), CHESS2(NCOOR,NCOOR),
      &          WORK(LWORK), ICRIRP(NCOOR,    2)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C     *** Print hessian in symmetric coordinates ***
 C
       CALL HEADER('Hessian in ' // TEXT(1:LTXT) // ' coordinates',-1)
       WRITE(LUPRI,'(/8X,A/)') 'Notation: irrep/coordinate number'
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
       BEGIN = 1
       LAST  = MIN(NDCOOR,KCOL)
@@ -4491,6 +4493,7 @@ C
       DO 300 I = 1, J
          HESMOL(I,J) = HESMOL(J,I)
  300  CONTINUE
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     *** Transpose of coordinate transformation matrix ***
 C
@@ -4623,7 +4626,6 @@ C     /* Deck tsths1*/
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (DMTHR = 1.0D-9, D1 = 1.0D0)
-#include "taymol.h"
 #include "trkoor.h"
 #include "nuclei.h"
 #include "cbinum.h"
@@ -4631,7 +4633,11 @@ C     /* Deck tsths1*/
      &          HESMWT(NCOOR*(NCOOR+1)/2), DKIN(NCOOR,NCOOR),
      &          TM1TMP(NCOOR,NCOOR),TM2TMP(NCOOR,NCOOR),
      &          WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       KDIM = NCOOR**2
       CALL DZERO(TM1TMP,KDIM)
       DO 100 IC3 = 1, NCOOR
@@ -4699,8 +4705,8 @@ C
 C
 C
 C     /*Deck sdertt*/
-      SUBROUTINE SDERTT(TSTSDR,TSTGDR,SYMCOR,TMPGRD,TMPHES,BKPGRD,
-     &                  BKPHES,WORK,LWORK,WRKDLM,IPRINT)
+      SUBROUTINE SDERTT(TSTSDR,TSTGDR,SYMCOR,TMPGRD,TMPHES,
+     &                  WORK,LWORK,WRKDLM,IPRINT)
 C     *******************************************************************
 C     *** This routine tests the numerical derivatives with available ***
 C     ***                   analytical derivatives.                   ***
@@ -4714,7 +4720,6 @@ C     *******************************************************************
       PARAMETER (D0 = 0.0D0)
 #include "numder.h"
 #include "trkoor.h"
-#include "taymol.h"
 #include "symmet.h"
 #include "abainf.h"
 #include "exeinf.h"
@@ -4723,15 +4728,11 @@ C     *******************************************************************
 #include "inftap.h"
       DIMENSION TSTSDR(NCOOR,NCOOR), TSTGDR(NCOOR ),
      &          TMPHES(NCOOR,NCOOR), TMPGRD(MXCOOR),
-     &          BKPHES(NCOOR,NCOOR), BKPGRD(NCOOR ),
      &          SYMCOR(NCOOR,NCOOR), WORK  (LWORK )
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-      DO 100 IC2 = 1, NCOOR
-         BKPGRD(IC2) = GRDMOL(IC2)
-         DO 200 IC1 = 1, NCOOR
-            BKPHES(IC1,IC2) = HESMOL(IC1,IC2)
- 200     CONTINUE
- 100  CONTINUE
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
       DO 300 IC2 = 1, NCOOR
       DO 300 IC1 = 1, NCOOR
@@ -4748,9 +4749,8 @@ C
      &           SYMCOR,NCOOR,0.D0,
      &           TSTSDR,NCOOR)
 C
-      KDIM = MXCOOR**2
-      CALL DZERO(GRDMOL,MXCOOR)
-      CALL DZERO(HESMOL,KDIM  )
+      GRDMOL(:)   = 0.0D0
+      HESMOL(:,:) = 0.0D0
 C
       MOLGRD = .TRUE.
       MOLHES = .TRUE.
@@ -4817,13 +4817,7 @@ C
       WRITE (LUPRI,'(A,1P,2E15.7//)')
      &  'The values of these elements are: ',HVALC, HVALN
 C
-      DO 800 IC2 = 1, NCOOR
-         GRDMOL(IC2) = BKPGRD(IC2)
-         DO 900 IC1 = 1, NCOOR
-            HESMOL(IC1,IC2) = BKPHES(IC1,IC2)
- 900     CONTINUE
- 800  CONTINUE
-C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C
@@ -4839,7 +4833,11 @@ C
 #include "fcsym.h"
       LOGICAL FOUND
       DIMENSION SYMCOR(NCOOR,NCOOR), ICRIRP(NCOOR,2)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       DO 100 IC1 = 1, NMREDU
          FOUND = .FALSE.
          IIREP = KDRYRN(IC1)
@@ -5138,14 +5136,16 @@ C     ***************************************************************
 C
 #include "trkoor.h"
 #include "numder.h"
-#include "taymol.h"
       LOGICAL HESEXS
       INTEGER BEGIN
       DIMENSION TDER(NDIMT), SYMCOR(NCOOR,NCOOR), TRNCCR(NCOOR,NCOOR),
      &          TRAMSS(NCOOR), DKIN(NCOOR), TMPGRD(NCOOR),
      &          TMPHES(NCOOR,NCOOR), TMPMSS(NCOOR), CSTART(NCOOR),
      &          TMPTD1(NCOOR,NCOOR,NCOOR), TMPTD2(NCOOR,NCOOR,NCOOR)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       KDIMH = NCOOR**2
       KDIMT = NCOOR**3
 C
@@ -5209,7 +5209,7 @@ C     *** Hessian ***
          TMPHES(IC1,IC3) = TMPHES(IC1,IC3)
      &                   + HESMOL(IC1,IC2)*TRNCCR(IC3,IC2)
  700  CONTINUE
-      CALL DZERO(HESMOL,MXCOOR**2)
+      HESMOL(:,:) = 0.0D0
       DO 800 IC3 = 1, NCOOR
       DO 800 IC2 = 1, NDCOOR
       DO 800 IC1 = 1, NCOOR
@@ -5245,7 +5245,7 @@ C
 C     *** Mass transformation. ***
 C
 C     *** Gradient ***
-      CALL DZERO(GRDMOL,MXCOOR)
+      GRDMOL(:) = 0.0D0
       DO 1200 IC1 = 1, NCOOR
          GRDMOL(IC1) = GRDMOL(IC1) + TRAMSS(IC1)*TMPGRD(IC1)
  1200 CONTINUE
@@ -5256,6 +5256,7 @@ C     *** Hessian ***
          TMPHES(IC1,IC2) = TMPHES(IC1,IC2)+ HESMOL(IC1,IC2)*TRAMSS(IC2)
  1300 CONTINUE
       CALL DZERO(HESMOL,MXCOOR**2)
+      HESMOL(:,:) = 0.0D0
       DO 1400 IC2 = 1, NCOOR
       DO 1400 IC1 = 1, NCOOR
          HESMOL(IC1,IC2) = HESMOL(IC1,IC2)+ TRAMSS(IC1)*TMPHES(IC1,IC2)
@@ -5375,6 +5376,7 @@ C
          WRITE (LUPRI,'(24F10.7)') (TMPMSS(I),I=1,NDCOOR)
       END IF
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C
@@ -5449,15 +5451,18 @@ C     **********************************************************
 C
 #include "fcsym.h"
 #include "trkoor.h"
-#include "taymol.h"
       LOGICAL SYMDET, SYMADA
       DIMENSION SYMCOR(NCOOR ,NCOOR ), CSTART(NCOOR        ),
      &          GRIREP(NGORDR,NGVERT), CHRCTR(NGORDR,NCVERT),
      &          HESSIN(NCOOR ,NCOOR),  WORK  (LWORK)
       DIMENSION ICRIRP(NCOOR,2)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
 C
 C     *** Initializing. ***
       SYMADA = .FALSE.
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     *** Making symmetry adapted coordinates. ***
 C
@@ -5490,8 +5495,7 @@ C
 C
 C     *** Print! ***
 C
-      iprint = 8
-      IF (IPRINT .GT. 7) THEN
+      IF (IPRINT .GT. 4) THEN
          CALL HEADER ('Final hessian from RDHESS',0)
 C
          N = 0
@@ -5510,8 +5514,8 @@ C
             WRITE (LUPRI,'(A)') '                              '
          END DO
       END IF
-      iprint = 0
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C
@@ -5523,12 +5527,13 @@ C     /* Deck rdfhes */
 CRF added
 #include "numder.h"
 C
-#include "taymol.h"
 #include "nuclei.h"
 #include "trkoor.h"
       LOGICAL SYMADA, HESEXS
       CHARACTER*5 HSMINF
       DIMENSION WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       IF (C4FORC) THEN ! We should read a CFOUR style Hessian file
          CALL RDC4HS(WORK,LWORK,IPRINT)
@@ -5558,6 +5563,7 @@ C     *** Check if the speciefied dimensions match those from MOLECULE.INP. ***
 C
 C     *** Read the hessian from file. ***
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       DO 100 ICOOR2 = 1, NCOOR
 C
          DO 200 ICOOR1 = 1, NCOOR
@@ -5593,6 +5599,8 @@ C
 C
       CALL FLSHFO(LUPRI)
 C
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C
@@ -5607,13 +5615,15 @@ C     **********************************************************
 #include "priunit.h"
 #include "mxcent.h"
 C
-#include "taymol.h"
       CHARACTER*9 TYPE
       DIMENSION HESSIN(NCOOR,NCOOR), SYMCOR(NCOOR,NCOOR),
      &          TMPHES(NCOOR,NCOOR), WORK(LWORK)
+
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C     *** Cartesian to symmetric transformation. ***
       IF (TYPE .EQ. 'symmetry ') THEN
+        CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
         KDIM = NCOOR**2
 C
@@ -7482,15 +7492,18 @@ C     ************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "trkoor.h"
       LOGICAL HESEXS
       DIMENSION WORK(LWORK)
 
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       INQUIRE (FILE='FCM',EXIST=HESEXS)
 
       IF (.NOT. HESEXS ) CALL QUIT('Unable to open file FCM')
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       LUC4IF = -1
 
@@ -7510,6 +7523,8 @@ C     *** We can now read the Hessian ***
       END DO
 
       CALL GPCLOSE (LUC4IF,'KEEP')
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       RETURN
 

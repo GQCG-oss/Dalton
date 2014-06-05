@@ -1625,7 +1625,6 @@ C     **********************************************
 #include "mxcent.h"
 #include "inftap.h"
 
-#include "taymol.h"
 #include "trkoor.h"
 #include "numder.h"
       PARAMETER (IPRTRH = 20 )

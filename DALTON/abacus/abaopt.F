@@ -1540,7 +1540,6 @@ C  /* Deck runopt */
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
@@ -1553,9 +1552,7 @@ C  /* Deck runopt */
       DIMENSION GRDOLD(MXRCRD), GRDMAT(25,MXRCRD)
       DIMENSION STPMAT(25,MXRCRD), HESOLD(MXRCRD,MXRCRD)
       DIMENSION GRDARR(25,MXRCRD), STPARR(MXRCRD,MXRCRD)
-C emg
-      CHARACTER LABEL1*8, STHELP*10
-C emg
+      CHARACTER LABEL1*8, STHELP*10 ! emg
 C
 C     The array geinfo contains optimization information for each
 C     iteration. The first index is the iteration, the second gives
@@ -1571,6 +1568,10 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
+
+#include "taymol.h"
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       CALL QENTER('RUNOPT')
@@ -1718,8 +1719,10 @@ C emg -----------------------------------------------------------------
             KH2    = KSCTRA + (3*NUCDEP)**2
             KWRK3  = KH2    + MXCOOR*MXCOOR
             IF (KWRK3 .GT.LWORK) CALL STOPIT('RUNOPT',' ',KWRK3,LWORK)
-            CALL TRAHES(HESMOL,MXCOOR,WORK(KH2),WORK(KCSTRA),
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+            CALL TRAHES(HESMOL,NCOOR,WORK(KH2),WORK(KCSTRA),
      &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
+            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          ENDIF
          CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
@@ -1748,7 +1751,8 @@ C emg -----------------------------------------------------------------
 
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         STOP 'Manually stop after punching the Hessian and Gradient'
+         CALL QUIT(
+     &   'Manually stop after punching the Hessian and Gradient')
 
       ENDIF
 C
@@ -2657,7 +2661,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2672,8 +2675,12 @@ C
 #include "rspprp.h"
 #include "esg.h"
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
-      DIMENSION WORK(LWORK)
-      DIMENSION EGRAD(MXCOOR)
+      REAL*8  EGRAD(MXCOOR), WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       CALL QENTER('GTGRAD')
       WORK(1) = WRKDLM
       KFREE = 2
@@ -2744,15 +2751,20 @@ C
             HELFEY = .FALSE.
          END IF
       END IF
+
+!     transform symmetry gradient in GRDMOL to cartesian gradient in EGRAD
+      allocate ( grdmol(ncoor), hesmol(ncoor,ncoor) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,EGRAD,WORK(KFREE),
      &            WORK(KFREE + MXCOOR*MXCOOR),NCRREP(0,1),3*NUCDEP)
+      deallocate( grdmol, hesmol )
       CALL QEXIT('GTGRAD')
       RETURN
       END
 
 C  /* Deck gthess */
       SUBROUTINE GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA,
-     &                                 WORK,LWORK,WRKDLM)
+     &                  WORK,LWORK,WRKDLM)
 C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
@@ -2761,21 +2773,24 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "optinf.h"
-#include "trkoor.h"
 #include "cbiwlk.h"
 #include "pvibav.h"
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       CALL QENTER('GTHESS')
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       WORK(1) = WRKDLM
       KFREE = 2
       LFREE = LWORK - KFREE + 1
@@ -2828,8 +2843,10 @@ C        *** "desymmetrized".                          ***
 C
          KCSTRA = KFREE
          KSCTRA = KCSTRA + NCOOR**2
-         CALL TRAHES(HESMOL,MXCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+         CALL TRAHES(HESMOL,NCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
      &               MXCOOR,NCOOR,1)
+         CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       ELSE IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
 C
 C        For all iterations except the first, MINCGH is run here.
@@ -2853,7 +2870,6 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -2863,11 +2879,17 @@ C
       DIMENSION BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), HESINT(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
+      CALL QENTER('INIHES')
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2932,9 +2954,7 @@ C
  14            CONTINUE
  12         CONTINUE
          END IF
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian has been read from file.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/)') 'Initial Hessian has been read from file.'
          HSFILE = .FALSE.
 C
 C     Check if Hessian has been calculated
@@ -2954,10 +2974,10 @@ C
                   CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
                END IF
                CALL DZERO(HESOLD,MXRCRD*MXRCRD)
-               CALL TRAHES(HESMOL,MXCOOR,HESOLD,TMPMT2,TMPMT3,
+               CALL TRAHES(HESMOL,NCOOR,HESOLD,TMPMT2,TMPMT3,
      &                     MXCOOR,3*NUCDEP,1)
                CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,
-     &              HESOLD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &              HESOLD,MXRCRD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &              WORK,LWORK)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian Hessian',-1)
@@ -2970,17 +2990,17 @@ C
                GRADNM = SQRT(DDOT(ICRTCR,GRDMOL,1,GRDMOL,1))
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian gradient',-1)
-                  CALL OUTPUT(GRDMOL,1,1,1,ICRTCR,1,MXCOOR,1,LUPRI)
+                  CALL OUTPUT(GRDMOL,1,1,1,ICRTCR,1,NCOOR,-1,LUPRI)
                   CALL HEADER('Internal gradient',-1)
                   CALL OUTPUT(GRDINT,1,1,1,IINTCR,1,MXRCRD,1,LUPRI)
                END IF
                CALL HX2HQ(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,
-     &              HESMOL,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &              HESMOL,NCOOR,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &              WORK,LWORK)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Cartesian Hessian',-1)
                   CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,
-     &                                      MXCOOR,MXCOOR,1,LUPRI)
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
             END IF
             DO 15 J = 1, IINTCR
@@ -3024,7 +3044,7 @@ C
 C
          IF (IPRINT .GE. IPRDBG) THEN
             CALL HEADER('Cartesian gradient',-1)
-            CALL OUTPUT(GRDMOL,1,1,1,NCART,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(GRDMOL,1,1,1,NCART,1,NCART,-1,LUPRI)
          END IF
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Internal gradient',-1)
@@ -3083,7 +3103,7 @@ C
          END IF
          IF ((INRDHS .OR. INMDHS) .AND. ((.NOT. REDINT)
      &        .AND. (.NOT. DELINT))) THEN
-            CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+            HESMOL(:,:) = 0.0D0
             CALL HQ2HX(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,HESINT,
      &           GRDINT,HESMOL,WILBMT,BMTRAN,WORK,LWORK)
             IF (MAXOPR .GT. 0) THEN
@@ -3095,8 +3115,8 @@ C
  100           CONTINUE
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Expanded Cartesian Hessian',-1)
-                  CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,MXCOOR,MXCOOR,
-     &                                                       1,LUPRI)
+                  CALL OUTPUT(HESMOL,1,ICRTCR,1,ICRTCR,
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
                DO 715 J = 1, ICRTCR
                   DO 717 I = 1, J-1
@@ -3110,17 +3130,17 @@ C
 C
                CALL DGEMM('T','N',ICRTCR,ICRTCR,ICRTCR,1.D0,
      &                    TMPMT3,ICRTCR,
-     &                    HESMOL,MXCOOR,0.D0,
+     &                    HESMOL,NCOOR,0.D0,
      &                    TMPMAT,MXCOOR)
-               CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+               HESMOL(:,:) = 0.0D0
                CALL DGEMM('N','N',ICRTCR,ICRTCR,ICRTCR,1.D0,
      &                    TMPMAT,MXCOOR,
      &                    TMPMT3,ICRTCR,0.D0,
-     &                    HESMOL,MXCOOR)
+     &                    HESMOL,NCOOR)
                IF (IPRINT .GE. IPRDBG) THEN
                   CALL HEADER('Totally Symmetric Cartesian Hessian',-1)
-                  CALL OUTPUT(HESMOL,1,NCART,1,NCART,MXCOOR,MXCOOR,
-     &                                                         1,LUPRI)
+                  CALL OUTPUT(HESMOL,1,NCART,1,NCART,
+     &                        NCOOR,NCOOR,-1,LUPRI)
                END IF
             END IF
             DO 25 J = 1, ICRTCR
@@ -3146,15 +3166,13 @@ C     symmetry is used, the Hessian must be scaled so that it will be
 C     correct after normalization.
 C
       ELSE
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+         HESMOL(:,:) = 0.0D0
          DO 40 I = 1, NCRTOT
             HESMOL(I,I) = EVLINI*SCLVEC(I)*SCLVEC(I)
             HESOLD(I,I) = EVLINI
             GRDOLD(I) = GRDMOL(I)
  40      CONTINUE
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian is a diagonal matrix.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/)') 'Initial Hessian is a diagonal matrix.'
       END IF
 C
       IF (IPRINT .GE. IPRMED) THEN
@@ -3167,6 +3185,10 @@ C
      &                                                       1,LUPRI)
          END IF
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
+      CALL QEXIT('INIHES')
       RETURN
       END
 
@@ -3186,7 +3208,6 @@ C
 #include "optinf.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GRDMAT(25,MXRCRD), STPMAT(25,MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), GAMMA(MXRCRD)
@@ -3197,9 +3218,14 @@ C
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), HESINT(MXRCRD,MXRCRD)
       DIMENSION WORK(LWORK)
-      LOGICAL RESET, REJLST
-C
+      LOGICAL   RESET, REJLST
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+C     =====
       CALL QENTER('UPDHES')
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     If redundant internal coordinates are used, we have to transform
 C     the calculated Cartesian gradient
@@ -3291,7 +3317,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              RESET,GRADNM,IPRINT,ITYPE,.TRUE.)
             ELSE
                CALL UPMULT(MXRCRD,STPSYM,STPMAT,GAMMA,GRDMAT,HESOLD,
-     &              HESMOL,NCART,MXCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
+     &              HESMOL,NCART,NCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
      &              TMPMT2,TMPMT3,TMPMT4,TMPMT5,TMPMT6,NCART-NPROJ,
      &              RESET,GRADNM,IPRINT,ITYPE,.TRUE.)
             END IF
@@ -3302,7 +3328,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPBFGS(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (DFP) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPDFP ')
@@ -3311,7 +3337,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPDFP(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (PSB) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPPSB ')
@@ -3320,7 +3346,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPPSB(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (RANKON) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPRNKO')
@@ -3329,7 +3355,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              IINTCR,MXRCRD,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             ELSE
                CALL UPRNKO(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,
-     &              NCART,MXCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
+     &              NCART,NCOOR,TMPMAT,TMPMT2,TMPMT3,IPRINT)
             END IF
          ELSE IF (BOFILL) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPBOFL')
@@ -3338,7 +3364,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             ELSE
                CALL UPBOFL(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,NCART,
-     &              MXCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
+     &              NCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             END IF
          ELSE IF (BFGSR1) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPBFR1')
@@ -3347,7 +3373,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              MXRCRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             ELSE
                CALL UPBFR1(MXRCRD,STPSYM,GAMMA,HESOLD,HESMOL,NCART,
-     &              MXCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
+     &              NCOOR,TMPMAT,TMPMT2,TMPMT3,TMPMT4,TMPMT5,IPRINT)
             END IF
          ELSE IF (SCHLEG) THEN
             CALL UPOUTP(MXRCRD,SCLVEC,GRDOLD,GAMMA,HESOLD,'UPSCHL')
@@ -3360,7 +3386,7 @@ C            IF (REJINI .AND. (IREJOL .GT. 0)) RESET = .TRUE.
      &              TMPMT2,TMPMT3,IINTCR-NPROJ,RESET,GRADNM,IPRINT)
             ELSE
                CALL UPSCHL(MXRCRD,STPSYM,STPMAT,GAMMA,GRDMAT,HESOLD,
-     &              HESMOL,NCART,MXCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
+     &              HESMOL,NCART,NCOOR,TMPMAT(1),TMPMAT(MX2CRD+1),
      &              TMPMT2,TMPMT3,NCART-NPROJ,RESET,GRADNM,IPRINT)
             END IF
          END IF
@@ -3396,6 +3422,8 @@ C
  30         CONTINUE
          END IF
       END IF
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL QEXIT('UPDHES')
       RETURN
       END
@@ -3411,14 +3439,18 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GAMMA(MXRCRD), HESOLD(MXRCRD,MXRCRD)
       CHARACTER UPDTXT*6, OUTTXT*18
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       NCOOR = NCART
       IF (REDINT .OR. DELINT) NCOOR = IINTCR
       OUTTXT = 'Output from ' // UPDTXT
@@ -3443,9 +3475,9 @@ C
          CALL OUTPUT(GRDOLD,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
          CALL HEADER('Gradient at current geometry',-1)
          IF (REDINT .OR. DELINT) THEN
-            CALL OUTPUT(GRDINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(GRDINT,1,1,1,NCOOR,1,MXRCRD,-1,LUPRI)
          ELSE
-            CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,NCOOR,-1,LUPRI)
          END IF
       END IF
 C
@@ -3479,13 +3511,17 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
-#include "taymol.h"
 #include "nuclei.h"
 #include "symmet.h"
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESINT(MXRCRD,MXRCRD)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       IF (REDINT .OR. DELINT) THEN
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          CALL DZERO(GRDOLD,MXRCRD)
@@ -3496,7 +3532,7 @@ C
             GRDOLD(J) = GRDINT(J)
  10      CONTINUE
       ELSE
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
+         HESMOL(:,:) = 0.0D0
          CALL DZERO(GRDOLD,MXRCRD)
          DO 20 J = 1, NCART
             DO 25 I = 1, NCART
@@ -3522,6 +3558,8 @@ C
          END IF
       END IF
       KEEPHE = .FALSE.
+
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 
@@ -7184,13 +7222,17 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "taymol.h"
 #include "gnrinf.h"
 #include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
       LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK, CNVRGD(1:4)
       CHARACTER*4 LOGTXT
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CNVERG = .FALSE.
       CNVGRD = .FALSE.
       CNVSTP = .FALSE.
@@ -7733,14 +7775,17 @@ C
 #include "molinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "taymol.h"
 #include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MXCOOR,MXCOOR)
       DIMENSION WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+
       LUHES = -1
       CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',IDUMY,
      &     .FALSE.)
@@ -7759,8 +7804,10 @@ C
       ELSE
          IF (MAXREP .GT. 0) THEN
             CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
-            CALL TRAHES(HESMOL,MXCOOR,TMPMT4,TMPMT1,TMPMT2,
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+            CALL TRAHES(HESMOL,NCOOR,TMPMT4,TMPMT1,TMPMT2,
      &           MXCOOR,3*NUCDEP,1)
+            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             WRITE(LUHES,*) 3*NUCDEP
             WRITE(LUHES,*)
             DO 200 J = 1, 3*NUCDEP
@@ -7804,7 +7851,6 @@ C
 #include "molinp.h"
 #include "optinf.h"
 #include "gnrinf.h"
-#include "taymol.h"
 #include "symmet.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
@@ -7812,9 +7858,13 @@ C
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MXCOOR,MXCOOR)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION BMTINV(MXRCRD,MXCOOR), WORK(LWORK)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      HESMOL(:,:) = 0.0D0
       LUHES = -1
-      CALL DZERO(HESMOL,MXCOOR*MXCOOR)
       INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
       IF (.NOT. HESEXS) THEN
          IERR = -1
@@ -7844,11 +7894,10 @@ C
      &        TMPMT3,ICRD,
      &        TMPMT4,MXCOOR,0.D0,
      &        TMPMT1,MXCOOR)
-         CALL DZERO(HESMOL,MXCOOR*MXCOOR)
          CALL DGEMM('N','N',ICRD,ICRD,ICRD,1.D0,
      &        TMPMT1,MXCOOR,
      &        TMPMT3,ICRD,0.D0,
-     &        HESMOL,MXCOOR)
+     &        HESMOL,NCOOR)
       ELSE
          DO 150 J = 1, ICRD
             DO 160 I = 1, ICRD
@@ -7860,11 +7909,12 @@ C
 
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
          CALL HX2HQ(MXRCRD,MX2CRD,ATMARR,TMPMT1,TMPMT2,TMPMT3,
-     &        TMPMT4,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
+     &        TMPMT4,MXRCRD,GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,
      &        WORK,LWORK)
 
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 
@@ -7952,7 +8002,6 @@ C
       DIMENSION WORK(LWORK), COOR(3,MXCENT)
 C
 #include "molinp.h"
-#include "taymol.h"
 #include "numder.h"
 #include "symmet.h"
 #include "infpar.h"
