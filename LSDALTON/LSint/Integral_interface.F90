@@ -5219,9 +5219,9 @@ logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMS = setting%scheme%ADMMQ_ScaleXC2
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
+isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
 
 IF (setting%scheme%cam) THEN
@@ -5238,9 +5238,7 @@ nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
 CALL lstimer('START',ts,te,lupri)
-IF (setting%scheme%ADMM_DFBASIS) THEN
-  AO2 = AOdfAux
-ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+IF (setting%scheme%ADMM_JKBASIS) THEN
   AO2 = AOdfJK
 ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
   AO2 = AOVAL
@@ -5312,7 +5310,7 @@ ENDIF
 
 !We transform the full Density to a level 2 density D2
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
+                  & nbast,AO2,AO3,setting%scheme%ADMM1,&
                   & GC2,GC3,constrain_factor)
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
@@ -5352,7 +5350,7 @@ setting%scheme%dft%igrid = Grid_ADMML2
   
 !Only test electrons if the D2 density matrix is McWeeny purified
 testNelectrons = setting%scheme%dft%testNelectrons
-setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
 
 !Level 2 XC matrix
 call mat_zero(F2(1))
@@ -5508,7 +5506,7 @@ SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
    TYPE(MATRIX) :: temp,S23,T23,S33,S22,D2,tmp22
    real(realk)  :: trace, traceDS
    integer      :: nelectrons
-   logical      :: DEBUG_ADMM_CONST,DEBUG
+   logical      :: DEBUG
 
    DEBUG = .FALSE.
    CALL mat_init(T23,n2,n3)
@@ -5583,11 +5581,11 @@ real(realk) :: lambda
 Logical     :: isADMMQ
 Logical     :: isADMMP
 !
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMP = setting%scheme%ADMMP
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
-McWeeny = setting%scheme%ADMM_MCWEENY
+McWeeny = setting%scheme%ADMM1
 ERI2C = setting%scheme%ADMM_2ERI
 
 IF (io_file_exist(Filename,setting%IO)) THEN
@@ -5702,15 +5700,14 @@ character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
-logical             :: DEBUG_ADMM_CONST,PRINT_EK3
+logical             :: PRINT_EK3
 logical             :: isADMMQ,isADMMS,isADMMP
 integer             :: iAtom,iX
 !
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMS = setting%scheme%ADMMQ_ScaleXC2
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
+isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
-DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5727,9 +5724,7 @@ unres  = matrix_type .EQ. mtype_unres_dense
 
   
 DO idmat=1,ndrhs
-   IF (setting%scheme%ADMM_DFBASIS) THEN
-     AO2 = AOdfAux
-   ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+   IF (setting%scheme%ADMM_JKBASIS) THEN
      AO2 = AOdfJK
    ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
      AO2 = AOVAL
@@ -5761,7 +5756,7 @@ DO idmat=1,ndrhs
    call mat_zero(D2)
    call transform_D3_to_D2(DmatLHS(idmat)%p,D2,setting,lupri,luerr,&
                            & nbast2,nbast,AO2,AO3,&
-                           & setting%scheme%ADMM_MCWEENY,GC2,GC3,&
+                           & setting%scheme%ADMM1,GC2,GC3,&
                            & constrain_factor)
  
    !Store original AO-indeces (AOdf will not change, but is still stored)
@@ -5802,7 +5797,7 @@ DO idmat=1,ndrhs
    !Only test electrons if the D2 density matrix is McWeeny purified
 
    testNelectrons = setting%scheme%dft%testNelectrons
-   setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM_MCWEENY
+   setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM1
    
    !Level 2 XC matrix
    call mat_init(xc2,nbast2,nbast2)
@@ -5918,8 +5913,7 @@ CONTAINS
       real(realk)  :: trace
       integer      :: NbEl
       !
-      isADMMS = setting%scheme%ADMMQ_ScaleXC2
-      DEBUG_ADMM_CONST = .FALSE.
+      isADMMS = setting%scheme%ADMMS
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(tmp22,n2,n2)
       call mat_zero(tmp22)
@@ -5934,10 +5928,6 @@ CONTAINS
          LAMBDA = 2E0_realk/NbEl*trace
       ENDIF
       
-      IF (DEBUG_ADMM_CONST) THEN
-         write(lupri,*) "Tr([k2-xc2]d2)=", trace
-         write(lupri,*) "LAMBDA in gradient", LAMBDA
-      ENDIF
       CALL mat_free(tmp22)
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
    
@@ -5965,7 +5955,7 @@ CONTAINS
       real(realk),pointer        :: reOrtho_D3(:,:),reOrtho_d2(:,:)
       logical                    :: isADMMP
       !
-      isADMMP = setting%scheme%ADMMQ_ScaleE
+      isADMMP = setting%scheme%ADMMP
       call ls_dzero(ADMM_charge_term,3*nAtoms)
 
       tmpDFD(1)%p => D3
@@ -6026,14 +6016,12 @@ CONTAINS
       real(realk)                :: Tr_d2A22,nrm, val
       integer                    :: NbEl ! nb. electrons
       integer                    :: i,j,iAtom,iX
-      logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
       Logical                    :: isADMMQ,isADMMP
       !
-      DEBUG_ADMM_CONST = .FALSE.
-      isADMMP = setting%scheme%ADMMQ_ScaleE
-      isADMMQ = setting%scheme%ADMM_CONST_EL
+      isADMMP = setting%scheme%ADMMP
+      isADMMQ = setting%scheme%ADMMQ
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
