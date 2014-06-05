@@ -219,7 +219,7 @@ module cc_tools_module
       !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
       call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,wszes,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal,rest_occ_sio4=.true.)  
+         &rest_occ_om2=rest_occ_om2,scal=scal)  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -228,7 +228,7 @@ module cc_tools_module
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,rest_occ_sio4)
+         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no)
       implicit none
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
@@ -267,9 +267,9 @@ module cc_tools_module
       logical,intent(in) :: lock_outside
       !> size of w0
       integer(kind=8),intent(in)   :: wszes(4)
-      integer,optional,intent(in)  :: order(4)
+      integer,optional,intent(in)  :: order(4),act_no
       !restricted i<=j in the omega2 and or sio4
-      logical,optional, intent(in) :: rest_occ_om2,rest_occ_sio4
+      logical,optional, intent(in) :: rest_occ_om2
       real(realk), optional, intent(in) :: scal
       !timing information
       real(realk) :: twork,tcomm
@@ -282,17 +282,17 @@ module cc_tools_module
       integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2
       logical               :: second_trafo_step
       real(realk),pointer   :: dumm(:)
-      integer               :: mv((nv*nv)/2),st,dims(2)
+      integer               :: mv((nv*nv)/2),st,dims(2),no2
       real(realk),pointer   :: source(:,:),drain(:,:)
       integer(kind=ls_mpik) :: mode
       integer(kind=long)    :: o2v2
-      logical               :: rest_o2_occ, rest_sio4_occ
+      logical               :: rest_o2_occ
 
 
       rest_o2_occ   = .false.
-      rest_sio4_occ = .false.
       if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
-      if(present(rest_occ_sio4))rest_sio4_occ = rest_occ_sio4
+      no2 = no
+      if(present(act_no))no2=act_no
 
       o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
@@ -734,39 +734,10 @@ module cc_tools_module
       endif
 #endif
       !transform gamma -> l
-      call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
+      call dgemm('t','n',no2,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no2)
       !transform alpha -> a , order is now sigma [ k l i j]
-      if(rest_sio4_occ)then
+      call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
 
-         call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,1.0E0_realk,sio4,no)
-
-      else
-
-         call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,0.0E0_realk,w2,no)
-
-         do j=no,1,-1
-            do i=j,1,-1
-               pos1=1+((i+j*(j-1)/2)-1)*no*no
-               pos2=1+(i-1)*no*no+(j-1)*no*no*no
-               if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-            enddo
-         enddo
-         do j=no,1,-1
-            do i=j,1,-1
-               pos1=1+(i-1)*no*no+(j-1)*no*no*no
-               pos2=1+(j-1)*no*no+(i-1)*no*no*no
-               if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-            enddo
-         enddo
-
-         do j=no,1,-1
-            do i=j,1,-1
-               pos1=1+(i-1)*no*no+(j-1)*no*no*no
-               call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(no*no)/2,st)
-            enddo
-         enddo
-         sio4 = sio4 + w2(1:no**4)
-      endif
 
 
 
@@ -786,40 +757,10 @@ module cc_tools_module
          call mat_transpose(full1T,full2T*nor,1.0E0_realk,&
             &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
          !transform gamma -> l
-         call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)
+         call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
          !transform alpha -> k, order is now sigma[k l i j]
-         if(rest_sio4_occ)then
+         call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
 
-            call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,1.0E0_realk,sio4,no)
-
-         else
-
-            call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,0.0E0_realk,w2,no)
-
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+((i+j*(j-1)/2)-1)*no*no
-                  pos2=1+(i-1)*no*no+(j-1)*no*no*no
-                  if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-               enddo
-            enddo
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                  pos2=1+(j-1)*no*no+(i-1)*no*no*no
-                  if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
-               enddo
-            enddo
-
-            do j=no,1,-1
-               do i=j,1,-1
-                  pos1=1+(i-1)*no*no+(j-1)*no*no*no
-                  call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(no*no)/2,st)
-               enddo
-            enddo
-            sio4 = sio4 + w2(1:no**4)
-
-         endif
       endif
 
 
@@ -1107,6 +1048,212 @@ module cc_tools_module
       endif
       nullify(trick)
    end subroutine get_I_plusminus_le
+
+   !> \brief subroutine to add contributions to the sio4 matrix which enters the
+   !B2.2 term in the "non"-parallel region
+   !> \author Patrick Ettenhuber
+   !> \Date September 2012
+   subroutine add_int_to_sio4(w0,w2,w3,nor,no,nv,nb,fa,fg,la,lg,xo,sio4,act_no)
+      implicit none
+      !> workspace containing the paritially transformed integrals ordered as I(i
+      !gamma alpha j)
+      real(realk),pointer :: w0(:)
+      !> arbitrary workspace of correct size
+      real(realk),pointer :: w2(:),w3(:)
+      !> number of occupied, virutal and ao indices
+      integer, intent(in) :: nor,no,nv,nb
+      !> first alpha and first gamma indices of the current loop
+      integer, intent(in) :: fa,fg
+      !> lengths of the alpha ang gamma batches in the currnet loop
+      integer, intent(in) :: la,lg
+      !> transformation matrix for t1 transformed integrals "Lambda p"
+      real(realk),intent(in) :: xo(nb*no)
+      integer, intent(in), optional :: act_no
+      !> sio4 storage space to update during the batched loops
+      real(realk),pointer :: sio4(:)
+      integer :: pos,i,j,no2
+      integer(kind=8) :: pos1, pos2
+
+      no2 = no
+      if(present(act_no))no2 = act_no
+
+      ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
+      call array_reorder_4d(1.0E0_realk,w0,no,lg,la,no,[2,3,1,4],0.0E0_realk,w2)
+      ! (w2):I[alpha gamma i <= j] <- (w3):I[alpha gamma i j]
+      do j=1,no
+         do i=1,j
+            pos1=1_long+((i+j*(j-1)/2)-1)*la*(lg*i8)
+            pos2=1_long+(i-1)*la*lg+(j-1)*la*lg*(no*i8)
+            !call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
+            w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
+         enddo
+      enddo
+      ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
+      call array_reorder_3d(1.0E0_realk,w3,lg,la,nor,[2,3,1],0.0E0_realk,w2)
+      ! (w2):I[ l i <= j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i <= j alpha]
+      call dgemm('t','n',no2,nor*lg,la,1.0E0_realk,xo(fa),nb,w2,la,0.0E0_realk,w3,no2)
+      ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [alpha k ]^T I[l i <= j alpha]^T
+      call dgemm('t','t',no2,nor*no2,lg,1.0E0_realk,xo(fg),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+
+   end subroutine add_int_to_sio4
+
+   !> \brief Get the b2.2 contribution constructed in the kobayashi scheme after
+   !the loop to avoid steep scaling ste  !> \author Patrick Ettenhuber
+   !> \date December 2012
+   subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order)
+      implicit none
+      !> the sio4 matrix from the kobayashi terms on input
+      real(realk), intent(in) :: sio4(:)
+      !> amplitudes
+      !real(realk), intent(in) :: t2(*)
+      type(array), intent(inout) :: t2
+      !> some workspave
+      real(realk), intent(inout) :: w1(:)
+      real(realk), pointer :: w2(:)
+      !> number of occupied, virutal and ao indices
+      integer, intent(in) :: no,nv
+      !> residual to be updated
+      !real(realk), intent(inout) :: om2(*)
+      type(array), intent(inout) :: om2
+      !> integer specifying the calc-scheme
+      integer, intent(in) :: s
+      logical, intent(in) :: lock_outside
+      !> work and communication time in B2 term
+      real(realk), intent(inout) :: tw,tc
+      logical, intent(in),optional :: no_par
+      integer, intent(in),optional :: order(4)
+      integer :: nor
+      integer :: ml,l,tl,fai,lai
+      integer :: tri,fri
+      integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
+      real(realk) :: nrm1,nrm2,nrm3,nrm4
+      integer ::  mv((nv*nv)/2),st
+      integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
+      logical :: traf,np
+      integer :: o(4)
+
+      call time_start_phase(PHASE_WORK)
+
+      np = .false.
+      if(present(no_par))np = no_par
+      o = [1,2,3,4]
+      if(present(order)) o  = order
+
+      me    = 0
+      massa = 0
+      nnod  = 1
+#ifdef VAR_MPI
+      massa = infpar%master
+      nnod  = infpar%lg_nodtot
+      me    = infpar%lg_mynum
+      mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+#endif
+      o2v2=(i8*no)*no*nv*nv
+
+      !Setting transformation variables for each rank
+      !**********************************************
+      if(np)then
+         fai = 1
+         tl  = nv*nv
+      else
+         call mo_work_dist(nv*nv,fai,tl,traf)
+      endif
+
+      if(DECinfo%PL>3.and.me==0)then
+         write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
+      endif
+
+      nor=no*(no+1)/2
+
+      ! do contraction
+      if((s==4.or.s==3).and.traf)then
+
+
+         w1=0.0E0_realk
+         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
+
+
+      else if(s==2.and.traf)then
+
+#ifdef VAR_MPI
+         call mem_alloc(w2,tl*no*no)
+
+         call time_start_phase(PHASE_COMM, at = tw )
+
+         if(lock_outside)call arr_lock_wins(t2,'s',mode)
+         call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
+         if(lock_outside)call arr_unlock_wins(t2,.true.)
+
+         call time_start_phase(PHASE_WORK, at = tc )
+
+         w1=0.0E0_realk
+         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,w2,tl,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
+         call mem_dealloc(w2)
+#endif
+
+      endif
+
+
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+      !$OMP PRIVATE(i,j,pos1,pos2)
+      do j=no,1,-1
+         !$OMP DO 
+         do i=j,1,-1
+            pos1=1+((i+j*(j-1)/2)-1)*nv*nv
+            pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+            if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+         enddo
+         !$OMP END DO
+      enddo
+      !$OMP BARRIER
+      !$OMP DO 
+      do j=no,1,-1
+         do i=j,1,-1
+            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+            pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+            if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+         enddo
+      enddo
+      !$OMP END DO
+      !$OMP END PARALLEL
+
+      do j=no,1,-1
+         do i=j,1,-1
+            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+            call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+         enddo
+      enddo
+
+      if((s==4.or.s==3).and.traf)then
+
+         if(present(order))then
+            call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,order,1.0E0_realk,om2%elm1)
+         else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+         call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
+#else
+         !$OMP WORKSHARE
+         om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
+         !$OMP END WORKSHARE
+#endif
+         endif
+
+      else if(s==2.and.traf)then
+
+#ifdef VAR_MPI
+         call time_start_phase(PHASE_COMM, at = tw )
+
+         if(lock_outside)call arr_lock_wins(om2,'s',mode)
+         call array_two_dim_1batch(om2,o,'a',w1,2,1,nv*nv,lock_outside) 
+         call time_start_phase(PHASE_WORK, at = tc )
+#endif
+
+      endif
+
+      call time_start_phase(PHASE_COMM, at = tw )
+   end subroutine get_B22_contrib_mo
+
+
 
    subroutine print_tensor_unfolding_with_labels(mat,d1,l1,m1,d2,l2,m2,label)
       implicit none

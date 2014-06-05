@@ -615,6 +615,11 @@ contains
   !> \date October 2010
   subroutine check_dec_input()
     implicit none
+    integer :: nodtot
+    nodtot = 1
+#ifdef VAR_MPI
+    nodtot = infpar%nodtot
+#endif
 
     ! Check that array4OnFile is only called for the cases where it is implemented
 
@@ -736,7 +741,16 @@ contains
 
     endif
 
+   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+      call lsquit("ERROR(check_dec_input):Do not use &
+         &.CCSDfoce_scheme in a DEC calculation",-1)
+   endif
 
+   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+      call lsquit("ERROR(check_dec_input):You forced a scheme in &
+      &the CCSD part which is dependent on running at least 2 &
+      &MPI processes with only one process",-1)
+   endif
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
