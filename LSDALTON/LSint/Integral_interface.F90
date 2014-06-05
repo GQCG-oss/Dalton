@@ -5303,7 +5303,7 @@ ENDIF
 
 constrain_factor = 1.0E0_realk
 lambda = 0E0_realk 
-IF (isADMMQ) THEN   
+IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
@@ -5420,7 +5420,7 @@ IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_
 !call mat_free(TMP)
 
 
-IF (isADMMQ) THEN
+IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
 ! term of Kadmm coming from dependance of K on lambda: K=[D,lambda(D)]
   CALL mat_init(S32,nbast,nbast2)
   CALL mat_init(S33,nbast,nbast)
@@ -5575,18 +5575,20 @@ Logical,intent(IN)            :: GCAO2,GCAO3
 real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
-Character(80) :: Filename = 'ADMM_T23'
+Character(80) :: Filename
 Logical :: McWeeny,ERI2C
 real(realk) :: lambda
-Logical     :: isADMMQ
-Logical     :: isADMMP
+Logical     :: isADMMQ,isADMMS,isADMMP
 !
 isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
 isADMMP = setting%scheme%ADMMP
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
 McWeeny = setting%scheme%ADMM1
-ERI2C = setting%scheme%ADMM_2ERI
+ERI2C   = setting%scheme%ADMM_2ERI
+
+write(Filename,'(A8,2L1)') 'ADMM_T23',GCAO2,GCAO3
 
 IF (io_file_exist(Filename,setting%IO)) THEN
   call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
@@ -5618,7 +5620,7 @@ ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons
 ! constrain_factor = 1 / (1-lambda)
-IF (isADMMQ .AND. .NOT.(isADMMP)) THEN
+IF (isADMMQ .OR. isADMMS) THEN
    call mat_scal(constrain_factor,T23)
 ENDIF
 END SUBROUTINE get_T23
@@ -5742,7 +5744,7 @@ DO idmat=1,ndrhs
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
    ! Get the scaling factor derived from constraining the total charge
-   IF (isADMMQ) THEN   
+   IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5857,7 +5859,7 @@ DO idmat=1,ndrhs
    call mem_alloc(ADMM_charge_term,3,nAtoms)
    call ls_dzero(ADMM_charge_term,3*nAtoms)
    
-   IF (isADMMQ) THEN
+   IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                   & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
@@ -6018,9 +6020,10 @@ CONTAINS
       integer                    :: i,j,iAtom,iX
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
-      Logical                    :: isADMMQ,isADMMP
+      Logical                    :: isADMMQ,isADMMS,isADMMP
       !
       isADMMP = setting%scheme%ADMMP
+      isADMMS = setting%scheme%ADMMS
       isADMMQ = setting%scheme%ADMMQ
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
@@ -6039,7 +6042,7 @@ CONTAINS
       call mat_init(A22,n2,n2)
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
-      IF (isADMMQ) THEN
+      IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
          call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
                      & GGAXfactor,D2,k2,xc2,E_x2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3,constrain_factor)
@@ -6079,7 +6082,7 @@ CONTAINS
 
       call ls_dzero(ADMM_proj,3*nAtoms)
       
-      IF (isADMMQ .AND. (.NOT.isADMMP)) THEN
+      IF (isADMMQ .OR. isADMMS) THEN
          ! for ADMMQ and ADMMS, transpose(T') s2 T' replaced by S32 T'
          ! so need to compensate for the missing scaling of transpose(T23)
          ! in B32 only, not C22

@@ -1250,7 +1250,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            ENDIF
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMQ         = .TRUE.
            INTEGRAL%ADMMS         = .TRUE.
         CASE ('.ADMMP');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
@@ -1258,7 +1257,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            ENDIF
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMQ         = .TRUE.
            INTEGRAL%ADMMP         = .TRUE.
         CASE ('.ADMM-FUNC');
            READ(LUCMD,*) INTEGRAL%ADMM_FUNC
