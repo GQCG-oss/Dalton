@@ -690,7 +690,7 @@ C
       PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
-      LOGICAL   GRDINP
+      LOGICAL   GRDINP, NO_ABACUS_INPUT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(10)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -959,8 +959,10 @@ C         geometry if not overridden with '**START'
             GO TO 900
          END IF
          CALL ABAINIALL
+         NO_ABACUS_INPUT = .TRUE.
          GOTO 1
   930 CONTINUE
+      NO_ABACUS_INPUT = .FALSE.
       WORD1 = WORD
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
@@ -1417,7 +1419,7 @@ C
 cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ Properties not ' //
+         WRITE(LUPRI,'(3A/A)') '@ ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
      &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
@@ -1989,9 +1991,10 @@ C
 C     Properties not available for MP2, ABACUS run will be skipped
 C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ WARNING Properties not ' //
+         IF (.NOT. NO_ABACUS_INPUT)
+     &   WRITE(LUPRI,'(/3A/A)') '@ INFO ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
-     &      '@ WARNING You may consider using SOPPA instead.'
+     &      '@ INFO You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF
