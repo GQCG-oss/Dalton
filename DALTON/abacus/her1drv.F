@@ -436,9 +436,9 @@ C
          CALL DZERO(GRADFS,3*NUCDEP)
 #endif
          IF (SECDER) THEN
-            CALL HESZER(HESSKE)
-            CALL HESZER(HESSNA)
-            CALL HESZER(HESFS2)
+            HESSKE(:,:) = 0.0D0
+            HESSNA(:,:) = 0.0D0
+            HESFS2(:,:) = 0.0D0
          END IF
          IF (DIFDIP) THEN
             CALL DZERO(DDIPE,9*NUCDEP)
@@ -454,8 +454,8 @@ C
             CALL DZERO(GSOLTT,3*NUCDEP)
             CALL DZERO(GSOLNN,3*NUCDEP)
             IF (SECDER) THEN
-               CALL HESZER(HSOLT2)
-               CALL HESZER(HSOLNN)
+               HSOLT2(:,:) = 0.0D0
+               HSOLNN(:,:) = 0.0D0
             END IF
          ELSEIF (PCM) THEN
             ESOLTT = D0

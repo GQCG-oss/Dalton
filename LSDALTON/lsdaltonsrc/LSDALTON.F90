@@ -55,7 +55,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
-  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
+  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
   use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
@@ -359,7 +359,15 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               CALL Print_Memory_info(lupri,'after Low Accuracy Start')
            ENDIF
 
-           call scfloop(H1,F,D,S,E,ls,config)
+           if(config%skipscfloop)then              
+              WRITE(config%lupri,*)'The SCF Loop has been skipped!'
+              WRITE(config%lupri,*)'Warning: The use of the .SKIPSCFLOOP keyword assumes that the'
+              WRITE(config%lupri,*)'fock.restart exist and that it is the final Fock/Kohn-Sham matrix'
+              WRITE(config%lupri,*)'of the converged density matrix in dens.restart. Use at own risk.'
+              call read_fock_matrix_from_file(F(1))
+           else !default
+              call scfloop(H1,F,D,S,E,ls,config)
+           endif
            CALL Print_Memory_info(lupri,'after scfloop')
         endif
 

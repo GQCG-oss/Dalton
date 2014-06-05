@@ -124,6 +124,8 @@ type ConfigItem
    logical              :: doF12
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
+   !> skip SCF calculations
+   logical              :: skipscfloop
 end type ConfigItem
 
 type LowAccuracyStartType

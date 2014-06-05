@@ -653,7 +653,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "cbisol.h"
-#include "taymol.h"
 #include "pcmlog.h"
 Cef begin
 #include "incore.h"
@@ -677,7 +676,13 @@ C
       DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+
+#include "trkoor.h"
+#include "taymol.h"
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       real(8), allocatable :: work(:)
+
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C
@@ -908,9 +913,13 @@ C     We may have more DOSYM under **START than under **PROPE
                   DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
                END DO
                IF (REUSED .AND. ITERNR .GT. 0) THEN
+                  allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+                  CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                   REWIND (LUSIFC)
                   CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
                   READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
+                  CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+                  deallocate ( GRDMOL, HESMOL )
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(1),LMWORK)
                ELSE

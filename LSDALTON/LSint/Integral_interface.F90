@@ -1035,7 +1035,7 @@ IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 ! so we loosen the screening threshold with a factor 10
 ! and use DaLink to speed up the calculation. 
 OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
-SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1_realk
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
@@ -1224,7 +1224,7 @@ IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 ! so we loosen the screening threshold with a factor 10
 ! and use DaLink to speed up the calculation. 
 OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
-SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1_realk
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
@@ -3905,7 +3905,7 @@ call time_II_operations1()
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 !derivative on the LHS 
 call initIntegralOutputDims(setting%output,nbast,nbast,nbast,nbast,3)
 CALL ls_getIntegrals(AORdefault,AORdefault,AORdefault,AORdefault,&
@@ -4158,12 +4158,12 @@ INTEGER               :: ndmat,idmat
 real(realk) :: KFAC,maxCoor,OLDTHRESH,TS,TE
 Real(realk),pointer   :: DFULLRHS(:,:,:)
 integer      :: Oper
-IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15)RETURN
+IF (ABS(SETTING%SCHEME%exchangeFactor).LT.1.0E0-15_realk)RETURN
 !The size of the magnetic derivative integral will increase with 
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*(1.0E0_realk/maxCoor)
 IF(matrix_type .EQ. mtype_unres_dense)call lsquit('unres magderiv K not testet- not implemented',-1)
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4283,7 +4283,7 @@ type(matrix)          :: Dmat_AO(ndmat)
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -4333,7 +4333,7 @@ IF(SETTING%SCHEME%FMM) call lsquit('not tested',-1)
 !the size of the system so we modify the threshold with the 
 !largest X,Y or Z distance in the molecule. 
 call determine_maxCoor(SETTING%MOLECULE(1)%p,maxCoor)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0/maxCoor)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*(1.0E0_realk/maxCoor)
 
 IF(setting%IntegralTransformGC)THEN
    do idmat=1,ndmat
@@ -5219,9 +5219,9 @@ logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMS = setting%scheme%ADMMQ_ScaleXC2
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
+isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
 
 IF (setting%scheme%cam) THEN
@@ -5238,9 +5238,7 @@ nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
 CALL lstimer('START',ts,te,lupri)
-IF (setting%scheme%ADMM_DFBASIS) THEN
-  AO2 = AOdfAux
-ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+IF (setting%scheme%ADMM_JKBASIS) THEN
   AO2 = AOdfJK
 ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
   AO2 = AOVAL
@@ -5305,14 +5303,14 @@ ENDIF
 
 constrain_factor = 1.0E0_realk
 lambda = 0E0_realk 
-IF (isADMMQ) THEN   
+IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
             &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
 ENDIF
 
 !We transform the full Density to a level 2 density D2
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM_MCWEENY,&
+                  & nbast,AO2,AO3,setting%scheme%ADMM1,&
                   & GC2,GC3,constrain_factor)
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
@@ -5354,7 +5352,7 @@ setting%scheme%dft%igrid = Grid_ADMML2
   
 !Only test electrons if the D2 density matrix is McWeeny purified
 testNelectrons = setting%scheme%dft%testNelectrons
-setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
 
 !Level 2 XC matrix
 call mat_zero(F2(1))
@@ -5425,7 +5423,7 @@ if(dodisp) setting%scheme%dft%dodisp = dodisp
 !call mat_free(TMP)
 
 
-IF (isADMMQ) THEN
+IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
 ! term of Kadmm coming from dependance of K on lambda: K=[D,lambda(D)]
   CALL mat_init(S32,nbast,nbast2)
   CALL mat_init(S33,nbast,nbast)
@@ -5511,7 +5509,7 @@ SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
    TYPE(MATRIX) :: temp,S23,T23,S33,S22,D2,tmp22
    real(realk)  :: trace, traceDS
    integer      :: nelectrons
-   logical      :: DEBUG_ADMM_CONST,DEBUG
+   logical      :: DEBUG
 
    DEBUG = .FALSE.
    CALL mat_init(T23,n2,n3)
@@ -5580,18 +5578,20 @@ Logical,intent(IN)            :: GCAO2,GCAO3
 real(realk),intent(IN)        :: constrain_factor
 !
 TYPE(MATRIX) :: S23,S22,S22inv
-Character(80) :: Filename = 'ADMM_T23'
+Character(80) :: Filename
 Logical :: McWeeny,ERI2C
 real(realk) :: lambda
-Logical     :: isADMMQ
-Logical     :: isADMMP
+Logical     :: isADMMQ,isADMMS,isADMMP
 !
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
+isADMMP = setting%scheme%ADMMP
 !these options are for the ERI metric
 !with McWeeny ADMM1 is assumed, without ADMM2
-McWeeny = setting%scheme%ADMM_MCWEENY
-ERI2C = setting%scheme%ADMM_2ERI
+McWeeny = setting%scheme%ADMM1
+ERI2C   = setting%scheme%ADMM_2ERI
+
+write(Filename,'(A8,2L1)') 'ADMM_T23',GCAO2,GCAO3
 
 IF (io_file_exist(Filename,setting%IO)) THEN
   call io_read_mat(T23,Filename,setting%IO,LUPRI,LUERR)
@@ -5623,7 +5623,7 @@ ENDIF
 ! IF constraining the total charge
 ! Lagrangian multiplier for conservation of the total nb. of electrons
 ! constrain_factor = 1 / (1-lambda)
-IF (isADMMQ .AND. .NOT.(isADMMP)) THEN
+IF (isADMMQ .OR. isADMMS) THEN
    call mat_scal(constrain_factor,T23)
 ENDIF
 END SUBROUTINE get_T23
@@ -5705,15 +5705,14 @@ character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
 real(realk)         :: lambda, constrain_factor,nrm
-logical             :: DEBUG_ADMM_CONST,PRINT_EK3
+logical             :: PRINT_EK3
 logical             :: isADMMQ,isADMMS,isADMMP,DODISP
 integer             :: iAtom,iX
 !
-isADMMQ = setting%scheme%ADMM_CONST_EL
-isADMMS = setting%scheme%ADMMQ_ScaleXC2
-isADMMP = setting%scheme%ADMMQ_ScaleE
+isADMMQ = setting%scheme%ADMMQ
+isADMMS = setting%scheme%ADMMS
+isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
-DEBUG_ADMM_CONST = .FALSE.
 call lstimer('START',ts,te,lupri)
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5730,9 +5729,7 @@ unres  = matrix_type .EQ. mtype_unres_dense
 
   
 DO idmat=1,ndrhs
-   IF (setting%scheme%ADMM_DFBASIS) THEN
-     AO2 = AOdfAux
-   ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+   IF (setting%scheme%ADMM_JKBASIS) THEN
      AO2 = AOdfJK
    ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
      AO2 = AOVAL
@@ -5750,7 +5747,7 @@ DO idmat=1,ndrhs
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
    ! Get the scaling factor derived from constraining the total charge
-   IF (isADMMQ) THEN   
+   IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AO2,AO3,GC2,GC3)
@@ -5764,7 +5761,7 @@ DO idmat=1,ndrhs
    call mat_zero(D2)
    call transform_D3_to_D2(DmatLHS(idmat)%p,D2,setting,lupri,luerr,&
                            & nbast2,nbast,AO2,AO3,&
-                           & setting%scheme%ADMM_MCWEENY,GC2,GC3,&
+                           & setting%scheme%ADMM1,GC2,GC3,&
                            & constrain_factor)
  
    !Store original AO-indeces (AOdf will not change, but is still stored)
@@ -5807,7 +5804,7 @@ DO idmat=1,ndrhs
    !Only test electrons if the D2 density matrix is McWeeny purified
 
    testNelectrons = setting%scheme%dft%testNelectrons
-   setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM_MCWEENY
+   setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM1
    
    !Level 2 XC matrix
    call mat_init(xc2,nbast2,nbast2)
@@ -5867,7 +5864,7 @@ DO idmat=1,ndrhs
    call mem_alloc(ADMM_charge_term,3,nAtoms)
    call ls_dzero(ADMM_charge_term,3*nAtoms)
    
-   IF (isADMMQ) THEN
+   IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                   & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
@@ -5924,8 +5921,7 @@ CONTAINS
       real(realk)  :: trace
       integer      :: NbEl
       !
-      isADMMS = setting%scheme%ADMMQ_ScaleXC2
-      DEBUG_ADMM_CONST = .FALSE.
+      isADMMS = setting%scheme%ADMMS
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(tmp22,n2,n2)
       call mat_zero(tmp22)
@@ -5940,10 +5936,6 @@ CONTAINS
          LAMBDA = 2E0_realk/NbEl*trace
       ENDIF
       
-      IF (DEBUG_ADMM_CONST) THEN
-         write(lupri,*) "Tr([k2-xc2]d2)=", trace
-         write(lupri,*) "LAMBDA in gradient", LAMBDA
-      ENDIF
       CALL mat_free(tmp22)
    END SUBROUTINE get_Lagrange_multiplier_charge_conservation_in_Energy
    
@@ -5971,7 +5963,7 @@ CONTAINS
       real(realk),pointer        :: reOrtho_D3(:,:),reOrtho_d2(:,:)
       logical                    :: isADMMP
       !
-      isADMMP = setting%scheme%ADMMQ_ScaleE
+      isADMMP = setting%scheme%ADMMP
       call ls_dzero(ADMM_charge_term,3*nAtoms)
 
       tmpDFD(1)%p => D3
@@ -6032,14 +6024,13 @@ CONTAINS
       real(realk)                :: Tr_d2A22,nrm, val
       integer                    :: NbEl ! nb. electrons
       integer                    :: i,j,iAtom,iX
-      logical                    :: DEBUG_ADMM_CONST
       Type(matrix),pointer       :: Sa(:),S32x(:),S23x(:),S33x(:),S22x(:) ! derivative along x,y and z for each atom
       Type(matrix),pointer       :: D3x(:),D3x1(:),D3x3(:)
-      Logical                    :: isADMMQ,isADMMP
+      Logical                    :: isADMMQ,isADMMS,isADMMP
       !
-      DEBUG_ADMM_CONST = .FALSE.
-      isADMMP = setting%scheme%ADMMQ_ScaleE
-      isADMMQ = setting%scheme%ADMM_CONST_EL
+      isADMMP = setting%scheme%ADMMP
+      isADMMS = setting%scheme%ADMMS
+      isADMMQ = setting%scheme%ADMMQ
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
       call mat_zero(T23)
@@ -6057,7 +6048,7 @@ CONTAINS
       call mat_init(A22,n2,n2)
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
-      IF (isADMMQ) THEN
+      IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
          call get_Lagrange_multiplier_charge_conservation_in_Energy(LambdaE,&
                      & GGAXfactor,D2,k2,xc2,E_x2,setting,lupri,luerr,n2,n3,&
                      & AO2,AO3,GCAO2,GCAO3,constrain_factor)
@@ -6097,7 +6088,7 @@ CONTAINS
 
       call ls_dzero(ADMM_proj,3*nAtoms)
       
-      IF (isADMMQ .AND. (.NOT.isADMMP)) THEN
+      IF (isADMMQ .OR. isADMMS) THEN
          ! for ADMMQ and ADMMS, transpose(T') s2 T' replaced by S32 T'
          ! so need to compensate for the missing scaling of transpose(T23)
          ! in B32 only, not C22

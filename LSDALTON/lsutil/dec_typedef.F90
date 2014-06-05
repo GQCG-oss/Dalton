@@ -122,6 +122,10 @@ module dec_typedef_module
      real(realk) :: memory
      !> Memory defined by input? (If not, use system call).
      logical :: memory_defined
+     !> use system information to determine available memory during a dec
+     !calculation
+     logical :: use_system_memory_info
+
      ! Memory use for full molecule structure
      real(realk) :: fullmolecule_memory
      !> Save array4 on file instead of in memory (debug)
@@ -276,8 +280,6 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
-     !> Print fragment energies for full CC calculation
-     logical :: full_print_frag_energies
      ! --
 
      !> Output options 

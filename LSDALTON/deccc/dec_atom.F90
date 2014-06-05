@@ -2732,7 +2732,7 @@ contains
 
 
   !> \brief Write optimized fragment to file.
-  !> Assumes that file unit "wunit" has been opened and does NOT close this file.
+  !> Assumes that file unit "wunit" has been opened and does NOT close this file. ALWAYS WRITE INTEGERS AND LOGICALS WITH 64BIT
   !> \author Kasper Kristensen
   !> \param fragment Atomic fragment/atomic pair fragment
   subroutine fragment_write_data(wunit,fragment)
@@ -2740,34 +2740,39 @@ contains
     !> File unit number to write to
     integer, intent(in) :: wunit
     type(decfrag),intent(inout) :: fragment
+    logical(8) :: CDset64,FAset64
     integer :: i
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    write(wunit) fragment%EOSatoms(1)
+    write(wunit) int(fragment%EOSatoms(1),kind=8)
 
     ! Occupied AOS orbitals
-    write(wunit) fragment%noccAOS
-    write(wunit) fragment%occAOSidx
+    write(wunit) int(fragment%noccAOS,kind=8)
+    write(wunit) int(fragment%occAOSidx,kind=8)
 
     ! Unoccupied AOS orbitals
-    write(wunit) fragment%nunoccAOS
-    write(wunit) fragment%unoccAOSidx
-
+    write(wunit) int(fragment%nunoccAOS,kind=8)
+    write(wunit) int(fragment%unoccAOSidx,kind=8)
 
     ! EOS atom(s)
-    write(wunit) fragment%nEOSatoms
+    write(wunit) int(fragment%nEOSatoms,kind=8)
     do i=1,fragment%nEOSatoms
-       write(wunit) fragment%EOSatoms(i)
+       write(wunit) int(fragment%EOSatoms(i),kind=8)
     end do
 
     ! Energies
     write(wunit) fragment%energies
 
     ! Correlation density matrices
-    write(wunit) fragment%CDset
-    write(wunit) fragment%FAset
-    write(wunit) fragment%noccFA
-    write(wunit) fragment%nunoccFA
+    CDset64    = fragment%CDset
+    FAset64    = fragment%FAset
+    write(wunit) CDset64
+    write(wunit) FAset64
+    write(wunit) int( fragment%noccFA, kind=8 )
+    write(wunit) int( fragment%nunoccFA, kind=8 )
     if(fragment%CDset) then
        write(wunit) fragment%occmat
        write(wunit) fragment%virtmat
@@ -2864,15 +2869,8 @@ contains
     do i=1,ndone
 
        ! Atom index for the i'th fragment in atomicfragments.info
-       if(DECinfo%convert64to32) then
-          call read_64bit_to_32bit(funit,MyAtom)
-       elseif(DECinfo%convert32to64) then
-          call read_32bit_to_64bit(funit,MyAtom)
-       else
-          read(funit) MyAtom
-       end if
+       call read_64bit_to_int(funit,MyAtom)
        backspace(funit)  ! Go one step in file again to read properly in fragment_read_data
-
 
        ! Sanity check
        ! ------------
@@ -2937,36 +2935,22 @@ contains
     logical,pointer :: Occ_list(:),virt_list(:)
     integer :: noccAOS,nvirtAOS
     integer,pointer :: occAOSidx(:), virtAOSidx(:)
+    integer(8) :: noccFA64, nunoccFA64
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! Central atom
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,MyAtom)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,MyAtom)
-    else
-       read(runit) MyAtom
-    end if
+    call read_64bit_to_int(runit,MyAtom)
 
     ! Number of occupied AOS orbitals
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,noccAOS)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,noccAOS)
-    else
-       read(runit) noccAOS
-    end if
+    call read_64bit_to_int(runit,noccAOS)
 
     ! Occupied AOS indices
     call mem_alloc(occAOSidx,noccAOS)
     occAOSidx=0
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,noccAOS,occAOSidx)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,noccAOS,occAOSidx)
-    else
-       read(runit) occAOSidx
-    end if
+    call read_64bit_to_int(runit,noccAOS,occAOSidx)
 
     ! Logical vector keeping track of which occupied AOS orbitals are included in fragment
     call mem_alloc(occ_list,MyMolecule%nocc)
@@ -2975,26 +2959,13 @@ contains
        occ_list(occAOSidx(i)) = .true.
     end do
 
-
     ! Number of virtual AOS orbitals
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,nvirtAOS)
-    elseif(DECinfo%convert32to64) then
-       call read_64bit_to_32bit(runit,nvirtAOS)
-    else
-       read(runit) nvirtAOS
-    end if
+    call read_64bit_to_int(runit,nvirtAOS)
 
     ! Virtual AOS indices
     call mem_alloc(virtAOSidx,nvirtAOS)
     virtAOSidx=0
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,nvirtAOS,virtAOSidx)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,nvirtAOS,virtAOSidx)
-    else
-       read(runit) virtAOSidx
-    end if
+    call read_64bit_to_int(runit,nvirtAOS,virtAOSidx)
 
     ! Logical vector keeping track of which virtual AOS orbitals are included in fragment
     call mem_alloc(virt_list,MyMolecule%nunocc)
@@ -3003,52 +2974,25 @@ contains
        virt_list(virtAOSidx(i)) = .true.
     end do
 
-
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%nEOSatoms)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%nEOSatoms)
-    else
-       read(runit) fragment%nEOSatoms
-    end if
+    call read_64bit_to_int(runit,fragment%nEOSatoms)
 
     call mem_alloc(fragment%EOSatoms,fragment%nEOSatoms)
     do i=1,fragment%nEOSatoms
-       if(DECinfo%convert64to32) then
-          call read_64bit_to_32bit(runit,fragment%EOSatoms(i))
-       elseif(DECinfo%convert32to64) then
-          call read_32bit_to_64bit(runit,fragment%EOSatoms(i))
-       else
-          read(runit) fragment%EOSatoms(i)
-       end if
+       call read_64bit_to_int(runit,fragment%EOSatoms(i))
     end do
 
     ! Initialize fragment
     call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%nunocc, MyMolecule%nocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
-
     ! Fragment energies
     read(runit) fragment%energies
 
-
     ! Correlation density matrices and fragment-adapted orbitals
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%CDset)
-       call read_64bit_to_32bit(runit,fragment%FAset)
-       call read_64bit_to_32bit(runit,fragment%noccFA)
-       call read_64bit_to_32bit(runit,fragment%nunoccFA)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%CDset)
-       call read_32bit_to_64bit(runit,fragment%FAset)
-       call read_32bit_to_64bit(runit,fragment%noccFA)
-       call read_32bit_to_64bit(runit,fragment%nunoccFA)
-    else
-       read(runit) fragment%CDset
-       read(runit) fragment%FAset
-       read(runit) fragment%noccFA
-       read(runit) fragment%nunoccFA
-    end if
+    call read_64bit_to_int(runit,fragment%CDset)
+    call read_64bit_to_int(runit,fragment%FAset)
+    call read_64bit_to_int(runit,fragment%noccFA)
+    call read_64bit_to_int(runit,fragment%nunoccFA)
 
 
     ! Correlation density

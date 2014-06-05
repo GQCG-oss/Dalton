@@ -1311,16 +1311,18 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
+
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
 C     ***** Initialize *****
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL DZERO(GRDCAR,NCRTOT)
 C
 C     ***** Multiplicities *****
@@ -2554,9 +2556,12 @@ C  /* Deck wlkir1 */
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(NUCDEP), CSTRA(*), SCTRA(*)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
 #include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
@@ -2580,6 +2585,7 @@ C
             END IF
   200    CONTINUE
   100 CONTINUE
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
       CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM

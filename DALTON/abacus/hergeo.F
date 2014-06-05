@@ -364,12 +364,14 @@ C
      &       ADISTYX_MIN,' Angstrom (',ADISTYX_MIN/XTANG,' Bohr)'
 
             IF (N_SHORT_YX .GT. 0 .OR. N_SHORT_HX .GT. 0) THEN
+              NWARN = NWARN + 1
               WRITE(LUPRI,'(/A,2I5/A/A)')
-     &          'WARNING: Number of short HX and YX bond lengths:',
+     &          '@ WARNING: Number of short HX and YX bond lengths:',
      &            N_SHORT_HX,N_SHORT_YX,
-     &          'WARNING: If not intentional, maybe your coordinates'
+     &          '@ WARNING: If not intentional, maybe your coordinates'
      &            //' were in Angstrom,',
-     &          'WARNING: but "Angstrom" was not specified in .mol file'
+     &          '@ WARNING: but "Angstrom" was not specified'
+     &            //' in .mol file'
             END IF
 
            END IF
@@ -473,7 +475,7 @@ C
  40         CONTINUE
             IF (IJK .EQ. 0) WRITE(LUPRI,'(5X,A)') 'No angles found'
           END IF
-        END IF
+        END IF ! not QM3
       END IF
 C
 C     Punch bonding information in Gamess output format on unit LUPUNCH

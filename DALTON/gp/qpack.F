@@ -116,6 +116,8 @@ C
       EXTERNAL QBDINIT
 C
       LEVELQ = LEVELQ + 1
+!     print *, IDENT,' entry, LEVELQ =',LEVELQ,
+!    &(' ',QNAMES(i),i=1,levelq-1)
 Chj2  LQTREE = LQTREE + 1
       IF (LEVELQ .LE. MXQLVL) THEN
 Chj1     IDENT8 = IDENT//BLANK8
@@ -141,6 +143,8 @@ Chj1  IF (QNAMES(LEVELQ) .EQ. IDENT8) THEN
          CALL QDUMP(LUPRI)
          CALL QUIT('QEXIT error, exit ID does not match entry ID')
       END IF
+!     print *, IDENT,' exit,  LEVELQ =',LEVELQ,
+!    &(' ',QNAMES(i),i=1,levelq)
       RETURN
 C
       ENTRY QINIT
@@ -183,7 +187,7 @@ C  /* Deck qtrace */
 C
 C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
-C  Printe traceback from Q stack
+C  Print traceback from Q stack
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
       PARAMETER (MXQLVL = 100)

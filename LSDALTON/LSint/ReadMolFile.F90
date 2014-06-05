@@ -682,10 +682,16 @@ call TestLength(LINE120,120,LINE,80)
 !*  OLD INDPUT FORMAT
 !*
 !******************************************************************
+    
+    WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+         &   'old .mol fixed format input has been detected:',&
+         &   LINE, ' WARNING - '//&
+         &   'this input format may not be supported in future releases.'    
 
     READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5,A3)',IOSTAT=ios) CRT,&
     & Atomtypes,MolecularCharge,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),&
     & ID3!,pbc_check
+
     IF(IOS .NE. 0) THEN
       WRITE (LUPRI,'(2X,A)') ' Error in the determination of the number &
      & of atomic types'
@@ -716,6 +722,62 @@ call TestLength(LINE120,120,LINE,80)
       Angstrom = .FALSE.
     ENDIF
     Subsystems=.FALSE.
+
+    WRITE(LUPRI,'(1X,A)')'New recommended format looks like'
+    IF(Angstrom)THEN
+       IF(MolecularCharge.GT.0)THEN
+          IF(Atomtypes.GT.9999)THEN
+             WRITE(LUPRI,'(1X,A,I5,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' Angstrom'
+          ELSEIF(Atomtypes.GT.999)THEN
+             WRITE(LUPRI,'(1X,A,I4,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' Angstrom'
+          ELSEIF(Atomtypes.GT.99)THEN
+             WRITE(LUPRI,'(1X,A,I3,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' Angstrom'       
+          ELSEIF(Atomtypes.GT.9)THEN
+             WRITE(LUPRI,'(1X,A,I2,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' Angstrom'
+          ELSE
+             WRITE(LUPRI,'(1X,A,I1,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' Angstrom'
+          ENDIF
+       ELSE
+          IF(Atomtypes.GT.9999)THEN
+             WRITE(LUPRI,'(1X,A,I5,A)')'Atomtypes=',Atomtypes,' Angstrom'
+          ELSEIF(Atomtypes.GT.999)THEN
+             WRITE(LUPRI,'(1X,A,I4,A)')'Atomtypes=',Atomtypes,' Angstrom'
+          ELSEIF(Atomtypes.GT.99)THEN
+             WRITE(LUPRI,'(1X,A,I3,A)')'Atomtypes=',Atomtypes,' Angstrom'       
+          ELSEIF(Atomtypes.GT.9)THEN
+             WRITE(LUPRI,'(1X,A,I2,A)')'Atomtypes=',Atomtypes,' Angstrom'
+          ELSE
+             WRITE(LUPRI,'(1X,A,I1,A)')'Atomtypes=',Atomtypes,' Angstrom'
+          ENDIF
+       ENDIF
+    ELSE
+       IF(MolecularCharge.GT.0)THEN
+          IF(Atomtypes.GT.9999)THEN
+             WRITE(LUPRI,'(1X,A,I5,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' '
+          ELSEIF(Atomtypes.GT.999)THEN
+             WRITE(LUPRI,'(1X,A,I4,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' '
+          ELSEIF(Atomtypes.GT.99)THEN
+             WRITE(LUPRI,'(1X,A,I3,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' '
+          ELSEIF(Atomtypes.GT.9)THEN
+             WRITE(LUPRI,'(1X,A,I2,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' '
+          ELSE
+             WRITE(LUPRI,'(1X,A,I1,A,I5,A)')'Atomtypes=',Atomtypes,' Charge=',MolecularCharge,' '
+          ENDIF
+       ELSE
+          IF(Atomtypes.GT.9999)THEN
+             WRITE(LUPRI,'(1X,A,I5)')'Atomtypes=',Atomtypes
+          ELSEIF(Atomtypes.GT.999)THEN
+             WRITE(LUPRI,'(1X,A,I4)')'Atomtypes=',Atomtypes
+          ELSEIF(Atomtypes.GT.99)THEN
+             WRITE(LUPRI,'(1X,A,I3)')'Atomtypes=',Atomtypes
+          ELSEIF(Atomtypes.GT.9)THEN
+             WRITE(LUPRI,'(1X,A,I2)')'Atomtypes=',Atomtypes
+          ELSE
+             WRITE(LUPRI,'(1X,A,I1)')'Atomtypes=',Atomtypes
+          ENDIF
+       ENDIF
+    ENDIF
+    WRITE(LUPRI,'(1X,A60)') 'Note only integer charges are allowed in current LsDalton version'
 
     !johannesfor reading lattice vectors in pbc
    ! IPOS = INDEX(LINE,'PBC')
@@ -1113,6 +1175,7 @@ CHARACTER(len=80),intent(inout)  :: Atomicbasisset(nBasisBasParam)
 CHARACTER(len=80),intent(inout)  :: SubsystemLabel
 LOGICAL,intent(inout) :: ATOMBASIS,BASIS(nBasisBasParam),pointcharge,phantom
 !
+LOGICAL :: OLDFORMAT
 CHARACTER(len=120) :: LINE120
 CHARACTER(len=80)  :: TEMPLINE
 INTEGER            :: IPOS,IPOS2,IPOS3,ios,I
@@ -1121,6 +1184,7 @@ call StringInit120(LINE120)
 call StringInit80(TEMPLINE)
 READ (LUINFO, '(A120)') LINE120
 call TestLength(LINE120,120,TEMPLINE,80)
+OLDFORMAT = .FALSE.
 
 IPOS = INDEX(TEMPLINE,'Cha')
 IF (IPOS .NE. 0 ) THEN
@@ -1144,12 +1208,18 @@ IF (IPOS .NE. 0 ) THEN
       ENDIF
    ENDIF
 ELSE !OLD INPUT STYLE
+   WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+        &   'old .mol fixed format input has been detected:',&
+        &   TEMPLINE, ' WARNING - '//&
+        &   'this input format may not be supported in future releases.'
+   
    READ (TEMPLINE,'(BN,F10.0,I5)',IOSTAT=ios) AtomicCharge, nAtoms
    IF(IOS .NE. 0) THEN
       WRITE (LUPRI,'(2X,A50)') 'READ_LINE5: OLD: Error in the determination of the number of atoms'
       WRITE (LUPRI,'(2X,A50)') "READ_LINE5: OLD: Correct input structure is: Atoms=???"
       CALL LSQUIT('READ_LINE5: OLD: Error in determining the number of atoms',lupri)
    ENDIF
+   OLDFORMAT = .TRUE.
 ENDIF
 
 pointcharge = .FALSE.
@@ -1354,6 +1424,35 @@ IF (ATOMBASIS) THEN
    ENDIF
 ENDIF
 
+IF(OLDFORMAT)THEN
+   WRITE(LUPRI,'(1X,A)')'New recommended format looks like'
+   IF(ATOMBASIS)THEN
+      IF(nAtoms.GT.9999)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I5,A,A)')'Charge=',AtomicCharge,' Atoms=',nAtoms,' Basis=',TRIM(AtomicBasisset(RegBasParam))
+      ELSEIF(nAtoms.GT.999)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I4,A,A)')'Charge=',AtomicCharge,' Atoms=',nAtoms,' Basis=',TRIM(AtomicBasisset(RegBasParam))
+      ELSEIF(nAtoms.GT.99)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I3,A,A)')'Charge=',AtomicCharge,' Atoms=',nAtoms,' Basis=',TRIM(AtomicBasisset(RegBasParam))
+      ELSEIF(nAtoms.GT.9)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I2,A,A)')'Charge=',AtomicCharge,' Atoms=',nAtoms,' Basis=',TRIM(AtomicBasisset(RegBasParam))
+      ELSE
+         WRITE(LUPRI,'(1X,A,F7.2,A,I1,A,A)')'Charge=',AtomicCharge,' Atoms=',nAtoms,' Basis=',TRIM(AtomicBasisset(RegBasParam))
+      ENDIF
+   ELSE
+      IF(nAtoms.GT.9999)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I5)')'Charge=',AtomicCharge,' Atoms=',nAtoms
+      ELSEIF(nAtoms.GT.999)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I4)')'Charge=',AtomicCharge,' Atoms=',nAtoms
+      ELSEIF(nAtoms.GT.99)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I3)')'Charge=',AtomicCharge,' Atoms=',nAtoms
+      ELSEIF(nAtoms.GT.9)THEN
+         WRITE(LUPRI,'(1X,A,F7.2,A,I2)')'Charge=',AtomicCharge,' Atoms=',nAtoms
+      ELSE
+         WRITE(LUPRI,'(1X,A,F7.2,A,I1)')'Charge=',AtomicCharge,' Atoms=',nAtoms
+      ENDIF
+   ENDIF
+   WRITE(LUPRI,'(1X,A60)') 'Note only integer charges are allowed in current LsDalton version'
+ENDIF
 END SUBROUTINE READ_LINE5
 
 !> \brief determine if the basis is unique
