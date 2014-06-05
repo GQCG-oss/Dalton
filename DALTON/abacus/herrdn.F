@@ -470,7 +470,6 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include "optinf.h"
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -4439,6 +4438,9 @@ C
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
+C     **********************************************************
+C     ***** Calculate symmetry-adapted nuclear coordinates *****
+C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4450,6 +4452,7 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
+#include "trkoor.h"
       DIMENSION WORK(LWORK)
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4535,18 +4538,25 @@ C
   520    CONTINUE
       END IF
 C
-C     ***************************
-C     **** Initialize IPTCOR ****
-C     ***************************
+C     **************************************
+C     **** Initialize NCRREP and IPTCOR ****
+C     **************************************
 C
-      NCOOR  = 3*NUCDEP
+      NCOOR  = 3*NUCDEP ! also defining NCOOR in trkoor.h
       KCSTRA = 1
       KSCTRA = KCSTRA + NCOOR*NCOOR
       KLAST  = KSCTRA + NCOOR*NCOOR
       IF (KLAST.GT.LWORK) CALL STOPIT('NUCPRO','TRACOR',KLAST,LWORK)
+
+C     Initialize NCRREP(irep,1)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,IPREAD)
+
+C     Initialize NCRREP(irep,2)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),2,NCOOR,IPREAD)
+
+C     Initialize IPTCOR
       CALL TRACR(NCOOR)
+
       END
 C  /* Deck pricar */
       SUBROUTINE PRICAR(WORK,LWORK)

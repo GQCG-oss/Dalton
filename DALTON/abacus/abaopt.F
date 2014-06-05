@@ -1569,9 +1569,6 @@ C
       DIMENSION HESINT(MXRCRD,MXRCRD), VECMOD(MXCOOR)
       DIMENSION WORK(LWORK)
 
-#include "taymol.h"
-      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
-
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       CALL QENTER('RUNOPT')
@@ -1714,32 +1711,41 @@ C emg -----------------------------------------------------------------
       IF (ITRMAX.EQ.0) THEN
          LUHES = -1
          IF (NEWTON) THEN
-            KCSTRA = KWRK2
-            KSCTRA = KCSTRA + (3*NUCDEP)**2
-            KH2    = KSCTRA + (3*NUCDEP)**2
-            KWRK3  = KH2    + MXCOOR*MXCOOR
-            IF (KWRK3 .GT.LWORK) CALL STOPIT('RUNOPT',' ',KWRK3,LWORK)
-            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
-            CALL TRAHES(HESMOL,NCOOR,WORK(KH2),WORK(KCSTRA),
-     &                  WORK(KSCTRA),MXCOOR,NUCDEP*3,1)
-            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+            KFREE  = 1
+            LFREE  = LWRK2
+            JWRK2  = KWRK2 - 1
+            CALL MEMGET2('REAL','GRDMOL',KGRDMOL,NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','HESMOL',KHESMOL,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','CSTRA',KCSTRA,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','SCTRA',KSCTRA,NCOOR*NCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL MEMGET2('REAL','H2',KH2,MXCOOR*MXCOOR,
+     &         WORK(KWRK2),KFREE,LFREE)
+            CALL ABAREAD_TAYMOL(ERGMOL,WORK(JWRK2+KGRDMOL),
+     &         WORK(JWRK2+KHESMOL),NCOOR)
+            CALL TRAHES(WORK(JWRK2+KHESMOL),NCOOR,WORK(JWRK2+KH2),
+     &         WORK(JWRK2+KCSTRA),WORK(JWRK2+KSCTRA),MXCOOR,NCOOR,1)
+            CALL MEMREL('RUNOPT.TRAHES',WORK(KWRK2),1,1,KFREE,LFREE)
          ENDIF
          CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA,WORK(KWRK1),LWRK1,WRKDLM)
          CALL GPOPEN(LUHES,'midasifc.ederivs','UNKNOWN',' ',
      &            'FORMATTED', IDUMMY,.FALSE.)
          WRITE(LUHES,'(I6)') 3*NUCDEP
          WRITE(LUHES,*)
-         DO 413 I = 1, 3*NUCDEP
-            WRITE(LUHES,'(E25.16)') EGRAD(I)
-413      CONTINUE
+         DO, I = 1, NCOOR
+            WRITE(LUHES,'(1P,E25.16)') EGRAD(I)
+         END DO
          IF (NEWTON) THEN
             WRITE(LUHES,*)
-            DO 411 J = 1, 3*NUCDEP
-               DO 412 I = 1, 3*NUCDEP
-                  WRITE(LUHES,'(E25.16)')
+            DO, J = 1, NCOOR
+               DO, I = 1, NCOOR
+                  WRITE(LUHES,'(1P,E25.16)')
      &                  WORK(KH2+(J-1)*MXCOOR+I-1)
-412            CONTINUE
-411         CONTINUE
+               END DO
+            END DO
          ENDIF
          CALL GPCLOSE(LUHES,'KEEP')
 
@@ -2787,9 +2793,11 @@ C
       DIMENSION ALLHES(NCRTOT*NCRTOT)
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       CALL QENTER('GTHESS')
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       WORK(1) = WRKDLM
       KFREE = 2
@@ -2846,13 +2854,13 @@ C
          CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          CALL TRAHES(HESMOL,NCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
      &               MXCOOR,NCOOR,1)
-         CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       ELSE IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
 C
 C        For all iterations except the first, MINCGH is run here.
 C
          CALL MINCGH(EGRAD,EHESS,ALLHES,WORK(KFREE),LFREE)
       END IF
+      deallocate ( GRDMOL, HESMOL )
       CALL QEXIT('GTHESS')
       RETURN
       END
@@ -2881,7 +2889,8 @@ C
       DIMENSION WORK(LWORK)
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -2889,6 +2898,7 @@ C
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     We initialize the scaling vector (the inverse of the
@@ -3105,7 +3115,7 @@ C
      &        .AND. (.NOT. DELINT))) THEN
             HESMOL(:,:) = 0.0D0
             CALL HQ2HX(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,HESINT,
-     &           GRDINT,HESMOL,WILBMT,BMTRAN,WORK,LWORK)
+     &           GRDINT,HESMOL,NCOOR,WILBMT,BMTRAN,WORK,LWORK)
             IF (MAXOPR .GT. 0) THEN
                CALL DZERO(TMPMT4,MX2CRD*MX2CRD)
                DO 100 J = 1, ICRTCR
@@ -3147,8 +3157,7 @@ C
                GRDOLD(J) = GRDMOL(J)
                DO 27 I = 1, ICRTCR
                   HESOLD(I,J) = HESMOL(I,J)*SCLVEC(I)*SCLVEC(J)
-                  HESMOL(I,J) = HESMOL(I,J)*SCLVEC(I)*SCLVEC(I)
-     &                                             *SCLVEC(J)*SCLVEC(J)
+                  HESMOL(I,J) = HESOLD(I,J)*SCLVEC(I)*SCLVEC(J)
  27            CONTINUE
  25         CONTINUE
          ELSE
@@ -3187,6 +3196,7 @@ C
       END IF
 
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
 
       CALL QEXIT('INIHES')
       RETURN
@@ -3221,10 +3231,12 @@ C
       LOGICAL   RESET, REJLST
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C     =====
       CALL QENTER('UPDHES')
 
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     If redundant internal coordinates are used, we have to transform
@@ -3424,6 +3436,7 @@ C
       END IF
 
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
       CALL QEXIT('UPDHES')
       RETURN
       END
@@ -3447,37 +3460,42 @@ C
       CHARACTER UPDTXT*6, OUTTXT*18
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
-      NCOOR = NCART
-      IF (REDINT .OR. DELINT) NCOOR = IINTCR
+      IF (REDINT .OR. DELINT) THEN
+         NCRD = IINTCR
+      ELSE
+         NCRD = NCART
+      END IF
       OUTTXT = 'Output from ' // UPDTXT
       IF (IPRINT .GE. IPRMIN) THEN
          CALL TITLER(OUTTXT,'*',103)
          IF ((IPRINT .GE. IPRDBG) .AND. (.NOT. REDINT)
      &        .AND. (.NOT. DELINT)) THEN
             CALL HEADER('Scaling vector in UPOUTP',-1)
-            CALL OUTPUT(SCLVEC,1,1,1,NCART,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(SCLVEC,1,1,1,NCART,1,NCART,1,LUPRI)
          END IF
       END IF
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Step from last geometry',-1)
          IF (REDINT .OR. DELINT) THEN
-            CALL OUTPUT(STPINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            CALL OUTPUT(STPINT,1,1,1,NCRD,1,NCRD,1,LUPRI)
          ELSE
-            CALL OUTPUT(STPSYM,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            CALL OUTPUT(STPSYM,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
          CALL HEADER('Previous Hessian',-1)
-         CALL OUTPUT(HESOLD,1,NCOOR,1,NCOOR,MXRCRD,MXRCRD,1,LUPRI)
+         CALL OUTPUT(HESOLD,1,NCRD,1,NCRD,MXRCRD,MXRCRD,1,LUPRI)
          CALL HEADER('Gradient at last geometry',-1)
-         CALL OUTPUT(GRDOLD,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(GRDOLD,1,1,1,NCRD,1,MXRCRD,1,LUPRI)
          CALL HEADER('Gradient at current geometry',-1)
          IF (REDINT .OR. DELINT) THEN
-            CALL OUTPUT(GRDINT,1,1,1,NCOOR,1,MXRCRD,-1,LUPRI)
+            CALL OUTPUT(GRDINT,1,1,1,NCRD,1,MXRCRD,-1,LUPRI)
          ELSE
-            CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,NCOOR,-1,LUPRI)
+            CALL OUTPUT(GRDMOL,1,1,1,NCRD,1,NCRD,-1,LUPRI)
          END IF
       END IF
 C
@@ -3486,7 +3504,7 @@ C     vector has to be scaled, to make it "compatible" with the step
 C     vector and the Hessian.
 C
       CALL DZERO(GAMMA,MXRCRD)
-      DO 20 I = 1, NCOOR
+      DO 20 I = 1, NCRD
          IF (REDINT .OR. DELINT) THEN
             GAMMA(I) = GRDINT(I) - GRDOLD(I)
          ELSE
@@ -3495,8 +3513,9 @@ C
  20   CONTINUE
       IF (IPRINT .GE. IPRMED) THEN
          CALL HEADER('Scaled gradient difference',-1)
-         CALL OUTPUT(GAMMA,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         CALL OUTPUT(GAMMA,1,1,1,NCRD,1,MXRCRD,1,LUPRI)
       END IF
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -3518,9 +3537,9 @@ C
       DIMENSION HESOLD(MXRCRD,MXRCRD), HESINT(MXRCRD,MXRCRD)
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
-      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       IF (REDINT .OR. DELINT) THEN
          CALL DZERO(HESINT,MXRCRD*MXRCRD)
@@ -3532,6 +3551,8 @@ C
             GRDOLD(J) = GRDINT(J)
  10      CONTINUE
       ELSE
+         allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+         CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          HESMOL(:,:) = 0.0D0
          CALL DZERO(GRDOLD,MXRCRD)
          DO 20 J = 1, NCART
@@ -3543,6 +3564,8 @@ C
          DO 30 I = NCART+1, NCRTOT
             HESMOL(I,I) = SCLVEC(I)*SCLVEC(I)
  30      CONTINUE
+         CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+         deallocate ( GRDMOL, HESMOL )
       END IF
 C
       IF (IPRINT .GE. IPRMED) THEN
@@ -3559,7 +3582,6 @@ C
       END IF
       KEEPHE = .FALSE.
 
-      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 
@@ -7230,8 +7252,10 @@ C
       CHARACTER*4 LOGTXT
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CNVERG = .FALSE.
       CNVGRD = .FALSE.
@@ -7426,6 +7450,7 @@ C
          WRITE(LUPRI,'(A,1P,A5)') ' End of optimization   ',LOGTXT
          IF (BRKSYM) WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
       END IF
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -7783,8 +7808,12 @@ C
       DIMENSION WORK(LWORK)
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
-C
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+C ===
+
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 
       LUHES = -1
       CALL GPOPEN(LUHES,'DALTON.HES','UNKNOWN',' ','FORMATTED',IDUMY,
@@ -7792,7 +7821,7 @@ C
       IF (REDINT .OR. DELINT) THEN
          CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
          CALL HQ2HX(MXRCRD,MX2CRD,TMPMT1,TMPMT2,TMPMT3,HESINT,GRDINT,
-     &        TMPMT4,WILBMT,BMTRAN,WORK,LWORK)
+     &        TMPMT4,MX2CRD,WILBMT,BMTRAN,WORK,LWORK)
          WRITE(LUHES,'(I6)') 3*NUCDEP
          WRITE(LUHES,*)
          DO 100 J = 1, 3*NUCDEP
@@ -7804,10 +7833,8 @@ C
       ELSE
          IF (MAXREP .GT. 0) THEN
             CALL DZERO(TMPMT4,MXCOOR*MXCOOR)
-            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL TRAHES(HESMOL,NCOOR,TMPMT4,TMPMT1,TMPMT2,
      &           MXCOOR,3*NUCDEP,1)
-            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             WRITE(LUHES,*) 3*NUCDEP
             WRITE(LUHES,*)
             DO 200 J = 1, 3*NUCDEP
@@ -7828,6 +7855,7 @@ C
          END IF
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 
@@ -7860,8 +7888,10 @@ C
       DIMENSION BMTINV(MXRCRD,MXCOOR), WORK(LWORK)
 
 #include "trkoor.h"
-      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8 ERGMOL
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       HESMOL(:,:) = 0.0D0
       LUHES = -1
@@ -7915,6 +7945,7 @@ C
       END IF
       CALL GPCLOSE(LUHES,'KEEP')
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
       RETURN
       END
 

@@ -2210,7 +2210,7 @@ C
 C
 #include "trkoor.h"
 #include "taymol.h"
-      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       CALL QENTER('ABARESULT')
 C
@@ -2235,6 +2235,7 @@ C
      *            LSYM
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       ERGMOL = EMCSCF
 C
@@ -2679,6 +2680,7 @@ C
       END IF
 
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
 
       CALL QEXIT('ABARESULT')
       RETURN
@@ -2956,6 +2958,7 @@ C
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
+#include "nuclei.h"
 C
 C
       LOGICAL AROUND
@@ -2965,6 +2968,12 @@ C
       IF (NCOR .NE. NCOOR) THEN
          CALL QENTER('ABAWRIT_TAYMOL')
          CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR input .ne. NCOOR')
+      END IF
+      IF (NCOOR .NE. 3*NUCDEP) THEN
+         CALL QENTER('ABAWRIT_TAYMOL')
+         WRITE(LUPRI,'(//A,I10,A,I10)')
+     &      'ERROR in ABAWRIT_TAYMOL: NCOOR =',NCOOR,' .ne. ',3*NUCDEP
+         CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR .ne. 3*NUCDEP')
       END IF
       LUSTAR = -1
       CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
