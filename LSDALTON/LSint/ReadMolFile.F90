@@ -682,6 +682,11 @@ call TestLength(LINE120,120,LINE,80)
 !*  OLD INDPUT FORMAT
 !*
 !******************************************************************
+    
+    WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+         &   'old .mol fixed format input has been detected:',&
+         &   LINE, ' WARNING - '//&
+         &   'this input format may not be supported in future releases.'
 
     READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5,A3)',IOSTAT=ios) CRT,&
     & Atomtypes,MolecularCharge,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),&
@@ -1144,6 +1149,11 @@ IF (IPOS .NE. 0 ) THEN
       ENDIF
    ENDIF
 ELSE !OLD INPUT STYLE
+   WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+        &   'old .mol fixed format input has been detected:',&
+        &   TEMPLINE, ' WARNING - '//&
+        &   'this input format may not be supported in future releases.'
+   
    READ (TEMPLINE,'(BN,F10.0,I5)',IOSTAT=ios) AtomicCharge, nAtoms
    IF(IOS .NE. 0) THEN
       WRITE (LUPRI,'(2X,A50)') 'READ_LINE5: OLD: Error in the determination of the number of atoms'
