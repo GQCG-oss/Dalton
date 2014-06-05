@@ -142,7 +142,7 @@ C
       VRML_SYM = .FALSE.
       TRSTCH = .FALSE.
       TRSTFC = .FALSE.
-      IPRINT = 0
+      IPRINT = IPDEF
       TRSTRA = 0.5D0
       TRSTIN = 1.2D0
       TRSTDE = 0.7D0
@@ -675,7 +675,7 @@ C
          END IF
          FSTORD = .TRUE.
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
+         WRITE(LUPRI,'(/A)') ' ERROR! More than one ' //
      &        'optimization method has been selected under '//WORD1
          CALL QUIT
      &        ('More than one optimization method chosen for '//WORD1)
@@ -715,7 +715,7 @@ C
      &           'in Cartesian coordinates.'
          END IF
       ELSE IF (ITYP .GT. 1) THEN
-         WRITE(LUPRI,'(/A)') ' WARNING! More than one ' //
+         WRITE(LUPRI,'(/A)') ' ERROR! More than one ' //
      &        'coordinate system has been selected in '//WORD1
          CALL QUIT
      &        ('More than one coordinate system chosen under '//WORD1)
@@ -1685,7 +1685,8 @@ C emg -----------------------------------------------------------------
 
          CALL GPCLOSE(LUNDPF,'KEEP')
          CALL GPCLOSE(LUNMPF,'KEEP')
-         STOP 'Manually stop after punching the Hessian and Gradient'
+         CALL QUIT(
+     &   'Manually stop after punching the Hessian and Gradient')
 
       ENDIF
 C
@@ -7939,7 +7940,7 @@ C
 C
 C     Call new numerical derivative routines.
 C
-      CALL NMDINI(IPRINT)
+      CALL NMDINI(IPRINT_NUMGRD)
       IF (LUCMD .LE. 0) CALL GPOPEN(LUCMD,'DALTON.INP','OLD',
      &   ' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUCMD,IOSTAT=IOS)
@@ -7947,11 +7948,11 @@ C
         CALL UPCASE(WORD)
       IF (WORD .NE. '**NMDDR') GOTO 1100
 C
-      CALL NMDINP(WORD,IPRINT)
+      CALL NMDINP(WORD,IPRINT_NUMGRD)
  1110 CALL GPCLOSE(LUCMD,'KEEP')
       FCLASS = GROUP
       IF (NMORDR .LT. 1) NMORDR = 1
-      CALL NUMDRV(WORK,LWORK,IPRINT,WRKDLM)
+      CALL NUMDRV(WORK,LWORK,IPRINT_NUMGRD,WRKDLM)
 C
       CALL QEXIT('NUMGRD')
       RETURN
