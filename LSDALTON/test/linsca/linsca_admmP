@@ -17,22 +17,21 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_ADMMQ.info <<'%EOF%'
-   linsca_ADMMQ
+cat > linsca_admmP.info <<'%EOF%'
+   linsca_admmP
    -------------
    Molecule:         HCN
    Wave Function:    HF
-   Test Purpose:     Check ADMMQ exchange energy: a variant of ADMM2
-                     (JCTC 6(8):2348–2364, 2010) where the total charge
-                     is constrained.
+   Test Purpose:     Check ADMMP exchange energy: partially-scaled ADMMQ
+                     variant. ADMMP equals ADMMS scaling for LDA functional
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_ADMMQ.mol <<'%EOF%'
+cat > linsca_admmP.mol <<'%EOF%'
 BASIS
-6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
+6-31G* Aux=df-def2 CABS=3-21G JK=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry
@@ -47,10 +46,12 @@ C   0.0   0.0     0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_ADMMQ.dal <<'%EOF%'
+cat > linsca_admmP.dal <<'%EOF%'
+**GENERAL
+.TIME
 **INTEGRALS
 .DENSFIT
-.ADMMQ
+.ADMMP
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -64,8 +65,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_ADMMQ.check
-cat >> linsca_ADMMQ.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_admmP.check
+cat >> linsca_admmP.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -75,7 +76,8 @@ else
 fi
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy.* -91.8922268" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -91.4060974[7-8]" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -91.8886890" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

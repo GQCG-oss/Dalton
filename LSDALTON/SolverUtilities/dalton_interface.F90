@@ -2352,22 +2352,16 @@ CONTAINS
         LOGICAL, intent(in)           :: do_dft
         !
         INTEGER                       :: iBmat
-        LOGICAL                       :: ADMMexchange  , ADMMGCBASIS    
+        LOGICAL                       :: ADMMexchange 
         ! -- ADMM modifications
         !     replace GdBs = J(B) + K(B)
         !    by      GdBs = J(B) + K(b) + X(B) - X(b) if ADMM
         IF(present(setting))THEN
             ADMMexchange = setting%scheme%ADMM_EXCHANGE
-            ADMMGCBASIS  = setting%scheme%ADMM_GCBASIS
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
-            ADMMGCBASIS  = lsint_fock_data%ls%setting%scheme%ADMM_GCBASIS
-        ENDIF
-        IF (ADMMGCBASIS) THEN
-            ADMMexchange = .FALSE.
         ENDIF
         IF (ADMMexchange) THEN 
-            call lsquit('ADMM is not fully tested yet for RESPONSE',-1)
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         ELSE 
@@ -2514,13 +2508,6 @@ CONTAINS
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
             logical                :: GC3,GC2,testNelectrons,grid_done
-            real(realk)         :: GGAXfactor
-            !
-            IF (setting%scheme%cam) THEN
-              GGAXfactor = 1.0E0_realk
-            ELSE
-              GGAXfactor = setting%scheme%exchangeFactor
-            ENDIF
             !
             nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
@@ -2669,7 +2656,7 @@ CONTAINS
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
                                         & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(-GGAXfactor,TMPF3,K(ibmat))
+                call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2687,7 +2674,7 @@ CONTAINS
                 call set_default_AOs(AO3,AOdfold)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
-                call mat_daxpy(GGAXfactor,Gx3(ibmat),K(ibmat))
+                call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
                                 
                 IF (setting%do_dft) &
       &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)

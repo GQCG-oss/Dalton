@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSresponse_HF_alpha_aK.info <<'%EOF%'
-   LSresponse_HF_alpha_aK
+cat > LSresponse_HF_alpha_admm.info <<'%EOF%'
+   LSresponse_HF_alpha_admm
    -------------------
    Molecule:         H2O2
    Wave Function:    HF / 6-31+G* / 3-21G (JK aux.basis for ADMM)
@@ -30,7 +30,7 @@ cat > LSresponse_HF_alpha_aK.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSresponse_HF_alpha_aK.mol <<'%EOF%'
+cat > LSresponse_HF_alpha_admm.mol <<'%EOF%'
 BASIS
 6-31G* Aux=3-21G CABS=3-21G JK=3-21G
 H2O
@@ -46,9 +46,9 @@ H     -0.75888457485381     -0.20410153961542      0.00000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSresponse_HF_alpha_aK.dal <<'%EOF%'
+cat > LSresponse_HF_alpha_admm.dal <<'%EOF%'
 **INTEGRALS
-.ADMM-JK
+.ADMM
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -78,8 +78,8 @@ cat > LSresponse_HF_alpha_aK.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > LSresponse_HF_alpha_aK.check
-cat >> LSresponse_HF_alpha_aK.check <<'%EOF%'
+echo $CHECK_SHELL > LSresponse_HF_alpha_admm.check
+cat >> LSresponse_HF_alpha_admm.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

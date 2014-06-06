@@ -17,19 +17,19 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_ADMMP.info <<'%EOF%'
-   linsca_ADMMP
+cat > linsca_admmS.info <<'%EOF%'
+   linsca_admmS
    -------------
    Molecule:         HCN
    Wave Function:    HF
-   Test Purpose:     Check ADMMP exchange energy: partially-scaled ADMMQ
-                     variant. ADMMP equals ADMMS scaling for LDA functional
+   Test Purpose:     Check ADMMS exchange energy: scaled ADMMQ variant
+                     to equally scale k(d') and x(d') wrt d'
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_ADMMP.mol <<'%EOF%'
+cat > linsca_admmS.mol <<'%EOF%'
 BASIS
 6-31G* Aux=df-def2 CABS=3-21G JK=3-21G
 HCN molecule
@@ -46,12 +46,12 @@ C   0.0   0.0     0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_ADMMP.dal <<'%EOF%'
+cat > linsca_admmS.dal <<'%EOF%'
 **GENERAL
 .TIME
 **INTEGRALS
 .DENSFIT
-.ADMMP
+.ADMMS
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -65,8 +65,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_ADMMP.check
-cat >> linsca_ADMMP.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_admmS.check
+cat >> linsca_admmS.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -76,8 +76,7 @@ else
 fi
 
 # ENERGY test
-CRIT1=`$GREP "Final DFT energy: * -91.4060974[7-8]" $log | wc -l`
-CRIT1=`$GREP "Final DFT energy: * -91.8886890" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -91.8889341" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

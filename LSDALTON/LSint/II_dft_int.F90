@@ -2484,7 +2484,7 @@ ENDIF
 #endif
 END SUBROUTINE II_DFTsetFunc
 
-SUBROUTINE II_DFTaddFunc(Func,hfweight)
+SUBROUTINE II_DFTaddFunc(Func,GGAfactor)
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
@@ -2492,8 +2492,9 @@ use lsmpi_type
 #endif
 implicit none
 Character(len=80),intent(IN) :: Func
-Real(realk),intent(INOUT)    :: hfweight
-CALL DFTaddFunc(Func,hfweight)
+Real(realk),intent(IN)       :: GGAfactor
+!
+CALL DFTaddFunc(Func,GGAfactor)
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN

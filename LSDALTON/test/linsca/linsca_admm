@@ -31,7 +31,7 @@ cat > linsca_admm.info <<'%EOF%'
 #######################################################################
 cat > linsca_admm.mol <<'%EOF%'
 BASIS
-6-31G* Aux=3-21G
+6-31G* Aux=3-21G CABS=3-21G JK=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry
@@ -50,7 +50,7 @@ cat > linsca_admm.dal <<'%EOF%'
 **GENERAL
 .NOGCBASIS
 **INTEGRALS
-.ADMM-DF
+.ADMM
 **WAVE FUNCTIONS
 .HF
 *DENSOPT

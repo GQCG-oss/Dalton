@@ -1237,13 +1237,6 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            ENDIF
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .TRUE.
-        CASE ('.ADMMQ');
-           IF (INTEGRAL%ADMM_EXCHANGE) THEN
-             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
-           ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMQ         = .TRUE.
         CASE ('.ADMMS');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
@@ -1258,8 +1251,17 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMM_EXCHANGE = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .TRUE.
            INTEGRAL%ADMMP         = .TRUE.
+        CASE ('.ADMMQ');
+           IF (INTEGRAL%ADMM_EXCHANGE) THEN
+             CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
+           ENDIF
+           INTEGRAL%ADMM_EXCHANGE = .TRUE.
+           INTEGRAL%ADMM_JKBASIS  = .TRUE.
+           INTEGRAL%ADMMQ         = .TRUE.
         CASE ('.ADMM-FUNC');
            READ(LUCMD,*) INTEGRAL%ADMM_FUNC
+        CASE ('.ADMM-ADDXC');
+           INTEGRAL%ADMM_ADDXC = .TRUE.
         CASE ('.ADMM-GC'); ! EXPERIMENTAL
            INTEGRAL%ADMM_GCBASIS  = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .FALSE.

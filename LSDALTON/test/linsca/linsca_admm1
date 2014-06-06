@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_ADMM1.info <<'%EOF%'
-   linsca_ADMM1
+cat > linsca_admm1.info <<'%EOF%'
+   linsca_admm1
    -------------
    Molecule:         HCN
    Wave Function:    HF
@@ -31,7 +31,7 @@ cat > linsca_ADMM1.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_ADMM1.mol <<'%EOF%'
+cat > linsca_admm1.mol <<'%EOF%'
 BASIS
 6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
 HCN molecule
@@ -48,7 +48,7 @@ C   0.0   0.0     0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_ADMM1.dal <<'%EOF%'
+cat > linsca_admm1.dal <<'%EOF%'
 **INTEGRALS
 .DENSFIT
 .ADMM1
@@ -65,8 +65,8 @@ B3LYP
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_ADMM1.check
-cat >> linsca_ADMM1.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_admm1.check
+cat >> linsca_admm1.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

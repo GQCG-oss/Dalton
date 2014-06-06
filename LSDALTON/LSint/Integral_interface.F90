@@ -5214,7 +5214,7 @@ integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_ADMMQ, scaling_ADMMP, printConstFactor, printLambda
-logical             :: isADMMQ
+logical             :: isADMMQ,addxc
 logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
@@ -5223,6 +5223,7 @@ isADMMQ = setting%scheme%ADMMQ
 isADMMS = setting%scheme%ADMMS
 isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
+addxc = setting%scheme%admm_addxc.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5339,11 +5340,7 @@ call mat_daxpy(fac,TMPF,F)
 !Subtract XC-correction
 CALL lstimer('AUX-EX',ts,te,lupri)
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
-!Print the functional used at this stage 
-!call DFTREPORT(lupri) 
-!use this call to add a functional instead of replacing it. 
-!call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
 
 !choose the ADMM Level 2 grid
 setting%scheme%dft%igrid = Grid_ADMML2
@@ -5361,10 +5358,10 @@ IF (isADMMS) THEN
    call mat_scal(constrain_factor**(4./3.),F2(1)) ! RE-SCALING XC2 TO FIT k2  
 ENDIF
 IF (.NOT.(isADMMP)) THEN
-   call mat_daxpy(-GGAXfactor,F2(1),k2_xc2)
+   call mat_daxpy(-1E0_realk,F2(1),k2_xc2)
 endif
 tracex2d2 = mat_trAB(F2(1),D2(1))
-write(lupri,*)     "Tr(x2d2)=", GGAXfactor*traceX2D2
+write(lupri,*)     "Tr(x2d2)=", traceX2D2
 
 
 
@@ -5372,41 +5369,54 @@ write(lupri,*)     "Tr(x2d2)=", GGAXfactor*traceX2D2
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
                           & AO2,AO3,GC2,GC3,constrain_factor)
  
-call mat_daxpy(-GGAXfactor*fac,TMPF,dXC)
+call mat_daxpy(-fac,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
 !Re-set to default (level 3) grid
 setting%scheme%dft%igrid = Grid_Default
 
-
-
 !****Calculation of Level 3 XC matrix from level 2 Density matrix starts here
 call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
 setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
-CALL mat_init(F3(1),nbast,nbast)
-CALL mat_zero(F3(1))
-call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
-tracex3d3 = mat_trAB(F3(1),D)
+IF (addxc) THEN
+  CALL mat_init(F3(1),nbast,nbast)
+  CALL mat_zero(F3(1))
+  call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
+  tracex3d3 = mat_trAB(F3(1),D)
+  
+  CALL mat_daxpy(1E0_realk,F3(1),dXC)
+  CALL mat_free(F3(1))
+  EdXC = (EX3(1)- fac*EX2(1))
+ELSE
+  EdXC = -fac*EX2(1)
+ENDIF
 
-CALL mat_daxpy(GGAXfactor,F3(1),dXC)
-EdXC = (EX3(1)- fac*EX2(1))*GGAXfactor
+!Restore dft functional to original
+IF (setting%do_dft) THEN
+  call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),GGAXfactor)
+  !Augment the functional with the admm gga exchange contribution X
+   IF (.NOT.addxc) THEN
+     call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
+   ENDIF
+ENDIF
+
+
 
 IF (PRINT_EK3) THEN
    write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
    write(*,*)     "E(k2)=Tr(k2 d2) ", traceK2D2
    write(lupri,*) "E(k2)=Tr(k2 d2) ", traceK2D2
-   write(*,*)     "E(X3)= ", EX3(1)*GGAXfactor
-   write(lupri,*) "E(X3)= ", EX3(1)*GGAXfactor
-   write(*,*)     "E(x2)= ", fac*EX2(1)*GGAXfactor
-   write(lupri,*) "E(x2)= ", fac*EX2(1)*GGAXfactor
-   write(*,*)     "E(X3)-E(x2)= ",EdXC
-   write(lupri,*) "E(X3)-E(x2)= ",EdXC
+   write(*,*)     "E(x2)= ", fac*EX2(1)
+   write(lupri,*) "E(x2)= ", fac*EX2(1)
+   IF (addxc) THEN
+      write(*,*)     "E(X3)= ", EX3(1)
+      write(lupri,*) "E(X3)= ", EX3(1)
+      write(*,*)     "E(X3)-E(x2)= ",EdXC
+      write(lupri,*) "E(X3)-E(x2)= ",EdXC
+   ENDIF
 ENDIF
 
-
-!Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
 
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -5441,10 +5451,10 @@ IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
   scaling_ADMMQ = 2E0_realk*mat_trAB(k2_xc2,D2(1)) / nelectrons
 
   IF (isADMMS) THEN
-     scaling_ADMMQ = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)*GGAXfactor/nelectrons
+     scaling_ADMMQ = scaling_ADMMQ - 2E0_realk/3E0_realk*EX2(1)/nelectrons
   ENDIF
   IF (isADMMP) THEN
-     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1)*GGAXfactor)
+     scaling_ADMMP = 2E0_realk / nelectrons * constrain_factor**(4.E0_realk) * (mat_trAB(k2_xc2,d2(1)) - EX2(1))
      call mat_scal(scaling_ADMMP, tmp33)
      write(lupri,*) 'debug:LAMBDA_P',scaling_ADMMP
   ELSE
@@ -5464,7 +5474,6 @@ CALL mat_free(k2_xc2)
 call mat_free(TMPF)
 call mat_free(F2(1))
 call mat_free(D2(1))
-CALL mat_free(F3(1))
 CONTAINS   
    SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,&
                                  & GCAO2,GCAO3,constrain_factor)
@@ -5791,7 +5800,7 @@ DO idmat=1,ndrhs
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5809,9 +5818,9 @@ DO idmat=1,ndrhs
    call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
    IF (isADMMS) THEN   
       call mat_scal(constrain_factor**(4./3.),xc2)
-      E_x2 = Exc2(1)*constrain_factor**(4./3.)*GGAXfactor
+      E_x2 = Exc2(1)*constrain_factor**(4./3.)
    ELSE
-      E_x2 = Exc2(1)*GGAXfactor
+      E_x2 = Exc2(1)
    ENDIF
    
    
@@ -5825,7 +5834,6 @@ DO idmat=1,ndrhs
    ELSEIF (isADMMP) THEN   
       call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk),grad_xc2,1)
    ENDIF
-   call DSCAL(3*nAtoms,-GGAXfactor,grad_xc2,1)
 
    call DAXPY(3*nAtoms,1E0_realk,grad_xc2,1,admm_Kgrad,1)
    CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_xc2,nAtoms,'grad_xc2')
@@ -5841,8 +5849,6 @@ DO idmat=1,ndrhs
    call mem_alloc(grad_XC3,3,nAtoms)
    call ls_dzero(grad_XC3,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
-   
-   call DSCAL(3*nAtoms,GGAXfactor,grad_XC3,1) !Include -GGAfactor
    
    call DAXPY(3*nAtoms,1E0_realk,grad_XC3,1,admm_Kgrad,1)
    
@@ -5861,7 +5867,7 @@ DO idmat=1,ndrhs
    
    IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
-                  & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+                  & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,1E0_realk,&
                   & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                   & lambda)
       call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
@@ -5873,7 +5879,7 @@ DO idmat=1,ndrhs
    ! derivative of the small d2 Density matrix
    ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,E_x2,&
-               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,GGAXfactor,&
+               & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,1E0_realk,&
                & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
                & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)

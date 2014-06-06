@@ -48,7 +48,7 @@ C   0.0   0.0     0.0
 #######################################################################
 cat > linsca_admm_df.dal <<'%EOF%'
 **INTEGRALS
-.ADMM-JK
+.ADMM
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
