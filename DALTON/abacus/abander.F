@@ -1000,6 +1000,8 @@ C
          KLAST  = KFTMPD + NCOOR**4
          LWRK   = LWORK - KLAST + 1
 C
+C        PRDERV not only prints, but calculates also the correct GRDMOL and HESMOL when symmetry
+c
          CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
      &       CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),ICRIRP,
      &       LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
@@ -3561,7 +3563,7 @@ C     *** coordinates.                                 ***
 C         (as we do not write HESMOL back with ABAWRIT_TAYMOL
 C          it is OK that we modify the content of HESMOL)
 C
-      CALL OTRTEN(HESMOL,SYMCOR,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N',
+      CALL OTRTEN(HESMOL,SYMCOR,TMPHES,NCOOR,NCOOR,NCOOR,IPRINT,'N',
      &            'T')
 C
 C     *** Transforming the hessian matrix to dalton ***
@@ -3575,7 +3577,7 @@ C
 C
 C     *** Transformation. ***
 C
-      CALL OTRTEN(HESMOL,TRAMAT,TMPHES,MXCOOR,NCOOR,NCOOR,IPRINT,'N',
+      CALL OTRTEN(HESMOL,TRAMAT,TMPHES,NCOOR,NCOOR,NCOOR,IPRINT,'N',
      &            'T')
 C
 C     *** Run harmonic analysis. ***
@@ -4079,7 +4081,7 @@ C
       END
 C
 C
-C     /* Deck prderv*/
+C     /* Deck prtder*/
       SUBROUTINE PRTDER(TDER,NDIM,NCOR,TEXT,LTXT,IPRINT)
 C     **********************************************************
 C     *** Printing of third derivatives in TEXT coordinates. ***
@@ -4205,7 +4207,6 @@ C     *** backing it up for later use.                    ***
 C
       CPRPBK = CNMPRP
       CNMPRP = .FALSE.
-      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
 C
 C     *** Print gradient ***
 C
@@ -4224,11 +4225,13 @@ C
             KLAST  = KSEGRD + NCOOR
             LWRK1  = LWORK  - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in TRFCGD')
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL TRAGRD(GRDMOL,WORK(KEGRAD),WORK(KCSTRA),WORK(KSCTRA),
      &                  NCRREP(0,1),NCOOR)
             CALL TRFCGD(WORK(KEGRAD),SYMCOR,CSTART,WORK(KSEGRD),
      &                  WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
-            CALL DCOPY(MXCOOR,WORK(KEGRAD),1,GRDMOL,1)
+            CALL DCOPY(NCOOR,WORK(KEGRAD),1,GRDMOL,1)
+            CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          END IF
 C
          KCGRAD = 1
@@ -4272,12 +4275,13 @@ C
             KLAST  = KSEHSS + NCOOR**2
             LWRK1  = LWORK  - KLAST + 1
             IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded in TRFCHS')
-            CALL TRAHES(HESMOL,MXCOOR,WORK(KEHESS),WORK(KCSTRA),
+            CALL TRAHES(HESMOL,NCOOR,WORK(KEHESS),WORK(KCSTRA),
      &                  WORK(KSCTRA),MXCOOR,NCOOR,1)
             CALL TRFCHS(WORK(KEHESS),SYMCOR,CSTART,WORK(KSEHSS),
      &                  WORK(KLAST),NCOOR,NDCOOR,LWRK1,IPRINT)
 
-            CALL DCOPY(MXCOOR**2,WORK(KEHESS),1,HESMOL,1)
+            CALL MCOPY(NCOOR,NCOOR,WORK(KEHESS),MXCOOR,HESMOL,NCOOR)
+!           CALL MCOPY(NROWA,NCOLA,A,NRDIMA,B,NRDIMB)
          END IF
 C
          KSMCIN = 1
@@ -4353,8 +4357,6 @@ C     *** Restoring CNMPRP. ***
 C
       CNMPRP = CPRPBK
 C
-      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
-
       RETURN
       END
 C
@@ -4741,7 +4743,7 @@ C
 C
       CALL DGEMM('N','N',NCOOR,NCOOR,NCOOR,1.D0,
      &           SYMCOR,NCOOR,
-     &           HESMOL,MXCOOR,0.D0,
+     &           HESMOL,NCOOR,0.D0,
      &           TMPHES,NCOOR)
 C
       CALL DGEMM('N','T',NCOOR,NCOOR,NCOOR,1.D0,
@@ -4774,7 +4776,7 @@ C
          IF (KLAST.GT.LWORK) CALL QUIT('Memory exceeded inside SDERTT')
          CALL TRAGRD(GRDMOL,TMPGRD,WORK(KCSTR),WORK(KSCTR),NCRREP(0,1),
      &               NCOOR)
-         CALL TRAHES(HESMOL,MXCOOR,TMPHES,WORK(KCSTR),WORK(KSCTR),NCOOR,
+         CALL TRAHES(HESMOL,NCOOR,TMPHES,WORK(KCSTR),WORK(KSCTR),NCOOR,
      &               NCOOR,1)
       ELSE
          DO 400 IC2 = 1, NCOOR
@@ -5255,7 +5257,6 @@ C     *** Hessian ***
       DO 1300 IC1 = 1, NCOOR
          TMPHES(IC1,IC2) = TMPHES(IC1,IC2)+ HESMOL(IC1,IC2)*TRAMSS(IC2)
  1300 CONTINUE
-      CALL DZERO(HESMOL,MXCOOR**2)
       HESMOL(:,:) = 0.0D0
       DO 1400 IC2 = 1, NCOOR
       DO 1400 IC1 = 1, NCOOR

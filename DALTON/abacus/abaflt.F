@@ -130,9 +130,9 @@ C     of floating orbitals. We assume the the position of all centers
 C     with zero charge have been completely optimized.
 C
 C     The final second-order properties are stored in
-C     HESMOL(MXCOOR,MXCOOR), DIPFLT(3,MXCOOR) and POLFLT(3,3).
+C     HESMOL(NCOOR,NCOOR), DIPFLT(3,MXCOOR) and POLFLT(3,3).
 C     If no floating orbitals are used this arrays are set
-C     equal to HESMOL(MXCOOR,MXCOOR), DIP1(3,MXCOOR) and
+C     equal to HESMOL(NCOOR,NCOOR), DIP1(3,MXCOOR) and
 C     POLFLT(3,3)
 C
 #include "implicit.h"

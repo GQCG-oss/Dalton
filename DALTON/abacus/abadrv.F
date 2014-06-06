@@ -690,7 +690,7 @@ C
       PARAMETER (NDIR = 28, NTABLE = 60, D0 = 0.D0)
       LOGICAL   POPULA, NOHESS, FCKEXP
       LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
-      LOGICAL   GRDINP
+      LOGICAL   GRDINP, NO_ABACUS_INPUT
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, RSTLBL(10)*6, WORD1*7, WRDSRC*7,
      *          WORDL*12
@@ -959,8 +959,10 @@ C         geometry if not overridden with '**START'
             GO TO 900
          END IF
          CALL ABAINIALL
+         NO_ABACUS_INPUT = .TRUE.
          GOTO 1
   930 CONTINUE
+      NO_ABACUS_INPUT = .FALSE.
       WORD1 = WORD
 C
       CALL TITLER('Output from '//WRDSRC//' input processing for ABACUS'
@@ -1417,7 +1419,7 @@ C
 cs    write session
 cs
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ Properties not ' //
+         WRITE(LUPRI,'(3A/A)') '@ ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
      &      '@ You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
@@ -1989,9 +1991,10 @@ C
 C     Properties not available for MP2, ABACUS run will be skipped
 C
       IF (.NOT. ABASOP .AND. DOMP2 .AND. (NASHT .EQ. 0)) THEN
-         WRITE(LUPRI,'(A/A)') '@ WARNING Properties not ' //
+         IF (.NOT. NO_ABACUS_INPUT)
+     &   WRITE(LUPRI,'(/3A/A)') '@ INFO ',WRDSRC,' properties not ' //
      &        'available for MP2 wave functions!',
-     &      '@ WARNING You may consider using SOPPA instead.'
+     &      '@ INFO You may consider using SOPPA instead.'
          SKIPAB = .TRUE.
          GOTO 789
       END IF
@@ -2210,7 +2213,7 @@ C
 C
 #include "trkoor.h"
 #include "taymol.h"
-      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       CALL QENTER('ABARESULT')
 C
@@ -2235,6 +2238,7 @@ C
      *            LSYM
       READ (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT
 C
+      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       ERGMOL = EMCSCF
 C
@@ -2679,6 +2683,7 @@ C
       END IF
 
       CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      deallocate ( GRDMOL, HESMOL )
 
       CALL QEXIT('ABARESULT')
       RETURN
@@ -2956,6 +2961,7 @@ C
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
+#include "nuclei.h"
 C
 C
       LOGICAL AROUND
@@ -2965,6 +2971,12 @@ C
       IF (NCOR .NE. NCOOR) THEN
          CALL QENTER('ABAWRIT_TAYMOL')
          CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR input .ne. NCOOR')
+      END IF
+      IF (NCOOR .NE. 3*NUCDEP) THEN
+         CALL QENTER('ABAWRIT_TAYMOL')
+         WRITE(LUPRI,'(//A,I10,A,I10)')
+     &      'ERROR in ABAWRIT_TAYMOL: NCOOR =',NCOOR,' .ne. ',3*NUCDEP
+         CALL QUIT('ERROR in ABAWRIT_TAYMOL: NCOOR .ne. 3*NUCDEP')
       END IF
       LUSTAR = -1
       CALL GPINQ('ABACUS.RESTART','EXIST',AROUND)
