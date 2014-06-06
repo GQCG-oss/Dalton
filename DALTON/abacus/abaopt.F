@@ -2895,11 +2895,25 @@ C
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
       CALL QENTER('INIHES')
+      IF (IPRINT .GE. IPRMED) THEN
+         CALL TITLER('Output from INIHES','*',103)
+         WRITE (LUPRI,*) 'HSFILE',HSFILE
+         WRITE (LUPRI,*) 'INITHS',INITHS
+         WRITE (LUPRI,*) 'REDINT',REDINT
+         WRITE (LUPRI,*) 'DELINT',DELINT
+         WRITE (LUPRI,*) 'INMDHS',INMDHS
+         WRITE (LUPRI,*) 'INRDHS',INRDHS
+      END IF
       CALL DZERO(HESOLD,MXRCRD*MXRCRD)
       CALL DZERO(GRDOLD,MXRCRD)
       CALL DZERO(SCLVEC,MXCOOR)
       allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
       CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      IF (IPRINT .GE. IPRDBG) THEN
+         CALL HEADER(
+     &'INIHES: Symmetry coordinate gradient from ABAREAD_TAYMOL',-1)
+         CALL OUTPUT(GRDMOL,1,1,1,NCOOR,1,NCOOR,-1,LUPRI)
+      END IF
 C
 C     We initialize the scaling vector (the inverse of the
 C     normalization vector in WLKCGH).
@@ -2917,7 +2931,6 @@ C
  1    CONTINUE
 C
       IF (IPRINT .GE. IPRMED) THEN
-         CALL TITLER('Output from INIHES','*',103)
          IF (IPRINT .GE. IPRMAX) THEN
             CALL HEADER('Scaling vector',-1)
             CALL OUTPUT(SCLVEC,1,1,1,NCRTOT,1,MXCOOR,-1,LUPRI)
@@ -3027,9 +3040,7 @@ C
                GRDOLD(J) = GRDMOL(J)
  18         CONTINUE
          END IF
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'Initial Hessian has been calculated.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/)') 'Initial Hessian has been calculated.'
 C
 C     Next line makes reinitialization possible:
 C

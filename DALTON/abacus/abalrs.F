@@ -395,11 +395,11 @@ C
      &                           IPRCLC,MXRM,MXPHP,WORK,LWORK)
                      IF (NOCONV) THEN
                         WRITE (LUPRI,'(/3A,2F10.5)')
-     &                    ' No convergence for ',
+     &                    '@ WARNING  No convergence for ',
      &                    IMGLAB(IREC),'. Last residual and threshold:',
      &                    FINRES, THRCLC
                      ELSE
-                        WRITE (LUPRI,'(/3A,2F10.5)')
+                        WRITE (LUPRI,'(3A,2F10.5)')
      &                    '    Convergence for ',
      &                    IMGLAB(IREC),'. Last residual and threshold:',
      &                    FINRES, THRCLC
