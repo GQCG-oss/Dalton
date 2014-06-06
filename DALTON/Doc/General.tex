@@ -123,7 +123,7 @@ orbitals.
 
 \item[\Key{NMDDRV}] Calls for a generalized numerical geometry
 differentiation. These routines will take advantage of the full
-molecular point group in order to minimize the number of point to be
+molecular point group in order to minimize the number of points to be
 calculated. What order of derivatives and whether any analytical
 derivatives are to be used is determined in the \verb|*NMDDRV| input
 module.
@@ -1690,7 +1690,7 @@ derivatives from 2.order analytical derivatives.
 
 \item[\Key{DRYRUN}]\verb| |\newline
 \verb|READ (LUCMD,*) NMREDU|\newline
-\verb|READ (LUCMD,*)| (KDRYRN(II),II=1,NMREDU)
+\verb|READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)|
 
 The numerical derivatives will not be calculated, and the program will
 just set up the required displacement. An optional number of redundant

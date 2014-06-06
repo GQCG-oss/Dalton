@@ -2797,8 +2797,6 @@ C
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
 
       CALL QENTER('GTHESS')
-      allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
-      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       WORK(1) = WRKDLM
       KFREE = 2
       LFREE = LWORK - KFREE + 1
@@ -2851,16 +2849,17 @@ C        *** "desymmetrized".                          ***
 C
          KCSTRA = KFREE
          KSCTRA = KCSTRA + NCOOR**2
+         allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
          CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
          CALL TRAHES(HESMOL,NCOOR,EHESS,WORK(KCSTRA),WORK(KSCTRA),
      &               MXCOOR,NCOOR,1)
+         deallocate ( GRDMOL, HESMOL )
       ELSE IF ((ITRNMR .GT. 0) .AND. (.NOT. NWSYMM)) THEN
 C
 C        For all iterations except the first, MINCGH is run here.
 C
          CALL MINCGH(EGRAD,EHESS,ALLHES,WORK(KFREE),LFREE)
       END IF
-      deallocate ( GRDMOL, HESMOL )
       CALL QEXIT('GTHESS')
       RETURN
       END
