@@ -57,6 +57,7 @@ f.add(from_string = 'Singlet electronic excitation energies',
 
 f.add(from_string = 'Electric transition dipole moments',
       num_lines = 36,
+      ignore_sign = True,
       abs_tolerance = 1.0e-3)
 
 f.add(from_string = 'Magnetic transition dipole moments',
