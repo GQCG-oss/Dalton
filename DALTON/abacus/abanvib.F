@@ -1286,7 +1286,8 @@ C
 C     *** Results. ***
 C
       IF (PRPTXT.EQ.'SPIN-SPIN') THEN
-         CALL HEADER('Vibrational averaged ' // PRPTXT //' couplings',0)
+         CALL HEADER('Vibrationally averaged ' // PRPTXT //' couplings',
+     &      0)
          KAVEIS = 1
          KANISO = KAVEIS + 5*NUCDEP*(NUCDEP+1)/2
          KASYM  = KANISO +   NUCDEP*(NUCDEP+1)/2
@@ -1304,17 +1305,14 @@ C
       IF (IPRINT .GT.10) THEN
          DO IDIM3 = 1, NDIM3
             IF (NDIM3.GT.1) THEN
-               WRITE (LUPRI,'(A)') '                                  '
-               WRITE (LUPRI,'(A)') '                                  '
-               WRITE (LUPRI,'(A,I4)') 'Third dimension:   ', IDIM3
+               WRITE (LUPRI,'(//A,I4)') 'Third dimension:   ', IDIM3
             END IF
 C
-            CALL OUTPUT(VIBAVE(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,1,
-     &                  LUPRI)
+            CALL OUTPUT(VIBAVE(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,
+     &                  -1,LUPRI)
 C
          END DO
-         WRITE (LUPRI,'(A)') '                                  '
-         WRITE (LUPRI,'(A)') '                                  '
+         WRITE (LUPRI,'(/)')
       END IF
 C
 C     *** Print. ***
@@ -1338,13 +1336,11 @@ C
       IF (IPRINT.GT.20) THEN
          DO IDIM3 = 1, NDIM3
             IF (NDIM3.GT.1) THEN
-               WRITE (LUPRI,'(A)') '                                 '
-               WRITE (LUPRI,'(A)') '                                 '
-               WRITE (LUPRI,'(A,I4)') 'Third dimension:   ', IDIM3
+               WRITE (LUPRI,'(//A,I4)') 'Third dimension:   ', IDIM3
             END IF
 C
-            CALL OUTPUT(HARMCO(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,1,
-     &                  LUPRI)
+            CALL OUTPUT(HARMCO(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,
+     &                  -1,LUPRI)
          END DO
       END IF
 C
@@ -1367,9 +1363,7 @@ C
       IF (IPRINT.GT.20) THEN
          DO IDIM3 = 1, NDIM3
             IF (NDIM3.GT.1) THEN
-               WRITE (LUPRI,'(A)') '                                 '
-               WRITE (LUPRI,'(A)') '                                 '
-               WRITE (LUPRI,'(A,I4)') 'Third dimension:   ', IDIM3
+               WRITE (LUPRI,'(//A,I4)') 'Third dimension:   ', IDIM3
             END IF
 C
             CALL OUTPUT(AHRMCO(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,1,
@@ -1380,9 +1374,7 @@ C
      &               ' at reference geometry',0)
          DO IDIM3 = 1, NDIM3
             IF (NDIM3.GT.1) THEN
-               WRITE (LUPRI,'(A)') '                                '
-               WRITE (LUPRI,'(A)') '                                '
-               WRITE (LUPRI,'(A,I4)') 'Third dimension:   ', IDIM3
+               WRITE (LUPRI,'(//A,I4)') 'Third dimension:   ', IDIM3
             END IF
 C
             CALL OUTPUT(FUNVAL(1,1,IDIM3),1,NDIM1,1,NDIM2,NDIM1,NDIM2,1,
@@ -1429,10 +1421,9 @@ C     *** Memory for temporary array ***
         READ (LUWLK)
         READ (LUWLK) NDCOOT, WORK(KTEMP:KLAST-1)
         CALL GPCLOSE(LUWLK,'KEEP')
-        IF ( NDCOOT .NE. NDCOOR) 
-     &                             WRITE (LUPRI, '(A,A,A)') 
-     &                             'Check that force field in file',
-     &                             ABAWLK, 'matches current geometry'
+        IF ( NDCOOT .NE. NDCOOR) WRITE (LUPRI, '(3A)')
+     &     'Check that force field in file',
+     &     ABAWLK, 'matches current geometry'
 C     *** Store the force constants in TDER ***
         DO 100 ICOOR1 = 1, NDCOOR
         DO 100 ICOOR2 = 1, NDCOOR
@@ -1456,13 +1447,13 @@ C     *** Store the force constants in TDER ***
            TDER(ICOOR3,ICOOR1,ICOOR2) = DERIV(IDERIV)*DFAC
            TDER(ICOOR3,ICOOR2,ICOOR1) = DERIV(IDERIV)*DFAC
  200    CONTINUE
-      END IF 
+      END IF
 C
       IF (IPRINT.GE.20) THEN
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
 C
          ISTRT = 1
-         KCOL  = 6 
+         KCOL  = 9
          LAST  = MIN(NDCOOR,KCOL)
          KCOOR = NDCOOR
          NCOL  = NDCOOR/KCOL
@@ -1470,10 +1461,10 @@ C
 C
          DO ICOL = 1, NCOL
             DO ICOOR = 1, NDCOOR
-               WRITE (LUPRI,'(5X,6F12.6)')
+               WRITE (LUPRI,'(5X,9F12.6)')
      &                        (TDER(ICOOR,I,I),I=ISTRT,LAST)
             END DO
-            WRITE (LUPRI,'(A)') ' '
+            WRITE (LUPRI,'()')
             ISTRT = ISTRT + KCOL
             LAST  = MIN(NDCOOR,KCOL+LAST)
          END DO

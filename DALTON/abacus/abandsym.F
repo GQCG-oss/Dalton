@@ -2442,14 +2442,16 @@ C
 C
 C     *** Test print ***
 C
-      CALL HEADER('Dependent and indepenent force coefficients',-1)
-      WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
+      IF (NLDPMX .GE. KDPSTR) THEN
+         CALL HEADER('Dependent and indepenent force coefficients',-1)
+         WRITE (LUPRI,'(5X,A)') 'Dependent components   Independent ' //
      &                          'components     coefficients'
-      DO II = KDPSTR, NLDPMX
-         WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
-     &        (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2),
-     &        DCOEFF(II,1)
-      END DO
+         DO II = KDPSTR, NLDPMX
+            WRITE (LUPRI,'(I15,I4,I19,I4,15X,F6.2)')
+     &           (KDPMTX(II,J,1),J=1,2), (KDPMTX(II,J,2),J=1,2),
+     &           DCOEFF(II,1)
+         END DO
+      END IF
 C
       RETURN
       END

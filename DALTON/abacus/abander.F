@@ -1357,15 +1357,15 @@ c#endif
 C
 C     *** Finite field header. ***
 C
-      CALL TITLER('Numerical derivatives.','*',118)
-      CALL HEADER('Derivatives calculated:',0)
+      CALL TITLER('@ Numerical derivatives.','*',118)
+      CALL HEADER('@ Derivatives calculated:',0)
       WRITE (LUPRI,'(A,I3)')
-     &     '           Derivatives calculated to order', NMORDR + NAORDR
+     &     '@          Derivatives calculated to order', NMORDR + NAORDR
       WRITE (LUPRI,'(A,I3,A)')
-     &     '           Analytical derivatives from energies to ',
+     &     '@          Analytical derivatives from energies to ',
      &     NAORDR, ' order.'
       WRITE (LUPRI,'(A,I3,A,I3,A)')
-     &     '         ', NMORDR, '. numerical derivatives from',NAORDR,
+     &     '@        ', NMORDR, '. numerical derivatives from',NAORDR,
      &     '. order analytical derivatives'
 C
 C     *** Symmetry adapted coordinates ***
@@ -1423,7 +1423,7 @@ C
 C
 C           ***   The first component IX1 has always the largest order,   ***
 C           ***          and are then independent of the others           ***
-C           *** The order of the other components are not larger then one ***
+C           *** The order of the other components are not larger than one ***
 C
             IMINCR = 1
             IF (IMXRDR .EQ. 1) IMINCR = IORDR
@@ -1533,10 +1533,14 @@ C
 C                       *** Finding the appropriate step-possibility. ***
 C
                         IC   = 0
-                        IMOD = 1
                         IDIV = 1
                         DO 1600 I = 1, IRSRDR+1
-                           ICIN(I) = MOD(INT((IINNER-1)/IDIV),2) + 1
+                           I_MOD = MOD(INT((IINNER-1)/IDIV),2)
+                           IF (I_MOD .EQ. 0) THEN
+                              ICIN(I) = 1
+                           ELSE
+                              ICIN(I) = -1
+                           END IF
                            IDIV = IDIV*2
  1600                   CONTINUE
 C
@@ -1891,7 +1895,7 @@ C
 C        *** Test print. ***
          IF (IPRINT.GT.10) THEN
             WRITE (LUPRI,'(A, 12I5)') 'Component: ',
-     &                                         (INDSTP(I),I=1,IRSRDR+1)
+     &            (ICIN(I)*INDSTP(I),I=1,IRSRDR+1)
          END IF
       END IF
 C
@@ -1942,11 +1946,12 @@ c#endif
 C
 C           *** Header print ***
 C
-            CALL HEADER('Next numerical derivative component',0)
+            CALL HEADER('@ Next numerical derivative component',0)
             IF (IDIME.NE.1) THEN
-               WRITE (LUPRI,'(12I5)')  (INDSTP(I),I=1,IRSRDR+1)
+               WRITE (LUPRI,'(A,(T6,12I5))')  '@    ',
+     &            (ICIN(I)*INDSTP(I),I=1,IRSRDR+1)
             ELSE
-               WRITE (LUPRI,'(5X,A)') 'Starting geometry.'
+               WRITE (LUPRI,'(A)') '@    Starting geometry.'
             END IF
 C
             IF ((.NOT.DRYRUN).AND.((.NOT.RESTRT).OR.(RESTRT.AND.RSTDON
