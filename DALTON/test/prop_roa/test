@@ -34,23 +34,23 @@ f.add(string = 'Frequencies',
 # Optical rotation
 f.add(from_string = 'G tensor for frequency',
       num_lines = 8,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-7)
 
 # Polarizability tensor
 f.add(from_string = 'Polarizability tensor at reference geometry',
       num_lines = 25,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-7)
 
 # No-London G tensor
 # London G tensor
 f.add(from_string = 'London G tensor at reference geometry',
       num_lines = 23,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-7)
 
 # A tensor
 f.add(from_string = 'A tensor at reference geometry',
       num_lines = 40,
-      abs_tolerance = 1.0e-7)
+      abs_tolerance = 2.0e-7)
 
 # Rayleigh properties
 f.add(from_string = 'Rayleigh properties for parent molecule',
