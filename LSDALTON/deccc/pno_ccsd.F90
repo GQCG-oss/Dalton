@@ -53,7 +53,7 @@ module pno_ccsd_module
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
      real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
      real(realk),pointer :: r1(:,:),r2(:,:)
-     real(realk),pointer :: gvvvv(:), gvovo(:), goooo(:), goovv(:), govov(:), gooov(:)
+     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), govov(:), gooov(:)
      real(realk),pointer :: xo_pair(:,:),xv_pair(:,:),yo_pair(:,:),yv_pair(:,:)
      real(realk),pointer :: Gai(:,:)
      integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
@@ -144,7 +144,6 @@ module pno_ccsd_module
      call mem_alloc( pno_o2, nspaces  )
      call mem_alloc( sio4,   nspaces  )
      call mem_alloc( govov,  o2v2     )
-     call mem_alloc( goooo,  no**4    )
      call mem_alloc( goovv,  o2v2     )
      call mem_alloc( Lvoov,  o2v2     )
      call mem_alloc( gooov,  no**3*nv )
@@ -161,7 +160,6 @@ module pno_ccsd_module
      !zero the relevant quatnities
      !$OMP WORKSHARE
      Gai   = 0.0E0_realk
-     goooo = 0.0E0_realk
      govov = 0.0E0_realk !remove this integral since it may be provided by MP2
      goovv = 0.0E0_realk
      Lvoov = 0.0E0_realk
@@ -340,8 +338,8 @@ module pno_ccsd_module
            w3 = w1
 
            !goooo
-           w1 = w3
-           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yo,no,w2,fa,la,fg,lg,goooo)
+           !w1 = w3
+           !call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yo,no,w2,fa,la,fg,lg,goooo)
            !gooov
            w1 = w3
            call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,fa,la,fg,lg,gooov)
@@ -716,26 +714,26 @@ module pno_ccsd_module
      Lvoov = p20 * Lvoov
      call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
 
-     do ns = 1, nspaces
-        if(.not.pno_cv(ns)%allocd) cycle 
+     !do ns = 1, nspaces
+     !   if(.not.pno_cv(ns)%allocd) cycle 
 
-        !The original space quantities carry no numbering
-        d   => pno_cv(ns)%d
-        idx => pno_cv(ns)%iaos
-        pnv =  pno_cv(ns)%ns2
-        pno =  pno_cv(ns)%n
-        rpd =  pno_cv(ns)%rpd
-        PS  =  pno_cv(ns)%PS
-        if(PS)then
-           print *,"PS",idx
-           call print_tensor_unfolding_with_labels(sio4(ns)%elm1,&
-              &[1],'ji',1,[no,no],'lk',2,'SIO4 PS')
-        else
-           print *,"NP",idx
-           call print_tensor_unfolding_with_labels(sio4(ns)%elm1,&
-              &[pno,pno],'ji',2,[no,no],'lk',2,'SIO4 NP')
-        endif
-     enddo
+     !   !The original space quantities carry no numbering
+     !   d   => pno_cv(ns)%d
+     !   idx => pno_cv(ns)%iaos
+     !   pnv =  pno_cv(ns)%ns2
+     !   pno =  pno_cv(ns)%n
+     !   rpd =  pno_cv(ns)%rpd
+     !   PS  =  pno_cv(ns)%PS
+     !   if(PS)then
+     !      print *,"PS",idx
+     !      call print_tensor_unfolding_with_labels(sio4(ns)%elm1,&
+     !         &[1],'ji',1,[no,no],'lk',2,'SIO4 PS')
+     !   else
+     !      print *,"NP",idx
+     !      call print_tensor_unfolding_with_labels(sio4(ns)%elm1,&
+     !         &[pno,pno],'ji',2,[no,no],'lk',2,'SIO4 NP')
+     !   endif
+     !enddo
 
 
      !!DEBUG: A2 term
@@ -922,7 +920,7 @@ module pno_ccsd_module
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
      !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
      !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
-     !$OMP vvf,goooo,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
+     !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
      !$OMP oof, maxsize, nspaces, ovf,  s_idx,o1,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
      call init_threadmemvar()
@@ -973,7 +971,7 @@ module pno_ccsd_module
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
-           &w1,w2,w3,w4,w5,goooo,govov,vvf,sio4,nspaces)
+           &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1338,7 +1336,7 @@ module pno_ccsd_module
      call mem_dealloc( pno_o2 )
      call mem_dealloc( sio4  )
      call mem_dealloc( govov )
-     call mem_dealloc( goooo )
+     !call mem_dealloc( goooo )
      call mem_dealloc( goovv )
      call mem_dealloc( Lvoov )
      call mem_dealloc( gooov )
@@ -2523,14 +2521,14 @@ module pno_ccsd_module
 
 
   subroutine get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o2_space,&
-        &w1,w2,w3,w4,w5,goooo,govov,vvf,sio4,nspaces)
+        &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
      type(array), intent(in) :: pno_t2(nspaces),sio4(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in) :: goooo(:),govov(:),vvf(:,:)
+     real(realk),intent(in) :: govov(:),vvf(:,:)
      character :: tr11,tr12,tr21,tr22
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:),d(:,:),d1(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:)
@@ -2665,7 +2663,6 @@ module pno_ccsd_module
 
         !prepare 4 occupied integral goooo for B2 term
         call ass_D1to4( w3(1:rpd**2*rpd1**2), p1, [rpd,rpd,rpd1,rpd1] )
-        call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p3, [rpd1,nv,rpd1,nv] )
         call ass_D1to4( govov, p4, [no,  nv,no,  nv] )
@@ -2762,7 +2759,6 @@ module pno_ccsd_module
            call ass_D1to4(w3,p1,[rpd,rpd,pno1,pno1])
            do l=1,pno1
               do k=1,pno1
-                 !call array_reorder_2d(p10,sig(:,:,idx1(k),idx1(l)),rpd,rpd,[2,1],nul, p1(:,:,l,k))
                  p1(:,:,k,l) = sig(:,:,idx1(k),idx1(l))
               enddo
            enddo
@@ -2823,8 +2819,6 @@ module pno_ccsd_module
            call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,h2,w1)
            call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
            call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
-           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
-           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
         endif
 
 
