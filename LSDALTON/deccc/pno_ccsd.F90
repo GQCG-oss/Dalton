@@ -2710,12 +2710,8 @@ module pno_ccsd_module
                     w3(i+(j-1)*pno) = sig(i,j,idx1(paircontrib(1,pair)),idx1(paircontrib(2,pair)))
                  enddo
               enddo
-           call print_tensor_unfolding_with_labels(w3,&
-           &[rpd,rpd],'ij',2,[1,1],'kl',2,'ints pno')
 
               call array_reorder_2d( p10, t21, pnv1, pnv1, paircontrib(:,3-pair) , nul, w1 )
-           call print_tensor_unfolding_with_labels(w1,&
-           &[pnv1,pnv1],'ab',2,[1,1],'kl',2,'amps pno')
               call dgemm( 'n', 't', pnv1**2,rpd*rpd,1, p10, w1, pnv1**2, w3,rpd*rpd, dble(pair-1), w4, pnv1**2 )
 
            enddo
@@ -2825,8 +2821,10 @@ module pno_ccsd_module
            call array_reorder_4d( p10, h2, pnv, pnv,rpd,rpd, [1,3,2,4], p10, o )
         else
            call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,h2,w1)
-           call array_reorder_4d( p10, w1, pnv, rpd, pnv1, rpd, [2,4,1,3], nul, w3 )
+           call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
            call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
+           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
+           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
         endif
 
 
