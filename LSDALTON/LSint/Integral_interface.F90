@@ -5843,6 +5843,7 @@ DO idmat=1,ndrhs
       call DSCAL(3*nAtoms,constrain_factor**(4.E0_realk),grad_xc2,1)
    ENDIF
 
+   call DSCAL(3*nAtoms,-1E0_realk,grad_xc2,1)
    call DAXPY(3*nAtoms,1E0_realk,grad_xc2,1,admm_Kgrad,1)
    CALL LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,grad_xc2,nAtoms,'grad_xc2')
    call mem_dealloc(grad_xc2)
