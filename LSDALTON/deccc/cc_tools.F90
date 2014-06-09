@@ -228,7 +228,7 @@ module cc_tools_module
    !> \author Patrick Ettenhuber
    !> \date October 2012
    subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor, tlen,tred,fa,fg,&
-         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no)
+         & la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm, order,rest_occ_om2,scal,act_no, sio4_ilej )
       implicit none
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
@@ -269,7 +269,7 @@ module cc_tools_module
       integer(kind=8),intent(in)   :: wszes(4)
       integer,optional,intent(in)  :: order(4),act_no
       !restricted i<=j in the omega2 and or sio4
-      logical,optional, intent(in) :: rest_occ_om2
+      logical,optional, intent(in) :: rest_occ_om2, sio4_ilej
       real(realk), optional, intent(in) :: scal
       !timing information
       real(realk) :: twork,tcomm
@@ -286,13 +286,16 @@ module cc_tools_module
       real(realk),pointer   :: source(:,:),drain(:,:)
       integer(kind=ls_mpik) :: mode
       integer(kind=long)    :: o2v2
-      logical               :: rest_o2_occ
+      logical               :: rest_o2_occ, rest_sio4
+      real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
 
 
       rest_o2_occ   = .false.
       if(present(rest_occ_om2 ))rest_o2_occ   = rest_occ_om2
       no2 = no
       if(present(act_no))no2=act_no
+      rest_sio4 = .true.
+      if(present(sio4_ilej))rest_sio4 = sio4_ilej
 
       o2v2 = int((i8*no)*no*nv*nv,kind=long)
 #ifdef VAR_MPI
@@ -736,7 +739,22 @@ module cc_tools_module
       !transform gamma -> l
       call dgemm('t','n',no2,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no2)
       !transform alpha -> a , order is now sigma [ k l i j]
-      call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+      if( rest_sio4 )then
+         call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+      else
+
+         call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
+         call ass_D1to3(w2,t1,[no2,no2,nor])
+         call ass_D1to4(sio4,h1,[no,no,no2,no2])
+         do j=no,1,-1
+            do i=j,1,-1
+               call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
+               if(i /= j)then
+                     h1(j,i,:,:) =h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
+               endif
+            enddo
+         enddo
+      endif
 
 
 
@@ -759,7 +777,21 @@ module cc_tools_module
          !transform gamma -> l
          call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
          !transform alpha -> k, order is now sigma[k l i j]
-         call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+         if( rest_sio4 )then
+            call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+         else
+            call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
+            call ass_D1to3(w2,t1,[no2,no2,nor])
+            call ass_D1to4(sio4,h1,[no,no,no2,no2])
+            do j=no,1,-1
+               do i=j,1,-1
+                  call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
+                  if(i /= j)then
+                     h1(j,i,:,:) =h1(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
+                  endif
+               enddo
+            enddo
+         endif
 
       endif
 
