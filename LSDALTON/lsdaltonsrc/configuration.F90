@@ -3759,13 +3759,15 @@ END SUBROUTINE TRIM_STRING
 end module configuration
 
 #ifdef VAR_MPI
-subroutine lsmpi_setmasterToSlaveFunc(WORD)
+subroutine lsmpi_setmasterToSlaveFunc(WORD,hfweight)
 use infpar_module
 use xcfun_host,only: USEXCFUN
 use lsmpi_mod
   implicit none
   character(len=80)  :: WORD
+  real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
 end subroutine lsmpi_setmasterToSlaveFunc
 
@@ -3779,8 +3781,8 @@ use typedef
   real(realk) :: hfweight
   integer :: ierror
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight=0E0_realk   
   IF(.NOT.USEXCFUN)THEN
      CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
      IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
@@ -3802,8 +3804,8 @@ use typedef
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(hfweight,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
-  hfweight=0E0_realk 
   IF(.NOT.USEXCFUN)THEN
      CALL DFTaddFunc(WORD(1:80),hfweight)
   ELSE

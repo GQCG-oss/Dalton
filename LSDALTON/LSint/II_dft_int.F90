@@ -2477,7 +2477,7 @@ IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
+  call lsmpi_setmasterToSlaveFunc(Func,hfweight)
 ELSE
   call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
@@ -2499,7 +2499,7 @@ CALL DFTaddFunc(Func,GGAfactor)
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
+  call lsmpi_setmasterToSlaveFunc(Func,GGAfactor)
 ELSE
   call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
