@@ -5223,7 +5223,9 @@ isADMMQ = setting%scheme%ADMMQ
 isADMMS = setting%scheme%ADMMS
 isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
-addxc = setting%scheme%admm_addxc.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
+addxc = setting%scheme%admm_addxc
+addxc = addxc.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
+addxc = addxc.OR.setting%scheme%cam    !Hack for camb3lyp - for now SR
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
