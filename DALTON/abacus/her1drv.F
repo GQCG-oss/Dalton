@@ -254,8 +254,8 @@ C     in relativistic calculations). /Mar2001 hjaaj
       KJCENT = KJSYMC +  (NUCDEP + 1)/IRAT
       KGEXP  = KJCENT +  (NUCDEP + 1)/IRAT
       KCSTRA = KGEXP  +  NUCDEP
-      KSCTRA = KCSTRA + MXCOOR*MXCOOR
-      KTLMD  = KSCTRA + MXCOOR*MXCOOR
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KTLMD  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (SOLVNT) THEN
          KHESKE = KTLMD + LMNTOT*6*NUCDEP
          IF (MAXDIF .GE. 2) THEN

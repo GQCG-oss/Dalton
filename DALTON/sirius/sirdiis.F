@@ -1831,7 +1831,7 @@ C
          CALL DGETAP(NORBI,WRK(KTMP1),ERRVEC(1+IIORB(ISYM)))
 C
          IF (IPR_DIIS .GE. 15) THEN
-            WRITE (LUPRI,'(/A/A/A,I3)')
+            WRITE (LUPRI,'(/A/A,I3/A)')
      &      ' (DIIS_EVC) 4 Fmo = 4 (DCmo FDmo + DVmo FCmo)',
      &      '        = 4 Ct SAO (DCAO FDAO + DVAO FCAO) C for symmetry',
      &      ISYM,
