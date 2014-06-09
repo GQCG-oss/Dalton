@@ -1,0 +1,5 @@
+   rsp_hyperpolar
+   --------------
+   Molecule:         H2O
+   Wave Function:    MCSCF (CAS) / 6-31++G**
+   Test Purpose:     First hyperpolarizability
