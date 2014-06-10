@@ -1051,7 +1051,7 @@ do I=1,MOLECULE%natoms
    X1 = MOLECULE%ATOM(I)%CENTER(1)
    Y1 = MOLECULE%ATOM(I)%CENTER(2)
    Z1 = MOLECULE%ATOM(I)%CENTER(3)
-   RADI = BondRadius(ICHARGE)
+   RADI = BondRadius(ICHARGE) !Radius in Angstrom
    DISTANCE1 = X1*X1 + Y1*Y1 + Z1*Z1
    do J=1,I-1
       IF(MOLECULE%ATOM(J)%pointcharge)CYCLE
@@ -1060,9 +1060,9 @@ do I=1,MOLECULE%natoms
       X2 = MOLECULE%ATOM(J)%CENTER(1)
       Y2 = MOLECULE%ATOM(J)%CENTER(2)
       Z2 = MOLECULE%ATOM(J)%CENTER(3)
-      RADJ = BondRadius(JCHARGE)
+      RADJ = BondRadius(JCHARGE) !Radius in Angstrom
       DISTANCE = DISTANCE1 + X2*X2 + Y2*Y2 + Z2*Z2 - 2*X1*X2 - 2*Y1*Y2 - 2*Z1*Z2
-      DISTANCE = SQRT(DISTANCE)
+      DISTANCE = SQRT(DISTANCE)*bohr_to_angstrom !now in Angstrom
       IF (ICHARGE.NE.1.AND.JCHARGE.NE.1) THEN
          IF (DISTANCE .LE. 1.0E0_realk)THEN ! R(Y-X) .lt. 1.0 Angstrom is usually an error
             nShortYXbonds=nShortYXbonds+1
@@ -1079,8 +1079,7 @@ do I=1,MOLECULE%natoms
 enddo
 
  WRITE(LUPRI,'(A)')' '
-
-IF(nShortYXbonds.GT.0.AND.MOLECULE%natoms.GT.1.AND.MOLECULE%natomsNPC.GT.1)THEN
+IF((nShortYXbonds.GT.0.OR.nShortHXbonds.GT.0).AND.MOLECULE%natoms.GT.1.AND.MOLECULE%natomsNPC.GT.1)THEN
  WRITE(LUPRI,'(/A,2I5)')&
         &          'WARNING: Number of short HX and YX bond lengths:',nShortHXbonds,nShortYXbonds
  WRITE(LUPRI,'(A)')'WARNING: If not intentional, maybe your coordinates were in Angstrom,'
@@ -1128,8 +1127,8 @@ contains
        print*,'ERROR, RADIUS called with CHARGE =',NCHARGE
        CALL LSQUIT('RADIUS called with unvalid CHARGE',-1)
     ELSE
-       BondRadius = 0.01E0_realk * RAD(NCHARGE)
-       BondRadius = BondRadius/bohr_to_angstrom !now in Bohr
+       BondRadius = 0.01E0_realk * RAD(NCHARGE) !Output in Angstrom
+       BondRadius = BondRadius
     END IF
   end FUNCTION BondRadius
 end subroutine Geometry_analysis
