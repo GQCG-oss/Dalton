@@ -364,6 +364,7 @@ C
 !#define EXPERIMENTAL_DMAT_RESTART
 #ifdef EXPERIMENTAL_DMAT_RESTART
       real(8), allocatable :: dmat_restart(:)
+      logical              :: is_gcbasis
 #endif
 C
       CALL QENTER('DIIS_CTL')
@@ -614,7 +615,7 @@ C
 #ifdef EXPERIMENTAL_DMAT_RESTART
 ! radovan: experimental and untested feature, use at own risk
 !          reads AO dmat from LSDalton's dens.restart
-! TODO: check that there is no symmetry and check that nrow*ncol == N2BASX
+
          if (itdiis == 1) then
             iunit = -1
             CALL GPOPEN(iunit,'dens.restart','UNKNOWN',' ',
@@ -623,8 +624,26 @@ C
             nrow = 0
             ncol = 0
             read(iunit) nrow, ncol
+
+            ! check that dimensions match
+            if (nrow*ncol /= n2basx) then
+               call quit('dimensions do not match in restart')
+            end if
+
+            ! check that there is no symmetry
+            if (nsym > 1) then
+               call quit('nsym > 1 in restart')
+            end if
+
             allocate(dmat_restart(nrow*ncol))
-            read(iunit)(dmat_restart(I),I=1,nrow*ncol)
+            read(iunit) (dmat_restart(I),I=1,nrow*ncol)
+            read(iunit) is_gcbasis
+
+            ! check that gcbasis is .false.
+            if (is_gcbasis == .true.) then
+               call quit('is_gcbasis is true in restart')
+            end if
+
             CALL GPCLOSE(iunit, 'KEEP')
             dmat_restart = 2.0*dmat_restart
             CALL DCOPY(nrow*ncol,dmat_restart,1,DCAO,1)
