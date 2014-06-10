@@ -1063,22 +1063,17 @@ do I=1,MOLECULE%natoms
       RADJ = BondRadius(JCHARGE)
       DISTANCE = DISTANCE1 + X2*X2 + Y2*Y2 + Z2*Z2 - 2*X1*X2 - 2*Y1*Y2 - 2*Z1*Z2
       DISTANCE = SQRT(DISTANCE)
-      print*,'distance',distance
       IF (ICHARGE.NE.1.AND.JCHARGE.NE.1) THEN
          IF (DISTANCE .LE. 1.0E0_realk)THEN ! R(Y-X) .lt. 1.0 Angstrom is usually an error
             nShortYXbonds=nShortYXbonds+1
-            print*,'DISTANCE .LE. 1.0E0_realk  nShortYXbonds',nShortYXbonds
          ENDIF
       else
          IF (DISTANCE .LE. 0.7E0_realk)THEN ! R(H-X) .lt. 0.7 Angstrom is usually an error
             nShortHXbonds=nShortHXbonds+1
-            print*,'DISTANCE .LE. 0.7E0_realk  nShortHXbonds',nShortHXbonds
          ENDIF
       endif
-      print*,'NORMAL 1.2E0_realk*(RADI + RADJ)',1.2E0_realk*(RADI + RADJ)
       IF(DISTANCE.LT.(1.2E0_realk*(RADI + RADJ)))THEN
          nBonds = nBonds + 1
-         print*,'increase nBonds',nBonds
       ENDIF
    enddo   
 enddo
