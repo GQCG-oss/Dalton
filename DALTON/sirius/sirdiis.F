@@ -363,6 +363,9 @@ C
 
 !#define EXPERIMENTAL_DMAT_RESTART
 #ifdef EXPERIMENTAL_DMAT_RESTART
+      ! TODO: do not allocate extra matrix, not needed
+      !       but read directly into DCAO
+      !       then DSCAL by 2.0 to match Dalton
       real(8), allocatable :: dmat_restart(:)
       logical              :: is_gcbasis
 #endif
