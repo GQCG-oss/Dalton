@@ -614,6 +614,7 @@ C
 #ifdef EXPERIMENTAL_DMAT_RESTART
 ! radovan: experimental and untested feature, use at own risk
 !          reads AO dmat from LSDalton's dens.restart
+! TODO: check that there is no symmetry and check that nrow*ncol == N2BASX
          if (itdiis == 1) then
             iunit = -1
             CALL GPOPEN(iunit,'dens.restart','UNKNOWN',' ',
