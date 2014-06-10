@@ -360,6 +360,11 @@ C
       LOGICAL   LCONV, LNEWOCC, DODFT_SAVE
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
+
+!#define EXPERIMENTAL_DMAT_RESTART
+#ifdef EXPERIMENTAL_DMAT_RESTART
+      real(8), allocatable :: dmat_restart(:)
+#endif
 C
       CALL QENTER('DIIS_CTL')
       KFREE  = KFRSAV
@@ -605,6 +610,28 @@ C
          HSFOCK = ((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
          CALL FCKDEN((NISHT.GT.0.OR.HSFOCK),(.NOT.ONLYFC),
      &                DCAO,DCAO(1+N2BASX),CMO,DV,WRK(KFREE),LFREE)
+
+#ifdef EXPERIMENTAL_DMAT_RESTART
+! radovan: experimental and untested feature, use at own risk
+!          reads AO dmat from LSDalton's dens.restart
+         if (itdiis == 1) then
+            iunit = -1
+            CALL GPOPEN(iunit,'dens.restart','UNKNOWN',' ',
+     &                 'UNFORMATTED',IDUMMY,
+     &                 .FALSE.)
+            nrow = 0
+            ncol = 0
+            read(iunit) nrow, ncol
+            allocate(dmat_restart(nrow*ncol))
+            read(iunit)(dmat_restart(I),I=1,nrow*ncol)
+            CALL GPCLOSE(iunit, 'KEEP')
+            dmat_restart = 2.0*dmat_restart
+            CALL DCOPY(nrow*ncol,dmat_restart,1,DCAO,1)
+            deallocate(dmat_restart)
+         end if
+#endif /* EXPERIMENTAL_DMAT_RESTART */
+
+
 C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
 C     For a restricted open shell DFT calculation, or high spin
