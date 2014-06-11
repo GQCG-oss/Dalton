@@ -6191,6 +6191,7 @@ contains
     real(realk),dimension(natoms) :: EPQ
     real(realk) :: Eacc,Epairmax
     integer,dimension(natoms) :: atomindices
+    integer,dimension(natoms,2) :: lastpair
 
 
     ! ****************************************************************************************
@@ -6237,9 +6238,11 @@ contains
 
     ! Init stuff
     MyMolecule%ccmodel = DECinfo%ccmodel  ! use original CC model as initialization model
+    lastpair = 1
 
     ! Loop over all atoms P
     Ploop: do P=1,natoms
+       lastpair(P,1) = P
        ! If no orbitals assigned to P, no pairs for this atom
        if(.not. dofrag(P)) then
           Qloop1: do Q=1,natoms
@@ -6277,6 +6280,8 @@ contains
 
        end do Qloop2
 
+       ! Print last included pair for atomic center P:
+       lastpair(P,2) = Qquit
 
        ! Step 3 above: Find which pairs to treat at MP2 level
        ! ****************************************************
@@ -6371,7 +6376,7 @@ contains
 
     ! Print summary for pair analysis and estimated energies
     call print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
-         & FragEnergies,MyMolecule%DistanceTable)
+         & lastpair,FragEnergies,MyMolecule%DistanceTable)
 
     if(DECinfo%PairEstimateIgnore) then
        write(DECinfo%output,*) ' ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** ' 
@@ -6392,7 +6397,7 @@ contains
   !> \author Kasper Kristensen
   !> \date October 2013
   subroutine print_pair_estimate_summary(natoms,Nskip,NMP2,NCC,dofrag,Epair_est,Eskip_est,&
-       & FragEnergies,DistanceTable)
+       & lastpair,FragEnergies,DistanceTable)
     implicit none
     !> Number of atoms in molecule
     integer,intent(in) :: natoms
@@ -6408,6 +6413,8 @@ contains
     real(realk),intent(in) :: Epair_est
     !> Estimated correlation energy from the pairs that will be skipped in the calculation
     real(realk),intent(in) :: Eskip_est
+    !> Last pair included for each atomic fragment:
+    integer,intent(in) :: lastpair(natoms,2)
     !> Estimated fragment energies
     real(realk),intent(in) :: FragEnergies(natoms,natoms)
     !> Interatomic distance table
@@ -6436,6 +6443,10 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     ! Also print estimated pair fragment energies. Maybe this should be removed at some point
+    call print_spec_pair_fragment_energies(natoms,natoms,lastpair,FragEnergies,dofrag,&
+         & DistanceTable, 'Last pairs included for each atomic center','PF_LASTPAIR')
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
     call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
          & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
     write(DECinfo%output,*)
