@@ -6443,10 +6443,12 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     ! Also print estimated pair fragment energies. Maybe this should be removed at some point
-    call print_spec_pair_fragment_energies(natoms,natoms,lastpair,FragEnergies,dofrag,&
-         & DistanceTable, 'Last pairs included for each atomic center','PF_LASTPAIR')
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    if(DECinfo%PairEstimateIgnore) then
+      call print_spec_pair_fragment_energies(natoms,natoms,lastpair,FragEnergies,dofrag,&
+           & DistanceTable, 'Last pairs included for each atomic center','PF_LASTPAIR')
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    end if
     call print_pair_fragment_energies(natoms,FragEnergies,dofrag,&
          & DistanceTable, 'Estimated occupied pair energies','PF_ESTIMATE')
     write(DECinfo%output,*)
