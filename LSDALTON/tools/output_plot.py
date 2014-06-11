@@ -30,7 +30,10 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    elif ecorrtype=="v(T)":
       ov  = "v"
       ect = 2
-   else :
+   elif ecorrtype=="oEsti":
+      ov = "o"
+      ect = 3
+   else: 
       print "ERROR(plot_pair_energies):invalid choice of ecorrtype"
       exit()
    

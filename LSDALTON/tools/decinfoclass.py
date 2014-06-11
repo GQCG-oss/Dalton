@@ -90,6 +90,9 @@ class decinfo_class:
       for i in range(len(filelines)):
         line = filelines[i]
         if(fromfrag):
+          #READ FOT:
+          if ("FOT (Fragment Optimization Threshold)" in line):
+            self.fotfloat = float(line.split()[-1])
           #READ NUMBER OF JOBS
           if ("DEC JOB SUMMARY: Number of single jobs =" in line):
             self.sfragjobs = int(line.split()[-1])
@@ -100,6 +103,8 @@ class decinfo_class:
           if ("DEC JOB SUMMARY: Total number of jobs  =" in line):
             self.nfragjobs = int(line.split()[-1])
             found_nf = True
+          if ("SUMMARY FOR PAIR ESTIMATE ANALYSIS" in line):
+            self.ecorrtype.append("Estimated")
           #READ DEC CORRELATION ENEGIES
           if ("Lagrangian scheme energy      :"    in line):
             self.ecorrlag[0]  = float(line.split()[-1])
@@ -169,6 +174,7 @@ class decinfo_class:
       foundlagp = False
       foundoccp = False
       foundvirtp = False
+      foundesti = False
 
       #SETTING THE OFFSETS FOR READING HERE
       skip       = 4
@@ -228,6 +234,14 @@ class decinfo_class:
               self.pfrags[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
               self.pfrags[j].dist      = float(filelines[i+skip+j].split()[2])
               self.pfrags[j].ecorrvirt[k] = float(filelines[i+skip+j].split()[elenpair])
+              self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
+          if(self.ecorrtype[k]+" occupied pair energies" in filelines[i] and not exclude):
+            foundesti = True
+            for j in range(self.pfragjobs):
+              self.pfrags[j].fragid    = int(filelines[i+skip+j].split()[elfragid])
+              self.pfrags[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
+              self.pfrags[j].dist      = float(filelines[i+skip+j].split()[2])
+              self.pfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elenpair])
               self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
 
 
