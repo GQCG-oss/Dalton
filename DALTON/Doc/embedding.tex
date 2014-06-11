@@ -1,18 +1,18 @@
 \chapter{Polarizable embedding calculations}\label{ch:embedding}
 
-\index{polarizable embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale model}\index{multiscale}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
-This chapter introduces the polarizable embedding (PE) model as implemented in the PE library~\cite{pelib2012} included in the 
-\latestrelease\ release. Methods available are: PE-HF~\cite{pescf}, 
-PE-DFT~\cite{pescf}, PE-MP2/SOPPA~\cite{pesoppa} and 
-PE-CC\footnote{Currently, the PE-CC uses an older implementation 
-and not the PE 
-library. Note, that in the next release, the PE-CC
+\index{polarizable embedding}\index{electrostatic embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale modeling}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
+This chapter introduces the polarizable embedding (PE) model as implemented
+in the PE library~\cite{pelib2012} included in the \latestrelease\ release.
+Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
+PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
+and PE-CC\footnote{TODO: Currently, the PE-CC uses an older implementation 
+and not the PE library. Note, that in the next release, the PE-CC
 implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}. 
 The implementation uses the Gen1Int library to calculate one-electron
 integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
 first section gives some general considerations about the model and 
 implementation. In the second section we introduce the input format using
-examples.
+basic examples.
 
 \begin{center}
 \fbox{
@@ -21,10 +21,14 @@ examples.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item PE library: J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156851.
-\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted.\newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
-\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33},\hspace{0.25em}2012, (2012). 
-\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134},\hspace{0.25em}104108, (2011).
+\item PE library: (TODO).
+\item PE model: J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011) and J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156852.
+\item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
+\item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
+\item PE-MCSCF: E.~D.~Hedeg\aa{}rd, N.~H.~List, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Chem.~Phys.}, {\bf 139}, 044101 (2013).
+\item PE-CC: K.~Sneskov, T.~Schwabe, J.~Kongsted and O.~Christiansen. \newblock {\em J.~ Chem.~Phys.}, {\bf 134}, 104108, (2011).
+\item PE-CPP: M.~N.~Pedersen, E.~D.~Hedeg\aa{}rd, J.~M.~H.~Olsen, J.~Kauczor, P.~Norman and J.~Kongsted \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 1164 (2014).
+\item Magnetic properties with LAOs: C.~Steinmann, J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 10}, 981 (2014).
 \end{list}
 }}
 \end{center}
@@ -60,34 +64,39 @@ distributed/localized properties are used because of the better convergence of
 the multipole expansion. These are typically centered on all atomic sites in 
 the environment (and sometimes also bond-midpoints), however, the 
 implementation is general in this sense so they can be placed anywhere in 
-space. Currently, multipole moments up to fifth order and anisotropic 
-dipole-dipole polarizabilities are supported. The multipole moments are 
-expected to be traceless, however, for moments up to and including octopoles 
-the trace will be removed if present. In case polarizabilities are included it 
-might be necessary to use an exclusion list to ensure that only relevant sites 
-can polarize each other. The format of the \potinp\ file is demonstrated below.
+space. Currently, the PE library supports multipole moments up to fifth order and
+anisotropic dipole-dipole polarizabilities are supported. For multipoles up to and
+including third order (octopoles) the trace will be removed if present. Note, that
+the fourth and fifth order multipole moments are expected to be traceless. In case
+polarizabilities are included it might be necessary to use an exclusion list
+to ensure that only relevant sites can polarize each other. The format of
+the \potinp\ file is demonstrated below.
 
-The PE model is implemented for HF, DFT, MP2 and
+The PE model is implemented for HF, DFT, MP2, MCSCF and
 CC wave functions. Singlet linear response may be evaluated
 at PE-HF and PE-DFT levels of theory for closed- and open-shell systems,
-and at PE-SOPPA, PE-CC2 and PE-CCSD levels for closed-shell systems.
-In addition, triplet linear response and singlet quadratic response
-properties are available at the PE-HF and PE-DFT levels for closed-shell
-systems only. In the PE-MP2/SOPPA models the environment response is
-taken into account at the HF/RPA level (see Ref.~\cite{pesoppa} for details). 
-Note, that the current implementation 
-does not support point-group symmetry, London atomic orbitals or analytical 
-molecular gradients and Hessians. Furthermore, PE-CC uses 
+and at PE-SOPPA, PE-MCSCF, PE-CC2 and PE-CCSD levels for closed-shell systems.
+Furthermore, the PE library has been coupled with the complex polarization
+propagator (CPP) module to allow damped linear response properties at
+PE-HF and PE-DFT levels of theory for closed- and open-shell systems. Triplet
+linear response and singlet quadratic and cubic response properties are available
+at the PE-HF and PE-DFT levels for closed-shell systems only. Magnetic linear
+response properties using London atomic orbitals (LAOs) are also available.
+In the PE-MP2/SOPPA models, the environment response is
+taken into account at the HF/RPA level (see Ref.~\cite{pesoppa} for details).
+Note, that the current implementation does not support point-group symmetry
+or analytical molecular gradients and Hessians.
+(TODO: Furthermore, PE-CC uses 
 an older implementation with different input format which is briefly described 
-in Sec.~\ref{sec:pecc}. Note, that in the next release, PE-CC will use the
-more general and efficient PE library implementation.
+in Sec.~\ref{sec:pecc}.  Note, that in the next release, PE-CC will use the
+more general and efficient PE library implementation.)
 
 
 \section{Input description}
-The following input description is relevant only for PE-HF, PE-DFT and 
-PE-MP2/SOPPA. The PE-CC input is described in subsection~\ref{sec:pecc}. To 
-include environment effects using the PE model it is 
-necessary to define the core and environment part of the system: the \molinp\ 
+The following input description is relevant only for PE-HF, PE-DFT,
+PE-MP2/SOPPA and PE-MCSCF. The PE-CC input is described in
+subsection~\ref{sec:pecc}. To include environment effects using the PE model it
+is necessary to define the core and environment part of the system: the \molinp\ 
 file specifies the core molecular system and the \potinp\ file, which contains 
 the embedding potential, defines the environment. Moreover, additional 
 keywords are needed in the \dalinp\ input file to activate the PE model. To use 
@@ -250,7 +259,9 @@ section). Here the first line gives the number of lists (i.e.\ the number of
 lines) and the length of the exclusion lists (i.e.\ the number of entries per 
 line). The exclusion lists specify what the polarizable sites are not allowed 
 to be polarized by, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be 
-polarized by sites 2, 3, 4 and 5.
+polarized by sites 2, 3, 4 and 5.\\
+
+\noindent (TODO: add @LJ section...)
 
 \subsection*{PE-CC example}\label{sec:pecc}
 The PE-CC calculations in the current release uses an older implementation and 
