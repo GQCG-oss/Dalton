@@ -15,7 +15,7 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.6'
+RUNTEST_VERSION = 'v0.1.7'
 
 import re
 import os
