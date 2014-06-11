@@ -359,6 +359,9 @@ If (.NOT. dyn%NHchain) then
 Endif
 !
 Call LSHeader(lupri, 'Energy conservation (au)')
+Write(*,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
 Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
                             '   Potential energy: ',traj%CurrPotential, &
                             '   Kinetic energy: ', traj%CurrKinetic
