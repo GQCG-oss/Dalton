@@ -2760,7 +2760,9 @@ contains
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
     real(realk) :: nov    
-    StepsizeLoop6 = StepsizeLoop*6 
+    integer :: AverageOrbitalPerAtoms
+    AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
+    StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
 
     IF(DECinfo%onlyOccPart)THEN
        !increase with StepsizeLoop6 virtual orbitals
@@ -2823,7 +2825,9 @@ contains
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
     real(realk) :: nov    
-    StepsizeLoop6 = StepsizeLoop*6 
+    integer :: AverageOrbitalPerAtoms
+    AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
+    StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
     nov = (nocc*1.0E0_realk/(nvirt*1.0E0_realk))
     Xocc = NINT(2*StepsizeLoop6*nov)
     Yvirt = 2*StepsizeLoop6-Xocc
