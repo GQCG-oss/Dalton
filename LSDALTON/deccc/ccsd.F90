@@ -1736,7 +1736,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !of gamma batch
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4%d,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk )
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
 
                  !start a new timing phase after these terms
                  call time_start_phase(PHASE_WORK)
@@ -1755,7 +1755,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
            call lsmpi_poke()
            ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,no,nv,nb,fa,fg,la,lg,xo,sio4%d)
+           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%d)
            call lsmpi_poke()
 
 
@@ -1993,9 +1993,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
+        !call print_tensor_unfolding_with_labels(sio4%d,&
+        !   &[no,no],'kl',2,[nor],'i<j',1,'SIO4 FULL')
+
         !get B2.2 contributions
         !**********************
-        call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,nb,omega2,scheme,lock_outside,&
+        call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
 
@@ -3050,192 +3053,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call time_start_phase(PHASE_WORK, at = tw )
   end subroutine get_cnd_terms_mo
-
-  !> \brief Get the b2.2 contribution constructed in the kobayashi scheme after
-  !the loop to avoid steep scaling ste  !> \author Patrick Ettenhuber
-  !> \date December 2012
-  subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,nb,om2,s,lock_outside,tw,tc)
-    implicit none
-    !> the sio4 matrix from the kobayashi terms on input
-    real(realk), intent(in) :: sio4(:)
-    !> amplitudes
-    !real(realk), intent(in) :: t2(*)
-    type(array), intent(inout) :: t2
-    !> some workspave
-    real(realk), intent(inout) :: w1(:)
-    real(realk), pointer :: w2(:)
-    !> number of occupied, virutal and ao indices
-    integer, intent(in) :: no,nv,nb
-    !> residual to be updated
-    !real(realk), intent(inout) :: om2(*)
-    type(array), intent(inout) :: om2
-    !> integer specifying the calc-scheme
-    integer, intent(in) :: s
-    logical, intent(in) :: lock_outside
-    !> work and communication time in B2 term
-    real(realk), intent(inout) :: tw,tc
-    integer :: nor
-    integer :: ml,l,tl,fai,lai
-    integer :: tri,fri
-    integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
-    real(realk) :: nrm1,nrm2,nrm3,nrm4
-    integer ::  mv((nv*nv)/2),st
-    integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
-    logical :: traf
-
-    call time_start_phase(PHASE_WORK)
-
-    me    = 0
-    massa = 0
-    nnod  = 1
-#ifdef VAR_MPI
-    massa = infpar%master
-    nnod  = infpar%lg_nodtot
-    me    = infpar%lg_mynum
-    mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
-#endif
-    o2v2=(i8*no)*no*nv*nv
-      
-    !Setting transformation variables for each rank
-    !**********************************************
-    call mo_work_dist(nv*nv,fai,tl,traf)
-
-    if(DECinfo%PL>3.and.me==0)then
-      write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
-    endif
-    
-    nor=no*(no+1)/2
-
-    ! do contraction
-    if((s==4.or.s==3).and.traf)then
-
-
-      w1=0.0E0_realk
-      call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-
-
-    else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-      call mem_alloc(w2,tl*no*no)
-
-      call time_start_phase(PHASE_COMM, at = tw )
-
-      if(lock_outside)call arr_lock_wins(t2,'s',mode)
-      call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
-      if(lock_outside)call arr_unlock_wins(t2,.true.)
-
-      call time_start_phase(PHASE_WORK, at = tc )
-
-      w1=0.0E0_realk
-      call dgemm('n','n',tl,nor,no*no,0.5E0_realk,w2,tl,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-      call mem_dealloc(w2)
-#endif
-
-    endif
-   
-
-    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do j=no,1,-1
-      !$OMP DO 
-      do i=j,1,-1
-        pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-        pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-      enddo
-      !$OMP END DO
-    enddo
-    !$OMP BARRIER
-    !$OMP DO 
-    do j=no,1,-1
-      do i=j,1,-1
-        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-        if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-      enddo
-    enddo
-    !$OMP END DO
-    !$OMP END PARALLEL
-
-    do j=no,1,-1
-      do i=j,1,-1
-        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-      enddo
-    enddo
-
-    if((s==4.or.s==3).and.traf)then
-
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-      call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
-#else
-      !$OMP WORKSHARE
-      om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
-      !$OMP END WORKSHARE
-#endif
-
-    else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-      call time_start_phase(PHASE_COMM, at = tw )
-
-      if(lock_outside)call arr_lock_wins(om2,'s',mode)
-      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside)
-
-      call time_start_phase(PHASE_WORK, at = tc )
-#endif
-
-    endif
-
-    call time_start_phase(PHASE_COMM, at = tw )
-  end subroutine get_B22_contrib_mo
-
-  !> \brief subroutine to add contributions to the sio4 matrix which enters the
-  !B2.2 term in the "non"-parallel region
-  !> \author Patrick Ettenhuber
-  !> \Date September 2012
-  subroutine add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
-    implicit none
-    !> workspace containing the pariteially transformed integrals ordered as I(i
-    !gamma alpha j)
-    real(realk),pointer :: w0(:)
-    !> arbitrary workspace of correct size
-    real(realk),pointer :: w2(:),w3(:)
-    !> number of occupied, virutal and ao indices
-    integer, intent(in) :: no,nv,nb
-    !> first alpha and first gamma indices of the current loop
-    integer, intent(in) :: fa,fg
-    !> lengths of the alpha ang gamma batches in the currnet loop
-    integer, intent(in) :: la,lg
-    !> transformation matrix for t1 transformed integrals "Lambda p"
-    real(realk),intent(in) :: xo(nb*no)
-    !> sio4 storage space to update during the batched loops
-    real(realk),pointer :: sio4(:)
-    integer :: nor,pos,i,j
-    integer(kind=8) :: pos1, pos2
-
-    nor=no*(no+1)/2
-
-    ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-    call array_reorder_4d(1.0E0_realk,w0,no,lg,la,no,[2,3,1,4],0.0E0_realk,w2)
-    ! (w2):I[alpha gamma i <= j] <- (w3):I[alpha gamma i j]
-    do j=1,no
-      do i=1,j
-        pos1=1_long+((i+j*(j-1)/2)-1)*la*(lg*i8)
-        pos2=1_long+(i-1)*la*lg+(j-1)*la*lg*(no*i8)
-        !call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
-        w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
-      enddo
-    enddo
-    ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
-    call array_reorder_3d(1.0E0_realk,w3,lg,la,nor,[2,3,1],0.0E0_realk,w2)
-    ! (w2):I[ l i <= j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i <= j alpha]
-    call dgemm('t','n',no,nor*lg,la,1.0E0_realk,xo(fa),nb,w2,la,0.0E0_realk,w3,no)
-    ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [alpha k ]^T I[l i <= j alpha]^T
-    call dgemm('t','t',no,nor*no,lg,1.0E0_realk,xo(fg),nb,w3,nor*no,1.0E0_realk,sio4,no)
-
-  end subroutine add_int_to_sio4
 
 
 
