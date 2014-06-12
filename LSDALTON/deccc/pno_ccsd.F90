@@ -103,6 +103,7 @@ module pno_ccsd_module
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
 #ifdef VAR_OMP
+     integer, external :: omp_get_thread_num
      call omp_set_nested(.true.)
 #endif
   
@@ -921,7 +922,7 @@ module pno_ccsd_module
      !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
      !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
      !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
-     !$OMP oof, maxsize, nspaces, ovf,  s_idx,o1,&
+     !$OMP oof, maxsize, nspaces, ovf,  s_idx,o1,sio4,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
      call init_threadmemvar()
 
@@ -2176,7 +2177,7 @@ module pno_ccsd_module
 
      tid = 0
 #ifdef VAR_OMP
-     tid = omp_get_thread_num()
+     !tid = omp_get_thread_num()
 #endif
 
      !if( tid == 0 )then

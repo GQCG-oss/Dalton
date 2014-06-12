@@ -889,7 +889,7 @@ module cc_debug_routines_module
         if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
              break_iterations=.true.
 
-        if(DECinfo%use_singles .and. (.not. break_iterations) .and..not.u_pnos) then
+        if(DECinfo%use_singles .and. (.not. break_iterations)) then
           call array4_free(iajb)
         end if
 

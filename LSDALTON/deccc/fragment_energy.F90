@@ -2281,6 +2281,7 @@ contains
         AtomicFragment%EoccFOP=0E0_realk
         AtomicFragment%EvirtFOP=0E0_realk
         AtomicFragment%energies=0E0_realk
+        AtomicFragment%ccmodel = DECinfo%ccmodel
         call dec_fragment_time_get(times_fragopt)
         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
            &AtomicFragment%ccmodel,'Fragment optmization')
