@@ -6261,6 +6261,7 @@ contains
        ! Step 2 above: Find which pairs to skip
        ! **************************************
        Eacc = 0.0_realk
+       Qquit = natoms
        Qloop2: do Q=natoms,1,-1
 
           ! Skip if no orbitals assigned to atom Q
