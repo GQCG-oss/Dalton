@@ -129,7 +129,7 @@ implicit none
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
   config%doDEC = .false.
-  config%SCFinteractionEnergy = .false.
+  config%InteractionEnergy = .false.
   config%SameSubSystems = .false.
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
@@ -1039,10 +1039,10 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE('.SCFINTERACTIONENERGY')
-           !Calculated the SCF Interaction energy 
+        CASE('.INTERACTIONENERGY')
+           !Calculated the Interaction energy 
            !using Counter Poise Correction
-           config%SCFinteractionEnergy = .true.
+           config%InteractionEnergy = .true.
         CASE('.SAMESUBSYSTEMS')
            config%SameSubSystems = .true.
         CASE('.SUBSYSTEMDENSITY')
@@ -3337,8 +3337,8 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    endif
 
 ! Check Counter Poise Input :
-   IF(config%SCFinteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
-      call lsquit('.SCFINTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
+   IF(config%InteractionEnergy.AND.(ls%input%molecule%nSubSystems.NE.2))THEN
+      call lsquit('.INTERACTIONENERGY keyword require SubSystems in MOLECULE.INP',-1)
    ENDIF
 
 ! Check integral input:

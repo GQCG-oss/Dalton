@@ -76,7 +76,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
-  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
+  use InteractionEnergyMod, only: InteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -518,8 +518,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      ENDIF
 #endif     
 
-        if (config%SCFinteractionEnergy) then
-           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
+        if (config%InteractionEnergy) then
+           CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
         !PROPERTIES SECTION
 
