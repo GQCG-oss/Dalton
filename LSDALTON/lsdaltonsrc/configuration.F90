@@ -2853,7 +2853,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
-   integer :: nocc,nvirt,nthreads_test
+   integer :: nocc,nvirt,nthreads_test,nthreads
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -2862,18 +2862,19 @@ integer, external :: OMP_GET_NESTED
 
    write(config%lupri,*) 'Configuration:'
    write(config%lupri,*) '=============='
-
+nthreads = 1
 #ifdef VAR_OMP
 !deactivates nested OpenMP behavior - this should be false per default-
 !but we want to be sure.
 !IF(OMP_GET_NESTED())THEN
 !   CALL LSQUIT('Nested OpenMP is set to true, deactivate using OMP_NESTED=FALSE',-1)
 !ENDIF
-!$OMP PARALLEL   
+!$OMP PARALLEL SHARED(nthreads)  
 !$OMP MASTER
-IF(OMP_GET_NUM_THREADS().GT. 1)THEN
-   WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',OMP_GET_NUM_THREADS(),' threads.'
-ELSEIF(OMP_GET_NUM_THREADS().EQ. 1)THEN
+nthreads = OMP_GET_NUM_THREADS()
+IF(nthreads.GT. 1)THEN
+   WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',nthreads,' threads.'
+ELSEIF(nthreads.EQ. 1)THEN
    WRITE(lupri,'(4X,A)')'This is a Single core calculation. (no OpenMP)'
 ENDIF
 !$OMP END MASTER
@@ -2883,6 +2884,18 @@ ENDIF
 #endif
 
 #ifdef VAR_MPI
+IF(nthreads.EQ.1)THEN
+ IF(infpar%nodtot.GT.1)THEN
+  WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot,' processors, but you are only using 1 OpenMP thread'
+  WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
+  WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
+  WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
+  WRITE(lupri,'(4X,A)')     'WARNING: Where X is the number of floating point cores on your system.'
+  WRITE(lupri,'(4X,A)')     'WARNING: Note due to hyper-threading, and vendors reporting number of integer cores instead of' 
+  WRITE(lupri,'(4X,A)')     'WARNING: floating point units/cores, the determination of the optimal X may require some testing'
+  WRITE(lupri,'(4X,A)')     'WARNING: and may easily be half what you expect'
+ ENDIF
+ENDIF
 #ifdef VAR_INT64
 #ifdef VAR_MPI_32BIT_INT
 !int64,mpi & mpi32
