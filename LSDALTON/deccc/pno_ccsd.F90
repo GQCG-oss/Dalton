@@ -2549,6 +2549,17 @@ module pno_ccsd_module
      real(realk), parameter :: p20 =  2.0E0_realk
      real(realk), parameter :: m10 = -1.0E0_realk
 
+     !print *," CALCULATE CONTRIBUTION", ns
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+
+
+
      tw = 0.0E0_realk
      tc = 0.0E0_realk
 
@@ -2667,6 +2678,9 @@ module pno_ccsd_module
         call ass_D1to4( w1,    p3, [rpd1,nv,rpd1,nv] )
         call ass_D1to4( govov, p4, [no,  nv,no,  nv] )
 
+        !print *," CONRTIB LOOP", ns, ns2
+        !print *,""
+        !print *,""
 
         !CODE FOR PAIR SPACES WITH RESTRICTIONS
         if( PS1 )then
@@ -2704,11 +2718,19 @@ module pno_ccsd_module
 
               do i = 1, rpd
                  do j = 1, rpd
-                    w3(i+(j-1)*pno) = sig(i,j,idx1(paircontrib(1,pair)),idx1(paircontrib(2,pair)))
+                    w3(j+(i-1)*pno) = sig(j,i,idx1(paircontrib(1,pair)),idx1(paircontrib(2,pair)))
                  enddo
               enddo
 
-              call array_reorder_2d( p10, t21, pnv1, pnv1, paircontrib(:,3-pair) , nul, w1 )
+
+              call array_reorder_2d( p10, t21, pnv1, pnv1, paircontrib(:,pair) , nul, w1 )
+
+              !call print_tensor_unfolding_with_labels(w1,&
+              !   &[pnv1,pnv1],'ab',2,[rpd1,rpd1],'lk',2,'AMPS P')
+
+              !call print_tensor_unfolding_with_labels(w3,&
+              !   &[rpd,rpd],'ij',2,[rpd1,rpd1],'lk',2,'INTS 1')
+
               call dgemm( 'n', 't', pnv1**2,rpd*rpd,1, p10, w1, pnv1**2, w3,rpd*rpd, dble(pair-1), w4, pnv1**2 )
 
            enddo
@@ -2759,18 +2781,27 @@ module pno_ccsd_module
            call ass_D1to4(w3,p1,[rpd,rpd,pno1,pno1])
            do l=1,pno1
               do k=1,pno1
-                 p1(:,:,k,l) = sig(:,:,idx1(k),idx1(l))
+                 p1(:,:,l,k) = sig(:,:,idx1(l),idx1(k))
               enddo
            enddo
 
-           call array_reorder_4d( p10, t21, pnv1, rpd1, pnv1, rpd1, [1,3,2,4], nul, w1 )
-           call dgemm( 'n', 't', pnv1**2, rpd**2 , rpd1**2, p10, w1, pnv1**2, w3, rpd**2, nul, w4, pnv1**2 )
+           call array_reorder_4d( p10, t21, pnv1, rpd1, pnv1, rpd1, [3,1,4,2], nul, w1 )
 
+           !call print_tensor_unfolding_with_labels(w1,&
+           !   &[pnv1,pnv1],'ba',2,[rpd1,rpd1],'lk',2,'AMPS R')
+
+           !call print_tensor_unfolding_with_labels(w3,&
+           !   &[rpd,rpd],'ji',2,[rpd1,rpd1],'lk',2,'INTS R')
+
+           call dgemm( 'n', 't', pnv1**2, rpd**2 , rpd1**2, p10, w1, pnv1**2, w3, rpd**2, nul, w4, pnv1**2 )
 
         endif
 
+        !call print_tensor_unfolding_with_labels(w4,&
+        !   &[pnv1,pnv1],'ba',2,[rpd,rpd],'ij',2,'res - foo')
+
         !Squareup and transpose subblocks
-        if( .not.PS )then
+        !if( .not.PS )then
            !do j=pno,1,-1
            !   do i=j,1,-1
            !      pos1=1+((i+j*(j-1)/2)-1)*pnv1*pnv1
@@ -2805,21 +2836,28 @@ module pno_ccsd_module
            !   enddo
            !enddo
            !call array_reorder_4d(p10,w2,pnv1,pnv1,rpd,rpd,[3,4,1,2],nul,w4)
-           h2 => w4
-        else
-           h2 => w4
-        endif
+           !h2 => w4
+        !else
+           !h2 => w4
+        !endif
 
         ! transform back, or in the case of ns==ns2 just order correctly and add
         ! the contributions directly to the residual, and use symmetry of the
         ! term here
+        !call print_tensor_unfolding_with_labels(o,&
+        !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA BEFORE')
+
         if(ns==ns2)then
-           call array_reorder_4d( p10, h2, pnv, pnv,rpd,rpd, [1,3,2,4], p10, o )
+           call array_reorder_4d( p10, w4, pnv, pnv,rpd,rpd, [2,4,1,3], p10, o )
         else
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,h2,w1)
+           call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
            call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
            call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
+           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
+           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
         endif
+        !call print_tensor_unfolding_with_labels(o,&
+        !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AFTER')
 
 
 

@@ -1993,8 +1993,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
-        call print_tensor_unfolding_with_labels(sio4%d,&
-           &[no,no],'kl',2,[nor],'i<j',1,'SIO4 FULL')
+        !call print_tensor_unfolding_with_labels(sio4%d,&
+        !   &[no,no],'kl',2,[nor],'i<j',1,'SIO4 FULL')
 
         !get B2.2 contributions
         !**********************
