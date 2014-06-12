@@ -204,7 +204,9 @@ CONTAINS
        config%diag%CFG_purifyrestart = .FALSE.
     ENDIF
 
+    IF(config%doDEC)call mat_init(CMO,H1%nrow,H1%ncol)
     call Get_Energy(Esub,Etmp,config,H1,F,D1,S,ls,CMO,Natoms,lupri,luerr)
+    IF(config%doDEC)call mat_free(CMO)
 
     config%diag%CFG_restart = CFG_restart
     config%diag%CFG_purifyrestart = CFG_purifyrestart

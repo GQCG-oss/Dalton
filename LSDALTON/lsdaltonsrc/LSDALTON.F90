@@ -461,7 +461,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
               ! Single point DEC calculation using current HF files
               DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F(1),D(1),S,CMO)
+                 call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
               endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)

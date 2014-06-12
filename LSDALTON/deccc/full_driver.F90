@@ -37,7 +37,7 @@ module full
 contains
 
   !> \brief Main part for full molecular coupled-cluster calculations.
-  subroutine full_driver(MyMolecule,mylsitem,D)
+  subroutine full_driver(MyMolecule,mylsitem,D,EHF,Ecorr)
 
     implicit none
     !> Full molecule structure
@@ -46,7 +46,12 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> HF density matrix
     type(matrix),intent(in) :: D
-    real(realk) :: Ecorr,EHF,Eerr
+    !> HF Energy 
+    real(realk),intent(inout) :: EHF
+    !> Correlation Energy 
+    real(realk),intent(inout) :: Ecorr
+    !local variables
+    real(realk) :: Eerr
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
