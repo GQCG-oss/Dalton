@@ -17,18 +17,19 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fullccsd_high.info <<'%EOF%'
-   DEC-CCSD energy for full molecule
+cat > fullccsd_6.info <<'%EOF%'
+   MO-CCSD energy for full molecule
    --------------------------------
    Molecule:         HF
    Wave Function:    CCSD / cc-pVDZ
-   Test Purpose:     Test full molecule CCSD energy using DEC program (Kasper K)
+   Test Purpose:     Test full molecule CCSD energy using DEC program
+                     and the MO-based algorithm. (Pablo Baudin)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fullccsd_high.mol <<'%EOF%'
+cat > fullccsd_6.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
@@ -42,7 +43,7 @@ H          0.70368        0.11634       -1.09866
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fullccsd_high.dal <<'%EOF%'
+cat > fullccsd_6.dal <<'%EOF%'
 **GENERAL
 .FORCEGCBASIS
 **WAVE FUNCTIONS
@@ -57,9 +58,11 @@ TRILEVEL
 .DEBUG_MPI_MEM
 **CC
 .FrozenCore
+.CCSDforce_scheme
+6
 .CCSD
 .ccThr
-1e-9
+1e-7
 .MEMORY
 1.0
 *END OF INPUT
@@ -73,8 +76,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fullccsd_high.check
-cat >>fullccsd_high.check <<'%EOF%'
+echo $CHECK_SHELL >fullccsd_6.check
+cat >>fullccsd_6.check <<'%EOF%'
 
 log=$1
 

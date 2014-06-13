@@ -4117,7 +4117,7 @@ end function max_batch_dimension
     write(lupri,*)
     write(lupri,'(13X,a)') '**********************************************************'
     if(DECinfo%full_molecular_cc) then
-       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'CC ENERGY SUMMARY', '*'
+       write(lupri,'(13X,a,19X,a,20X,a)') '*', 'CC ENERGY SUMMARY', '*'
     else
        write(lupri,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
     end if
