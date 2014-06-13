@@ -61,6 +61,7 @@ TRILEVEL
 .CCSDforce_scheme
 5
 .CCSD
+.MOCCSD
 .ccThr
 1e-7
 .MEMORY
