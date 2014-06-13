@@ -2886,7 +2886,8 @@ ENDIF
 #ifdef VAR_MPI
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
-  WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot,' processors, but you are only using 1 OpenMP thread'
+  WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
+                          & ' processors, but you are only using 1 OpenMP thread'
   WRITE(lupri,'(4X,A)')     'WARNING: This is NOT recommended! LSDALTON is designed as a MPI/OpenMP hybrid code'
   WRITE(lupri,'(4X,A)')     'WARNING: It is therefore HIGHLY recommended to use the command'
   WRITE(lupri,'(4X,A)')     'WARNING: export OMP_NUM_THREADS=X'
