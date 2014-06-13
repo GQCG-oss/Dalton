@@ -1123,16 +1123,24 @@ module dec_typedef_module
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
-  TYPE traceback
-     INTEGER :: na,ng,ident
-  END TYPE traceback
+  type traceback
+     integer :: na,ng,ident
+  end type traceback
 
+  type int_batch
+     integer :: nbatches,max_dim
+     integer, pointer :: orb2batch(:)
+     integer, pointer :: batchdim(:)
+     integer, pointer :: batchsize(:)
+     integer, pointer :: batchindex(:)
+     type(batchtoorb), pointer :: batch2orb(:)
+  end type int_batch
 
   !> Integral batch handling
-  TYPE batchTOorb
-     INTEGER,pointer :: orbindex(:)
-     INTEGER :: norbindex
-  END TYPE batchTOorb
+  type batchTOorb
+     integer,pointer :: orbindex(:)
+     integer :: norbindex
+  end type batchTOorb
 
   !> MO Integral batch info:
   type MObatchInfo
