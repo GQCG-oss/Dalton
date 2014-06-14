@@ -77,7 +77,7 @@ module pno_ccsd_module
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: iorb,nthreads
      type(int_batch) :: a_batch, g_batch
-     real(realk) :: MemFree,tw,tc
+     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,trest,tfin
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -93,8 +93,8 @@ module pno_ccsd_module
      call omp_set_nested(.true.)
 #endif
   
-     tw = 0.0E0_realk
-     tc = 0.0E0_realk
+     call time_start_phase(PHASE_WORK, twall = tw)
+     tinit = tw
   
      o2v2 = (i8*no**2)*nv**2
      use_triangular = .true.
@@ -142,11 +142,20 @@ module pno_ccsd_module
      gooov = 0.0E0_realk
      !$OMP END WORKSHARE
 
+     call time_start_phase(PHASE_WORK, twall = tamps, ttot = tinit, labelttot =&
+        & 'PNO: init and zeroing                :' )
+
      !Get all the pno amplitudes with index restrictions i<=j
      call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
 
+     call time_start_phase(PHASE_WORK, twall = tome, ttot = tamps, labelttot = &
+        & 'PNO: extract and transform amplitudes:' )
+
      !initialize the pno_residual and the sio4 according to the allocated pno_cv
      call init_pno_residual_and_sio4(pno_cv,pno_o2,sio4,nspaces,no)
+
+     call time_start_phase(PHASE_WORK, twall = tbatchc, ttot = tome, labelttot = &
+        & 'PNO: initialize residual and sio4    :' )
 
      !call II_get_AbsoluteValueOcc_overlap(DECinfo%output,DECinfo%output,setting,nb,no,out)
 
@@ -175,11 +184,16 @@ module pno_ccsd_module
 
      call free_query_info(query)
 
+     call time_start_phase(PHASE_WORK, twall = tint_dir, ttot = tbatchc, labelttot = &
+        & 'PNO: build batches                   :' )
+
      ! Do the batched interal loop
      call pno_residual_integral_direct_loop(mylsitem,w1,s1,w2,s2,w3,s3,w4,s4,w5,s5,no,nv,nb,&
         &maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,xo,xv,yo,yv,gooov,&
         &goovv,govov,Lvoov,Gai)
 
+     call time_start_phase(PHASE_WORK, twall = tfock, ttot = tint_dir, labelttot = &
+        & 'PNO: integral direct loop            :' )
 
      ! Free gamma stuff
      call free_batch_info(g_batch)
@@ -232,6 +246,8 @@ module pno_ccsd_module
      call mem_dealloc( iFock )
      call mem_dealloc( w1    )
 
+     call time_start_phase(PHASE_WORK, twall = trest, ttot = tfock, labelttot = &
+        & 'PNO: fock matrix construction        :' )
 
      Lvoov = p20 * Lvoov
      call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
@@ -651,6 +667,8 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
+     call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
+        & 'PNO: MO part                         :' )
 
      !this subroutine assumes that symmetrization has already occured and only a
      !backtransformation to the original space is carried out
@@ -691,6 +709,8 @@ module pno_ccsd_module
 #ifdef VAR_OMP
      call omp_set_nested(nested)
 #endif
+     call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
+        & 'PNO: finalization                    :' )
   end subroutine get_ccsd_residual_pno_style
 
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx,ndidx1,ndidx2)
