@@ -746,7 +746,7 @@ contains
 
    if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
       call lsquit("ERROR(check_dec_input):Do not use &
-         &.CCSDfoce_scheme in a DEC calculation",-1)
+         &.CCSDforce_scheme in a DEC calculation",-1)
    endif
 
    if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then

@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fullccsd_mo.info <<'%EOF%'
+cat > fullccsd_6.info <<'%EOF%'
    MO-CCSD energy for full molecule
    --------------------------------
    Molecule:         HF
@@ -29,7 +29,7 @@ cat > fullccsd_mo.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fullccsd_mo.mol <<'%EOF%'
+cat > fullccsd_6.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
@@ -43,7 +43,7 @@ H          0.70368        0.11634       -1.09866
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fullccsd_mo.dal <<'%EOF%'
+cat > fullccsd_6.dal <<'%EOF%'
 **GENERAL
 .FORCEGCBASIS
 **WAVE FUNCTIONS
@@ -58,6 +58,8 @@ TRILEVEL
 .DEBUG_MPI_MEM
 **CC
 .FrozenCore
+.CCSDforce_scheme
+6
 .CCSD
 .MOCCSD
 .ccThr
@@ -75,8 +77,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fullccsd_mo.check
-cat >>fullccsd_mo.check <<'%EOF%'
+echo $CHECK_SHELL >fullccsd_6.check
+cat >>fullccsd_6.check <<'%EOF%'
 
 log=$1
 

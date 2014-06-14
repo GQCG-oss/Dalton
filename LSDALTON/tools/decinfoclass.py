@@ -42,6 +42,7 @@ class decinfo_class:
    ####################################
 
    plot_pair_energies = plot_pair_energies
+   plot_AF_energy_errors = plot_AF_energy_errors
 
    #READ DEC SPECIFIC INFO
    def get_dec_info(self,filelines,fragtype,fromfrag):
