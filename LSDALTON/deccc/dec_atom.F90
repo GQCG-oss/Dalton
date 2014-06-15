@@ -5700,9 +5700,12 @@ contains
     if(myfragment%nEOSatoms==1) then ! atomic fragment
        myjob%atom1(1) = myfragment%EOSatoms(1)
        myjob%atom2(1) = myfragment%EOSatoms(1)
-    else
+    else if(myfragment%nEOSatoms==2)then
        myjob%atom1(1) = myfragment%EOSatoms(1)
        myjob%atom2(1) = myfragment%EOSatoms(2)
+    else
+       call lsquit("ERROR(copy_fragment_info_job) incorrect number of atoms in&
+          & EOS space", -1)
     end if
 
     myjob%nocc(1) = myfragment%noccAOS

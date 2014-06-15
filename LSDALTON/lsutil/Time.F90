@@ -167,6 +167,7 @@ Integer :: nhomolumo(3)
 
 !Phase integers (NOT counters)
 Integer :: last_phase
+!$OMP FIRSTPRIVATE(last_phase)
 
 
 
@@ -241,6 +242,10 @@ real(realk) :: CT_PHASE(nphases)
 
 
 !$OMP THREADPRIVATE(cputime1,walltime1,cputime2,walltime2)
+!$OMP FIRSTPRIVATE( PHASEcputime1, PHASEwalltime1, PHASEcputime2, PHASEwalltime2) 
+!$OMP LASTPRIVATE( PHASEcputime1, PHASEwalltime1, PHASEcputime2, PHASEwalltime2) 
+!$OMP REDUCTION(+:WT_PHASE,CT_PHASE)
+
 contains
 
 

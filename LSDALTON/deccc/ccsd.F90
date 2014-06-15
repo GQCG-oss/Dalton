@@ -60,6 +60,7 @@ module ccsd_module
 !         & array4_write_file
 !         & array_change_atype_to_d,print_norm
     use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
+    use pno_ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
@@ -680,151 +681,85 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
-             & MOinfo,mo_ccsd,iter,local,rest)
+             & MOinfo,mo_ccsd,pno_cv,pno_s,pno_govov,nspaces,iter,local,use_pnos,rest,frag)
     implicit none
     !> CC model
-    integer,intent(inout) :: ccmodel
-    logical, intent(in)   :: w_cp
-    type(array)           :: delta_fock
-    type(array)           :: omega2
-    type(array)           :: t2
-    type(array)           :: fock
-    type(array)           :: iajb
-    integer,intent(in)    :: no,nv
-    type(array)           :: ppfock
-    type(array)           :: qqfock
-    type(array)           :: pqfock
-    type(array)           :: qpfock
-    type(array)           :: xo
-    type(array)           :: xv
-    type(array)           :: yo
-    type(array)           :: yv
-    integer,intent(in)    :: nb
-    type(lsitem)          :: MyLsItem
-    type(array)           :: omega1
-    type(array)           :: t1
-    type(array)           :: pgmo_diag
-    type(array)           :: pgmo_up
-    type(MObatchInfo)     :: MOinfo
-    logical,intent(in)    :: mo_ccsd
-    integer,intent(in)    :: iter
-    logical,intent(in)    :: local
-    logical,intent(inout) :: rest
+    integer,intent(in)    :: ccmodel
+    logical, intent(in)      :: w_cp
+    type(array)              :: delta_fock
+    type(array)              :: omega2
+    type(array)              :: t2
+    type(array)              :: fock
+    type(array)              :: iajb
+    integer,intent(in)       :: no,nv
+    type(array)              :: ppfock
+    type(array)              :: qqfock
+    type(array)              :: pqfock
+    type(array)              :: qpfock
+    type(array)              :: xo
+    type(array)              :: xv
+    type(array)              :: yo
+    type(array)              :: yv
+    integer,intent(in)       :: nb
+    integer,intent(in)       :: nspaces
+    type(lsitem)             :: MyLsItem
+    type(array)              :: omega1
+    type(array)              :: t1
+    type(array)              :: pgmo_diag
+    type(array)              :: pgmo_up
+    type(MObatchInfo)        :: MOinfo
+    logical,intent(in)       :: mo_ccsd
+    type(PNOSpaceInfo)       :: pno_cv(:), pno_S(:)
+    type(array),intent(in)   :: pno_govov(:)
+    integer,intent(in)       :: iter
+    logical,intent(in)       :: local
+    logical,intent(in)       :: use_pnos
+    logical,intent(inout)    :: rest
+    type(decfrag),intent(in),optional :: frag
     !internal variables
     logical :: parent
     integer :: lg_me,lg_nnod
-#ifdef VAR_MPI
-    integer :: addr01(infpar%pc_nodtot)
-    integer :: addr02(infpar%pc_nodtot)
-    integer :: addr03(infpar%pc_nodtot)
-    integer :: addr04(infpar%pc_nodtot)
-    integer :: addr05(infpar%pc_nodtot)
-    integer :: addr06(infpar%pc_nodtot)
-    integer :: addr07(infpar%pc_nodtot)
-    integer :: addr08(infpar%pc_nodtot)
-    integer :: addr09(infpar%pc_nodtot)
-    integer :: addr10(infpar%pc_nodtot)
-    integer :: addr11(infpar%pc_nodtot)
-    integer :: addr12(infpar%pc_nodtot)
-    integer :: addr13(infpar%pc_nodtot)
-    integer :: addr14(infpar%pc_nodtot)
-    parent  = (infpar%parent_comm == MPI_COMM_NULL)
-    lg_nnod = infpar%lg_nodtot
-    lg_me   = infpar%lg_mynum
-
-    if( lspdm_use_comm_proc  )then
-      if (parent) call ls_mpibcast(CCSD_COMM_PROC_MASTER,infpar%master,infpar%pc_comm)
-      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
-      call ls_mpi_buffer(lg_nnod,infpar%master)
-      call ls_mpi_buffer(lg_me,infpar%master)
-      call ls_mpi_buffer(nb,infpar%master)
-      call ls_mpi_buffer(no,infpar%master)
-      call ls_mpi_buffer(nv,infpar%master)
-      call ls_mpi_buffer(iter,infpar%master)
-      call ls_mpi_buffer(local,infpar%master)
-      call ls_mpi_buffer(ccmodel,infpar%master)
-      call ls_mpi_buffer(rest,infpar%master)
-
-      if(parent)addr01=delta_fock%addr_loc
-      call ls_mpi_buffer(addr01,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)delta_fock=get_arr_from_parr(addr01(infpar%pc_mynum+1))
-
-      if(parent)addr02=omega2%addr_loc
-      call ls_mpi_buffer(addr02,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)omega2=get_arr_from_parr(addr02(infpar%pc_mynum+1))
-
-      if(parent)addr03=t2%addr_loc
-      call ls_mpi_buffer(addr03,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)t2=get_arr_from_parr(addr03(infpar%pc_mynum+1))
-
-      if(parent)addr04=fock%addr_loc
-      call ls_mpi_buffer(addr04,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)fock=get_arr_from_parr(addr04(infpar%pc_mynum+1))
-
-      if(parent)addr05=iajb%addr_loc
-      call ls_mpi_buffer(addr05,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)iajb=get_arr_from_parr(addr05(infpar%pc_mynum+1))
-
-      if(parent)addr06=ppfock%addr_loc
-      call ls_mpi_buffer(addr06,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)ppfock=get_arr_from_parr(addr06(infpar%pc_mynum+1))
-
-      if(parent)addr07=qqfock%addr_loc
-      call ls_mpi_buffer(addr07,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)qqfock=get_arr_from_parr(addr07(infpar%pc_mynum+1))
-
-      if(parent)addr08=pqfock%addr_loc
-      call ls_mpi_buffer(addr08,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)pqfock=get_arr_from_parr(addr08(infpar%pc_mynum+1))
-
-      if(parent)addr09=qpfock%addr_loc
-      call ls_mpi_buffer(addr09,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)qpfock=get_arr_from_parr(addr09(infpar%pc_mynum+1))
-
-      if(parent)addr10=xo%addr_loc
-      call ls_mpi_buffer(addr10,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)xo=get_arr_from_parr(addr10(infpar%pc_mynum+1))
-
-      if(parent)addr11=xv%addr_loc
-      call ls_mpi_buffer(addr11,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)xv=get_arr_from_parr(addr11(infpar%pc_mynum+1))
-
-      if(parent)addr12=yo%addr_loc
-      call ls_mpi_buffer(addr12,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)yo=get_arr_from_parr(addr12(infpar%pc_mynum+1))
-
-      if(parent)addr13=yv%addr_loc
-      call ls_mpi_buffer(addr13,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)yv=get_arr_from_parr(addr13(infpar%pc_mynum+1))
-
-      if(parent)addr14=omega1%addr_loc
-      call ls_mpi_buffer(addr14,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)omega1=get_arr_from_parr(addr14(infpar%pc_mynum+1))
-
-      call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
-      call mpicopy_dec_settings(DECinfo)
-      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
-    endif
-
-#endif
 
 #ifdef MOD_UNRELEASED
-    if (mo_ccsd) then 
-       call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
-            & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,fock,ppfock,&
-            & pqfock,qpfock,qqfock,local)
-    else 
-       call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-            & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-            & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
-    end if
+    if(use_pnos)then
+
+       !TODO: remove these sortings
+       call array_reorder(t2,[1,3,2,4])
+       call array_reorder(omega2,[1,3,2,4])
+
+       call get_ccsd_residual_pno_style(t1%elm1,t2%elm1,omega1%elm1,&
+          &omega2%elm1,iajb%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
+          &present(frag),pno_cv,pno_S,pno_govov,nspaces,ppfock%elm1,&
+          &qqfock%elm1,delta_fock%elm1,iter,f=frag)
+
+       !TODO: remove these sortings
+       call array_reorder(t2,[1,3,2,4])
+       call array_reorder(omega2,[1,3,2,4])
+
+    else
+
+       if (mo_ccsd) then 
+
+          call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,&
+             & iajb,nb,no,nv,iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,&
+             & delta_fock,fock,ppfock, pqfock,qpfock,qqfock,local)
+
+       else 
+
+          call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
+             & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
+             & xo%elm1,xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,&
+             & rest=rest)
+
+       end if
+    endif
 #else
     call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-         & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-         & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
+       & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+       & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 #endif
 
-  end subroutine ccsd_residual_wrapper
+ end subroutine ccsd_residual_wrapper
 
 
 
@@ -881,7 +816,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      implicit none
 
      !> CC model
-     integer,intent(inout) :: ccmodel
+     integer,intent(in) :: ccmodel
      !> Number of basis functions
      integer,intent(in) :: nb
      !> Number of occupied orbitals
@@ -2318,7 +2253,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &omega2,o2v2,s,pd,lock_outside,tw,tc)
      implicit none
      !> CC model
-     integer,intent(inout) :: ccmodel
+     integer,intent(in) :: ccmodel
      integer(kind=8),intent(in)::o2v2
      real(realk),intent(inout)::ppf(:)
      real(realk),intent(inout)::qqf(:)
@@ -4312,7 +4247,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer, intent(in) :: nbas, nocc, nvir, iter
     type(array), intent(inout) :: pgmo_diag, pgmo_up
@@ -4791,7 +4726,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
@@ -4856,7 +4791,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta

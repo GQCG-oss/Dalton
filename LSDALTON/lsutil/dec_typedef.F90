@@ -1218,7 +1218,7 @@ module dec_typedef_module
   end type PNOSpaceInfo
 
   type pno_query_info
-     integer :: n_arrays
-     integer, pointer :: size_array(:)
+     integer(kind=8)          :: n_arrays
+     integer(kind=8), pointer :: size_array(:)
   end type pno_query_info
 end module dec_typedef_module
