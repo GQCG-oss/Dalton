@@ -23,7 +23,25 @@ module pno_ccsd_module
   
   private
   
+  !SET OMP INFORMATION LOOP
+  integer :: nthreads_level1_int_dir
+  integer,pointer :: info_omp1(:,:,:,:)
+  integer, parameter :: beg_array   = 1
+  integer, parameter :: end_array   = 2
+  integer, parameter :: nloops      = 3
+  integer, parameter :: first_loop  = 1
+  integer, parameter :: second_loop = 2
+  integer, parameter :: third_loop  = 3
+  integer, parameter :: w1_tag      = 1
+  integer, parameter :: w2_tag      = 2
+  integer, parameter :: w3_tag      = 3
+  integer, parameter :: w4_tag      = 4
+  integer, parameter :: w5_tag      = 5
+
+
   contains
+
+
   
   !> \author Patrick Ettenhuber
   !> \date November 2013
@@ -31,7 +49,7 @@ module pno_ccsd_module
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
   subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,govov,no,nv,nb,xo,xv,yo,yv,&
-        &mylsitem,fj,pno_cv,pno_S,pno_govov,nspaces,oof,vvf,ifo,iter,f)
+        &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
@@ -44,7 +62,6 @@ module pno_ccsd_module
      type(decfrag),intent(in),optional :: f
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_govov(nspaces)
      !INTERNAL VARIABLES
      type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
@@ -1185,14 +1202,19 @@ module pno_ccsd_module
      real(realk) :: norm,thr
      real(realk),parameter :: p10 = 1.0E0_realk
      real(realk),parameter :: nul = 0.0E0_realk
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces
      logical :: keep_pair
      integer :: allremoved, ofmindim, ofmaxdim, allocpcount
+
+     call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
 
      if( DECinfo%noPNOoverlaptrunc ) then
         thr = -1.0E0_realk * huge(thr)
      else
         thr = DECinfo%PNOoverlapthr
      endif
+
+     mem_overlap_spaces = 0.0E0_realk
 
      allocpcount= 0
      allremoved = 0
@@ -1201,7 +1223,7 @@ module pno_ccsd_module
 
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
-     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount,mem_overlap_spaces)&
      !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
@@ -1310,6 +1332,8 @@ module pno_ccsd_module
                        pno_S(c)%d(dg,dg) = sv(dg)
                     enddo
 
+                    mem_overlap_spaces = mem_overlap_spaces + (ns1*red1 + red2*ns2 + red1 * red2 ) * 8.0E0_realk
+
                  endif
 
 
@@ -1346,6 +1370,9 @@ module pno_ccsd_module
      call mem_TurnOffThread_Memory()
 
      print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
+     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
+     & getting overlap spaces:")
+     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
 
   end subroutine get_pno_overlap_matrices
 
@@ -1449,28 +1476,32 @@ module pno_ccsd_module
 
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,g,pno_g,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb, n
-     real(realk), intent(in) :: t_mp2(nv,no,nv,no),g(nv,no,nv,no)
-     type(array), intent(inout) :: pno_g(n)
+     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
      type(PNOSpaceInfo),pointer :: cv(:)
-     logical,intent(in) :: fj
      type(decfrag),intent(in),optional :: f
      !INTERNAL
      real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
      integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-     integer :: pno_gvvvv_size,find_pos(no,no),maxocc,maxminocc
+     integer :: find_pos(no,no),maxocc,maxminocc
      logical :: doit
+     logical :: fj
      real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
      integer :: tid
+     real(realk) :: time_pno_spaces, mem_pno_spaces
 #ifdef VAR_OMP
      integer, external :: omp_get_num_threads, omp_get_thread_num
      integer :: nt_s, nt_n
 #endif
 
+     call time_start_phase(PHASE_WORK, twall = time_pno_spaces )
+     mem_pno_spaces = 0.0E0_realk
+
      find_pos = -1
+     fj = present(f)
 
      counter = 0
      if(fj) counter = 1
@@ -1505,7 +1536,6 @@ module pno_ccsd_module
 
      calc_parameters = 0
      det_parameters  = 0
-     pno_gvvvv_size  = 0
 
 
      if( fj )then
@@ -1528,9 +1558,9 @@ module pno_ccsd_module
 
 
      call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters&
-     !$OMP ,pno_gvvvv_size)&
-     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,pno_g,g,&
+     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
+     !$OMP mem_pno_spaces)&
+     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
      !$OMP maxocc,maxminocc)&
      !$OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
      call init_threadmemvar()
@@ -1565,15 +1595,10 @@ module pno_ccsd_module
         cv(1)%PS           = .false.
         counter            = 1
 
-        !get pno_g for FA space
-        !call ass_D1to4(w1,p1,[cv(1)%rpd,nv,cv(1)%rpd,nv])
-        !beg2 = cv(1)%rpd*nv*cv(1)%rpd*nv + 1
-        !end2 = beg2 + 
-        !call ass_D1to4(w1(beg2:end2),p1,[cv(1)%rpd,cv(1)%ns2,cv(1)%rpd,cv(1)%ns2])
-
         calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
         det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
-        pno_gvvvv_size  = pno_gvvvv_size  + cv(1)%ns2**4
+
+        mem_pno_spaces  = mem_pno_spaces  + (cv(1)%ns2**2)*8.0E0_realk
 
         if(.not.cv(1)%allocd)then
            call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
@@ -1631,7 +1656,7 @@ module pno_ccsd_module
                     endif
 
                     calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                    pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                    mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
                  endif
               endif
@@ -1683,7 +1708,7 @@ module pno_ccsd_module
                  endif
 
                  calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                 pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                 mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
               endif
 
@@ -1698,9 +1723,12 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
-     !print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
+     print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
 
+     call time_start_phase(PHASE_WORK, ttot = time_pno_spaces, labelttot = " PNO:&
+     & getting pno spaces:")
+
+     write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
 
   end subroutine get_pno_trafo_matrices
 
@@ -1820,10 +1848,11 @@ module pno_ccsd_module
      real(realk) :: MemFree,used_mem, Frac_of_mem
      real(realk), pointer :: dummy1(:), dummy2(:,:)
      integer(kind=8) :: nelms
+     integer :: edit,max_w_per_thr1(5),max_w_per_thr2(5),max_w_per_thr3(5)
 
      !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
      basic = 11
-     call init_query_info(query,basic+(nspaces*5))
+     call init_query_info(query,basic+(nspaces*5*3))
 
      call get_currently_available_memory(MemFree)
 
@@ -1837,8 +1866,6 @@ module pno_ccsd_module
         
      converged  = .false.
      gamma_size = nb
-
-     print *,no,nv,nb,maxocc,maxvirt
 
      do while(.not. converged)
 
@@ -1891,8 +1918,30 @@ module pno_ccsd_module
      do narray = 1, query%n_arrays
         print*,"Array",narray," of size:",query%size_array(narray)
      enddo
+
+     max_w_per_thr1 = 0
+     max_w_per_thr2 = 0
+     max_w_per_thr3 = 0
+     do narray = 1,5
+        do ns = 1, nspaces
+           edit = basic - 1 + (ns-1) * nloops * 5 + (first_loop - 1)  * 5
+           max_w_per_thr1(narray) = max(max_w_per_thr1(narray),query%size_array(edit+narray))
+           edit = basic - 1 + (ns-1) * nloops * 5 + (second_loop - 1) * 5
+           max_w_per_thr2(narray) = max(max_w_per_thr2(narray),query%size_array(edit+narray))
+           edit = basic - 1 + (ns-1) * nloops * 5 + (third_loop - 1)  * 5
+           max_w_per_thr3(narray) = max(max_w_per_thr3(narray),query%size_array(edit+narray))
+        enddo
+     end do
+
+     print *,max_w_per_thr1
+     print *,max_w_per_thr2
+     print *,max_w_per_thr3
+
+     stop 0
+
      if(DECinfo%PL>2)write(*,'("INFO: allocating ",g10.3," GB in PNO integral &
         &direct loop with #a:",I6," and #g:",I6)')used_mem,a_batch%nbatches,g_batch%nbatches
+
 
   end subroutine get_batch_sizes_pno_residual
 
@@ -1938,8 +1987,8 @@ module pno_ccsd_module
      real(realk), parameter :: m05 = -0.5E0_realk
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
-     !$integer :: tid
-     !$integer, external :: omp_get_thread_num()
+     integer :: tid, edit
+     !$ integer, external :: omp_get_thread_num
 
      master        = .true.
      tw            = 0.0E0_realk
@@ -1962,7 +2011,7 @@ module pno_ccsd_module
         !make sure this offset is the last accessed element in this if statement
         offset_for_omp = 10 
 
-        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5) )then
+        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5*3) )then
            call lsquit("ERROR(pno_residual_integral_direct_loop):query not&
               & possible, n_arrays needs to be set correctly, please check&
               & offset_for_omp",-1)
@@ -2087,15 +2136,15 @@ module pno_ccsd_module
 
 
            if(this_is_query)then
-              query%size_array(2) = max(query%size_array(2),(i8*la*nb)*lg*nv)
-              query%size_array(3) = max(query%size_array(3),(i8*lg*nv)*la*nb)
-              query%size_array(4) = max(query%size_array(4),(i8*lg*nv)*la*no)
-              !goovv
-              query%size_array(2) = max(query%size_array(2),(i8*nv*nv)*la*no)
-              query%size_array(3) = max(query%size_array(3),(i8*la*nb)*lg*nv)
-              !gooov and Lvoov
-              query%size_array(2) = max(query%size_array(2),(i8*no*no)*la*no)
-              query%size_array(3) = max(query%size_array(3),(i8*nv*nv)*la*no)
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*la*nb)*lg*nv)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*lg*nv)*la*nb)
+              query%size_array(w4_tag) = max(query%size_array(w4_tag),(i8*lg*nv)*la*no)
+              !goovv              tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*nv*nv)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nv)
+              !gooov and Lvoov    tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*no*no)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*nv*nv)*la*no)
            else
               call dgemm('n','n',la*nb*lg,nv,nb,p10,w1,la*nb*lg,yv,nb,nul,w2,la*nb*lg)
               call array_reorder_4d(p10,w2,la,nb,lg,nv,[3,4,1,2],nul,w3)
@@ -2117,20 +2166,24 @@ module pno_ccsd_module
            call time_start_phase(PHASE_WORK, twall = times(1), at = times(4) )
 
            !$OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-           !$OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-           !$OMP pno_cv,pno_t2,pno_o2,&
-           !$OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
+           !$OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1) &
            !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-           !$OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)
+           tid = 0
 #ifdef VAR_OMP
            tid = omp_get_thread_num()
 #endif
-           my_w1 => w1
-           my_w2 => w2
-           my_w3 => w3
-           my_w4 => w4
-           my_w5 => w5
+           if(this_is_not_query)then
+              my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,first_loop):info_omp1(end_array,tid+1,w1_tag,first_loop))
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,first_loop):info_omp1(end_array,tid+1,w2_tag,first_loop))
+              my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,first_loop):info_omp1(end_array,tid+1,w3_tag,first_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,first_loop):info_omp1(end_array,tid+1,w4_tag,first_loop))
+              my_w5 => w5(info_omp1(beg_array,tid+1,w5_tag,first_loop):info_omp1(end_array,tid+1,w5_tag,first_loop))
+           endif
 
            !$OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
@@ -2156,17 +2209,19 @@ module pno_ccsd_module
 
               if(this_is_query)then
 
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*la*nb)*lg*rpd)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*la*nb)*lg*rpd)
-                 query%size_array(offset_for_omp+ns+4) = max(query%size_array(offset_for_omp+ns+4),(i8*lg*rpd)*la*rpd)
+                 edit = offset_for_omp+(ns-1)*nloops*5+(first_loop-1)*5
+
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*lg*rpd)*la*rpd)
 
                  !VOVO
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*pnv*rpd)*la*rpd)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*pnv*rpd)*la*rpd)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*pnv*rpd)*la*rpd)
 
                  !SIO4
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*no*rpd)*la*rpd)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*rpd*rpd)*no*no)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*no*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*rpd*rpd)*no*no)
 
               else
 
@@ -2183,8 +2238,9 @@ module pno_ccsd_module
                  enddo
                  !  yv_pair
                  call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
-
+#ifndef VAR_OMP
                  call time_start_phase(PHASE_WORK, at = times_in_loops(1,1) )
+#endif
 
                  !gvovo contribution
                  if( PS )then
@@ -2207,7 +2263,9 @@ module pno_ccsd_module
                  call array_reorder_4d(p10,my_w2,no,rpd,la,rpd,[2,4,1,3],nul,my_w3)
                  call dgemm('n','n',rpd*rpd*no,no,la,p10,my_w3,rpd*rpd*no,xo(fa,1),nb,p10,sio4(ns)%elm1,rpd*rpd*no)
 
+#ifndef VAR_OMP
                  call time_start_phase(PHASE_WORK, at = times_in_loops(3,1) )
+#endif
 
               endif
 
@@ -2216,13 +2274,13 @@ module pno_ccsd_module
            !$OMP END PARALLEL
 
 
-           call time_start_phase(PHASE_WORK, ttot = times(1), twall = times(2) )
-           !times(5) = times(5) + times(1)
+           call time_start_phase(PHASE_WORK, ttot = times(1))
+           times(5) = times(5) + times(1)
 
            !shift intrgrals to w2 in the order \delta \gamma \alpha \beta
            if(this_is_query)then
 
-              query%size_array(3) = max(query%size_array(3),(i8*la*nb)*lg*nb)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nb)
 
            else if(.not.SORT_INT_TO_W2_DONE)then
 
@@ -2232,15 +2290,15 @@ module pno_ccsd_module
 
            endif
 
-           call time_start_phase(PHASE_WORK, at = times(6) )
+           call time_start_phase(PHASE_WORK, at = times(6), twall = times(2)  )
 
-           !$OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-           !$OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-           !$OMP pno_cv,pno_t2,pno_o2,&
-           !$OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
-           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-           !$OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
+           !OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
+           !OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
+           !OMP pno_cv,pno_t2,pno_o2,&
+           !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
+           !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
+           !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
+           !OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
 #ifdef VAR_OMP
            tid = omp_get_thread_num()
 #endif
@@ -2249,7 +2307,7 @@ module pno_ccsd_module
            my_w3 => w3
            my_w4 => w4
            my_w5 => w5
-           !$OMP DO SCHEDULE(DYNAMIC)
+           !OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
 
               if(.not.pno_cv(ns)%allocd)then
@@ -2270,16 +2328,16 @@ module pno_ccsd_module
 
               if(this_is_query)then
 
+                 edit = offset_for_omp+(ns-1)*nloops*5+(second_loop-1)*5
+
                  !CAREFUL: THIS ACCOUNTS FOR BOTH CASES PS AND NOT PS, WHEN
                  !CHANGING THE ROUTINE BELOW, THE QUERY HAS TO BE ADAPTED
                  !ACCORDINGLY
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*nb*lg)*la*pnv)
-                 query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),(i8*lg*la)*pnv*pnv)
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*la*pnv)*pnv*rpd)
-
-                 query%size_array(offset_for_omp+ns+4) = max(query%size_array(offset_for_omp+ns+4),(i8*pnv*pnv)*rpd*rpd)
-
-                 query%size_array(offset_for_omp+ns+5) = max(query%size_array(offset_for_omp+ns+5),(i8*la*rpd))
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*nb*lg)*la*pnv)
+                 query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*lg*la)*pnv*pnv)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*la*pnv)*pnv*rpd)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*pnv*pnv)*rpd*rpd)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*la*rpd))
 
               else
                  !Get the transformation matrices
@@ -2335,8 +2393,8 @@ module pno_ccsd_module
               endif
 
            enddo
-           !$OMP END DO NOWAIT
-           !$OMP END PARALLEL
+           !OMP END DO NOWAIT
+           !OMP END PARALLEL
 
            call time_start_phase(PHASE_WORK, ttot = times(2), twall = times(1) )
            times(7) = times(7) + times(2)
@@ -2384,25 +2442,25 @@ module pno_ccsd_module
 
                  if(this_is_query)then
                     !note that the mem requirements for w4 and w5 are the same
-                    query%size_array(1) = max(query%size_array(1),var_inp(2))
-                    query%size_array(3) = max(query%size_array(3),var_inp(3))
-                    query%size_array(4) = max(query%size_array(4),var_inp(1))
-                    query%size_array(5) = max(query%size_array(5),var_inp(1))
+                    query%size_array(w1_tag) = max(query%size_array(w1_tag),var_inp(2))
+                    query%size_array(w3_tag) = max(query%size_array(w3_tag),var_inp(3))
+                    query%size_array(w4_tag) = max(query%size_array(w4_tag),var_inp(1))
+                    query%size_array(w5_tag) = max(query%size_array(w5_tag),var_inp(1))
                  endif
 
                  I_PLUS_MINUS_DONE = .true.
 
               endif
 
-              call time_start_phase(PHASE_WORK, at = times(8) )
+              call time_start_phase(PHASE_WORK, at = times(8), twall = times(1) )
 
-              !$OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-              !$OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-              !$OMP pno_cv,pno_t2,pno_o2,&
-              !$OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
-              !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-              !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-              !$OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
+              !OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
+              !OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
+              !OMP pno_cv,pno_t2,pno_o2,&
+              !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
+              !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
+              !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
+              !OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
 #ifdef VAR_OMP
               tid = omp_get_thread_num()
 #endif
@@ -2432,15 +2490,17 @@ module pno_ccsd_module
 
                  if(this_is_query)then
 
+                    edit = offset_for_omp+(ns-1)*nloops*5+(third_loop-1)*5
+
                     if(.not.PS)then
-                       query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*pnv*rpd)*pnv*rpd)
+                       query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*pnv*rpd)
                     endif
 
                     !The sizes are the same for both blocks + an -
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*nb*tred)*pnv)
-                    query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),(i8*tred*pnv)*pnv)
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*tred)*nvr)
-                    query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*nor)*tred*2)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*nb*tred)*pnv)
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*tred*pnv)*pnv)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
                     var_inp = 0
 
@@ -2511,9 +2571,9 @@ module pno_ccsd_module
 
                  if( this_is_query )then
 
-                    query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),var_inp(1))
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),var_inp(2))
-                    query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),var_inp(3))
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),var_inp(1))
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),var_inp(2))
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),var_inp(3))
 
                  else
 
@@ -2523,8 +2583,8 @@ module pno_ccsd_module
 
 
               enddo
-              !$OMP END DO
-              !$OMP END PARALLEL
+              !OMP END DO
+              !OMP END PARALLEL
 
               call time_start_phase( PHASE_WORK, ttot = times(1) )
               times(9) = times(9) + times(1)

@@ -1428,7 +1428,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                 :: nnodes
    logical                 :: fragment_job
    type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
-   type(array), pointer    :: pno_govov(:)
    character(3), parameter :: safefilet11 = 't11'
    character(3), parameter :: safefilet12 = 't12'
    character(3), parameter :: safefilet1f = 't1f'
@@ -1844,19 +1843,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             frag%nspaces = nspaces
 
-            call mem_alloc( pno_govov, nspaces )
             call mem_alloc( frag%CLocPNO, nspaces )
             call get_pno_trafo_matrices(no,nv,nb,m2%val,&
-               &frag%CLocPNO,frag%nspaces,VOVO%val,pno_govov,fragment_job,f=frag)
+               &frag%CLocPNO,frag%nspaces,f=frag)
             pno_cv => frag%CLocPNO
 
          else
             !ALL PAIRS
             nspaces = no * ( no + 1 ) / 2
-            call mem_alloc( pno_govov, nspaces )
             call mem_alloc( pno_cv, nspaces )
             call get_pno_trafo_matrices(no,nv,nb,m2%val,&
-               &pno_cv,nspaces,VOVO%val,pno_govov,fragment_job,f=frag)
+               &pno_cv,nspaces,f=frag)
 
          endif
 
@@ -1955,7 +1952,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
-               & pno_cv,pno_s,pno_govov,nspaces,&
+               & pno_cv,pno_s,nspaces,&
                & iter,local,use_pnos,restart,frag=frag)
 
          case( MODEL_RPA )
@@ -2337,7 +2334,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             if( pno_cv(i)%allocd )then
                call free_PNOSpaceInfo(pno_cv(i))
-               !call array_free(pno_govov(i))
             endif
 
             do j = 1, i - 1
@@ -2353,7 +2349,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             if( frag%CLocPNO(i)%allocd )then
                call free_PNOSpaceInfo( frag%CLocPNO(i) )
-               !call array_free(pno_govov(i))
             endif
 
             do j = 1, i - 1
@@ -2367,7 +2362,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       endif
 
       call mem_dealloc( pno_S )
-      call mem_dealloc( pno_govov )
 
    endif
 

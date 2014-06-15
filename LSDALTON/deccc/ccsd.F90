@@ -681,7 +681,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
-             & MOinfo,mo_ccsd,pno_cv,pno_s,pno_govov,nspaces,iter,local,use_pnos,rest,frag)
+             & MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,rest,frag)
     implicit none
     !> CC model
     integer,intent(in)    :: ccmodel
@@ -710,7 +710,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(MObatchInfo)        :: MOinfo
     logical,intent(in)       :: mo_ccsd
     type(PNOSpaceInfo)       :: pno_cv(:), pno_S(:)
-    type(array),intent(in)   :: pno_govov(:)
     integer,intent(in)       :: iter
     logical,intent(in)       :: local
     logical,intent(in)       :: use_pnos
@@ -729,7 +728,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
        call get_ccsd_residual_pno_style(t1%elm1,t2%elm1,omega1%elm1,&
           &omega2%elm1,iajb%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
-          &present(frag),pno_cv,pno_S,pno_govov,nspaces,ppfock%elm1,&
+          &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
           &qqfock%elm1,delta_fock%elm1,iter,f=frag)
 
        !TODO: remove these sortings
@@ -974,6 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      time_Bcnd_comm       = 0.0E0_realk
      time_Esing_work      = 0.0E0_realk
      time_Esing_comm      = 0.0E0_realk
+     commtime             = 0.0E0_realk
 
 
      ! Set default values for the path throug the routine
@@ -1854,9 +1854,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(tasks,tasksc)
      endif
 
+#endif
+
      call time_start_phase(PHASE_WORK, at = time_intloop_comm , twall = time_intloop_stop)
-
-
 
      ! Print timings for the first part
      !*********************************
@@ -1880,7 +1880,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
-#endif
 
 
      ! Reallocate 1 temporary array

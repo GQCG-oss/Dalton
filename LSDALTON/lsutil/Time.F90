@@ -167,8 +167,6 @@ Integer :: nhomolumo(3)
 
 !Phase integers (NOT counters)
 Integer :: last_phase
-!$OMP FIRSTPRIVATE(last_phase)
-
 
 
 !Timing information
@@ -240,11 +238,6 @@ real(realk) :: PHASEcputime1,PHASEwalltime1,PHASEcputime2,PHASEwalltime2
 real(realk) :: WT_PHASE(nphases)
 real(realk) :: CT_PHASE(nphases)
 
-
-!$OMP THREADPRIVATE(cputime1,walltime1,cputime2,walltime2)
-!$OMP FIRSTPRIVATE( PHASEcputime1, PHASEwalltime1, PHASEcputime2, PHASEwalltime2) 
-!$OMP LASTPRIVATE( PHASEcputime1, PHASEwalltime1, PHASEcputime2, PHASEwalltime2) 
-!$OMP REDUCTION(+:WT_PHASE,CT_PHASE)
 
 contains
 
@@ -593,6 +586,7 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
    character(len=100), pointer :: line
    real(realk) :: deltacpu,deltawall
 
+   !$OMP CRITICAL
    CALL LS_GETTIM(PHASEcputime2,PHASEwalltime2)
 
    DeltaCPU =  PHASEcputime2  - PHASEcputime1   
@@ -756,6 +750,7 @@ subroutine time_start_phase(phase,dt,dc,at,ac,twall,tcpu,ttot,ctot,&
 
    last_phase = phase
 
+   !$OMP END CRITICAL
 end subroutine time_start_phase
 
 
