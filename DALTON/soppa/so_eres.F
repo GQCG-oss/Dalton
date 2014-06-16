@@ -770,10 +770,18 @@ C
          write(*,*) 'at end of 100 loop, iterating...', inewtr, nnewtr
   100 CONTINUE 
 
+         write(*,*) 'This is the Aab array'
+         do iasdf=0, laab-1
+            write(*,*) work(kaab+iasdf)       
+         enddo
 
-         
 
-         write(*,*) 'done with all 100 loops', inewtr, nnewtr
+         write(*,*) 'This is the Aij array'
+         do iasdf=0, laij-1
+            write(*,*) work(kaij+iasdf)       
+         enddo
+
+
 C
 C==================================
 C     End of loop over excitations.
@@ -968,6 +976,7 @@ C     be changed to the correct type.
       real*8, allocatable, dimension(:) :: tempdens
 
       logical, save :: printspininfo = .true., assemble_densai=.true.
+      logical       :: aijreduce !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
 
       integer :: isymtr, ldensai, nit
       integer, save :: inewtr
@@ -1060,6 +1069,7 @@ C     The <name> of the common block can be read from the <name>LAST
 C     variable in the getbytespan call.
 C**********************************************************
       commonblocktransfers: if (forceupdate) then
+      aijreduce = .true.
 
       call getbytespan(lbuf, eribufLAST, bytesize)
       call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
@@ -1212,8 +1222,8 @@ C**************************************************
 
 C todo
 C ! these have been inserted twice
-      CALL DZERO(WORK(KAIJ),LAIJ)
-      CALL DZERO(WORK(KAAB),LAAB)
+      !CALL DZERO(WORK(KAIJ),LAIJ)
+      !CALL DZERO(WORK(KAAB),LAAB)
 
       if (resetvectors) then
          call dzero( work(kfock),   lfock)
@@ -1718,7 +1728,11 @@ C    Assemble the sigda vector in the master's work array
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
 
+
+
+
 C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
+      if (aijreduce) then
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kaab), laab, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -1730,9 +1744,23 @@ C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
          call mpi_reduce( work(kaij), temp, laij, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
+            aijreduce = .false. 
+      endif
+
+      !if (myid.eq.0) then
+      !write(*,*) 'FROM PARALLEL' 
+         !write(*,*) 'Paral: This is the Aab array'
+         !do iasdf=0, laab-1
+            !write(*,*) work(kaab+iasdf)       
+         !enddo
 
 
-
+         !write(*,*) 'Paral: This is the Aij array'
+         !do iasdf=0, laij-1
+            !write(*,*) work(kaij+iasdf)       
+         !enddo
+      !write(*,*) 'STOP PARALLEL' 
+      !endif
 
 
 
