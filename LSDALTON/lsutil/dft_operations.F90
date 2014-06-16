@@ -182,7 +182,6 @@ ENDIF
 end subroutine free_DFTdata
 
 
-#ifdef VAR_MPI
 subroutine mpicopy_DFTparam(DFT,master)
 implicit none
 integer(kind=ls_mpik) :: master
@@ -210,12 +209,20 @@ call LS_MPI_BUFFER(DFT%DODISP,Master)
 !AMT New Dispersion values
 call LS_MPI_BUFFER(DFT%DO_DFTD2,Master)
 call LS_MPI_BUFFER(DFT%L_INP_D2PAR,Master)
+call LS_MPI_BUFFER(DFT%D2_s6_inp,Master)  
+call LS_MPI_BUFFER(DFT%D2_alp_inp,Master)
+call LS_MPI_BUFFER(DFT%D2_rs6_inp,Master)
 call LS_MPI_BUFFER(DFT%DODISP2,Master)
 call LS_MPI_BUFFER(DFT%DODISP3,Master)
 call LS_MPI_BUFFER(DFT%DO_DFTD3,Master)
 call LS_MPI_BUFFER(DFT%DO_BJDAMP,Master)
 call LS_MPI_BUFFER(DFT%DO_3BODY,Master)
 call LS_MPI_BUFFER(DFT%L_INP_D3PAR,Master)
+call LS_MPI_BUFFER(DFT%D3_s6_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_alp_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_rs6_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_rs18_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_s18_inp,Master)
 !AMT
 call LS_MPI_BUFFER(DFT%DFTIPT,Master)
 call LS_MPI_BUFFER(DFT%DFTBR1,Master)
@@ -254,7 +261,6 @@ do i=1,size(DFT%GridObject)
 enddo
 
 end subroutine mpicopy_DFTparam
-#endif
 
 subroutine initDFTdatatype(DFTdata)
 implicit none

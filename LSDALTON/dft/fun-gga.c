@@ -102,9 +102,26 @@ static void lda_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
 static void lda_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
 static void lda_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp* dp);
 static void lda_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
+static real ldax_energy(const FunDensProp* dp);
+static void ldax_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void ldax_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
+static void ldax_third(FunThirdFuncDrv *ds,   real fac, const FunDensProp* dp);
+static void ldax_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
 static integer  ldagauss_read(const char* conf_line, real *hfweight);
 static integer  blyp_read(const char* conf_line, real *hfweight);
-static integer  bx_read(const char* conf_line, real *hfweight);
+static integer  b88x_read(const char* conf_line, real *hfweight);
+static integer  ldax_read(const char* conf_line, real *hfweight);
+static integer  pbex_read(const char* conf_line, real *hfweight);
+static integer  revpbex_read(const char* conf_line, real *hfweight);
+static integer  rpbex_read(const char* conf_line, real *hfweight);
+static integer  mpbex_read(const char* conf_line, real *hfweight);
+static integer  pw91x_read(const char* conf_line, real *hfweight);
+static integer  kt1x_read(const char* conf_line, real *hfweight);
+static integer  kt2x_read(const char* conf_line, real *hfweight);
+static integer  kt3x_read(const char* conf_line, real *hfweight);
+static integer  g96x_read(const char* conf_line, real *hfweight);
+static integer  lg93x_read(const char* conf_line, real *hfweight);
+static integer  optx_read(const char* conf_line, real *hfweight);
 static integer  b3lyp_read(const char* conf_line, real *hfweight);
 static integer  b3lypgauss_read(const char* conf_line, real *hfweight);
 static integer  bp86_read(const char* conf_line, real *hfweight);
@@ -132,30 +149,46 @@ static void gga_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
     fun_false, (read), NULL, lda_energy, lda_first, lda_second, \
     lda_third, lda_fourth }
 
+#define LDAX_FUNCTIONAL(name,read) { (name), \
+    fun_false, (read), NULL, ldax_energy, ldax_first, ldax_second, \
+    ldax_third, ldax_fourth }
+
 #define GGA_FUNCTIONAL(name,read) { (name), \
     gga_isgga, (read), gga_report, gga_energy, gga_first, gga_second, \
     gga_third, gga_fourth }
 
-Functional XAlphaFunctional = GGA_FUNCTIONAL("XAlpha", xalpha_read);
-Functional LDAFunctional =    LDA_FUNCTIONAL("LDA",     lda_read);
+Functional XAlphaFunctional     = GGA_FUNCTIONAL("XAlpha",  xalpha_read);
+Functional LDAFunctional        = LDA_FUNCTIONAL("LDA",     lda_read);
 /* SVWN5 aliases LDA */
-Functional SVWN5Functional =  LDA_FUNCTIONAL("SVWN5",   lda_read);
-Functional SVWN3Functional =  GGA_FUNCTIONAL("SVWN3",   ldagauss_read);
-Functional B3LYPFunctional =  GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
+Functional SVWN5Functional      = LDA_FUNCTIONAL("SVWN5",   lda_read);
+Functional SVWN3Functional      = GGA_FUNCTIONAL("SVWN3",   ldagauss_read);
+Functional B3LYPFunctional      = GGA_FUNCTIONAL("B3LYP",   b3lyp_read);
 Functional B3LYPGaussFunctional = GGA_FUNCTIONAL("B3LYP-G", b3lypgauss_read);
-Functional B3P86Functional =  GGA_FUNCTIONAL("B3P86",   b3p86_read);
-Functional B3P86GFunctional = GGA_FUNCTIONAL("B3P86-G", b3p86g_read);
-Functional BLYPFunctional =   GGA_FUNCTIONAL("BLYP",    blyp_read);
-Functional BXFunctional   =   GGA_FUNCTIONAL("BX",      bx_read);
-Functional BP86Functional =   GGA_FUNCTIONAL("BP86",    bp86_read);
-Functional BPW91Functional =  GGA_FUNCTIONAL("BPW91",   bpw91_read);
-Functional GGAKeyFunctional = GGA_FUNCTIONAL("GGAKey",  gga_key_read);
-Functional KT1Functional =    GGA_FUNCTIONAL("KT1",     kt1_read);
-Functional KT2Functional =    GGA_FUNCTIONAL("KT2",     kt2_read);
-Functional KT3Functional =    GGA_FUNCTIONAL("KT3",     kt3_read);
-Functional OLYPFunctional =   GGA_FUNCTIONAL("OLYP" ,   olyp_read);
-Functional PBE0Functional =   GGA_FUNCTIONAL("PBE0",    pbe0_read);
-Functional PBEFunctional =    GGA_FUNCTIONAL("PBE",     pbe_read); 
+Functional B3P86Functional      = GGA_FUNCTIONAL("B3P86",   b3p86_read);
+Functional B3P86GFunctional     = GGA_FUNCTIONAL("B3P86-G", b3p86g_read);
+Functional BLYPFunctional       = GGA_FUNCTIONAL("BLYP",    blyp_read);
+Functional B88X_Functional      = GGA_FUNCTIONAL("B88X",    b88x_read);
+Functional LDAX_Functional      = LDAX_FUNCTIONAL("LDAX",   ldax_read);
+Functional PBEX_Functional      = GGA_FUNCTIONAL("PBEX",    pbex_read);
+Functional RPBEX_Functional     = GGA_FUNCTIONAL("RPBEX",   rpbex_read);
+Functional REVPBEX_Functional   = GGA_FUNCTIONAL("REVPBEX", revpbex_read);
+Functional MPBEX_Functional     = GGA_FUNCTIONAL("MPBEX",   mpbex_read);
+Functional PW91X_Functional     = GGA_FUNCTIONAL("PW91X",   pw91x_read);
+Functional KT1X_Functional      = GGA_FUNCTIONAL("KT1X",    kt1x_read);
+Functional KT2X_Functional      = GGA_FUNCTIONAL("KT2X",    kt2x_read);
+Functional KT3X_Functional      = GGA_FUNCTIONAL("KT3X",    kt3x_read);
+Functional G96X_Functional      = GGA_FUNCTIONAL("G96X",    g96x_read);
+Functional LG93X_Functional     = GGA_FUNCTIONAL("LG93X",   lg93x_read);
+Functional OPTX_Functional      = GGA_FUNCTIONAL("OPTX",    optx_read);
+Functional BP86Functional       = GGA_FUNCTIONAL("BP86",    bp86_read);
+Functional BPW91Functional      = GGA_FUNCTIONAL("BPW91",   bpw91_read);
+Functional GGAKeyFunctional     = GGA_FUNCTIONAL("GGAKey",  gga_key_read);
+Functional KT1Functional        = GGA_FUNCTIONAL("KT1",     kt1_read);
+Functional KT2Functional        = GGA_FUNCTIONAL("KT2",     kt2_read);
+Functional KT3Functional        = GGA_FUNCTIONAL("KT3",     kt3_read);
+Functional OLYPFunctional       = GGA_FUNCTIONAL("OLYP" ,   olyp_read);
+Functional PBE0Functional       = GGA_FUNCTIONAL("PBE0",    pbe0_read);
+Functional PBEFunctional        = GGA_FUNCTIONAL("PBE",     pbe_read); 
 
 /* MIXED FUNCTIONALS */
 typedef struct FuncList_ FuncList;
@@ -252,6 +285,42 @@ lda_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
 }
 
 static integer
+ldax_read(const char* conf_line, real *hfweight)
+{
+    return 1;
+}
+
+static real
+ldax_energy(const FunDensProp* dp)
+{
+    return SlaterFunctional.func(dp);
+}
+
+static void
+ldax_first(FunFirstFuncDrv *ds, real factor,  const FunDensProp* dp)
+{
+    SlaterFunctional.first(ds, factor, dp);
+}
+
+static void
+ldax_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    SlaterFunctional.second(ds, factor, dp);
+}
+
+static void
+ldax_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    SlaterFunctional.third(ds, factor, dp);
+}
+
+static void
+ldax_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    SlaterFunctional.fourth(ds, factor, dp);
+}
+
+static integer
 ldagauss_read(const char* conf_line, real *hfweight)
 {
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
@@ -269,10 +338,101 @@ blyp_read(const char* conf_line, real *hfweight)
 }
 
 static integer
-bx_read(const char* conf_line, real *hfweight)
+b88x_read(const char* conf_line, real *hfweight)
 {
-    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 1.0);
-    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, *hfweight);
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+pbex_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PbexFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+revpbex_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &revPBExFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+rpbex_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &rPBExFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+mpbex_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &mPBExFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+pw91x_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PW91xFunctional, *hfweight);
+    return 1;
+}
+
+static integer
+kt1x_read(const char* conf_line, real *hfweight)
+{
+    static const real dirw = 1.0;
+    static const real ktgam = -0.006;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw*(*hfweight));
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam*(*hfweight));
+    return 1;
+}
+
+static integer
+kt2x_read(const char* conf_line, real *hfweight)
+{
+    static const real dirw = 1.07173;
+    static const real ktgam = -0.006;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw*(*hfweight));
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam*(*hfweight));
+    return 1;
+}
+
+static integer
+kt3x_read(const char* conf_line, real *hfweight)
+{
+    static const real dirw = 1.092, optw = -0.925452;
+    static const real ktgam = -0.004;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw*(*hfweight));
+    gga_fun_list = add_functional(gga_fun_list, &KTFunctional,    ktgam*(*hfweight));
+    gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional,   optw*(*hfweight));
+    return 1;
+}
+
+static integer
+g96x_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, *hfweight);
+    gga_fun_list = add_functional(gga_fun_list, &G96xFunctional,   *hfweight);
+    return 1;
+}
+
+static integer
+lg93x_read(const char* conf_line, real *hfweight)
+{
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, *hfweight);
+    gga_fun_list = add_functional(gga_fun_list, &LG93xFunctional,  *hfweight);
+    return 1;
+}
+
+static integer
+optx_read(const char* conf_line, real *hfweight)
+{
+    static const real optkw = -1.43169, dirw = 1.05151;
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, dirw*(*hfweight));
+    gga_fun_list = add_functional(gga_fun_list, &OPTXFunctional,  optkw*(*hfweight));
     return 1;
 }
 

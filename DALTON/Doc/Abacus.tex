@@ -46,8 +46,8 @@ can only be calculated in the \Sec{*RESPONSE} module.
 
 \item[\Key{ALPHA}] Invokes the calculation of frequency dependent
 polarizabilities\index{frequency}\index{polarizability}.
- Combined with the
-keyword \Key{SOPPA} or \Key{SOPPA(CCSD)} it invokes a SOPPA\index{SOPPA} or SOPPA(CCSD)
+Combined with the keyword \Key{SOPPA} or \Key{SOPPA(CCSD)}
+it invokes a SOPPA\index{SOPPA} or SOPPA(CCSD)
 \index{SOPPA(CCSD)} calculation of the frequency dependent polarizability.
 
 \item[\Key{CAVORG}]\verb| |\newline
@@ -168,7 +168,6 @@ localized molecular orbitals requires that the use of point group
 symmetry is turned off.
 
 
-
 \item[\Key{MAGNET}] Invokes the calculation of the molecular
 magnetizability\index{magnetizability} (commonly known as magnetic
 susceptibility) as
@@ -239,13 +238,22 @@ molecular gradient as \index{molecular gradient}described in Ref.~\cite{tuhjahja
 molecular Hessian\index{molecular Hessian} and gradient\index{molecular gradient} as
 described in Ref.~\cite{tuhjahjajpjjcp84}.
 
-%\item[\Key{NACME}] Invokes the calculation of non-adiabatic
-%coupling\index{non-adiabatic coupling element} matrix elements as
-%described in
-%Ref.~\cite{klbpjhjajjothjcp97}. Presently, complete non-adiabatic
-%coupling matrix elements cannot be obtained from this keyword alone,
-%but has to be combined with subsequent calculations in the
-%\resp\ program. Currently inactive option.
+\item[\Key{NACME}] Invokes the calculation of first-order non-adiabatic
+coupling\index{non-adiabatic coupling matrix element} matrix elements as
+described in Ref.~\cite{klbpjhjajjothjcp97}.
+The keyword \Key{EXCITA} in this section,
+the keywords \Key{FNAC} and \Key{NEXCIT} in section \Sec{EXCITA},
+and the keyword \Key{SKIP} in section \Sec{TROINV}
+must also be specified to get the first-order non-adiabatic coupling matrix elements.
+
+% -- Feb. 2014 hjaaj: the NACMEs can still be calculated in the RESPONS module
+% I think (not tested), but it is much easier to do it under **PROPERTIES,
+% where it has been implemented to calculate vibrational g factors (.VIB_G)
+
+%Presently, complete non-adiabatic
+% coupling matrix elements cannot be obtained from this keyword alone,
+% but has to be combined with subsequent calculations in the
+% \resp\ program.
 
 \item[\Key{NMR}] Invokes the calculation of both parameters
 entering the NMR spin-Hamiltonian, that is nuclear
@@ -302,8 +310,7 @@ coupling constants\index{nuclear quadrupole coupling}\index{NQCC}.
   of a fully analytical molecular Hessian calculation in the final
   geometry.
 
-\item[\Key{OECD}] Invokes the calculation of Oriented Electronic Circular
-Dichroism
+\item[\Key{OECD}] Invokes the calculation of Oriented Electronic Circular Dichroism
 (OECD)\index{ECD!oriented}\index{electronic circular dichroism!oriented}\index{OECD}\index{oriented electronic circular dichroism}
 as described in Ref.~\cite{tbpaehcpl246}. This
 necessitates the specification of the number of electronic
@@ -311,14 +318,14 @@ excitations\index{electronic excitation} in
 each symmetry, given in the \Sec{EXCITA} module.
 Note that OECD can only be calculated at the mathematical origin
 and the \Key{NOCMC} option is automatically turned on.
-The reader is
-referred to Sec.~\ref{sec:ecd} for more details.
+The reader is referred to Sec.~\ref{sec:ecd} for more details.
 
 \item[\Key{OPTROT}] Requests the calculation of the optical rotation
-of a molecule~\cite{thkrklbpjjofd99,plpmp91}. By default the optical
-rotation is calculated
-both with and without the use of London orbitals (using the
-length gauge formulation). Note that in the
+of a molecule~\cite{thkrklbpjjofd99,plpmp91}.
+By default the optical rotation is calculated
+both with and without the use of London orbitals
+(using the length gauge formulation).
+Note that in the
 formalism used in \dalton , this quantity vanishes in the static
 limit, and frequencies need to be set in the \verb|*ABALNR| input
 module. See also the description in Chapter~\ref{sec:optrot}.
@@ -331,20 +338,20 @@ See also the description in Chapter~\ref{sec:optrot}.
 \item[\Key{PHASEO}]\verb| |\newline
 \verb|READ (LUCMD, *) (ORIGIN(ICOOR), ICOOR = 1, 3)|
 
-Changes the origin of the phase-factors entering the London atomic
-orbitals. This will change the value of all of the contributions to
+Changes the origin of the phase-factors entering the London atomic orbitals.
+This will change the value of all of the contributions to
 the different magnetic field dependent properties when using London
 atomic orbitals, but the total magnetic properties will remain
 unchanged. To be used for debugging purposes only.
 
 \item[\Key{POLARI}] Invokes the calculation of frequency-independent
 polarizabilities\index{polarizability}. See the keyword \Key{ALPHA} in
-this input section for the calculation of frequency-dependent
-polarizabilities.
+this input section for the calculation of frequency-dependent polarizabilities.
 
 \item[\Key{POPANA}] Invokes a population analysis\index{population analysis}\index{dipole gradient} based on the
 dipole gradient as first introduced by Cioslowski \cite{jcjacs111}.
-This flag also invokes the \Key{DIPGRA} flag and the \Key{POLARI} flags. Note that the charges obtained in this approach is not without conceptual problems (as are the Mulliken charges)~\cite{hskrpoajcp120}.
+This flag also invokes the \Key{DIPGRA} flag and the \Key{POLARI} flags.
+Note that the charges obtained in this approach is not without conceptual problems (as are the Mulliken charges)~\cite{hskrpoajcp120}.
 
 \item[\Key{PRINT}]\verb| |
 \newline
@@ -355,8 +362,8 @@ more line containing print level. Default print level is the
 value of \verb|IPRDEF| from the general input module.
 
 \item[\Key{QUADRU}] Calculates the molecular quadrupole
-moment\index{quadrupole moments}\index{moments!total quadrupole}. This
-includes both the electronic and nuclear contributions to the
+moment\index{quadrupole moments}\index{moments!total quadrupole}.
+This includes both the electronic and nuclear contributions to the
 quadrupole moments. These will printed separately only if a print
 level of 2 or higher has been chosen. Note that the quadrupole moment is
 defined according to Buckingham \cite{adbacp12}. The quadrupole moment
@@ -366,8 +373,7 @@ transformed to the principal moments of inertia coordinate system.
 \item[\Key{RAMAN}] Calculates Raman intensities\index{Raman intensity}, as described in
 Ref.~\cite{thkrklbpjjofd99}. This property needs a lot of settings
 in order to perform correctly, and the reader is therefore referred to
-Section~\ref{sec:vroa}, where the
-calculation of this property is described in more detail.
+Section~\ref{sec:vroa}, where the calculation of this property is described in more detail.
 
 \item[\Key{REPS}] \verb| |\newline
 \verb|READ (LUCMD, *) NREPS|\newline
@@ -533,8 +539,8 @@ requested for a DFT calculation.
 \item[\Key{VIB\_G}] Invokes the calculation of the vibrational g factor,\index{vibrational g factor}
 i.e. the non-adiabatic correction to the moment of inertia tensor for
 molecular vibrations.\index{non-adiabatic corrections}\index{moment of
-inertia tensor!non-adiabatic corrections} This keyword has to be
-combined with the keyword \Key{SKIP} in the section \Sec{TROINV}.
+inertia tensor!non-adiabatic corrections}
+This keyword has to be combined with the keyword \Key{SKIP} in the section \Sec{TROINV}.
 
 \item[\Key{VIBANA}] Invokes a vibrational analysis\index{vibrational analysis} in the current
 geometry. This will generate the vibrational frequencies in the
@@ -615,7 +621,7 @@ debugging purposes.
 calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: \Sec{ABALNR}}\label{sec:abalnr}
+\subsection{Freguency-dependent linear response calculations: \Sec{ABALNR}}\label{sec:abalnr}
 
 Directives to control the calculation of frequency dependent linear
 response\index{linear response}\index{response!linear}
@@ -778,32 +784,34 @@ functions the properties are calculated using the
 random phase approximation (RPA) and for MCSCF\index{MCSCF}
 wave functions the multiconfigurational (MC-RPA) is used.
 In the case of Kohn--Sham DFT, time-dependent linear response theory
-is used in the adiabatic approximation with the exact functional kernel.
+is used in the adiabatic approximation to the functional kernel.
 
 Implemented electronic transition properties are at the moment:
 
 \begin{enumerate}
-\item Oscillator Strength\index{oscillator strength} which determines
-visible and UV absorption.
-\item Rotatory Strength\index{rotatory strength} which determines
-Electronic Circular Dichroism\index{electronic circular dichroism}\index{ECD}
-(ECD).
-\item Excitation Energies\index{electronic excitation}\index{excitation energy}.
+\item Excitation Energies
+\index{electronic excitation}\index{excitation energy!electronic}.
 These are always calculated when
 invoking the \verb|.EXCITA| keyword in the general input module.
+\item Oscillator Strengths\index{oscillator strength} which determine
+intensities in visible and UV absorption.
+\item Rotatory Strengths\index{rotatory strength} which determine
+Electronic Circular Dichroism\index{electronic circular dichroism}\index{ECD}
+(ECD).
 \end{enumerate}
 
 \begin{description}
-\item[\Key{DIPSTR}] Calculates the dipole strength\index{dipole
-strength}, that is, the
-dipole oscillator strength which determine the visible and UV
-absorption, using the dipole length form.
+\item[\Key{DIPSTR}] Calculates the dipole strengths\index{dipole strength},
+that is, the dipole oscillator strengths\index{oscillator strength}
+which determine the visible and UV absorption, using the dipole length form.
 
 \item[\Key{FNAC}] Calculate first-order non-adiabatic coupling
-matrix\index{non-adiabatic coupling element} elements. This is not yet
-fully implemented in the \aba\
-module and must be combined with subsequent
-\response\ calculations.
+matrix\index{non-adiabatic coupling matrix element} elements
+from the reference state to the states requested with \Key{NEXCIT}.
+The keyword \Key{NACME} in the parent section to \Sec{EXCITA}
+and the keyword \Key{SKIP} in section \Sec{TROINV}
+must also be specified to get the coupling elements.
+
 
 \item[\Key{INTPRI}]\verb| |\newline
 \verb|READ (LUCMD, *) IPRINT|
@@ -844,14 +852,15 @@ Set the number of excitation energies\index{excitation energy} to be
 calculated in each
 symmetry. Read one more line containing the number of excitations in
 each of the irreducible representations of the molecular point group.
-The default is not to calculate any excitation energies in any of the
+The default is not to calculate one excitation energy in each of the
 irreducible representations.
 
 \item[\Key{OPTORB}] Use optimal orbital trial vectors\index{optimal
 orbital trial vector} in the
-iterative solution of the eigenvalue equations.
-\index{linear response}\index{response!linear}
-These are generate by solving the orbital response equation
+iterative solution of the eigenvalue equations
+in order to speed up the calculation.
+Only relevant for MCSCF.
+These are generated by solving the orbital response equation
 exact, keeping the configuration part fixed as described in
 Ref.~\cite{tuhjahjajpjjcp84}.
 
@@ -868,12 +877,11 @@ Circular Dichroism (ECD) without using London orbitals.
 
 \item[\Key{SKIP}] Skip the calculation of electronic excitation
 energies. This will give wrong results for ECD.
-%and first-order non-adiabatic coupling matrix elements (NACME).
 Mainly for debugging purposes.
 
 \item[\Key{STOP}] Stops the program after finishing the
-calculation of the eigenvalue equations. Mainly
-for debugging purposes.
+calculation of the eigenvalue equations.
+Mainly for debugging purposes.
 
 \item[\Key{SUMRUL}] Calculate oscillator strength sum rules from
 the calculated excitation energies and dipole oscillator strengths.
@@ -888,10 +896,10 @@ of the linear response equations. Read one more line
 containing the convergence threshold. The default value is
 $1\cdot10^{-4}$.
 
-\item[\Key{TRIPLE}]
+\item[\Key{TRIPLET}]
 \index{excitation energies!triplet}
 Indicates that it is triplet excitation energies that is to be
-calculated.
+calculated instead of the default singlet excitation energies.
 \end{description}
 
 \subsection{One-electron expectation values:
@@ -900,8 +908,8 @@ calculated.
 Directive that control the calculation of one-electron expectation
 values appear in the \verb|*EXPECT| input module. Notice, however,
 that the directives controlling the calculation of one-electron
-expectation values to the geometric Hessian appear in the
-\verb|*ONEINT| section.
+expectation values needed for the molecular gradient and Hessian
+appear in the \verb|*ONEINT| section.
 
 \begin{description}
 \item[\Key{ALL CO}] Indicates that all components of the expectation
@@ -1035,9 +1043,9 @@ will be printed.
 \begin{description}
 \item[\Key{ANGLES}]\verb| |\newline
 \verb|READ (LUCMD,*) NANG|\newline
-\verb|    DO 310 I = 1, NANG|\newline
-\verb|       READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
-\verb|310 CONTINUE|
+\verb|DO  I = 1, NANG|\newline
+\verb|   READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
+\verb|END DO|
 
 Calculate and print
 bond angles\index{bond angle}\index{geometry!bond angle}. Read one
@@ -1052,9 +1060,9 @@ Waals radius} radii of the atoms.
 
 \item[\Key{DIHEDR}]\verb| |\newline
 \verb|READ (LUCMD,*) NDIHED|\newline
-\verb|    DO 410 I = 1, NDIHED|\newline
-\verb|       READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
-\verb|410 CONTINUE|
+\verb|DO  I = 1, NDIHED|\newline
+\verb|   READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
+\verb|END DO|
 
 Calculate and print dihedral\index{dihedral angle}\index{geometry!dihedral angle}
 (torsional) angles.  Read one more line specifying the number of angles,
@@ -1070,12 +1078,12 @@ value, but it is overwritten by the keywords \verb|.ANGLES| and
 \verb|.DIHEDR|.
 \end{description}
 
-\subsection{Right-hand sides for response equations: \Sec{GETSGY}}
+\subsection{Right-hand sides for geometry response equations: \Sec{GETSGY}}
 
 Directives affecting the construction of the right-hand
 sides~(RHS)\index{property gradient}\index{right-hand side}---that is,
-property gradient terms---for the response
-calculation as well as some matrices needed for reorthonormalization
+wave function gradient terms---for the geometric derivative response
+calculations as well as some matrices needed for reorthonormalization
 contributions appear in the \verb|*GETSGY| section.
 
 \begin{description}
@@ -1276,7 +1284,8 @@ transformation. The calculation will not be aborted. Mainly for
 debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: \Sec{LINRES}}\label{sec:linres}
+\subsection{Linear response for static singlet property operators:
+\Sec{LINRES}}\label{sec:linres}
 
 Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
@@ -1452,10 +1461,10 @@ of the nuclear contributions. Mainly for debugging purposes.
 
 \subsection{One-electron integrals: \Sec{ONEINT}}
 
-Directives affecting the calculation of one-electron integrals in the
+Directives affecting the calculation of one-electron integral contributions in the
 calculation of molecular gradients\index{molecular gradient} and molecular
-Hessians\index{molecular Hessian} appear in the
-\verb|*ONEINT| section.
+Hessians\index{molecular Hessian} appear in the \verb|*ONEINT| section.
+
 \begin{description}
 \item[\Key{NCLONE}] Calculate only the classical contributions to the
 nuclear-attraction integrals.
@@ -1473,7 +1482,7 @@ total molecular gradient and Hessian\index{molecular gradient}\index{molecular H
 \item[\Key{PRINT}]\verb| |\newline
 \verb|READ (LUCMD,*) IPRINT|
 
- Set print level in the calculation of one-electron contributions to
+Set print level in the calculation of one-electron contributions to
 the molecular gradient and Hessian\index{molecular gradient}\index{molecular Hessian}.  Read one more line containing
 print level. Default value is the value of \verb|IPRDEF| from the
 general input module.
@@ -1488,7 +1497,7 @@ one-electron integral contributions to the molecular gradients and
 Hessians has been evaluated\index{molecular gradient}\index{molecular Hessian}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Relaxation contribution to Hessian: \Sec{RELAX}}
+\subsection{Relaxation contribution to geometric Hessian: \Sec{RELAX}}
 
 Directives controlling the calculation of the relaxation
 contributions ({\it i.e.\/} those from the response terms) to the different
@@ -1522,7 +1531,7 @@ the relaxation Hessian to verify its Hermiticity or anti-Hermiticity
 purposes.
 \end{description}
 
-\subsection{Reorthonormalization contributions: \Sec{REORT}}
+\subsection{Reorthonormalization contributions to geometric Hessian: \Sec{REORT}}
 
 Directives affecting the calculation of reorthonormalization
 contributions to the geometric Hessian appear in the \verb|*REORT |
@@ -1545,12 +1554,11 @@ calculation of the reorthonormalization contributions to the molecular
 Hessian. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Response calculation: \Sec{RESPON}}
+\subsection{Response calculations for geometric Hessian: \Sec{RESPON}}
 \label{sec:abares}
 
 Directives affecting the response (coupled-perturbed MCSCF)
-calculation  of geometric perturbations appear in the \verb|*RESPON|
-section.
+calculation of geometric perturbations appear in the \verb|*RESPON| section.
 \begin{description}
 \item[\Key{D1DIAG}] Neglect diagonal elements of the orbital
 Hessian when generating trial vectors. Mainly for debugging
@@ -1904,7 +1912,7 @@ supposedly independent coordinates.  Read one more line specifying
 value.  Default is~0.1.
 \end{description}
 
-\subsection{Response equations for triplet operators:
+\subsection{Linear response for static triplet property operators:
 \Sec{TRPRSP}}\label{sec:trprsp}
 
 Directives controlling the set-up of right-hand sides for triplet
@@ -2192,7 +2200,6 @@ of \verb|IPRDEF| from the general input module.
 \item[\Key{SKIP}] Skip the analysis of the vibrational frequencies
 and normal modes of the molecule.
 \end{description}
-
 
 %%% Local Variables:
 %%% mode: latex

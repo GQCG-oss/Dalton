@@ -19,9 +19,26 @@ MODULE IntegralInterfaceModuleDF
   use GCtransMod
   use screen_mod
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
-       & II_get_df_exchange_mat, II_get_pari_df_exchange_mat
+       & II_get_df_exchange_mat, II_get_pari_df_exchange_mat,&
+       & init_IIDF_matrix,free_IIDF_matrix,&
+       & II_get_RI_alphaCD_3CenterInt, II_get_RI_alphabeta_2CenterInt, &
+       & II_get_RI_alphaCD_3CenterInt2,getRIbasisMPI
   private
+
+SAVE
+logical :: SavealphaBeta
+type(matrix) :: AlphaBetaSave
 contains
+subroutine init_IIDF_matrix()
+SavealphaBeta = .FALSE.
+end subroutine init_IIDF_matrix
+
+subroutine free_IIDF_matrix()
+IF(SavealphaBeta)THEN
+   call mat_free(AlphaBetaSave)
+ENDIF
+end subroutine free_IIDF_matrix
+
 !> \brief Calculates the coulomb matrix using density fitting
 !> \author S. Reine
 !> \date 2010
@@ -104,7 +121,7 @@ Character(80)             :: Filename
 Real(realk)               :: eeGradtmp(3,setting%molecule(1)%p%nAtoms)
 
 integer :: nbast,naux
-logical :: ReCalcGab,saveNOSEGMENT,OnMaster
+logical :: ReCalcGab,saveNOSEGMENT
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -118,8 +135,7 @@ DO idmat=1,ndlhs
   write(Filename,'(A8,I3)') 'LSCALPHA',idmat
   IF (.not.io_file_exist(Filename,SETTING%IO)) call lsquit('Error in II_get_df_J_gradient. CALPHA does not exsit!',-1)
   CALL mat_init(calpha(idmat),naux,1)
-  OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
-  call io_read_mat(calpha(idmat),Filename,Setting%IO,OnMaster,lupri,luerr)
+  call io_read_mat(calpha(idmat),Filename,Setting%IO,lupri,luerr)
 ENDDO
 
 
@@ -1584,11 +1600,8 @@ logical :: inc_scheme,do_inc
 integer :: nmat,nrow,ncol
 integer :: i,j,natoms
 real(realk) :: tmp_sum
-logical :: OnMaster
 Real(realk),pointer   :: eigValphaBeta(:), copy_alpBeta(:,:)
 Real(realk)         :: minEigv,maxEigv,conditionNum
-
-OnMaster = .NOT.Setting%scheme%MATRICESINMEMORY
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
   IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_regular_df_coulomb_mat. FMM and unrestricted',-1)
@@ -1657,43 +1670,19 @@ do Idmat=1,nmat
 !  Either calculate the (alpha|beta) matrix and its cholesky-factorization and write
 !  OR read cholesky-factorization from file
    IF (io_file_exist(Filename,SETTING%IO)) THEN
-      call io_read_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+      call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ELSE
+      !build Matrix 
       call mat_zero(alphabeta)
       call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
       call ls_getIntegrals(AODFdefault,AOempty,&
            &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
       call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
-
-#if 0
-     ! checking eigenvalues of the full (alpha|beta) matrix
-     call mem_alloc(copy_alpBeta,nAux,nAux)
-!      DO j=i,nAux
-!         DO i=1,nAux
-!            copy_alpBeta(i,j) = alphabeta(i,j)
-!         ENDDO
-!      ENDDO
-     call mat_to_full(alphabeta,1E0_realk,copy_alpBeta)
-     call mem_alloc(eigValphaBeta,nAux)
-     call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
-     call check_min_max_Array_elem(minEigV,maxEigV,conditionNum,eigValphaBeta,nAux,lupri,luerr)
-     call mem_dealloc(eigValphaBeta)
-     call mem_dealloc(copy_alpBeta)
-     write(lupri,*) "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-     write(*,*)     "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-     write(lupri,*) "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-     write(*,*)     "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-     write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-     write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-     !call LSQUIT('Testing eigenvalues of the FULL (alpha|beta) matrix - quitting II_get_regular_df_coulomb_mat()',-1)
-#endif
-
-
-!     Make Choleksy-factorization
+      !Make Choleksy-factorization
       CALL mat_dpotrf(alphabeta)
-!     Save Cholesky-factors to file
+      !Save Cholesky-factors to file
       call io_add_filename(SETTING%IO,Filename,LUPRI)
-      call io_write_mat(alphabeta,Filename,SETTING%IO,OnMaster,LUPRI,LUERR)
+      call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ENDIF
    call LSTIMER('ALBE  ',TSTART,TEND,LUPRI)
 
@@ -1717,12 +1706,12 @@ do Idmat=1,nmat
       ELSE
          IF(setting%scheme%incremental) THEN
             call mat_init(calpha_old,naux,1)
-            call io_read_mat(calpha_old,Filename,Setting%IO,OnMaster,lupri,luerr)
+            call io_read_mat(calpha_old,Filename,Setting%IO,lupri,luerr)
             call mat_daxpy(1E0_realk,calpha_old,calpha)
             call mat_free(calpha_old)
          ENDIF
       ENDIF
-      call io_write_mat(calpha,Filename,Setting%IO,OnMaster,lupri,luerr)
+      call io_write_mat(calpha,Filename,Setting%IO,lupri,luerr)
       ! **** End write
    ENDIF
    
@@ -2230,5 +2219,295 @@ ENDIF
 CALL LSTIMER('FIT-JO',TSTART,TEND,LUPRI)
 
 END SUBROUTINE II_get_overlap_df_coulomb_mat
+
+SUBROUTINE II_get_RI_AlphaCD_3CenterInt(LUPRI,LUERR,FullAlphaCD,SETTING,&
+     & nbasisAux,nbasis)
+  IMPLICIT NONE
+  Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux
+  REAL(REALK),intent(inout)     :: FullAlphaCD(nbasisAux,nbasis,nbasis)
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  !
+  Integer                    :: nAtoms,nBastAux,nBast,N,K,M,ialpha,v,a
+  Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
+  Real(realk)                :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  logical :: MasterWakeSlaves
+
+  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)  
+  call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
+  IF(nbasis.NE.nBast)THEN
+     print*,'nbasis',nbasis
+     print*,'nbast',nbast
+     Call lsquit('dim mismatch in II_get_df_exchange2',-1)
+  ENDIF
+  IF(nbasisAux.NE.nBastAux)THEN
+     print*,'nbasisAux',nbasisAux
+     print*,'nbastAux',nbastAux
+     Call lsquit('dim mismatch in II_get_df_exchange2',-1)
+  ENDIF
+  !set threshold 
+  SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+  !(alpha|cd)
+  !call typedef_setMolecules(setting,molecule,1,2,3,4)
+  call initIntegralOutputDims(setting%Output,nBastAux,1,nbast,nbast,1)
+  !MPI is used inside this routine 
+  !but since this is called by both master and slaves
+  !the master should not wake up the slaves
+  MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+  SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+  call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,&
+       & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+  SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+  CALL retrieve_Output(lupri,setting,FullAlphaCD,.FALSE.)  
+  call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
+END SUBROUTINE II_get_RI_AlphaCD_3CenterInt
+
+SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisAux,&
+     & nbasis,nvirt,nocc,Cvirt,Cocc,maxsize,mynum,numnodes)
+  IMPLICIT NONE
+  Integer,intent(in)            :: LUPRI,LUERR,nbasis,nbasisAux
+  Integer,intent(in)            :: nocc,nvirt,mynum,numnodes  
+  REAL(REALK),pointer           :: FullAlphaCD(:,:,:)!(nbasisAuxMPI,nvirt,nocc)
+  REAL(REALK),intent(in)        :: Cocc(nbasis,nocc)
+  REAL(REALK),intent(in)        :: Cvirt(nbasis,nvirt)
+  TYPE(LSSETTING),intent(inout) :: SETTING
+  integer(kind=long),intent(in) :: maxsize
+  !
+  integer(kind=long)         :: nsize
+  Integer                    :: nAtoms,nBastAux,nBast,N,K,M,ialpha,v,a
+  Integer                    :: BDIAG,IDIAG,ILOC,JLOC,ALPHAAUX,GAMMA,DELTA
+  Integer                    :: ALPHA,BETA,I
+  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp,TMP1
+  real(realk),pointer :: AlphaCD(:,:,:),AlphaCD2(:,:,:)
+  TYPE(MoleculeInfo),pointer      :: molecule1,molecule2,molecule3,molecule4
+  TYPE(MoleculeInfo),pointer      :: ATOMS(:)
+  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+  Integer :: iAtomA,nAuxA,B
+  integer :: J,mynum2,startF,iatomampi,MynbasisAuxMPI
+  logical :: doMPI,MasterWakeSlaves
+  integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+
+  SETTING%scheme%CS_SCREEN = .FALSE.
+  SETTING%scheme%PS_SCREEN = .FALSE.
+  SETTING%scheme%OD_SCREEN = .FALSE.
+  SETTING%scheme%OE_SCREEN = .FALSE.
+
+  nsize = (nbasis*nbasis*nbasisAux+nocc*nbasis*nbasisAux)*mem_realsize
+  !in case of setting%molBuild = .TRUE. then the setting%molecule(1)%p can 
+  !not be used as pointers
+  molecule1 => SETTING%MOLECULE(1)%p
+  molecule2 => SETTING%MOLECULE(2)%p
+  molecule3 => SETTING%MOLECULE(3)%p
+  molecule4 => SETTING%MOLECULE(4)%p
+!  print*,'nsize',nsize
+!  print*,'maxsize',maxsize
+  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  IF(numnodes.EQ.1.AND.maxsize.GT.nsize )THEN     
+     !serial version
+     call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
+     IF(nbasis.NE.nBast)THEN
+        print*,'nbasis',nbasis
+        print*,'nbast',nbast
+        Call lsquit('dim mismatch in II_get_RI_AlphaCD_3CenterInt2',-1)
+     ENDIF
+     IF(nbasisAux.NE.nBastAux)THEN
+        print*,'nbasisAux',nbasisAux
+        print*,'nbastAux',nbastAux
+        Call lsquit('dim mismatch in II_get_RI_AlphaCD_3CenterInt2',-1)
+     ENDIF
+     IF(nbasisAUX.NE.nBastAux)Call lsquit('dim mismatch in ',-1)
+    !set threshold 
+     SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+     !(alpha|cd)
+     !call typedef_setMolecules(setting,molecule,1,2,3,4)
+     call initIntegralOutputDims(setting%Output,nBastAux,1,nbast,nbast,1)
+
+     !both Master and non-master calls this
+     
+     call ls_getIntegrals(AODFdefault,AOempty,AORdefault,AORdefault,&
+          & CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+     
+     call mem_alloc(AlphaCD,nbastAux,nbast,nbast)
+     CALL retrieve_Output(lupri,setting,AlphaCD,.FALSE.)
+     
+     ! Transform index delta to diagonal occupied index 
+     !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
+     M = nbastAux*nbast !rows of Output Matrix
+     N = nocc           !columns of Output Matrix
+     K = nbast          !summation dimension
+     call mem_alloc(AlphaCD2,nbastAux,nbast,nocc)
+     call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,&
+          & 0.0E0_realk,AlphaCD2,M)
+     call mem_dealloc(AlphaCD)
+     call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
+     !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
+!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
+!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP)
+     do BDIAG = 1,nvirt
+        do IDIAG = 1,nocc
+           do ALPHAAUX = 1,nbasisAUX
+              TMP = 0.0E0_realk
+              do GAMMA = 1,nbasis
+                 TMP = TMP + Cvirt(GAMMA,BDIAG)*AlphaCD2(ALPHAAUX,GAMMA,IDIAG)
+              enddo
+              FullAlphaCD(ALPHAAUX,BDIAG,IDIAG) = TMP
+           enddo
+        enddo
+     enddo
+!$OMP END PARALLEL DO
+     call mem_dealloc(AlphaCD2)
+  ELSE
+     
+     !DO THE MPI ON THE BATCH LEVEL do not need to modify MOLECULE
+
+     !MPI version and memory reduced version
+     !     print*,'MEMORY OPTIMIZED VERSION'
+     !     WRITE(lupri,*)'MEMORY OPTIMIZED VERSION'
+     !MEMORY OPTIMIZED VERSION
+     call getMolecularDimensions(molecule1,nAtoms,nBast,nBastAux)
+     allocate(ATOMS(nAtoms))
+     CALL pari_set_atomic_fragments(molecule1,ATOMS,nAtoms,lupri)
+     ! Split only on of the atomic loops over nodes
+     call mem_alloc(nbasisAuxMPI,numnodes)
+     call mem_alloc(nAtomsMPI,numnodes)    
+     call mem_alloc(startAuxMPI,nAtoms,numnodes)
+     call mem_alloc(AtomsMPI,nAtoms,numnodes)
+     call mem_alloc(nAuxMPI,nAtoms,numnodes)
+     call getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,startAuxMPI,&
+          & AtomsMPI,nAtomsMPI,nAuxMPI)
+     call mem_dealloc(startAuxMPI)
+     MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+     call mem_dealloc(nbasisAuxMPI)
+     IF(MynbasisAuxMPI.GT.0)THEN
+        call mem_alloc(FullAlphaCD,MynbasisAuxMPI,nvirt,nocc)
+        FullalphaCD = 0.0E0_realk
+        startF = 0
+        DO iAtomAMPI=1,nAtomsMPI(mynum+1)
+           iAtomA = AtomsMPI(iAtomAMPI,mynum+1)
+           nAuxA = nAuxMPI(iAtomAMPI,mynum+1)
+           call typedef_setMolecules(setting,molecule1,3,4,ATOMS(iAtomA),1)             
+           call initIntegralOutputDims(setting%Output,nAuxA,1,nBast,nBast,1)
+           !need to deactivate MPI inside ls_getIntegrals. 
+           !both master and slaves call this routine 
+           doMPI = SETTING%SCHEME%doMPI
+           SETTING%SCHEME%doMPI = .FALSE.
+           MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+           SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+           call ls_getIntegrals(AODFdefault,AOEmpty,AORdefault,AORdefault,&
+                &CoulombOperator,RegularSpec,Contractedinttype,SETTING,LUPRI,LUERR)
+           SETTING%SCHEME%doMPI = doMPI
+           SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+           call mem_alloc(alphaCD,nAuxA,nBast,nBast)
+           CALL retrieve_Output(lupri,setting,alphaCD,.FALSE.)
+           ! Transform index delta to diagonal occupied index 
+           !(alphaAux;gamma,J) = (alphaAux;gamma,delta)*C(delta,J)
+           M = nAuxA*nbast        !rows of Output Matrix
+           N = nocc               !columns of Output Matrix
+           K = nbast              !summation dimension
+           call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
+           call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
+           call mem_dealloc(AlphaCD)
+           !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
+!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
+!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,ALPHA,TMP)
+           do BDIAG = 1,nvirt
+            do IDIAG = 1,nocc
+             do ALPHAAUX = 1,nAUXA
+              TMP = 0.0E0_realk
+              do ALPHA = 1,nbast
+               TMP = TMP + Cvirt(ALPHA,BDIAG)*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
+              enddo
+              FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) = FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) + TMP
+             enddo
+            enddo
+           enddo
+!$OMP END PARALLEL DO
+           call mem_dealloc(AlphaCD2)
+           startF = startF + nAUXA
+        ENDDO
+        call typedef_setMolecules(setting,molecule1,1,2,3,4)
+        call pari_free_atomic_fragments(ATOMS,nAtoms)
+        deallocate(ATOMS)
+     ENDIF
+     call mem_dealloc(AtomsMPI)
+     call mem_dealloc(nAtomsMPI)
+     call mem_dealloc(nAuxMPI)
+  ENDIF
+  SETTING%MOLECULE(1)%p => molecule1
+  SETTING%MOLECULE(2)%p => molecule2
+  SETTING%MOLECULE(3)%p => molecule3
+  SETTING%MOLECULE(4)%p => molecule4
+  call LSTIMER('AlphaCD',TSTART,TEND,LUPRI)
+  SETTING%scheme%CS_SCREEN = .TRUE.
+  SETTING%scheme%PS_SCREEN = .TRUE.
+  SETTING%scheme%OD_SCREEN = .TRUE.
+  SETTING%scheme%OE_SCREEN = .TRUE.
+END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
+
+subroutine getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,&
+     & startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+  implicit none
+  TYPE(MoleculeInfo),intent(in)    :: molecule1
+  integer,intent(in)    :: numnodes,nAtoms
+  integer,intent(inout) :: nbasisAuxMPI(numnodes),nAtomsMPI(numnodes)
+  integer,intent(inout) :: startAuxMPI(nAtoms,numnodes)
+  integer,intent(inout) :: AtomsMPI(nAtoms,numnodes),nAuxMPI(nAtoms,numnodes)
+  !
+  TYPE(MOLECULARORBITALINFO) :: orbitalInfo
+  integer :: mynum2,iAtomA,nBast,nBastAux,idx(1),nb
+  integer :: nBastLocA,startRegA,endRegA,nauxA,startAuxA,endAuxA     
+  call setMolecularOrbitalInfo(molecule1,orbitalInfo)     
+  DO mynum2 = 1,numnodes        
+     nbasisAuxMPI(mynum2) = 0
+     nAtomsMPI(mynum2) = 0
+  ENDDO
+  nb = 0
+  DO iAtomA=1,nAtoms
+     call getAtomicOrbitalInfo(orbitalInfo,iAtomA,nBastLocA,startRegA,endRegA,nauxA,startAuxA,endAuxA)
+     idx = MINLOC(nbasisAuxMPI) !the rank this atom should be assign to. 
+     nbasisAuxMPI(idx(1)) = nbasisAuxMPI(idx(1)) + nAuxA
+     nAtomsMPI(idx(1)) = nAtomsMPI(idx(1)) + 1
+     AtomsMPI(nAtomsMPI(idx(1)),idx(1)) = iAtomA
+     nAuxMPI(nAtomsMPI(idx(1)),idx(1)) = nAuxA
+     startAuxMPI(nAtomsMPI(idx(1)),idx(1)) = nb
+     nb = nb + nauxA
+  ENDDO
+  CALL freeMolecularOrbitalInfo(orbitalInfo)
+end subroutine getRIbasisMPI
+
+SUBROUTINE II_get_RI_AlphaBeta_2CenterInt(LUPRI,LUERR,AlphaBeta,SETTING,nbasisAux)
+  IMPLICIT NONE
+  Integer,intent(in)                :: LUPRI,LUERR,nbasisAux
+  REAL(REALK)                       :: AlphaBeta(nbasisAux,nbasisAux)
+  TYPE(LSSETTING),intent(inout)     :: SETTING
+  !
+  Integer                    :: nAtoms,nBastAux,nBast
+  Real(realk) :: TSTART,TEND,TSTARTFULL,TENDFULL,tmp
+  logical :: MasterWakeSlaves,doMPI
+  call LSTIMER('START ',TSTARTFULL,TENDFULL,LUPRI)
+  call getMolecularDimensions(SETTING%MOLECULE(1)%p,nAtoms,nBast,nBastAux)
+  IF(nbasisAux.NE.nBastAux)THEN
+     print*,'nbasisAux',nbasisAux
+     print*,'nbastAux',nbastAux
+     Call lsquit('dim mismatch in II_get_df_exchange2',-1)
+  ENDIF
+  !set threshold 
+  SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+  !(alpha|cd)
+  !call typedef_setMolecules(setting,molecule,1,2,3,4)
+  call initIntegralOutputDims(setting%output,nbastaux,1,nbastaux,1,1)
+  !MPI is used inside this routine 
+  !but since this is called by both master and slaves
+  !the master should not wake up the slaves
+  doMPI = SETTING%SCHEME%doMPI
+  SETTING%SCHEME%doMPI = .FALSE.
+  MasterWakeSlaves = SETTING%SCHEME%MasterWakeSlaves
+  SETTING%SCHEME%MasterWakeSlaves = .FALSE.
+  call ls_getIntegrals(AODFdefault,AOempty,AODFdefault,AOempty,CoulombOperator,RegularSpec,&
+       &                  ContractedInttype,SETTING,LUPRI,LUERR)
+  SETTING%SCHEME%doMPI = doMPI
+  SETTING%SCHEME%MasterWakeSlaves = MasterWakeSlaves
+  call retrieve_Output(lupri,setting,AlphaBeta,.FALSE.)
+  call LSTIMER('AlphaBeta',TSTART,TEND,LUPRI)
+END SUBROUTINE II_get_RI_AlphaBeta_2CenterInt
 
 END MODULE INTEGRALINTERFACEMODULEDF

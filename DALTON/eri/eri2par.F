@@ -1006,12 +1006,12 @@ C
          N_TASKS = N_TASKS + 1
 
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
-         IF (IPRINT .GT. 0)
+         IF (IPRINT .GT. 15)
      &      write (lupri,'(/A,I5,A,I8,A,I5,A,I5)')
      &      'Node',MYNUM,' received task',N_TASKS,' IPRTYP =',IPRTYP,
-     &      'Print level is',IPRINT
+     &      ' Print level is',IPRINT
 
-!        allocate memory here if we don't call hermit (more to follow...).
+!        allocate memory here if we do not call hermit (more to follow...).
 !        idea: move allocation down to main driver routines of modules as we might want to use
 !              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons)
 !              which is severely hampered by a "static" WORK for everything.
@@ -1117,8 +1117,10 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
+#if defined (BUILD_PELIB)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_MPI(WORK(1), MWORK, IPRINT)
+            CALL PE_IFC_MPI(IPRINT)
+#endif
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN

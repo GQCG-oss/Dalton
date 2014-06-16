@@ -47,6 +47,8 @@ P     1.4523500000      0.89962300000    0.0000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_phantom.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .DFT
 B3LYP

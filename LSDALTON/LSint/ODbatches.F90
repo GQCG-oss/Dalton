@@ -615,7 +615,6 @@ type(lstensor),pointer :: GAB
  integer(kind=short)  :: maxGab,maxpGAB
  real(realk)  :: d2,distance
  Logical      :: screen
-
  nbatches=0
  DO IA=1,AOA%nbatches
    IBSTART = 1

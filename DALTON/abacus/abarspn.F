@@ -386,13 +386,13 @@ C
       END IF
 C
       IF (ABSLRS) THEN
-        ABS_DIRFCK=DIRFCK
+        LUABSVECS = -1
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
-          OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
           WRITE(LUABSVECS) 'EOFLABEL'
         ELSE
-          OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+          CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
         END IF
       ENDIF
 C
@@ -483,8 +483,8 @@ C
       CALL GPCLOSE(LURSP4,'DELETE')
       CALL GPCLOSE(LURSP5,'KEEP')
       CALL GPCLOSE(LURSP ,'KEEP')
-      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL,'KEEP')
-      IF (ABSLRS) CLOSE(LUABSVECS,status='keep')
+      IF (LUSOL.GT.0) CALL GPCLOSE(LUSOL    ,'KEEP')
+      IF (ABSLRS)     CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       TIMRSP = SECOND() - TIMRSP
       IF (IPRRSP .GT. 0) WRITE (LUPRI,'(/A,F13.2,A)')
@@ -682,7 +682,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS .AND. ABS_DIRFCK .AND. NCONF.LE.1) THEN
+      IF (ABSLRS .AND. NCONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)

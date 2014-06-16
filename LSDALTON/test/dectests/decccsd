@@ -57,6 +57,7 @@ TRILEVEL
 1.0d-5
 **DEC
 .CCSD
+.NO_MO_CCSD
 .MPIsplit
 0
 !.CCSDsolver_par

@@ -1395,6 +1395,10 @@ C  /* Deck trpinp */
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "cbitrp.h"
 C
+C Used from common blocks:
+C  gnrinf.h : THR_REDFAC
+C
+#include "gnrinf.h"
 #include "abainf.h"
 #include "anrinf.h"
 #include "dorps.h"
@@ -1425,10 +1429,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in TRPINP.'
+               WRITE (LUPRI,'(/4A/)') ' Keyword "',WORD,
+     &            '" not recognized in ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in LRSINP.')
+               CALL QUIT('Illegal keyword in TRPINP.')
     1          CONTINUE
                   SKIP = .TRUE.
                GO TO 100
@@ -1442,7 +1446,13 @@ C
                GO TO 100
     4          CONTINUE ! .THRESH
                   READ (LUCMD,*) THRTRP
-                  IF (THRTRP .EQ. 1.D-04) ICHANG = ICHANG - 1
+                  IF (THR_REDFAC .GT. 0.0D0) THEN
+                     WRITE (LUPRI,'(4A,1P,D10.2)') '@ INFO ',
+     &               WORD1, WORD,
+     &               ' threshold multiplied with general factor',
+     &               THR_REDFAC
+                     THRTRP = THRTRP*THR_REDFAC
+                  END IF
                GO TO 100
     5          CONTINUE
                   READ (LUCMD,*) MXRM
@@ -1481,23 +1491,21 @@ C
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults for TRPRSP:',0)
          IF (SKIP) THEN
-            WRITE (LUPRI,'(A)') ' TRPDRV skipped in this run.'
+            WRITE (LUPRI,'(A)') ' Triplet response skipped in this run.'
          ELSE
             IF (IPRTRP .NE. IPRDEF) THEN
                WRITE (LUPRI,'(A,I5)')
-     *              ' Print level in TRPRSP        :',IPRTRP
+     &              ' Print level in TRPRSP        :',IPRTRP
             END IF
             IF ( INTPRI .NE. IPRDEF) THEN
                WRITE (LUPRI,'(A,I5)')
      &              ' Print level of integrals     :', INTPRI
             END IF
-            IF (THRTRP .NE. 1.D-04) THEN
-               WRITE (LUPRI,'(A,1P,E9.2)')
-     *            ' Threshold in TRPRSP          :',THRTRP
-            END IF
+            WRITE (LUPRI,'(A,1P,E9.2)')
+     &              ' Threshold in triplet response:',THRTRP
             IF (MAXTRP .NE. 40) THEN
                WRITE(LUPRI,'(A,I5)')' Maximum iterations in TRPRSP :',
-     *                               MAXTRP
+     &                               MAXTRP
             END IF
             IF (MXRM .NE. 400) THEN
                WRITE (LUPRI,'(A,I5)')' Maximum size of reduced space :',
@@ -1515,6 +1523,9 @@ C
                WRITE (LUPRI,'(/,A)') ' Program is stopped after TRPDRV.'
             END IF
          END IF
+      ELSE IF (TRPRSP) THEN
+            WRITE (LUPRI,'(A,1P,E9.2)')
+     &            ' Threshold in triplet response:',THRTRP
       END IF
       RETURN
       END
@@ -1523,8 +1534,12 @@ C  /* Deck trpini */
 C
 C     Initialize /CBITRP/
 C
+C Used from common blocks:
+C gnrinf.h : THR_REDFAC
+C
 #include "implicit.h"
 #include "mxcent.h"
+#include "gnrinf.h"
 #include "abainf.h"
 #include "cbitrp.h"
 C
@@ -1538,6 +1553,12 @@ C
       MXRM   = 400
       MXPHP  = 0
       TRPRSP = .TRUE.
+      IF (THR_REDFAC .GT. 0.0D0) THEN
+         WRITE (LUPRI,'(2A,1P,D10.2)') '@ INFO ',
+     &   ' *TRPRES default threshold multiplied with general factor',
+     &   THR_REDFAC
+         THRTRP = THRTRP*THR_REDFAC
+      END IF
       RETURN
       END
 C  /* Deck trpdrv */
@@ -1996,10 +2017,15 @@ C
      &                        NEXVAL,NABATY,1,TRPLAB(IREC),LUGDVE,
      &                        LUSOVE,LUREVE,THRTRP,MAXTRP,IPRTRP,MXRM,
      &                        MXPHP,WORK,LWORK)
-                  IF (NOCONV) WRITE
-     &                 (LUPRI,'(/,3A,2F10.5)') ' No convergence for ',
-     &                    TRPLAB(IREC),'. Last residual and threshold:',
-     &                    FINRES, THRTRP
+                  IF (NOCONV) THEN
+                     WRITE (LUPRI,'(/3A,2F10.5)')
+     &                  '@ WARNING No convergence for ',TRPLAB(IREC),
+     &                  '. Last residual and threshold:', FINRES, THRTRP
+                  ELSE
+                     WRITE (LUPRI,'(3A,2F10.5)')
+     &                  '    Convergence for ',TRPLAB(IREC),
+     &                  '. Last residual and threshold:', FINRES, THRTRP
+                  END IF
                END IF
 C
 C     Write solutions and residuals
@@ -2022,7 +2048,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL ABAWRITRS
+               CALL ABAWRIT_RESTART
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

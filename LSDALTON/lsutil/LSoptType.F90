@@ -182,6 +182,11 @@ Type opt_setting
     Logical :: OLDIBT
     Logical :: Shanks
     Integer :: Deriv_order
+! Force-modified PES
+    Logical :: FMPES
+    Integer, dimension(2) :: Att_atom
+    Real(realk) :: Ext_force
+!
 End type opt_setting
 
 contains

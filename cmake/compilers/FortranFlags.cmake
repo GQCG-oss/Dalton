@@ -84,7 +84,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_OMP)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -openmp -parallel"
+            "${CMAKE_Fortran_FLAGS} -openmp"
             )
     endif()
     if(ENABLE_64BIT_INTEGERS)
@@ -120,6 +120,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     if(ENABLE_OMP) 
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
+            )
+    endif()
+# WARNING you may need to add -Mcuda=5.5 
+# For now use --extra-fc-flags="-Mcuda=5.5"
+# ./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --openacc --extra-fc-flags="-Mcuda=5.5" build
+    if(ENABLE_OPENACC) 
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -acc"
             )
     endif()
     if(ENABLE_BOUNDS_CHECK)
@@ -164,7 +172,12 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
     add_definitions(-DVAR_CRAY)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+
+    if(ENABLE_TITANBUILD)
+       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ -hsystem_alloc")
+    else()
+       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+    endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")
     set(CMAKE_Fortran_FLAGS_PROFILE "-g")

@@ -898,10 +898,10 @@ C  /* Deck her_rvres */
      &                     L_TMPMT,L_GRA,L_HES,L_SUS,L_FCK,ITYPE,
      &                     IPRINT,DINTSKP,GENCTR)
 !     module dependencies
-      use parallel_communication_models_mpi
-      use one_sided_communication_wrappers
       use rma_windows
 #ifdef VAR_MPI
+      use parallel_communication_models_mpi
+      use one_sided_communication_wrappers
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif
@@ -1984,7 +1984,6 @@ C
 #include "twocom.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
@@ -1993,6 +1992,9 @@ C
 #include "inftap.h"
 #include "inforb.h"
 #include "incore.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C For MPE event logging
 C      evIDb2 = MPE_Log_get_event_number()
@@ -2435,6 +2437,7 @@ C
             CALL ADDGRD(GRADNN)
             CALL ADDGRD(GRADNA)
             CALL ADDGRD(GRADEE)
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             CALL HEADER('Molecular gradient',-1)
             CALL ADDGRD(GRADFS)
@@ -2443,6 +2446,7 @@ C
                CALL ADDGRD(GSOLTT)
                CALL ADDGRD(GSOLNN)
             END IF
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
             GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
@@ -2497,10 +2501,11 @@ C  /* Deck her_sdres */
       SUBROUTINE HER_SDRES(FMAT,HESSEE,NDMAT,DINTSKP,TSKCPU,IWHICH,
      &                     ICOUNT,ITYPE,IPRINT,GENCTR)
 !     module dependencies
+      use rma_windows
+
+#ifdef VAR_MPI
       use parallel_communication_models_mpi
       use one_sided_communication_wrappers
-      use rma_windows
-#ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
       use mpi
 #endif

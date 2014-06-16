@@ -1,0 +1,38 @@
+**SYSTP
+.NUMMTP
+ 1
+.TYPE
+ 0
+.MODEL
+ SPC
+.CHARGS
+ 10
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+ 0.0000
+*******
+.TYPE
+ 1-2
+.MODEL
+ SPC_E01  # (This model includes the induced dipole moments in
+.ALPISO   # the optimization of the wave function and introduces
+ 1        # an iterative determination of  the t and t-bar coupled
+ 9.501    # cluster parameters)
+*******
+**TWOIA (i,j=0,1,2,...,N; if i=0 then j.neq.0)
+.LJ_A
+ 2
+ 0.00000
+ 0.00000
+.LJ_B
+ 2
+ 0.000
+ 0.000
+**END OF

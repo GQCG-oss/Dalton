@@ -59,12 +59,12 @@ type OptItem
       integer     :: hfcalc
       !> Calctype can be set to HF or dft:
       integer     :: dftcalc
-      !> Request to add a Level 4 using regular integrals - no densfit or increm
-      logical     :: purescf
       !> Use Block-Sparse Matrices:
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
       logical     :: cfg_prefer_SCALAPACK
+      !> Should we crash the calculation - for debugging purposes
+      logical     :: crashcalc
       !> Should incremental scheme be used for integrals?
       logical     :: cfg_incremental
       !> Should we save old F0 and D0 related to incremental and line search
@@ -144,9 +144,9 @@ implicit none
    opt%hfcalc                    = 1
    opt%dftcalc                   = 2
    opt%calctype                  = opt%hfcalc !Default is HF
-   opt%purescf                   = .false.
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
+   opt%crashcalc                 = .false.
    opt%cfg_incremental           = .false.
    opt%cfg_saveF0andD0           = .false.
    opt%cfg_queue_on_disk         = .false.

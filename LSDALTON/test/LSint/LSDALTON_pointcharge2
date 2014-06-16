@@ -52,6 +52,8 @@ bq3 -4.4867611522 0.0000000000 -4.5020127872
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_pointcharge2.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **WAVE FUNCTIONS
 .DFT
  B3LYP

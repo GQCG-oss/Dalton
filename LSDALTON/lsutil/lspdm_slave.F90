@@ -1,6 +1,7 @@
 
 subroutine pdm_array_slave(comm)
   use precision
+  use lstiming
   !use matrix_operations_scalapack, only: BLOCK_SIZE, SLGrid, DLEN_
   use memory_handling, only: mem_alloc,mem_dealloc
   use matrix_operations, only: mtype_scalapack, matrix_type
@@ -25,9 +26,14 @@ subroutine pdm_array_slave(comm)
    integer, external :: numroc
    integer, pointer :: dims(:),dims2(:)
    logical :: loc
+   character (4) :: at 
+   integer       :: it
 #ifdef VAR_MPI
    loc = (infpar%parent_comm /= MPI_COMM_NULL)
+
+   call time_start_phase(PHASE_COMM)
    CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
+   call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
      CASE(JOB_TEST_ARRAY)
@@ -40,7 +46,7 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims,A%mode)
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_standard(dims,A%mode,MASTER_INIT) 
+       A=array_init_standard(dims,A%mode,MASTER_ACCESS) 
        call mem_dealloc(dims)
      CASE(JOB_INIT_ARR_TILED)
        call mem_alloc(idiag,A%mode)
@@ -48,7 +54,7 @@ subroutine pdm_array_slave(comm)
        idiag=A%tdim
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_tiled(dims,A%mode,MASTER_INIT,idiag,A%zeros) 
+       A=array_init_tiled(dims,A%mode,at,it,MASTER_ACCESS,idiag,A%zeros) 
        call mem_dealloc(idiag)
        call mem_dealloc(dims)
      CASE(JOB_FREE_ARR_STD)
@@ -59,7 +65,7 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims,A%mode)
        dims =A%dims
        call arr_free_aux(A)
-       A=array_init_replicated(dims,A%mode,MASTER_INIT) 
+       A=array_init_replicated(dims,A%mode,MASTER_ACCESS) 
        call mem_dealloc(dims)
      CASE(JOB_PRINT_MEM_INFO1)
        call print_mem_per_node(DECinfo%output,.false.)
@@ -97,8 +103,11 @@ subroutine pdm_array_slave(comm)
        call array_zero_tiled_dist(A)
      CASE(JOB_GET_CC_ENERGY)
        AF = get_cc_energy_parallel(A,B,C)
+     CASE(JOB_GET_MP2_ENERGY)
+       AF = get_mp2_energy_parallel(A,B)
      CASE(JOB_GET_FRAG_CC_ENERGY)
        !the counterpart to this buffer is in get_fragment_cc_energy
+       call time_start_phase(PHASE_COMM)
        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
        call ls_mpi_buffer(i,infpar%master)
        call mem_alloc(dims,i)
@@ -107,16 +116,23 @@ subroutine pdm_array_slave(comm)
        call mem_alloc(dims2,j)
        call ls_mpi_buffer(dims2,j,infpar%master)
        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+       call time_start_phase(PHASE_WORK)
 
        AF = get_fragment_cc_energy_parallel(A,B,C,i,j,dims,dims2)
 
        call mem_dealloc(dims)
        call mem_dealloc(dims2)
-     CASE(JOB_CHANGE_INIT_TYPE)
-       call change_init_type_td(A,i)
+     CASE(JOB_CHANGE_ACCESS_TYPE)
+       call change_access_type_td(A,i)
      CASE(JOB_ARRAY_SCALE)
        call ls_mpibcast(AF,infpar%master,infpar%lg_comm)
        call array_scale_td(A,AF)
+     CASE(JOB_GET_RPA_ENERGY)
+       write(*,*) 'Johannes RPA ene'
+       AF = get_rpa_energy_parallel(A,B)
+     CASE(JOB_GET_SOS_ENERGY)
+       write(*,*) 'Johannes SOS ene'
+       AF = get_sosex_cont_parallel(A,B)
    END SELECT
 #endif
 end subroutine pdm_array_slave

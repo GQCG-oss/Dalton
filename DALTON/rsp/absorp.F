@@ -278,6 +278,7 @@ C     the few lowest excited states to be used as startvectors.
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "absorp.h"
 #include "dummy.h"
 #include "infrsp.h"
@@ -292,11 +293,12 @@ C
       PARAMETER ( BLANK='        ' )
 C
       IF (IPRABS.GT.0) THEN
-         WRITE(LUPRI,'(/,2A,/,2(A,I4),/A)')
-     &        ' RESONANT -- Solve the eigenvalue equation',
+         WRITE(LUPRI,'(/A/2(A,I4),3A/A)')
+     &        ' RESONANT -- Solve the eigenvalue equation'//
      &        ' ( E[2] - w*S[2] )*X = 0',
      &        ' RESONANT -- for the',NEXCITED_STATES,
      &        ' lowest excited states of symmetry',KSYMOP,
+     &        '  ( ',REP(KSYMOP-1),')',
      &        ' RESONANT -- to be used as startvectors in LR solver.'
       END IF
 C
@@ -1275,6 +1277,7 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "absorp.h"
@@ -1332,11 +1335,11 @@ C
       END IF
 C
       IF (IPRABS.GE.0) THEN
-         WRITE(LUPRI,'(/2A,/3A,I2,A/,A,5(4F12.8,/,11X))')
-     &        ' ABSVEC1 -- Solving linear response equations',
+         WRITE(LUPRI,'(/A/3A,I2,3A/A,5F12.8/,(11X,5F12.8))')
+     &        ' ABSVEC1 -- Solving linear response equations'//
      &        ' ( E[2] - {w-iW}*S[2] ) N = B[1]  ',
-     &        ' ABSVEC1 -- for operator ', LABEL,
-     &        ' of symmetry',KSYMOP,' at frequencies:',
+     &        ' ABSVEC1 -- for operator ', LABEL, ' of symmetry',
+     &        KSYMOP,'  ( ',REP(KSYMOP-1),') at the frequencies:',
      &        ' ABSVEC1 --',(FREQ_ABS(I),I=1,NFREQ_ABS)
       END IF
 C
@@ -2043,7 +2046,7 @@ C
      &        ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      &        ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC
 C
-         IF (ABSLRS.AND.(NCONF.LE.1).AND.ABS_DIRFCK) THEN
+         IF (ABSLRS.AND.(NCONF.LE.1)) THEN
               CALL ABS_QRRDVE(ISYMA,ISYMB,ISYMC,ALAB,BLAB,CLAB,
      &        FREQA,FREQB,FREQC,KZYVA,KZYVB,KZYVC,WRK(KVECA),WRK(KVECB),
      &        WRK(KVECC))
@@ -2144,8 +2147,7 @@ C
             CALL A2INIT(1,KZYVC,KZYVB,ISYMC,ISPINC,ISYMB,ISPINB,1,
      &           WRK(KVECB+KZYVB),WRK(KGRAD),XINDX,UDV,PV,ALAB,ISYMA,
      &           ISPINA,CMO,MJWOP,WRK(KFREE),LFREE)
-            VAL(1) = -DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC+KZYVC),1)*
-     &           DAMPING*DAMPING
+            VAL(1) = -DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC+KZYVC),1)
             VAL(2) = DDOT(KZYVC,WRK(KGRAD),1,WRK(KVECC),1)
             TMPVAL(1) = TMPVAL(1) + VAL(1)
             TMPVAL(2) = TMPVAL(2) + VAL(2)

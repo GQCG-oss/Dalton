@@ -159,6 +159,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/hersol.F
     DALTON/abacus/hersym.F
     DALTON/abacus/hertst.F
+    DALTON/abacus/her_lslib.F
     DALTON/abacus/huckel.F
     DALTON/abacus/abalresc.F
     DALTON/abacus/linearlr.F
@@ -429,7 +430,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/densfit/denfit_noddy.F
     DALTON/densfit/df_dirac.F
     DALTON/dft/dft_aos.F
-    DALTON/dft/dft_ac.F 
+    DALTON/dft/dft_ac.F
     DALTON/dft/dft_aux.F
     DALTON/dft/dft_den.F
     DALTON/dft/dft_exp.F
@@ -611,6 +612,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirorb.F
     DALTON/sirius/sirout.F
     DALTON/sirius/sir_mep.F
+    DALTON/sirius/sir_qfit.F
     DALTON/sirius/sirpcm.F
     DALTON/sirius/sirpcmder.F
     DALTON/sirius/sirpop.F
@@ -627,7 +629,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirtra.F
     DALTON/sirius/sirupd.F
     DALTON/sirius/symchk.F
-    DALTON/sirius/pcm_interface.F
     DALTON/soppa/ccsd_tcmepkx.F
     DALTON/soppa/dc_calc.F
     DALTON/soppa/dc_eres.F

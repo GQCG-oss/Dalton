@@ -1,2 +1,6 @@
 *testjob-pid*
-
+*/*.out
+*/*.stdout
+*/*.diff
+*/*.filtered
+*/*.reference

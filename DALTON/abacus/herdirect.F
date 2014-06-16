@@ -451,6 +451,7 @@ C
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
+#include "maxaqn.h"
 #include "aovec.h"
       LOGICAL USEERI, LDUMMY
       PARAMETER (D0 = 0.0D0)
@@ -459,8 +460,9 @@ C
      &          WORK(*)
 C
 C Used from common blocks:
-C   gnrinf: SEGBAS, PARCAL
+C   gnrinf: SEGBAS, PARCAL, USE_LSLIB
 C   infpar: NODTOT
+C   symmet: MAXREP
 C
 #include "infpar.h"
 #include "inforb.h"
@@ -469,6 +471,7 @@ C
 #include "blocks.h"
 #include "cbihr2.h"
 #include "cbieri.h"
+#include "symmet.h"
 #include "veclen.h"
 C
 #include "memint.h"
@@ -501,7 +504,11 @@ C
       ICHUNK = MAX(IVECLN/NDMT,1)
 #endif
 C
-      IF (.NOT. USEERI) THEN
+      IF (USE_LSLIB .AND. MAXREP .EQ. 0) THEN
+         ! only implemented for C1 symmetry
+         CALL DALTON_LSLIB_FCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
+     &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
+      ELSE IF (.NOT. USEERI) THEN
          CALL HRFCK1(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,
      &               ICEDIF,IFTHRS,WORK(KFREE),LFREE)
       ELSE

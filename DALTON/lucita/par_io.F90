@@ -291,7 +291,9 @@ contains
    end subroutine write_batch_pario
 !******************************************************************************
 
-#else
-module dummy_mcci_pario
-#endif
 end module
+#else
+subroutine mcci_pario
+! dummy routine for non-mpi compilation
+end
+#endif

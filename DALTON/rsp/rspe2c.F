@@ -205,7 +205,7 @@ C
      *                    WRK(JE2OFF+KZVAR+KZCONF),1)
                DO I=0,KZCONF-1
                   WRK(JE2OFF+I) = WRK(JDIAE+I) * WRK(JBCOFF+I)
-               ENDDO
+               END DO
                CALL DZERO(WRK(JE2OFF+KZVAR),KZCONF)
             ELSE
 #if defined (VAR_SPLITFILES)
@@ -215,7 +215,7 @@ C
 #else
                CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
 #endif
-            ENDIF
+            END IF
             CALL DCOPY(KZVAR,WRK(JE2OFF+KZVAR),1,
      *                 WRK(JE2OFF+KZDIM*KZYVAR),1)
             CALL DCOPY(KZVAR,WRK(JE2OFF),1,
@@ -226,28 +226,28 @@ C
      *                 WRK(JS2OFF+KZDIM*KZYVAR+KZVAR),1)
             CALL DSCAL(KZYVAR,DM1,WRK(JS2OFF+KZDIM*KZYVAR),1)
             JBCOFF = JBCOFF + KZYCON
-         ENDIF
+         END IF
          JE2OFF = JE2OFF + KZYVAR
          JS2OFF = JS2OFF + KZYVAR
  15   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,1,LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZDIM
-         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,1,LUPRI)
+         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZDIM,KZYVAR,KZDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                              KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                              KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
       JBOOFF = KBOVEC + JOTOT
@@ -277,32 +277,32 @@ C
          END IF
  20   CONTINUE
       IF (IPRRSP.GT.110) THEN
-         WRITE(LUPRI,'(2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
+         WRITE(LUPRI,'(/2A,I8)')' E(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,1,
-     &               LUPRI)
-         WRITE(LUPRI,'(2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
+         CALL OUTPUT(WRK(KE2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
+         WRITE(LUPRI,'(/2A,I8)')' S(2) LINEAR TRANSFORMED VECTORS',
      *   ' : DIMENSION ',KZYDIM
-         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,KZYVAR,KZYDIM,1,
-     &               LUPRI)
+         CALL OUTPUT(WRK(KS2LIN),1,KZYVAR,1,KZYDIM,
+     &               KZYVAR,KZYDIM,-1,LUPRI)
          IF ( NOTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' ORBITAL TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' ORBITAL TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NOTOT
-            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,KZYWOP,
-     *                                              2*NOTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBOVEC),1,KZYWOP,1,2*NOTOT,
+     *                  KZYWOP,2*NOTOT,-1,LUPRI)
          END IF
          IF ( NCTOT.GT.0 ) THEN
-            WRITE(LUPRI,'(2A,I8)')' CONFIGURATION TRIAL VECTORS ',
+            WRITE(LUPRI,'(/2A,I8)')' CONFIGURATION TRIAL VECTORS ',
      *      ' : DIMENSION ',2*NCTOT
-            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,KZYCON,
-     *                                              2*NCTOT,1,LUPRI)
+            CALL OUTPUT(WRK(KBCVEC),1,KZYCON,1,2*NCTOT,
+     *                  KZYCON,2*NCTOT,-1,LUPRI)
          END IF
       END IF
 C
 C CHECK IF TRIAL VECTORS ARE ORTHONORMAL
 C
       IF ( NOTOT.GT.0) THEN
-         IJ = 0
+         IJ   = 0
          XMAX = D0
          IMAX = 0
          JMAX = 0
@@ -311,20 +311,20 @@ C
             DO 40 J = 1,I
                IJ = IJ + 1
                JOFF = KBOVEC+(J-1)*KZYWOP
-               XIJ = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
+               XIJ  = DDOT(KZYWOP,WRK(IOFF),1,WRK(JOFF),1)
                WRK(KWRK1-1+IJ) = XIJ
                IF ((ABS(XIJ).GT.XMAX).AND.(I.NE.J)) THEN
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  40         CONTINUE
  30      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR ORBITAL TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NOTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NOTOT,-1,LUPRI)
       END IF
       IF ( NCTOT.GT.0 ) THEN
          IJ = 0
@@ -342,21 +342,21 @@ C
                   IMAX = I
                   JMAX = J
                   XMAX = XIJ
-               ENDIF
+               END IF
  60         CONTINUE
  50      CONTINUE
          WRITE(LUPRI,'(/A)')' OVERLAP FOR CONFIGURATION TRIAL VECTORS'
-         CALL OUTPAK(WRK(KWRK1),2*NCTOT,1,LUPRI)
          IF ( XMAX.GT.DTOL )
-     *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *   ' LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+     &   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     &   'WARNING: LARGEST ELEMENT (I,J), I=',IMAX,' J=',JMAX,' :',XMAX
+         CALL OUTPAK(WRK(KWRK1),2*NCTOT,-1,LUPRI)
       END IF
 C
 C SET UP REDUCED E2 AND S2 MATRICES
 C
       JBOVEC = KBOVEC
       JBCVEC = KBCVEC
-      DO 70 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          JCHK = J
          IF ( J.GT.KZDIM ) THEN
             JCHK = JCHK - KZDIM
@@ -376,7 +376,7 @@ C
             JBVEC  = JBOVEC
             JBOVEC = JBOVEC + KZYWOP
          END IF
-         DO 80 I = 1,KZYDIM
+         DO I = 1,KZYDIM
             X1 = DDOT(JZVAR,WRK(JBVEC),1,
      *                WRK(KE2LIN+(I-1)*KZYVAR+JZOFF),1)
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
@@ -387,12 +387,12 @@ C
             X2 = DDOT(JZVAR,WRK(JBVEC+JZVAR),1,
      *                WRK(KS2LIN+(I-1)*KZYVAR+JYOFF),1)
             WRK(KS2MAT-1+(I-1)*KZYDIM+J) = X1 + X2
- 80      CONTINUE
- 70   CONTINUE
-      WRITE(LUPRI,'(A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
-      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,1,LUPRI)
+         END DO  !  I = 1,KZYDIM
+      END DO  !  J = 1,KZYDIM
+      WRITE(LUPRI,'(/A,I8)')' REDUCED E(2) MATRIX : DIMENSION ',KZYDIM
+      CALL OUTPUT(WRK(KE2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' REDUCED S(2) MATRIX : DIMENSION ',KZYDIM
+      CALL OUTPUT(WRK(KS2MAT),1,KZYDIM,1,KZYDIM,KZYDIM,KZYDIM,-1,LUPRI)
 C
 C CHECK BLOCK STRUCTURE OF E2 AND S2 AND WRITE OUT LARGEST DEVIATIONS
 C
@@ -462,50 +462,70 @@ C
       JZ=JA
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IA),IBTYP(JA)
       IZ=IB
       JZ=JB
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZBMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF ( ZBMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IB),IBTYP(JB)
       IZ=IS
       JZ=JS
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZSMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
-      IF ( ZSMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IS,' J=',JS,' DEV=',ZSMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(IS),IBTYP(JS)
       IZ=ID
       JZ=JD
       IY=IZ+KZDIM
       JY=JZ+KZDIM
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
-     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZDMAX
-      IF ( ZDMAX.GT.DTOL )
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+      IF ( ZDMAX.GT.DTOL ) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2MAT-1+(IZ-1)*KZYDIM+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2MAT-1+(JZ-1)*KZYDIM+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(IY-1)*KZYDIM+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2MAT-1+(JY-1)*KZYDIM+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
+      WRITE(LUPRI,'(/A,2I5)') 'IBTYP(I), IBTYP(J) =',IBTYP(ID),IBTYP(JD)
 C
 C CHECK EIGENVALUES OF E2
 C
@@ -518,30 +538,31 @@ C
       KJBIG  = KBIG  + KZYDIM
       KWRK1  = KJBIG + KZYDIM
 C
-      WRITE(LUPRI,'(/A,/A)')' ********************************',
+      WRITE(LUPRI,'(/A/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH JACO ROUTINE '
-      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A,/A)')
+      IF ( KOFFTY.EQ.1 ) WRITE(LUPRI,'(/A/A)')
      *' *** E2 *** HAVE TWO ZERO EIGENVALUES BECAUSE REFERENCE STATE',
      *'            IS INCLUDED IN REDUCED SPACE'
       IJ = 0
-      DO 500 J = 1,KZYDIM
-         DO 600 I = 1,J
+      DO J = 1,KZYDIM
+         DO I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
- 600     CONTINUE
- 500  CONTINUE
+         END DO
+      END DO
       CALL JACO(WRK(KE2),WRK(KEIVEC),KZYDIM,KZYDIM,0,
      *          WRK(KBIG),WRK(KJBIG))
 C     CALL JACO(F,V,NB,NMAX,NROWV,BIG,JBIG)
-      DO 610 I = 1,KZYDIM
- 610     WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      DO I = 1,KZYDIM
+         WRK(KEIVAL-1+I) = WRK(KE2-1 + (I*I+I)/2)
+      END DO
       CALL ORDER(WRK(KEIVEC),WRK(KEIVAL),KZYDIM,0)
 C     CALL ORDER(EVEC,EVAL,N,NEVEC)
       WRITE(LUPRI,'(/A)') '   The eigenvalues of E2 :'
-      DO 620 I = 1,KZYDIM,2
+      DO I = 1,KZYDIM,2
          WRITE(LUPRI,'(1P,2(I10,D20.10))')
      *      I,WRK(KEIVAL-1+I), I+1, WRK(KEIVAL+I)
- 620  CONTINUE
+      END DO
 C
 C CHECK EIGENVALUES OF S2
 C
@@ -1106,7 +1127,7 @@ C    *      '  IS:',KZCONF,'  CALCULATED NUMBER,NHCDET:',NHCDET
 C           CALL QUIT(' H2XSIG,INCORRECT CALCULATION OF DETERMINANTS')
 C        END IF
          CALL DSCAL(KZCONF,DM1,EVECS(1,ISIM),1)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1,ISIM),1)
@@ -1140,7 +1161,7 @@ C
      *               EVECS(1+KZVAR,ISIM),
      *               WRK(KUFCAC),H2XAC(1,1,ISIM),.FALSE.,.FALSE.,
      *               XINDX,ISPIN1,ISPIN2,WRK(KFREE),LFREE)
-         IF (IREFSY .EQ. KSYMST) THEN
+         IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
 C           ... remove CREF component of E[2] vector
             T1 = DDOT(KZCONF,WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
             CALL DAXPY(KZCONF,(-T1),WRK(KREFCO),1,EVECS(1+KZVAR,ISIM),1)
@@ -1221,8 +1242,8 @@ C
          IF ( IPRRSP.GT. 4 ) THEN
             WRITE (LUPRI,'(/A,2(/A,I5),/A,(T10,10I4))')
      *      ' >>> Restart in LRST >>>',
-     *      ' OPERATOR SYMMETRY          :',JSYMOP,
-     *      ' DIMENSION OF REDUCED SPACE :',KZDIM,
+     *      ' OPERATOR SYMMETRY               :',JSYMOP,
+     *      ' HALF-DIMENSION OF REDUCED SPACE :',KZDIM,
      *      ' IBTYP :',(IBTYP(I),I=1,KZDIM)
          END IF
          IF (JSYMOP.NE.KSYMOP) THEN
@@ -1247,7 +1268,15 @@ C
 #endif
             JZDIM = I
   50     CONTINUE
-  51     KZDIM = JZDIM
+  51     CONTINUE
+         IF (JZDIM .LT. KZDIM) THEN
+            WRITE (LUPRI,'(/A/A,I5,A,I5/A)')
+     *      ' >>> Restart in LRST >>>',
+     *      ' Half-dimnsion of reduced space reduced from',KZDIM,
+     *      ' to',JZDIM,
+     *      ' because that was the number of sigma vectors on LURSP5'
+         END IF
+         KZDIM = JZDIM
 C
 C
 C READ IN OLD TRIAL VECTORS AND SET UP REDUCED MATRICES
@@ -1725,10 +1754,10 @@ C
             WRITE(LUPRI,'(/A/,5(/A,1P,D15.7),/)')
      * '@ FREQUENCY DEPENDENT SECOND ORDER PROPERTIES WITH FREQUENCY :',
      *      '@    a.u.:',FREQ(IFREQ),
-     *      '     cm-1:',XTKAYS*FREQ(IFREQ),
-     *      '     e.V.:',XTEV*FREQ(IFREQ),
-     *      '  kJ/mol.:',XKJMOL*FREQ(IFREQ),
-     *      '     nm  :',XTNM/FREQ(IFREQ)
+     *      '@    cm-1:',XTKAYS*FREQ(IFREQ),
+     *      '@    eV  :',XTEV*FREQ(IFREQ),
+     *      '@  kJ/mol:',XKJMOL*FREQ(IFREQ),
+     *      '@    nm  :',XTNM/FREQ(IFREQ)
          END IF
 
          DO 400 IOP = 1,NOP
@@ -2563,10 +2592,12 @@ C
 #include "ibndxdef.h"
 C
 C Used from common blocks:
-C  /WRKRSP/: ??
-C  /INFPRI/: LUERR
+C  pgroup.h: REP
+C  wrkrsp.h: ??
+C  infpri.h: LUERR
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "inforb.h"
 #include "wrkrsp.h"
 #include "infrsp.h"
@@ -2583,17 +2614,19 @@ C
 C
       CALL QENTER('RSPCTL')
       IF (MMPCM) CALL MMPCMINIT()
-      IF (IPRRSP .GE. 2) THEN
+      IF (IPRRSP .GE. 1) THEN
          IF (LINEQ) THEN
-            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
-     *   'FOR LINEAR RESPONSE PROPERTIES >>>',
-     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+            WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
+     &   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
+     &   'FOR LINEAR RESPONSE PROPERTIES >>>',
+     &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
+     &   '); triplet = ',TRPLET
          ELSE
-            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
-     *   ' <<< EXCITATION ENERGIES',
-     *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
-     &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
+            WRITE (LUPRI,'(///2A//A,I2,3A,L3/)')
+     &   ' <<< EXCITATION ENERGIES',
+     &   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
+     &   ' Operator symmetry =',KSYMOP,'  ( ',REP(KSYMOP-1),
+     &   '); triplet = ',TRPLET
          END IF
       END IF
 C
@@ -2715,8 +2748,8 @@ C
 C        CALL RSPES2(GD,REDGD,REDE,REDS,EIVAL,EIVEC,
 C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *               XINDX,WRK,LWRK)
-         WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTUCTED : STOP'
-         CALL QUIT('RSPCTL: ABCHK FINISHED')
+         WRITE(LUPRI,'(/A)')' .ABCHK E2 AND S2 CONSTRUCTED : STOP'
+         CALL QUIT('RSPCTL: .ABCHK FINISHED')
       END IF
 C
 C     Initialize micro iteration counter
@@ -3289,12 +3322,14 @@ C                         the response calculation(s) )
 C  /WRKRSP/ :
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infopt.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "rspprp.h"
 #include "infpp.h"
 #include "inflr.h"
+#include "inflin.h"
 #include "inforb.h"
 #include "infdim.h"
 #include "infinp.h"
@@ -3695,21 +3730,23 @@ C ---------------------------- not non-adiabatic coupling:
  600        CONTINUE  ! go to 600 if non-adiabatic coupling ("HDO" in label)
          END IF
          PRI_LINE = ' '
-         WRITE (PRI_LINE,'(3(A,I2))')
+         WRITE (PRI_LINE,'(3(A,I2),3A)')
      &   '@ Excit. operator sym',KSYMOP,' & ref. state sym',IREFSY,
-     &   ' => excited state symmetry',KSYMST
+     &   ' => excited state symmetry',KSYMST,'  ( ',REP(KSYMST-1),')'
          CALL TITLER(PRI_LINE,'*',103)
          DO 555 INUM = 1,NBX
             PRI_LINE = ' '
-            WRITE (PRI_LINE,'(A,I5,A,I3)')
-     *      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST
+            WRITE (PRI_LINE,'(A,I5,A,I2,3A)')
+     &      '@ Excited state no:',(ISIM-1+INUM),' in symmetry',KSYMST,
+     &      '  ( ',REP(KSYMST-1),')'
             CALL HEADER(PRI_LINE,0)
-            WRITE(LUPRI,'( A,1P,G16.8,A,3(/A1,19X,G16.8,A),
-     *                   //A,T21,G16.8,A)')
-     *      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),'au',
-     *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV',
-     *      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1',
-     *      ' ',WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
+            WRITE(LUPRI,'( A,1P,G16.8,A
+     &                    /A,T21,3(G16.8,A)
+     &                   //A,T21,G16.8,A)')
+     &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
+     &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
+     &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
+     *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
      *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
@@ -3780,6 +3817,15 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+     
+
+            IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
      &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
@@ -3792,22 +3838,24 @@ C     Print oscillator/rotatory strengths
 C
       IF (RSPOCD .OR. RSPECD) THEN
 
-         CALL AROUND('Absorption and Circular Dichroism Spectra')
+         CALL AROUND('@  Absorption and Circular Dichroism Spectra')
 
-         WRITE (LUPRI,'(/,3(/,5X,A,I3))')
-     &   ' Reference  state    symmetry:',IREFSY,
-     &   ' Excitation operator symmetry:',KSYMOP,
-     &   ' Excited    state    symmetry:',KSYMST
+         WRITE (LUPRI,'(3(/A,I3,3A))')
+     &'@  Reference  state    symmetry:',IREFSY,
+     &  '  ( ',REP(IREFSY-1),')',
+     &'@  Excitation operator symmetry:',KSYMOP,
+     &  '  ( ',REP(KSYMOP-1),')',
+     &'@  Excited    state    symmetry:',KSYMST,'  ( ',REP(KSYMST-1),')'
 
-         WRITE (LUPRI,'(/,5X,A,/5X,A,//)')
-     &      ' Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
-     &      '        dimensionless              (oscillator strength)'
+         WRITE (LUPRI,'(/A/A)')
+     &   '@  Units: 10**(-40) (esu**2)*(cm**2) (rotatory   strength)',
+     &   '@         dimensionless              (oscillator strength)'
 
          CALL HEADER('Oscillator and Scalar Rotatory Strength',18)
          WRITE(LUPRI,'(/,8X,A,/,8X,A,/,8X,A)')
-     &   ' State Frequency   Oscillator Strength    Rotatory  Strength',
-     &   '         (eV)      Velocity     Length    Velocity    Length',
-     &   ' -----------------------------------------------------------'
+     &'@  State Frequency   Oscillator Strength    Rotatory  Strength',
+     &'@          (eV)      Velocity     Length    Velocity    Length',
+     &'@  -----------------------------------------------------------'
 
          DO LOCST = 1,NPPCNV(KSYMOP)
 
@@ -3829,13 +3877,13 @@ C
      &                                WRK(KTRMAG+IOFF1),1)/EXENG
 
 
-               WRITE(LUPRI,'(8X,I5,5(1X,F10.4))')
-     &         LOCST,EXEV,OSCVEL,OSCLEN,ROTVEL*ESUECD,ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,5F11.4)')
+     &         '@',LOCST,EXEV,OSCVEL,OSCLEN,ROTVEL*ESUECD,ROTLEN*ESUECD
 
             ELSE
 
-             WRITE(LUPRI,'(8X,I5,1X,F10.4,1X,A,1X,F10.4,1X,A,1X,F10.4)')
-     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
+     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
@@ -4053,12 +4101,12 @@ C
          END DO
 
          CALL HEADER('Total Rotatory Strength Tensor',18)
-         WRITE(LUPRI,'(/,A,/,A,A,/,A,A)')
-     &   ' State Gauge                 Total Rotatory Strength Tensor ',
-     &   '                  xx        xy        xz        yy        yz',
-     &   '        zz',
-     &   ' -----------------------------------------------------------',
-     &   '------------'
+         WRITE(LUPRI,'(/A/A/A)')
+     &' State Gauge                 Total Rotatory Strength Tensor ',
+     &'                  xx        xy        xz        yy        yz'//
+     &'        zz',
+     &' -----------------------------------------------------------'//
+     &'------------'
          LENTOT = 3*3*NPPCNV(KSYMOP)
          CALL DCOPY(LENTOT,RMVEL,1,RTVEL,1)
          CALL DAXPY(LENTOT,1.0D0,RQVEL,1,RTVEL,1)
@@ -4149,6 +4197,7 @@ C
       DIMENSION XINDX(*),WRK(*)
 C
 #include "priunit.h"
+#include "pgroup.h"
 #include "infpri.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -4226,13 +4275,14 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 600 IOP = 1,NGPLR(KSYMOP)
-         WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))') 
-     &   ' RSPLR -- linear response calculation for symmetry',KSYMOP,
-     &   ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
+         WRITE (LUPRI,'(//A,I2,3A/2A/A,I3/A,(T25,5F10.6))') 
+     &  ' RSPLR -- linear response calculation for symmetry',KSYMOP,
+     &    '  ( ',REP(KSYMOP-1),')',
+     &  ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
      &  ' RSPLR -- operator spin  : ',OPRANK(INDPRP(LBLLR(KSYMOP,IOP))),
-     &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
+     &  ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
-     *               WRK(KGD),LWRK1)
+     &               WRK(KGD),LWRK1)
          DNORM = DNRM2(KZYVAR,WRK(KGD),1)
          write(lupri,*) 'FREQ 2 ',FREQ(1:NFREQ)
          IF (IPRRSP .GT. 30) THEN
@@ -4338,7 +4388,7 @@ C    *                  XINDX,LWRK,UDV,NBX,IBOFF)
                NVEC   = (IOP-1)*2*NFREQ + (IBOFF+IVEC-1)*2 + 2
                CALL WRITDX(LURSP2,NVEC,IRAT*KZYVAR,WRK(IBV))
                IF (IPRRSP .GT. 30) THEN
-                  CALL HEADER('Residuum vectors in RSPLR for operator '
+                  CALL HEADER('Residual vectors in RSPLR for operator '
      &                        //LBLLR(KSYMOP,IOP)//':',-1)
                   CALL OUTPUT(WRK(IBV),1,KZVAR,1,2,KZVAR,2,1,LUPRI)
                   DNORM = DNRM2(KZYVAR,WRK(IBV),1)
@@ -4866,10 +4916,10 @@ C
          CALL DCOPY(KZVAR,WRK(KS2+JTOT+KZVAR),1,WRK(KS2+JTOT+KTOT),1)
          CALL DSCAL(KZYVAR,-1.0D0,WRK(KS2+JTOT+KTOT),1)
  105  CONTINUE
-      WRITE(LUPRI,'(A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
-      CALL OUTPUT(WRK(KE2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,1,LUPRI)
-      WRITE(LUPRI,'(A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
-      CALL OUTPUT(WRK(KS2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' E(2) MATRIX : DIMENSION ',KZYVAR
+      CALL OUTPUT(WRK(KE2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
+      WRITE(LUPRI,'(/A,I8)')' S(2) MATRIX : DIMENSION ',KZYVAR
+      CALL OUTPUT(WRK(KS2),1,KZYVAR,1,KZYVAR,KZYVAR,KZYVAR,-1,LUPRI)
       ZAMAX = D0
       IA    = 0
       JA    = 0
@@ -4936,50 +4986,66 @@ C
       JZ=JA
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF ( ZAMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
-      IF ( ZAMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' A(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IA,' J=',JA,' DEV=',ZAMAX
+      END IF
       IZ=IB
       JZ=JB
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZBMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
-      IF (ZBMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' B(I,J)-MATRIX : MAXIMUM DEVIATION, I=',IB,' J=',JB,' DEV=',ZBMAX
+      END IF
       IZ=IS
       JZ=JS
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZSMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
-      IF(ZSMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JZ),
      *' IZ=',JZ,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IZ),
      *' IZ=',IY,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JY),
      *' IZ=',JY,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IY)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' S(I,J)-MATRIX : MAXIMUM DEVIATION, I=',JS,' J=',IS,' DEV=',ZSMAX
+      END IF
       IZ=ID
       JZ=JD
       IY=IZ+KZVAR
       JY=JZ+KZVAR
-      WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+      IF (ZDMAX.GT.DTOL) THEN
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)') 'WARNING '//
      *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
-      IF(ZDMAX.GT.DTOL)
-     *WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
+         WRITE(LUPRI,'(/4(/A,I5,A,I5,A,1P,G16.8))')
      *' IZ=',IZ,' JZ=',JY,' E2(IZ,JZ)',WRK(KE2-1+(IZ-1)*KZYVAR+JY),
      *' IZ=',JZ,' JZ=',IY,' E2(IZ,JZ)',WRK(KE2-1+(JZ-1)*KZYVAR+IY),
      *' IZ=',IY,' JZ=',JZ,' E2(IZ,JZ)',WRK(KE2-1+(IY-1)*KZYVAR+JZ),
      *' IZ=',JY,' JZ=',IZ,' E2(IZ,JZ)',WRK(KE2-1+(JY-1)*KZYVAR+IZ)
+      ELSE
+         WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
+     *' D(I,J)-MATRIX : MAXIMUM DEVIATION, I=',ID,' J=',JD,' DEV=',ZDMAX
+      END IF
       IF ( KZYVAR.GT.MAXRM ) RETURN
       KZYRED = KZYVAR
       KZRED  = KZVAR
@@ -5008,7 +5074,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYVAR
+      DO J = 1,KZYVAR
          DO 600 I = 1,J
             IJ = IJ + 1
             IF (I.EQ.J) THEN
@@ -5017,7 +5083,7 @@ C
                REDS(IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       CALL RSPRED(ICTL,.FALSE.,NSIM,IBTYP,GD,REDGD,REDE,REDS,
      *            EIVAL,EIVEC,WRK(KWRK1),WRK(KWRK1),
      *            UDV,WRK(KWRK1),XINDX,WRK(KWRK1),LWRK1)
@@ -5245,7 +5311,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.90) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
@@ -5394,7 +5460,7 @@ C
       WRITE(LUPRI,'(/A,/A)')' ********************************',
      *' CHECK EIGENVALUES OF E2 WITH RSPRED ROUTINE '
       IJ = 0
-      DO 500 J = 1,KZYDIM
+      DO J = 1,KZYDIM
          DO 600 I = 1,J
             IJ = IJ + 1
             WRK(KE2-1+IJ) = WRK(KE2MAT-1+(I-1)*KZYDIM+J)
@@ -5404,7 +5470,7 @@ C
                WRK(KS2-1+IJ) = D0
             END IF
  600     CONTINUE
- 500  CONTINUE
+      END DO
       ICTL = 2
       NSIM = 0
       KZSAV = KZRED
@@ -5604,7 +5670,7 @@ C
             WRITE(LUPRI,'(/A)')
      *      ' OVERLAP FOR ORBITAL TRIAL VECTORS'
          IF (IPRRSP.GT.130) THEN
-            CALL OUTPAK(WRK(KWRK1),2*KZDIM,1,LUPRI)
+            CALL OUTPAK(WRK(KWRK1),2*KZDIM,-1,LUPRI)
          END IF
          IF ( XMAX.GT.DTOL )
      *   WRITE(LUPRI,'(/A,I5,A,I5,A,1P,G16.8)')
@@ -5828,10 +5894,11 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),FC(*)
       DIMENSION XINDX(*),VECB(*), WRK(LWRK)
 C
+#include "priunit.h"
+#include "pgroup.h"
 #include "infrsp.h"
 #include "maxorb.h"
 #include "infvar.h"
-#include "priunit.h"
 #include "inftap.h"
 #include "rspprp.h"
 #include "inflr.h"
@@ -5842,9 +5909,9 @@ C
 C
       WRITE(LUPRI,'(A)') ' '
       CALL PRSYMB(LUPRI,'=',70,1)
-      WRITE(LUPRI,'(2A)')
-     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   ',
-     &     'F U N C T I O N   <<<<<<<<'
+      WRITE(LUPRI,'(A)')
+     &     ' >>>>>>>>    L I N E A R   R E S P O N S E   '//
+     &     'F U N C T I O N S   <<<<<<<<'
       CALL PRSYMB(LUPRI,'=',70,1)
 C
       KVECA = 1
@@ -5855,7 +5922,7 @@ C     Define variables that depend on symmetry
 C
       DO IOPA = 1, NGPLR(KSYMOP)
          CALL GETGPV(LBLLR(KSYMOP,IOPA),FC,DUMMY,CMO,UDV,PV,XINDX,
-     *               ANTSYM,WRK(KVECA),LWRK)
+     &               ANTSYM,WRK(KVECA),LWRK)
 C
 C     Loop over solution vectors
 C
@@ -5872,12 +5939,12 @@ C     Compute linear response value
 C
                VAL = DDOT(KZYVAR,WRK(KVECA),1,VECB,1)
 C              
-               WRITE(LUPRI,'(/A,2(/A,A10,I4,F10.6),/,/A,F20.12)')
+               WRITE(LUPRI,'(/A,2(/A,A10,I4,3A,F10.6),/,/A,F20.12)')
      &              ' Linear response function in a.u.',
      &              ' A operator, symmetry, frequency: ',
-     &              LBLLR(KSYMOP,IOPA),KSYMOP,-FREQ(IFREQ),
+     & LBLLR(KSYMOP,IOPA),KSYMOP,'  ( ',REP(KSYMOP-1),')',-FREQ(IFREQ),
      &              ' B operator, symmetry, frequency: ',
-     &                LBLLR(KSYMOP,IOPB),KSYMOP, FREQ(IFREQ),
+     & LBLLR(KSYMOP,IOPB),KSYMOP,'  ( ',REP(KSYMOP-1),')', FREQ(IFREQ),
      &              ' Value of linear response -<<A;B>>(omega): ',VAL
             END DO
          END DO
@@ -5997,7 +6064,7 @@ C                     write(0,*)lab1,lab2,inum,iatom,mod(inum,3)
                   tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
                if (lab2.eq.'Z2SPNORB' .and. lab1 .eq.'PVIOLA Z') then
-                  tot=tot+sopr(ksymop,i,j)*2867.081D0
+                tot=tot+sopr(ksymop,i,j)*2867.081D0
                endif
             enddo
          enddo
@@ -6071,6 +6138,366 @@ C
          END IF
          WRITE(LUPRI,'(/"@ Overlap diagnostic LAMBDA =",F10.4)') ALAMBDA
       END IF
+      RETURN
+      END
+
+C  /* Deck RSPMO2 */
+      SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
+C
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+C
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+
+      IF ((NASHT .GT. 0) .OR. (NSYM .NE. 1)) RETURN
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('MO Overlap Diagnostic',-1)
+
+C     Memory allocation   
+      KUCMO   = 1
+      KWOPXY  = KUCMO  + NORBT*NBAST
+      KINT    = KWOPXY + NDIM1
+      KINTMO  = KINT   + 3*NNBASX
+      KINUMO  = KINTMO + 3*NNORBX 
+      KDIAX   = KINUMO + 3*N2ORBX
+      KDIAY   = KDIAX  + NORBT
+      KDIAZ   = KDIAY  + NORBT
+      KDIFX   = KDIAZ  + NORBT
+      KDIFY   = KDIFX  + NDIM1
+      KDIFZ   = KDIFY  + NDIM1
+      KDIFR   = KDIFZ  + NDIM1
+      KINDXI  = KDIFR  + NDIM1
+      KINDXA  = KINDXI + NDIM1
+      KWRK2   = KINDXA + NDIM1
+      LWRK2   = LWRK   - KWRK2 
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('RSPMO2',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+      CALL DZERO(WRK(KWOPXY),NDIM1)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+      CALL DZERO(WRK(KINTMO),3*NNORBX) 
+      CALL DZERO(WRK(KINUMO),3*N2ORBX)
+      CALL DZERO(WRK(KDIAX),NORBT)
+      CALL DZERO(WRK(KDIAY),NORBT)
+      CALL DZERO(WRK(KDIAZ),NORBT)
+      CALL DZERO(WRK(KDIFX),NDIM1)
+      CALL DZERO(WRK(KDIFY),NDIM1)
+      CALL DZERO(WRK(KDIFZ),NDIM1)
+      CALL DZERO(WRK(KDIFR),NDIM1)
+      CALL DZERO(WRK(KINDXI),NDIM1)
+      CALL DZERO(WRK(KINDXA),NDIM1)
+
+      CALL UPKCMO(CMO,WRK(KUCMO))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*) 'NWOPPT: ', NWOPPT
+        WRITE(LUPRI,*) 'Response Vector in RSPMO2'
+        DO 111 I=1,NDIM2
+          WRITE(LUPRI,*) I, WOP(I)
+ 111    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X part of Response Vector in RSPMO2' 
+        DO 112 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I)
+ 112    CONTINUE
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'Y part of Response Vector in RSPMO2'
+        DO 113 I=1,NDIM1
+          WRITE(LUPRI,*) I, WOP(I+NDIM1)
+ 113    CONTINUE
+      ENDIF
+
+C ADD X AND Y PARTS OF RESPONSE VECTOR
+
+      DO 114 I=1,NDIM1
+         WRK(KWOPXY+I-1) = WOP(I) - WOP(I+NDIM1)
+ 114  CONTINUE     
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'X+Y Response Vector in RSPMO2'
+        DO 115 I=1,NDIM1
+          WRITE(LUPRI,*) I, WRK(KWOPXY+I-1)
+ 115    CONTINUE
+      ENDIF
+
+C
+C READ DIPOLE MATRIX FROM FILE
+C
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &   .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+     
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX)) 
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+         WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+         CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      END IF
+
+
+      CALL UTHU(WRK(KINT),WRK(KINTMO),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+
+      CALL DSPTSI(NORBT,WRK(KINTMO),WRK(KINUMO))
+
+      CALL UTHU(WRK(KINT+NNBASX),WRK(KINTMO+NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+NNORBX),WRK(KINUMO+N2ORBX))
+
+      CALL UTHU(WRK(KINT+2*NNBASX),WRK(KINTMO+2*NNORBX),WRK(KUCMO),
+     &          WRK(KWRK2),NBAST,NORBT)
+      CALL DSPTSI(NORBT,WRK(KINTMO+2*NNORBX),WRK(KINUMO+2*N2ORBX))
+
+      IF (LOCDEB) THEN
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'XDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+        WRITE(LUPRI,*)
+        WRITE(LUPRI,*) 'YDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+        WRITE(LUPRI,*) 
+        WRITE(LUPRI,*) 'ZDIPLEN in MO BASIS'
+        CALL OUTPUT(WRK(KINUMO+2*N2ORBX),1,NORBT,1,NORBT,NORBT,
+     &              NORBT,1,LUPRI)
+      ENDIF
+
+C Take out the diagonal elements
+
+        DO 116 I=1,NORBT
+          WRK(KDIAX+I-1) = WRK(KINUMO+I-1+NORBT*(I-1))
+          WRK(KDIAY+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+N2ORBX)
+          WRK(KDIAZ+I-1) = WRK(KINUMO+I-1+NORBT*(I-1)+2*N2ORBX)
+ 116    CONTINUE
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*) 'NORBT:', NORBT
+          WRITE(LUPRI,*) 'DIAGONAL ELEMENTS IN XDIP YDIP ZDIP'
+          DO 117 I=1,NORBT
+            WRITE(LUPRI,*) I, WRK(KDIAX+I-1), WRK(KDIAY+I-1), 
+     &                        WRK(KDIAZ+I-1)
+ 117      CONTINUE
+        ENDIF
+
+        IF (LOCDEB) THEN
+          WRITE(LUPRI,*)
+          WRITE(LUPRI,*) 'Number of occ. orbitals: ', NRHFT
+          WRITE(LUPRI,*) 'Number of vir. orbitals: ', NVIRT
+        ENDIF
+
+        IF (LOCDEB) THEN
+          XDIPMOM = 0.0D0
+          YDIPMOM = 0.0D0
+          ZDIPMOM = 0.0D0
+          DO 222 I=1,NRHFT
+            XDIPMOM = XDIPMOM + WRK(KDIAX+I-1)
+            YDIPMOM = YDIPMOM + WRK(KDIAY+I-1)
+            ZDIPMOM = ZDIPMOM + WRK(KDIAZ+I-1)
+ 222      CONTINUE
+          XDIPMOM = 2*XDIPMOM
+          YDIPMOM = 2*YDIPMOM
+          ZDIPMOM = 2*ZDIPMOM
+
+          WRITE(LUPRI,*) 'Ground state electronic dipole moment'
+          WRITE(LUPRI,*) XDIPMOM, YDIPMOM, ZDIPMOM
+          WRITE(LUPRI,*)
+        ENDIF
+
+        KK=1
+        DO 118 I=1,NRHFT
+          DO 119 J=1,NVIRT
+             WRK(KDIFX+KK-1) = WRK(KDIAX+NRHFT+J-1) - WRK(KDIAX+I-1)
+             WRK(KDIFY+KK-1) = WRK(KDIAY+NRHFT+J-1) - WRK(KDIAY+I-1)
+             WRK(KDIFZ+KK-1) = WRK(KDIAZ+NRHFT+J-1) - WRK(KDIAZ+I-1)
+             WRK(KINDXI+KK-1) = I
+             WRK(KINDXA+KK-1) = NRHFT+J
+             KK=KK+1
+ 119      CONTINUE
+ 118   CONTINUE
+
+       IF ((KK-1) .NE. NDIM1) THEN
+         CALL QUIT('RSPMO2: Error in Dimension')
+       ENDIF
+
+        DO 120 I=1,NDIM1
+          TEMP=D0
+          TEMP = WRK(KDIFX+I-1)*WRK(KDIFX+I-1)+
+     &           WRK(KDIFY+I-1)*WRK(KDIFY+I-1)+
+     &           WRK(KDIFZ+I-1)*WRK(KDIFZ+I-1)
+          TEMP = SQRT(TEMP)
+          WRK(KDIFR+I-1) = TEMP
+ 120   CONTINUE
+
+        IF (LOCDEB) THEN
+          write(lupri,*) 'Norms for hole-particle component'
+          DO 333 I=1,NDIM1
+            KK = Int(WRK(KINDXI+I-1))
+            LL = Int(WRK(KINDXA+I-1))
+            Write(lupri,*) WRK(KDIFR+I-1), WRK(KWOPXY+I-1), KK, LL
+ 333      CONTINUE 
+        ENDIF
+
+        TEMP1=D0
+        TEMP2=D0
+        DO 121 I=1,NDIM1
+          TEMP1 = TEMP1 + WRK(KDIFR+I-1)*WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+          TEMP2 = TEMP2 + WRK(KWOPXY+I-1)*WRK(KWOPXY+I-1)
+121    CONTINUE
+
+       DELTAR = (TEMP1/TEMP2)*XTANG
+       WRITE(LUPRI,*)
+       WRITE(LUPRI,'(/A,F10.4)') 'Delta_R Diagnostic (Aa): ', DELTAR
+       WRITE(LUPRI,*)
+
+
+      RETURN
+      END
+C  /* Deck TRCHAR */
+      SUBROUTINE TRCHAR (WOP,NDIM2,NDIM1,CMO,UDV,LUPRI,WRK,LWRK)
+c
+#ifdef BUILD_QFITLIB
+      use qfit
+#endif
+C
+C
+C     NDIM2 = KZYVAR
+C     NDIM1 = KZVAR
+C
+#include "implicit.h"
+      DIMENSION WOP(*),CMO(*),WRK(*), UDV(*)
+      PARAMETER (D0 = 0.0D0)
+      LOGICAL LOCDEB, ANTSYM
+      real*8, dimension(:), allocatable :: dens
+      DIMENSION TRDIP(3)
+C
+#include "mxcent.h"
+#include "codata.h"
+#include "maxorb.h"
+#include "maxash.h"
+#include "infind.h"
+#include "inforb.h"
+#include "infvar.h"
+#include "inflin.h"
+#include "nuclei.h"
+
+      LOCDEB = .FALSE.
+
+      CALL HEADER('Calculation of Transition Density charges',-1)
+
+C     Memory allocation
+      KUBOVE  = 1
+      KDCAO   = KUBOVE + N2ORBX
+      KDVAO   = KDCAO  + N2BASX
+      KDENS   = KDVAO  + N2BASX
+      KINT    = KDENS  + NNBASX
+      KWRK2   = KINT   + 3*NNBASX
+      LWRK2   = LWRK   - KWRK2
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('TRCHAR',-KWRK2,LWRK2)
+
+      CALL DZERO(WRK(KUBOVE),N2ORBX)
+      CALL DZERO(WRK(KDCAO),N2BASX)
+      CALL DZERO(WRK(KDVAO),N2BASX)
+      CALL DZERO(WRK(KDENS),NNBASX)
+      CALL DZERO(WRK(KINT),3*NNBASX)
+
+      CALL RSPZYM(1,WOP,WRK(KUBOVE))
+      CALL DSCAL(N2ORBX,-1.0D0,WRK(KUBOVE),1) 
+
+      CALL DEQ27(CMO,WRK(KUBOVE),UDV,WRK(KDCAO),WRK(KDVAO),
+     &           WRK(KWRK2),LWRK2)
+
+      IF (NASHT .GT. 1) THEN
+        CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
+        CALL DZERO(WRK(KDVAO),N2BASX) 
+      ENDIF 
+
+      CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDVAO))
+      CALL PKSYM1(WRK(KDVAO),WRK(KDENS),NBAS,NSYM,1)
+
+      IF (LOCDEB)  THEN
+         WRITE (LUPRI,'(/A)') ' Transition Density Matrix'
+         CALL OUTPAK(WRK(KDENS),NBAST,1,LUPRI)
+      ENDIF
+
+      !write(*,*) "rsp:", cord
+      !write(*,*) "rsp:", charge
+      !call qfit_initialize(cord(:,1:natoms),charge(1:natoms))
+
+      LU=-1
+      CALL GPOPEN(LU,'AOPROPER','OLD','SEQUENTIAL','UNFORMATTED',0,
+     &     .FALSE.)
+
+      REWIND LU
+      CALL MOLLAB('XDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT))
+
+      CALL MOLLAB('YDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+NNBASX))
+
+      CALL MOLLAB('ZDIPLEN ',LU,LUPRI)
+      CALL READT(LU,NNBASX,WRK(KINT+2*NNBASX))
+
+      CALL GPCLOSE(LU,'KEEP')
+
+      IF (LOCDEB) THEN
+          WRITE (LUPRI,'(/A)') ' XDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' YDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+NNBASX),NBAST,1,LUPRI)
+
+          WRITE (LUPRI,'(/A)') ' ZDIPLEN AO Basis:'
+          CALL OUTPAK(WRK(KINT+2*NNBASX),NBAST,1,LUPRI)
+      ENDIF
+
+      TRDIP(1) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT),1)
+      TRDIP(2) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+NNBASX),1)
+      TRDIP(3) = DDOT(NNBASX,WRK(KDENS),1,WRK(KINT+2*NNBASX),1) 
+
+      WRITE (LUPRI,'(/A)') ' Transition Dipole (x,y,z)'
+      WRITE(LUPRI,'(5x,3F12.6)') TRDIP
+
+      allocate( dens( nnbasx ) )
+      CALL DCOPY(NNBASX,WRK(KDENS),1,dens,1)
+#ifdef BUILD_QFITLIB
+      call qfit_set_transition_dipole( TRDIP )
+      call qfit_fit(dens)
+#endif
+      deallocate( dens )
+      CALL QFITRES
       RETURN
       END
 ! -- end of rspe2c.F --

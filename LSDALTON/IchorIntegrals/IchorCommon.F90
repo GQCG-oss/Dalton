@@ -206,8 +206,8 @@ WRITE (0,'(/A/1X,A)') '  --- SEVERE ERROR, PROGRAM WILL BE ABORTED ---',TEXT
 #endif
 
 CALL Ichor_GETTIM(CTOT,WTOT)
-CALL Ichor_TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRIN)
-CALL Ichor_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
+CALL Ichor_TIMTXT('>>>> Total CPU  time used in LSDALTON:',CTOT,LUPRIN)
+CALL Ichor_TIMTXT('>>>> Total wall time used in LSDALTON:',WTOT,LUPRIN)
 CALL FLUSH(LUPRIN)
 #ifdef VAR_IFORT
 #ifndef VAR_INT64
@@ -367,27 +367,27 @@ subroutine build_expQ_inverseexpQ(nPrimC,nPrimD,expC,expD,expQ,inversexpQ)
   ENDDO
 end subroutine build_expQ_inverseexpQ
 
-subroutine build_reducedExponents_integralPrefactorPQ(nPrimP,nPrimQ,expQ,expP,&
-     & reducedExponents,integralPrefactor)
-  implicit none      
-  integer,intent(in) :: nPrimP,nPrimQ
-  real(realk),intent(in) :: expQ(nPrimQ),expP(nPrimP)
-  real(realk),intent(inout) :: reducedExponents(nPrimP,nPrimQ)
-  real(realk),intent(inout) :: integralPrefactor(nPrimP,nPrimQ)
-  !local variables 
-  integer :: iPrimQ,iPrimP
-  real(realk) :: p,q,p_q
-  Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
-  DO iPrimQ = 1, nPrimQ
-     q  = expQ(iPrimQ)
-     DO iPrimP=1, nPrimP
-        p  = expP(iPrimP)
-        p_q = p + q
-        reducedExponents(iPrimP,iPrimQ) = p*q/p_q
-        integralPrefactor(iPrimP,iPrimQ) = PIFAC/(p*q*SQRT(p_q))
-     ENDDO
-  ENDDO
-end subroutine build_reducedExponents_integralPrefactorPQ
+!!$subroutine build_reducedExponents_integralPrefactorPQ(nPrimP,nPrimQ,expQ,expP,&
+!!$     & reducedExponents,integralPrefactor)
+!!$  implicit none      
+!!$  integer,intent(in) :: nPrimP,nPrimQ
+!!$  real(realk),intent(in) :: expQ(nPrimQ),expP(nPrimP)
+!!$  real(realk),intent(inout) :: reducedExponents(nPrimP,nPrimQ)
+!!$  real(realk),intent(inout) :: integralPrefactor(nPrimP,nPrimQ)
+!!$  !local variables 
+!!$  integer :: iPrimQ,iPrimP
+!!$  real(realk) :: p,q,p_q
+!!$  Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
+!!$  DO iPrimQ = 1, nPrimQ
+!!$     q  = expQ(iPrimQ)
+!!$     DO iPrimP=1, nPrimP
+!!$        p  = expP(iPrimP)
+!!$        p_q = p + q
+!!$        reducedExponents(iPrimP,iPrimQ) = p*q/p_q
+!!$        integralPrefactor(iPrimP,iPrimQ) = PIFAC/(p*q*SQRT(p_q))
+!!$     ENDDO
+!!$  ENDDO
+!!$end subroutine build_reducedExponents_integralPrefactorPQ
     
 subroutine build_reducedExponents_integralPrefactorQP(nPrimP,nPrimQ,expQ,expP,&
      & reducedExponents,integralPrefactor)
@@ -426,7 +426,7 @@ subroutine PrintTypeExpInfo(nPrimP,nPrimQ,reducedExponents,integralPrefactor,lup
      WRITE(lupri,'(3X,ES18.9)')integralPrefactor(iPrimP)
   enddo
 END subroutine PRINTTYPEEXPINFO
-
+!!$
 subroutine PrintTypeInfo(AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
      & nContA,nContB,nContC,nContD,expA,ContractCoeffA,expB,ContractCoeffB,&
      & expC,ContractCoeffC,expD,ContractCoeffD,&
@@ -540,79 +540,6 @@ subroutine copy_noScreen(nAtomsA,nAtomsB,noScreenAB,noScreenAB2)
 !$OMP END PARALLEL DO
 end subroutine copy_noScreen
 
-SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
-     & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,BATCHGAB,&
-     & THRESHOLD_CS,GABELM,nPasses,IatomAPass,IatomBPass,&
-     & TriangularLHSAtomLoop,TriangularODAtomLoop,iAtomC,iAtomD,noScreenABin) 
-  implicit none
-  logical,intent(in) :: CSScreen,TriangularLHSAtomLoop,TriangularODAtomLoop
-  integer,intent(in) :: nAtomsA,nAtomsB,iAtomC,iAtomD
-  integer,intent(in) :: iBatchIndexOfTypeA,nBatchB,nBatchA
-  integer,intent(in) :: iBatchIndexOfTypeB
-  real(realk),intent(in) :: BATCHGAB(nBatchA,nBatchB),THRESHOLD_CS,GABELM
-  logical,intent(in) :: noScreenABin(natomsA,natomsB)
-  integer,intent(inout) :: nPasses
-  integer,intent(inout) :: IatomAPass(natomsA*natomsB)
-  integer,intent(inout) :: IatomBPass(natomsA*natomsB)
-  !local variables
-  integer :: iBatchA,IatomA,iBatchB,IatomB,iPass,IatomAstart,IatomBend
-  iPass=0
-!  IF(TriangularODAtomLoop)THEN
-!     IatomAstart = iAtomC !Restrict AtomC =< AtomA
-!  ELSE
-     IatomAstart = 1     
-!  ENDIF
-  IatomBend = nAtomsB
-  IF(CSScreen)THEN
-     DO IatomA = IatomAstart,nAtomsA
-        iBatchA = iBatchIndexOfTypeA + IatomA
-        IF(TriangularLHSAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
-        DO IatomB = 1,IatomBend
-           IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
-              IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
-                 IF(noScreenABin(IatomA,IatomB))THEN
-                    IF(GABELM*BATCHGAB(iBatchA,iBatchIndexOfTypeB + IatomB).GT.THRESHOLD_CS)THEN
-                       iPass = iPass + 1
-                       IatomAPass(iPass) = IatomA
-                       IatomBPass(iPass) = IatomB
-                    ENDIF
-                 ENDIF
-              ENDIF
-           ELSE
-              IF(noScreenABin(IatomA,IatomB))THEN
-                 IF(GABELM*BATCHGAB(iBatchA,iBatchIndexOfTypeB + IatomB).GT.THRESHOLD_CS)THEN
-                    iPass = iPass + 1
-                    IatomAPass(iPass) = IatomA
-                    IatomBPass(iPass) = IatomB
-                 ENDIF
-              ENDIF
-           ENDIF
-        ENDDO
-     ENDDO
-  ELSE
-     DO IatomA = IatomAstart,nAtomsA
-        IF(TriangularLHSAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
-        DO IatomB = 1,IatomBend
-           IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
-              IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
-                 IF(noScreenABin(IatomA,IatomB))THEN
-                    iPass = iPass + 1
-                    IatomAPass(iPass) = IatomA
-                    IatomBPass(iPass) = IatomB
-                 ENDIF
-              ENDIF
-           ELSE
-              IF(noScreenABin(IatomA,IatomB))THEN
-                 iPass = iPass + 1
-                 IatomAPass(iPass) = IatomA
-                 IatomBPass(iPass) = IatomB
-              ENDIF
-           ENDIF
-        ENDDO
-     ENDDO
-  ENDIF
-  nPasses = iPass
-END SUBROUTINE BUILD_NOSCREEN2
 
 subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
      & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,Segmented,&
@@ -793,6 +720,91 @@ ELSE
 !$OMP END PARALLEL DO 
 ENDIF
 end SUBROUTINE Build_pcent_Pdistance12_PpreExpFac
+
+SUBROUTINE Build_pcent_PpreExpFac(nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,&
+     & inversexpP,expA,expB,Acenter,Bcenter,ContractCoeffA,ContractCoeffB,Segmented,&
+     & pcentPass,PpreExpFacPass,INTPRINT)
+  implicit none
+  integer,intent(in) :: nPrimA,nPrimB,natomsA,natomsB,nContA,nContB,INTPRINT
+  real(realk),intent(in) :: inversexpP(nPrimA,nPrimB),expA(nPrimA),expB(nPrimB)
+  real(realk),intent(in) :: Acenter(3,natomsA),Bcenter(3,natomsB)
+  real(realk),intent(in) :: ContractCoeffA(nPrimA,nContA)
+  real(realk),intent(in) :: ContractCoeffB(nPrimB,nContB)
+  logical,intent(in)     :: Segmented!,noScreenAB(nAtomsA,nAtomsB)
+  real(realk),intent(inout) :: PcentPass(3,nPrimA,nPrimB,natomsA,natomsB)
+  real(realk),intent(inout) :: PpreExpFacPass(nPrimA,nPrimB,natomsA,natomsB)
+  !local variables
+  integer :: i12,i2,i1,offset,IatomA,IatomB
+  real(realk) :: e2,e1,X,Y,Z,d2,AX,AY,AZ,BX,BY,BZ,TMPCCB,tmpe2d2,eBX,eBY,eBZ
+  IF (Segmented) THEN
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,ContractCoeffB,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+   BX = Bcenter(1,IatomB)
+   BY = Bcenter(2,IatomB)
+   BZ = Bcenter(3,IatomB)
+   DO IatomA = 1,nAtomsA
+     AX = Acenter(1,IatomA)
+     AY = Acenter(2,IatomA)
+     AZ = Acenter(3,IatomA)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
+     d2 = X*X + Y*Y + Z*Z
+     DO i2=1,nPrimB
+      e2  = expB(i2)       
+      eBX = e2*BX
+      eBY = e2*BY
+      eBZ = e2*BZ
+      tmpe2d2 = e2*d2
+      TMPCCB = ContractCoeffB(i2,1)
+      DO i1=1,nPrimA
+        pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+        pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+        pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+        PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-expA(i1)*tmpe2d2*inversexpP(i1,i2))*ContractCoeffA(i1,1)*TMPCCB
+      ENDDO
+     ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO 
+ELSE
+!$OMP PARALLEL DO DEFAULT(none) PRIVATE(IatomB,BX,BY,BZ,IatomA,AX,AY,AZ,X,Y,Z,d2,&
+!$OMP e2,e1,eBX,eBY,eBZ,tmpe2d2,TMPCCB,i1,i2) FIRSTPRIVATE(nAtomsB,nAtomsA,nPrimA,&
+!$OMP nPrimB) SHARED(expA,expB,inversexpP,&
+!$OMP Acenter,Bcenter,pcentPass,ContractCoeffA,PpreExpFacPass) SCHEDULE(DYNAMIC,1)
+  DO IatomB = 1,nAtomsB
+   BX = Bcenter(1,IatomB)
+   BY = Bcenter(2,IatomB)
+   BZ = Bcenter(3,IatomB)
+   DO IatomA = 1,nAtomsA
+     AX = Acenter(1,IatomA)
+     AY = Acenter(2,IatomA)
+     AZ = Acenter(3,IatomA)
+     X = AX - BX
+     Y = AY - BY
+     Z = AZ - BZ
+     d2 = X*X + Y*Y + Z*Z
+     DO i2=1,nPrimB
+      e2  = expB(i2)       
+      eBX = e2*BX
+      eBY = e2*BY
+      eBZ = e2*BZ
+      tmpe2d2 = e2*d2
+      DO i1=1,nPrimA
+       pcentPass(1,i1,i2,iAtomA,IatomB) = (AX*expA(i1) + eBX)*inversexpP(i1,i2)
+       pcentPass(2,i1,i2,iAtomA,IatomB) = (AY*expA(i1) + eBY)*inversexpP(i1,i2)
+       pcentPass(3,i1,i2,iAtomA,IatomB) = (AZ*expA(i1) + eBZ)*inversexpP(i1,i2)
+       PpreExpFacPass(i1,i2,iAtomA,IatomB) = exp(-tmpe2d2*expA(i1)*inversexpP(i1,i2))
+      ENDDO
+     ENDDO
+   ENDDO
+  ENDDO
+!$OMP END PARALLEL DO 
+ENDIF
+end SUBROUTINE Build_pcent_PpreExpFac
 
 SUBROUTINE Build_pcent_Pdistance12_PpreExpFac2(nPrimP,nPasses,&
      & PcentPass,Pdistance12Pass,PpreExpFacPass,&

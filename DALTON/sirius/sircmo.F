@@ -551,9 +551,8 @@ C
 C
 C        Diagonalize overlap matrix ( S * U = U * Seig )
 C
-         CALL JACO(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KS1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -977,9 +976,8 @@ C
      *             NBASI,NORBI)
 C        CALL UTHU(H,HT,U,WRK,NAO,NMO)
 C
-         CALL JACO(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *             SCRA(KSCR1),SCRA(KSCR2))
-C        CALL JACO (F,V,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(SCRA(KH1T),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,V,NB,NMAX,NROWV,THR_JACO)
          II = 0
          DO 175 I = 1,NORBI
             II = II + I
@@ -1205,9 +1203,8 @@ C
             ISSYM = IIORB(ISYM) + 1
             ICSYM = ICMO(ISYM) + 1
 C
-            CALL JACO(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,
-     *                SCRA,SCRA(1+NORBI))
-C           CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+            CALL JACO_THR(FC(ISSYM),CMO(ICSYM),NORBI,NORBI,NBASI,0.0D0)
+C           CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
             II = ISSYM - 1
             DO 175 I=1,NORBI
@@ -1382,11 +1379,8 @@ C
   167    CONTINUE
 C
 C
-         KBIG  = KWRK
-         KJBIG = KBIG + NORBI
-         CALL JACO(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             WRK(KBIG),WRK(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(JXFC),CMO(JCMO),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          DO 175 I = 1,NORBI
             WRK(I) = WRK(JXFC-1 + IROW(I+1))
@@ -1431,6 +1425,7 @@ C
       LOGICAL   PROCC
 C
 C Used from common blocks:
+C   pgroup : REP
 C   INFINP : CENT,TYPE,SUPSYM,?
 C   INFORB : NSYM,...
 C   INFIND : ISSMO(),
@@ -1438,6 +1433,7 @@ C   CBIREA : LMULBS
 C
 #include "maxorb.h"
 #include "maxash.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -1446,8 +1442,8 @@ C
 C
 C *** FORMAT statements
 C
- 2400 FORMAT(/' Molecular orbitals for symmetry species',I3,
-     &       /' ------------------------------------------')
+ 2400 FORMAT(/' Molecular orbitals for symmetry species',I2,'  (',A,')'
+     &       /' ------------------------------------------------')
  2600 FORMAT(/'    Orbital ',7I9)
  2620 FORMAT( '    Sup.sym.',7I9)
  2800 FORMAT(I4,1X,A4,':',A4,7F9.4)
@@ -1486,7 +1482,7 @@ C           Oct12 hjaaj: do print all active orbitals if MCSCF
             NENDI = NORB(ISYM)
          END IF
       IF (NENDI.EQ.0) GO TO 300
-         WRITE(IOUT,2400) ISYM
+         WRITE(IOUT,2400) ISYM,REP(ISYM-1)
 C
          ICMOI = ICMO(ISYM)
          ISTORB = IORB(ISYM)

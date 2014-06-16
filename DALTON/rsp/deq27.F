@@ -34,19 +34,21 @@ C
 C Purpose:
 C To compute eq.27 for the inactive density matrix and its counterpart
 C for the active density matrix, following
-C the direct RPA article of Jensen et al., Chem. Phys. ,119, 297 (1988).
-C That is to compute Inactive and Active  density matrices
-C later to be used for calculating one-index transformed
-C anti-symmetric Fock matrices over Atomic Orbitals.
+C the direct RPA article of Jensen et al., Chem. Phys. 119, 297 (1988).
+C That is to compute Inactive and Active density matrices
+C to be used for calculating one-index transformed
+C Fock matrices over Atomic Orbitals.
 C
 C It follows TR1DEN in SIRIUS, which in turn
 C follows appendix C in Chem. Phys. 104 (1986) 229.
 C
-C DXCAO and DXVAO must be reserved as square (unfolded) matrices
+C DXCAO and DXVAO must be reserved as square matrices (NBAST,NBAST)
 C
-C General formula: DX(p,q) = sum(t) Bo(t,p) D(t,q)
-C Thus: DXC(p,i) = 2*Bo(i,p)
-C       DXV(p,u) = sum(v) DV(v,u) Bo(v,p) = sum(v) DV(u,v) Bo(v,p)
+C General formula: DX(p,q) = sum(t) Bo(t,p) D(t,q) - D(p,t) Bo(q,t)
+C Thus: DXC(p,i) =   2 Bo(i,p)
+C       DXC(i,p) = - 2 Bo(p,i)
+C       DXV(p,u) =   sum(v) DV(v,u) Bo(v,p)
+C       DXV(u,p) = - sum(v) DV(u,v) Bo(p,v)
 C
 C Input:
 C   CMO(*)  molecular orbital coefficients
@@ -65,8 +67,7 @@ C
       DIMENSION CMO(*),UBO(NORBT,*),DV(NASHT,*),DXCAO(*),DXVAO(*),
      *          WRK(*)
 C
-      PARAMETER (HALF = 0.5D0, D2 = 2.0D0, D4 = 4.0D0)
-      PARAMETER (HALFM = -0.5D0, D1 = 1.D0, DM1 = -1.D0)
+      PARAMETER ( DM1 = -1.D0 )
 C
 C Used from common blocks:
 C  INFORB : NSYM,NASHT,...
@@ -75,8 +76,8 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 #include "inforb.h"
-#include "wrkrsp.h"
 #include "infrsp.h"
+#include "wrkrsp.h"
 C
 #if defined (VAR_DEBUG)
 #include "idbg.h"
@@ -87,7 +88,7 @@ C
 C     MAERKE 931116; mjp+hjaaj
 C      IF (SOPPA) THEN
 C     JJE 2013-07-20: allow for entry into deq27 if SOPRPA == .true.
-C                     due to PE module
+C                     due to PE library
       IF (SOPPA .and. (.not. SOPRPA)) THEN
          CALL QDUMP(LUPRI)
          CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
@@ -126,24 +127,24 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV(p,u) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_I(p.u) = sum(v) Bo(v,p) DV(v,u)
          IASHI = IASH(ISYM)
          IF (NASHI .EQ. 0 .OR. NORBJ .EQ. 0) GO TO 2000
          CALL DGEMM('T','N',NORBJ,NASHI,NASHI,1.D0,
-     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT,
-     &              DV(IASHI+1,IASHI+1),NASHT,0.D0,
-     &              WRK(KDXV),NORBJ)
+     &              UBO(IORBI+NISHI+1,IORBJ+1),NORBT, ! (v,p)T
+     &              DV(IASHI+1,IASHI+1),NASHT,0.D0,   ! (v,u)
+     &              WRK(KDXV),NORBJ)                  ! (p,u)
 C **     step 2 of active dm:
          CALL DGEMM('N','N',NBASJ,NASHI,NORBJ,1.D0,
-     &              CMO(ICMOJ+1),NBASJ,
-     &              WRK(KDXV),NORBJ,0.D0,
-     &              WRK(KDXAO1),NBASJ)
+     &              CMO(ICMOJ+1),NBASJ,               ! (pi,p)
+     &              WRK(KDXV),NORBJ,0.D0,             ! (p,u)
+     &              WRK(KDXAO1),NBASJ)                ! (pi,u)
          IOFMOV = ICMOI + 1 + NISHI*NBASI
          IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
          CALL DGEMM('N','T',NBASI,NBASJ,NASHI,1.D0,
-     &              CMO(IOFMOV),NBASI,
-     &              WRK(KDXAO1),NBASJ,0.D0,
-     &              WRK(IDXAO2),NBAST)
+     &              CMO(IOFMOV),NBASI,                ! (upsilon,u)
+     &              WRK(KDXAO1),NBASJ,0.D0,           ! (pi,u)T
+     &              WRK(IDXAO2),NBAST)                ! (pi,upsilon)
 C **  this symmetry block finished
  2000 CONTINUE
 C
@@ -172,25 +173,25 @@ C
 C **     step 1 of active dm:
 C *****  first calculate one-index transformation of second index
 C *****  of DV(uv), the active density matrix.
-C        DXV(p,u) = sum(v) Bo(v,p) DV(v,u)
+C        DXV_II(p,u) = sum(v) Bo(p,v) DV(v,u)
          IASHI = IASH(ISYM)
          IASHJ = IASH(JSYM)
          IF( NASHJ .EQ. 0 .OR. NORBI .EQ. 0) GO TO 3000
          CALL DGEMM('N','N',NORBI,NASHJ,NASHJ,1.D0,
-     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,
-     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,
-     &              WRK(KDXV),NORBI)
+     &              UBO(IORBI+1,IORBJ+NISHJ+1),NORBT,  ! (p,v)
+     &              DV(IASHJ+1,IASHJ+1),NASHT,0.D0,    ! (v,u)
+     &              WRK(KDXV),NORBI)                   ! (p,u)
 C **     step 2 of active dm:
          CALL DGEMM('N','N',NBASI,NASHJ,NORBI,1.D0,
-     &              CMO(ICMOI+1),NBASI,
-     &              WRK(KDXV),NORBI,0.D0,
-     &              WRK(KDXAO1),NBASI)
+     &              CMO(ICMOI+1),NBASI,                ! (pi,p)
+     &              WRK(KDXV),NORBI,0.D0,              ! (p,u)
+     &              WRK(KDXAO1),NBASI)                 ! (pi,u)
          IOFMOV = ICMOJ + 1 + NISHJ*NBASJ
          IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
          CALL DGEMM('N','T',NBASI,NBASJ,NASHJ,1.D0,
-     &              WRK(KDXAO1),NBASI,
-     &              CMO(IOFMOV),NBASJ,0.D0,
-     &              WRK(IDXAO2),NBAST)
+     &              WRK(KDXAO1),NBASI,                 ! (pi,u)
+     &              CMO(IOFMOV),NBASJ,0.D0,            ! (beta,u)T
+     &              WRK(IDXAO2),NBAST)                 ! (pi,beta)
 C **  this symmetry block finished
  3000 CONTINUE
 C
@@ -222,17 +223,18 @@ C     see eq. 22
          NBASJ = NBAS(JSYM)
 C
 C **     the inactive one-index transformed dm:
-C        DXC(p,i) = 2*Bo(i,p)
+C        DXC_I(i,p) = 2 Bo(i,p) -> DXCAO_I(iota,pi)
+
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
-            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,2.D0,
-     &                 CMO(ICMOJ+1),NBASJ,
-     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0,
-     &                 WRK(KDXAO1),NBASJ)
+            CALL DGEMM('N','T',NBASJ,NISHI,NORBJ,2.D0,  ! 2
+     &                 CMO(ICMOJ+1),NBASJ,              ! (pi,p)
+     &                 UBO(IORBI+1,IORBJ+1),NORBT,0.D0, ! (i,p)T
+     &                 WRK(KDXAO1),NBASJ)               ! (pi,i)
             IDXAO2 = KDXAO2 + IBAS(JSYM)*NBAST + IBAS(ISYM)
             CALL DGEMM('N','T',NBASI,NBASJ,NISHI,1.D0,
-     &                 CMO(ICMOI+1),NBASI,
-     &                 WRK(KDXAO1),NBASJ,0.D0,
-     &                 WRK(IDXAO2),NBAST)
+     &                 CMO(ICMOI+1),NBASI,              ! (iota,i)
+     &                 WRK(KDXAO1),NBASJ,0.D0,          ! (pi,i)T
+     &                 WRK(IDXAO2),NBAST)               ! (iota,pi)
          END IF
 C **  this symmetry block finished
  4000 CONTINUE
@@ -259,17 +261,18 @@ C
 C **     the inactive one-index transformed dm:
 C        UBO not transposed for D-II (see eq. 25)
 C
-C        DXC(p,i) = 2*Bo(i,p)
+C        DXC_II(p,i) = 2*Bo(p,i) -> DXCAO_II(pi,iota)
+
          IF (NBASI*NBASJ*NORBJ .NE. 0) THEN
-            CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,2.D0,
-     &                 CMO(ICMOJ+1),NBASJ,
-     &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,
-     &                 WRK(KDXAO1),NBASJ)
+            CALL DGEMM('N','N',NBASJ,NISHI,NORBJ,2.D0,    ! 2
+     &                 CMO(ICMOJ+1),NBASJ,                ! (pi,p)
+     &                 UBO(IORBJ+1,IORBI+1),NORBT,0.D0,   ! (p,i)
+     &                 WRK(KDXAO1),NBASJ)                 ! (pi,i)
             IDXAO2 = KDXAO2 + IBAS(ISYM)*NBAST + IBAS(JSYM)
             CALL DGEMM('N','T',NBASJ,NBASI,NISHI,1.D0,
-     &                 WRK(KDXAO1),NBASJ,
-     &                 CMO(ICMOI+1),NBASI,0.D0,
-     &                 WRK(IDXAO2),NBAST)
+     &                 WRK(KDXAO1),NBASJ,                 ! (pi,i)
+     &                 CMO(ICMOI+1),NBASI,0.D0,           ! (iota,i)T
+     &                 WRK(IDXAO2),NBAST)                 ! (pi,iota)
          END IF
 C **  this symmetry block finished
  5000 CONTINUE
@@ -428,7 +431,6 @@ C
 C
       END IF
 C
-      CALL MEMREL('DEQ27MO',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('DEQ27MO')
       RETURN
 C

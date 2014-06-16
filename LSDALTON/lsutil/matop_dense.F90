@@ -1557,14 +1557,21 @@ end subroutine mat_dense_insert_section
     implicit none
     integer, intent(in) :: iunit
     type(Matrix), intent(inout) :: A
-    integer :: i
+    integer :: i,Nrow,Ncol
 !   logical :: cfg_compress = .false.
 
 !    REWIND iunit
 
 !   if (.not.cfg_compress) then
-    READ(iunit) A%Nrow, A%Ncol
-    READ(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
+    READ(iunit) Nrow, Ncol
+    IF(Nrow.EQ.A%Nrow.AND.Ncol.EQ.A%Ncol)THEN
+       READ(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
+    ELSE
+       print*,'Error in reading matrix from disk. Dimension mismatch'
+       print*,'Dimensions of the matrix on Disk  :',Nrow,Ncol
+       print*,'Allocated Dimensions of the matrix:',A%Nrow,A%Ncol
+       CALL LSQUIT('Error in reading matrix from disk. Dimension mismatch',-1)
+    ENDIF
 !    READ(iunit) A%Nrow, A%Ncol         
 !    READ(iunit) A%elms
 !   else

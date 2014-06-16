@@ -1,0 +1,60 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+#
+# Test of first hyperpolarizability
+#
+
+ CRIT1=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;X\,X\) \=   *  \-1\.16564[0-9][0-9][0-9]" $log | wc -l`
+ CRIT2=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;X\,X\) \=   *   6\.67002[0-9][0-9][0-9]" $log | wc -l`
+ CRIT3=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;X\,X\) \=   *   ( \-|\-0)\.27992[0-9][0-9][0-9]" $log | wc -l`
+ CRIT4=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Y\,X\) \=   *   6\.78192[0-9][0-9][0-9]" $log | wc -l`
+ CRIT5=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Y\,X\) \=   *   ( |0)\.30935[0-9][0-9][0-9]" $log | wc -l`
+ CRIT6=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Y\,X\) \=   *   ( |0)\.05758[0-9][0-9][0-9]" $log | wc -l`
+ CRIT7=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Z\,X\) \=   *   ( \-|\-0)\.28959[0-9][0-9][0-9]" $log | wc -l`
+ CRIT8=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Z\,X\) \=   *   ( |0)\.05795[0-9][0-9][0-9]" $log | wc -l`
+ CRIT9=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Z\,X\) \=   *   ( \-|\-0)\.05646[0-9][0-9][0-9]" $log | wc -l`
+CRIT10=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;X\,Y\) \= beta\(X\,Y\,X\)" $log | wc -l`
+CRIT11=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;X\,Y\) \= beta\(Y\,Y\,X\)" $log | wc -l`
+CRIT12=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;X\,Y\) \= beta\(Z\,Y\,X\)" $log | wc -l`
+CRIT13=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Y\,Y\) \=    *  ( |0)\.31558[0-9][0-9][0-9]" $log | wc -l`
+CRIT14=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Y\,Y\) \=    *  3\.82717[0-9][0-9][0-9]" $log | wc -l`
+CRIT15=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Y\,Y\) \=    *  ( \-|\-0)\.13767[0-9][0-9][0-9]" $log | wc -l`
+CRIT16=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Z\,Y\) \=    *  ( |0)\.05790[0-9][0-9][0-9]" $log | wc -l`
+CRIT17=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Z\,Y\) \=    *  ( \-|\-0)\.14096[0-9][0-9][0-9]" $log | wc -l`
+CRIT18=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Z\,Y\) \=    *  ( |0)\.42301[0-9][0-9][0-9]" $log | wc -l`
+CRIT19=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;X\,Z\) \= beta\(X\,Z\,X\)" $log | wc -l`
+CRIT20=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;X\,Z\) \= beta\(Y\,Z\,X\)" $log | wc -l`
+CRIT21=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;X\,Z\) \= beta\(Z\,Z\,X\)" $log | wc -l`
+CRIT22=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Y\,Z\) \= beta\(X\,Z\,Y\)" $log | wc -l`
+CRIT23=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Y\,Z\) \= beta\(Y\,Z\,Y\)" $log | wc -l`
+CRIT24=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Y\,Z\) \= beta\(Z\,Z\,Y\)" $log | wc -l`
+CRIT25=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(X\;Z\,Z\) \=     * ( \-|\-0)\.03674[0-9][0-9][0-9]" $log | wc -l`
+CRIT26=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Y\;Z\,Z\) \=     * ( |0)\.34328[0-9][0-9][0-9]" $log | wc -l`
+CRIT27=`$GREP "\@ B-freq \= ( |0)\.040000 * C-freq \= ( |0)\.040000  *   beta\(Z\;Z\,Z\) \=     * ( \-|\-0)\.00417[0-9][0-9][0-9]" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ $CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ $CRIT25 \+ $CRIT26 \+ $CRIT27 `
+CTRL[1]=27
+ERROR[1]="DFT/MM FIRST HYPERPOLARIZABILITY NOT CORRECT"
+
+PASSED=1 
+for i in 1 
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                

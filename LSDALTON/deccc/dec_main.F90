@@ -44,7 +44,7 @@ contains
   !> matrices are available from HF calculation.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine dec_main_prog_input(mylsitem,F,D,S,C)
+  subroutine dec_main_prog_input(mylsitem,F,D,S,C,E)
     implicit none
 
     !> Integral info
@@ -57,6 +57,9 @@ contains
     type(matrix),intent(inout) :: S
     !> MO coefficients 
     type(matrix),intent(inout) :: C
+    !> CC Energy (intent out) 
+    real(realk),intent(inout) :: E
+    !local variables
     type(fullmolecule) :: Molecule
 
     print *, 'Hartree-Fock info comes directly from HF calculation...'
@@ -65,6 +68,9 @@ contains
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+      
     ! Fock, overlap, and MO coefficient matrices are now stored
     ! in Molecule, and there is no reason to store them twice.
     ! So we delete them now and reset them at the end.
@@ -72,7 +78,7 @@ contains
     call mat_free(S)
     call mat_free(C)
 
-    call dec_main_prog(MyLsitem,molecule,D)
+    call dec_main_prog(MyLsitem,molecule,D,E)
 
     ! Restore input matrices
     call molecule_copyback_FSC_matrices(Molecule,F,S,C)
@@ -92,14 +98,15 @@ contains
   subroutine dec_main_prog_file(mylsitem)
 
     implicit none
-
     !> Integral info
     type(lsitem), intent(inout) :: mylsitem
+
     type(matrix) :: D
     type(fullmolecule) :: Molecule
-
-    print *, 'Hartree-Fock info is read from file...'
-
+    integer :: nbasis
+    real(realk) :: E
+    E = 0.0E0_realk
+    
     ! Minor tests
     ! ***********
     !Array test
@@ -115,15 +122,21 @@ contains
       return
     endif
 
-    ! Get informations about full molecule by reading from file
-    call molecule_init_from_files(molecule,mylsitem)
+    print *, 'Hartree-Fock info is read from file...'
 
     ! Get density matrix
+    Molecule%nbasis = get_num_basis_functions(mylsitem)
     call dec_get_density_matrix_from_file(Molecule%nbasis,D)
-
+    
+    ! Get informations about full molecule by reading from file
+    call molecule_init_from_files(molecule,mylsitem,D)
+ 
+    !> F12
+    !call molecule_init_f12(molecule,mylsitem,D)
+       
     ! Main DEC program
-    call dec_main_prog(MyLsitem,molecule,D)
-
+    call dec_main_prog(MyLsitem,molecule,D,E)
+     
     ! Delete molecule structure and density
     call molecule_finalize(molecule)
     call mat_free(D)
@@ -135,7 +148,7 @@ contains
   !> \brief Main DEC program.
   !> \author Marcin Ziolkowski (modified for Dalton by Kasper Kristensen)
   !> \date September 2010
-  subroutine dec_main_prog(MyLsitem,molecule,D)
+  subroutine dec_main_prog(MyLsitem,molecule,D,E)
 
     implicit none
     !> Integral info
@@ -144,18 +157,27 @@ contains
     type(fullmolecule),intent(inout) :: molecule
     !> HF density matrix
     type(matrix),intent(in) :: D
+    !> Energy (maybe HF energy as input, CC energy as output) 
+    real(realk),intent(inout) :: E
     character(len=10) :: program_version
     character(len=50) :: MyHostname
     integer, dimension(8) :: values
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
 
-
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
     if(DECinfo%check_lcm_orbitals) then
        call check_lcm_against_canonical(molecule,MyLsitem)
        return
     end if
+
+    if(DECinfo%force_Occ_SubSystemLocality)then
+       call force_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
+
+    if(DECinfo%check_Occ_SubSystemLocality)then
+       call check_Occupied_SubSystemLocality(molecule,MyLsitem)
+    endif
 
 
     ! Actual DEC calculation
@@ -192,7 +214,7 @@ contains
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC
        write(DECinfo%output,'(/,a,/)') 'Full molecular calculation is carried out...'
-       call full_driver(molecule,mylsitem,D)
+       call full_driver(molecule,mylsitem,D,EHF,Ecorr)
        ! --
     else
        ! -- Initialize DEC driver for energy calculation
@@ -200,6 +222,7 @@ contains
        call DEC_wrapper(molecule,mylsitem,D,EHF,Ecorr,molgrad,Eerr)
        ! --
     end if
+    E = EHF + Ecorr 
 
     ! Update number of DEC calculations for given FOT level
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
@@ -363,10 +386,10 @@ contains
     ! Quick solution to ensure that the MP2 gradient contributions are not set
     save_first_order = DECinfo%first_order
     save_grad = DECinfo%gradient
-    save_dens = DECinfo%MP2density
+    save_dens = DECinfo%density
     DECinfo%first_order = .false.
     DECinfo%gradient = .false.
-    DECinfo%MP2density=.false.
+    DECinfo%density=.false.
     
     write(DECinfo%output,*) 'Calculating DEC correlation energy, FOT = ', DECinfo%FOT
 
@@ -389,7 +412,6 @@ contains
 
     ! Total CC energy: EHF + Ecorr
     ECC = EHF + Ecorr
-
     ! Restore input matrices
     call molecule_copyback_FSC_matrices(Molecule,F,S,C)
 
@@ -399,7 +421,7 @@ contains
     ! Reset DEC parameters to the same as they were at input
     DECinfo%first_order = save_first_order
     DECinfo%gradient = save_grad
-    DECinfo%MP2density = save_dens
+    DECinfo%density = save_dens
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.

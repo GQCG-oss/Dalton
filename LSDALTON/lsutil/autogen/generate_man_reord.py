@@ -600,20 +600,6 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
    
 
 def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
-
-#  cases = ["pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk"]
-#  cases.append("pre2 == 0.0E0_realk .and. pre1 /= 1.0E0_realk")
-#  cases.append("pre2 == 1.0E0_realk .and. pre1 == 1.0E0_realk")
-#  cases.append("pre2 == 1.0E0_realk .and. pre1 /= 1.0E0_realk")
-#  cases.append("pre2 /= 1.0E0_realk .and. pre1 == 1.0E0_realk")
-#  cases.append("pre2 /= 1.0E0_realk .and. pre1 /= 1.0E0_realk")
-#
-#  #write sfuff for all the cases above
-#  for cas in range(len(cases)):
-#    if(cas==0):
-#      f.write("\n    precase_acc: if("+cases[cas]+")then\n")
-#    else:
-#      f.write("\n    elseif("+cases[cas]+")then\n")
   
   #get the batched space
   casecounter = 1
@@ -691,14 +677,34 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     offsetstr="    "
     offsetstr2 = offsetstr + "  "
 
-    # WRITE OPENACC KERNEL
-    oacckernelsdo = "!$acc kernels loop independent present(array_in,array_out)\n"
-    f.write("#ifdef VAR_OPENACC\n")
-    f.write(oacckernelsdo)
-    f.write("#endif\n")
+    #WRITING OPENACC DIRECTIVES:
+    oaccparallel_init = "!$acc parallel present(array_in,array_out) async(async_id)\n"
+    if(modes == 4):
+      oaccloop_gang = "!$acc loop gang collapse(2)\n"
+      oaccloop_worker = "!$acc loop worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
+    elif(modes == 3):
+      oaccloop_gang = "!$acc loop gang\n"
+      oaccloop_worker = "!$acc loop worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
+    elif(modes == 2):
+      oaccloop_gang = "!$acc loop gang, worker\n"
+      oaccloop_vector = "!$acc loop vector\n"
 
-    #WRITING THE INNER FOR LOOPS HERE: 
+    #WRITING THE INNER FOR LOOPS HERE:
+    f.write(oaccparallel_init)
+    f.write(oaccloop_gang)
     for j in range(modes):
+      if (modes == 4 and j == 2):
+        f.write(oaccloop_worker)
+      if (modes == 3 and j == 1):
+        f.write(oaccloop_worker)
+      if (modes == 4 and j == 3):
+        f.write(oaccloop_vector)
+      if (modes == 3 and j == 2):
+        f.write(oaccloop_vector)
+      if (modes == 2 and j == 1):
+        f.write(oaccloop_vector)
       f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
       offsetstr2 += "  "
 
@@ -746,23 +752,18 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
 
     f.write(cpstr)
     
+    oaccloop_end = "!$acc end loop\n"
+    oaccparallel_end = "!$acc end parallel\n"
 
     for j in  range(modes-1,-1,-1):
       f.write(offsetstr2+"enddo\n")
+      if (modes == 4 and j == 1):
+        f.write("")
+      else:
+        f.write(oaccloop_end)
       offsetstr2 = offsetstr2[0:-2]
-
-    # END OPENACC KERNEL
-    oacckernelsdo ="!$acc end kernels loop\n"
-    f.write("#ifdef VAR_OPENACC\n")
-    f.write(oacckernelsdo)
-    f.write("#endif\n")
+    f.write(oaccparallel_end)
     f.write("\n")
- 
-#    if(cas==len(cases)-1):
-#      f.write("\n")
-#      f.write("    endif precase_acc\n")
-#      f.write("\n")
-
 
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
 def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
@@ -823,10 +824,7 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "    logical :: "
   for i in range(modes):
     subheaderstr+= "mod"+abc[i]+","
-#  subheaderstr = subheaderstr[0:-1]
   subheaderstr = subheaderstr[0:-1] + "\n"
-#  subheaderstr += "!$acc declare present(array_in,array_out)\n"
-#  subheaderstr += "\n\n"
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
@@ -878,7 +876,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "  !\> \\author Janus Juul Eriksen & Patrick Ettenhuber\n"
   subheaderstr+= "  !\> \date "+str(now.month)+", "+str(now.year)+"\n"
   subheaderstr+= "  subroutine "+sname+"(dims,"
-  subheaderstr+= "pre1,array_in,pre2,array_out)\n"
+  subheaderstr+= "pre1,array_in,pre2,array_out,async_id)\n"
   subheaderstr+= "    implicit none\n"
   subheaderstr+= "    !>  the dimensions of the different modes in the original array\n"
   subheaderstr+= "    integer, intent(in) :: dims("+str(modes)+")\n"
@@ -888,6 +886,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
+  subheaderstr+= "    integer(acc_handle_kind) :: async_id\n"
   subheaderstr+= "    integer :: "
   for i in range(modes):
     subheaderstr+= abc[i]+",d"+abc[i]+","
@@ -896,11 +895,12 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
-  subheaderstr+= "\n"
+  subheaderstr += "\n" 
+  subheaderstr += "    if (async_id .eq. -1) async_id = acc_async_sync\n"
+  subheaderstr += "\n"
 
   f.write(subheaderstr)
   return sname
-
 
 
 def write_simple_module_header(f,idim,idx,now,args,kindof):
@@ -925,6 +925,9 @@ def write_simple_module_header(f,idim,idx,now,args,kindof):
      sys.exit()
 
    f.write("  use precision\n")
+   if(kindof=="acc"):
+     f.write("  use openacc\n")
+   f.write("\n")
    f.write("  contains\n")
 
 def write_simple_module_end_and_close(f,idim,idx,now,args,kindof):
@@ -969,10 +972,12 @@ def write_main_header(f,now,args,lsutildir,minr,maxr):
        if(mode==2 and i == 0):
          continue
        f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
-#   if(args[4]):
-#     f.write("  use reord2d_acc_reord_module\n")
-#     f.write("  use reord3d_acc_reord_module\n")
-#     f.write("  use reord4d_acc_reord_module\n")
+   if(args[4]):
+     f.write("#ifdef VAR_OPENACC\n")
+     f.write("  use reord2d_acc_reord_module\n")
+     f.write("  use reord3d_acc_reord_module\n")
+     f.write("  use reord4d_acc_reord_module\n")
+     f.write("#endif\n")
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")
    #Write the subroutines called by the user

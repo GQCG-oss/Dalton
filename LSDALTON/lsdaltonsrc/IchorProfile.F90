@@ -3,7 +3,7 @@ MODULE ProfileIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use Integralparameters
@@ -36,24 +36,26 @@ IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR
 type(configItem)    :: config
+#ifdef VAR_ICHOR
 !
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
 integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest,perm
 logical :: dirac,doprint,debug
 real(realk)         :: TIMSTR,TIMEND,normII,normIchorNoscreen,normIchorScreen
-TYPE(BASISSETLIBRARYITEM) :: LIBRARY
+TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
 CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
-logical      :: spherical,savedospherical,SameMOL,COMPARE
+logical      :: spherical,savedospherical,SameMOL,COMPARE,ForcePrint
 Character    :: intSpec(5)
 intSpec(1) = 'R'
 intSpec(2) = 'R'
 intSpec(3) = 'R'
 intSpec(4) = 'R'
 intSpec(5) = 'C'
+ForcePrint = .TRUE.
 WRITE(lupri,*)'IchorProfile Routine'
 !call debug_mem_stats(LUPRI)
 do A=1,80
@@ -65,21 +67,22 @@ doprint = .FALSE.
 allocate(UNITTESTBASIS(4))
 BASISLABEL='REGULAR  '
 spherical = .TRUE.!.FALSE.
+IPRINT = 0
    
 IF(config%prof%IchorProfInputBasis)THEN
    do A = 1,4       
       BASISSETNAME(1:20) = config%prof%IchorProfInputBasisString(A)
       WRITE(lupri,*)'Using Input Basis:',BASISSETNAME(1:20)
       CALL Build_basis(LUPRI,IPRINT,&
-           &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%REGULAR,LIBRARY,&
-           &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,BASISSETNAME)
+           &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
+           &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
       SETTING%BASIS(A)%p => UNITTESTBASIS(A)
-      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%REGULAR,spherical,.FALSE.,nbast(A))
+      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ELSE
    do A = 1,4       
-      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%REGULAR,spherical,.FALSE.,nbast(A))
+      call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ENDIF
@@ -98,7 +101,7 @@ IF(config%prof%IchorProfDoThermite)THEN
 !   setting%scheme%PS_SCREEN = .FALSE.
    CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
    call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
-   CALL LSTIMER('Thermite4Center',TIMSTR,TIMEND,lupri)
+   CALL LSTIMER('Thermite4Center',TIMSTR,TIMEND,lupri,ForcePrint)
    call determine_norm(IntegralsII,normII,dim1,dim2,dim3,dim4)
    WRITE(lupri,*)'Norm of Thermite:',normII
    setting%scheme%dospherical = savedospherical
@@ -112,7 +115,6 @@ IF(config%prof%IchorProfDoThermite)THEN
    ENDIF
 ENDIF
 
-iprint=0
 IF(config%prof%IchorProfDoIchor)THEN
    WRITE(lupri,*)'Performing Ichor Profiling'
    call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
@@ -123,7 +125,7 @@ IF(config%prof%IchorProfDoIchor)THEN
 !   setting%scheme%CS_SCREEN = .FALSE.
 !   setting%scheme%PS_SCREEN = .FALSE.
    call SCREEN_ICHORERI_DRIVER(LUPRI,iprint,setting,INTSPEC,SameMOL)
-   CALL LSTIMER('IchorScreen',TIMSTR,TIMEND,lupri)
+   CALL LSTIMER('IchorScreen',TIMSTR,TIMEND,lupri,ForcePrint)
    CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
    call MAIN_ICHORERI_DRIVER(LUPRI,iprint,setting,dim1,dim2,dim3,dim4,&
         & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)
@@ -131,7 +133,7 @@ IF(config%prof%IchorProfDoIchor)THEN
 !   setting%scheme%OD_SCREEN = .TRUE.
 !   setting%scheme%CS_SCREEN = .TRUE.
 !   setting%scheme%PS_SCREEN = .TRUE.
-   CALL LSTIMER('Ichor4Center',TIMSTR,TIMEND,lupri)
+   CALL LSTIMER('Ichor4Center',TIMSTR,TIMEND,lupri,ForcePrint)
    call determine_norm(integralsIchor,normIchorScreen,dim1,dim2,dim3,dim4)
    WRITE(lupri,*)'Norm of Ichor4Center:',normIchorScreen
    IF(config%prof%IchorProfDoThermite.AND.(ABS(normIchorScreen-normII).LT.1.0E-12_realk))THEN
@@ -139,8 +141,10 @@ IF(config%prof%IchorProfDoIchor)THEN
       print*,'Norm the same screen'
    ELSE
       print*,'normIchorScreen',normIchorScreen
-      print*,'normII   ',normII
-      print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
+      IF(config%prof%IchorProfDoThermite)THEN
+         print*,'normII   ',normII
+         print*,'ABS(normIchor-normII)',ABS(normIchorScreen-normII)
+      ENDIF
    ENDIF
    IF(.NOT.COMPARE)THEN
       call mem_dealloc(integralsIchor)
@@ -165,10 +169,10 @@ call mem_dealloc(integralsII)
 ENDIF
 
 IF(config%prof%IchorProfInputBasis)THEN
-   call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(2)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(3)%REGULAR)
-   call free_basissetinfo(UNITTESTBASIS(4)%REGULAR)
+   call free_basissetinfo(UNITTESTBASIS(1)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(2)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(3)%BINFO(RegBasParam))
+   call free_basissetinfo(UNITTESTBASIS(4)%BINFO(RegBasParam))
 endif
 deallocate(UNITTESTBASIS)
 SETTING%BASIS(1)%p => originalBasis
@@ -177,8 +181,12 @@ SETTING%BASIS(3)%p => originalBasis
 SETTING%BASIS(4)%p => originalBasis
 WRITE(lupri,*)'Done IchorUnitTest'
 !call debug_mem_stats(LUPRI)
+#else
+call lsquit('Profile_Ichor requires VAR_ICHOR',-1)
+#endif
 END SUBROUTINE Profile_Ichor
 
+#ifdef VAR_ICHOR
 subroutine determine_norm(Integrals,norm,dim1,dim2,dim3,dim4)
 implicit none
 integer :: dim1,dim2,dim3,dim4
@@ -197,6 +205,7 @@ DO D=1,dim4
    ENDDO
 ENDDO
 end subroutine determine_norm
+#endif
 
 End MODULE ProfileIchorMod
 

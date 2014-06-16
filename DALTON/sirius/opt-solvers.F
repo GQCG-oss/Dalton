@@ -21,15 +21,16 @@
 !...      http://daltonprogram.org
 !
 !
-      SUBROUTINE DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,FAOS,DAOS,INDEVC,
-     &                       NEVC,GVEC,BMAT,CVEC,MXERRV,KFREE,LFREE,WRK,
-     &                       PNOROT)
+      SUBROUTINE DIISWEIGHTS(METHOD,ENERG,H1AO,SAOUNP,
+     &                       DAOS,FAOS,
+     &                       INDEVC,NEVC,GVEC,BMAT,CVEC,MXERRV,
+     &                       WRK,KFREE,LFREE,PNOROT)
 c
 c     Computes weights that old density matrices are summed up with
 c     to create new trial density matrix.
 c     GVEC and BMAT store information between steps.
 c     Exact content of these date structures depends on the method used
-c     to optimize (EDIIS, total energy based, h1-energy based, 
+c     to optimize (EDIIS, total energy based, h1-energy based,
 c     DIIS, with lagrange multiplier, without, etc).
 c
 c     The methods are assumed to optimize a quadratic problem:
@@ -45,7 +46,6 @@ c     the case of DIIS, or interpolated energy (possibly the electronic
 c     part, depending on the formulation of the problem) in the case of
 c     EDIIS.
 c
-c     nitpicking: function pointers would be ideal here...
 #include "implicit.h"
 #include "maxorb.h"
 #include "infinp.h"
@@ -53,7 +53,7 @@ c     nitpicking: function pointers would be ideal here...
 #include "inforb.h"
       CHARACTER*10 METHOD
       DIMENSION H1AO(NNBAST),SAOUNP(NBAST,NBAST)
-      DIMENSION FAOS(NNBAST,MXERRV,2),DAOS(NNBAST,MXERRV,2)
+      DIMENSION DAOS(NNBAST,MXERRV,2),FAOS(NNBAST,MXERRV,2)
       INTEGER   INDEVC, NEVC
       DIMENSION GVEC(NEVC),BMAT(NEVC,NEVC),CVEC(NEVC+1)
 
@@ -62,7 +62,7 @@ c     nitpicking: function pointers would be ideal here...
       CALL QENTER('DIISWEIGHTS')
 c     call outpkb(DAOS(1,INDEVC,2),NBAS,NSYM,1,0)
 c     setup the default that acts only when NEVC == 1
-      CVEC(1) = 1D0
+      CVEC(1) = 1.0D0
       IF (METHOD(1:4).EQ.'DIIS') THEN
 c        GVEC is not accessed for DIIS
          IF(NEVC.GT.1) THEN
@@ -114,17 +114,17 @@ c     -------------------------------------------------------------------
       DIMENSION BMAT(NEVC,NEVC),WRK(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
 
-c      call output(d,1,nbast,1,nbast,nbast,nbast,1,0) 
-c      call outpkb(FAOS(1,INDEVC,1),NBAS,NSYM,1,0)
+c      call output(d,1,nbast,1,nbast,nbast,nbast,-1,0)
+c      call outpkb(FAOS(1,INDEVC,1),NBAS,NSYM,-1,0)
       KFREE=KFRSAV
       LFREE=LFRSAV
 
-      CALL MEMGET('REAL',KTMP1 ,NNBAST,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOMMi ,N2BASX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCOMMj ,N2BASX,WRK,KFREE,LFREE)
-      IF (NASHT.GT.0) THEN
-         CALL MEMGET('REAL',KTMP2,N2BASX,WRK,KFREE,LFREE)
-      ENDIF
+      CALL MEMGET2('REAL','TMP1 ',KTMP1 ,NNBAST,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COMMi',KCOMMi,N2BASX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','COMMj',KCOMMj,N2BASX,WRK,KFREE,LFREE)
+      IF (NASHT.GT.0)
+     &   CALL MEMGET2('REAL','TMP2 ',KTMP2,N2BASX,WRK,KFREE,LFREE)
+
       DO I = 1,NEVC
 C     S*DV*FD-FD*DV*S
          CALL DCOPY(NNBAST,FAOS(1,I,1),1,WRK(KTMP1),1)
@@ -190,8 +190,7 @@ c     find optimal weights for DIIS using precomputed B matrix
       END IF
       RETURN
       END
-
-c     
+c
 c     -------------------------------------------------------------------
 c     C2DIIS-specific chunk of code
 c     -------------------------------------------------------------------
@@ -207,15 +206,13 @@ c     find optimal weights for C2DIIS using precomputed B matrix
       LFREE=LFRSAV
 
       LBMAT=NEVC*(NEVC+1)*DP5
-      CALL MEMGET('REAL',KBTMP,LBMAT,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVEC,NEVC*NEVC,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KWJ  ,NEVC     ,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIWJ ,NEVC     ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BTMP',KBTMP,LBMAT,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVEC',KEVEC,NEVC*NEVC,WRK,KFREE,LFREE)
 
-      
+
       CALL DUNIT(WRK(KEVEC),NEVC)
       CALL DGETSP(NEVC,BMAT,WRK(KBTMP))
-      CALL JACO(WRK(KBTMP),WRK(KEVEC),NEVC,NEVC,NEVC,WRK(KWJ),WRK(KIWJ))
+      CALL JACO_THR(WRK(KBTMP),WRK(KEVEC),NEVC,NEVC,NEVC,0.0D0)
 
       DO I = 1,NEVC
          II = KBTMP-1+IROW(I+1)
@@ -237,7 +234,7 @@ c     find optimal weights for C2DIIS using precomputed B matrix
       CALL MEMREL('C2DIIS.coefs',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       END
 
-c     
+c
 c     -------------------------------------------------------------------
 c     EDIIS-specific chunk of code
 c     -------------------------------------------------------------------
@@ -310,12 +307,12 @@ c     -------------------------------------------------------------------
       ENDDO
       BMAT(INDEVC,INDEVC) = 99999.D0
 #endif /* EDIIS_WITH_DIFFERENCES_FORMULAS */
-      END 
+      END
 c     -------------------------------------------------------------------
       SUBROUTINE ediis_solve_for_coefs(NEVC,GVEC,BMAT,WEIGHTVEC,
      &                                 INDEVC,FEASIBLE)
 #include "implicit.h"
-#include "inforb.h"      
+#include "inforb.h"
 #include "priunit.h"
 
       INTEGER NEVC
@@ -335,7 +332,7 @@ C
          CALL QUIT('EDIIS called with NEVC .eq. 1')
       END IF
 c#define EDIIS_SCAN_WHOLE_SPACE 1
-#ifdef EDIIS_SCAN_WHOLE_SPACE 
+#ifdef EDIIS_SCAN_WHOLE_SPACE
          CALL ediis_scan_whole_space(
      &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
          GO TO 9999
@@ -350,7 +347,7 @@ C     Put the weights where none is forced zero last in CVEC.
 
       CALL DCOPY(NEVC,GVEC,1,CVEC,1)
 c        WRITE(LUPRI,*) 'DIISenergies. ', NEVC, 'error vectors'
-c        WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)      
+c        WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)
       CALL DGESV(NEVC,1,CONSTR,NEVC,PIV,CVEC,NEVC,INFO)
       FEASIBLE = INFO.EQ.0
 
@@ -368,7 +365,7 @@ C     (reuse CONSTR as work array)
          ENDIF
       ENDDO
       WRITE(LUPRI,*) 'Computed EDIIS weights:'
-      WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)      
+      WRITE(LUPRI,'(8F10.5)') (CVEC(I),i=1,NEVC)
       WRITE(LUPRI,*) '(full) interpolated Delta energy: ',EK, FEASIBLE
 c
 c     look for other, constrained solution when using ediis.
@@ -389,7 +386,7 @@ C
       SUBROUTINE ediis_scan_whole_space(
      &           NEVC,GVEC,BMAT,WEIGHTVEC,INDEVC,FEASIBLE)
 #include "implicit.h"
-#include "inforb.h"      
+#include "inforb.h"
 #include "priunit.h"
 
       INTEGER NEVC
@@ -420,7 +417,7 @@ C     Put the weights where none is forced zero last in CVEC.
 
       CALL DCOPY(NEVC,GVEC,1,CVEC(1,ACTSIZE),1)
 c      WRITE(LUPRI,*) 'DIISenergies. ', NEVC, 'error vectors'
-c      WRITE(LUPRI,'(8F10.5)') (CVEC(I,ACTSIZE),i=1,NEVC)      
+c      WRITE(LUPRI,'(8F10.5)') (CVEC(I,ACTSIZE),i=1,NEVC)
       CALL DGESV(NEVC,1,CONSTR,NEVC,PIV,CVEC(1,ACTSIZE),NEVC,INFO)
       FEASIBLE = INFO.EQ.0
 
@@ -439,7 +436,7 @@ c     Check out quality of the initial EDIIS solution.
          ENDIF
       ENDDO
       WRITE(LUPRI,*) 'Computed EDIIS weights:'
-      WRITE(LUPRI,'(8F10.5)') (CVEC(I,ACTSIZE),i=1,NEVC)      
+      WRITE(LUPRI,'(8F10.5)') (CVEC(I,ACTSIZE),i=1,NEVC)
       WRITE(LUPRI,*) '(full) interpolated Delta energy: ',EK, FEASIBLE
 c
 c     look for other, constrained solution when using ediis.

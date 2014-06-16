@@ -147,11 +147,12 @@ C
 C*****************************************************************************
 
 !       module dependencies
-        use parallel_communication_models_mpi
-        use one_sided_communication_wrappers
         use rma_windows
 
 #ifdef VAR_MPI
+        use parallel_communication_models_mpi
+        use one_sided_communication_wrappers
+
 #ifdef USE_MPI_MOD_F90
         use mpi
 #include "implicit.h"
@@ -728,8 +729,8 @@ C
          KINDEX = KFAC   + 3*NUCDEP*(MAXREP + 1)
          KPOINT = KINDEX + (3*NUCIND*(MAXREP + 1) + 1)/IRAT
          KCSTRA = KPOINT + (3*NUCDEP*(MAXREP + 1) + 1)/IRAT
-         KSCTRA = KCSTRA + MXCOOR*MXCOOR
-         KLAST  = KSCTRA + MXCOOR*MXCOOR
+         KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+         KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          IF (KLAST .GT. LWORK) CALL STOPIT('SKLFCK','EXP',KLAST,LWORK)
          CALL SKLEXP(WORK(KSKLTN),HESSEE,WORK(KCSTRA),WORK(KSCTRA),
      &               WORK(KFAC),WORK(KINDEX),WORK(KPOINT),MAXDER,IPRINT)

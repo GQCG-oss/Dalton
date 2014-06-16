@@ -171,13 +171,8 @@ C        *** set RHF parameters for RHF and MP2 ***
 C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
-         IF (DOCINO .OR. DOCI .OR. DOMC) THEN
-            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
-            IF (DOMP2) THEN
-               FLAG(16) = .FALSE.
-               PCMSV    = PCM
-               PCM      = .FALSE.
-            END IF
+         IF (DOMP2) THEN
+            FLAG(25) = .TRUE. ! SIRIFC from RHF needed for MP2 if embedding
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.
 C        ... no solvent if RHF followed by MP2 and CI or MC
@@ -347,10 +342,6 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
-            IF (PEQM) call quit('ERROR: DIIS failed to converge'//
-     &                 'and QC-SCF is not implemented with PE library')
-            IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
-     &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.
             FLAG( 5) = FLAGSV(5)
             FLAG(15) = RHFCAN
@@ -429,6 +420,9 @@ C ***************************************************
 C        *** MP2 ***
 C
       IF (DOMP2) THEN
+         IF (DOCINO .OR. DOCI .OR. DOMC .OR. DOLUCITA) THEN
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
+         END IF
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
      &      'implemented in MP2 module and is ignored.'
@@ -475,7 +469,7 @@ C ***************************************************
 C        *** reset to CI/MCSCF flags ***
 C
       IF ( (DORHF .OR. DOMP2) .AND.
-     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB) ) THEN
+     &     (DOMC .OR. DOCI .OR. DOCINO .OR. FCVORB .OR. DOLUCITA) ) THEN
          HSROHF = .FALSE.
          HSFOCK = .FALSE.
 C        ... otherwise error in some MCSCF routines
@@ -810,6 +804,10 @@ C
       IF (DOSTEX) THEN
          CALL STXCTL(WORK,LWORK)
       END IF
+
+      IF (QFIT) THEN
+         CALL QFITRES
+      ENDIF
 
 #if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files

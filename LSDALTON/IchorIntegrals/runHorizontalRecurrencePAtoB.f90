@@ -1,27 +1,5 @@
 MODULE TESTMODULE
 CONTAINS
-!TODO you can easily change
-!  real(realk),intent(in) :: AuxCont(    1,nTUVQ,nContPasses)
-!  real(realk),intent(inout) :: ThetaP(    1:    1,    1:    1,nTUVQ,nContPasses)
-!  !Local variables
-!  integer :: iP,iTUVQ,iTUVA
-!  DO iP = 1,nContPasses
-!   DO iTUVQ = 1,nTUVQ
-!     DO iTUVA=  1,  1
-!        ThetaP(iTUVA,1,iTUVQ,IP) = AuxCont(iTUVA,iTUVQ,IP)
-
-!  to :
-!  real(realk),intent(in) :: AuxCont(    1,nTUVQ*nContPasses)
-!  real(realk),intent(inout) :: ThetaP(    1:    1,    1:    1,nTUVQ*nContPasses)
-!  !Local variables
-!  integer :: iP,iTUVQ,iTUVA
-!  DO iP = 1,nContPasses*nTUVQ
-!     DO iTUVA=  1,  1
-!        ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)
-
-!better OpenMP loadbalance 
-
-
   subroutine PASSsub
     IMPLICIT NONE
     INTEGER :: JMAX,nTUV,nTUVprev,ituvP,J,Tp,Up,Vp,N,N2,ntuvP,ituv,C
@@ -42,14 +20,29 @@ CONTAINS
     integer,pointer :: JINDEX(:)
     integer :: nTUVLIST,nTUVLISTactual
     integer,pointer :: TwoTermTUVLIST(:)
-
+    character(len=3) :: ARCSTRING
+    integer :: GPUrun,MaxAngmomSingle
+    logical :: DoOpenMP,DoOpenACC,CPU
     WRITE(*,'(A)')'MODULE AGC_OBS_HorizontalRecurrenceLHSModAtoB'
     WRITE(*,'(A)')' use IchorPrecisionModule'
     WRITE(*,'(A)')'  '
     WRITE(*,'(A)')' CONTAINS'
-    MaxAngmomP = 6
 
-
+DO GPUrun = 1,2
+    CPU = .TRUE.
+    IF(GPUrun.EQ.2)CPU = .FALSE.
+    DoOpenMP = .FALSE.
+    DoOpenACC = .FALSE.
+    IF(CPU)DoOpenMP = .TRUE.
+    IF(.NOT.CPU)DoOpenACC = .TRUE.
+    IF(CPU)THEN
+       ARCSTRING = 'CPU'
+    ELSE
+       ARCSTRING = 'GPU'
+    ENDIF
+    MaxAngmomP = 4 !D currently
+    MaxAngmomSingle = 2 !D currently
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#ifdef VAR_OPENACC'
     DO JMAX=0,MaxAngmomP
 
        nTUV = (JMAX+1)*(JMAX+2)*(JMAX+3)/6   
@@ -83,8 +76,8 @@ CONTAINS
        DO AngmomA = 0,JP
           AngmomB = JP - AngmomA
           IF(AngmomB.GT.AngmomA)CYCLE
-          IF(AngmomA.GT.3)CYCLE
-          IF(AngmomB.GT.3)CYCLE
+          IF(AngmomA.GT.MaxAngmomSingle)CYCLE
+          IF(AngmomB.GT.MaxAngmomSingle)CYCLE
 
           NTUVA = (AngmomA+1)*(AngmomA+2)*(AngmomA+3)/6
           NTUVB = (AngmomB+1)*(AngmomB+2)*(AngmomB+3)/6
@@ -95,30 +88,32 @@ CONTAINS
                &         (AngmomB)*(AngmomB+1)*(AngmomB+2)/6
           NTUVAstart = (AngmomA)*(AngmomA+1)*(AngmomA+2)/6
           NTUVBstart = (AngmomB)*(AngmomB+1)*(AngmomB+2)/6
-
+          
+          IF(AngmomA.EQ.0.AND.AngmomB.EQ.0)CYCLE
           WRITE(*,'(A)')''
           IF(JP.LT.10)THEN
-             WRITE(*,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContPasses,nTUVQ,&'
+             WRITE(*,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQP,nPasses,nTUVQ,&'
           ELSE
-             WRITE(*,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContPasses,nTUVQ,&'
+             WRITE(*,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB(nContQP,nPasses,nTUVQ,&'
           ENDIF
-          WRITE(*,'(A)')'         & Pdistance12,AuxCont,ThetaP,lupri)'
+          WRITE(*,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
           WRITE(*,'(A)')'  implicit none'
-          WRITE(*,'(A)')'  integer,intent(in) :: nContPasses,nTUVQ,lupri'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3)'
-          WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ,nContPasses)'
+          WRITE(*,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
+          WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
+          WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ*nContQP*nPasses)'
+          WRITE(*,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
           !             WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',nTUVAspec,',',nTUVBspec,',nTUVQ,nContPasses)'
           IF(nTUVBstart+1.EQ.1.AND.nTUVB.EQ.1)THEN
-             WRITE(*,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',1,nTUVQ,nContPasses)'
+             WRITE(*,'(A,I5,A1,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',1,nTUVQ*nContQP*nPasses)'
           ELSE
-             WRITE(*,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ,nContPasses)'
+             WRITE(*,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ*nContQP*nPasses)'
           ENDIF
           WRITE(*,'(A)')'  !Local variables'
           IF(ANGMOMB.NE.0)THEN
-             WRITE(*,'(A)')'  integer :: iP,iTUVQ,iTUVA'
+             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB'
              WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab'
           ELSE
-             WRITE(*,'(A)')'  integer :: iP,iTUVQ,iTUVA'
+             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVA,iAtomA,iAtomB'
           ENDIF
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
           CREATED  = .FALSE.
@@ -138,14 +133,69 @@ CONTAINS
           IF(JB.GT.1)THEN
              WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDIF
-          IF(JB.NE.0)THEN
-             WRITE(*,'(A)')'  Xab = Pdistance12(1)'
-             WRITE(*,'(A)')'  Yab = Pdistance12(2)'
-             WRITE(*,'(A)')'  Zab = Pdistance12(3)'
+          IF(DoOpenMP)THEN
+!             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+             WRITE(*,'(A)')'!$OMP DO &'
+             WRITE(*,'(A)')'!$OMP PRIVATE(iP,&'
+             IF(JB.NE.0)THEN
+                DO JTMP=1,JB-1
+                   if(JTMP.LT.10)THEN
+                      WRITE(*,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
+                   else
+                      WRITE(*,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
+                   endif
+                ENDDO
+                WRITE(*,'(A)')'!$OMP         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) '
+             ELSE
+                WRITE(*,'(A)')'!$OMP         iTUVA) '
+             ENDIF
+!             WRITE(*,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
+!             IF(JB.NE.0)THEN
+!                WRITE(*,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+!             ELSE
+!                WRITE(*,'(A)')'!$OMP         AuxCont,ThetaP)'
+!             ENDIF
           ENDIF
-          WRITE(*,'(A)')'  DO iP = 1,nContPasses'
-          WRITE(*,'(A)')'   DO iTUVQ = 1,nTUVQ'
-
+          IF(DoOpenACC)THEN
+             WRITE(*,'(A)')'!$ACC PARALLEL LOOP &'
+             WRITE(*,'(A)')'!$ACC PRIVATE(iP,&'
+             IF(JB.NE.0)THEN
+                DO JTMP=1,JB-1
+                   if(JTMP.LT.10)THEN
+                      WRITE(*,'(A,I1,A)')'!$ACC         Tmp',JTMP,',&'
+                   else
+                      WRITE(*,'(A,I2,A)')'!$ACC         Tmp',JTMP,',&'
+                   endif
+                ENDDO
+                WRITE(*,'(A)')'!$ACC         iPassP,iTUVA,iAtomA,iAtomB,Xab,Yab,Zab) &'
+             ELSE
+                WRITE(*,'(A)')'!$ACC         iTUVA) &'
+             ENDIF
+             WRITE(*,'(A)')'!$ACC PRESENT(nTUVQ,nContQP,nPasses,&'
+             IF(JB.NE.0)THEN
+                WRITE(*,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+             ELSE
+                WRITE(*,'(A)')'!$ACC         AuxCont,ThetaP)'
+             ENDIF
+          ENDIF
+             !          WRITE(*,'(A)')'  DO iP = 1,nContQP*nPasses'
+!          WRITE(*,'(A)')'   DO iTUVQ = 1,nTUVQ'
+!             WRITE(*,'(A)')'    iPassP = (iP-1)/nContQP+1'
+!DO i123 = 1,n1*n2*n3'
+!i1 = mod(I123-1,n1)+1'
+!i2 = mod((I123-(mod(I123-1,nPrim1)+1))/n1,n2)+1'
+!i3 = (I123-1)/(n1*n2) + 1'
+          WRITE(*,'(A)')'  DO iP = 1,nTUVQ*nContQP*nPasses'
+          IF(JB.NE.0)THEN
+             WRITE(*,'(A)')'!    iTUVQ = mod(IP-1,nTUVQ)+1'
+             WRITE(*,'(A)')'!    iContQP = mod((IP-(mod(IP-1,nTUVQ)+1))/nTUVQ,nContQP)+1'
+             WRITE(*,'(A)')'    iPassP = (IP-1)/(nTUVQ*nContQP) + 1'
+             WRITE(*,'(A)')'    iAtomA = iAtomApass(iPassP)'
+             WRITE(*,'(A)')'    iAtomB = iAtomBpass(iPassP)'
+             WRITE(*,'(A)')'    Xab = Pdistance12(1,iAtomA,iAtomB)'
+             WRITE(*,'(A)')'    Yab = Pdistance12(2,iAtomA,iAtomB)'
+             WRITE(*,'(A)')'    Zab = Pdistance12(3,iAtomA,iAtomB)'
+          ENDIF
 
           DO JTMP=0,JB
              !           print*,'!JTMP = ',JTMP
@@ -153,7 +203,7 @@ CONTAINS
                 !nTUVTMPP=(Jab-JTMP)*(Jab-JTMP+1)*(Jab-JTMP+2)/6
                 IF(nTUVBstart+1.EQ.1)THEN
                    WRITE(*,'(A,I3,A,I3)')'     DO iTUVA=',NTUVAstart+1,',',nTUVA
-                   WRITE(*,'(A)')   '        ThetaP(iTUVA,1,iTUVQ,IP) = AuxCont(iTUVA,iTUVQ,IP)'
+                   WRITE(*,'(A)')   '        ThetaP(iTUVA,1,IP) = AuxCont(iTUVA,IP)'
                    WRITE(*,'(A)')   '     ENDDO'
                 ENDIF
                 CYCLE
@@ -193,12 +243,14 @@ CONTAINS
              ENDIF
           ENDDO
           deallocate(CREATED)
-          WRITE(*,'(A)')'   ENDDO'
+!          WRITE(*,'(A)')'   ENDDO'
           WRITE(*,'(A)')'  ENDDO'
+!          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END PARALLEL DO'
+          IF(DoOpenMP)WRITE(*,'(A)')'!$OMP END DO'
           IF(JP.LT.10)THEN
-             WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB'
+             WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB'
           ELSE
-             WRITE(*,'(A,I2,A,I1,A,I1,A)')'end subroutine HorizontalRR_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB'
+             WRITE(*,'(A,I2,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'AtoB'
           ENDIF
        enddo
        deallocate(TUVINDEX)
@@ -207,8 +259,10 @@ CONTAINS
        deallocate(VINDEX)
        deallocate(JINDEX)
     enddo
-    WRITE(*,'(A)')'end module'
-  END subroutine PASSsub
+    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#endif'
+ enddo
+ WRITE(*,'(A)')'end module'
+END subroutine PASSsub
   
   subroutine TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,&
        & nTUVQSTART,nTUVQ)
@@ -301,7 +355,7 @@ CONTAINS
        STOP 'Recurrent iTUVQ'
     ENDIF
     IF(iTUVP.LE.nTUVP.AND.((iTUVQ.GE.nTUVQSTART+1).AND.(iTUVQ.LE.nTUVQ)))THEN
-       WRITE(STRING(iSTRING:iSTRING+12),'(A13)') ',iTUVQ,IP) = '
+       WRITE(STRING(iSTRING:iSTRING+12),'(A13)') ',IP) = '
        iString = iSTRING+13
     ELSE
        WRITE(STRING(iSTRING:iSTRING+3),'(A4)') ') = '
@@ -342,11 +396,11 @@ CONTAINS
     ENDIF
     IF(iTUVQminus1x.EQ.1)THEN
        !Aux(',iTUVp,',IP)
-       WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'iTUVQ,IP) '
+       WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'IP) '
        iString = iSTRING+10
     ELSE
        IF(iTUVplus1x.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQSTART+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-          WRITE(STRING(iSTRING:iSTRING+13),'(I2,A12)') iTUVQminus1x,',iTUVQ,IP) '
+          WRITE(STRING(iSTRING:iSTRING+13),'(I2,A12)') iTUVQminus1x,',IP) '
           iString = iSTRING+14
        ELSE
           IF(iTUVQminus1x.LT.100)THEN
@@ -395,11 +449,11 @@ CONTAINS
     ENDIF
     IF(iTUVQminus1x.EQ.1)THEN
        !Aux(',iTUVp,',IP)
-       WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'iTUVQ,IP) '
+       WRITE(STRING(iSTRING:iSTRING+9),'(A10)') 'IP) '
        iString = iSTRING+10
     ELSE
        IF(iTUVP.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQSTART+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-          WRITE(STRING(iSTRING:iSTRING+12),'(I2,A11)') iTUVQminus1x,',iTUVQ,IP) '
+          WRITE(STRING(iSTRING:iSTRING+12),'(I2,A11)') iTUVQminus1x,',IP) '
           iString = iSTRING+13
        ELSE
           IF(iTUVQminus1x.LT.100)THEN

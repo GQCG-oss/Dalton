@@ -501,7 +501,9 @@ contains
     call mpi_allreduce(x, y, size(y), mpi_double_precision, mpi_sum, communicator, ierr)
 
   end subroutine
-#else /* ifdef VAR_MPI */
-module dummy_dalton_mpi
-#endif
 end module
+#else /* ifdef VAR_MPI */
+subroutine dalton_mpi
+   call quit('ERROR: dummy dalton_mpi called')
+end
+#endif

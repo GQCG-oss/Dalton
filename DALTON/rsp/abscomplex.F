@@ -614,12 +614,13 @@ C
       KFREE = 1
       LFREE = LWRK
 C    
+      LUABSVECS = -1
       CALL GPINQ('ABSVECS','EXIST',EX)
       IF (.NOT.EX) THEN
-        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
         WRITE(LUABSVECS) 'EOFLABEL'
       ELSE
-        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
@@ -663,7 +664,7 @@ C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
-      CLOSE(LUABSVECS,status='keep')
+      CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       RETURN
       END
@@ -833,7 +834,6 @@ C
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
@@ -884,7 +884,6 @@ c
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
 C
@@ -955,7 +954,6 @@ C
       ELSE
         NTMAX=NNMAX
       ENDIF
-      ABS_DIRFCK = DIRFCK
 c
       CALL MEMGET('REAL',KDENS,NTMAX*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,NTMAX*N2BASX,WRK,KFREE,LFREE)
@@ -1054,6 +1052,7 @@ c          END IF
         END DO
       END IF  
 C
+      CALL DZERO(WRK(KFMAO(1)),NTMAX*N2BASX)
       CALL SIRFCK(WRK(KFMAO(1)),WRK(KDMAO(1)),NTMAX,ISYMDM,IFCTYP,
      &     DIRFCK,WRK(KFREE),LFREE)
 C
@@ -1152,9 +1151,12 @@ C
 c     FLAG(16) MEANS SOLVENT CALCULATION
 C
       IF (FLAG(16) .OR. PCM .OR. QM3) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     &               XTMP,WRK(KFREE),LFREE)
+        CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
+     &              XTMP,WRK(KFREE),LFREE)
       ENDIF
+      IF (QMMM) THEN
+        CALL QUIT('ERROR: CPP cannot be used with QMMM')
+      END IF
 c
       CALL QEXIT('ABS_LINE2')
       RETURN
@@ -1249,19 +1251,24 @@ c
          IF (KMOD.NE.0) THEN
            KTOT=KINT+1
          ENDIF
-       ELSE
+      ELSE
          KINT=1
          KTOT=1
          KNMAX=NNMAX
-       ENDIF
-       KNTOT=KNMAX
-       CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
-       DO K=1,KTOT
+      ENDIF
+      KNTOT=KNMAX
+      CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
+      DO K=1,KTOT
          IF (K.GT.KINT) KNTOT=KMOD
          CALL ABS_LINE2(KZVAR,XTMP(1,(K-1)*KNMAX+1),WRK(KZYMB),ISYMDM,
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
-       ENDDO
+      ENDDO
+C
+      IF (PEQM) THEN
+         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+     &               XTMP,WRK(KFREE),LFREE)
+      ENDIF
 C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)

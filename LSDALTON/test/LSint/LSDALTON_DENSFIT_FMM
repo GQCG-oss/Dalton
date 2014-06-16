@@ -48,6 +48,8 @@ O                  7.134485    0.659897   -3.942496
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_DENSFIT_FMM.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **INTEGRALS
 .RUNMM
 .DENSFIT

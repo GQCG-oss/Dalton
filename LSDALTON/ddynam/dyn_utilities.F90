@@ -626,9 +626,12 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk 
+  print*,'Vels',Vels
+  print*,'Mass',Mass
   Do i = 1,N
      Kinetic = Kinetic + (DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )*Mass(i) )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic_Cart
 !====================!
 ! Calc_Kinetic       !
@@ -642,9 +645,11 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk  
+  print*,'Vels',Vels
   Do i = 1,N
      Kinetic = Kinetic + DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic
 !===================!
 ! Calc_AngMom_Cart  !
@@ -1001,6 +1006,25 @@ Subroutine Final_Analysis(NumAtoms,MaxSteps,NumTrajs,FUPrint,Phase,PrintLevel)
   Call mem_dealloc(AtmArr)
 !
 End Subroutine Final_Analysis
+!===============
+! Print temp
+!===============
+Subroutine Print_temp(num_steps,T_array,lupri)
+! Prints temperature statistics
+Implicit none
+Integer :: num_steps, i, lupri
+Real(realk), dimension(num_steps+1) :: T_array
+!
+Call Underline(lupri, 'Temperature variation', -1)
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+Write(lupri,'(5X,A)') '|  Step  |    T, K   |'  
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+Do i = 1, num_steps+1 
+     Write(lupri,'(5X,A,I7,A,F10.3,A)') '|', i-1,  ' |', T_array(i),' |'
+Enddo
+Write(lupri,'(5X,A)') '+--------+-----------+'  
+!
+End subroutine Print_temp
 !====================
 !   Read_PhaseFile
 !====================

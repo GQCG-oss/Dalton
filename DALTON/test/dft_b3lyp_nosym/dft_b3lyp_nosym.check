@@ -1,0 +1,16 @@
+#!/bin/ksh
+AWK=awk
+log=$1
+ERRLIST=""
+. ./functions || { echo "current dir is not the test dir" ; exit 1; }
+
+check_scf_energy DFT  -73.176324747907 1e-10
+
+if [ "$ERRLIST" = "" ]; then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo "Failed tests: $ERRLIST"
+  echo THERE IS A PROBLEM
+  exit 1
+fi

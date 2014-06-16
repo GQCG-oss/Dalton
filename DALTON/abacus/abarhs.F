@@ -1666,7 +1666,7 @@ ckr            IDORCI(ISCOOR,2) = 1
          ELSE
 ckr            IDORCI(ISCOOR,1) = 1
          END IF
-         CALL ABAWRITRS
+         CALL ABAWRIT_RESTART
   300    CONTINUE
   100 CONTINUE
 C

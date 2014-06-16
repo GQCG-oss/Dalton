@@ -1,0 +1,10 @@
+   DFT D2 Dispersion Correction  
+   --------------------------
+   Molecule:         CH4 Dimer 
+   Wave Function:    DFT / BLYP / STO-3G (Geom. Opt.)
+   Test Purpose:     Run a geometry optimization with symm. using the
+                     DFT-D2 empirical dispersion correction. BLYP 
+                     uncorrected gives a C-C separation of ~4.6 Ang,
+                     the corrected version gives ~3.4 Ang. The 
+                     S22 geometry is ~3.7 Ang  
+                                                                

@@ -1,0 +1,5 @@
+   cc_rsp_exci
+   -----------
+   Molecule:         HeH+ in C2
+   Wave Function:    CCSD / 6-31G**
+   Test Purpose:     Excited states linear response function

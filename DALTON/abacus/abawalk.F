@@ -1311,16 +1311,18 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
+
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
 C     ***** Initialize *****
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL DZERO(GRDCAR,NCRTOT)
 C
 C     ***** Multiplicities *****
@@ -2554,9 +2556,12 @@ C  /* Deck wlkir1 */
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(NUCDEP), CSTRA(*), SCTRA(*)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
 #include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
@@ -2580,8 +2585,9 @@ C
             END IF
   200    CONTINUE
   100 CONTINUE
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
-      CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
+      CALL TRAHES(HESMOL,NCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM
       WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY,
      &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
@@ -5098,11 +5104,9 @@ C
             END IF
    20    CONTINUE
    30    CONTINUE
-         HESMAX = EVAL(NONTRO)
          SPECAS = .FALSE.
       ELSE
          HESMIN = EVAL(1)
-         HESMAX = EVAL(NONTRO)
          GRDMIN = ABS(GRDDIA(1))
 C
 C        Test whether the lowest Hessian eigenvalue is negative and the
@@ -5113,12 +5117,13 @@ C
       END IF
 C
       GRDNRM = SQRT(DDOT(NONTRO,GRDDIA,1,GRDDIA,1))
+      GRD_ASUM = DASUM(NONTRO,GRDDIA,1)
 C
       IF (IPRINT .GT. 5) THEN
          WRITE (LUPRI,'(A,1P,D12.5)') ' HESMIN: ', HESMIN
-         WRITE (LUPRI,'(A,1P,D12.5)') ' HESMAX: ', HESMAX
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDMIN: ', GRDMIN
          WRITE (LUPRI,'(A,1P,D12.5)') ' GRDNRM: ', GRDNRM
+         WRITE (LUPRI,'(A,1P,D12.5)') ' GRD_ASUM', GRD_ASUM
       END IF
 C
 C     ************************
@@ -5129,16 +5134,20 @@ C
          IF (IPRINT .GT. 3) WRITE (LUPRI,'(/A/)') ' General case.'
 C
 C        Determine level shift
-C        hjaaj Oct 2013:
+C        hjaaj Jan 2014
 C           We want to find the RNU for which the step length SL is TRUSTR
 C           We want RNU = 0 (Newton step) or RNU > 0 (restricted step)
 C           We know that SL = norm(- (Hess + RNU)^-1 grad )
-C                   Thus SL ≥ norm(grad) / (HESMAX + RNU)
-C                   and  SL ≤ norm(grad) / (HESMIN + RNU)
-C           From this you can derive the formulas for XMIN and XMAX
+C               SL ≤ contribution if all eigenvalues where equal to EVAL(1)
+C                  = GRD_ASUM  / (EVAL(1) + RNU)
+C               SL ≥ contribution from first eigenvector
+C                  = GRDDIA(1) / (EVAL(1) + RNU)
+C           From this you can derive the formulas for XMIN and XMAX,
+C           when we also remember that if RNU corresponding to trust
+C           radius is negative, then we select Newton step, RNU = 0.
 C
-         XMIN = MAX(D0,GRDNRM/TRUSTR - HESMIN)
-         XMAX = MAX(D0,GRDNRM/TRUSTR - HESMAX)
+         XMIN = MAX(D0,  -HESMIN + GRD_ASUM/TRUSTR)
+         XMAX = MAX(D0, - HESMIN + DP5*GRDMIN/TRUSTR)
          IF (IPRINT .GT. 5) THEN
             WRITE (LUPRI,'(/A,2(1P,D12.5,2X))')
      *         ' XMIN and XMAX before WLKBIS (WLKSTL) minimum walk: ',

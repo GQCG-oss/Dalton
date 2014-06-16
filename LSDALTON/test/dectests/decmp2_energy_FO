@@ -60,7 +60,6 @@ TIGHT
 **DEC
 .FrozenCore
 .FragmentAdapted
-.NOTABSORBH
 .MEMORY
 2.0
 *END OF INPUT

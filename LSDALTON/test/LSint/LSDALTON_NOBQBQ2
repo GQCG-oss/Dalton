@@ -51,6 +51,8 @@ bq3 -4.4867611522 0.0000000000 -4.5020127872
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_NOBQBQ2.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **INTEGRALS
 .NOBQBQ
 **WAVE FUNCTIONS
@@ -63,6 +65,9 @@ cat > LSDALTON_NOBQBQ2.dal <<'%EOF%'
 1.0D-11
 .ANGINT
 31
+*DENSOPT
+.CONVTHR
+1.0d-6
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT
@@ -80,7 +85,7 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-CRIT1=`$GREP "Final DFT energy:  * -75.942221654" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy:  * -75.94222165" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -90,7 +95,7 @@ TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="Nuclear repulsion NOT CORRECT -"
 
-CRIT1=`$GREP "Electronic energy:  * -85.502041830" $log | wc -l`
+CRIT1=`$GREP "Electronic energy:  * -85.502041834" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Electronic energy NOT CORRECT -"

@@ -32,12 +32,12 @@ cat > LSDALTON_userdefined_basis1.mol <<'%EOF%'
 ATOMBASIS
 LSint test, H2O
 6-31G** provided through userdefined ATOMBASIS
-    2    0  X  Y  Z   1.00D-15
-        8.0   1      Bas=USERDEFINED
+Atomtypes=2 Nosymmetry 
+Charge=8.0  Atoms=1   Bas=USERDEFINED
 O     0.0000000000000000   -0.2249058930  0.00000000
-        1.0   2      Bas=6-31G**
-H     1.45235              0.899623      0.00000000
-H     -1.45235              0.899623      0.00000000
+Charge=1.0  Atoms=2   Bas=6-31G**
+H     1.4523500000000000    0.8996230000  0.00000000
+H    -1.4523500000000000    0.8996230000  0.00000000
 
 USERDEFINED BASIS
 a 8

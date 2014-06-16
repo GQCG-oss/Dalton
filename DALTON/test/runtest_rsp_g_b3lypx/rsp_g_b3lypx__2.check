@@ -1,0 +1,37 @@
+log=$1
+GREP=egrep
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# ?
+CRIT1=`$GREP "Final DFT energy\: * \-39\.310212222343" $log | wc -l`
+TEST[1]=`expr $CRIT1`
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECT"
+
+# ?
+CRIT1=`$GREP "ANGMOM.*1SPNORB.*1.49835283.*[DE]-04" $log | wc -l`
+TEST[2]=`expr $CRIT1`
+CTRL[2]=1
+ERROR[2]="G-TENSOR - FIELD NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi

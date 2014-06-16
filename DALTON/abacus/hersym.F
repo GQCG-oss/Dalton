@@ -48,7 +48,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
-#include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 
@@ -366,9 +365,10 @@ C ::: Finally the number of atoms are updated. :::
                CALL LINE5R(MLINE(NCI),Q,NONT2,MBSI,IQM,JCO,MXAQN,
      &                    BASIS,ATOMBA,LMULBS,BSNM,
      &                    RADIUS_PCM, ALPHA_PCM)
-               CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
-     &                    LMULBS,BSNM,IQM,JCO,MXAQN,
-     &                    RADIUS_PCM, ALPHA_PCM)
+!              CALL LINE5W(MLINE(NCI),Q,NONT(K),MBSI,BASIS,ATOMBA,
+!    &                    LMULBS,BSNM,IQM,JCO,MXAQN,
+!    &                    RADIUS_PCM, ALPHA_PCM)
+               CALL LINE5_UPD(MLINE(NCI),NONT(K))
             END IF
  510        CONTINUE
             IF (J .EQ. NINT(ATMARR(4,I))) THEN
@@ -857,8 +857,8 @@ Cdbg     CALL OUTPUT(ATMARR(1,0),1,6,1,N_ATOMS+1,6,N_ATOMS+1,1,LUPRI)
       IF (ITURN .LE. 1) GO TO 10
 
  100  WRITE(LUPRI,'(/A/A)')
-     &   ' - molecule centered at center of mass and rotated so',
-     &   '   principal axes of inertia are along coordinate axes.'
+     &   '@   The molecule is centered at center of mass and rotated',
+     &   '@   so principal axes of inertia are along coordinate axes.'
 Cdbg     CALL PRNARR('CENTER_MOLECULE: coord.s now', N_ATOMS, ATMARR)
       RETURN
       END

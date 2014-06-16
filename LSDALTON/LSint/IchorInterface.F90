@@ -1,30 +1,24 @@
 !> @file
-!> Contains the main Ichor integral drivers
+!> Contains the main LSDALTON to Ichor integral Interfaces 
 !> Ichor is the "Integral Code Hand Optimized for Rapid evaluation" 
 !> Ichor is the ethereal golden fluid that is the blood of the greek gods
+!> The Ichor code is in the IchorIntegrals directory. 
 
-!> \brief Main Ichor drivers for the calculation of integrals 
-!> based on the McMurchie-Davidson(McM)/Obara Saika(OS)/Head-Gordon-Pople(HGP)/Rys 
+!> \brief Main Ichor Interface for the calculation of integrals 
+!> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorErimoduleHost
   use precision
   use TYPEDEFTYPE,only: lssetting,BASISSETINFO,MOLECULEINFO
-  use memory_handling, only: mem_alloc,mem_dealloc
+  use memory_handling, only: mem_alloc,mem_dealloc, mem_add_external_memory
+  use basis_typetype,only: RegBasParam,CABBasParam
   use dec_typedef_module, only: DecAObatchinfo
-#ifdef VAR_ICHOR
-  use IchorGabmodule
-  use IchorErimodule
-  use IchorParametersModule
-  use IchorBatchToolsModule !DetermineBatchSize, GenerateOrderdListOfTypes
-  use IchorSaveGabModule!, only: SET_IchorGabID,GET_IchorGabID,&
-!       & InitIchorSaveGabModule, FreeIchorSaveGabModule,&
-!       & addgabtoichorsavegabmodule
-#endif
 public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
-     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI
+     & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
+     & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -33,6 +27,7 @@ character(len=1),intent(in) :: AOspec
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO
 integer,intent(inout)     :: MinimumAllowedAObatchSize
+#ifdef VAR_ICHOR
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nAOBatches
@@ -41,10 +36,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -54,6 +49,7 @@ call Determine_OrbSizeOfBatches(setting%MOLECULE(iAO)%p,AObasis,&
      & nAOBatches,OrbSizeOfAOBatches,Spherical)
 MinimumAllowedAObatchSize = MAXVAL(OrbSizeOfAOBatches)
 call mem_dealloc(OrbSizeOfAOBatches)
+#endif
 end SUBROUTINE determine_MinimumAllowedAObatchSize
 
 SUBROUTINE determine_Ichor_nbatchesofAOS(setting,iAO,AOSPEC,&
@@ -65,6 +61,7 @@ integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nbatchesofAOS
 integer,intent(inout)     :: RequestedOrbitalDimOfAObatch
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer     :: MaxOrbitalDimOfAObatch,nBatches,MinimumAllowedAObatchSize
 integer     :: MinOrbitalDimOfAObatch,J,n,k
@@ -76,10 +73,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -136,6 +133,7 @@ call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
      & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,&
      & RequestedOrbitalDimOfAObatch)
 
+#endif
 end SUBROUTINE determine_Ichor_nbatchesofAOS
 
 SUBROUTINE determine_Ichor_nAObatches(setting,iAO,AOSPEC,nAObatches,lupri)
@@ -145,17 +143,19 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: iAO,lupri
 integer,intent(inout)     :: nAObatches
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
 call Determine_nBatches(setting%MOLECULE(iAO)%p,AObasis,nAOBatches)
+#endif
 end SUBROUTINE determine_Ichor_nAObatches
 
 subroutine loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
@@ -167,6 +167,7 @@ integer,intent(inout) :: nbatchesofAOS,MaxOrbitalDimOfAObatch
 integer,intent(inout) :: MinOrbitalDimOfAObatch 
 integer,intent(in) :: OrbSizeOfBatches(nBatches)
 !local
+#ifdef VAR_ICHOR
 integer :: I,DIM
 nbatchesofAOS=1
 DIM = 0
@@ -185,6 +186,7 @@ DO I=1,nBatches
 ENDDO
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
+#endif
 end subroutine loop1
 
 SUBROUTINE determine_Ichor_batchesofAOS(setting,iAO,AOSPEC,&
@@ -198,6 +200,7 @@ type(DecAObatchinfo)      :: AObatchinfo(nbatchesofAOS)
 integer,intent(in)        :: RequestedOrbitalDimOfAObatch
 integer,intent(inout)     :: MaxOrbitalDimOfAObatch
 !
+#ifdef VAR_ICHOR
 TYPE(BASISSETINFO),pointer :: AObasis
 integer,pointer :: OrbSizeOfBatches(:)
 integer :: nBatches,MinimumAllowedAObatchSize,ibatchesofAOS
@@ -206,10 +209,10 @@ logical   :: spherical
 spherical = .TRUE.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(iAO)%p%regular
+   AObasis => setting%basis(iAO)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(iAO)%p%CABS   
+   AObasis => setting%basis(iAO)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -277,6 +280,7 @@ ENDIF
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 
+#endif
 end SUBROUTINE determine_Ichor_batchesofAOS
 
 SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
@@ -289,6 +293,7 @@ integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
 real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
 Character,intent(IN)      :: intSpec(5)
+#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -335,10 +340,10 @@ IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Inte
 !A
 IF (intSpec(1).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(intspec(1).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -372,10 +377,10 @@ call build_TypeInfo2(setting%MOLECULE(1)%p,AObasis,nTypesA,&
 !B
 IF (intSpec(2).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(2)%p%regular
+   AObasis => setting%basis(2)%p%BINFO(RegBasParam)
 ELSEIF(intspec(2).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(2)%p%CABS   
+   AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -410,10 +415,10 @@ call build_TypeInfo2(setting%MOLECULE(2)%p,AObasis,nTypesB,&
 !C
 IF (intSpec(3).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(3)%p%regular
+   AObasis => setting%basis(3)%p%BINFO(RegBasParam)
 ELSEIF(intspec(3).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(3)%p%CABS   
+   AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -448,10 +453,10 @@ call build_TypeInfo2(setting%MOLECULE(3)%p,AObasis,nTypesC,&
 !D
 IF (intSpec(4).EQ.'R') THEN
    !   The regular AO-basis
-   AObasis => setting%basis(4)%p%regular
+   AObasis => setting%basis(4)%p%BINFO(RegBasParam)
 ELSEIF(intspec(4).EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(4)%p%CABS   
+   AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
 ELSE
    call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
 ENDIF
@@ -481,17 +486,16 @@ call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
      & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,nbatchDstart2,nbatchDend2)
 
-#ifdef VAR_ICHOR 
-SphericalSpec=SphericalParam 
-IchorJobSpec=IcorJobEri          !4 center 2 electronic repulsion integrals
-IchorInputSpec=IcorInputNoInput  !no input in inputstorage (no Density matrix)
+call GetIchorSphericalParamIdentifier(SphericalSpec)
+call GetIchorJobEriIdentifier(IchorJobSpec)
+call GetIchorInputIdentifier(IchorInputSpec)
 IchorInputDim1=1                 !not used since   IcorInputNoInput
 IchorInputDim2=1                 !not used since   IcorInputNoInput
 IchorInputDim3=1                 !not used since   IcorInputNoInput
 call mem_alloc(InputStorage,1)
-IchorParSpec=IchorParNone        !no parallelization
-IchorDebugSpec=iprint            !Debug PrintLevel
-IchorAlgoSpec=IchorAlgoOS        !IchorAlgoOS means Obara-Saika/Head-Gordon-Pople
+call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 IF(FullBatch)THEN
    SameLHSaos = intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
    SameRHSaos = intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
@@ -515,33 +519,21 @@ ELSE
    SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
 ENDIF
 
-IF(SameODs.AND.SameRHSaos.AND.SameLHSaos)THEN
-   IchorPermuteSpec= IchorPermuteTTT
-ELSEIF(SameRHSaos.AND.SameLHSaos)THEN
-   IchorPermuteSpec=IchorPermuteTTF 
-ELSEIF(SameODs)THEN
-   IchorPermuteSpec=IchorPermuteFFT 
-ELSEIF(SameLHSaos)THEN
-   IchorPermuteSpec=IchorPermuteTFF
-ELSEIF(SameRHSaos)THEN
-   IchorPermuteSpec=IchorPermuteFTF
-ELSE
-   IchorPermuteSpec=IchorPermuteFFF
-ENDIF
-filestorageIdentifier=IchorNofilestorage !Logical Unit number or IchorNofilestorage if no file storage
-MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
-MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
-MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
-MemAllocated = 0                 !Memory allocated in the Ichor program
+call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+call GetIchorFileStorageIdentifier(filestorageIdentifier)
 
+MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
+MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
+MaxMemAllocated=0!Maximum Memory used in the program. Ichor adds to this value
+MemAllocated = 0 !Memory allocated in the Ichor program
+
+call GetIchorScreeningParameter(IchorScreenSpec,SETTING%SCHEME%CS_SCREEN,&
+     & SETTING%SCHEME%OD_SCREEN,.FALSE.)
 IF(SETTING%SCHEME%CS_SCREEN.AND.SETTING%SCHEME%OD_SCREEN)THEN
-   IchorScreenSpec=IchorScreen      !Default screening         
-   CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 ELSEIF(SETTING%SCHEME%CS_SCREEN)THEN
-   IchorScreenSpec=IchorScreenCS  !Cauchy-Schwarz screening         
-   CALL GET_IchorGabID(IchorGabID1,IchorGabID2)
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 ELSE   
-   IchorScreenSpec=IchorScreenNone    !deactivate screening in CS screening
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
@@ -558,7 +550,7 @@ THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
 !=====================================================================
 !  Main Call
 !=====================================================================
-call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
      & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
      & nbatchAstart2,nbatchAend2,&
@@ -582,15 +574,13 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
+
+call Mem_Add_external_memory(MaxMemAllocated)
 call mem_dealloc(InputStorage)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
 !=====================================================================
 
 
 !=====================================================================
-
 !free space
 !A
 call mem_dealloc(nAtomsOfTypeA)
@@ -630,6 +620,9 @@ call mem_dealloc(startOrbitalOfTypeD)
 call mem_dealloc(exponentsOfTypeD)
 call mem_dealloc(ContractCoeffOfTypeD)
 call mem_dealloc(Dcenters)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
 
 END SUBROUTINE MAIN_ICHORERI_DRIVER
 
@@ -639,6 +632,7 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
 Character,intent(IN)      :: intSpec(5)
 logical,intent(IN) :: SameMOL
+#ifdef VAR_ICHOR
 !
 integer                :: nTypes
 !A
@@ -676,9 +670,8 @@ Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
 logical   :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 
-#ifdef VAR_ICHOR 
-call FreeIchorSaveGabModule
-call InitIchorSaveGabModule()
+call FreeIchorSaveGabModuleInterface
+call InitIchorSaveGabModuleInterface
 
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
@@ -687,10 +680,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    !A
    IF (intSpec(1).EQ.'R') THEN
       !   The regular AO-basis
-      AObasis => setting%basis(1)%p%regular
+      AObasis => setting%basis(1)%p%BINFO(RegBasParam)
    ELSEIF(intspec(1).EQ.'C')THEN
       !   The CABS AO-type basis
-      AObasis => setting%basis(1)%p%CABS   
+      AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
    ELSE
       call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
    ENDIF
@@ -717,10 +710,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    !B
    IF (intSpec(2).EQ.'R') THEN
       !   The regular AO-basis
-      AObasis => setting%basis(2)%p%regular
+      AObasis => setting%basis(2)%p%BINFO(RegBasParam)
    ELSEIF(intspec(2).EQ.'C')THEN
       !   The CABS AO-type basis
-      AObasis => setting%basis(2)%p%CABS   
+      AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
    ELSE
       call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
    ENDIF
@@ -744,35 +737,37 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & spherical,MaxnAtomsB,MaxnPrimB,MaxnContB,startOrbitalOfTypeB,&
         & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,1,nBatchB)
    
-   SphericalSpec=SphericalParam 
-   IchorJobSpec=IcorJobEri          !4 center 2 electronic repulsion integrals
-   IchorInputSpec=IcorInputNoInput  !no input in inputstorage (no Density matrix)
+   call GetIchorSphericalParamIdentifier(SphericalSpec)
+   call GetIchorJobEriIdentifier(IchorJobSpec)
+   call GetIchorInputIdentifier(IchorInputSpec)
    IchorInputDim1=1                 !not used since   IcorInputNoInput
    IchorInputDim2=1                 !not used since   IcorInputNoInput
    IchorInputDim3=1                 !not used since   IcorInputNoInput
    call mem_alloc(InputStorage,1)
-   IchorParSpec=IchorParNone        !no parallelization
-   IchorDebugSpec=iprint            !Debug PrintLevel
-   IchorAlgoSpec=IchorAlgoOS        !IchorAlgoOS means Obara-Saika/Head-Gordon-Pople
-   IchorPermuteSpec=IchorPermuteFFF !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
-   filestorageIdentifier=IchorNofilestorage !Logical Unit number or IchorNofilestorage if no file storage
+   call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+   call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+   call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
+   !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
+   call GetIchorPermuteParameter(IchorPermuteSpec,.FALSE.,.FALSE.,.FALSE.)
+   call GetIchorFileStorageIdentifier(filestorageIdentifier)
    MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
    MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
    MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
    MemAllocated = 0                 !Memory allocated in the Ichor program
-   !LHS
    OutputDim1 = nBatchA
    OutputDim2 = nBatchB
    OutputDim3 = 1
    OutputDim4 = 1
    OutputDim5 = 1
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.TRUE.,.FALSE.)
+   !LHS
    IF (intSpec(1).EQ.intSpec(2).AND.SAMEMOL)THEN
       SameLHSaos = .TRUE.
    ELSE
       SameLHSaos = .FALSE.
    ENDIF
    call mem_alloc(BATCHGAB,nBatchA*nBatchB)
-   call IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+   call IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
         & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
         & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
         & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
@@ -785,11 +780,12 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & MaxFileStorage,MaxMemAllocated,MemAllocated,&
         & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
         & BATCHGAB,lupri)
+   call Mem_Add_external_memory(MaxMemAllocated)
+
    CALL GenerateIdentifier(INTSPEC,GabIdentifier)
-   call AddGabToIchorSaveGabModule(nBatchA,nBatchB,GabIdentifier,BATCHGAB)
+   call AddGabToIchorSaveGabModuleInterface(nBatchA,nBatchB,&
+        & GabIdentifier,BATCHGAB)
    call mem_dealloc(BATCHGAB)   
-   !   call DetermineBatchSize(nTypesC,nAtomsOfTypeC,nBatchC)
-   !   call DetermineBatchSize(nTypesD,nAtomsOfTypeD,nBatchD)
    IchorGabID1=GabIdentifier !screening Matrix Identifier
    
    !A
@@ -820,10 +816,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       !C
       IF (intSpec(3).EQ.'R') THEN
          !   The regular AO-basis
-         AObasis => setting%basis(3)%p%regular
+         AObasis => setting%basis(3)%p%BINFO(RegBasParam)
       ELSEIF(intspec(3).EQ.'C')THEN
          !   The CABS AO-type basis
-         AObasis => setting%basis(3)%p%CABS   
+         AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
       ELSE
          call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
       ENDIF
@@ -850,10 +846,10 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       !D
       IF (intSpec(4).EQ.'R') THEN
          !   The regular AO-basis
-         AObasis => setting%basis(4)%p%regular
+         AObasis => setting%basis(4)%p%BINFO(RegBasParam)
       ELSEIF(intspec(4).EQ.'C')THEN
          !   The CABS AO-type basis
-         AObasis => setting%basis(4)%p%CABS   
+         AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
       ELSE
          call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
       ENDIF
@@ -888,7 +884,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
          SameLHSaos = .FALSE.
       ENDIF
       call mem_alloc(BATCHGCD,nBatchC*nBatchD)
-      call IchorGab(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+      call IchorGabInterface(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
            & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
            & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
            & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
@@ -901,11 +897,13 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & MaxFileStorage,MaxMemAllocated,MemAllocated,&
            & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
            & BATCHGCD,lupri)
+      call mem_Add_external_memory(MaxMemAllocated)
+
       CALL GenerateIdentifier(INTSPEC,GabIdentifier)
       IF(GabIdentifier.EQ.IchorGabID1)THEN
          GabIdentifier = GabIdentifier + 53210
       ENDIF
-      call AddGabToIchorSaveGabModule(nBatchC,nBatchD,GabIdentifier,BATCHGCD)
+      call AddGabToIchorSaveGabModuleInterface(nBatchC,nBatchD,GabIdentifier,BATCHGCD)
       call mem_dealloc(BATCHGCD)
       IchorGabID2=GabIdentifier !screening Matrix Identifier   
 
@@ -930,24 +928,67 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
       call mem_dealloc(ContractCoeffOfTypeD)
       call mem_dealloc(Dcenters)
    ENDIF
-   IchorScreenSpec=IchorScreenCS  !Cauchy-Schwarz screening         
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.FALSE.,.FALSE.)
 ELSE   
-   IchorScreenSpec=IchorScreenNone    !deactivate screening in CS screening
+   call GetIchorScreeningParameter(IchorScreenSpec,.FALSE.,.FALSE.,.FALSE.)
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
-CALL SET_IchorGabID(IchorGabID1,IchorGabID2)
+CALL SET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
 
 END SUBROUTINE SCREEN_ICHORERI_DRIVER
 
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(inout) :: nBatchA,nBatchB
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
+        & nBatchA,nBatchB,IchorGabID1)
+ELSE
+   call RetrieveGabDIMFromIchorSaveGabModuleInterface(&
+        & nBatchA,nBatchB,IchorGabID2)   
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM
+
+SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+logical,intent(IN) :: LHS
+integer,intent(IN) :: nBatchA,nBatchB
+real(realk),intent(inout) :: BATCHGAB(nBatchA*nBatchB)
+! local variables
+integer :: IchorGabID1,IchorGabID2
+#ifdef VAR_ICHOR
+CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
+IF(LHS)THEN
+   call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
+ELSE
+   call RetrieveGabFromIchorSaveGabModuleInterface(nBatchA,nBatchB,IchorGabID2,BATCHGAB)
+ENDIF
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+END SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GAB
+
 SUBROUTINE FREE_SCREEN_ICHORERI()
 implicit none
 #ifdef VAR_ICHOR
-CALL SET_IchorGabID(0,0)
-call FreeIchorSaveGabModule
+CALL SET_IchorGabIDInterface(0,0)
+call FreeIchorSaveGabModuleInterface
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
@@ -958,6 +999,7 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   Character,intent(IN)      :: intSpec(5)
   integer,intent(inout) :: GabIdentifier
   !
+#ifdef VAR_ICHOR 
   Integer :: I
   GabIdentifier = 0 
   DO I = 1,4
@@ -975,6 +1017,7 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   ELSE
      call lsquit('unknown spec in GENERATEIDENTIFIER',-1)
   ENDIF
+#endif
 END SUBROUTINE GENERATEIDENTIFIER
 
 Subroutine Determine_nTypesForBatch(BASISINFO,ntypes)
@@ -984,6 +1027,7 @@ TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of different types of batches
 INTEGER,intent(inout)        :: ntypes
 !
+#ifdef VAR_ICHOR 
 INTEGER                   :: SUM1,I,K
 IF(BASISINFO%natomtypes.EQ. 0)&
      & CALL LSQUIT('Error Determine_nTypesForBatch called with empty basis',-1)
@@ -995,6 +1039,7 @@ DO I=1,BASISINFO%natomtypes
    ENDDO
    ntypes=ntypes + SUM1
 ENDDO
+#endif
 END Subroutine DETERMINE_NTYPESFORBATCH
 
 Subroutine Determine_nBatches(MOLECULE,BASISINFO,nBatches)
@@ -1005,6 +1050,7 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 TYPE(BASISSETINFO),intent(in):: BASISINFO
 !> the number of Batches
 integer,intent(inout)    :: nBatches
+#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg
 !build nAtomsOfType
@@ -1025,6 +1071,7 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
+#endif
 END Subroutine DETERMINE_NBATCHES
 
 Subroutine Determine_OrbSizeOfBatches(MOLECULE,BASISINFO,nBatches,OrbSizeOfBatches,Spherical)
@@ -1040,6 +1087,7 @@ integer,intent(in)    :: nBatches
 !> the orbital size of Batches
 integer,intent(inout) :: OrbSizeOfBatches(nBatches)
 
+#ifdef VAR_ICHOR 
 !local variables
 integer :: R,I,ICHARGE,TYPE,K,iseg,ncol,nOrbComp,iBatches
 !build nAtomsOfType
@@ -1068,6 +1116,7 @@ DO I=1,MOLECULE%natoms
   ENDDO
  ENDDO
 ENDDO
+#endif
 END Subroutine DETERMINE_ORBSIZEOFBATCHES
 
 Subroutine build_TypeInfo1(MOLECULE,BASISINFO,nTypes,nAtomsOfType,&
@@ -1098,6 +1147,7 @@ integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
 
+#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1181,6 +1231,7 @@ do iBatchType=1,nBatchType
    MaxnCont = MAX(MaxnCont,nContOfType(iBatchType))
 enddo
 
+#endif
 end Subroutine Build_TypeInfo1
 
 Subroutine Build_TypeInfo2(MOLECULE,BASISINFO,nTypes,spherical,MaxnAtoms,MaxnPrim,&
@@ -1212,6 +1263,7 @@ real(realk),intent(inout) :: CentersOfType(3,MaxnAtoms,nTypes)
 integer,intent(in)      :: iBatchStart
 !> the end Batch index (normally nBatches else not the full set is used)
 integer,intent(in)      :: iBatchEnd
+#ifdef VAR_ICHOR 
 !
 INTEGER,pointer          :: MODELTYPES(:),MODELBATCHTYPES(:,:,:)
 INTEGER                  :: maxseg,maxang,I,K,L,iBatchType,R,icharge,type,iseg
@@ -1297,6 +1349,7 @@ ENDDO
 call mem_dealloc(MODELTYPES)
 call mem_dealloc(MODELBATCHTYPES)
 
+#endif
 end Subroutine Build_TypeInfo2
 
 END MODULE IchorErimoduleHost

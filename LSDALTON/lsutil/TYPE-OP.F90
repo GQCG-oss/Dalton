@@ -53,71 +53,6 @@ integer :: comm
 setting%comm = comm
 end subroutine set_integral_comm
 
-!> \brief write lsitem to disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param LS lsitem to be written
-SUBROUTINE write_lsitem_to_disk(LS)
-implicit none
-TYPE(LSITEM)    :: LS
-!
-LOGICAL         :: fileexist  
-INTEGER         :: lun,i
-call lsquit('write_lsitem_to_disk option disabeled',-1)
-!Open lsitem file
-!!$INQUIRE(file='lsitem',EXIST=fileexist)
-!!$IF(fileexist)THEN
-!!$   lun = -1
-!!$   CALL LSOPEN(LUN,'lsitem','old','UNFORMATTED')
-!!$   call LSclose(LUN,'DELETE')
-!!$ENDIF
-!!$lun = -1
-!!$CALL LSOPEN(lun,'lsitem','new','UNFORMATTED')
-!!$
-!!$!Write
-!!$CALL WRITE_DALTONINPUT_TO_DISK(lun,LS%INPUT)
-!!$write(lun) ls%setting%integraltransformGC
-!!$
-!!$!Close
-!!$call LSclose(LUN,'KEEP')
-
-END SUBROUTINE write_lsitem_to_disk
-
-!> \brief read lsitem from disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param LS lsitem to be written
-SUBROUTINE read_lsitem_from_disk(LS)
-implicit none
-TYPE(LSITEM)    :: LS
-!
-LOGICAL         :: fileexist,integraltransformGC
-INTEGER         :: lun,i,nbast
-call lsquit('read_lsitem_from_disk option disabeled',-1)
-
-!!$INQUIRE(file='lsitem',EXIST=fileexist)
-!!$IF(fileexist)THEN
-!!$   LS%lupri=-1
-!!$   LS%luerr=-1
-!!$   lun = -1
-!!$   CALL LSOPEN(lun,'lsitem','old','UNFORMATTED')
-!!$   REWIND(lun)
-!!$   CALL READ_DALTONINPUT_FROM_DISK(lun,LS%INPUT)
-!!$   read(lun)integraltransformGC
-!!$   call LSclose(LUN,'KEEP')
-!!$   CALL typedef_init_setting(ls%setting)
-!!$   CALL typedef_set_default_setting(ls%setting,ls%input)
-!!$   ls%setting%integraltransformGC = integraltransformGC
-!!$   IF(.NOT.ls%input%basis%REGULAR%Gcont.AND.ls%input%BASIS%GCtransAlloc)THEN
-!!$      nbast = getNbasis(AORdefault,Contractedinttype,ls%input%MOLECULE,6)
-!!$      call write_GCtransformationmatrix(nbast,ls%setting,6)
-!!$   ENDIF
-!!$ELSE
-!!$   CALL LSQUIT('In call to read_lsitem_from_disk FILE: lsitem do not exit ',-1)
-!!$ENDIF
-
-END SUBROUTINE read_lsitem_from_disk
-
 !> \brief 
 !> \author
 !> \date
@@ -145,6 +80,9 @@ ELSEIF (AOtype.EQ.AOdfCABS) THEN
 ELSEIF (AOtype.EQ.AOdfJK) THEN
   nc = MOLECULE%nbastJK
   np = MOLECULE%nprimbastJK
+ELSEIF (AOtype.EQ.AOadmm) THEN
+  nc = MOLECULE%nbastADMM
+  np = MOLECULE%nprimbastADMM
 ELSEIF (AOtype.EQ.AOVAL) THEN
   nc = MOLECULE%nbastVAL
   np = MOLECULE%nprimbastVAL
@@ -154,24 +92,9 @@ ELSEIF (AOtype.EQ.AONuclear) THEN
 ELSEIF (AOtype.EQ.AOpCharge) THEN
   nc = MOLECULE%nAtoms
   np = MOLECULE%nAtoms
-ELSEIF (AOtype.EQ.AOS1p1cSeg)THEN
-  nc = 1
-  np = 1
-ELSEIF (AOtype.EQ.AOS2p1cSeg)THEN
-  nc = 1
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cSeg)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOS2p2cGen)THEN
-  nc = 2
-  np = 2
-ELSEIF (AOtype.EQ.AOP1p1cSeg)THEN
-  nc = 3
-  np = 3
-ELSEIF (AOtype.EQ.AOD1p1cSeg)THEN
-  nc = 5
-  np = 5
+ELSEIF (AOtype.EQ.AOelField) THEN
+  nc = MOLECULE%nAtoms
+  np = MOLECULE%nAtoms
 ELSE
   WRITE(LUPRI,'(1X,A,I3)') 'Error in getNbasis. Not valid AOtype =', AOtype
   CALL LSQUIT('AOtype not valid in getNbasis',lupri)
@@ -185,317 +108,6 @@ ELSE
   CALL LSQUIT('Error: intType not valid in getNbasis',lupri)
 ENDIF
 END FUNCTION getNbasis
-
-#if 0
-!> \brief write daltonitem to disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param lun logical unit number to write to
-!> \param dalton the daltonitem structure
-SUBROUTINE write_daltonitem_to_disk(lun,DALTON)
-implicit none
-TYPE(integralconfig),intent(in)   :: DALTON
-INTEGER,intent(in)            :: lun
-
-WRITE(LUN) DALTON%CONTANG
-WRITE(LUN) DALTON%NOGCINTEGRALTRANSFORM
-WRITE(LUN) DALTON%FORCEGCBASIS
-WRITE(LUN) DALTON%NOBQBQ
-WRITE(LUN) DALTON%NOOMP
-WRITE(LUN) DALTON%UNRES
-WRITE(LUN) DALTON%CFG_LSDALTON
-WRITE(LUN) DALTON%TRILEVEL
-WRITE(LUN) DALTON%DOPASS
-WRITE(LUN) DALTON%DENSFIT
-WRITE(LUN) DALTON%DF_K
-WRITE(LUN) DALTON%INTEREST
-WRITE(LUN) DALTON%MATRICESINMEMORY
-WRITE(LUN) DALTON%MEMDIST
-WRITE(LUN) DALTON%LOW_ACCURACY_START
-WRITE(LUN) DALTON%LINSCA
-WRITE(LUN) DALTON%PRINTATOMCOORD
-WRITE(LUN) DALTON%JENGINE
-WRITE(LUN) DALTON%LOCALLINK
-WRITE(LUN) DALTON%LOCALLINKmulthr
-WRITE(LUN) DALTON%LOCALLINKsimmul
-WRITE(LUN) DALTON%LOCALLINKoption
-WRITE(LUN) DALTON%LOCALLINKincrem
-WRITE(LUN) DALTON%LOCALLINKDcont
-WRITE(LUN) DALTON%LOCALLINKDthr
-WRITE(LUN) DALTON%FMM
-WRITE(LUN) DALTON%LINK
-WRITE(LUN) DALTON%LSDASCREEN
-WRITE(LUN) DALTON%LSDAJENGINE
-WRITE(LUN) DALTON%LSDACOULOMB
-WRITE(LUN) DALTON%LSDALINK
-WRITE(LUN) DALTON%LSDASCREEN_THRLOG
-WRITE(LUN) DALTON%DAJENGINE
-WRITE(LUN) DALTON%DACOULOMB
-WRITE(LUN) DALTON%DALINK
-WRITE(LUN) DALTON%DASCREEN_THRLOG
-WRITE(LUN) DALTON%DEBUGOVERLAP
-WRITE(LUN) DALTON%DEBUG4CENTER
-WRITE(LUN) DALTON%DEBUGPROP
-WRITE(LUN) DALTON%DEBUGICHOR
-WRITE(LUN) DALTON%DEBUGGEN1INT
-WRITE(LUN) DALTON%DEBUGCGTODIFF
-WRITE(LUN) DALTON%DEBUGEP
-WRITE(LUN) DALTON%DEBUGscreen
-WRITE(LUN) DALTON%DEBUGGEODERIVOVERLAP
-WRITE(LUN) DALTON%DEBUGGEODERIVKINETIC
-WRITE(LUN) DALTON%DEBUGGEODERIVEXCHANGE
-WRITE(LUN) DALTON%DEBUGGEODERIVCOULOMB
-WRITE(LUN) DALTON%DEBUGMAGDERIV
-WRITE(LUN) DALTON%DEBUGMAGDERIVOVERLAP
-WRITE(LUN) DALTON%DEBUG4CENTER_ERI
-WRITE(LUN) DALTON%DEBUGCCFRAGMENT
-WRITE(LUN) DALTON%DEBUGKINETIC
-WRITE(LUN) DALTON%DEBUGNUCPOT
-WRITE(LUN) DALTON%DO4CENTERERI
-WRITE(LUN) DALTON%OVERLAP_DF_J
-WRITE(LUN) DALTON%DEBUGGGEM
-WRITE(LUN) DALTON%DEBUGLSlib
-WRITE(LUN) DALTON%DEBUGUncontAObatch
-WRITE(LUN) DALTON%DEBUGDECPACKED
-WRITE(LUN) DALTON%PARI_J
-WRITE(LUN) DALTON%PARI_K
-WRITE(LUN) DALTON%SIMPLE_PARI
-WRITE(LUN) DALTON%NON_ROBUST_PARI
-WRITE(LUN) DALTON%PARI_CHARGE
-WRITE(LUN) DALTON%PARI_DIPOLE
-WRITE(LUN) DALTON%TIMINGS
-WRITE(LUN) DALTON%nonSphericalETUV
-WRITE(LUN) DALTON%HIGH_RJ000_ACCURACY
-WRITE(LUN) DALTON%NO_MMFILES
-WRITE(LUN) DALTON%MM_NO_ONE
-WRITE(LUN) DALTON%CREATED_MMFILES
-WRITE(LUN) DALTON%USEBUFMM
-WRITE(LUN) DALTON%ATOMBASIS
-WRITE(LUN) DALTON%BASIS
-WRITE(LUN) DALTON%AUXBASIS
-WRITE(LUN) DALTON%CABSBASIS
-WRITE(LUN) DALTON%JKBASIS
-WRITE(LUN) DALTON%NOFAMILY
-WRITE(LUN) DALTON%Hermiteecoeff
-WRITE(LUN) DALTON%DoSpherical
-WRITE(LUN) DALTON%UNCONT
-WRITE(LUN) DALTON%NOSEGMENT
-WRITE(LUN) DALTON%DO3CENTEROVL
-WRITE(LUN) DALTON%DO2CENTERERI
-WRITE(LUN) DALTON%MIXEDOVERLAP
-WRITE(LUN) DALTON%CS_SCREEN
-WRITE(LUN) DALTON%PARI_SCREEN
-WRITE(LUN) DALTON%OE_SCREEN
-WRITE(LUN) DALTON%saveGABtoMem
-WRITE(LUN) DALTON%PS_SCREEN
-WRITE(LUN) DALTON%PS_DEBUG
-WRITE(LUN) DALTON%OD_SCREEN 
-WRITE(LUN) DALTON%MBIE_SCREEN
-WRITE(LUN) DALTON%FRAGMENT
-WRITE(LUN) DALTON%LR_EXCHANGE_DF
-WRITE(LUN) DALTON%LR_EXCHANGE_PARI
-WRITE(LUN) DALTON%LR_EXCHANGE
-WRITE(LUN) DALTON%ADMM_EXCHANGE
-WRITE(LUN) DALTON%ADMM_GCBASIS
-WRITE(LUN) DALTON%ADMM_JKBASIS
-WRITE(LUN) DALTON%ADMM_DFBASIS
-WRITE(LUN) DALTON%ADMM_MCWEENY
-WRITE(LUN) DALTON%ADMM_CONST_EL
-
-WRITE(LUN) DALTON%SR_EXCHANGE
-WRITE(LUN) DALTON%CAM
-
-WRITE(LUN) DALTON%LINSCAPRINT
-WRITE(LUN) DALTON%AOPRINT
-WRITE(LUN) DALTON%MOLPRINT
-WRITE(LUN) DALTON%INTPRINT
-WRITE(LUN) DALTON%BASPRINT
-WRITE(LUN) DALTON%FTUVmaxprim
-WRITE(LUN) DALTON%maxpasses
-WRITE(LUN) DALTON%MM_LMAX
-WRITE(LUN) DALTON%MM_TLMAX
-WRITE(LUN) DALTON%MMunique_ID1
-WRITE(LUN) DALTON%numAtomsPerFragment
-WRITE(LUN) DALTON%LU_LUINTM
-WRITE(LUN) DALTON%LU_LUINTR
-WRITE(LUN) DALTON%LU_LUINDM
-WRITE(LUN) DALTON%LU_LUINDR
-
-call WRITE_DFT_PARAM(LUN,DALTON%DFT)
-
-WRITE(LUN) DALTON%MM_SCREEN
-WRITE(LUN) DALTON%DO_MMGRD
-WRITE(LUN) DALTON%MM_NOSCREEN
-WRITE(LUN) DALTON%THRESHOLD  
-WRITE(LUN) DALTON%CS_THRESHOLD
-WRITE(LUN) DALTON%OE_THRESHOLD
-WRITE(LUN) DALTON%PS_THRESHOLD
-WRITE(LUN) DALTON%OD_THRESHOLD
-WRITE(LUN) DALTON%PARI_THRESHOLD
-WRITE(LUN) DALTON%J_THR
-WRITE(LUN) DALTON%K_THR
-WRITE(LUN) DALTON%ONEEL_THR
-WRITE(LUN) DALTON%CAMalpha
-WRITE(LUN) DALTON%CAMbeta
-WRITE(LUN) DALTON%CAMmu
-WRITE(LUN) DALTON%exchangeFactor
-
-END SUBROUTINE write_daltonitem_to_disk
-
-!> \brief read daltonitem from disk
-!> \author S. Reine and T. Kjaergaard
-!> \date 2010
-!> \param lun logical unit number to write to
-!> \param dalton the daltonitem structure
-SUBROUTINE read_daltonitem_from_disk(lun,DALTON)
-implicit none
-TYPE(integralconfig),intent(inout)   :: DALTON
-INTEGER,intent(in)            :: lun
-
-READ(LUN) DALTON%CONTANG
-READ(LUN) DALTON%NOGCINTEGRALTRANSFORM
-READ(LUN) DALTON%NOBQBQ
-READ(LUN) DALTON%NOOMP
-READ(LUN) DALTON%UNRES
-READ(LUN) DALTON%CFG_LSDALTON
-READ(LUN) DALTON%TRILEVEL
-READ(LUN) DALTON%DOPASS
-READ(LUN) DALTON%DENSFIT
-READ(LUN) DALTON%DF_K
-READ(LUN) DALTON%INTEREST
-READ(LUN) DALTON%MATRICESINMEMORY
-READ(LUN) DALTON%MEMDIST
-READ(LUN) DALTON%LOW_ACCURACY_START
-READ(LUN) DALTON%LINSCA
-READ(LUN) DALTON%PRINTATOMCOORD
-READ(LUN) DALTON%JENGINE
-READ(LUN) DALTON%LOCALLINK
-READ(LUN) DALTON%LOCALLINKmulthr
-READ(LUN) DALTON%LOCALLINKsimmul
-READ(LUN) DALTON%LOCALLINKoption
-READ(LUN) DALTON%LOCALLINKincrem
-READ(LUN) DALTON%LOCALLINKDcont
-READ(LUN) DALTON%LOCALLINKDthr
-READ(LUN) DALTON%FMM
-READ(LUN) DALTON%LINK
-READ(LUN) DALTON%LSDASCREEN
-READ(LUN) DALTON%LSDAJENGINE
-READ(LUN) DALTON%LSDACOULOMB
-READ(LUN) DALTON%LSDALINK
-READ(LUN) DALTON%LSDASCREEN_THRLOG
-READ(LUN) DALTON%DAJENGINE
-READ(LUN) DALTON%DACOULOMB
-READ(LUN) DALTON%DALINK
-READ(LUN) DALTON%DASCREEN_THRLOG
-READ(LUN) DALTON%DEBUGOVERLAP
-READ(LUN) DALTON%DEBUG4CENTER
-READ(LUN) DALTON%DEBUGPROP
-READ(LUN) DALTON%DEBUGICHOR
-READ(LUN) DALTON%DEBUGGEN1INT
-READ(LUN) DALTON%DEBUGCGTODIFF
-READ(LUN) DALTON%DEBUGEP
-READ(LUN) DALTON%DEBUGscreen
-READ(LUN) DALTON%DEBUGGEODERIVOVERLAP
-READ(LUN) DALTON%DEBUGGEODERIVKINETIC
-READ(LUN) DALTON%DEBUGGEODERIVEXCHANGE
-READ(LUN) DALTON%DEBUGGEODERIVCOULOMB
-READ(LUN) DALTON%DEBUGMAGDERIV
-READ(LUN) DALTON%DEBUGMAGDERIVOVERLAP
-READ(LUN) DALTON%DEBUG4CENTER_ERI
-READ(LUN) DALTON%DEBUGCCFRAGMENT
-READ(LUN) DALTON%DEBUGKINETIC
-READ(LUN) DALTON%DEBUGNUCPOT
-READ(LUN) DALTON%DO4CENTERERI
-READ(LUN) DALTON%OVERLAP_DF_J
-READ(LUN) DALTON%DEBUGGGEM
-READ(LUN) DALTON%DEBUGLSlib
-READ(LUN) DALTON%DEBUGUncontAObatch
-READ(LUN) DALTON%DEBUGDECPACKED
-READ(LUN) DALTON%PARI_J
-READ(LUN) DALTON%PARI_K
-READ(LUN) DALTON%SIMPLE_PARI
-READ(LUN) DALTON%NON_ROBUST_PARI
-READ(LUN) DALTON%PARI_CHARGE
-READ(LUN) DALTON%PARI_DIPOLE
-READ(LUN) DALTON%TIMINGS
-READ(LUN) DALTON%nonSphericalETUV
-READ(LUN) DALTON%HIGH_RJ000_ACCURACY
-READ(LUN) DALTON%NO_MMFILES
-READ(LUN) DALTON%MM_NO_ONE
-READ(LUN) DALTON%CREATED_MMFILES
-READ(LUN) DALTON%USEBUFMM
-READ(LUN) DALTON%ATOMBASIS
-READ(LUN) DALTON%BASIS
-READ(LUN) DALTON%AUXBASIS
-READ(LUN) DALTON%CABSBASIS
-READ(LUN) DALTON%JKBASIS
-READ(LUN) DALTON%NOFAMILY
-READ(LUN) DALTON%Hermiteecoeff
-READ(LUN) DALTON%DoSpherical
-READ(LUN) DALTON%UNCONT
-READ(LUN) DALTON%NOSEGMENT
-Read(LUN) DALTON%DO3CENTEROVL
-READ(LUN) DALTON%DO2CENTERERI
-READ(LUN) DALTON%MIXEDOVERLAP
-READ(LUN) DALTON%CS_SCREEN
-READ(LUN) DALTON%PARI_SCREEN
-READ(LUN) DALTON%OE_SCREEN
-READ(LUN) DALTON%saveGABtoMem
-READ(LUN) DALTON%PS_SCREEN
-READ(LUN) DALTON%PS_DEBUG
-READ(LUN) DALTON%OD_SCREEN 
-READ(LUN) DALTON%MBIE_SCREEN
-READ(LUN) DALTON%FRAGMENT
-READ(LUN) DALTON%LR_EXCHANGE_DF
-READ(LUN) DALTON%LR_EXCHANGE_PARI
-READ(LUN) DALTON%LR_EXCHANGE
-READ(LUN) DALTON%ADMM_EXCHANGE
-READ(LUN) DALTON%ADMM_GCBASIS
-READ(LUN) DALTON%ADMM_JKBASIS
-READ(LUN) DALTON%ADMM_DFBASIS
-READ(LUN) DALTON%ADMM_MCWEENY
-READ(LUN) DALTON%ADMM_CONST_EL
-
-READ(LUN) DALTON%SR_EXCHANGE
-READ(LUN) DALTON%CAM
-
-READ(LUN) DALTON%LINSCAPRINT
-READ(LUN) DALTON%AOPRINT
-READ(LUN) DALTON%MOLPRINT
-READ(LUN) DALTON%INTPRINT
-READ(LUN) DALTON%BASPRINT
-READ(LUN) DALTON%FTUVmaxprim
-READ(LUN) DALTON%maxpasses
-READ(LUN) DALTON%MM_LMAX
-READ(LUN) DALTON%MM_TLMAX
-READ(LUN) DALTON%MMunique_ID1
-READ(LUN) DALTON%numAtomsPerFragment
-READ(LUN) DALTON%LU_LUINTM
-READ(LUN) DALTON%LU_LUINTR
-READ(LUN) DALTON%LU_LUINDM
-READ(LUN) DALTON%LU_LUINDR
-
-call READ_DFT_PARAM(LUN,DALTON%DFT)
-
-READ(LUN) DALTON%MM_SCREEN
-READ(LUN) DALTON%DO_MMGRD
-READ(LUN) DALTON%MM_NOSCREEN
-READ(LUN) DALTON%THRESHOLD  
-READ(LUN) DALTON%CS_THRESHOLD
-READ(LUN) DALTON%OE_THRESHOLD
-READ(LUN) DALTON%PS_THRESHOLD
-READ(LUN) DALTON%OD_THRESHOLD
-READ(LUN) DALTON%PARI_THRESHOLD
-READ(LUN) DALTON%J_THR
-READ(LUN) DALTON%K_THR
-READ(LUN) DALTON%ONEEL_THR
-READ(LUN) DALTON%CAMalpha
-READ(LUN) DALTON%CAMbeta
-READ(LUN) DALTON%CAMmu
-READ(LUN) DALTON%exchangeFactor
-
-END SUBROUTINE read_daltonitem_from_disk
-#endif
 
 !> \brief set the integralconfig to default values
 !> \author S. Reine and T. Kjaergaard
@@ -518,11 +130,7 @@ DALTON%DOPASS = .TRUE.
 DALTON%DENSFIT = .FALSE.
 DALTON%DF_K = .FALSE.
 DALTON%INTEREST = .FALSE.
-#ifdef VAR_SCALAPACK
-DALTON%MATRICESINMEMORY = .TRUE.
-#else
-DALTON%MATRICESINMEMORY = .TRUE.!.FALSE.
-#endif
+DALTON%MATRICESINMEMORY = .FALSE.
 DALTON%MEMDIST = .FALSE.
 DALTON%LOW_ACCURACY_START = .FALSE.
 DALTON%LINSCA = .FALSE.
@@ -533,17 +141,19 @@ DALTON%AOPRINT = 0
 DALTON%MOLPRINT = 0
 DALTON%INTPRINT = 0
 DALTON%PRINTATOMCOORD = .FALSE.
-DALTON%BASIS = .FALSE.
 DALTON%ATOMBASIS = .FALSE.
-DALTON%AUXBASIS = .FALSE.
-DALTON%CABSBASIS = .FALSE.
-DALTON%JKBASIS = .FALSE.
+DALTON%BASIS = .FALSE.
 DALTON%ADMM_EXCHANGE = .FALSE.
+DALTON%ADMM1         = .FALSE.
+DALTON%ADMMQ         = .FALSE.
+DALTON%ADMMS         = .FALSE.
+DALTON%ADMMP         = .FALSE.
+DALTON%ADMM_FUNC     = 'B88X'
+DALTON%ADMM_ADDXC    = .FALSE.
 DALTON%ADMM_GCBASIS  = .FALSE.
-DALTON%ADMM_DFBASIS  = .FALSE.
 DALTON%ADMM_JKBASIS  = .FALSE.
-DALTON%ADMM_MCWEENY  = .FALSE.
-DALTON%ADMM_CONST_EL = .FALSE.
+DALTON%ADMM_2ERI     = .FALSE.
+DALTON%PRINT_EK3     = .FALSE.
 DALTON%NOFAMILY = .FALSE.
 DALTON%Hermiteecoeff = .TRUE.
 DALTON%JENGINE = .TRUE.
@@ -581,6 +191,7 @@ DALTON%DEBUG4CENTER = .FALSE.
 DALTON%DEBUG4CENTER_ERI = .FALSE.
 DALTON%DEBUGPROP = .FALSE.
 DALTON%DEBUGICHOR = .FALSE.
+DALTON%DEBUGICHOROPTION = -1
 DALTON%DEBUGGEN1INT = .FALSE.
 DALTON%DEBUGCGTODIFF = .FALSE.
 DALTON%DEBUGEP = .FALSE.
@@ -660,12 +271,6 @@ DALTON%MIXEDOVERLAP = .FALSE.
 DALTON%LR_EXCHANGE_DF = .FALSE.
 DALTON%LR_EXCHANGE_PARI = .FALSE.
 DALTON%LR_EXCHANGE = .FALSE.
-DALTON%ADMM_EXCHANGE = .FALSE.
-DALTON%ADMM_GCBASIS    = .FALSE.
-DALTON%ADMM_JKBASIS    = .FALSE.
-DALTON%ADMM_DFBASIS    = .FALSE.
-DALTON%ADMM_MCWEENY    = .FALSE.
-DALTON%ADMM_CONST_EL   = .FALSE.
 !CAM PARAMETERS
 DALTON%SR_EXCHANGE = .FALSE.
 DALTON%CAM = .FALSE.
@@ -742,34 +347,20 @@ SUBROUTINE PRINT_DALTONINPUT(DALTON,LUPRI)
 IMPLICIT NONE
 TYPE(DALTONINPUT) :: DALTON
 INTEGER           :: LUPRI
-
+INTEGER :: I
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,'(A)')'THE DALTON INPUT STUCTUR'
 WRITE(LUPRI,*) '                     '
 CALL PRINT_MOLECULEINFO(LUPRI,DALTON%MOLECULE,DALTON%BASIS,DALTON%DALTON%MOLPRINT)
-CALL PRINT_MOLECULE_AND_BASIS(LUPRI,DALTON%MOLECULE,DALTON%BASIS%REGULAR)
-CALL PRINT_BASISSETINFO(LUPRI,DALTON%BASIS%REGULAR)
+DO I=1,nBasisBasParam
+   IF(DALTON%DALTON%BASIS(I))THEN
+      write(lupri,*)'THE ',DALTON%BASIS%BINFO(I)%label
+      CALL PRINT_MOLECULE_AND_BASIS(LUPRI,DALTON%MOLECULE,DALTON%BASIS%BINFO(I))
+      CALL PRINT_BASISSETINFO(LUPRI,DALTON%BASIS%BINFO(I))
+   ENDIF
+ENDDO
 CALL PRINT_DALTONITEM(LUPRI,DALTON%DALTON)
 CALL PRINT_IOITEM(DALTON%IO,LUPRI)
-
-IF(DALTON%DALTON%AUXBASIS)THEN
-   write(lupri,*)'THE DALTON%BASIS%AUXILIARY'
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,DALTON%MOLECULE,DALTON%BASIS%AUXILIARY)
-   CALL PRINT_BASISSETINFO(LUPRI,DALTON%BASIS%AUXILIARY)
-ENDIF
-
-IF(DALTON%DALTON%CABSBASIS)THEN
-   write(lupri,*)'THE DALTON%BASIS%CABS'
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,DALTON%MOLECULE,DALTON%BASIS%CABS)
-   CALL PRINT_BASISSETINFO(LUPRI,DALTON%BASIS%CABS)
-ENDIF
-
-IF(DALTON%DALTON%JKBASIS)THEN
-   write(lupri,*)'THE DALTON%BASIS%JK'
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,DALTON%MOLECULE,DALTON%BASIS%JK)
-   CALL PRINT_BASISSETINFO(LUPRI,DALTON%BASIS%JK)
-ENDIF
-
 END SUBROUTINE PRINT_DALTONINPUT
 
 !> \brief print the lssetting 
@@ -796,11 +387,15 @@ DO I=1,SET%nAO
    WRITE(LUPRI,*)'AO NUMBER',I
    WRITE(LUPRI,*)'MOLECULE AND BASIS'
    CALL PRINT_MOLECULEINFO(LUPRI,SET%MOLECULE(I)%p,SET%BASIS(I)%p,1)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SET%MOLECULE(I)%p,SET%BASIS(I)%p%REGULAR)   
-   CALL PRINT_BASISSETINFO(LUPRI,SET%BASIS(I)%p%REGULAR)
+   DO J=1,nBasisBasParam
+      IF(SET%SCHEME%BASIS(J))THEN
+         CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SET%MOLECULE(I)%p,SET%BASIS(I)%p%BINFO(I))   
+         CALL PRINT_BASISSETINFO(LUPRI,SET%BASIS(I)%p%BINFO(I))
+         CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SET%FRAGMENT(I)%p,SET%BASIS(I)%p%BINFO(I))   
+      ENDIF
+   ENDDO
    WRITE(LUPRI,*)'FRAGMENT AND BASIS'
    CALL PRINT_MOLECULEINFO(LUPRI,SET%FRAGMENT(I)%p,SET%BASIS(I)%p,1)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SET%FRAGMENT(I)%p,SET%BASIS(I)%p%REGULAR)   
    WRITE(LUPRI,*)'Batchindex(',I,')=',SET%Batchindex(I)
    WRITE(LUPRI,*)'Batchsize(',I,')=',SET%Batchsize(I)
    WRITE(LUPRI,*)'Batchdim  (',I,')=',SET%Batchdim(I)
@@ -898,6 +493,119 @@ WRITE(LUPRI,*)'node        ',SET%node
 
 END SUBROUTINE PRINT_LSSETTING
 
+#ifdef VAR_MPI
+!!$subroutine VerifySetting(Setting,master,lupri)
+!!$Type(LSSETTING)      :: SETTING
+!!$Type(LSSETTING)      :: SETTING2
+!!$integer(kind=ls_mpik) :: master
+!!$integer :: lupri
+!!$!
+!!$integer :: LUI
+!!$integer(kind=ls_mpik) :: comm,mynum,master,nodtot
+!!$integer :: IAO
+!!$
+!!$comm = Setting%comm
+!!$call get_rank_for_comm(comm,mynum)
+!!$
+!!$LUI=-1
+!!$CALL lsOPEN(LUI,'VerifySetting'//mynum,'UNKNOWN','UNFORMATTED')
+!!$
+!!$WRITE(LUI,*)Setting%comm
+!!$WRITE(LUI,*)Setting%IntegralTransformGC
+!!$do IAO=1,4
+!!$   WRITE(LUI,*)Setting%BASIS(IAO)%p
+!!$!   WRITE(LUI,*)Setting%MOLECULE(IAO)%p
+!!$!   WRITE(LUI,*)Setting%FRAGMENT(IAO)%p
+!!$enddo
+!!$call lsclose(LUI,'KEEP')
+!!$
+!!$call lsmpi_barrier(comm)
+!!$
+!!$IF(mynum.EQ.master)THEN
+!!$ call get_size_for_comm(comm,nodtot)
+!!$ do mynum = 0,nodtot-1
+!!$  LUI=-1
+!!$  CALL lsOPEN(LUI,'VerifySetting'//mynum,'UNKNOWN','UNFORMATTED')
+!!$  
+!!$  READ(LUI,*)Setting2%comm
+!!$  READ(LUI,*)Setting2%IntegralTransformGC
+!!$  allocate(Setting2%BASIS(4))
+!!$  
+!!$  do IAO=1,4
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%REGULAR%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%REGULAR%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%GCtrans%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%GCtrans%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%AUXILIARY%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%AUXILIARY%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%CABS%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%CABS%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%JK%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%JK%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%ADMM%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%ADMM%nChargeindex
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%VALENCE%natomtypes
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p%VALENCE%nChargeindex
+!!$      
+!!$   IF(Setting2%BASIS(IAO)%p%REGULAR%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%REGULAR%ATOMTYPE(Setting%BASIS(IAO)%p%REGULAR%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%REGULAR%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%REGULAR%Chargeindex(Setting%BASIS(IAO)%p%REGULAR%nChargeindex))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%GCtrans%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%GCtrans%ATOMTYPE(Setting%BASIS(IAO)%p%GCtrans%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%GCtrans%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%GCtrans%Chargeindex(Setting%BASIS(IAO)%p%GCtrans%nChargeindex))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%AUXILIARY%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%AUXILIARY%ATOMTYPE(Setting%BASIS(IAO)%p%AUXILIARY%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%AUXILIARY%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%AUXILIARY%Chargeindex(Setting%BASIS(IAO)%p%AUXILIARY%nChargeindex))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%CABS%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%CABS%ATOMTYPE(Setting%BASIS(IAO)%p%CABS%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%CABS%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%CABS%Chargeindex(Setting%BASIS(IAO)%p%CABS%nChargeindex))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%JK%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%JK%ATOMTYPE(Setting%BASIS(IAO)%p%JK%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%JK%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%JK%Chargeindex(Setting%BASIS(IAO)%p%JK%nChargeindex))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%VALENCE%natomtypes.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%VALENCE%ATOMTYPE(Setting%BASIS(IAO)%p%VALENCE%natomtypes))
+!!$   ENDIF
+!!$   IF(Setting2%BASIS(IAO)%p%VALENCE%nChargeindex.GT.0)THEN
+!!$      allocate(Setting2%BASIS(IAO)%p%VALENCE%Chargeindex(Setting%BASIS(IAO)%p%VALENCE%nChargeindex))
+!!$   ENDIF
+!!$   
+!!$   READ(LUI,*)Setting2%BASIS(IAO)%p
+!!$
+!!$         !compare
+!!$         IF(Setting2%BASIS(IAO)%p.EQ.Setting%BASIS(IAO)%p)THEN
+!!$            print*,'Setting2%BASIS(IAO)%p.EQ.Setting%BASIS(IAO)%p'
+!!$         ELSE
+!!$            call lsquit('Setting%BASIS(IAO)%p not correct',-1)
+!!$         ENDIF         
+!!$      enddo      
+!!$
+!!$      deallocate(Setting2%BASIS)
+!!$      call lsclose(LUI,'DELETE')
+!!$      WRITE(lupri,*)'Done settings from rank=',mynum
+!!$   enddo
+!!$   WRITE(lupri,*)'Done Testing all settings'
+!!$ENDIF
+!!$
+!!$call lsmpi_barrier(comm)
+!!$
+!!$end subroutine VerifySetting
+#endif
+
 !> \brief print the moleculeinfo structure
 !> \author S. Reine and T. Kjaergaard
 !> \date 2010
@@ -917,20 +625,39 @@ WRITE(LUPRI,'(A)')'THE MOLECULE'
 WRITE(LUPRI,*) '--------------------------------------------------------------------'
 WRITE(LUPRI,'(A38,2X,F8.4)')'Molecular Charge                    :',MOLECULE%charge
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Regular basisfunctions             :',MOLECULE%nbastREG
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Auxiliary basisfunctions           :',MOLECULE%nbastAUX
-WRITE(LUPRI,'(2X,A38,2X,I7)')'CABS basisfunctions                :',MOLECULE%nbastCABS
-WRITE(LUPRI,'(2X,A38,2X,I7)')'JK-fit basisfunctions              :',MOLECULE%nbastJK
+IF(BASIS%WBASIS(AuxBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Auxiliary basisfunctions           :',MOLECULE%nbastAUX
+ENDIF
+IF(BASIS%WBASIS(CABBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'CABS basisfunctions                :',MOLECULE%nbastCABS
+ENDIF
+IF(BASIS%WBASIS(JKBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'JK-fit basisfunctions              :',MOLECULE%nbastJK
+ENDIF
+IF(BASIS%WBASIS(ADMBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'ADMM basisfunctions                :',MOLECULE%nbastADMM
+ENDIF
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Valence basisfunctions             :',MOLECULE%nbastVAL
+
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Regular basisfunctions   :',MOLECULE%nprimbastREG
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%nprimbastAUX
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
-WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
+IF(BASIS%WBASIS(AuxBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Auxiliary basisfunctions :',MOLECULE%nprimbastAUX
+ENDIF
+IF(BASIS%WBASIS(CABBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive CABS basisfunctions      :',MOLECULE%nprimbastCABS
+ENDIF
+IF(BASIS%WBASIS(JKBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive JK-fit basisfunctions    :',MOLECULE%nprimbastJK
+ENDIF
+IF(BASIS%WBASIS(ADMBasParam)) THEN
+   WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive ADMM basisfunctions      :',MOLECULE%nprimbastADMM
+ENDIF
 WRITE(LUPRI,'(2X,A38,2X,I7)')'Primitive Valence basisfunctions   :',MOLECULE%nprimbastVAL
 WRITE(LUPRI,*) '--------------------------------------------------------------------'
 WRITE(LUPRI,*) '                     '
 
 WRITE(LUPRI,*) '                     '
-IF(MOLECULE%ATOM(1)%nbasis == 2) THEN
+IF(BASIS%WBASIS(AuxBasParam)) THEN
    WRITE(LUPRI,*) '--------------------------------------------------------------------'
    WRITE(LUPRI,'(2X,A4,2X,A6,2X,A12,2X,A20,2X,A9,2X,A8,2X,A8)')'atom',&
         &'charge','Atomicbasis ','Auxiliarybasisset',' Phantom ','nPrimREG','nContREG'
@@ -968,15 +695,15 @@ ENDIF
 !    ELSE
 !       DO I=1,30
 !          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
-!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
-!             ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
+!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(REGBASPARAM)
+!             ITYPE2 = MOLECULE%ATOM(I)%IDtype(AUXBASPARAM)
 !             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
 !                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
 !                  &BASIS%AUXILIARY%ATOMTYPE(ITYPE2)%NAME,&
 !                  &MOLECULE%ATOM(I)%Phantom,&
 !                  &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
 !          ELSE
-!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
+!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(REGBASPARAM)
 !             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
 !                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
 !                  &MOLECULE%ATOM(I)%Phantom,&
@@ -987,16 +714,16 @@ ENDIF
 !       WRITE(LUPRI,'(2X,A)')'are printed in order to limit output'
 !    ENDIF
 ! ELSE
-   IF(BASIS%REGULAR%Labelindex .EQ. 0)THEN
+   IF(BASIS%BINFO(REGBASPARAM)%Labelindex .EQ. 0)THEN
       DO I=1,MOLECULE%nAtoms
-         IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
+         IF(BASIS%WBASIS(AuxBasParam)) THEN
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
                ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
-               ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
-               ITYPE2 = BASIS%AUXILIARY%CHARGEINDEX(ICHARGE)
+               ITYPE1 = BASIS%BINFO(REGBASPARAM)%CHARGEINDEX(ICHARGE)
+               ITYPE2 = BASIS%BINFO(AUXBASPARAM)%CHARGEINDEX(ICHARGE)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                    &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
-                    &BASIS%AUXILIARY%ATOMTYPE(itype2)%NAME,&
+                    &BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype1)%NAME,&
+                    &BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(itype2)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ELSE
@@ -1007,9 +734,9 @@ ENDIF
          ELSE
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
                ICHARGE = INT(MOLECULE%ATOM(I)%CHARGE)
-               ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
+               ITYPE1 = BASIS%BINFO(REGBASPARAM)%CHARGEINDEX(ICHARGE)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                    &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
+                    &BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype1)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ELSE
@@ -1022,13 +749,13 @@ ENDIF
       ENDDO
    ELSE
       DO I=1,MOLECULE%nAtoms
-         IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
+         IF(BASIS%WBASIS(AuxBasParam)) THEN
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
-               ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
-               ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
+               ITYPE1 = MOLECULE%ATOM(I)%IDtype(RegBasParam)
+               ITYPE2 = MOLECULE%ATOM(I)%IDtype(AuxBasParam)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                    &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
-                    &BASIS%AUXILIARY%ATOMTYPE(itype2)%NAME,&
+                    &BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype1)%NAME,&
+                    &BASIS%BINFO(AUXBASPARAM)%ATOMTYPE(itype2)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ELSE
@@ -1038,9 +765,9 @@ ENDIF
             ENDIF
          ELSE
             IF(.NOT.MOLECULE%ATOM(I)%Pointcharge)THEN
-               ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
+               ITYPE1 = MOLECULE%ATOM(I)%IDtype(RegBasParam)
                WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                    &BASIS%REGULAR%ATOMTYPE(itype1)%NAME,&
+                    &BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype1)%NAME,&
                     &MOLECULE%ATOM(I)%Phantom,&
                     &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
             ELSE
@@ -1105,6 +832,7 @@ WRITE(LUPRI,'(A)')'BASISSETLIBRARY'
 WRITE(LUPRI,*)'Number of Basisset',BASISSETLIBRARY%nbasissets
 DO I=1,BASISSETLIBRARY%nbasissets
    WRITE(LUPRI,'(A10,2X,A50)')'BASISSET:',BASISSETLIBRARY%BASISSETNAME(I)
+   IF(BASISSETLIBRARY%nCharges(I).EQ.0)call lsquit('Error in PRINT_BASISSETLIB',-1)
    IF(BASISSETLIBRARY%nCharges(I) .LT. 10)THEN
       WRITE(StringFormat(1:12),'(A5,I1,A6)') '(A10,',BASISSETLIBRARY%nCharges(I),'F10.4)'
       N=12
@@ -1127,7 +855,7 @@ END SUBROUTINE PRINT_BASISSETLIBRARY
 SUBROUTINE PRINT_DALTONITEM(LUPRI,DALTON)
 implicit none
 TYPE(integralconfig)  :: DALTON
-INTEGER           :: LUPRI
+INTEGER           :: LUPRI,I
 
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,'(A)')'THE DALTONITEM'
@@ -1170,6 +898,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGOVERLAP',DALTON%DEBUGOVERLAP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUG4CENTER',DALTON%DEBUG4CENTER
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGPROP',DALTON%DEBUGPROP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOR',DALTON%DEBUGICHOR
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOROPTION',DALTON%DEBUGICHOROPTION
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGGEN1INT',DALTON%DEBUGGEN1INT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGCGTODIFF',DALTON%DEBUGCGTODIFF
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGEP',DALTON%DEBUGEP
@@ -1201,8 +930,9 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'nonSphericalETUV',DALTON%nonSphericalETUV
 
 WRITE(LUPRI,'(2X,A35,I8)')'BASPRINT',DALTON%BASPRINT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ATOMBASIS',DALTON%ATOMBASIS
-WRITE(LUPRI,'(2X,A35,7X,L1)')'BASIS',DALTON%BASIS
-WRITE(LUPRI,'(2X,A35,7X,L1)')'AUXBASIS',DALTON%AUXBASIS
+DO I=1,nBasisBasParam
+   WRITE(LUPRI,'(2X,A35,7X,L1)')'BASIS',DALTON%BASIS(I)
+ENDDO
 WRITE(LUPRI,'(2X,A35,7X,L1)')'NOFAMILY',DALTON%NOFAMILY
 WRITE(LUPRI,'(2X,A35,7X,L1)')'Hermiteecoeff',DALTON%Hermiteecoeff
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DoSpherical',DALTON%DoSpherical
@@ -1234,11 +964,16 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'LR_EXCHANGE_DF',DALTON%LR_EXCHANGE_DF
 WRITE(LUPRI,'(2X,A35,7X,L1)')'LR_EXCHANGE_PARI',DALTON%LR_EXCHANGE_PARI
 WRITE(LUPRI,'(2X,A35,7X,L1)')'LR_EXCHANGE',DALTON%LR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_EXCHANGE',DALTON%ADMM_EXCHANGE
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_GCBASIS',DALTON%ADMM_GCBASIS
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM1',DALTON%ADMM1
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_2ERI',DALTON%ADMM_2ERI
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMQ',DALTON%ADMMQ
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMS',DALTON%ADMMS
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMP',DALTON%ADMMP
+WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_ADDXC',DALTON%ADMM_ADDXC
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_JKBASIS',DALTON%ADMM_JKBASIS
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_DFBASIS',DALTON%ADMM_DFBASIS
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_MCWEENY',DALTON%ADMM_MCWEENY
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_CONST_EL',DALTON%ADMM_CONST_EL
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_GCBASIS',DALTON%ADMM_GCBASIS
+WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
 WRITE(LUPRI,'(2X,A35,7X,L1)')'SR_EXCHANGE',DALTON%SR_EXCHANGE
 WRITE(LUPRI,'(2X,A35,7X,L1)')'CAM',DALTON%CAM
 WRITE(LUPRI,'(2X,A35,F16.8)') 'CAMalpha',DALTON%CAMalpha
@@ -1393,7 +1128,7 @@ TYPE(MOLECULEINFO),intent(in) :: MOLECULE
 INTEGER,intent(in)            :: LUPRI,nbast
 integer,intent(inout) ::  Atom_for_each_bas(nbast)
 !
-integer :: ibasis,I,Icharge,type,J
+integer :: ibasis,I,Icharge,type,J,R
 iF(MOLECULE%nbastREG.NE.nbast)call lsquit('dim mismatch in Atom_for_each_basisfunc',-1)
 ibasis = 0 
 DO I=1,MOLECULE%nAtoms
@@ -1401,7 +1136,8 @@ DO I=1,MOLECULE%nAtoms
       ICHARGE = INT(MOLECULE%ATOM(I)%charge) 
       type= basInfo%Chargeindex(ICHARGE)
    ELSE
-      type=MOLECULE%ATOM(I)%IDtype(basInfo%labelindex)
+      R = basInfo%labelindex
+      type=MOLECULE%ATOM(I)%IDtype(R)
    ENDIF
    IF(MOLECULE%ATOM(I)%pointcharge)CYCLE   
    DO J = 1, basInfo%ATOMTYPE(type)%Totnorb
@@ -1467,10 +1203,19 @@ DO I=1,MOLECULE%nAtoms
       printed_dots=.FALSE.
    ENDIF
 
-   IF(.NOT.MOLECULE%ATOM(I)%phantom)THEN
+   IF(MOLECULE%ATOM(I)%pointcharge.OR.MOLECULE%ATOM(I)%phantom)THEN
+      IF(MOLECULE%ATOM(I)%pointcharge)THEN
+         !pointcharges have charges but no basis functions
+         TOTCHARGE=TOTCHARGE+INT(MOLECULE%ATOM(I)%charge) 
+      ELSEIF(MOLECULE%ATOM(I)%phantom)THEN
+         !Phantom atoms have no charges only basis functions
+         TOTprim=TOTprim+basInfo%ATOMTYPE(type)%Totnprim
+         TOTcont=TOTcont+basInfo%ATOMTYPE(type)%Totnorb
+      ELSE
+         call lsquit('Atom both pointcharge and phantom',-1)
+      ENDIF
+   ELSE
       TOTCHARGE=TOTCHARGE+basInfo%ATOMTYPE(type)%Charge
-   ENDIF
-   IF(.NOT.MOLECULE%ATOM(I)%pointcharge)THEN
       TOTprim=TOTprim+basInfo%ATOMTYPE(type)%Totnprim
       TOTcont=TOTcont+basInfo%ATOMTYPE(type)%Totnorb
    ENDIF
@@ -1641,7 +1386,7 @@ DO I=1,SETTING%nAO
    WRITE(LUPRI,*)'AO NUMBER',I
    WRITE(LUPRI,*)'FRAGMENT AND BASIS'
    CALL PRINT_MOLECULEINFO(LUPRI,SETTING%FRAGMENT(I)%p,SETTING%BASIS(I)%p,0)
-   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SETTING%FRAGMENT(I)%p,SETTING%BASIS(I)%p%REGULAR)   
+   CALL PRINT_MOLECULE_AND_BASIS(LUPRI,SETTING%FRAGMENT(I)%p,SETTING%BASIS(I)%p%BINFO(RegBasParam))   
 ENDDO
 
 CALL PRINT_FRAGMENTITEM(SETTING%FRAGMENTS,LUPRI)
@@ -1680,7 +1425,7 @@ implicit none
 TYPE(FRAGMENTINFO) :: FRAGMENT
 INTEGER            :: I,LABEL
 INTEGER            :: LUPRI
-CHARACTER(len=7)   :: STRING(5)
+CHARACTER(len=7)   :: STRING(6)
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,'(A)')'THE FRAGMENTINFO'
 WRITE(LUPRI,*) '                     '
@@ -1696,6 +1441,7 @@ STRING(2) = 'DF-Aux '
 STRING(3) = 'CABS   '
 STRING(4) = 'JKAux  '
 STRING(5) = 'Valence'
+STRING(6) = 'ADMM   '
 DO I=1,FRAGMENT%numFragments
    WRITE(LUPRI,'(2X,I3,6X,A7,6X,I3,7X,I3,12X,I3,12X,I3,4X,I3)') I, STRING(LABEL), &
         & FRAGMENT%nPrimOrb(I,LABEL),& 
@@ -2404,7 +2150,7 @@ type(lssetting),intent(in)    :: oldsetting
 type(lssetting),intent(inout) :: newsetting
 integer :: lupri
 !
-integer :: I,nAO,ndmat,dim1,dim2,dim3
+integer :: I,nAO,ndmat,dim1,dim2,dim3,J
 
 call typedef_init_setting(newSETTING)
 
@@ -2425,20 +2171,13 @@ do I = 1,nAO
 !   call copy_molecule(oldsetting%Fragment(I)%p,newsetting%Fragment(I)%p,lupri)
    nullify(newsetting%Basis(I)%p)
    allocate(newsetting%Basis(I)%p)
-   newsetting%Basis(I)%p%GCtransAlloc = oldsetting%basis(I)%p%GCtransAlloc
-   IF(oldsetting%basis(I)%p%GCtransAlloc)THEN
-      call copy_basissetinfo(oldsetting%basis(I)%p%GCtrans,newsetting%basis(I)%p%GCtrans) 
-   ELSE
-      newsetting%basis(I)%p%GCtrans%nAtomtypes=0
-      newsetting%basis(I)%p%GCtrans%labelindex=0
-      newsetting%basis(I)%p%GCtrans%nChargeindex=0
-      nullify(newsetting%basis(I)%p%GCtrans%ATOMTYPE)
-   ENDIF
-   call copy_basissetinfo(oldsetting%basis(I)%p%REGULAR,newsetting%basis(I)%p%REGULAR) 
-   call copy_basissetinfo(oldsetting%basis(I)%p%AUXILIARY,newsetting%basis(I)%p%AUXILIARY) 
-   call copy_basissetinfo(oldsetting%basis(I)%p%CABS,newsetting%basis(I)%p%CABS) 
-   call copy_basissetinfo(oldsetting%basis(I)%p%JK,newsetting%basis(I)%p%JK) 
-   call copy_basissetinfo(oldsetting%basis(I)%p%VALENCE,newsetting%basis(I)%p%VALENCE) 
+   call nullifyMainBasis(newsetting%Basis(I)%p)
+   newsetting%Basis(I)%p%WBASIS = oldsetting%basis(I)%p%WBASIS
+   do J=1,nBasisBasParam
+      IF(newsetting%Basis(I)%p%WBASIS(J))THEN
+         call copy_basissetinfo(oldsetting%basis(I)%p%BINFO(J),newsetting%basis(I)%p%BINFO(J)) 
+      ENDIF
+   enddo
    newsetting%Batchindex(I) = oldsetting%Batchindex(I)
    newsetting%Batchsize(I) = oldsetting%Batchsize(I)
    newsetting%Batchdim(I) = oldsetting%Batchdim(I)
@@ -2815,7 +2554,7 @@ SUBROUTINE typedef_free_setting(SETTING)
 !use molecule_module
 implicit none
 TYPE(LSSETTING)  :: SETTING
-INTEGER          :: nAO,iAO,I
+INTEGER          :: nAO,iAO,I,J
 nAO = SETTING%nAO
 
 DO iAO=1,nAO
@@ -2825,26 +2564,11 @@ DO iAO=1,nAO
      NULLIFY(SETTING%MOLECULE(iAO)%p)
   ENDIF
   IF (SETTING%basBuild(iAO)) THEN
-     IF(SETTING%BASIS(iAO)%p%REGULAR%nAtomtypes.NE.0)THEN
-        call free_basissetinfo(SETTING%BASIS(iAO)%p%REGULAR)
-     ENDIF
-     IF(SETTING%BASIS(iAO)%p%AUXILIARY%nAtomtypes.NE.0)THEN
-        call free_basissetinfo(SETTING%BASIS(iAO)%p%AUXILIARY)
-     ENDIF
-     IF(SETTING%BASIS(iAO)%p%CABS%nAtomtypes.NE.0)THEN
-        call free_basissetinfo(SETTING%BASIS(iAO)%p%CABS)
-     ENDIF
-     IF(SETTING%BASIS(iAO)%p%JK%nAtomtypes.NE.0)THEN
-        call free_basissetinfo(SETTING%BASIS(iAO)%p%JK)
-     ENDIF
-     IF(SETTING%BASIS(iAO)%p%VALENCE%nAtomtypes.NE.0)THEN
-        call free_basissetinfo(SETTING%BASIS(iAO)%p%VALENCE)
-     ENDIF
-     IF(SETTING%BASIS(iAO)%p%GCtransAlloc)THEN
-        IF(SETTING%BASIS(iAO)%p%GCtrans%nAtomtypes.NE.0)THEN
-           call free_basissetinfo(SETTING%BASIS(iAO)%p%GCtrans)
+     DO J=1,nBasisBasParam
+        IF(SETTING%BASIS(iAO)%p%BINFO(J)%nAtomtypes.NE.0)THEN
+           call free_basissetinfo(SETTING%BASIS(iAO)%p%BINFO(J))
         ENDIF
-     ENDIF
+     ENDDO
      deallocate(setting%Basis(iAO)%p)
      nullify(setting%Basis(iAO)%p)
   ENDIF
@@ -2957,6 +2681,8 @@ implicit none
 TYPE(integralconfig), INTENT(IN) :: dalton_inp
 TYPE(LSINTSCHEME),INTENT(INOUT) :: scheme
 
+scheme%doMPI                 = .TRUE.
+scheme%MasterWakeSlaves      = .TRUE.
 scheme%noOMP                 = dalton_inp%noOMP
 scheme%CFG_LSDALTON          = dalton_inp%CFG_LSDALTON
 scheme%DOPASS                = dalton_inp%DOPASS
@@ -3009,7 +2735,7 @@ scheme%MM_NO_ONE             = dalton_inp%MM_NO_ONE
 scheme%CREATED_MMFILES       = dalton_inp%CREATED_MMFILES
 scheme%USEBUFMM              = dalton_inp%USEBUFMM
 scheme%MMunique_ID1          = dalton_inp%MMunique_ID1
-scheme%AUXBASIS              = dalton_inp%AUXBASIS
+scheme%BASIS                 = dalton_inp%BASIS
 scheme%NOFAMILY              = dalton_inp%NOFAMILY
 scheme%Hermiteecoeff         = dalton_inp%Hermiteecoeff
 scheme%DoSpherical           = dalton_inp%DoSpherical
@@ -3022,11 +2748,15 @@ scheme%CMORDER               = 0
 scheme%CMiMat                = 0
 scheme%MIXEDOVERLAP          = dalton_inp%MIXEDOVERLAP
 scheme%ADMM_EXCHANGE         = dalton_inp%ADMM_EXCHANGE
+scheme%ADMM1                 = dalton_inp%ADMM1 
+scheme%ADMMQ                 = dalton_inp%ADMMQ
+scheme%ADMMS                 = dalton_inp%ADMMS
+scheme%ADMMP                 = dalton_inp%ADMMP
+scheme%ADMM_ADDXC            = dalton_inp%ADMM_ADDXC
 scheme%ADMM_GCBASIS          = dalton_inp%ADMM_GCBASIS 
-scheme%ADMM_DFBASIS          = dalton_inp%ADMM_DFBASIS 
 scheme%ADMM_JKBASIS          = dalton_inp%ADMM_JKBASIS 
-scheme%ADMM_MCWEENY          = dalton_inp%ADMM_MCWEENY 
-scheme%ADMM_CONST_EL         = dalton_inp%ADMM_CONST_EL
+scheme%ADMM_2ERI             = dalton_inp%ADMM_2ERI 
+scheme%PRINT_EK3             = dalton_inp%PRINT_EK3
 scheme%THRESHOLD             = dalton_inp%THRESHOLD
 scheme%CS_THRESHOLD          = dalton_inp%CS_THRESHOLD
 scheme%OE_THRESHOLD          = dalton_inp%OE_THRESHOLD
@@ -3084,6 +2814,8 @@ TYPE(LSINTSCHEME),INTENT(IN) :: scheme
 INTEGER,INTENT(IN)           :: IUNIT
 
 WRITE(IUNIT,'(3X,A22,L7)') 'noBQBQ                ', scheme%noBQBQ
+WRITE(IUNIT,'(3X,A22,L7)') 'doMPI                 ', scheme%doMPI
+WRITE(IUNIT,'(3X,A22,L7)') 'MasterWakeSlaves      ', scheme%MasterWakeSlaves
 WRITE(IUNIT,'(3X,A22,L7)') 'noOMP                 ', scheme%noOMP
 WRITE(IUNIT,'(3X,A22,L7)') 'CFG_LSDALTON          ', scheme%CFG_LSDALTON
 WRITE(IUNIT,'(3X,A22,L7)') 'DOPASS                ', scheme%DOPASS
@@ -3135,7 +2867,6 @@ WRITE(IUNIT,'(3X,A22,L7)') 'MM_NO_ONE             ', scheme%MM_NO_ONE
 WRITE(IUNIT,'(3X,A22,L7)') 'CREATED_MMFILES       ', scheme%CREATED_MMFILES       
 WRITE(IUNIT,'(3X,A22,L7)') 'USEBUFMM              ', scheme%USEBUFMM              
 WRITE(IUNIT,'(3X,A22,I7)') 'MMunique_ID1          ', scheme%MMunique_ID1          
-WRITE(IUNIT,'(3X,A22,L7)') 'AUXBASIS              ', scheme%AUXBASIS              
 WRITE(IUNIT,'(3X,A22,L7)') 'NOFAMILY              ', scheme%NOFAMILY              
 WRITE(IUNIT,'(3X,A22,L7)') 'Hermiteecoeff           ', scheme%Hermiteecoeff
 WRITE(IUNIT,'(3X,A22,L7)') 'DoSpherical           ', scheme%DoSpherical           
@@ -3149,10 +2880,14 @@ WRITE(IUNIT,'(3X,A22,I7)') 'CMIMAT                ', scheme%CMIMAT
 WRITE(IUNIT,'(3X,A22,L7)') 'MIXEDOVERLAP          ', scheme%MIXEDOVERLAP
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_EXCHANGE         ', scheme%ADMM_EXCHANGE
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_GCBASIS          ', scheme%ADMM_GCBASIS 
-WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_DFBASIS          ', scheme%ADMM_DFBASIS 
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_JKBASIS          ', scheme%ADMM_JKBASIS 
-WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_MCWEENY          ', scheme%ADMM_MCWEENY 
-WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_CONST_EL         ', scheme%ADMM_CONST_EL
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMM1                 ', scheme%ADMM1 
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_2ERI             ', scheme%ADMM_2ERI 
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ                 ', scheme%ADMMQ
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMMS                 ', scheme%ADMMS
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMMP                 ', scheme%ADMMP
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_ADDXC            ', scheme%ADMM_ADDXC
+WRITE(IUNIT,'(3X,A22,L7)') 'PRINT_EK3             ', scheme%PRINT_EK3
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'OE_THRESHOLD          ', scheme%OE_THRESHOLD
@@ -3221,7 +2956,7 @@ TYPE(daltoninput) :: DALTON
 TYPE(daltoninput) :: NDALTON
 integer :: lupri
 !TYPE(daltonitem),pointer :: NDALTON(:)
-
+integer :: I
 ! STRUCTURE
   NDALTON = DALTON
   !ALL STRUCTURES IN THIS STRUCTURE LIKE, THE DALTONITEM IS COPIED BY THIS
@@ -3240,13 +2975,10 @@ integer :: lupri
   call mem_alloc(NDALTON%MOLECULE%ATOM,DALTON%MOLECULE%nAtoms)
   NDALTON%MOLECULE%ATOM = DALTON%MOLECULE%ATOM
   
-  !THE SAME IS DONE FOR THE BASISSETINFO 
-  CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%REGULAR,DALTON%BASIS%REGULAR)
-  CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%AUXILIARY,DALTON%BASIS%AUXILIARY)
-  CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%CABS,DALTON%BASIS%CABS)
-  CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%JK,DALTON%BASIS%JK)
-  CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%VALENCE,DALTON%BASIS%VALENCE)
-
+  !THE SAME IS DONE FOR THE BASISSETINFO
+  DO I=1,nBasisBasParam
+     CALL ALLOC_SYNC_BASISSETINFO(NDALTON%BASIS%BINFO(I),DALTON%BASIS%BINFO(I))
+  ENDDO
   !AND THE BLOCK STRUCTURES - BUT THIS IS ONLY USED IN INTEGRAL EVALUATION
 !  NULLIFY(NDALTON%LHSblock%blocks)
 !  ALLOCATE(NDALTON%LHSblock%blocks(DALTON%LHSblock%numBlocks))
@@ -3553,9 +3285,9 @@ integer :: istart, iend, vistart, viend, vnorb
     IF(ls%input%MOLECULE%ATOM(i)%pointcharge)CYCLE
     IF(vbasis%labelindex .EQ. 0)THEN
        icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
-       itype = ls%input%BASIS%REGULAR%chargeindex(icharge)
+       itype = ls%input%BASIS%BINFO(REGBASPARAM)%chargeindex(icharge)
     ELSE
-       itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
+       itype = ls%input%MOLECULE%ATOM(i)%IDtype(REGBASPARAM)
     ENDIF
 
     nAngmom = vbasis%ATOMTYPE(itype)%nAngmom
@@ -3571,17 +3303,17 @@ integer :: istart, iend, vistart, viend, vnorb
     IF(ls%input%MOLECULE%ATOM(i)%pointcharge)CYCLE
     IF(vbasis%labelindex .EQ. 0)THEN
        icharge = INT(ls%input%MOLECULE%ATOM(i)%charge) 
-       itype = ls%input%BASIS%REGULAR%chargeindex(icharge)
+       itype = ls%input%BASIS%BINFO(REGBASPARAM)%chargeindex(icharge)
     ELSE
-       itype = ls%input%MOLECULE%ATOM(i)%IDtype(1)
+       itype = ls%input%MOLECULE%ATOM(i)%IDtype(REGBASPARAM)
     ENDIF
 
       vnAngmom = vbasis%ATOMTYPE(itype)%nAngmom
-       nAngmom = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%nAngmom
+       nAngmom = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%nAngmom
 
       kmult = 1
       do ang = 0,vnAngmom-1
-         norb = ls%input%BASIS%REGULAR%ATOMTYPE(itype)%SHELL(ang+1)%norb
+         norb = ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%norb
         vnorb = vbasis%ATOMTYPE(itype)%SHELL(ang+1)%norb
 
          iend =  istart  + (vnorb*kmult) -1
@@ -3597,7 +3329,7 @@ integer :: istart, iend, vistart, viend, vnorb
       enddo
 
       do ang=vnAngmom, nAngmom-1
-         norb =  ls%input%BASIS%REGULAR%ATOMTYPE(itype)%SHELL(ang+1)%norb
+         norb =  ls%input%BASIS%BINFO(REGBASPARAM)%ATOMTYPE(itype)%SHELL(ang+1)%norb
          istart = istart + (norb*kmult)
          kmult = kmult +2
       enddo
@@ -3618,7 +3350,7 @@ integer :: ncore, i, icharge,nAtoms
   nAtoms= ls%setting%MOLECULE(1)%p%nAtoms
 
   do i=1,nAtoms
-  
+    if(ls%setting%MOLECULE(1)%p%ATOM(i)%Phantom)CYCLE
     icharge = INT(ls%setting%MOLECULE(1)%p%ATOM(i)%charge)
   
     if (icharge.gt. 2)  ncore = ncore + 1

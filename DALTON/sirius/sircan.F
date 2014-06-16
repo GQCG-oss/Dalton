@@ -71,7 +71,7 @@ C
 C
       CALL QENTER('SIRCAN')
       IF (IPRCAN .GT. 0)
-     *   WRITE (LUW4,'(//A/)') ' <<<<< OUTPUT FROM SIRCAN >>>>>'
+     &   WRITE (LUW4,'(//A/)') ' <<<<< Output from SIRCAN'
       REDOCI = FLAG(45)
       ONLYNO = FLAG(46)
       ONLYFD = FLAG(48)
@@ -180,7 +180,7 @@ C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
 C
 C
 C Step 5: Redo CI calculation for natural orbitals.
-C         >>> This is a test option <<<
+C         >>> NOTE: This is a test (debug) option
 C
       IF (REDOCI .AND. NCONF .GT. 1) THEN
          IF (FLAG(47)) THEN
@@ -291,7 +291,7 @@ C
       IF (IPRCNO .GE. 2) CALL GETTIM (T0,W0)
       IF (IPRCNO .GE. 1) THEN
          WRITE (LUPRI,'(/2A/)')
-     &      '   <<< OUTPUT FROM SIRCNO >>>    Keyword = ',KEYCNO
+     &      '   <<< OUTPUT FROM SIRCNO     Keyword = ',KEYCNO
       END IF
       IF (KEYCNO .EQ. 'ONLYNO' .OR. KEYCNO .EQ. 'NATORB') THEN
          IF (IPRCNO .GE. 5) WRITE (LUPRI,'(A/)')
@@ -402,10 +402,9 @@ C .. 1.2 .. (FCKMAT)
 C     ... space for extra matrix for SRHYBR
 C         but we do not use this matrix in SIRCNO /hjaaj oct 04
       LWRK2  = LWRK   - KWRK2
-C .. 1.3  (2*JACO)
+C .. 1.3  (2*JACO_THR)
       KBIG   = KWRK2
-      KJBIG  = KBIG   + MAX(NASHT,NBASMA)
-      KCMO2  = KJBIG  + MAX(NASHT,NBASMA)
+      KCMO2  = KBIG   + MAX(NASHT,NBASMA)
       KWRK3  = KCMO2  + NCMOT
 C Test if WRK is big enough:
       KWRK = MAX(KWRK1,KWRK2,KWRK3)
@@ -510,9 +509,8 @@ C           zero active-secondary block
          END IF
 C
 C
-         CALL JACO(WRK(JFC),WRK(JCMO2),NORBI,NORBI,NBASI,
-     *             WRK(KBIG),WRK(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(JFC),WRK(JCMO2),NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR (F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          DO 175 I=1,NORBI
             WRK(KBIG-1 + I) = WRK(JFC-1 + IROW(I+1))
@@ -601,10 +599,8 @@ C
 C        do NO transformation w/o symmetry blocking (for TRACI)
          KUNO   = KWRK1
          KBIG   = KUNO   + N2ASHX
-         KJBIG  = KBIG   + NASHT
          CALL DUNIT(WRK(KUNO),NASHT)
-         CALL JACO(WRK(KDV),WRK(KUNO),NASHT,NASHT,NASHT,
-     *             WRK(KBIG),WRK(KJBIG))
+         CALL JACO_THR(WRK(KDV),WRK(KUNO),NASHT,NASHT,NASHT,0.0D0)
 C
 C        select positive phase of transformation vectors
 C        (920715-hjaaj: we assume that degenerate orbitals
@@ -825,6 +821,7 @@ C
 C
 C Used from common blocks:
 C  GNRINF: WRINDX
+C  pgroup: REP
 C  INFINP: LSYM
 C  INFORB: ICMO(*),...
 C  INFIND: ISSMO()
@@ -832,6 +829,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -840,8 +838,8 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
       IF (IPRINT .GE. 4) THEN
-         WRITE (LUPRI,'(//A//A,I2)')
-     *      ' <<< output from getno >>>',
+         WRITE (LUPRI,'(//A,I2)')
+     *      ' <<< output from getno    '//
      *      ' Symmetry of state vector :',ICSYM
       END IF
       IF (SUPSYM .AND. ORDER_in .AND. NOAVER) THEN
@@ -855,8 +853,6 @@ C     Calculate natural orbital transformation and
 C     natural orbital occupation numbers
 C
       CALL MEMGET('REAL',KDV  ,NNASHX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBIG ,NASHT ,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KJBIG,NASHT ,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
       IF (NASHT .EQ. 1) THEN
          WRK(KDV) = NACTEL ! takes care of debug cases with NACTEL = 0 or NACTEL = 2
@@ -889,12 +885,12 @@ C
             END IF
          END IF
          DVMAX = D0
-         DO 220 I = 2,NASHT
+         DO, I = 2,NASHT
             II = (I*I-I)/2
-            DO 210 J = 1,I-1
+            DO, J = 1,I-1
                DVMAX = MAX(DVMAX,ABS(WRK(KDV-1+II+J)))
-  210       CONTINUE
-  220    CONTINUE
+            END DO
+         END DO
          IF (DVMAX .LE. THRZER) THEN
             MOISNO = .TRUE.
             IF (IPRINT .GE. 2) THEN
@@ -910,12 +906,15 @@ C
       END IF
 C
       IF (.NOT. MOISNO) THEN
-         CALL JACO(WRK(KDV),UNO,NASHT,NASHT,NASHT,WRK(KBIG),WRK(KJBIG))
+
+         CALL JACO_THR(WRK(KDV),UNO,NASHT,NASHT,NASHT,0.0D0)
+
 C        select positive phase of MO-NO transformation vectors:
-         DO 240 I = 1,NASHT
+         DO, I = 1,NASHT
             JUNOMX = IDAMAX(NASHT,UNO(1,I),1)
             IF (UNO(JUNOMX,I) .LT. D0) CALL DSCAL(NASHT,DM1,UNO(1,I),1)
-  240    CONTINUE
+         END DO
+
       END IF
 C
 C     extract natural occupation numbers
@@ -957,28 +956,28 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
             END DO
             IF (IPRINT .GE. 2 .AND. .NOT. MOISNO) THEN
                WRITE(LUPRI,'(/A)')
-     *           ' GETNO: The natural orbitals are reordered.'
+     &           ' GETNO: The natural orbitals are reordered.'
             ENDIF
         END IF
       END IF
       IF (IPRINT .GE. 1) THEN
          WRITE (LUPRI,'(/A/A)')
-     *      ' Occupancies of natural orbitals',
-     *      ' -------------------------------'
+     &      ' Occupancies of natural orbitals',
+     &      ' -------------------------------'
          IF (SUPSYM .AND. .NOT. NOAVER) WRITE (LUPRI,'(/A)')
-     *      ' NOTE: degenerate orbitals have been averaged.'
+     &      ' NOTE: degenerate orbitals have been averaged.'
          DO 520 ISYM = 1,NSYM
             NOCCI = NOCC(ISYM)
             IF (NOCCI .EQ. 0) THEN
-               WRITE (LUPRI,3030) ISYM
+               WRITE (LUPRI,3030) ISYM,REP(ISYM-1)
             ELSE
                OCCSUM = DSUM(NOCCI,OCCNO(IORB(ISYM)+1),1)
-               IORBI = IORB(ISYM)
+               IORBI  = IORB(ISYM)
                IF (SUPSYM) THEN
-                  WRITE (LUPRI,3045) ISYM,OCCSUM,
+                  WRITE (LUPRI,3045) ISYM,REP(ISYM-1),OCCSUM,
      &               (OCCNO(IORBI+I),ISSMO(IORBI+I),I=1,NOCCI)
                ELSE
-                  WRITE (LUPRI,3040) ISYM,OCCSUM,
+                  WRITE (LUPRI,3040) ISYM,REP(ISYM-1),OCCSUM,
      &               (OCCNO(IORBI+I),I=1,NOCCI)
                END IF
             END IF
@@ -986,17 +985,19 @@ C        ... regenerate ISSORD() as ISSMO() may have been changed in ORD2SS
 C  HJAAJ MAERKE TODO 921106: if (supsym) print also sorted after supsym
 C  HJAAJ MAERKE TODO 071108: if (supsym) also OCCSUM for each supersym
       END IF
- 3030 FORMAT(/' Symmetry',I3,' -- No occupied orbitals')
- 3040 FORMAT(/' Symmetry',I3,' -- Total occupation in this symmetry is',
-     &          F14.9,//,(5F14.9))
- 3045 FORMAT(/' Symmetry',I3,' (supersymmetry in parenthesis)',
+ 3030 FORMAT(/' Symmetry',I2,'  ( ',A,') -- No occupied orbitals')
+ 3040 FORMAT(/' Symmetry',I2,'  ( ',A,
+     &        ') -- Total occupation in this symmetry is',F14.9,
+     &      //,(5F14.9))
+ 3045 FORMAT(/' Symmetry',I2,'  ( ',A,
+     &        ') -- Supersymmetry in parenthesis',
      &       /' -- Total occupation in this symmetry is',F14.9,
-     *       //,4(F14.9,' (',I2,')'))
+     &       //,4(F14.9,' (',I2,')'))
       IF (IPRINT .GT. 5 .AND. NASHT .GT. 0 .AND. .NOT.MOISNO) THEN
          DO 620 ISYM = 1,NSYM
          IF (NASH(ISYM) .GT. 0) THEN
             WRITE (LUPRI,'(/A,I3)')
-     *         ' Transformation to NO (active orb.) for symmetry',ISYM
+     &         ' Transformation to NO (active orb.) for symmetry',ISYM
             IST  = IASH(ISYM) + 1
             IEND = IASH(ISYM) + NASH(ISYM)
             CALL OUTPUT(UNO,IST,IEND,IST,IEND,NASHT,NASHT,1,LUPRI)
@@ -1009,12 +1010,12 @@ C
       IF (.NOT.MOISNO) THEN
       IF (.NOT.NATORB) THEN
          IF (IPRINT .GE. 5) WRITE (LUPRI,'(/A)')
-     *      ' GETNO: the orbital coefficients are NOT transformed to'//
-     *      ' natural orbitals.'
+     &      ' GETNO: the orbital coefficients are NOT transformed to'//
+     &      ' natural orbitals.'
       ELSE
          IF (IPRINT .GE. 3) WRITE (LUPRI,'(/A)')
-     *      ' GETNO: the orbital coefficients are transformed to'//
-     *      ' natural orbitals.'
+     &      ' GETNO: the orbital coefficients are transformed to'//
+     &      ' natural orbitals.'
          IF (LWRK1 .LT. NCMOT) CALL ERRWRK('GETNO.NATORB',NCMOT,LWRK1)
          DO 800 ISYM = 1,NSYM
             NASHI  = NASH(ISYM)

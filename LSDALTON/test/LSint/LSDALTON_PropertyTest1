@@ -50,6 +50,7 @@ H           0.931113       -0.104860       -3.346471
 #######################################################################
 cat > LSDALTON_PropertyTest1.dal <<'%EOF%'
 **GENERAL
+.TESTMPICOPY
 .NOGCBASIS
 **INTEGRALS
 .DEBUGPROP

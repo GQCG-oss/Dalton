@@ -1,0 +1,226 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+ 
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > prop_soppactocd.info <<%EOF%
+   prop_soppactocd
+   ---------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA)
+   Test Purpose:     Calculation of CTOCD-DZ magnetizability and
+	             shielding constants through ABACUS
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > prop_soppactocd.mol <<%EOF%
+INTGRL
+Calculation of CTOCD-DZ magnetizability and shielding constants through ABACUS
+
+c   2    2  X  Y      0.10D-15  0.10D-15
+      8.00    1    3    6    5    1
+O   0.00000             0.00000              0.1241444240
+F  6    1
+31195.6 0.00021
+4669.38 0.001628
+1062.62 0.00845
+301.426 0.034191
+98.5153 0.110311
+35.4609 .269493
+F  1    1
+13.6179 .423545
+F  1    1
+5.38618 .283038
+F  1    1
+1.53873 .027484
+F  1    1
+.6055 -.005144
+F  1    1
+.22054 .00164
+F  3    1
+114.863 .002266
+26.8767 0.017192
+8.32077 0.075341
+F  1    1
+2.97237 .212775
+F  1    1
+1.12848 .370478
+F  1    1
+.4236 .398523
+F  1    1
+.15074 .184703
+F  2    1
+1.21879 .357851
+.36102 .759561
+      1.00    1    2    3    1
+H   0.00000             1.43153              -0.985265576
+F  3    1
+33.865014 .006068
+5.094788 0.045316
+1.158786 0.202846
+F  1    1
+0.32584 0.503709
+F  1    1
+.102741 .383568
+F  1    1
+1.16 1.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > prop_soppactocd.dal <<%EOF%
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.MP2
+**PROPERTIES
+.SOPPA
+.CTOCD
+.MAGNET
+.SHIELD
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >prop_soppactocd.check
+cat >>prop_soppactocd.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 60 * 39" $log | wc -l`
+CRIT4=`$GREP "Cartesian basis used" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.1241444240" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 1\.4315300000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9852655760" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-1\.4315300000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (\-0|\-)\.9852655760" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 19 * 7 * 11 * 2" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-76\.060784218[0-9]" $log | wc -l`
+CRIT3=`$GREP "MP2 second order energy *\: * \-76\.310968287[0-9]" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="ENERGY CALCULATION IS NOT CORRECT ${TEST[4]}"
+
+# Total magnetizability tensor
+CRIT1=`$GREP "Bx *   \-2\.415824.* * \-*0*\.00000000000[0-9] *  \-*0*\.00000000000[0-9]" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.00000000000[0-9] *   \-2\.172349.* *  \-*0*\.00000000000[0-9]" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.00000000000[0-9] * \-*0*\.00000000000[0-9] * \-2\.33525(7|8)" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[5]=3
+ERROR[5]="TOTAL CTOCD-DZ MAGNETIZABILITY TENSOR NOT CORRECT ${TEST[5]}"
+
+# Diamagnetic magnetizability tensor
+CRIT1=`$GREP "Bx *   \-2\.871431...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-2\.300002...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-2\.574539......" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[6]=3
+ERROR[6]="CTOCD-DZ DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
+
+# Paramagnetic magnetizability tensor
+CRIT1=`$GREP "Bx * (0| )\.455607.* (\-0|\-|0| )\.00000000000[0-9] * (\-0|\-|0| )\.00000000000[0-9] *" $log | wc -l`
+CRIT2=`$GREP "By * (\-0|\-|0| )\.00000000000[0-9] * (0| )\.127652.* (\-0|\-|0| )\.00000000000[0-9] *" $log | wc -l`
+CRIT3=`$GREP "Bz * (\-0|\-|0| )\.00000000000[0-9] * (\-0|\-|0| )\.00000000000[0-9] * 0*\.239281" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[7]=6
+ERROR[7]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT ${TEST[7]}"
+
+# Total shielding tensor for O
+CRIT1=`$GREP "O * x * 215\.982..... *  (\-0|\-|0| )\.0000000. *  (\-0|\-|0| )\.0000000." $log | wc -l`
+CRIT2=`$GREP "O * y * (\-0|\-|0| )\.0000000. * 267\.262..... *  (\-0|\-|0| )\.0000000." $log | wc -l`
+CRIT3=`$GREP "O * z * (\-0|\-|0| )\.0000000. *  (\-0|\-|0| )\.0000000[0-9] * 221\.215" $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[8]=6
+ERROR[8]="TOTAL CTOCD-DZ SHIELDING TENSOR FOR OXYGEN NOT CORRECT ${TEST[8]}"
+
+# Diamagnetic and paramagnetic contributions
+CRIT1=`$GREP "Diamagnetic contribution\: * 332\.7738.. *  Paramagnetic\: * \-97\.953" $log | wc -l`
+CRIT2=`$GREP "Diamagnetic contribution\: *  92\.8392.. *  Paramagnetic\: * \-64\.900" $log | wc -l`
+CRIT3=`$GREP "Diamagnetic contribution\: * 330\.7006.. *  Paramagnetic\: * \-95\.880" $log | wc -l`
+CRIT4=`$GREP "Diamagnetic contribution\: *  21\.9856.. *  Paramagnetic\: *    5\.953" $log | wc -l`
+CRIT5=`$GREP "Diamagnetic contribution\: * 414\.9256.. *  Paramagnetic\: * \-95\.880" $log | wc -l`
+CRIT6=`$GREP "Diamagnetic contribution\: *  24\.8735.. *  Paramagnetic\: *    5\.953" $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[9]=9
+ERROR[9]="CTOCD-DZ DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN, GAUGE ORIG ON ATOM, NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+%EOF%
+#######################################################################
