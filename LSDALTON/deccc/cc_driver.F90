@@ -1737,7 +1737,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    If_not_converged: if(.not.restart_from_converged)then
 
       mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(nbas>400)) mo_ccsd = .false.
+      if (DECinfo%NO_MO_CCSD.or.(nb>400)) mo_ccsd = .false.
        
       if (DECinfo%force_scheme) then
         if (DECinfo%en_mem<5) then
