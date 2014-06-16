@@ -46,11 +46,11 @@ C
       integer :: inewtr, nnewtr, isymd1, ntosym
       logical, save :: assemble_densai=.true.
    
-C todo This inew variables changes behaviour erratically unless implicitly saved. Using Write(*,*) statements to print its value will retain it's intended value, but omitting the write statement will turn it into a non-functioning integer.
+C todo This inew variables changes behaviour erratically unless saved. Using Write(*,*) statements to print its value will retain it's intended value, but omitting the write statement will turn it into a non-functioning integer.
 C The error seems to occur after the parallel call to par_so_eres.
 C The implicit save of inew removes the error and makes sure it's correct throughout the calculation.
 C I advice using a debugger that will monitor the adress of INEW and see when it changes. This MIGHT be an out-of-bounds error in par_so_eres.
-      integer :: inew=0
+      integer, save :: inew=0
 
 C
 #include "ccorb.h"
@@ -67,6 +67,9 @@ C
 #include "iprtyp.h"
 #include "infpar.h"
 #include "parsoppa.h"
+
+
+#include "debugonce.h"
       integer, save :: numprocs
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       forceupdate = .true.
@@ -76,6 +79,7 @@ C------------------
 C     Add to trace.
 C------------------
 C
+      write(*,*) 'new call to so_eres'
       CALL QENTER('SO_ERES')
 C
 C
@@ -138,10 +142,12 @@ C
       KTR1D   = KTR1E   + LTR1E
       KTR2E   = KTR1D   + LTR1D
       KTR2D   = KTR2E   + LTR2E
+
       KRES1E  = KTR2D   + LTR2D
       KRES1D  = KRES1E  + LRES1E
       KRES2E  = KRES1D  + LRES1D
       KRES2D  = KRES2E  + LRES2E
+
       KFOCK   = KRES2D  + LRES2D
       KDENS   = KFOCK   + LFOCK
       KBTR1E  = KDENS   + LDENS
@@ -153,6 +159,7 @@ C
       KSIGAI2 = KSIGAI1 + LSIGAI1
       KSIGDA1 = KSIGAI2 + LSIGAI2
       KSIGDA2 = KSIGDA1 + LSIGDA1
+
       KAIJ    = KSIGDA2 + LSIGDA2
       KAAB    = KAIJ    + LAIJ
       KEND2   = KAAB    + LAAB
@@ -315,6 +322,7 @@ C     Note, there is a strong coherence between the order of
 C     these bcasts and the initialization of the slaves in 
 C     the beginning of par_so_eres. 
 C***********************************************************
+         thisinewtr = inewtr
       parallelsoppa: if (numprocs.gt.1) then
          ! make every slave join the parallel calculation 
          call mpixbcast(87, 1, 'INTEGE', 0)
@@ -330,6 +338,7 @@ C***********************************************************
          copynit     = nit
          copyisymtr  = isymtr
          copyinewtr  = inewtr
+
          ! Copy the common block to all slaves
          call getbytespan(ntot, parsoppaLAST, bytesize)
          call mpi_bcast(ntot, bytesize, mpi_byte, 0,mpi_comm_world,ierr)
@@ -406,9 +415,6 @@ C   implies that IDEL2 is always 1 and that IDEL is systematically
 C   incremented by one each time.
 C--------------------------------------------------------------------
 C
-C todo beyer
-                  !call dzero(densai, ldensai)
-C todo ... beyer
                DO 230 IDEL2 = 1,NUMDIS
 C
 
@@ -478,6 +484,12 @@ C
                   CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
      &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                         WORK(KEND4),LWORK4)
+      !if (idel2.eq.numdis) then
+         !write(*,*) myid,  illl, 'sequence, after so_t2m1'
+         !do i=0, 10
+            !write(*,*) myid, work(kt2m1+i)
+         !enddo
+      !endif
                   DTIME      = SECOND()   - DTIME
                   SOTIME(12) = SOTIME(12) + DTIME
 C
@@ -522,10 +534,6 @@ C
      &                               ISYMD,ISYDIS,WORK(KEND5),
      &                               LWORK5)
 
-         write(*,*) 'after so_densai1'
-         do i=1, 10
-            write(*,*) myid, i,illl, densai(i) 
-         enddo
                   END IF
                   DTIME      = SECOND()   - DTIME
                   SOTIME(41) = SOTIME(41) + DTIME
@@ -547,6 +555,8 @@ C                 specifically the first and the second term in eqs.
 C                 (34,35). Also calculate Aij and Aab in eqs. (43,44).
 C----------------------------------------------------------------------
 C
+
+
                   DTIME      = SECOND()
                   CALL SO_RES_A(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                          WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
@@ -626,10 +636,7 @@ C
 C
   888    continue !Continuation point in case the Fock/density matrix was calculated in parallel
 
-         !write(*,*) "SO_ERES FOCK CHECK!"
-         !do i=0, lfock
-         !   write(*,*) i, work(kfock+i)
-         !enddo
+
 C====================================================
 C        End of loop over distributions of integrals.
 C====================================================
@@ -649,6 +656,7 @@ C        Calculate and add the RPA two-particle parts to the result
 C        vectors.
 C------------------------------------------------------------------
 C
+
          DTIME      = SECOND()
          CALL SO_TWOFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                   WORK(KFOCK),LFOCK,ISYRES)
@@ -680,16 +688,32 @@ C
      &                 WORK(KCMO),LCMO,ISYRES)
          DTIME      = SECOND()   - DTIME
          SOTIME(19) = SOTIME(19) + DTIME
-C
+
 C--------------------------------------------------------------
 C        Calculate and add the symmetry correcting term to A in
 C        eq. (44).
 C--------------------------------------------------------------
 C
          DTIME      = SECOND()
+
+C TODO NOTE this routine makes heavy use of DGEMM and DGEMV
+C      can you speed it up with MKL?
+         !write(*,*) 'from so_eres, these are aab '
+         !do iasdf=0, laab
+            !write(*,*) work(kaab+iasdf), iasdf
+         !enddo
+         
+         !write(*,*) 'from so_eres, these are aij'
+         !write(*,*)
+         !do iasdf=0, laij
+            !write(*,*) work(kaij+iasdf), iasdf
+         !enddo
          CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                   WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
      &                   LTR1E,WORK(KTR1D),LTR1D,ISYRES)
+
+
+
          DTIME      = SECOND()   - DTIME
          SOTIME(20) = SOTIME(20) + DTIME
 C
@@ -702,6 +726,7 @@ C
      &                   WORK(KTR1E),LTR1E,WORK(KTR1D),
      &                   LTR1D,FOCKD,LFOCKD,DENSIJ,LDENSIJ,DENSAB,
      &                   LDENSAB,ISYRES,ISYMTR)
+
          DTIME      = SECOND()   - DTIME
          SOTIME(21) = SOTIME(21) + DTIME
 C
@@ -711,6 +736,7 @@ C        vectors.
 C------------------------------------------------------------------
 C
          DTIME      = SECOND()
+
          CALL SO_ONEFOCK(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,FOCKD,
      &                   LFOCKD,WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,
      &                   ISYRES,ISYMTR)
@@ -729,6 +755,7 @@ C
          
          DTIME      = SECOND()   - DTIME
          SOTIME(30) = SOTIME(30) + DTIME
+
 C
 C----------------------------------------
 C        Write new resultvectors to file.
@@ -738,8 +765,15 @@ C
          CALL SO_WRITE(WORK(KRES1D),LRES1D,LURS1D,FNRS1D,INEW)
          CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
          CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
+
 C
+         write(*,*) 'at end of 100 loop, iterating...', inewtr, nnewtr
   100 CONTINUE 
+
+
+         
+
+         write(*,*) 'done with all 100 loops', inewtr, nnewtr
 C
 C==================================
 C     End of loop over excitations.
@@ -751,49 +785,37 @@ C----------------------------------------------------------------
 C
       DTIME      = SECOND()
       IF ( (MODEL .NE. 'AOSOC') .AND.
-     &     (NIT .EQ. 1).and.
-     &     (assemble_densai )) THEN
+     &   (NIT .EQ. 1)         .and.
+     &   (assemble_densai ))  THEN
+
+C todo if I remove these write statements, the whole calculation fucks up and crashes before it even gets here...
+         write(*,*) 'now calling so_densai2'
+
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
          assemble_densai = .false. 
 
-          write(*,*) "SO_ERES DENSAI CHECK!"
-          do i=1, ldensai
-             write(*,*) i, densai(i)
-          enddo
-
-
-C 
+         write(*,*) 'done calling so_densai2'
       END IF
+C
       DTIME      = SECOND()   - DTIME
       SOTIME(41) = SOTIME(41) + DTIME
 C
       IF ( IPRSOP. GE. 7 ) THEN
-C
 C------------------------------------------
 C        Write new resultvectors to output.
 C------------------------------------------
-C
          DO 400 INEWTR = 1,NNEWTR
-C
-C----------------------------------------------------
-C           Determine pointer to INEWTR trial vector.
-C----------------------------------------------------
-C
             INEW = NOLDTR + INEWTR
-C
             WRITE(LUPRI,'(/,I3,A)') INEWTR,
      &                '. new E[2] linear transformed trial vector'
-C
             CALL SO_READ(WORK(KRES1E),LRES1E,LURS1E,FNRS1E,INEW)
             CALL SO_READ(WORK(KRES2E),LRES2E,LURS2E,FNRS1D,INEW)
             CALL SO_READ(WORK(KRES1D),LRES1D,LURS1D,FNRS2E,INEW)
             CALL SO_READ(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
-C
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KRES1E+I-1),WORK(KRES1D+I-1),I=1,LRES1E)
             WRITE(LUPRI,'(I8,1X,F14.8,5X,F14.8)') 
      &           (I,WORK(KRES2E+I-1),WORK(KRES2D+I-1),I=1,LRES2E)
-C
   400    CONTINUE
 C
       END IF
@@ -916,7 +938,8 @@ C     Intent of Dummy arguments
       dimension work(lwork)  !intent(inout)
 
 C     Variables for updating the slaves' /common/ blocks.
-      integer  :: bytesize
+      integer :: bytesize
+      logical :: resetvectors
 
 C     Variables for the spinning barrier
       logical :: release, flag, exitspinningbarrier
@@ -936,31 +959,32 @@ C     Pre-sorting load balancing variables
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
+C     The real*8 datatype is due to the defined implicit type in implicit.h
+C     If this datatype changes, every instance of real8 in this subroutine should
+C     be changed to the correct type.
       real*8, allocatable, dimension(:) :: t2mp
       real*8, allocatable, dimension(:) :: densai
-      real*8, allocatable, dimension(:) :: tempfock
+      real*8, allocatable, dimension(:) :: temp
       real*8, allocatable, dimension(:) :: tempdens
 
       logical, save :: printspininfo = .true., assemble_densai=.true.
-      logical, save :: debugging = .false.
 
-      real    :: starttime, stoptime
-      real    :: timestartpresort, timeendpresort 
-      integer :: isymtr, ldensai, nit, inewtr
+      integer :: isymtr, ldensai, nit
+      integer, save :: inewtr
       integer :: allocstatus, deallocstatus
       CHARACTER MODEL*5
 
 
 
 
-      !PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
+      PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 
 
 
 C**************************************************
 C     Initialization variables.
 C**************************************************
-      write(*,*) myid, "entered par_so_eres"
+      !write(*,*) myid, "entered par_so_eres"
       presorting         = .true.
       densai_was_reduced = .false.
 
@@ -978,6 +1002,14 @@ C**************************************************
          call getbytespan(ntot, parsoppaLAST, bytesize)
          call mpi_bcast(ntot,bytesize,mpi_byte, 0, mpi_comm_world, ierr)
       endif
+
+
+      if (inewtr.ne.copyinewtr) then
+         resetvectors = .true.
+      else
+         resetvectors = .false.
+      endif
+
       model   = copymodel
       ldensai = copyldensai
       nit     = copynit
@@ -1159,7 +1191,9 @@ C**********************************************************
      &                   nbast,i2bst,iaodis,iaodpk)
       endif
 
-      call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
+
+      CALL DZERO(WORK(KAIJ),LAIJ)
+      CALL DZERO(WORK(KAAB),LAAB)
 
       forceupdate = .false. ! This avoids redundant updating of common blocks. SO_ERES sets this to true when necessary and this routine sets it to false when necessary.
       endif commonblocktransfers
@@ -1169,10 +1203,30 @@ C**********************************************************
 C**************************************************
 C     This data needs to be updated every time PAR_SO_ERES is called 
 C**************************************************
+      call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
+
       call mpi_bcast( work(kindxb), (8*MXSHEL*MXCONT + 1)/IRAT, 
      & mpi_real8, 0, mpi_comm_world, ierr)
+
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
-      call dzero( work(kfock), lfock)
+
+C todo
+C ! these have been inserted twice
+      CALL DZERO(WORK(KAIJ),LAIJ)
+      CALL DZERO(WORK(KAAB),LAAB)
+
+      if (resetvectors) then
+         call dzero( work(kfock),   lfock)
+         call dzero( work(kres1e),  lres1e)
+         CALL dzero( work(kres1d),  lres1d)
+         call dzero( work(kres2e),  lres2e)
+         call dzero( work(kres2d),  lres2d)
+         call dzero( work(ksigai1), lsigai1)
+         call dzero( work(ksigai2), lsigai2)
+         call dzero( work(ksigda1), lsigda1)
+         call dzero( work(ksigda2), lsigda2)
+      endif
+
 
       if ( .not.allocated(densai) ) then
          allocate(densai(ldensai), stat=allocstatus)
@@ -1438,6 +1492,7 @@ C------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
 C------------------------------------------------------------------------
                idel2loop: DO 310 IDEL2 = 1,NUMDIS
+                  
                   IDEL  = INDEXA(IDEL2)
                   ISYMD = ISAO(IDEL) ! Keeps track of symmetry
                   ISYDIS = MULD2H(ISYMD,ISYMOP)
@@ -1488,21 +1543,9 @@ C                 MP-amplitudes.
 C------------------------------------------------------------
 C
 C
-      !work(kt2m1:kt2m1+lt2m1) = 69.0
-      !write(*,*) myid, illl, 'paral, checking so_t2m1'
-      !do i=0, lt2m1
-         !write(*,*) myid, illl, work(kt2m1+i)
-      !enddo
                   CALL SO_T2M1(WORK(KT2M1),LT2M1,T2MP,LT2MP,
      &                         WORK(KCMO),LCMO,IDEL,ISYMD,ISYDIS,
      &                         WORK(KEND4),LWORK4)
-      !if (myid.eq.4) then
-      !write(*,*) myid, illl, 'paral, after so_t2m1'
-      !do i=0, lt2m1
-         !write(*,*) myid, illl, work(kt2m1+i)
-      !enddo
-      !endif
-
 C
 C---------------------------------------------
 C                 Work space allocation no. 5.
@@ -1540,10 +1583,6 @@ C
      &                               WORK(KCMO),LCMO,WORK(KT2M1),LT2M1,
      &                               ISYMD,ISYDIS,WORK(KEND5),
      &                               LWORK5)
-         write(*,*) illl, 'after so_densai1'
-         do t=1, 10
-            write(*,*) myid, t,illl, densai(t) 
-         enddo
                   END IF
 C
 C----------------------------------------------
@@ -1640,36 +1679,75 @@ C     The slaves are redirected to label 800
 800   continue 
 
 C ************************************************** 
-C Now assemble the Fock matrix in the master's work array
-C and assemble the densai matrix as well
+C Now assemble the Fock matrix, the result vectors and the sigma vectors
+C in the master's work array.
+C Assemble the densai matrix as well and make it ready to be
+C transferred back to the master.
 C ************************************************** 
 
-      allocate(tempfock(lfock))
-      tempfock = 0.0000
-
-C TODO get rid of this barrier!
-      call mpi_barrier(mpi_comm_world, ierr)
+      lres = lres1e +  lres1d +  lres2e +  lres2d 
+      lsig = lsigai1 + lsigai2 + lsigda1 + lsigda2
+      allocate( temp( max(lfock,lres,lsig, laab, laij) ) )
 
 C     Assemble the Fock Matrix in the master's work array
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kfock), lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       else
-         call mpi_reduce( work(kfock), tempfock, lfock, MPI_REAL8,
+         call mpi_reduce( work(kfock), temp, lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
-
       endif
 
+
+C    Assemble the Result vector in the master's work array
+      if  (myid.eq.0) then
+         call mpi_reduce(MPI_IN_PLACE, work(kres1e), lres, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      else
+         call mpi_reduce( work(kres1e), temp, lres, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      endif
+        
+ 
+C    Assemble the sigda vector in the master's work array
+      if  (myid.eq.0) then
+         call mpi_reduce(MPI_IN_PLACE, work(ksigai1), lsig, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      else
+         call mpi_reduce( work(ksigai1), temp, lsig, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      endif
+
+C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
+      if  (myid.eq.0) then
+         call mpi_reduce(MPI_IN_PLACE, work(kaab), laab, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+         call mpi_reduce(MPI_IN_PLACE, work(kaij), laij, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      else
+         call mpi_reduce( work(kaab), temp, laab, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+         call mpi_reduce( work(kaij), temp, laij, MPI_REAL8,
+     &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+      endif
+
+
+
+
+
+
+
+C TODO replace this by saving the density matrix in the master's work
+C      array and then transfer the data back in so_eres with a vectorized
+C      operation.
 C     Assemble the density matrix on process 1.
 C     Process 1 will send this matrix to the master, once the master
 C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
       if(assemble_densai) then
          allocate(tempdens(ldensai))
          tempdens = 0.0000
-
          call mpi_reduce(densai, tempdens, ldensai, MPI_REAL8,
      &                   MPI_SUM, 1, MPI_COMM_WORLD, ierr)
-
          assemble_densai = .false. ! This reduction should only ever occur ONCE in an entire SOPPA calculation
          if( (myid.eq.0) .or. (myid.eq.1) ) densai_was_reduced = .true.
       endif
@@ -1688,10 +1766,10 @@ C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
 C************************************************** 
 C      Clean up allocated arrays 
 C************************************************** 
-      if (allocated(tempfock) ) then
-         deallocate(tempfock, stat=deallocstatus)
+      if (allocated(temp) ) then
+         deallocate(temp, stat=deallocstatus)
          if(.not.(allocstatus.eq.0) ) then
-            call quit('Deallocation error in PAR_SO_ERES (tempfock)')
+            call quit('Deallocation error in PAR_SO_ERES (temp)')
          endif
       endif
 
@@ -1709,7 +1787,6 @@ C**************************************************
      &                '(AssignedIndices)')
          endif
       endif
-
 
       if (allocated(presortarray) ) then
          deallocate(presortarray, stat=deallocstatus)
