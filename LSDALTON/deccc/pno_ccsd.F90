@@ -24,8 +24,6 @@ module pno_ccsd_module
   private
   
   !SET OMP INFORMATION LOOP
-  integer :: nthreads_level1_int_dir
-  integer,pointer :: info_omp1(:,:,:,:)
   integer, parameter :: beg_array   = 1
   integer, parameter :: end_array   = 2
   integer, parameter :: nloops      = 3
@@ -37,6 +35,8 @@ module pno_ccsd_module
   integer, parameter :: w3_tag      = 3
   integer, parameter :: w4_tag      = 4
   integer, parameter :: w5_tag      = 5
+  integer :: nthreads_level1_int_dir(nloops), max_nthr_int_loop
+  integer,pointer :: info_omp1(:,:,:,:)
 
 
   contains
@@ -725,6 +725,7 @@ module pno_ccsd_module
 #endif
      call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
         & 'PNO: finalization                    :' )
+
   end subroutine get_ccsd_residual_pno_style
 
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx,ndidx1,ndidx2)
@@ -1848,16 +1849,23 @@ module pno_ccsd_module
      real(realk) :: MemFree,used_mem, Frac_of_mem
      real(realk), pointer :: dummy1(:), dummy2(:,:)
      integer(kind=8) :: nelms
-     integer :: edit,max_w_per_thr1(5),max_w_per_thr2(5),max_w_per_thr3(5)
+     integer :: edit,max_nthreads,max_w_per_thr(5,nloops),loop,thread
+     !$ integer, external :: omp_get_num_threads, omp_get_max_threads
 
      !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
      basic = 11
-     call init_query_info(query,basic+(nspaces*5*3))
+     call init_query_info(query,basic+(nspaces*5*nloops))
 
      call get_currently_available_memory(MemFree)
 
 #ifdef VAR_MPI
      !call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+#endif
+
+     nthreads_level1_int_dir = 1
+     max_nthr_int_loop       = 1
+#ifdef VAR_OMP
+     max_nthr_int_loop       = omp_get_max_threads()
 #endif
 
      frac_of_mem = 0.8_realk*MemFree
@@ -1887,7 +1895,7 @@ module pno_ccsd_module
               nelms = nelms + query%size_array(narray)
            enddo
 
-           used_mem = (nelms*8.0E0_realk)/(1.0E9_realk)
+           used_mem = (nelms*8.0E0_realk)/(1.024E3_realk**3)
 
            converged = ( used_mem < frac_of_mem )
 
@@ -1915,33 +1923,72 @@ module pno_ccsd_module
 
      enddo
 
-     do narray = 1, query%n_arrays
-        print*,"Array",narray," of size:",query%size_array(narray)
+     !do narray = 1, query%n_arrays
+     !   print*,"Array",narray," of size:",query%size_array(narray)
+     !enddo
+
+     max_w_per_thr = 0
+     do loop = 1, nloops
+        do narray = 1,5
+           do ns = 1, nspaces
+              edit = basic - 1 + (ns-1) * nloops * 5 + (loop - 1)  * 5
+              max_w_per_thr(narray,loop) = max(max_w_per_thr(narray,loop),query%size_array(edit+narray))
+           enddo
+        end do
+        print *,max_w_per_thr(:,loop)
      enddo
 
-     max_w_per_thr1 = 0
-     max_w_per_thr2 = 0
-     max_w_per_thr3 = 0
-     do narray = 1,5
-        do ns = 1, nspaces
-           edit = basic - 1 + (ns-1) * nloops * 5 + (first_loop - 1)  * 5
-           max_w_per_thr1(narray) = max(max_w_per_thr1(narray),query%size_array(edit+narray))
-           edit = basic - 1 + (ns-1) * nloops * 5 + (second_loop - 1) * 5
-           max_w_per_thr2(narray) = max(max_w_per_thr2(narray),query%size_array(edit+narray))
-           edit = basic - 1 + (ns-1) * nloops * 5 + (third_loop - 1)  * 5
-           max_w_per_thr3(narray) = max(max_w_per_thr3(narray),query%size_array(edit+narray))
+
+#ifdef VAR_OMP
+     nthreads_level1_int_dir(first_loop)  = omp_get_max_threads()
+     nthreads_level1_int_dir(second_loop) = omp_get_max_threads()
+     nthreads_level1_int_dir(third_loop)  = omp_get_max_threads()
+
+
+     do narray = 1, 5
+
+        if(max_w_per_thr(narray,first_loop)/=0.and.(narray/=1))then
+           nthreads_level1_int_dir(first_loop)  =&
+              & min(nthreads_level1_int_dir(first_loop), query%size_array(narray)/max_w_per_thr(narray,first_loop))
+        endif
+        if(max_w_per_thr(narray,second_loop)/=0.and.(narray/=3))then
+           nthreads_level1_int_dir(second_loop) =&                                                      
+              & min(nthreads_level1_int_dir(second_loop),query%size_array(narray)/max_w_per_thr(narray,second_loop))
+        endif
+        if(max_w_per_thr(narray,third_loop)/=0.and.(narray/=4.and.narray/=5))then
+           nthreads_level1_int_dir(third_loop)  =&                                                      
+              & min(nthreads_level1_int_dir(third_loop), query%size_array(narray)/max_w_per_thr(narray,third_loop))
+        endif
+
+     enddo
+#endif
+
+     max_nthr_int_loop = max(nthreads_level1_int_dir(first_loop),&
+        & nthreads_level1_int_dir(second_loop),&
+        & nthreads_level1_int_dir(third_loop))
+
+     print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
+
+     call mem_alloc(info_omp1,2,max_nthr_int_loop,5,nloops)
+
+     !initialize with invalid numbers
+     info_omp1 = -1
+
+     do loop = 1, nloops
+        do narray = 1, 5
+           do thread=1, max_nthr_int_loop
+              if(thread<=nthreads_level1_int_dir(loop))then
+                 info_omp1(1,thread,narray,loop) = 1 + (thread-1)*max_w_per_thr(narray,loop)
+                 info_omp1(2,thread,narray,loop) = ( thread )*max_w_per_thr(narray,loop)
+                 !print *,"INFO FOR thread",thread," and array ",narray," in loop ",loop
+                 !print *,info_omp1(1,thread,narray,loop), info_omp1(2,thread,narray,loop)
+              endif
+           enddo
         enddo
-     end do
-
-     print *,max_w_per_thr1
-     print *,max_w_per_thr2
-     print *,max_w_per_thr3
-
-     stop 0
+     enddo
 
      if(DECinfo%PL>2)write(*,'("INFO: allocating ",g10.3," GB in PNO integral &
         &direct loop with #a:",I6," and #g:",I6)')used_mem,a_batch%nbatches,g_batch%nbatches
-
 
   end subroutine get_batch_sizes_pno_residual
 
@@ -1966,15 +2013,15 @@ module pno_ccsd_module
      integer(kind=8) :: myload,var_inp(4)
      integer :: ns
      integer, pointer :: idx(:)
-     real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h3(:),r1(:,:)
-     real(realk), pointer :: xo_pair(:,:),xv_pair(:,:),yo_pair(:,:),yv_pair(:,:)
-     real(realk), pointer :: tpl(:), tmi(:)
+     real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h2(:),h3(:),r1(:,:)
+     real(realk), pointer :: xo_pair(:,:,:),xv_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
+     real(realk), pointer :: tpl(:,:), tmi(:,:)
      integer :: max_pnor, max_pnvr
      integer :: pno_comb
      integer :: pair,paircontribs,paircontrib(2,2),rpd,pno,pnv
      integer :: goffs,aoffs,tlen,tred,nor,nvr,pos1,pos2,beg1,beg2,ic,i
      integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg
-     integer :: offset_for_omp
+     integer :: offset_for_omp,contract
      logical :: FoundInMem,fullRHS, doscreen, PS, EOS, add_contrib
      type(DECscreenITEM)    :: DecScreen
      character :: INTSPEC(5)
@@ -1987,8 +2034,13 @@ module pno_ccsd_module
      real(realk), parameter :: m05 = -0.5E0_realk
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
-     integer :: tid, edit
-     !$ integer, external :: omp_get_thread_num
+     integer :: tid, edit,orig_nthr
+#ifdef VAR_OMP
+     !$ logical :: nested
+     !$ integer, external :: omp_get_nested,omp_get_thread_num, omp_get_num_threads
+     nested    = omp_get_nested()
+     call omp_set_nested(.true.)
+#endif
 
      master        = .true.
      tw            = 0.0E0_realk
@@ -2011,28 +2063,28 @@ module pno_ccsd_module
         !make sure this offset is the last accessed element in this if statement
         offset_for_omp = 10 
 
-        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5*3) )then
+        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5*nloops) )then
            call lsquit("ERROR(pno_residual_integral_direct_loop):query not&
               & possible, n_arrays needs to be set correctly, please check&
               & offset_for_omp",-1)
         endif
 
-        query%size_array(6)  = i8*nb*maxocc
-        query%size_array(7)  = i8*nb*maxocc
-        query%size_array(8)  = i8*nb*maxvirt
-        query%size_array(9)  = i8*nb*maxvirt
-        query%size_array(10) = i8*max_pnvr*max_pnor
-        query%size_array(11) = i8*max_pnvr*max_pnor
+        query%size_array(6)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(7)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(8)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(9)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(10) = i8*max_pnvr*max_pnor*max_nthr_int_loop
+        query%size_array(11) = i8*max_pnvr*max_pnor*max_nthr_int_loop
 
         var_inp = 0
      else
-        call mem_alloc( xo_pair, nb, maxocc )
-        call mem_alloc( yo_pair, nb, maxocc )
-        call mem_alloc( xv_pair, nb, maxvirt  )
-        call mem_alloc( yv_pair, nb, maxvirt  )
+        call mem_alloc( xo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( yo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( xv_pair, nb, maxvirt, max_nthr_int_loop   )
+        call mem_alloc( yv_pair, nb, maxvirt, max_nthr_int_loop   )
 
-        call mem_alloc( tpl, max_pnor*max_pnvr)
-        call mem_alloc( tmi, max_pnor*max_pnvr)
+        call mem_alloc( tpl, max_pnor*max_pnvr, max_nthr_int_loop )
+        call mem_alloc( tmi, max_pnor*max_pnvr, max_nthr_int_loop )
      endif
 
 
@@ -2135,6 +2187,9 @@ module pno_ccsd_module
            endif
 
 
+           !TODO: IMPLEMENT LOOP OVER occ occ on the outside for simple one
+           !sided updates if integrals are stored in batches in occ-occ and
+           !reorder such that the first trafo is to occ
            if(this_is_query)then
               query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*la*nb)*lg*nv)
               query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*lg*nv)*la*nb)
@@ -2160,29 +2215,30 @@ module pno_ccsd_module
               call dgemm('t','n',nv,no*no*nv,la,p10,xv(fa,1),nb,w3,la,p10,Lvoov,nv)
            endif
 
-
-
-
            call time_start_phase(PHASE_WORK, twall = times(1), at = times(4) )
 
-           !$OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-           !$OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,&
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,&
            !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
            !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
-           !$OMP sio4,info_omp1) &
-           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,&
            !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
-           !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)
+           !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(first_loop))
+
            tid = 0
 #ifdef VAR_OMP
            tid = omp_get_thread_num()
 #endif
+
            if(this_is_not_query)then
-              my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,first_loop):info_omp1(end_array,tid+1,w1_tag,first_loop))
               my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,first_loop):info_omp1(end_array,tid+1,w2_tag,first_loop))
               my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,first_loop):info_omp1(end_array,tid+1,w3_tag,first_loop))
               my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,first_loop):info_omp1(end_array,tid+1,w4_tag,first_loop))
-              my_w5 => w5(info_omp1(beg_array,tid+1,w5_tag,first_loop):info_omp1(end_array,tid+1,w5_tag,first_loop))
+
+              my_w1 => null()
+              my_w5 => null()
            endif
 
            !$OMP DO SCHEDULE(DYNAMIC)
@@ -2228,16 +2284,16 @@ module pno_ccsd_module
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i) = xo(:,idx(i))
+                    xo_pair(:,i,tid+1) = xo(:,idx(i))
                  enddo
                  !  xv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                  !  yo_pair
                  do i = 1, pno
-                    yo_pair(:,i) = yo(:,idx(i))
+                    yo_pair(:,i,tid+1) = yo(:,idx(i))
                  enddo
                  !  yv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
 #ifndef VAR_OMP
                  call time_start_phase(PHASE_WORK, at = times_in_loops(1,1) )
 #endif
@@ -2251,13 +2307,13 @@ module pno_ccsd_module
                     beg2 = 1
                  endif
                  !VOVO and sio4
-                 call dgemm('n','n',la*nb*lg,rpd,nb,p10,w1,la*nb*lg,yo_pair(1,beg1),nb,nul,my_w2,la*nb*lg)
+                 call dgemm('n','n',la*nb*lg,rpd,nb,p10,w1,la*nb*lg,yo_pair(1,beg1,tid+1),nb,nul,my_w2,la*nb*lg)
                  call array_reorder_4d(p10,my_w2,la,nb,lg,rpd,[3,4,1,2],nul,my_w3)
-                 call dgemm('n','n',lg*rpd*la,rpd,nb,p10,my_w3,lg*rpd*la,yo_pair(1,beg2),nb,nul,my_w4,lg*rpd*la)
+                 call dgemm('n','n',lg*rpd*la,rpd,nb,p10,my_w3,lg*rpd*la,yo_pair(1,beg2,tid+1),nb,nul,my_w4,lg*rpd*la)
                  !VOVO contribution
-                 call dgemm('t','n',pnv,rpd*la*rpd,lg,p10,xv_pair(fg,1),nb,my_w4,lg,nul,my_w2,pnv)
+                 call dgemm('t','n',pnv,rpd*la*rpd,lg,p10,xv_pair(fg,1,tid+1),nb,my_w4,lg,nul,my_w2,pnv)
                  call array_reorder_4d(p10,my_w2,pnv,rpd,la,rpd,[3,4,1,2],nul,my_w3)
-                 call dgemm('t','n',pnv,rpd*pnv*rpd,la,p10,xv_pair(fa,1),nb,my_w3,la,p10,o,pnv)
+                 call dgemm('t','n',pnv,rpd*pnv*rpd,la,p10,xv_pair(fa,1,tid+1),nb,my_w3,la,p10,o,pnv)
                  !sio4
                  call dgemm('t','n',no,rpd*la*rpd,lg,p10,xo(fg,1),nb,my_w4,lg,nul,my_w2,no)
                  call array_reorder_4d(p10,my_w2,no,rpd,la,rpd,[2,4,1,3],nul,my_w3)
@@ -2270,7 +2326,7 @@ module pno_ccsd_module
               endif
 
            enddo
-           !$OMP END DO
+           !$OMP END DO NOWAIT
            !$OMP END PARALLEL
 
 
@@ -2292,22 +2348,28 @@ module pno_ccsd_module
 
            call time_start_phase(PHASE_WORK, at = times(6), twall = times(2)  )
 
-           !OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-           !OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-           !OMP pno_cv,pno_t2,pno_o2,&
-           !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
-           !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-           !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-           !OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit,r1) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(second_loop))
+           tid = 0
 #ifdef VAR_OMP
            tid = omp_get_thread_num()
 #endif
-           my_w1 => w1
-           my_w2 => w2
-           my_w3 => w3
-           my_w4 => w4
-           my_w5 => w5
-           !OMP DO SCHEDULE(DYNAMIC)
+           if(this_is_not_query)then
+              my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,second_loop):info_omp1(end_array,tid+1,w1_tag,second_loop))
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,second_loop):info_omp1(end_array,tid+1,w2_tag,second_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,second_loop):info_omp1(end_array,tid+1,w4_tag,second_loop))
+              my_w5 => w5(info_omp1(beg_array,tid+1,w5_tag,second_loop):info_omp1(end_array,tid+1,w5_tag,second_loop))
+
+              my_w3 => null()
+           endif
+           !$OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
 
               if(.not.pno_cv(ns)%allocd)then
@@ -2333,54 +2395,93 @@ module pno_ccsd_module
                  !CAREFUL: THIS ACCOUNTS FOR BOTH CASES PS AND NOT PS, WHEN
                  !CHANGING THE ROUTINE BELOW, THE QUERY HAS TO BE ADAPTED
                  !ACCORDINGLY
-                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*nb*lg)*la*pnv)
-                 query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*lg*la)*pnv*pnv)
-                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*la*pnv)*pnv*rpd)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*nb)
+                 query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*lg)*la*pnv)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*pnv)
                  query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*pnv*pnv)*rpd*rpd)
-                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*la*rpd))
+
+                 if( pnv < lg )then
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*la*pnv)*rpd*pnv)
+                 else
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*pnv)*rpd*lg)
+                 endif
+
+                 query%size_array(edit+w5_tag) = max(query%size_array(edit+w5_tag),(i8*la*rpd))
 
               else
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i) = xo(:,idx(i))
+                    xo_pair(:,i,tid+1) = xo(:,idx(i))
                  enddo
                  !  yv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
-
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+#ifndef VAR_OMP
                  call time_start_phase(PHASE_WORK, at = times_in_loops(1,2)  )
+#endif
 
                  !Get G_{\alpha i}
 
-                 ! make I(\delta \gamma \alpha d) and I(\gamma \alpha d c)
-                 call dgemm('n','n',nb*lg*la,pnv,nb,p10,w3,nb*lg*la,yv_pair,nb,nul,my_w2,nb*la*lg)
-                 call dgemm('t','n',lg*la*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,lg*la*pnv)
                  if( PS )then
+                    call ass_D1to2(my_w5,r1,[la,rpd])
                     do pair = 1,2
-                       call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,my_w1,lg,xo_pair(fg,pair),nb,nul,my_w2,la*pnv*pnv)
+                       call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,pair,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                       call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                       call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
 
+                       !u{cldj}(j,dlc)
                        call array_reorder_2d(p20,t,pnv,pnv,paircontrib(:,3-pair),nul,my_w4)
-                       call array_reorder_2d(m10,t,pnv,pnv,paircontrib(:,pair),p10,my_w4)
+                       call array_reorder_2d(m10,t,pnv,pnv,paircontrib(:,pair),  p10,my_w4)
 
-                       call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,my_w2,la,my_w4,pnv*pnv*rpd,nul,my_w5,la)
+                       !this hopefully optimizes the construction of this term
+                       if( pnv < lg )then
+                          call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                          h1 => my_w1
+                          h2 => my_w4
+                          contract = pnv*rpd*pnv
+                       else
+                          call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                          h1 => my_w2
+                          h2 => my_w1
+                          contract = pnv*rpd*lg
+                       endif
 
-                       call ass_D1to2(my_w5,r1,[la,rpd])
+
+                       call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
+
 
                        !$OMP CRITICAL
                        Gai(fa:xa,idx(3-pair)) = Gai(fa:xa,idx(3-pair)) + r1(:,1)
                        !$OMP END CRITICAL
                     enddo
                  else
-                    call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,my_w1,lg,xo_pair(fg,1),nb,nul,my_w2,la*pnv*pnv)
+                    call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,1,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                    call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                    call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
 
-                    !u{cldj}(dclj)
-                    call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[3,1,2,4],nul,my_w4)
-                    call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[1,3,2,4],p10,my_w4)
+                    !u{cldj}(j,dlc)
+                    call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[4,3,2,1],nul,my_w4)
+                    call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[2,3,4,1],p10,my_w4)
 
-                    call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,my_w2,la,my_w4,pnv*pnv*rpd,nul,my_w5,la)
+                    !this hopefully optimizes the construction of this term
+                    if( pnv < lg )then
+                       call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                       h1 => my_w1
+                       h2 => my_w4
+                       contract = pnv*rpd*pnv
+                    else
+                       call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                       h1 => my_w2
+                       h2 => my_w1
+                       contract = pnv*rpd*lg
+                    endif
+
+
+                    call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
                     call ass_D1to2(my_w5,r1,[la,rpd])
-
                     !$OMP CRITICAL
                     do ic = 1, rpd
                        Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
@@ -2388,13 +2489,14 @@ module pno_ccsd_module
                     !$OMP END CRITICAL
 
                  endif
-
+#ifndef VAR_OMP
                  call time_start_phase(PHASE_WORK, at = times_in_loops(2,2) )
+#endif
               endif
 
            enddo
-           !OMP END DO NOWAIT
-           !OMP END PARALLEL
+           !$OMP END DO NOWAIT
+           !$OMP END PARALLEL
 
            call time_start_phase(PHASE_WORK, ttot = times(2), twall = times(1) )
            times(7) = times(7) + times(2)
@@ -2454,18 +2556,29 @@ module pno_ccsd_module
 
               call time_start_phase(PHASE_WORK, at = times(8), twall = times(1) )
 
-              !OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-              !OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-              !OMP pno_cv,pno_t2,pno_o2,&
-              !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
-              !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-              !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-              !OMP my_w4,my_w5,tid) REDUCTION(+:times,times_in_loops)
+              !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+              !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,goffs,aoffs,tlen,tred,&
+              !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
+              !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+              !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
+              !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !$OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
+              !$OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
+              !$OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
+              tid = 0
 #ifdef VAR_OMP
               tid = omp_get_thread_num()
 #endif
+              if(this_is_not_query)then
+                 my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,third_loop):info_omp1(end_array,tid+1,w1_tag,third_loop))
+                 my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,third_loop):info_omp1(end_array,tid+1,w2_tag,third_loop))
+                 my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,third_loop):info_omp1(end_array,tid+1,w3_tag,third_loop))
 
-              !OMP DO SCHEDULE(DYNAMIC)
+                 my_w4 => null()
+                 my_w5 => null()
+              endif
+
+              !$OMP DO SCHEDULE(DYNAMIC)
               do ns = 1, nspaces
 
                  if(.not.pno_cv(ns)%allocd)then
@@ -2509,16 +2622,16 @@ module pno_ccsd_module
                     !Get the transformation matrices
                     !  xo_pair 
                     do i = 1, pno
-                       xo_pair(:,i) = xo(:,idx(i))
+                       xo_pair(:,i,tid+1) = xo(:,idx(i))
                     enddo
                     !  xv_pair
-                    call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+                    call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                     !  yo_pair
                     do i = 1, pno
-                       yo_pair(:,i) = yo(:,idx(i))
+                       yo_pair(:,i,tid+1) = yo(:,idx(i))
                     enddo
                     !  yv_pair
-                    call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+                    call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
 
                     call time_start_phase(PHASE_WORK, at = times_in_loops(1,3) )
 
@@ -2529,35 +2642,35 @@ module pno_ccsd_module
                        call array_reorder_4d(p10,t,pnv,rpd,pnv,rpd,[1,3,2,4],nul,my_w2)
                        h1 => w2(1:pnv**2*rpd**2)
                     endif
-                    call get_tpl_and_tmi(h1,pnv,rpd,tpl,tmi)
+                    call get_tpl_and_tmi(h1,pnv,rpd,tpl(:,tid+1),tmi(:,tid+1))
 
                     call time_start_phase(PHASE_WORK, at = times_in_loops(2,3) )
 
                     !Plus block
-                    call dgemm('n','n',nb*tred,pnv,nb,p10,w4,nb*tred,yv_pair,nb,nul,my_w2,nb*tred)
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w4,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
                     !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,pnv*tred)
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
                     !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
                     call get_I_cged(my_w2,my_w1,tred,pnv)
                     !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tpl,nvr,nul,my_w3,tred)
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tpl(1,tid+1),nvr,nul,my_w3,tred)
 
 
                     !Minus block
-                    call dgemm('n','n',nb*tred,pnv,nb,p10,w5,nb*tred,yv_pair,nb,nul,my_w2,nb*tred)
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w5,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
                     !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,pnv*tred)
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
                     !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
                     call get_I_cged(my_w2,my_w1,tred,pnv)
                     !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tmi,nvr,nul,my_w3(tred*nor+1),tred)
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tmi(1,tid+1),nvr,nul,my_w3(tred*nor+1),tred)
 
                     call time_start_phase(PHASE_WORK, twall = times(2), at = times_in_loops(3,3) )
+
+
+                    call ass_D2to1(xo,h1,[nb,no])
+                    call ass_D2to1(xv_pair(:,:,tid+1),h3,[nb,pnv])
                  endif
-
-
-                 call ass_D2to1(xo,h1,[nb,no])
-                 call ass_D2to1(xv_pair,h3,[nb,pnv])
 
                  if( PS )then
                     call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
@@ -2583,8 +2696,8 @@ module pno_ccsd_module
 
 
               enddo
-              !OMP END DO
-              !OMP END PARALLEL
+              !$OMP END DO NOWAIT
+              !$OMP END PARALLEL
 
               call time_start_phase( PHASE_WORK, ttot = times(1) )
               times(9) = times(9) + times(1)
@@ -2610,6 +2723,8 @@ module pno_ccsd_module
         call mem_dealloc( tpl )
         call mem_dealloc( tmi )
 
+        call mem_dealloc(info_omp1)
+
         call time_start_phase(PHASE_WORK, ttot = tbeg)
         if(DECinfo%PL>2)then
            write (*,'(" PNO: total time batched loop     :",1g10.3)')tbeg
@@ -2625,6 +2740,10 @@ module pno_ccsd_module
            write (*,'(" PNO: loop 3                      :",5g10.3)')times(9),&
               &times_in_loops(1,3),times_in_loops(2,3),times_in_loops(3,3),times_in_loops(4,3)
         endif
+
+#ifdef VAR_OMP
+        call omp_set_nested(nested)
+#endif
      endif
 
   end subroutine pno_residual_integral_direct_loop

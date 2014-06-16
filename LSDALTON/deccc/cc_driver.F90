@@ -187,9 +187,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
       else
          if(DECinfo%use_pnos)then
-            call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-               & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,DECinfo%use_pnos)
+               & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,.false.)
          endif
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -1390,7 +1390,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
    !> (from previous calculations) must be stored in t1_final at input!
    logical,intent(in)                        :: longrange_singles
-   logical,intent(in)                        :: local
+   logical,intent(inout)                     :: local
    logical,intent(in)                        :: use_pnos
    type(array4), intent(inout), optional     :: m2
    type(array2), intent(inout), optional     :: m1
@@ -1519,6 +1519,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m2',DECinfo%output)
       end if
+      if(.not. local)then
+         print *,"WARINING(ccsolver): switching to local for parallel solver&
+            & with PNOs"
+         local = .true.
+      endif
    endif
 
 

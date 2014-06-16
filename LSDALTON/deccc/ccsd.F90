@@ -935,7 +935,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
      integer(kind=8) :: nb4,o2v2,no4
      integer :: tlen,tred,nor,nvr,goffs,aoffs
-     integer :: prev_alphaB,mpi_buf
+     integer :: prev_alphaB,mpi_buf,ccmodel_copy
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !TEST AND DEVELOPMENT VARIABLES!!!!!
@@ -1038,7 +1038,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
         call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
-        call mpi_communicate_ccsd_calcdata(ccmodel,omega2,t2,govov,xo,xv,yo,yv,MyLsItem,nb,nv,no,iter,local)
+        ccmodel_copy = ccmodel
+        call mpi_communicate_ccsd_calcdata(ccmodel_copy,omega2,t2,govov,xo,xv,yo,yv,MyLsItem,nb,nv,no,iter,local)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
@@ -2276,7 +2277,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=ls_mpik) :: me,nnod,nod
      integer :: ml1,fai1,l1,tl1,lai1
      integer :: ml2,fai2,l2,tl2,lai2
-     integer :: fri,tri
+     integer :: fri,tri,ccmodel_copy
      character(ARR_MSG_LEN) :: msg
      real(realk) :: nrm
      integer(kind=8) :: w3size
@@ -2297,8 +2298,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
      master=(infpar%lg_mynum==infpar%master)
      if((s==2.or.s==1).and.master)then
+        ccmodel_copy = ccmodel
         call time_start_phase(PHASE_COMM, at = tw)
-        call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
+        call share_E2_with_slaves(ccmodel_copy,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
         call time_start_phase(PHASE_WORK, at = tc)
      endif
 #endif
@@ -4299,6 +4301,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer, pointer :: joblist(:)
     logical :: master
     integer(kind=ls_mpik) :: tile_master, myrank, nnod
+    integer :: ccmodel_copy
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -4453,8 +4456,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Wake up slaves and communicate important data
     call time_start_phase(PHASE_COMM)
     StartUpSlaves: if (master.and.nnod>1) then
+      ccmodel_copy = ccmodel
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
-      call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
+      call mpi_communicate_moccsd_data(ccmodel_copy,pgmo_diag,pgmo_up,t1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
     end if StartUpSlaves
     call time_start_phase(PHASE_WORK)
@@ -5953,46 +5957,6 @@ subroutine calculate_E2_and_permute_slave()
   call mem_dealloc(Had)
   call mem_dealloc(w1)
 end subroutine calculate_E2_and_permute_slave
-subroutine get_master_comm_proc_to_wrapper
-  use precision
-  use typedeftype,only:lsitem,array
-  use infpar_module
-  use tensor_interface_module
-  use ccsd_module, only: ccsd_residual_wrapper
-  implicit none
-  logical               :: w_cp
-  type(array)           :: delta_fock
-  type(array)           :: omega2
-  type(array)           :: t2
-  type(array)           :: fock
-  type(array)           :: iajb
-  integer               :: no,nv
-  type(array)           :: ppfock
-  type(array)           :: qqfock
-  type(array)           :: pqfock
-  type(array)           :: qpfock
-  type(array)           :: xo
-  type(array)           :: xv
-  type(array)           :: yo
-  type(array)           :: yv
-  integer               :: nb
-  type(lsitem)          :: MyLsItem
-  type(array)           :: omega1
-  type(array)           :: t1
-  type(array)           :: pgmo_diag
-  type(array)           :: pgmo_up
-  type(MObatchInfo)     :: MOinfo
-  logical               :: mo_ccsd
-  integer               :: iter,ccmodel
-  logical               :: local
-  logical               :: rest
-  
-  call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
-             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
-             & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
-             & MOinfo,mo_ccsd,iter,local,rest)
-
-end subroutine get_master_comm_proc_to_wrapper
 
 
 #ifdef MOD_UNRELEASED
