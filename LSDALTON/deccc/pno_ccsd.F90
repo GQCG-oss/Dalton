@@ -2001,12 +2001,12 @@ module pno_ccsd_module
      !Arguments
      type(lsitem), intent(inout) :: mylsitem
      integer(kind=8),intent(in)  :: s1,   s2,   s3,    s4,   s5
-     real(realk), target, intent(inout)  :: w1(s1),w2(s2),w3(:), w4(:),w5(:)
+     real(realk), target, intent(inout)  :: w1(:),w2(:),w3(:), w4(:),w5(:)
      integer, intent(in) :: no, nv, nb, maxocc,maxvirt,nspaces
      type(int_batch),intent(in) :: a_batch, g_batch
      type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
-     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv)
+     real(realk), intent(in) :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
      real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
      type(pno_query_info),optional, intent(inout) :: query
      !internal variables
