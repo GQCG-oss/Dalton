@@ -1558,13 +1558,13 @@ module pno_ccsd_module
 
 
 
-     call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
-     !$OMP mem_pno_spaces)&
-     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
-     !$OMP maxocc,maxminocc)&
-     !$OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
-     call init_threadmemvar()
+     !call mem_TurnONThread_Memory()
+     !OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
+     !OMP mem_pno_spaces)&
+     !OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
+     !OMP maxocc,maxminocc)&
+     !OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
+     !call init_threadmemvar()
 
      tid = 0
 #ifdef VAR_OMP
@@ -1608,7 +1608,7 @@ module pno_ccsd_module
         endif
         !$OMP END MASTER
 
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doi :do i = 1, no
            doj: do j = 1, no
 
@@ -1663,9 +1663,9 @@ module pno_ccsd_module
               endif
            enddo doj
         enddo doi
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      else
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doiful :do i = 1, no
            dojful: do j = 1, no
 
@@ -1715,14 +1715,14 @@ module pno_ccsd_module
 
            enddo dojful
         enddo doiful
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      endif
 
      !call mem_dealloc(w1)
 
-     call collect_thread_memory()
-     !$OMP END PARALLEL
-     call mem_TurnOffThread_Memory()
+     !call collect_thread_memory()
+     !OMP END PARALLEL
+     !call mem_TurnOffThread_Memory()
 
      print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
 
@@ -2097,7 +2097,6 @@ module pno_ccsd_module
      INTSPEC(5)               = 'C' !C = Coulomb operator
      doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
 
-
      ! ***********************************************
      ! *  precalculate the full screening matrix     *
      ! ***********************************************
@@ -2148,6 +2147,7 @@ module pno_ccsd_module
               write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
                  &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
 #else
+              if(gammaB
               write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
                  &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
 #endif
@@ -2556,15 +2556,15 @@ module pno_ccsd_module
 
               call time_start_phase(PHASE_WORK, at = times(8), twall = times(1) )
 
-              !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
-              !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,goffs,aoffs,tlen,tred,&
-              !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
-              !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
-              !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
-              !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
-              !$OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
-              !$OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
-              !$OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
+              !OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+              !OMP SHARED(nspaces,paircontrib,xa,xg,Gai,goffs,aoffs,tlen,tred,&
+              !OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
+              !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+              !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
+              !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
+              !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
+              !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
               tid = 0
 #ifdef VAR_OMP
               tid = omp_get_thread_num()
@@ -2578,7 +2578,7 @@ module pno_ccsd_module
                  my_w5 => null()
               endif
 
-              !$OMP DO SCHEDULE(DYNAMIC)
+              !OMP DO SCHEDULE(DYNAMIC)
               do ns = 1, nspaces
 
                  if(.not.pno_cv(ns)%allocd)then
@@ -2696,8 +2696,8 @@ module pno_ccsd_module
 
 
               enddo
-              !$OMP END DO NOWAIT
-              !$OMP END PARALLEL
+              !OMP END DO NOWAIT
+              !OMP END PARALLEL
 
               call time_start_phase( PHASE_WORK, ttot = times(1) )
               times(9) = times(9) + times(1)

@@ -1520,9 +1520,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             & in m2',DECinfo%output)
       end if
       if(.not. local)then
-         print *,"WARINING(ccsolver): switching to local for parallel solver&
-            & with PNOs"
-         local = .true.
+         print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
+         stop 0
       endif
    endif
 
