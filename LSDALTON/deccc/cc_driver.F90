@@ -1804,8 +1804,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    If_not_converged: if(.not.restart_from_converged)then
 
-      mo_ccsd = .false.
-      if (DECinfo%MOCCSD) mo_ccsd = .true.
+      mo_ccsd = .true.
+      if (DECinfo%NO_MO_CCSD.or.(nb>400)) mo_ccsd = .false.
+       
+      if (DECinfo%force_scheme) then
+        if (DECinfo%en_mem<5) then
+          DECinfo%NO_MO_CCSD = .true.
+          mo_ccsd            = .false.
+        else if (DECinfo%en_mem>=5) then 
+          mo_ccsd            = .true.
+          if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
+             & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
+        end if
+      end if
 
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 

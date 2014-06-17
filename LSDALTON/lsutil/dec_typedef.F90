@@ -186,8 +186,8 @@ module dec_typedef_module
      real(realk) :: EOSPNOthr
      !> use triangular counting in th occupied indices
      logical :: PNOtriangular
-     !> Use MO-based algorithm to solve the CCSD equations
-     logical :: MOCCSD
+     !> Prevent using MO-based algorithm to solve the CCSD equations
+     logical :: NO_MO_CCSD
      !> do not update the singles residual
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option

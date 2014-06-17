@@ -3023,10 +3023,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! For MO-CCSD part
     ntot    = nocc + nvir
     nbas    = MyFragment%nbasis
-    mo_ccsd = .false.
-    if (DECinfo%MOCCSD) mo_ccsd = .true.
-    if (DECinfo%force_scheme) scheme=DECinfo%en_mem
+    mo_ccsd = .true.
+    if (DECinfo%NO_MO_CCSD.or.(nbas>400)) mo_ccsd = .false.
 
+    if (DECinfo%force_scheme) then
+      scheme=DECinfo%en_mem
+      if (scheme<5) then
+        DECinfo%NO_MO_CCSD = .true.
+        mo_ccsd            = .false.
+      else if (scheme>=5) then 
+        mo_ccsd            = .true.
+        if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
+           & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
+      end if
+    end if
+
+        
 #ifdef MOD_UNRELEASED
     ! The two if statments are necessary as mo_ccsd might become false
     ! after the first statement (if not enought memory).
