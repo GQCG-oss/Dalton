@@ -2295,9 +2295,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(.not.use_pnos)then
       VOVO = array4_init([no,nv,no,nv])
       call array_convert(iajb,VOVO%val)
-      call array_free(iajb)
       call array4_reorder(VOVO,[2,1,4,3])
    endif
+   call array_free(iajb)
 
    ! deallocate stuff
    if(use_singles) then
