@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > deccc2_mo.info <<'%EOF%'
+cat > deccc2.info <<'%EOF%'
    DEC-CC2 energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
    Molecule:         3 BH molecules with stretched bonds
@@ -28,7 +28,7 @@ cat > deccc2_mo.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > deccc2_mo.mol <<'%EOF%'
+cat > deccc2.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
@@ -46,7 +46,7 @@ H          6.000000      0.0000000    1.4500000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > deccc2_mo.dal <<'%EOF%'
+cat > deccc2.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -74,8 +74,8 @@ TRILEVEL
 #######################################################################
 
 #######################################################################
-echo $CHECK_SHELL >deccc2_mo.check
-cat >>deccc2_mo.check <<'%EOF%'
+echo $CHECK_SHELL >deccc2.check
+cat >>deccc2.check <<'%EOF%'
 
 log=$1
 
