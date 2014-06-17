@@ -2147,7 +2147,6 @@ module pno_ccsd_module
               write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
                  &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
 #else
-              if(gammaB
               write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
                  &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
 #endif
