@@ -2037,7 +2037,8 @@ module pno_ccsd_module
      integer :: tid, edit,orig_nthr
 #ifdef VAR_OMP
      !$ logical :: nested
-     !$ integer, external :: omp_get_nested,omp_get_thread_num, omp_get_num_threads
+     !$ logical, external :: omp_get_nested
+     !$ integer, external :: omp_get_thread_num, omp_get_num_threads
      nested    = omp_get_nested()
      call omp_set_nested(.true.)
 #endif
