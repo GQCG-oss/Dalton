@@ -7,14 +7,11 @@ module optimlocMOD
 !#                                                        #
 !##########################################################
   use precision
-!  use Pipek
   use orbspread_module !like orbspread_propint
   use charge_module !like get_correct_S
   use kurtosis !like kurtosis_test 
-!  use davidson_settings
   use matrix_module, only: matrix
   use matrix_operations 
-!  use matrix_util, only: matrix_exponential
   use matrix_util
   use loc_utils
   use typedeftype
@@ -35,30 +32,27 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   integer,       intent(in)    :: nocc
   integer,       intent(in)    :: m(2)
   integer                      :: nvirt, nbas, ncore, nval
-  type(Matrix)                 :: CMOo, CMOv, CMOc
-  type(Matrix), pointer        :: CMOs
-  integer     , pointer        :: selected(:)
-  real(realk), pointer      :: tmp(:)
-  type(orbspread_data)         :: inp
-  integer :: m_core
   real(realk) :: TIMSTR,TIMEND
   type(matrix) :: SC,CSC,S
   logical :: ForcePrint
+  
+
   ForcePrint =  .TRUE.
   CALL LSTIMER('START ',TIMSTR,TIMEND,ls%lupri)
-
-  nvirt=CMO%ncol - nocc
-  nbas =CMO%nrow
+  
+  !initializations
   ncore = count_ncore(ls)
   nval = nocc - ncore
+  nvirt=CMO%ncol - nocc
+  nbas =CMO%nrow
   CFG%lupri = ls%lupri
+
   !Compute OrbLoc%SU needed for localization
   if (CFG%PM) then
      call mat_init(CFG%PM_input%SU,nbas,nbas)
      call get_correct_S(CFG,ls,nbas)
      CFG%PM_input%CMO => CMO
   end if
-  CFG%lupri = ls%lupri
 
   if (CFG%PFM_input%TESTCASE) then
      call kurtosis_test(ls,cmo,nbas,CMO%ncol)
@@ -68,99 +62,27 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
      return
   end if
 
-!!!!!!!!!!!!!!!!! general, propint
-  if (CFG%orbspread)  call orbspread_propint(inp,ls)
+
+  if (CFG%orbspread)  call orbspread_propint(CFG%orbspread_inp,ls)
   if (CFG%PFM)   call kurt_initAO(CFG%PFM_input,ls,cmo%ncol)
 
-  if (.not. m(1)==0) then
-     CFG%PFM_input%m=m(1)
-     if (ncore.gt.0) then
-!!!!!!!!!!!!!!!! core
-        !init
-        call mat_init(CMOc,nbas,ncore)
-        !get core block
-        call mem_alloc(tmp,nbas*ncore)
-        call mat_retrieve_block(CMO,tmp,nbas,ncore,1,1)
-        call mat_set_from_full(tmp,1d0,CMOc)
-        call mem_dealloc(tmp)
+  
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',ncore,' CORE ORBITALS ******'
+  write(ls%lupri,'(a)') '  %LOC%  '
+  CFG%PFM_input%m=m(1)
+  call localization(CMO,m(1),ncore,nbas,0,ls,CFG,.true.)
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nval,' VALENCE ORBITALS ******'
+  write(ls%lupri,'(a)') '  %LOC%  '
+  call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,.false.)
+  write(ls%lupri,'(a)') '  %LOC%  '
+  write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nvirt,' VIRTUAL ORBITALS ******'
+  write(ls%lupri,'(a)') '  %LOC%  '
+  CFG%PFM_input%m=m(2)
+  call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,.false.)
 
-        !run localization
-        write(ls%lupri,*) 'Localizing core: ', nbas, CMOc%ncol
-        if (CFG%orbspread.or.CFG%PFM) then
-           m_core = 1
-        else
-           m_core = 2
-        end if
-
-        if (ncore < 6) then
-           write(ls%lupri,*) 'Too few orbitals to localize' 
-        else
-           write(ls%lupri,'(a)') 'Pred= ******* CORE LOCALIZATION ******* '
-           call localize_davidson(CMOc,m_core,inp,ls,CFG)
-        end if
-        call mem_alloc(tmp,nbas*ncore)
-        call mat_to_full(CMOc,1d0,tmp)
-        call mat_free(CMOc)
-        call mat_create_block(CMO,tmp,nbas,ncore,1,1)
-        call mem_dealloc(tmp)
-     endif
-!!!!!!!!!!!!!!!!!! valence
-     !init
-     call mat_init(CMOo,nbas,nval)
-     !
-     !!get core block
-     call mem_alloc(tmp,nbas*nval)
-     call mat_retrieve_block(CMO,tmp,nbas,nval,1,ncore+1)
-     call mat_set_from_full(tmp,1d0,CMOo)
-     call mem_dealloc(tmp)
-
-     !run localization
-     write(ls%lupri,*) 'Localizing valence: ', nbas, CMOo%ncol
-     if (nval < 6) then
-        write(ls%lupri,*) 'Too few orbitals to localize' 
-     else
-        write(ls%lupri,'(a)') 'Pred= ******* VALENCE LOCALIZATION ******* '
-        call localize_davidson(CMOo,m(1),inp,ls,CFG)
-     end if
-
-     !set occupied block in CMO
-     call mem_alloc(tmp,nbas*nval)
-     call mat_to_full(CMOo,1d0,tmp)
-     call mat_free(CMOo)
-     call mat_create_block(CMO,tmp,nbas,nval,1,ncore+1)
-     call mem_dealloc(tmp)
-  endif
-  if (.not. m(2) == 0 .and. (nvirt>0) ) then
-     CFG%PFM_input%m=m(2)
-!!!!!!!!!!!!!!!!! virtual
-     !init
-     call mat_init(CMOv,nbas,nvirt)
-
-     !get occupied block
-     call mem_alloc(tmp,nbas*nvirt)
-     call mat_retrieve_block(CMO,tmp,nbas,nvirt,1,nocc+1)
-     call mat_set_from_full(tmp,1d0,CMOv)
-     call mem_dealloc(tmp)
-
-
-     !run localization
-     write(ls%lupri,*) 'Localizing virtual: ', nvirt
-     if (nvirt < 6) then 
-        write(ls%lupri,*) 'Too few orbitals to localize'
-     else
-        write(ls%lupri,'(a)') 'Pred= ******* VIRTUAL LOCALIZATION ******* '
-        call localize_davidson(CMOv,m(2),inp,ls,CFG)
-     end if
-
-     !set occupied block in CMO
-     call mem_alloc(tmp,nbas*nvirt)
-     call mat_to_full(CMOv,1d0,tmp)
-     call mat_free(CMOv)
-     call mat_create_block(CMO,tmp,nbas,nvirt,1,nocc+1)
-     call mem_dealloc(tmp)
-  endif
-
-  if (CFG%orbspread) call orbspread_propint_free(inp)
+  if (CFG%orbspread) call orbspread_propint_free(CFG%orbspread_inp)
   if (CFG%PFM)  call kurt_freeAO(CFG%PFM_input)
   if (CFG%PM) call mat_free(CFG%PM_input%SU)
 
@@ -176,7 +98,7 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   call mat_identity(SC)
   call mat_daxpy(-1E0_realk,SC,CSC)
   IF(ABS(mat_sqnorm2(CSC)/CSC%nrow).GT.1.0E-15_realk)THEN
-     write(ls%lupri,*) 'WARNING: ORBITALS NOT ORTHONORMAL!!! SOMETHING IS WRONG.' 
+     write(ls%lupri,*) '  %LOC% WARNING: ORBITALS NOT ORTHONORMAL!!!' 
   ENDIF
   call mat_free(S)
   call mat_free(SC)
@@ -186,10 +108,67 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
 
 end subroutine optimloc
 
-subroutine localize_davidson(CMO,m,orbspread_input,ls,CFG)
+!>  calls localization with appropriate dimension and check for problems
+!> \author Ida-Marie Hoeyvik
+!> \date 2014
+subroutine localization(MO,m,norb,nbas,offset,ls,CFG,core) 
+implicit none
+!> Matrix containg all MO coefficents
+type(matrix),intent(inout) :: MO 
+!> exponent for localization. 0 if no loc.
+integer, intent(in) :: m
+!> number of orbitals to be localized
+integer, intent(in) :: norb
+!> number of basis functions
+integer, intent(in) :: nbas 
+!> points to where in MO matrix we start (offset = 0, ncore, or nval)
+integer, intent(in) :: offset
+!>temp block for MOs
+real(realk), pointer :: tmp(:)
+!> block of MOs to be localized
+type(matrix) :: MOblock
+!> true if core orbitals
+logical, intent(in)  :: core
+!> items for localizer etc
+type(RedSpaceItem)   :: CFG
+type(lsitem)         :: ls
+
+! when m=0, no localization is to be performed
+if (m == 0) return
+
+
+if (norb < 6)  then
+   write(ls%lupri,'(a)') '  %LOC%  Too few orbitals to localize.  ' 
+   return 
+endif
+
+call mem_alloc(tmp,nbas*norb)
+call mat_init(MOblock,nbas,norb)
+! extract matrix from CMO(1,offset+1)
+call mat_retrieve_block(MO,tmp,nbas,norb,1,offset+1)
+
+call mat_set_from_full(tmp,1.0_realk,MOblock)
+call mem_dealloc(tmp)
+
+! if core, make sure m = 1 for orbspread and fourthmoment
+if (core .and. (CFG%orbspread.or.CFG%PFM)) then
+   call localize_davidson(MOblock,1,ls,CFG)
+else
+   call localize_davidson(MOblock,m,ls,CFG)
+endif
+
+call mem_alloc(tmp,nbas*norb)
+call mat_to_full(MOblock,1.0_realk,tmp)
+call mat_free(MOblock)
+! set localized coefficients into MO matrix
+call mat_create_block(MO,tmp,nbas,norb,1,offset+1)
+call mem_dealloc(tmp)
+
+end subroutine localization
+
+subroutine localize_davidson(CMO,m,ls,CFG)
   implicit none
   type(RedSpaceItem) :: CFG
-  type(orbspread_data) :: orbspread_input
   type(lsitem) :: ls
   type(matrix) :: CMO
   integer :: m
@@ -197,7 +176,7 @@ subroutine localize_davidson(CMO,m,orbspread_input,ls,CFG)
   call davidson_reset(CFG)
 
   if (CFG%orbspread) then
-     call orbspread_localize_davidson(CFG,CMO,m,orbspread_input,ls)
+     call orbspread_localize_davidson(CFG,CMO,m,ls)
      return
   elseif (CFG%PFM) then
      call PFM_localize_davidson(CFG,CMO,m,ls)

@@ -668,6 +668,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%ccmodel,master)
     CALL ls_mpi_buffer(MyFragment%noccLOC,master)
     CALL ls_mpi_buffer(MyFragment%nunoccLOC,master)
+    CALL ls_mpi_buffer(MyFragment%nspaces,master)
 
 
     ! Logicals that are not pointers
@@ -676,6 +677,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
     CALL ls_mpi_buffer(MyFragment%FAset,master)
+    CALL ls_mpi_buffer(MyFragment%PNOset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
@@ -827,6 +829,7 @@ contains
     end if
 
 
+
     ! CCORBITAL types
     ! ---------------
     ! Allocate decorbitals
@@ -904,6 +907,19 @@ contains
          call ls_mpi_buffer(MyFragment%qqfockFA,MyFragment%nunoccFA,MyFragment%nunoccFA,master)
        endif
 
+       if(MyFragment%PNOset) then
+
+         if( .not. AddToBuffer )then
+
+           nullify(MyFragment%CLocPNO)
+           call mem_alloc( MyFragment%CLocPNO, MyFragment%nspaces )
+
+         endif
+
+         do i = 1, MyFragment%nspaces
+           call buffercopy_PNOSpaceInfo_struct(MyFragment%CLocPNO(i),master)
+         enddo
+       endif
 
        ! INTEGRAL LSITEM
        ! '''''''''''''''
@@ -932,6 +948,48 @@ contains
     end if
 
   End subroutine mpicopy_fragment
+
+  subroutine buffercopy_PNOSpaceInfo_struct(inf,master)
+    implicit none
+    type(PNOSpaceInfo),intent(inout) :: inf
+    integer(kind=ls_mpik),intent(in) :: master
+    call ls_mpi_buffer(inf%n,master)
+    call ls_mpi_buffer(inf%ns1,master)
+    call ls_mpi_buffer(inf%ns2,master)
+    call ls_mpi_buffer(inf%rpd,master)
+    call ls_mpi_buffer(inf%red1,master)
+    call ls_mpi_buffer(inf%red2,master)
+    call ls_mpi_buffer(inf%allocd,master)
+    call ls_mpi_buffer(inf%s_associated,master)
+
+    if(inf%allocd)then
+
+      !allocate the arrays correctly
+      if( .not. AddToBuffer )then
+
+        call mem_alloc(inf%iaos,inf%n)
+
+        if (inf%s_associated) then
+          call mem_alloc(inf%s1,inf%ns1,inf%red1)
+          call mem_alloc(inf%s2,inf%red2,inf%ns2)
+          call mem_alloc(inf%d,inf%red1,inf%red2)
+        else
+          call mem_alloc(inf%d,inf%ns1,inf%ns2)
+        endif
+      endif
+    
+      call ls_mpi_buffer(inf%iaos,inf%n,master)
+      if (inf%s_associated) then
+        call ls_mpi_buffer(inf%s1,inf%ns1,inf%red1,master)
+        call ls_mpi_buffer(inf%s2,inf%red2,inf%ns2,master)
+        call ls_mpi_buffer(inf%d,inf%red1,inf%red2,master)
+      else
+        call ls_mpi_buffer(inf%d,inf%ns1,inf%ns2,master)
+      endif
+
+    endif
+   
+  end subroutine buffercopy_PNOSpaceInfo_struct
 
   subroutine share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
@@ -985,74 +1043,69 @@ contains
   !> \brief MPI communcation where CCSD and CC2 data is transferred
   !> \author Patrick Ettenhuber
   !> \date March 2012
-  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,s,loc)
-    implicit none
-    integer,intent(inout) :: ccmodel
-    type(mp2_batch_construction) :: bat
-    integer            :: nbas,nocc,nvirt,ierr,iter,s
-    !real(realk)        :: t2(:),govov(:)
-    type(array),intent(inout) :: t2,govov,om2
-    real(realk)        :: xo(:),xv(:),yo(:),yv(:)
-    type(lsitem)       :: MyLsItem
-    real(realk)        :: norm
-    integer(kind=long) :: nelms
-    integer :: i,n4,k
-    integer :: gaddr(infpar%lg_nodtot)
-    integer :: taddr(infpar%lg_nodtot)
-    integer :: oaddr(infpar%lg_nodtot)
-    logical :: loc
-    character(ARR_MSG_LEN) :: msg
-    logical :: master
-    master=(infpar%lg_mynum==infpar%master)
-   !communicate mylsitem and integers
-    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
-    call ls_mpi_buffer(nbas,infpar%master)
-    call ls_mpi_buffer(nocc,infpar%master)
-    call ls_mpi_buffer(nvirt,infpar%master)
-    call ls_mpi_buffer(iter,infpar%master)
-    call ls_mpi_buffer(s,infpar%master)
-    call ls_mpi_buffer(loc,infpar%master)
-    call ls_mpi_buffer(ccmodel,infpar%master)
-    if(.not.loc)then
-      if(master)gaddr=govov%addr_p_arr
-      call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
-      if(master)taddr=t2%addr_p_arr
-      call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
-      if(master)oaddr=om2%addr_p_arr
-      call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
-    endif
-    call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
-    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+  subroutine mpi_communicate_ccsd_calcdata(ccmodel,om2,t2,govov,xo,xv,yo,yv,MyLsItem,nbas,nvirt,nocc,iter,loc)
+     implicit none
+     integer,intent(inout) :: ccmodel
+     type(mp2_batch_construction) :: bat
+     integer            :: nbas,nocc,nvirt,ierr,iter
+     !real(realk)        :: t2(:),govov(:)
+     type(array),intent(inout) :: t2,govov,om2
+     real(realk)        :: xo(:),xv(:),yo(:),yv(:)
+     type(lsitem)       :: MyLsItem
+     real(realk)        :: norm
+     integer(kind=long) :: nelms
+     integer :: i,n4,k
+     integer :: gaddr(infpar%lg_nodtot)
+     integer :: taddr(infpar%lg_nodtot)
+     integer :: oaddr(infpar%lg_nodtot)
+     logical :: loc
+     character(ARR_MSG_LEN) :: msg
+     logical :: master
+     master=(infpar%lg_mynum==infpar%master)
 
-    !communicate rest of the quantities, master here, slaves back in the slave
-    !routine, due to crappy pointer/non-pointer issues (->allocations)
-    if(master)then
+     !communicate mylsitem and integers
+     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     !    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
+     call ls_mpi_buffer(nbas,infpar%master)
+     call ls_mpi_buffer(nocc,infpar%master)
+     call ls_mpi_buffer(nvirt,infpar%master)
+     call ls_mpi_buffer(iter,infpar%master)
+     call ls_mpi_buffer(loc,infpar%master)
+     call ls_mpi_buffer(ccmodel,infpar%master)
+     if(.not.loc)then
+        if(master)gaddr=govov%addr_p_arr
+        call ls_mpi_buffer(gaddr,infpar%lg_nodtot,infpar%master)
+        if(master)taddr=t2%addr_p_arr
+        call ls_mpi_buffer(taddr,infpar%lg_nodtot,infpar%master)
+        if(master)oaddr=om2%addr_p_arr
+        call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
+     endif
+     call mpicopy_lsitem(MyLsItem,infpar%lg_comm)
+     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
-      !split messages in 2GB parts, compare to counterpart in
-      !ccsd_data_preparation
-      k=SPLIT_MSG_REC
+     !communicate rest of the quantities, master here, slaves back in the slave
+     !routine, due to crappy pointer/non-pointer issues (->allocations)
+     if(master)then
 
-      nelms = nbas*nocc
-      call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+        !split messages in 2GB parts, compare to counterpart in
+        !ccsd_data_preparation
+        k=SPLIT_MSG_REC
 
-      nelms = nbas*nvirt
-      call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-      call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+        nelms = nbas*nocc
+        call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
 
-      nelms = int((i8*nvirt)*nvirt*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      if(iter/=1.and.(s==0.or.s==4))then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
-      endif
-    else
-      if(.not.loc)then
-        govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
-        t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
-        om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
-      endif
-    endif
+        nelms = nbas*nvirt
+        call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+
+     else
+        if(.not.loc)then
+           govov = get_arr_from_parr(gaddr(infpar%lg_mynum+1))
+           t2    = get_arr_from_parr(taddr(infpar%lg_mynum+1))
+           om2   = get_arr_from_parr(oaddr(infpar%lg_mynum+1))
+        endif
+     endif
   end subroutine mpi_communicate_ccsd_calcdata
 
   !> \brief mpi communcation where ccsd(t) data is transferred
@@ -1094,7 +1147,7 @@ contains
 
   end subroutine mpi_communicate_ccsdpt_calcdata
 
-
+#ifdef MOD_UNRELEASED
   !> Purpose: Get job list to have a good load balance in the
   !           main loop of the MO-CCSD residual calculations
   !
@@ -1199,7 +1252,7 @@ contains
     call mem_dealloc(work_in_node)
 
   end subroutine get_mo_ccsd_joblist
-
+#endif
 
   !> \brief get a suitable job distribution in mpi calculations
   !> \author Patrick Ettenhuber
@@ -1778,7 +1831,7 @@ contains
 
        ! Giga flops for fragment
 #ifdef VAR_PAPI
-       Gflops = jobs%flops(i)*1.0e-9
+       Gflops = jobs%flops(i)*1.0e-9_realk
 #else
        Gflops=-1.0_realk
 #endif
@@ -1871,6 +1924,7 @@ contains
 
   end subroutine mpibcast_dec_settings
 
+#ifdef MOD_UNRELEASED
   !> Purpose: Communicate data to the slaves needed to get MO integral.
   !           get_packed_gmo routine.
   !
@@ -2045,7 +2099,7 @@ contains
     endif
 
   end subroutine mpi_communicate_moccsd_data
-
+#endif
 
   !> \brief Copy DEC setting structure to buffer (master)
   !> or read from buffer (slave)
@@ -2090,11 +2144,13 @@ contains
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
-    call ls_mpi_buffer(DECitem%MOCCSD,Master)
+    call ls_mpi_buffer(DECitem%NO_MO_CCSD,Master)
     call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
+    call ls_mpi_buffer(DECitem%noFAtrafo,Master)
+    call ls_mpi_buffer(DECitem%noFAtrunc,Master)
     call ls_mpi_buffer(DECitem%simplePNOthr,Master)
     call ls_mpi_buffer(DECitem%use_pnos,Master)
     call ls_mpi_buffer(DECitem%EOSPNOthr,Master)
@@ -2132,9 +2188,10 @@ contains
     call ls_mpi_buffer(DECitem%array_test,Master)
     call ls_mpi_buffer(DECitem%reorder_test,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
+    call ls_mpi_buffer(DECitem%check_Occ_SubSystemLocality,Master)
+    call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
-    call ls_mpi_buffer(DECitem%full_print_frag_energies,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)
@@ -2152,6 +2209,7 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionScheme,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)

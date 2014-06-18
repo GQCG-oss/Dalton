@@ -35,11 +35,11 @@ Formaldehyde
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
 Charge=6.0 Atoms=1
-C           -1.588367    -.770650     .029109 
+C           -1.588367    -.770650     .029109
 Charge=8.0 Atoms=1
-O           -1.657083     .436069    -.009750 
+O           -1.657083     .436069    -.009750
 Charge=1.0 Atoms=2
-H           -.620668   -1.294822      .054251 
+H           -.620668   -1.294822      .054251
 H           -2.508043   -1.382001     .040282
 %EOF%
 #######################################################################
@@ -160,12 +160,12 @@ ERROR[2]="ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Induced dipole moments in environment
 #
- CRIT1=`$GREP "1 * \-0*\.086353.. * 0*\.133806.. * \-0*\.006226.." $log | wc -l`
- CRIT2=`$GREP "2 * \-0*\.06285[89].. * 0*\.011291.. * \-0*\.00296[67].." $log | wc -l`
- CRIT3=`$GREP "3 * \-0*\.005140.. * 0*\.026227.. *   0*\.017853.." $log | wc -l`
- CRIT4=`$GREP "4 *   0*\.032913.. * 0*\.064224.. * \-0*\.006332.." $log | wc -l`
- CRIT5=`$GREP "5 * \-0*\.005124.. * 0*\.151178.. *   0*\.005064.." $log | wc -l`
- CRIT6=`$GREP "6 * \-0*\.00096[89].. * 0*\.008300.. * \-0*\.007212.." $log | wc -l`
+CRIT1=`$GREP "1 * \-0*\.086353.. * 0*\.133806.. * \-0*\.006226.." $log | wc -l`
+CRIT2=`$GREP "2 * \-0*\.06285[89].. * 0*\.011291.. * \-0*\.00296[67].." $log | wc -l`
+CRIT3=`$GREP "3 * \-0*\.005140.. * 0*\.026227.. *   0*\.017853.." $log | wc -l`
+CRIT4=`$GREP "4 *   0*\.032913.. * 0*\.064224.. * \-0*\.006332.." $log | wc -l`
+CRIT5=`$GREP "5 * \-0*\.005124.. * 0*\.151178.. *   0*\.005064.." $log | wc -l`
+CRIT6=`$GREP "6 * \-0*\.00096[89].. * 0*\.008300.. * \-0*\.007212.." $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[3]=6
 ERROR[3]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -180,7 +180,7 @@ TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3
 ERROR[4]="DIPOLE MOMENT NOT CORRECT"
 
-PASSED=1 
+PASSED=1
 for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
@@ -196,7 +196,7 @@ then
 else
   echo THERE IS A PROBLEM
   exit 1
-fi                
+fi
 %EOF%
 chmod +x pehsrohf_wft.check
 #######################################################################

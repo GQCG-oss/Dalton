@@ -15,16 +15,17 @@ subroutine lsmpi_init(OnMaster)
    nDP       = 0
    nInteger4 = 0
    nInteger8 = 0
-   nShort    = 0
    nCha      = 0
 
+   if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
-   MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
+     MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
 #else
+     call MPI_INIT( ierr )
+     MPI_COMM_LSDALTON        = MPI_COMM_WORLD
+#endif
+   endif
 
-   call MPI_INIT( ierr )
-
-   MPI_COMM_LSDALTON        = MPI_COMM_WORLD
    lsmpi_enabled_comm_procs = .false.
 
    !asynchronous progress is off per default, might be switched on with an
@@ -32,7 +33,6 @@ subroutine lsmpi_init(OnMaster)
    LSMPIASYNCP             = .false.
    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 
-#endif
 
    call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
@@ -144,10 +144,6 @@ subroutine lsmpi_slave(comm)
          call MP2_integrals_and_amplitudes_workhorse_slave
       case(MP2INAMPRI);
          call MP2_RI_EnergyContribution_slave
-      case(CCGETGMO);
-         call cc_gmo_data_slave
-      case(MOCCSDDATA);
-         call moccsd_data_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
@@ -160,7 +156,13 @@ subroutine lsmpi_slave(comm)
          call calculate_E2_and_permute_slave
       case(RPAGETRESIDUAL);
          call rpa_res_slave
+      case(RPAGETFOCK);
+         call rpa_fock_slave
 #ifdef MOD_UNRELEASED
+      case(CCGETGMO);
+         call cc_gmo_data_slave
+      case(MOCCSDDATA);
+         call moccsd_data_slave
       case(CCSDPTSLAVE);
          call ccsdpt_slave
 #endif

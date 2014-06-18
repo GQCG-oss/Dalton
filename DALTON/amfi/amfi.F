@@ -158,7 +158,7 @@ cbs   initialize tables with double facultatives...
 cbs   move some powers of x,y,z to the right place   BEGIN 
 cbs   check if Lpowmax is high enough..
       if (Lpowmax.lt.Lmax) then 
-      CALL QUIT('increase lpowmax and edit ixyzpow')
+      CALL QUIT('AMFI: increase lpowmax and edit ixyzpow')
       endif 
       jrun=1
       do irun=0,Lmax
@@ -7638,3 +7638,4 @@ c     enddo
       endif 
       return 
       end 
+! --- end of amfi/amfi.F ---

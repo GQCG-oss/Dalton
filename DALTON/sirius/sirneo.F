@@ -728,13 +728,7 @@ C
 #include "infdim.h"
 #include "inftap.h"
 #include "infpri.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 #include "gnrinf.h"
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
 C
 C     local variables:
 C
@@ -766,13 +760,8 @@ C     ... symmetrize CI vector
       DOPHP  = .FALSE.
 #else
       DOPHP  = (MAXPHP .GT. 0)
-C----------------------
 C CBN+JK 03.01.06
-C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3) DOPHP = .FALSE.
-C-----------------------
-C CBN+JK 03.01.06
-C----------------------
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .OR. PEQM) DOPHP = .FALSE.
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1

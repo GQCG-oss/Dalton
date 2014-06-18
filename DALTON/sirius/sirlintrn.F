@@ -458,6 +458,19 @@ C
      &               DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
      &               WRK(KVTEX),WRK(KWPCM),LWPCM)
          CALL GETTIM(T5,W5)
+      ELSEIF (QMMM) THEN
+         CALL PELIN(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &              DV,WRK(KDTV),WRK(KSCVEC),WRK(KSOVEC),ORBLIN,
+     &              WRK(K3A),L3A)
+         CALL FLSHFO(LUPRI)
+         CALL GETTIM(T5,W5)
+      ELSE IF (PEQM) THEN
+#if defined (BUILD_PELIB)
+         CALL PE_LIN(NCSIM, NOSIM, BCVECS, BOVECS, CREF, CMO, INDXCI,
+     &               DV, WRK(KDTV), WRK(KSCVEC), WRK(KSOVEC), ORBLIN,
+     &               WRK(K3A), L3A)
+#endif
+         CALL GETTIM(T5,W5)
       ELSE
          T5 = T4
          W5 = W4

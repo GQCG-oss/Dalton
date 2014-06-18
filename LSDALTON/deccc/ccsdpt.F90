@@ -400,14 +400,14 @@ contains
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
-#ifdef VAR_MPI
-    do ij_count=1,infpar%lg_nodtot
-       if( ij_count - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," jobs 2 ",jobs
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
-#endif
+!#ifdef VAR_MPI
+!    do ij_count=1,infpar%lg_nodtot
+!       if( ij_count - 1 == infpar%lg_mynum)then
+!          print *,infpar%lg_mynum," jobs 2 ",jobs
+!       endif
+!       call lsmpi_barrier(infpar%lg_comm)
+!    enddo
+!#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -6123,12 +6123,12 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
-    do alphaB=1,infpar%lg_nodtot
-       if( alphaB - 1 == infpar%lg_mynum)then
-          print *,infpar%lg_mynum," distribution ",distribution
-       endif
-       call lsmpi_barrier(infpar%lg_comm)
-    enddo
+    !do alphaB=1,infpar%lg_nodtot
+    !   if( alphaB - 1 == infpar%lg_mynum)then
+    !      print *,infpar%lg_mynum," distribution ",distribution
+    !   endif
+    !   call lsmpi_barrier(infpar%lg_comm)
+    !enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
@@ -6581,9 +6581,9 @@ contains
         write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
         write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
         write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9_realk
         write(DECinfo%output,*)
 
 

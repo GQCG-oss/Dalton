@@ -440,7 +440,7 @@ C
 C
 C     Third parameter .TRUE. in call indicates that LUONEL will be written.
 C
-      CALL READIN(WORK(1),LMWORK,.TRUE.)
+      CALL READIN(WORK(1),LMWORK,RNHERM)
 C
 C     Initialize Hermit variables, also when RNHERM false (e.g. for ABACUS)
 C
@@ -463,7 +463,7 @@ C
          CALL HERCTL(WORK(1),LMWORK)
 C        ... Note: if RUNTWO or RUNERI then HERCTL sets FTRCTL = .TRUE.
 C        for transformation control, old AO/MO files cannot be used any more.
-C     ***************************************************************
+C        ***************************************************************
          CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'HERMIT')
          CALL TITLER('End of Integral Section (HERMIT)',' ',200)
          CALL FLSHFO(LUPRI)
@@ -658,7 +658,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "cbisol.h"
-#include "taymol.h"
 #include "pcmlog.h"
 Cef begin
 #include "incore.h"
@@ -682,7 +681,13 @@ C
       DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+
+#include "trkoor.h"
+#include "taymol.h"
+      REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
       real(8), allocatable :: work(:)
+
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C
@@ -913,9 +918,13 @@ C     We may have more DOSYM under **START than under **PROPE
                   DOREPW(I) = DOSYM(I + 1) .AND. DOREPW(I)
                END DO
                IF (REUSED .AND. ITERNR .GT. 0) THEN
+                  allocate ( GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) )
+                  CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                   REWIND (LUSIFC)
                   CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
                   READ (LUSIFC) POTNUC,EMY,EACTIV,ERGMOL
+                  CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+                  deallocate ( GRDMOL, HESMOL )
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(1),LMWORK)
                ELSE
@@ -1236,7 +1245,9 @@ C
       CALL PLTORB(WORK(KKIND),LMWORK)
 C
 !     release memory used in PElib
+#if defined (BUILD_PELIB)
       IF (PEQM) CALL PE_IFC_FINALIZE()
+#endif
 
       CALL GETTIM(CEND,WEND)
       CTOT = CEND - CSTR
@@ -1269,10 +1280,6 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
-#if defined (BUILD_PELIB)
-      use polarizable_embedding, only: pe_input_reader
-#endif
-
 #if defined (PCM_MODULE)
       use pcmmod_cfg
       use pcm_write
@@ -1307,7 +1314,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 14, NTABLE = 34, D0 = 0.D0)
+      PARAMETER (NDIR = 14, NTABLE = 35, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1337,7 +1344,7 @@ C
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
      &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.QFIT  '/
+     &            '.QFIT  ', '.LSLIB '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1401,7 +1408,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       PEQM   = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
-      QFIT = .FALSE.
+      QFIT   = .FALSE.
+      USE_LSLIB = .FALSE.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1533,7 +1541,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134), I
+     &                131,132,133,134,135), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1664,13 +1672,22 @@ C        '.DOUGLA'
             CALL QUIT('ERROR for .PEQM: PE library not enabled.')
 #endif
          GOTO 100
-!        '.QFIT   '
+!        '.QFIT  '
  134     CONTINUE
 #if defined (BUILD_QFITLIB)
          QFIT = .TRUE.
 #else
          WRITE(LUPRI,*) 'ERROR for .QFIT: QFITLIB not enabled.'
          CALL QUIT('ERROR for .QFIT: QFITLIB not enabled.')
+#endif
+         GOTO 100
+!        '.LSLIB '
+ 135     CONTINUE
+#if defined (BUILD_LSLIB)
+         USE_LSLIB  = .TRUE.
+#else
+         WRITE(LUPRI,*) 'ERROR for .LSLIB : LSLIB not enabled.'
+         CALL QUIT('ERROR for .LSLIB : LSLIB not enabled.')
 #endif
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN

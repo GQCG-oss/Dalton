@@ -17,6 +17,7 @@ module full
   use dec_fragment_utils
   use CABS_operations
 #ifdef MOD_UNRELEASED
+  use cc_debug_routines_module
   use full_f12contractions
   use f12_routines_module   ! Moved to August 2013 by Yang M. Wang
 #endif
@@ -27,7 +28,6 @@ module full
   !  use orbital_operations
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
-  use cc_debug_routines_module
   use ccdriver!,only: ccsolver_justenergy, ccsolver
   use fragment_energy_module,only : Full_DECMP2_calculation
 
@@ -37,7 +37,7 @@ module full
 contains
 
   !> \brief Main part for full molecular coupled-cluster calculations.
-  subroutine full_driver(MyMolecule,mylsitem,D)
+  subroutine full_driver(MyMolecule,mylsitem,D,EHF,Ecorr)
 
     implicit none
     !> Full molecule structure
@@ -46,7 +46,12 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> HF density matrix
     type(matrix),intent(in) :: D
-    real(realk) :: Ecorr,EHF,Eerr
+    !> HF Energy 
+    real(realk),intent(inout) :: EHF
+    !> Correlation Energy 
+    real(realk),intent(inout) :: Ecorr
+    !local variables
+    real(realk) :: Eerr
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -70,7 +75,7 @@ contains
     else
        !if(DECinfo%ccModel==MODEL_MP2) then
 
-       !   if(DECinfo%use_canonical .and. (.not.  DECinfo%full_print_frag_energies) ) then
+       !   if(DECinfo%use_canonical ) then
        !      ! simple conventional MP2 calculation, only works for canonical orbitals
        !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
        !   else
@@ -146,19 +151,19 @@ contains
     else
 
 
+#ifdef MOD_UNRELEASED
        if(DECinfo%CCSDmultipliers)then
-
           call ccsolver_energy_multipliers(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
              & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
              & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ecorr)
-
        else
-
           Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
              & mylsitem,print_level,fragment_job)
-
        endif
-
+#else
+       Ecorr = ccsolver_justenergy(DECinfo%ccmodel,MyMolecule,nbasis,nocc,nunocc,&
+             & mylsitem,print_level,fragment_job)
+#endif
 
     end if
 

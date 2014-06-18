@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2013.2
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -49,7 +49,7 @@
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,7 +58,8 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
@@ -104,7 +105,7 @@
   Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
@@ -119,6 +120,7 @@
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
   Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
   Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -128,37 +130,38 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Tue Sep 17 22:39:26 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun May 25 16:49:06 2014
+     Host name              : foeroyar                                
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/magnus/Projects/dalton_devel/dalton/DALTON/test/2013-09-17T22_38-testjob-pid-10519
-   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/build_release/peqm_tests
+   2) /home/magnus/Projects/dalton_devel/dalton/build_release/basis
 
 
 Compilation information
 -----------------------
 
  Who compiled             | magnus
- Host                     | TheSocialist
- System                   | Linux-3.10.11-200.fc19.x86_64
+ Host                     | foeroyar
+ System                   | Linux-3.14.4-200.fc20.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
  MPI                      | OFF
  Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C compiler               | /usr/lib64/ccache/gcc
- C compiler version       | gcc (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- C++ compiler             | /usr/lib64/ccache/g++
- C++ compiler version     | g++ (GCC) 4.8.1 20130603 (Red Hat 4.8.1-1)
- BLAS                     | /lib64/libblas.so
- LAPACK                   | /lib64/liblapack.so
+ Fortran compiler version | GNU Fortran (GCC) 4.8.2 20131212 (Red Hat 4.8.2-7)
+ C compiler               | /usr/bin/gcc
+ C compiler version       | gcc (GCC) 4.8.2 20131212 (Red Hat 4.8.2-7)
+ C++ compiler             | /usr/bin/g++
+ C++ compiler version     | g++ (GCC) 4.8.2 20131212 (Red Hat 4.8.2-7)
+ BLAS                     | /lib64/atlas/libf77blas.so;/lib64/atlas/libcblas.s
+                          | o;/lib64/atlas/libatlas.so
+ LAPACK                   | /lib64/atlas/libatlas.so;/lib64/atlas/liblapack.so
  Static linking           | OFF
- Last Git revision        | 125c293ec00a6e285dc76690c5a7c9e35d3b061c
- Configuration time       | 2013-09-17 22:19:49.616906
+ Last Git revision        | 2f9776f2fd9675185f08009607df1b9494db2901
+ Configuration time       | 2014-05-25 16:42:05.557733
 
 
    Content of the .dal input file
@@ -237,7 +240,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    3
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   6 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -248,7 +251,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -259,7 +262,7 @@ H              2.675323   -2.516779   -0.000673
   Number of symmetry independent centers:    4
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/magnus/Projects/dalton_devel/dalton/build/basis/3-21G"
+     "/home/magnus/Projects/dalton_devel/dalton/build_release/basis/3-21G"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 3-21G                                                                           
@@ -268,7 +271,7 @@ H              2.675323   -2.516779   -0.000673
                          SYMGRP: Point group information
                          -------------------------------
 
-Point group: C1 
+@    Point group: C1 
 
 
                                  Isotopic Masses
@@ -394,7 +397,7 @@ Point group: C1
  Rotational constants
  --------------------
 
- The molecule is planar.
+@    The molecule is planar.
 
                A                   B                   C
 
@@ -425,10 +428,23 @@ Point group: C1
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
 
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.973773359129     -1.393789716280      0.000424788898
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
@@ -440,9 +456,9 @@ Point group: C1
  Number of two-electron integrals written:      442378 ( 90.2% )
  Megabytes written:                              5.070
 
- >>>  Time used in TWOINT     is   0.33 seconds
- >>>> Total CPU  time used in HERMIT:   0.39 seconds
- >>>> Total wall time used in HERMIT:   0.40 seconds
+ >>>  Time used in TWOINT     is   0.30 seconds
+ >>>> Total CPU  time used in HERMIT:   0.37 seconds
+ >>>> Total wall time used in HERMIT:   0.38 seconds
 
 
                         .----------------------------------.
@@ -478,8 +494,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:26 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun May 25 16:49:07 2014
+     Host name              : foeroyar                                
 
  Title lines from ".mol" input file:
      Acrolein                                                                
@@ -507,111 +523,125 @@ Point group: C1
      Wave function environment is modeled using the
      polarizable embedding model (PE library).
 
-@    For the wave function of type :      >>> PE-MP2 <<<
+@    Wave function type        >>> PE-MP2 <<<
 @    Number of closed shell electrons          30
 @    Number of electrons in active shells       0
 @    Total charge of the molecule               0
 
 @    Spin multiplicity and 2 M_S                1         0
-     Total number of symmetries                 1
-@    Reference state symmetry                   1
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1
+                                           |  A  
                                        --- |  ---
 @    Occupied SCF orbitals              15 |   15
      Secondary orbitals                 29 |   29
      Total number of orbitals           44 |   44
      Number of basis functions          44 |   44
 
+     Optimization information
+     ========================
+@    Number of configurations                 1
+@    Number of orbital rotations            435
+     ------------------------------------------
+@    Total number of variables              436
+
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
-     Maximum number of QC-SCF iterations      0
+     Maximum number of QC-SCF iterations     60
      Threshold for SCF convergence     1.00D-06
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    8
 
  Iter      Total energy     Embedding energy      Error norm     Delta(E)
  -----------------------------------------------------------------------------
      (Precalculated two-electron integrals are transformed to P-supermatrix elements.
       Threshold for discarding integrals :  1.00D-12 )
-@  1  -189.012077505     -4.685919893970E-02    3.32659D+00   -1.89D+02
+@  1  -189.012077507     -4.685920151462E-02    3.32659D+00   -1.89D+02
       Virial theorem: -V/T =      2.005660
 @      MULPOP C       0.87; C       0.33; C       0.42; O      -0.94; H      -0.20; H      -0.20; H      -0.13; H      -0.15; 
  -----------------------------------------------------------------------------
-@  2  -189.427549244     -3.282263367503E-03    2.36435D+00   -4.15D-01
-      Virial theorem: -V/T =      2.004927
-@      MULPOP C      -0.38; C      -0.53; C      -0.54; O       0.23; H       0.25; H       0.36; H       0.30; H       0.31; 
+@  2  -189.426746274     -3.225517485315E-03    2.36711D+00   -4.15D-01
+      Virial theorem: -V/T =      2.004943
+@      MULPOP C      -0.37; C      -0.52; C      -0.54; O       0.23; H       0.24; H       0.35; H       0.30; H       0.31; 
  -----------------------------------------------------------------------------
-@  3  -189.704928980     -3.260744674171E-02    4.51613D-01   -2.77D-01
-      Virial theorem: -V/T =      2.001181
-@      MULPOP C       0.43; C      -0.34; C      -0.34; O      -0.70; H       0.21; H       0.27; H       0.23; H       0.23; 
+@  3  -189.704954541     -3.259065736095E-02    4.51416D-01   -2.78D-01
+      Virial theorem: -V/T =      2.001197
+@      MULPOP C       0.43; C      -0.35; C      -0.34; O      -0.69; H       0.21; H       0.28; H       0.23; H       0.23; 
  -----------------------------------------------------------------------------
-@  4  -189.714206605     -2.995203382821E-02    7.65727D-02   -9.28D-03
-      Virial theorem: -V/T =      2.004152
-@      MULPOP C       0.36; C      -0.36; C      -0.35; O      -0.63; H       0.23; H       0.29; H       0.23; H       0.24; 
+@  4  -189.714212462     -2.995945712548E-02    7.60883D-02   -9.26D-03
+      Virial theorem: -V/T =      2.004143
+@      MULPOP C       0.36; C      -0.36; C      -0.35; O      -0.63; H       0.22; H       0.30; H       0.23; H       0.24; 
  -----------------------------------------------------------------------------
-@  5  -189.714746291     -3.030778035027E-02    1.91991D-02   -5.40D-04
-      Virial theorem: -V/T =      2.003451
+@  5  -189.714748184     -3.031712305994E-02    1.90209D-02   -5.36D-04
+      Virial theorem: -V/T =      2.003450
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@  6  -189.714797619     -3.044587937285E-02    6.84128D-03   -5.13D-05
+@  6  -189.714798113     -3.044771330328E-02    6.56695D-03   -4.99D-05
       Virial theorem: -V/T =      2.003445
 @      MULPOP C       0.36; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@  7  -189.714804633     -3.048665594116E-02    3.14570D-03   -7.01D-06
+@  7  -189.714804773     -3.048867086440E-02    2.98738D-03   -6.66D-06
       Virial theorem: -V/T =      2.003453
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@  8  -189.714806011     -3.051219857721E-02    1.05026D-03   -1.38D-06
+@  8  -189.714806036     -3.051275723444E-02    9.61876D-04   -1.26D-06
       Virial theorem: -V/T =      2.003454
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@  9  -189.714806147     -3.051681847678E-02    3.61494D-04   -1.36D-07
+@  9  -189.714806152     -3.051692005900E-02    3.49351D-04   -1.16D-07
       Virial theorem: -V/T =      2.003454
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@ 10  -189.714806173     -3.051988840917E-02    8.47372D-05   -2.60D-08
+@ 10  -189.714806174     -3.051969686239E-02    1.03567D-04   -2.25D-08
       Virial theorem: -V/T =      2.003454
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@ 11  -189.714806175     -3.052072670026E-02    1.44582D-05   -1.57D-09
+@ 11  -189.714806176     -3.052065568829E-02    1.95009D-05   -2.18D-09
       Virial theorem: -V/T =      2.003454
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@ 12  -189.714806175     -3.052077014407E-02    4.02739D-06   -3.23D-11
+@ 12  -189.714806176     -3.052076556843E-02    5.64568D-06   -6.36D-11
       Virial theorem: -V/T =      2.003454
 @      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
  -----------------------------------------------------------------------------
-@ 13  -189.714806175     -3.052077914065E-02    7.99516D-07   -2.25D-12
+@ 13  -189.714806176     -3.052078034890E-02    2.81022D-06   -4.63D-12
+      Virial theorem: -V/T =      2.003454
+@      MULPOP C       0.37; C      -0.39; C      -0.37; O      -0.64; H       0.23; H       0.31; H       0.24; H       0.25; 
+ -----------------------------------------------------------------------------
+@ 14  -189.714806176     -3.052078090169E-02    8.73433D-07   -1.14D-12
 
-@ *** DIIS converged in  13 iterations !
-@     Converged SCF energy, gradient:   -189.714806174551    8.00D-07
+@ *** DIIS converged in  14 iterations !
+@     Converged SCF energy, gradient:   -189.714806176300    8.73D-07
     - total time used in SIRFCK :              0.00 seconds
 
       Polarizable embedding energy contributions:
      ---------------------------------------------
 
        Electrostatic contributions:
-         Monopoles                 -0.024393583355
-         Dipoles                    0.006298358787
-         Quadrupoles               -0.007169821483
-         Octopoles                 -0.003175793481
+         Monopoles                 -0.024393584053
+         Dipoles                    0.006298359261
+         Quadrupoles               -0.007169822249
+         Octopoles                 -0.003175793929
 
        Polarization contributions:
-         Electronic                -0.069810851119
-         Nuclear                    0.067517268078
-         Multipole                  0.000213643432
+         Electronic                -0.069810862166
+         Nuclear                    0.067517278774
+         Multipole                  0.000213643460
 
-       Total PE energy:            -0.030520779141
+       Total PE energy:            -0.030520780902
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.859       0.863
+ >>>> CPU and wall time for SCF :       0.959       0.961
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -630,51 +660,51 @@ Point group: C1
 
 @ Please see JCC, 2012-2022, 33, (2012) for reference.
 
- Hartree-Fock electronic energy:        -292.349132255925
- Hartree-Fock total      energy:        -189.684285395410
+ Hartree-Fock electronic energy:        -292.349132255913
+ Hartree-Fock total      energy:        -189.684285395398
 
- Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is   15
+ Hartree-Fock orbital energies, symmetry 1 ( A  ),   15 occupied SCF orbitals
 
-       -20.48273073   -11.30254755   -11.22357181   -11.20516927    -1.41895708
-        -1.09452088    -0.89327315    -0.79432125    -0.68427625    -0.67819455
-        -0.60659683    -0.56125933    -0.55656103    -0.44903390    -0.40197137
-         0.07617813     0.23816884     0.27017829     0.28125836     0.32037452
-         0.37412759     0.47956687     0.52183716     0.57943611     0.90775360
-         0.92484757     0.95360440     1.00527962     1.02425915     1.06642152
-         1.06814512     1.10709209     1.27313733     1.30977236     1.34890629
-         1.45004498     1.52472403     1.65416748     1.77011256     1.86649593
-         1.91255408     1.95893890     2.05930259     3.49732668
+       -20.48273063   -11.30254757   -11.22357182   -11.20516928    -1.41895705
+        -1.09452089    -0.89327315    -0.79432125    -0.68427624    -0.67819455
+        -0.60659683    -0.56125934    -0.55656101    -0.44903389    -0.40197137
+         0.07617813     0.23816883     0.27017828     0.28125836     0.32037452
+         0.37412759     0.47956688     0.52183715     0.57943611     0.90775360
+         0.92484756     0.95360440     1.00527961     1.02425915     1.06642151
+         1.06814512     1.10709209     1.27313732     1.30977235     1.34890628
+         1.45004498     1.52472402     1.65416748     1.77011256     1.86649597
+         1.91255410     1.95893892     2.05930259     3.49732671
 
     E(LUMO) :     0.07617813   (in symmetry 1)
   - E(HOMO) :    -0.40197137   (in symmetry 1)
   --------------------------
     gap     :     0.47814950
 
- Integral transformation: Total CPU and WALL times (sec)       0.590       0.592
+ Integral transformation: Total CPU and WALL times (sec)       0.585       0.585
 
  MP2 move   0.289377 electrons to unoccupied HF orbitals
 
 
 @   Hartree-Fock total energy   :          -189.6842853954
-@   + MP2 contribution          :            -0.3913190258
-@   = MP2 second order energy   :          -190.0756044212
+@   + MP2 contribution          :            -0.3913190299
+@   = MP2 second order energy   :          -190.0756044253
 
- Natural orbital occupation numbers, symmetry 1
+ Natural orbital occupation numbers, symmetry 1 (irrep A  )
  Sum =    30.00000000; RHF =    30.00000000; Difference =     0.00000000
 
          1.99992703     1.99988230     1.99988120     1.99987610     1.99191885
          1.98814284     1.98370077     1.98354709     1.98053333     1.97844572
-         1.97549981     1.97299112     1.96832560     1.95436767     1.94002625
-         0.06137082     0.03725104     0.02672719     0.02374522     0.01855082
+         1.97549981     1.97299112     1.96832560     1.95436767     1.94002624
+         0.06137083     0.03725104     0.02672720     0.02374522     0.01855082
          0.01631546     0.01424046     0.01392075     0.01323059     0.00945250
          0.00791626     0.00574429     0.00508185     0.00478515     0.00372150
          0.00358789     0.00314139     0.00264038     0.00189990     0.00184055
          0.00164910     0.00131510     0.00130527     0.00110359     0.00079078
          0.00053390     0.00047229     0.00040198     0.00019829
 
- Time used for MP2 natural orbitals :       0.647 CPU seconds,       0.649 wall seconds.
+ Time used for MP2 natural orbitals :       0.658 CPU seconds,       0.658 wall seconds.
 
- >>>> CPU and wall time for MP2 :       0.647       0.649
+ >>>> CPU and wall time for MP2 :       0.658       0.658
 
 
                        .-----------------------------------.
@@ -683,24 +713,24 @@ Point group: C1
 
 
 @    Spin multiplicity:           1
-@    Spatial symmetry:            1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
 @    Total charge of molecule:    0
 
-@    Final HF energy:            -189.714806174551                 
+@    Final HF energy:            -189.714806176300                 
 @    Nuclear repulsion:           102.664846860515
-@    Electronic energy:          -292.349132255925
-@    Embedding energy:             -0.030520779141
+@    Electronic energy:          -292.349132255913
+@    Embedding energy:             -0.030520780902
 
-@    Final gradient norm:           0.000000799516
+@    Final gradient norm:           0.000000873433
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:28 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun May 25 16:49:08 2014
+     Host name              : foeroyar                                
 
  (Only coefficients >0.0100 are printed.)
 
- Molecular orbitals for symmetry species  1
- ------------------------------------------
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
 
     Orbital        11       12       13       14       15       16       17
    1 C   :1s     0.0081   0.0286  -0.0000   0.0028  -0.0000   0.0000  -0.0000
@@ -750,12 +780,12 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :      1.53 seconds
- >>>> Total wall time used in SIRIUS :      1.54 seconds
+ >>>> Total CPU  time used in SIRIUS :      1.64 seconds
+ >>>> Total wall time used in SIRIUS :      1.64 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:28 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun May 25 16:49:08 2014
+     Host name              : foeroyar                                
 
 
                      .---------------------------------------.
@@ -800,6 +830,9 @@ Point group: C1
  -------------------------------------------
 
  Environment is modeled using the polarizable embedding scheme (PE library)
+
+    3 input options by user.
+
  Print level                                    : IPRPP  =   2
  Maximum number of iterations for eigenval.eqs. : MAXITP =  60
  Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
@@ -815,11 +848,11 @@ Point group: C1
 
  Old direct access AO file found, SORTA skipped.
 
- Integral transformation: Total CPU and WALL times (sec)       0.975       0.977
+ Integral transformation: Total CPU and WALL times (sec)       0.989       0.989
 
 
-   SCF energy         :     -189.714806174550517
- -- inactive part     :     -292.349132255925042
+   SCF energy         :     -189.714806176299561
+ -- inactive part     :     -292.349132255913048
  -- nuclear repulsion :      102.664846860515169
 
 
@@ -830,7 +863,7 @@ Point group: C1
 
 
  >>>>>>>>>> Linear response calculation
- >>>>>>>>>> Symmetry of excitation/property operator(s)    1
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    1  ( A  )
 
  Number of excitations of this symmetry            2
  Number of response properties of this symmetry    0
@@ -846,7 +879,7 @@ Point group: C1
 
  <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
 
- Operator symmetry =  1; triplet =   F
+ Operator symmetry = 1  ( A  ); triplet =   F
 
 
  *** THE REQUESTED    2 SOLUTION VECTORS CONVERGED
@@ -860,31 +893,29 @@ Point group: C1
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  2.41681262E-05 *ENERGY(eV):   3.7912911    
-@ STATE NO:    2 *TRANSITION MOMENT: -0.95760109     *ENERGY(eV):   6.7804595    
+@ STATE NO:    1 *TRANSITION MOMENT: -2.39701045E-05 *ENERGY(eV):   3.7912908    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.95760116     *ENERGY(eV):   6.7804596    
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -8.69303224E-06 *ENERGY(eV):   3.7912911    
-@ STATE NO:    2 *TRANSITION MOMENT:   1.3060774     *ENERGY(eV):   6.7804595    
+@ STATE NO:    1 *TRANSITION MOMENT:  8.52119446E-06 *ENERGY(eV):   3.7912908    
+@ STATE NO:    2 *TRANSITION MOMENT:   1.3060775     *ENERGY(eV):   6.7804596    
 
 @ Transition operator type:    ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  1.71224911E-02 *ENERGY(eV):   3.7912911    
-@ STATE NO:    2 *TRANSITION MOMENT:  2.98674628E-04 *ENERGY(eV):   6.7804595    
+@ STATE NO:    1 *TRANSITION MOMENT: -1.71224761E-02 *ENERGY(eV):   3.7912908    
+@ STATE NO:    2 *TRANSITION MOMENT:  2.98745396E-04 *ENERGY(eV):   6.7804596    
 
 
-  ******************************************************************************
-  *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1 ***
-  ******************************************************************************
+ **************************************************************************************
+ *** @ Excit. operator sym 1 & ref. state sym 1 => excited state symmetry 1  ( A  ) ***
+ **************************************************************************************
 
 
 
- @ Excited state no:    1 in symmetry  1
- ---------------------------------------
+ @ Excited state no:    1 in symmetry 1  ( A  )
+ ----------------------------------------------
 
-@ Excitation energy :  0.13932739    au
-@                      3.7912911     eV
-@                      30578.827     cm-1
-                       365.80401     kJ / mol
+@ Excitation energy :  0.13932738     au
+@                      3.7912908     eV;   30578.825     cm-1;   365.80397     kJ / mol
 
 @ Total energy :      -189.57548     au
 
@@ -892,22 +923,20 @@ Point group: C1
 @ SOPPA 2p-2h weight in excitation operator:    6.38 %
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.42539301E-11  (Transition moment :  2.41681262E-05 )
+@ Oscillator strength (LENGTH)   :  5.33685079E-11  (Transition moment : -2.39701045E-05 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  7.01920333E-12  (Transition moment : -8.69303224E-06 )
+@ Oscillator strength (LENGTH)   :  6.74444406E-12  (Transition moment :  8.52119446E-06 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.72319752E-05  (Transition moment :  1.71224911E-02 )
+@ Oscillator strength (LENGTH)   :  2.72319249E-05  (Transition moment : -1.71224761E-02 )
 
 
- @ Excited state no:    2 in symmetry  1
- ---------------------------------------
+ @ Excited state no:    2 in symmetry 1  ( A  )
+ ----------------------------------------------
 
-@ Excitation energy :  0.24917731    au
-@                      6.7804595     eV
-@                      54688.097     cm-1
-                       654.21492     kJ / mol
+@ Excitation energy :  0.24917731     au
+@                      6.7804596     eV;   54688.098     cm-1;   654.21493     kJ / mol
 
 @ Total energy :      -189.46563     au
 
@@ -915,28 +944,28 @@ Point group: C1
 @ SOPPA 2p-2h weight in excitation operator:    6.19 %
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.15233037      (Transition moment : -0.95760109     )
+@ Oscillator strength (LENGTH)   :  0.15233039      (Transition moment : -0.95760116     )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.28337076      (Transition moment :   1.3060774     )
+@ Oscillator strength (LENGTH)   :  0.28337081      (Transition moment :   1.3060775     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.48188292E-08  (Transition moment :  2.98674628E-04 )
+@ Oscillator strength (LENGTH)   :  1.48258527E-08  (Transition moment :  2.98745396E-04 )
 
 
- Time used in polarization propagator calculation is      3.77 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is      2.99 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:   4.79 seconds
- >>>> Total wall time used in RESPONSE:   4.82 seconds
+ >>>> Total CPU  time used in RESPONSE:   4.07 seconds
+ >>>> Total wall time used in RESPONSE:   4.07 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   6.74 seconds
- >>>> Total wall time used in DALTON:   6.77 seconds
+ >>>> Total CPU  time used in DALTON:   6.10 seconds
+ >>>> Total wall time used in DALTON:   6.11 seconds
 
  
-     Date and time (Linux)  : Tue Sep 17 22:39:33 2013
-     Host name              : TheSocialist                            
+     Date and time (Linux)  : Sun May 25 16:49:12 2014
+     Host name              : foeroyar                                

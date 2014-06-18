@@ -251,7 +251,12 @@ SUBROUTINE wtuvRecurrence(WTUV,WJ000,sharedTUV,Rpq,jmin,jmax,&
         ENDDO
        ENDDO
       ENDDO
-      CALL DCOPY(ntuv*nPrim,CUR(1:,ioffp:),1,WTUV,1)
+      do t=1,ntuv
+         DO n=1,nPrim
+            WTUV(n,t)=CUR(n,ioffp+t-1)
+         enddo
+      ENDDO
+!      CALL DCOPY(ntuv*nPrim,CUR(1:,ioffp:),1,WTUV,1)
       call mem_dealloc(CUR)
       call mem_dealloc(OLD)
    ENDIF

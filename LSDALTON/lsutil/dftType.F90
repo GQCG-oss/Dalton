@@ -188,7 +188,7 @@ ELSE
   IF (present(admm_exchange_func)) THEN
     word = admm_exchange_func
   ELSE
-    word = 'BX'
+    word = 'B88X'
   ENDIF
 ENDIF
 call set_admmfun(dft,word)

@@ -33,12 +33,12 @@ use mp2_module!,only: get_VOVO_integrals
 use atomic_fragment_operations
 use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
-use cc_debug_routines_module
 use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldarray_wrapper
 #ifdef MOD_UNRELEASED
+use cc_debug_routines_module
 use ccsdpt_module
 !endif mod_unreleased
 #endif
@@ -85,7 +85,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> Coupled cluster energy for full molecule
    real(realk) :: ccenergy,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
    type(array2) :: t1_final_arr2
-   type(array4) :: t2_final_arr4, VOVO_arr4
+   type(array4) :: t2_final_arr4, VOVO_arr4, mp2_amp
    type(array) :: t2_final,ccsdpt_t2,VOVO
    type(array) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
    integer :: natoms,ncore,nocc_tot,p,pdx,i
@@ -110,6 +110,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    if(infpar%lg_nodtot>1)local=.false.
 #endif
 
+#ifdef MOD_UNRELEASED
    ! is this a frozen core calculation or not?
    if (DECinfo%frozencore) then
 
@@ -124,23 +125,58 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       end if
 
       if (DECinfo%CCDEBUG) then
-         call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
+         if(DECinfo%use_pnos)then
+
+            !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+            call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, Co_fc, VOVO_arr4 )
+            call mp2_solver( nocc, nvirt, ppfock_fc, MyMolecule%qqfock, VOVO_arr4, mp2_amp )
+            call array4_free( VOVO_arr4 )
+
+            !CALL THE SOLVER WITH PNO ARGUMENT
+            call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
+               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy, &
+               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+            !FREE MP2 AMPLITUDES
+            call array4_free( mp2_amp )
+
+         else
+
+            call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
+
+         endif
 
       else
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
             & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
       endif
-
    else
       ncore = 0
 
       if (DECinfo%CCDEBUG) then
-         call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
+         if(DECinfo%use_pnos)then
+
+            !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
+            call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, MyMolecule%Co, VOVO_arr4 )
+            call mp2_solver( nocc, nvirt,MyMolecule%ppfock,MyMolecule%qqfock, VOVO_arr4, mp2_amp )
+            call array4_free( VOVO_arr4 )
+
+            !CALL THE SOLVER WITH PNO ARGUMENT
+            call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
+               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy, &
+               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
+
+            !FREE MP2 AMPLITUDES
+            call array4_free( mp2_amp )
+
+         else
+            call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
+         endif
       else
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
@@ -148,6 +184,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
 
    end if
+
 
    !FIXME: remove all array2 and array4 structures from this driver
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -172,7 +209,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          &labeldwidle = 'MASTER IDLE CC solver: ') 
    endif
 
-   natoms = MyMolecule%natoms
+   natoms   = MyMolecule%natoms
    nocc_tot = MyMolecule%nocc
 
    if(ccmodel == MODEL_CCSDpT)then
@@ -194,7 +231,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             &labeldwcomm = 'MASTER COMM pT: ',&
             &labeldwidle = 'MASTER IDLE pT: ') 
       endif
-
    else
 
       call array_reorder(t2_final,[1,3,2,4])
@@ -229,6 +265,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! print out ccsd fragment and pair interaction energies
    ccsd_mat_tot = array_init([natoms,natoms],2)
    ccsd_mat_tmp = array_init([natoms,natoms],2)
+   call array_zero(ccsd_mat_tot)
+   call array_zero(ccsd_mat_tmp)
 
    call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
       & ccsd_mat_tot%elm1,ccsd_mat_tmp%elm1)
@@ -311,7 +349,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    do i=1,nocc_tot
       call orbital_free(occ_orbitals(i))
    end do
+
    call mem_dealloc(occ_orbitals)
+
    do i=1,nvirt
       call orbital_free(unocc_orbitals(i))
    end do
@@ -343,9 +383,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy           =', ccenergy
+   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
    if(DECinfo%PrintInteractionEnergy)then
-    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy      =', interactionE
+    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy =', interactionE
    endif
    write(DECinfo%output,*)
 
@@ -374,6 +414,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,*)
    endif
 
+   if(ccmodel == MODEL_CCSDpT)then
+      call array_free(ccsdpt_t1)
+      call array_free(ccsdpt_t2)
+   endif
+
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
       ! free amplitude arrays
       call array_free(t1_final)
@@ -381,11 +426,42 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call array_free(t2_final)
 
-   if(ccmodel == MODEL_CCSDpT)then
-      call array_free(ccsdpt_t1)
-      call array_free(ccsdpt_t2)
-   endif
+!else mod unreleased
+#else
+   ! is this a frozen core calculation or not?
+   if (DECinfo%frozencore) then
 
+      ncore = MyMolecule%ncore
+
+      if(.not. present(Co_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
+      end if
+
+      if(.not. present(ppfock_fc)) then
+         call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
+      end if
+
+      call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+         & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
+   else
+      ncore = 0
+
+      call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+         & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local)
+   end if
+
+   !FIXME: remove all array2 and array4 structures from this driver
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   if(DECinfo%use_singles)then
+      call array2_free(t1_final_arr2)
+   endif
+   call array4_free(t2_final_arr4)
+   call array4_free(VOVO_arr4)
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!endif mod unreleased
+#endif
 end function ccsolver_justenergy
 
 !> \brief For a given fragment, calculate singles and doubles amplitudes and
@@ -442,6 +518,7 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
       t1 = array2_init(dims,MyFragment%t1)
    end if
 
+#ifdef MOD_UNRELEASED
    if(DECinfo%CCDEBUG)then
       if(DECinfo%use_pnos)then
 
@@ -487,16 +564,18 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
 
       endif
    else
-
+#endif
       call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,local)
 
+#ifdef MOD_UNRELEASED
       if(DECinfo%CCSDmultipliers)then
          call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
       endif
    endif
+#endif
 
    ! Save singles amplitudes in fragment structure
    if(DECinfo%SinglesPolari) then
@@ -780,7 +859,7 @@ subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
                deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
 
                ! Sanity check
-               if( abs(deltaF) < 1e-9 ) then
+               if( abs(deltaF) < 1e-9_realk ) then
                   write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
                   write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
                   write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
@@ -1096,7 +1175,7 @@ subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
                deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
 
                ! Sanity check
-               if( abs(deltaF) < 1e-9 ) then
+               if( abs(deltaF) < 1e-9_realk ) then
                   write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
                   write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
                   write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
@@ -1657,8 +1736,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    If_not_converged: if(.not.restart_from_converged)then
 
-      mo_ccsd = .false.
-      if (DECinfo%MOCCSD) mo_ccsd = .true.
+      mo_ccsd = .true.
+      if (DECinfo%NO_MO_CCSD.or.(nb>400)) mo_ccsd = .false.
+       
+      if (DECinfo%force_scheme) then
+        if (DECinfo%en_mem<5) then
+          DECinfo%NO_MO_CCSD = .true.
+          mo_ccsd            = .false.
+        else if (DECinfo%en_mem>=5) then 
+          mo_ccsd            = .true.
+          if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
+             & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
+        end if
+      end if
 
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
@@ -1667,6 +1757,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       else
 
+#ifdef MOD_UNRELEASED
          !============================================================================!
          !                          MO-CCSD initialization                            !
          !____________________________________________________________________________!
@@ -1683,7 +1774,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
          end if
-
          !JOHANNES MODEL_RPA
          if (ccmodel == MODEL_RPA) then
             if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
@@ -1695,7 +1785,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
          end if
-
+#endif
       end if INTEGRAL
 
 
@@ -1785,23 +1875,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RPA )
            
-            !msg = 'Norm of gmo'
-            !call print_norm(iajb,msg)
-
-            !msg = 'Norm of t2'
-            !call print_norm(t2(iter),msg)
-
-            !msg = 'Norm of omega2'
-            !call print_norm(omega2(iter),msg)
 #ifdef VAR_MPI
            call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #else
            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif
-            !msg = 'Norm of omega2 after computations'
-            !call print_norm(omega2(iter),msg)
 
-            !call lsquit("ERROR(ccsolver_par):no RPA implemented",DECinfo%output)
          case default
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
          end select SelectCoupledClusterModel
@@ -1953,7 +2032,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
 
          case(MODEL_RPA)
+
            ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+
            if(DECinfo%SOS) then
              ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
            endif
@@ -2127,7 +2208,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_convert(iajb,VOVO%val)
    call array_free(iajb)
    call array4_reorder(VOVO,[2,1,4,3])
-   call print_norm(VOVO%val,i8*no*no*nv*nv)
 
    ! deallocate stuff
    if(DECinfo%use_singles) then
@@ -2171,19 +2251,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_free(Cv2)
    call array_free(fock)
 
-   ! free memory from MO-based CCSD
-   if(.not. restart_from_converged)then
-      if (mo_ccsd) then
-         if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
-         call array_free(pgmo_diag)
-         call mem_dealloc(MOinfo%dimInd1)
-         call mem_dealloc(MOinfo%dimInd2)
-         call mem_dealloc(MOinfo%StartInd1)
-         call mem_dealloc(MOinfo%StartInd2)
-         call mem_dealloc(MOinfo%dimTot)
-         call mem_dealloc(MOinfo%tileInd)
-      end if
-   endif
 
    !transform back to original basis   
    if(DECinfo%use_singles)then
@@ -2205,6 +2272,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
 #ifdef MOD_UNRELEASED
+   ! free memory from MO-based CCSD
+   if(.not. restart_from_converged)then
+      if (mo_ccsd) then
+         if (pgmo_diag%dims(2)>1) call array_free(pgmo_up)
+         call array_free(pgmo_diag)
+         call mem_dealloc(MOinfo%dimInd1)
+         call mem_dealloc(MOinfo%dimInd2)
+         call mem_dealloc(MOinfo%StartInd1)
+         call mem_dealloc(MOinfo%StartInd2)
+         call mem_dealloc(MOinfo%dimTot)
+         call mem_dealloc(MOinfo%tileInd)
+      end if
+   endif
+
    if( .not. fragment_job .and. DECinfo%PL>2 )then
       call array_print_mem_info(DECinfo%output,.true.,.false.)
    endif
@@ -2238,12 +2319,13 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
    type(array),intent(inout),optional :: t1
    !> the filenames to check for valid singles amplitudes
    character(3),intent(in), optional :: safefilet11,safefilet12,safefilet1f
+   integer, intent(out) :: iter_start
    integer :: no,nv
-   integer :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
-   logical :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
-   logical :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
-   logical :: readfile1, readfile2
-   integer :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f,iter_start
+   integer(8) :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
+   logical(8) :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
+   logical(8) :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
+   logical(8) :: readfile1, readfile2
+   integer(8) :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f
    integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22,saved_nel1f,saved_nel2f
    logical :: all_singles, fin1_exists, fin2_exists
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
@@ -2304,7 +2386,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
             fu_t2=fu_t2f
             readfile2=.true.
          endif
-         iter_start = saved_iter2f
+         iter_start = int(saved_iter2f)
       endif
 
       !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
@@ -2392,24 +2474,24 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
          !CHECK WHICH IS THE PREFERRED FILE TO READ
          if(file_status21.and.file_status22)then
             if(saved_iter21>saved_iter22)then
-               iter_start=saved_iter21
+               iter_start=int(saved_iter21)
                fu_t2=fu_t21
                CLOSE(fu_t22)
                readfile2=.true.
             else
-               iter_start=saved_iter22
+               iter_start=int(saved_iter22)
                fu_t2=fu_t22
                CLOSE(fu_t21)
                readfile2=.true.
             endif
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
          else if(file_status21)then
-            iter_start=saved_iter21
+            iter_start=int(saved_iter21)
             fu_t2=fu_t21
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
             readfile2=.true.
          else if(file_status22)then
-            iter_start=saved_iter22
+            iter_start=int(saved_iter22)
             fu_t2=fu_t22
             WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
             readfile2=.true.
@@ -2478,7 +2560,7 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    character(3),intent(in), optional :: safefilet11,safefilet12
    integer :: fu_t21,fu_t22
    integer :: fu_t11,fu_t12
-   logical :: file_status11,file_status12,file_status21,file_status22
+   logical(8) :: file_status11,file_status12,file_status21,file_status22
    logical :: all_singles
    character(ARR_MSG_LEN) :: msg
 #ifdef SYS_AIX
@@ -2510,8 +2592,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
       if(mod(iter,2)==1)then
          file_status11=.false. 
          OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
-         WRITE(fu_t11)iter
-         WRITE(fu_t11)t1%nelms
+         WRITE(fu_t11)int(iter,kind=8)
+         WRITE(fu_t11)int(t1%nelms,kind=8)
          WRITE(fu_t11)t1%elm1
          WRITE(fu_t11)res_norm
          WRITE(fu_t11)energy
@@ -2530,8 +2612,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
       else if(mod(iter,2)==0)then
          file_status12=.false. 
          OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
-         WRITE(fu_t12)iter
-         WRITE(fu_t12)t1%nelms
+         WRITE(fu_t12)int(iter,kind=8)
+         WRITE(fu_t12)int(t1%nelms,kind=8)
          WRITE(fu_t12)t1%elm1
          WRITE(fu_t12)res_norm
          WRITE(fu_t12)energy
@@ -2558,8 +2640,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    if(mod(iter,2)==1)then
       file_status21=.false. 
       OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t21)iter
-      WRITE(fu_t21)t2%nelms
+      WRITE(fu_t21)int(iter,kind=8)
+      WRITE(fu_t21)int(t2%nelms,kind=8)
       WRITE(fu_t21)t2%elm1
       WRITE(fu_t21)res_norm
       WRITE(fu_t21)energy
@@ -2578,8 +2660,8 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    else if(mod(iter,2)==0)then
       file_status22=.false. 
       OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t22)iter
-      WRITE(fu_t22)t2%nelms
+      WRITE(fu_t22)int(iter,kind=8)
+      WRITE(fu_t22)int(t2%nelms,kind=8)
       WRITE(fu_t22)t2%elm1
       WRITE(fu_t22)res_norm
       WRITE(fu_t22)energy
@@ -2602,6 +2684,7 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess
 
+#ifdef MOD_UNRELEASED
 !> Purpose: Wrapper for the RPA model: get MO integrals (non-T1 transformed)
 !
 !> Author:  Pablo Baudin
@@ -2625,6 +2708,7 @@ subroutine wrapper_to_get_real_t1_free_gmo(nb,no,nv,Co,Cv,govov,ccmodel,mylsitem
   call get_t1_free_gmo(mo_ccsd,mylsitem,Co,Cv,govov,pgmo_diag,pgmo_up, &
     & nb,no,nv,CCmodel,MOinfo)
  
-  end subroutine wrapper_to_get_real_t1_free_gmo
+end subroutine wrapper_to_get_real_t1_free_gmo
+#endif
 
 end module ccdriver

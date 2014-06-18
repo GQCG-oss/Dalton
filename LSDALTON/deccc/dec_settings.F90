@@ -29,10 +29,11 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
-    DECinfo%doDEC             = .false.
+    DECinfo%doDEC                  = .false.
     ! Max memory measured in GB. By default set to 2 GB
-    DECinfo%memory            = 2.0E0_realk
-    DECinfo%memory_defined    = .false.
+    DECinfo%memory                 = 2.0E0_realk
+    DECinfo%memory_defined         = .false.
+    DECinfo%use_system_memory_info = .false.
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
@@ -78,14 +79,15 @@ contains
     DECinfo%use_pnos             = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
-    DECinfo%simplePNOthr         = 1.0E-7
-    DECinfo%EOSPNOthr            = 1.0E-5
+    DECinfo%simplePNOthr         = 1.0E-7_realk
+    DECinfo%EOSPNOthr            = 1.0E-5_realk
+    DECinfo%noFAtrunc            = .false.
+    DECinfo%noFAtrafo            = .false.
     DECinfo%noPNOoverlaptrunc    = .false.
-    DECinfo%PNOoverlapthr        = 1.0E-5
-    DECinfo%PNOtriangular        = .false.
+    DECinfo%PNOoverlapthr        = 1.0E-5_realk
+    DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
-    DECinfo%full_print_frag_energies = .false.
-    DECinfo%MOCCSD               = .false.
+    DECinfo%NO_MO_CCSD           = .false.
     DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
@@ -97,6 +99,8 @@ contains
     DECinfo%simple_mulliken_threshold    = .false.
     DECinfo%approximated_norm_threshold  = 0.1E0_realk
     DECinfo%check_lcm_orbitals           = .false.
+    DECinfo%check_Occ_SubSystemLocality  = .false.
+    DECinfo%force_Occ_SubSystemLocality  = .false.
     DECinfo%use_canonical                = .false.
     DECinfo%AbsorbHatoms                 = .true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken                     = .false.
@@ -160,7 +164,7 @@ contains
     DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
     DECinfo%DFTreference            = .false.
-    DECinfo%ccConvergenceThreshold  = 1e-5
+    DECinfo%ccConvergenceThreshold  = 1e-5_realk
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
     DECinfo%use_preconditioner      = .true.
@@ -184,7 +188,7 @@ contains
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
     DECinfo%kappa_driver_debug=.false.
-    DECinfo%kappaTHR=1e-4
+    DECinfo%kappaTHR=1e-4_realk
     DECinfo%EerrFactor = 1.0_realk
     DECinfo%EerrOLD = 0.0_realk
 
@@ -305,7 +309,7 @@ contains
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
-          DECinfo%MOCCSD      = .false.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -314,6 +318,7 @@ contains
           DECinfo%CCDhack=.true.
           DECinfo%use_singles=.true. 
           DECinfo%solver_par=.true.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CCSD')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
@@ -391,7 +396,8 @@ contains
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
 
-          ! Pair distance threshold
+       case('.USE_SYS_MEM_INFO') 
+          DECinfo%use_system_memory_info = .true.
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
@@ -444,7 +450,6 @@ contains
           read(input,*) DECinfo%MPIgroupsize
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
 
 
 #ifndef VAR_MPI
@@ -467,9 +472,11 @@ contains
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
+       case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
+       case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
-       case('.PNOTRIANGULAR');            DECinfo%PNOtriangular        = .true.
+       case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
+       case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
 
@@ -479,13 +486,12 @@ contains
 
 
 
-       !OTHER STUFF
+       !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
-       case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
+       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -493,15 +499,16 @@ contains
        case('.FRAGREDMODEL') 
           read(input,*) myword
           call find_model_number_from_input(myword,DECinfo%fragopt_red_model)
+       case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.ONLYOCCPART'); DECinfo%OnlyOccPart=.true.
        case('.ONLYVIRTPART'); DECinfo%OnlyVirtPart=.true.
 
-       case('.F12'); DECinfo%F12=.true.; doF12 = .TRUE.
+       case('.F12')
+          DECinfo%F12=.true.; doF12 = .TRUE.
        case('.F12DEBUG')     
           DECinfo%F12=.true.
           DECinfo%F12DEBUG=.true.
           doF12 = .TRUE.
-          !endif mod_unreleased
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
        case('.INTERACTIONENERGY')     
@@ -510,7 +517,6 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
-          DECinfo%full_print_frag_energies=.true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.STRESSTEST')     
@@ -576,6 +582,8 @@ contains
 
           ! Check that input orbitals are orthogonal (debug)
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
+       case('.CHECKSUBSYSTEMLOC'); DECinfo%check_Occ_SubSystemLocality=.true.
+       case('.FORCESUBSYSTEMLOC'); DECinfo%force_Occ_SubSystemLocality=.true.
 
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SKIPFULL') 
@@ -607,6 +615,11 @@ contains
   !> \date October 2010
   subroutine check_dec_input()
     implicit none
+    integer :: nodtot
+    nodtot = 1
+#ifdef VAR_MPI
+    nodtot = infpar%nodtot
+#endif
 
     ! Check that array4OnFile is only called for the cases where it is implemented
 
@@ -690,10 +703,12 @@ contains
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
 
-    if(.not. DECinfo%memory_defined) then
-       write(DECinfo%output,*) 'Memory not defined for **DEC or **CC calculation!'
-       write(DECinfo%output,*) 'Please specify using .MEMORY keyword (in gigabytes)'
-       write(DECinfo%output,*) ''
+    if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
+       & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
+
+       write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
+       write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
+       write(DECinfo%output,*) 'The recommended way is using .MEMORY and specifying the memory in GB'
 #ifdef VAR_MPI
        write(DECinfo%output,*) 'E.g. if each MPI process has 16 GB of memory available, then use'
 #else
@@ -703,7 +718,7 @@ contains
        write(DECinfo%output,*) '16.0'
        write(DECinfo%output,*) ''
        call lsquit('**DEC or **CC calculation requires specification of available memory using &
-            & .MEMORY keyword!',-1)
+            & EITHER .MEMORY OR .USE_SYS_MEM_INFO  keyword!',-1)
     end if
 
     ! Use purification of FOs when using fragment-adapted orbitals.
@@ -711,12 +726,35 @@ contains
        DECinfo%purifyMOs=.true.
     end if
 
+    if(DECinfo%use_system_memory_info) call get_currently_available_memory(DECinfo%memory)
+
     ! Check in the case of a DEC calculation that the cc-restart-files are not written
     if((.not.DECinfo%full_molecular_cc).and.(.not.DECinfo%CCSDnosaferun))then
        DECinfo%CCSDnosaferun = .true.
     endif
 
+    if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
+      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+            & does not make sense, please change input!',-1)
 
+    endif
+
+   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+      call lsquit("ERROR(check_dec_input):Do not use &
+         &.CCSDforce_scheme in a DEC calculation",-1)
+   endif
+
+   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+      call lsquit("ERROR(check_dec_input):You forced a scheme in &
+      &the CCSD part which is dependent on running at least 2 &
+      &MPI processes with only one process",-1)
+   endif
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -837,6 +875,8 @@ contains
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
+    write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
+    write(lupri,*) 'force_Occ_SubSystemLocality ', DECitem%force_Occ_SubSystemLocality
     write(lupri,*) 'PL ', DECitem%PL
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output

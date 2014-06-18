@@ -508,7 +508,7 @@ C        CALL RSPEVE(IBTYP,EIVAL,EIVEC,BVECS,WRK,NBX,IBOFF)
          DO 750 IVEC = 1,NBX
             IBV    = (IVEC-1)*KZYVAR + KBVECS
             NVEC   = IOFFSP + INQREX(KSYMOP,ISIM-1+IVEC)
-            IF (IPRRSP.GT.10) THEN
+            IF (IPRRSP.GT.1) THEN
                IF ( TRPLET ) THEN
                   WRITE(LUPRI,'(/A,I5,3X,A,I5,3A,/A,1P,D14.6)')
      &            '@ QRPPVE: TRIPLET EXCITATION VECTOR',ISIM-1+IVEC,
@@ -1719,6 +1719,8 @@ C
       DIMENSION JWOPSV(2,MAXWOP)
       CHARACTER A1*1, B1*1, CLABEL*8
       LOGICAL LYESGP
+      CHARACTER*8 ALAB, BLAB
+      DOUBLE PRECISION OMEGA_B, OMEGA_C
 C
       IPRRSP = IPRSMO
       LYESGP = .FALSE.
@@ -2084,6 +2086,14 @@ C
                         WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
+
+                        ALAB = ASMLB(MSYMA, IAOP)
+                        BLAB = BSMLB(MSYMB, IBOP)
+                        OMEGA_B = BSMFR(IBFR)
+                        OMEGA_C = EXCITA(MSYMC, IC, ISPINC+1)
+                        CALL PRINT_QR_SINGLE_RESIDUE(LUPRI,
+     &                      ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
+     &                      )
                               IF (PHOSPH .AND.
      &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
      &                        BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN
@@ -2485,7 +2495,7 @@ C
       IPRRSP = IPREXM
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (DOESA .OR. EXMTES) THEN
+         IF (DOESA .OR. EXMTES .OR. ISPINB.NE.ISPINC) THEN
             MSYMBE = NSYM
          ELSE
             MSYMBE = MSYMC
@@ -2553,7 +2563,8 @@ C
                   END IF
                   IF (DOESA) THEN
                      IBE = 1
-                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC) THEN
+                  ELSE IF (EXMTES .OR. MSYMB.NE.MSYMC
+     &                           .OR. ISPINB.NE.ISPINC) THEN
                      IBE = NPPCNV(MSYMB)
                   ELSE
                      IBE = IC
@@ -3914,4 +3925,18 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE PRINT_QR_SINGLE_RESIDUE(LU,
+     &   ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
+     &   )
+      IMPLICIT NONE
+      INTEGER LU, IC
+      CHARACTER*(*) ALAB, BLAB
+      DOUBLE PRECISION OMEGA_B, OMEGA_C, SMOM
+
+      WRITE(LU, '(/5A, F6.3, A, I1, A, F6.3, A, F10.6)')
+     &   '@    <<', TRIM(ALAB), '; ', TRIM(BLAB), ', wb =', OMEGA_B, 
+     &   ', w', IC, ' =', OMEGA_C, '>> = ', SMOM
+      END
+      
 C -- end of rspvec.F --

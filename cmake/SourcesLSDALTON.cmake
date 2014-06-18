@@ -59,7 +59,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     LSDALTON/lsdaltonsrc/Profile.F90
     LSDALTON/lsdaltonsrc/IchorTesting.F90
     LSDALTON/lsdaltonsrc/IchorProfile.F90
-    LSDALTON/lsdaltonsrc/SCFinteractionEnergy.F90
+    LSDALTON/lsdaltonsrc/InteractionEnergy.F90
     )
 set(DDYNAM_SOURCES
     LSDALTON/ddynam/LSinput.F90
@@ -79,6 +79,7 @@ set(DEC_SOURCES
     LSDALTON/deccc/crop_tools.F90
     LSDALTON/deccc/cc_tools.F90
     LSDALTON/deccc/ccsd.F90
+    LSDALTON/deccc/pno_ccsd.F90
     LSDALTON/deccc/rpa.F90
     LSDALTON/deccc/f12_integrals.F90
     LSDALTON/deccc/f12_routines.F90
@@ -163,6 +164,7 @@ set(LINEARS_SOURCES
     )
 set(RSPSOLVER_SOURCES	
     LSDALTON/responsesolver/rsp_cmplx_sym.F90
+    LSDALTON/responsesolver/rsp_cmplx_sym_new.F90
     LSDALTON/responsesolver/rsp_complex.F90
     LSDALTON/responsesolver/rsp_solver.F90
     LSDALTON/responsesolver/rsp_std_sym.F90

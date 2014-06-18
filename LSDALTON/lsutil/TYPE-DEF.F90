@@ -132,10 +132,7 @@ LOGICAL     :: MM_NOSCREEN
 Integer     :: MMunique_ID1
 !*BASIS PARAMETERS
 LOGICAL  :: ATOMBASIS
-LOGICAL  :: BASIS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -186,16 +183,17 @@ LOGICAL     :: LR_EXCHANGE_PARI
 LOGICAL     :: LR_EXCHANGE
 !ADMM setting
 LOGICAL       :: ADMM_EXCHANGE
-LOGICAL       :: ADMM_GCBASIS
-LOGICAL       :: ADMM_DFBASIS
-LOGICAL       :: ADMM_JKBASIS
-LOGICAL       :: ADMM_MCWEENY
-LOGICAL       :: ADMM_2ERI
-LOGICAL       :: ADMMQ_ScaleXC2
-LOGICAL       :: ADMMQ_ScaleE
-LOGICAL       :: PRINT_EK3
-LOGICAL       :: ADMM_CONST_EL
+LOGICAL       :: ADMM1
+LOGICAL       :: ADMMS
+LOGICAL       :: ADMMQ
+LOGICAL       :: ADMMP
 CHARACTER(80) :: ADMM_FUNC
+LOGICAL       :: ADMM_ADDXC
+LOGICAL       :: ADMM_GCBASIS
+LOGICAL       :: ADMM_JKBASIS
+LOGICAL       :: ADMM_2ERI
+LOGICAL       :: PRINT_EK3
+
 LOGICAL       :: SR_EXCHANGE
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
@@ -283,9 +281,7 @@ INTEGER     :: LU_LUINTR
 INTEGER     :: LU_LUINDM
 INTEGER     :: LU_LUINDR
 !*BASIS PARAMETERS
-LOGICAL  :: AUXBASIS
-LOGICAL  :: CABSBASIS
-LOGICAL  :: JKBASIS
+LOGICAL  :: BASIS(nBasisBasParam)
 LOGICAL  :: NOFAMILY
 LOGICAL  :: Hermiteecoeff
 LOGICAL  :: DoSpherical
@@ -344,14 +340,14 @@ LOGICAL     :: LR_EXCHANGE
 LOGICAL     :: SR_EXCHANGE
 
 LOGICAL     :: ADMM_EXCHANGE
+LOGICAL     :: ADMM1
+LOGICAL     :: ADMMQ
+LOGICAL     :: ADMMS
+LOGICAL     :: ADMMP
+LOGICAL     :: ADMM_ADDXC
 LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_DFBASIS
 LOGICAL     :: ADMM_JKBASIS
-LOGICAL     :: ADMM_MCWEENY
 LOGICAL     :: ADMM_2ERI
-LOGICAL     :: ADMM_CONST_EL
-LOGICAL     :: ADMMQ_ScaleXC2
-LOGICAL     :: ADMMQ_ScaleE
 LOGICAL     :: PRINT_EK3
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
@@ -418,7 +414,12 @@ Integer,pointer :: fragmentIndex(:)  !Index giving the fragment of each atom
 Integer,pointer :: nAtoms(:) !atoms in each fragment
 Integer,pointer :: AtomicIndex(:,:) !list of atoms in each fragment
 ! First dimension numFragments, second dimension for different basis sets:
-!    1: Regular, 2: DF-Aux, 3: CABS 4: JK 5: VALENCE
+!               (see BasisinfoType.F90)
+!    1: Regular (RegBasParam=1)
+!    2: DF-Aux  (AUXBasParam=2)
+!    3: CABS    (CABBasParam=3)
+!    4: JK      (JKBasParam=4)
+!    5: VALENCE (VALBasParam=5)
 Integer,pointer :: nContOrb(:,:)
 Integer,pointer :: nPrimOrb(:,:)
 Integer,pointer :: nStartContOrb(:,:)

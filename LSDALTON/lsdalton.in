@@ -41,6 +41,8 @@ AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_lslib_test=0
 opt_restart=0
+opt_nobackup=0
+opt_noarch=0
 optd=0
 optdens=0
 optpg=0
@@ -73,6 +75,9 @@ usage (){
       echo ' -t dir    change DALTON_TMPDIR from default to dir'
       echo ' -w dir    change WRKDIR from default to dir'
       echo " -exe exec change the executable from default ($LSDALTON_EXECUTABLE) to exec"
+      echo " -nobackup do not backup files, simply overwrite outputs"
+      echo " -noarch   do not create tar.gz archive"
+
       echo
       echo "Environment variables understood by the $0 script:"
       echo '    DALTON_TMPDIR             : scratch directory'
@@ -82,22 +87,24 @@ usage (){
 # Define backup function
 #
 backup () {
-  if [ "$1" = "-v" ]; then ekko=1; shift
-  else ekko=0;
+  if [ $opt_nobackup -eq 0 ]; then
+    if [ "$1" = "-v" ]; then ekko=1; shift
+    else ekko=0;
+    fi
+    for i in $* ; do
+       if [ -f "${i}" ]; then
+          for j in 6 5 4 3 2 1 0 ; do
+             jp=`expr $j + 1`
+             if [ -f "${i}.${j}" ]; then
+                [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
+                mv -f "${i}.${j}" "${i}.${jp}"
+             fi
+          done
+          if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
+          mv -f "${i}" "${i}.0"
+       fi
+    done
   fi
-  for i in $* ; do
-     if [ -f "${i}" ]; then
-        for j in 6 5 4 3 2 1 0 ; do
-           jp=`expr $j + 1`
-           if [ -f "${i}.${j}" ]; then
-              [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
-              mv -f "${i}.${j}" "${i}.${jp}"
-           fi
-        done
-        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
-        mv -f "${i}" "${i}.0"
-     fi
-  done
 }
 #
 # Interpret input
@@ -120,6 +127,8 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
       -exe ) LSDALTON_EXECUTABLE=$2; shift;;
+      -nobackup ) opt_nobackup=1;;
+      -noarch ) opt_noarch=1;;
       * ) usage; exit 1;;
    esac
    shift
@@ -320,10 +329,12 @@ for i in $filelist ; do
    fi
 done
 
-if [ -s "first.wrl" -a -r "first.wrl" ] ; then
-   tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
-else
-   tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+if [ $opt_noarch -eq 0 ]; then
+    if [ -s "first.wrl" -a -r "first.wrl" ] ; then
+       tar cf - $tarfilelist *wrl | gzip -9 > $outnam.tar.gz
+    else
+       tar cf - $tarfilelist | gzip -9 > $outnam.tar.gz
+    fi
 fi
 
 if [ -s $outnam.tar.gz ] ; then

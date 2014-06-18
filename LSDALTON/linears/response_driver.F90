@@ -4384,7 +4384,7 @@ Contains
     faI = aimag(MyRspFunc%freq(A))
     fbR = real(MyRspFunc%freq(B))
     fbI = aimag(MyRspFunc%freq(B))
-    if( ( abs(faR-fbR) < 1e-9 ) .and. ( abs(faI-fbI) < 1e-9 ) ) frequencies_identical = .true.
+    if( (abs(faR-fbR) < 1e-9_realk) .and. (abs(faI-fbI) < 1e-9_realk)) frequencies_identical = .true.
 
     ! All true?
     if(operators_identical .and. components_identical &

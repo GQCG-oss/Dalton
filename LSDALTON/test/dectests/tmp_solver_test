@@ -59,8 +59,6 @@ TRILEVEL
 .v2o2_free_solver
 !.CCSD_DEBUG_COMMUNICATION
 .FrozenCore
-.CCSDforce_scheme
-2
 .CCSD
 .ccThr
 1e-7

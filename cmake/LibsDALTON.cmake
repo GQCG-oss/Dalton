@@ -1,5 +1,12 @@
 set(DALTON_LIBS)
 
+if(ENABLE_CHEMSHELL)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
+        )
+endif()
+
 add_library(
     dalton
     ${DALTON_C_SOURCES}
@@ -16,6 +23,15 @@ if(ENABLE_GEN1INT)
     set(DALTON_LIBS
         gen1int_interface
         ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
+        ${DALTON_LIBS}
+        )
+endif()
+
+if(ENABLE_LSLIB)
+    add_definitions( -DBUILD_LSLIB )
+    add_dependencies(dalton lsdalton)
+    set(DALTON_LIBS
+        lsdalton
         ${DALTON_LIBS}
         )
 endif()
@@ -67,6 +83,7 @@ if(ENABLE_PCMSOLVER)
         )
 endif()
 
+if(NOT ENABLE_CHEMSHELL)
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
@@ -80,6 +97,7 @@ target_link_libraries(
     ${DALTON_LIBS}
     ${EXTERNAL_LIBS}
     )
+endif()
 
 # compile utilities
 

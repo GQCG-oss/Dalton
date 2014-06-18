@@ -74,6 +74,7 @@ IF(BASISINFO%natomtypes.EQ. 0)THEN
    print*,'BASISINFO%nprimbast    ',BASISINFO%nprimbast
    CALL LSQUIT('Error BUILD_AO called with empty basis',lupri)
 ENDIF
+call nullifyAOITEM(AO)
 IF(PRESENT(NORMA))THEN
    NORM=NORMA
 ELSE
@@ -87,10 +88,12 @@ ENDDO
 AO%natoms = J
 CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)
 CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)
+J=0
 DO I=1,MOLECULE%natoms   
    IF(MOLECULE%ATOM(I)%pointcharge)CYCLE 
-   AO%ATOMICnORB(I)=0
-   AO%ATOMICnBATCH(I)=0
+   J=J+1
+   AO%ATOMICnORB(J)=0
+   AO%ATOMICnBATCH(J)=0
 ENDDO
 AO%empty=.FALSE.
 NOFAMILY=SCHEME%NOFAMILY
@@ -141,10 +144,12 @@ AOmodelbat=L
 GHOSTFUNCS=0 !SHOULD BE CHANGED TO ACCOUNT FOR GHOST FUNCTIONS
 aobatches=(MOLECULE%natoms-GHOSTFUNCS)*SUM
 CALL MEM_ALLOC(AO%BATCH,aobatches)
+call nullifyAOBATCH(AO)
 IF(IPRINT .GT. 15)WRITE(lupri,*)aobatches,' aobatches should be more than sufficient'
 AOsum=SUM
 ALLOCATE(AOmodel(AOmodelbat))
 DO I=1,AOmodelbat
+   call nullifyAOITEM(AOmodel(I))
    AOmodel(I)%nbast = 0
    AOmodel(I)%natoms=1
    CALL MEM_ALLOC(AOmodel(I)%ATOMICnORB,1)
@@ -152,13 +157,16 @@ DO I=1,AOmodelbat
    CALL MEM_ALLOC(AOmodel(I)%ATOMICnBATCH,1)
    AOmodel(I)%ATOMICnBATCH(1)=0
    CALL MEM_ALLOC(AOmodel(I)%BATCH,SUM)
+   call nullifyAOBATCH(AOmodel(I))
    AOmodel(I)%nbatches = 0
    CALL MEM_ALLOC(AOmodel(I)%CC,1) !not used
+   CALL lsmat_dense_init(AOmodel(I)%CC(1),1,1)
+   AOmodel(I)%CC(1)%elms=0.0E0_realk
    CALL MEM_ALLOC(AOmodel(I)%angmom,1) !not used
+   AOmodel(I)%angmom(1) = 0
    AOmodel(I)%nCC = 1 !not used
    AOmodel(I)%nExp = 0   
    CALL MEM_ALLOC(AOmodel(I)%Exponents,SUM)
-   CALL lsmat_dense_init(AOmodel(I)%CC(1),1,1)
 ENDDO
 IF(SUM .EQ. 0) CALL LSQUIT('SUM EQ ZERO SOMETHINGS WRONG',lupri)
 nMODELEXP=SUM
@@ -484,6 +492,7 @@ AO%nbatches=1
 AO%nCC=1
 AO%nExp=1
 CALL MEM_ALLOC(AO%BATCH,1)   
+call nullifyAOBATCH(AO)
 CALL MEM_ALLOC(AO%CC,1)
 CALL MEM_ALLOC(AO%angmom,1)
 CALL MEM_ALLOC(AO%Exponents,1)
@@ -569,6 +578,7 @@ AO%nbatches=aobatches
 AO%nExp=1
 
 CALL MEM_ALLOC(AO%BATCH,aobatches)
+call nullifyAOBATCH(AO)
 CALL MEM_ALLOC(AO%Exponents,1)
 CALL lsmat_dense_init(AO%Exponents(1),1,1)
 call mem_alloc(CHARGES,MOLECULE%natoms)
@@ -693,6 +703,7 @@ AO%nbatches=aobatches
 AO%nExp=1
 
 CALL MEM_ALLOC(AO%BATCH,aobatches)
+call nullifyAOBATCH(AO)
 CALL MEM_ALLOC(AO%Exponents,1)
 CALL lsmat_dense_init(AO%Exponents(1),1,1)
 call mem_alloc(CHARGES,MOLECULE%natoms)
@@ -812,6 +823,7 @@ AO%nbatches=aobatches
 AO%nExp=1
 
 CALL MEM_ALLOC(AO%BATCH,aobatches)
+call nullifyAOBATCH(AO)
 CALL MEM_ALLOC(AO%Exponents,1)
 
 CALL lsmat_dense_init(AO%Exponents(1),1,1)
@@ -941,6 +953,7 @@ ENDIF
 
 AO_output%EMPTY = AOfull%EMPTY
 call mem_alloc(AO_output%BATCH,SizeRequestedBatch)
+call nullifyAOBATCH(AO_output)
 
 AO_output%nCC = AOfull%nCC
 call mem_alloc(AO_output%CC,AO_output%nCC)
@@ -1084,10 +1097,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -1119,7 +1132,11 @@ ENDIF
 call mem_alloc(batchsize,nbatches)
 call mem_alloc(batchindex,nbatches)
 call mem_alloc(batchdim,nbatches)
-
+do I=1,nbatches
+   batchsize(I) = 0
+   batchindex(I) = 0
+   batchdim(I) = 0
+enddo
 allocnbatches = nbatches
 nbatLoc = 0
 nbatches = 0
@@ -1188,10 +1205,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -1233,10 +1250,10 @@ uncont=.FALSE.
 intnrm = .false.
 IF(AOspec.EQ.'R')THEN
    !   The regular AO-basis
-   AObasis => setting%basis(1)%p%regular
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 ELSEIF(AOspec.EQ.'C')THEN
    !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%CABS   
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 ELSE
    call lsquit('Unknown specification in build_batchesOfAOs',-1)
 ENDIF
@@ -2365,15 +2382,17 @@ INTEGER,pointer   :: UATOM(:)
 TYPE(BASISSETINFO),pointer :: BASIS
 
 IF(AORdefault.EQ.AOregular)THEN
-   BASIS => SETTING%BASIS(1)%p%REGULAR
+   BASIS => SETTING%BASIS(1)%p%BINFO(RegBasParam)
 ELSEIF(AORdefault.EQ.AOVAL)THEN
-   BASIS => SETTING%BASIS(1)%p%VALENCE
+   BASIS => SETTING%BASIS(1)%p%BINFO(VALBasParam)
 ELSEIF(AORdefault.EQ.AOdfAux)THEN
-   BASIS => SETTING%BASIS(1)%p%AUXILIARY
+   BASIS => SETTING%BASIS(1)%p%BINFO(AuxBasParam)
 ELSEIF(AORdefault.EQ.AOdfJK)THEN
-   BASIS => SETTING%BASIS(1)%p%JK
+   BASIS => SETTING%BASIS(1)%p%BINFO(JKBasParam)
 ELSEIF(AORdefault.EQ.AOdfCABS)THEN
-   BASIS => SETTING%BASIS(1)%p%CABS
+   BASIS => SETTING%BASIS(1)%p%BINFO(CABBasParam)
+ELSEIF(AORdefault.EQ.AOadmm)THEN
+   BASIS => SETTING%BASIS(1)%p%BINFO(ADMBasParam)
 ELSE
    CALL LSQUIT('ERROR in BASINF unknown AO',-1)
 ENDIF
@@ -2407,15 +2426,15 @@ ENDDO
 
 MAXNSHELL=0
 MXPRIM=0
-BAS%spherical = SETTING%BASIS(1)%p%REGULAR%spherical
-R = SETTING%BASIS(1)%p%REGULAR%Labelindex
+BAS%spherical = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%spherical
+R = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%Labelindex
 IF(R.EQ. 0)THEN
    I=0
    DO J=1,SETTING%MOLECULE(1)%p%nAtoms
       IF(SETTING%MOLECULE(1)%p%ATOM(J)%pointcharge)CYCLE
       I=I+1
       ICHARGE = INT(SETTING%MOLECULE(1)%p%ATOM(J)%Charge)
-      type = SETTING%BASIS(1)%p%REGULAR%Chargeindex(ICHARGE)
+      type = SETTING%BASIS(1)%p%BINFO(REGBASPARAM)%Chargeindex(ICHARGE)
       ATOMtype(I)=type
       !determine MAXNSHELL = number of shells 
       DO K=1,BASIS%ATOMTYPE(type)%nAngmom

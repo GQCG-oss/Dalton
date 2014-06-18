@@ -1865,6 +1865,16 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
+         IF (PEQM .AND. (KEY .EQ. 'HMAT') .AND. .NOT. NOLOND) THEN
+#if defined (BUILD_PELIB)
+            KTMAT = KWRK
+            MWRK = KTMAT + 3 * N2BASX
+            IF (MWRK > LWRK) CALL STOPIT('ONEDRL', 'PEQM', MWRK, LWRK)
+            CALL PE_IFC_LONDON(WORK(KTMAT))
+            CALL DAXPY(3*N2BASX, D1, WORK(KTMAT), 1, WORK(KMATS), 1)
+#endif
+         END IF
+
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)
          IF (DERZ) CALL DCOPY(N2BASX,WORK(KMATS+2*N2BASX),1,OMATZ,1)

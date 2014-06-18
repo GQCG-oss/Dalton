@@ -118,6 +118,7 @@ F90_OBJS = \
 	TestMPI.o\
 	ks-settings.o\
 	dec_typedef.o\
+	dec_workarounds.o\
 	SphCartMatrices.o\
 	GCtrans.o\
 	TYPE-DEF.o\

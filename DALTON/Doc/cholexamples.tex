@@ -7,7 +7,7 @@ We present in this Chapter some examples of input files
 \dalinp\ for calculations that can be done
 with Cholesky-based algorithms available in the \dalton\ program 
 using either decomposed two-electron 
-integrals~\cite{choint,chorsp} either decomposed orbital 
+integrals~\cite{choint,chorsp,choexci} either decomposed orbital 
 energy denominators~\cite{jcp_chopt,ijqc_chopt}.
 A few more examples may be found in the test suite. 
 
@@ -218,6 +218,64 @@ takes them as zero!
 
 Obviously, it is not needed to compute simultaneously the two
 magnetic properties presented here.
+
+
+
+\section{Cholesky/CC2 excitation energies}
+In this example we calculate at the CCS and CC2 levels some excitation 
+energies of a molecule using Cholesky-decomposed two-electron integrals.
+As disccused in Ref. \cite{choexci}, the CC2 Jacobian is diagonal in the 
+doubles-doubles block, which allows for extracting the excitation energies 
+from an effective Jacobian that has the dimension of the single excitation 
+manifold, but depends on its eigenvalues. The pseudo-eigenvalue problem 
+must then be solved self-consistenly. As a consequence, the default Davidson
+solver scales quadratically with the number of computed excited states, 
+but we have also implemented a DIIS solver which scales linearly although
+it it less robust than the default Davidson diagonalization. In the
+following example, the DIIS solver is invoked through keyword
+\Key{CHEXDI} in the \Sec{CCEXCI} input section. Moreover, Davidson 
+preconditioner is used as required by keyword \Key{DV4DIS}. Note that
+using \Key{CHEXDI} without simultaneous use of \Key{DV4DIS} can lead to
+incorrect results in some cases.
+
+\begin{verbatim}
+**DALTON
+.RUN WAVE
+.CHOLES       ! Invoke Cholesky-based algorithms
+**INTEGRALS
+.DIPLEN
+**CHOLESKY
+.REDUCE
+.SPANDI
+  1.0d-3
+.THRCOM
+ 1.0D-8
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-8
+*CC INP
+.PRINT
+  3
+.FREEZE
+  16   0
+.CCS
+.CC2
+*CHOCC2
+.CHOMO          ! Use decomposed amplitudes
+*CCEXCI
+.CHEXDI         ! Call DIIS solver
+.DV4DIS         ! Run Davidson preconditioner
+.NCCEXCI
+  3   2
+**END OF DALTON INPUT
+\end{verbatim}
+
+Standard Davidson diagonalization (still restricted to the singles manifold)
+can be carried out by deleting keywords \Key{CHEXDI} and \Key{DV4DIS}.
+
+
 
 \section{CCSD(T) energy calculation using decomposed 
          energy denominators}

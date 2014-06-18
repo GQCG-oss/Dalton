@@ -3,7 +3,7 @@ MODULE IntegralInterfaceIchorMod
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
   use basis_type, only: free_basissetinfo
-  use basis_typetype,only: BASISSETINFO,BASISINFO
+  use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
   use Integralparameters
@@ -48,7 +48,7 @@ integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
 logical :: dirac,doprint,debug
 TYPE(MOLECULEINFO),pointer :: Originalmolecule
 TYPE(MOLECULEINFO),pointer :: atomicmolecule(:)
-TYPE(BASISSETLIBRARYITEM) :: LIBRARY
+TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
 CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
@@ -314,10 +314,10 @@ do Ipass = IpassStart,IpassEnd
        do A = 1,4       
           BASISSETNAME(1:20) = BASISTYPE(iBasiselm(A))
           CALL Build_basis(LUPRI,IPRINT,&
-               &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%REGULAR,LIBRARY,&
-               &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,BASISSETNAME)
+               &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
+               &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
           SETTING%BASIS(A)%p => UNITTESTBASIS(A)
-          call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%REGULAR,spherical,.FALSE.,nbast(A))
+          call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
        enddo
        dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
        !due to current code restrictions
@@ -487,10 +487,10 @@ do Ipass = IpassStart,IpassEnd
           call mem_dealloc(BATCHGAB)
           call FREE_SCREEN_ICHORERI
        ENDIF
-       call free_basissetinfo(UNITTESTBASIS(1)%REGULAR)
-       call free_basissetinfo(UNITTESTBASIS(2)%REGULAR)
-       call free_basissetinfo(UNITTESTBASIS(3)%REGULAR)
-       call free_basissetinfo(UNITTESTBASIS(4)%REGULAR)
+       call free_basissetinfo(UNITTESTBASIS(1)%BINFO(RegBasParam))
+       call free_basissetinfo(UNITTESTBASIS(2)%BINFO(RegBasParam))
+       call free_basissetinfo(UNITTESTBASIS(3)%BINFO(RegBasParam))
+       call free_basissetinfo(UNITTESTBASIS(4)%BINFO(RegBasParam))
        Setting%sameMol = .TRUE.
        Setting%sameFrag = .TRUE.
     ENDDO
@@ -608,11 +608,13 @@ atomicmolecule%nbastREG = 0
 atomicmolecule%nbastAUX = 0
 atomicmolecule%nbastCABS = 0
 atomicmolecule%nbastJK = 0
+atomicmolecule%nbastADMM = 0
 atomicmolecule%nbastVAL = 0
 atomicmolecule%nprimbastREG = 0
 atomicmolecule%nprimbastAUX = 0
 atomicmolecule%nprimbastCABS = 0
 atomicmolecule%nprimbastJK = 0
+atomicmolecule%nprimbastADMM = 0
 atomicmolecule%nprimbastVAL = 0
 atomicmolecule%pointMolecule = .FALSE.
 do I=1,nAtoms
@@ -626,7 +628,6 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%CENTER(3) = Rxyz(3)*I
    atomicmolecule%ATOM(I)%Atomic_number = 0 
    atomicmolecule%ATOM(I)%Charge = Icharge       
-   atomicmolecule%ATOM(I)%nbasis=1
    
    atomicmolecule%ATOM(I)%basislabel(1) = 'None'
    atomicmolecule%ATOM(I)%basislabel(2) = 'None'
@@ -645,6 +646,8 @@ do I=1,nAtoms
    atomicmolecule%ATOM(I)%nPrimOrbCABS =0 
    atomicmolecule%ATOM(I)%nContOrbJK =0 
    atomicmolecule%ATOM(I)%nPrimOrbJK =0 
+   atomicmolecule%ATOM(I)%nContOrbADMM =0 
+   atomicmolecule%ATOM(I)%nPrimOrbADMM =0 
    atomicmolecule%ATOM(I)%nContOrbVAL =0 
    atomicmolecule%ATOM(I)%nPrimOrbVAL =0 
    atomicmolecule%ATOM(I)%molecularIndex =0 

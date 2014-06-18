@@ -84,7 +84,7 @@ real(realk),pointer :: Pmat(:,:)
 !* Orbital localization settings  *
 !**********************************
 ! Info used when localizing orbitals using PSM
- type(orbspread_data),pointer :: orbspread_input
+ type(orbspread_data) :: orbspread_inp
 ! Info used when localizing orbitals with Pipek/Lowdin
  type(PMitem)  :: PM_input
 ! Info used when localizing orbitals using PFM
@@ -215,8 +215,6 @@ CFG%all_orb_locality   = .false.
 CFG%orb_debug          = .false.
 CFG%make_orb_plot      = .false.
 CFG%linesearch         =.true.
-CFG%PM_input%ChargeLocMulliken = .false.
-CFG%PM_input%ChargeLocLowdin   = .false.
 CFG%PM_input%PipekMezeyLowdin  = .false.
 CFG%PM_input%linesearch        = .false.
 CFG%PM_input%precond           = .true.

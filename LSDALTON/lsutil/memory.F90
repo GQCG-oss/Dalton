@@ -20,7 +20,7 @@ use lattice_type
 use lsmpi_module
 #endif
 private
-public Set_PrintSCFmemory
+public Set_PrintSCFmemory,MemInGB,stats_globalmem
 public Set_MemModParamPrintMemory, Print_Memory_info
 public MemModParamPrintMemorylupri,MemModParamPrintMemory
 public Set_PrintMemoryLowerLimit
@@ -71,13 +71,13 @@ public mem_deallocated_mem_lvec_data
 public mem_allocated_lattice_cell
 public mem_allocated_mem_lattice_cell
 public mem_deallocated_mem_lattice_cell
-public mem_add_external_memory
 #endif
+public mem_add_external_memory
 public longintbuffersize
 logical,save :: PrintSCFmemory
 logical,save :: MemModParamPrintMemory
 integer,save :: MemModParamPrintMemorylupri
-integer,save :: PrintMemoryLowerLimit
+integer(kind=8),save :: PrintMemoryLowerLimit
 integer,save :: longintbuffersize
 !Monitor memory for integral code and possibly other parts!
 !GLOBAL VARIABLES
@@ -101,6 +101,7 @@ integer(KIND=long),save :: mem_allocated_MYPOINTER, max_mem_used_MYPOINTER      
 integer(KIND=long),save :: mem_allocated_ARRAY2, max_mem_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
 integer(KIND=long),save :: mem_allocated_ARRAY4, max_mem_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
 integer(KIND=long),save :: mem_allocated_ARRAY, max_mem_used_ARRAY         !Count 'ARRAY ' memory, deccc code
+integer(KIND=long),save :: mem_allocated_PNOSPACEINFO, max_mem_used_PNOSPACEINFO         !Count 'PNOSpaceInfo ' memory, deccc code
 integer(KIND=long),save :: mem_allocated_MP2DENS, max_mem_used_MP2DENS       !Count 'MP2DENS' memory, deccc code
 integer(KIND=long),save :: mem_allocated_TRACEBACK, max_mem_used_TRACEBACK       !Count 'TRACEBACK' memory, deccc code
 integer(KIND=long),save :: mem_allocated_MP2GRAD, max_mem_used_MP2GRAD       !Count 'MP2GRAD' memory, deccc code
@@ -152,6 +153,7 @@ integer(KIND=long),save :: mem_tp_allocated_MYPOINTER, max_mem_tp_used_MYPOINTER
 integer(KIND=long),save :: mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2       !Count 'ARRAY2' memory, deccc code
 integer(KIND=long),save :: mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4       !Count 'ARRAY4' memory, deccc code
 integer(KIND=long),save :: mem_tp_allocated_ARRAY, max_mem_tp_used_ARRAY         !Count 'ARRAY' memory, deccc code
+integer(KIND=long),save :: mem_tp_allocated_PNOSPACEINFO, max_mem_tp_used_PNOSPACEINFO         !Count 'PNOSPACEINFO' memory, deccc code
 integer(KIND=long),save :: mem_tp_allocated_MP2DENS, max_mem_tp_used_MP2DENS       !Count 'MP2DENS' memory, deccc code
 integer(KIND=long),save :: mem_tp_allocated_TRACEBACK, max_mem_tp_used_TRACEBACK       !Count 'TRACEBACK' memory, deccc code
 integer(KIND=long),save :: mem_tp_allocated_MP2GRAD, max_mem_tp_used_MP2GRAD       !Count 'MP2GRAD' memory, deccc code
@@ -189,6 +191,7 @@ integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY_tmp
+integer(KIND=long),save :: max_mem_used_PNOSPACEINFO_tmp
 integer(KIND=long),save :: max_mem_used_MP2DENS_tmp
 integer(KIND=long),save :: max_mem_used_TRACEBACK_tmp
 integer(KIND=long),save :: max_mem_used_MP2GRAD_tmp
@@ -220,6 +223,7 @@ integer(KIND=long),save :: mem_MYPOINTERsize
 integer(KIND=long),save :: mem_ARRAY2size
 integer(KIND=long),save :: mem_ARRAY4size
 integer(KIND=long),save :: mem_ARRAYsize
+integer(KIND=long),save :: mem_PNOSPACEINFOsize
 integer(KIND=long),save :: mem_MP2DENSsize
 integer(KIND=long),save :: mem_TRACEBACKsize
 integer(KIND=long),save :: mem_MP2GRADsize
@@ -266,6 +270,7 @@ integer(KIND=long),save :: mem_lattice_cellsize
 !$OMP mem_tp_allocated_ARRAY2, max_mem_tp_used_ARRAY2,&
 !$OMP mem_tp_allocated_ARRAY4, max_mem_tp_used_ARRAY4,&
 !$OMP mem_tp_allocated_ARRAY, max_mem_tp_used_ARRAY,&
+!$OMP mem_tp_allocated_PNOSPACEINFO, max_mem_tp_used_PNOSPACEINFO,&
 !$OMP mem_tp_allocated_mpi, max_mem_tp_used_mpi, &
 !$OMP mem_tp_allocated_MP2DENS, max_mem_tp_used_MP2DENS,&
 !$OMP mem_tp_allocated_TRACEBACK, max_mem_tp_used_TRACEBACK,&
@@ -323,7 +328,7 @@ INTERFACE mem_alloc
       &             MATRIX_allocate_1dim, MATRIXP_allocate_1dim, DECFRAG_allocate_1dim, &
       &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
       &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
-      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
+      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
       &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
       &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
       &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
@@ -356,7 +361,7 @@ INTERFACE mem_alloc
          &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
          &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
          &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-         &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
+         &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
          &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
          &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
@@ -365,7 +370,55 @@ INTERFACE mem_alloc
          &             lsmpi_deallocate_i8V,lsmpi_deallocate_i4V,lsmpi_deallocate_dV,lsmpi_local_deallocate_dV
    END INTERFACE
 
+   INTERFACE MemInGB
+      MODULE PROCEDURE Mem4dimInGB,Mem4dimInGBint8,&
+           & Mem2dimInGB,Mem2dimInGBint8,&
+           & Mem1dimInGB,Mem1dimInGBint8
+   END INTERFACE MemInGB
+
    CONTAINS
+
+     real(realk) function Mem4dimInGB(n1,n2,n3,n4)
+       implicit none
+       integer(kind=4),intent(in)  :: n1,n2,n3,n4
+       integer(kind=8) :: Ln1,Ln2,Ln3,Ln4
+       Ln1 = n1; Ln2 = n2; Ln3 = n3; Ln4 = n4
+       Mem4dimInGB = Mem4dimInGBint8(Ln1,Ln2,Ln3,Ln4)
+     end function Mem4dimInGB
+
+     real(realk) function Mem4dimInGBint8(n1,n2,n3,n4)
+       implicit none
+       integer(kind=8),intent(in)  :: n1,n2,n3,n4
+       Mem4dimInGBint8 = n1*n2*n3*n4*8.0E-9_realk
+     end function Mem4dimInGBint8
+
+     real(realk) function Mem2dimInGB(n1,n2)
+       implicit none
+       integer(kind=4),intent(in)  :: n1,n2
+       integer(kind=8) :: Ln1,Ln2
+       Ln1 = n1; Ln2 = n2
+       Mem2dimInGB = Mem2dimInGBint8(Ln1,Ln2)
+     end function Mem2dimInGB
+
+     real(realk) function Mem2dimInGBint8(n1,n2)
+       implicit none
+       integer(kind=8),intent(in)  :: n1,n2
+       Mem2dimInGBint8 = n1*n2*8.0E-9_realk
+     end function Mem2dimInGBint8
+
+     real(realk) function Mem1dimInGB(n1)
+       implicit none
+       integer(kind=4),intent(in)  :: n1
+       integer(kind=8) :: Ln1
+       Ln1 = n1
+       Mem1dimInGB = Mem1dimInGBint8(Ln1)
+     end function Mem1dimInGB
+
+     real(realk) function Mem1dimInGBint8(n1)
+       implicit none
+       integer(kind=8),intent(in)  :: n1
+       Mem1dimInGBint8 = n1*8.0E-9_realk
+     end function Mem1dimInGBint8
 
    subroutine Set_PrintSCFmemory(inputPrintSCFmemory)
       implicit none
@@ -387,7 +440,7 @@ INTERFACE mem_alloc
 
    Subroutine Set_PrintMemoryLowerLimit(inputPrintMemoryLowerLimit)
       implicit none
-      integer,intent(in) :: inputPrintMemoryLowerLimit
+      integer(kind=8),intent(in) :: inputPrintMemoryLowerLimit
       IF(MemModParamPrintMemory)THEN
          PrintMemoryLowerLimit = inputPrintMemoryLowerLimit
       ENDIF
@@ -405,6 +458,7 @@ INTERFACE mem_alloc
       TYPE(ARRAY2) :: ARRAY2item
       TYPE(ARRAY4) :: ARRAY4item
       TYPE(ARRAY) :: ARRAYitem
+      TYPE(PNOSpaceInfo) :: PNOSpaceitem
       TYPE(MP2DENS) :: MP2DENSitem
       TYPE(TRACEBACK) :: TRACEBACKitem
       TYPE(MP2GRAD) :: MP2GRADitem
@@ -421,7 +475,7 @@ INTERFACE mem_alloc
       TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
       ! Size of buffer handling for long integer buffer
-      longintbuffersize = 76
+      longintbuffersize = 78
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
 #ifdef VAR_LSDEBUG
@@ -437,6 +491,7 @@ INTERFACE mem_alloc
       mem_ARRAY2size=80
       mem_ARRAY4size=384
       mem_ARRAYsize=1360
+      mem_PNOSpaceInfosize=1360
       mem_MP2DENSsize=504
       mem_TRACEBACKsize=12
       mem_MP2GRADsize=848
@@ -465,6 +520,7 @@ INTERFACE mem_alloc
       mem_ARRAY2size=sizeof(ARRAY2item)
       mem_ARRAY4size=sizeof(ARRAY4item)
       mem_ARRAYsize=sizeof(ARRAYitem)
+      mem_PNOSpaceInfosize=sizeof(PNOSpaceitem)
       mem_MP2DENSsize=sizeof(MP2DENSitem)
       mem_TRACEBACKsize=sizeof(TRACEBACKitem)
       mem_MP2GRADsize=sizeof(MP2GRADitem)
@@ -492,6 +548,7 @@ INTERFACE mem_alloc
       !print *,sizeof(ARRAY2item)
       !print *,sizeof(ARRAY4item)
       !print *,sizeof(ARRAYitem)
+      !print *,sizeof(PNOSpaceitem)
       !print *,sizeof(MP2DENSitem)
       !print *,sizeof(TRACEBACKitem)
       !print *,sizeof(MP2GRADitem)
@@ -546,6 +603,7 @@ INTERFACE mem_alloc
       max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
       max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
       max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_ARRAY_tmp)
+      max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,max_mem_used_PNOSpaceInfo_tmp)
       max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,max_mem_used_MP2DENS_tmp)
       max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,max_mem_used_TRACEBACK_tmp)
       max_mem_used_MP2GRAD = MAX(max_mem_used_MP2GRAD,max_mem_used_MP2GRAD_tmp)
@@ -594,6 +652,7 @@ INTERFACE mem_alloc
       max_mem_used_ARRAY2_tmp = 0
       max_mem_used_ARRAY4_tmp = 0
       max_mem_used_ARRAY_tmp = 0
+      max_mem_used_PNOSpaceInfo_tmp = 0
       max_mem_used_MP2DENS_tmp = 0
       max_mem_used_TRACEBACK_tmp = 0
       max_mem_used_MP2GRAD_tmp = 0
@@ -659,6 +718,7 @@ INTERFACE mem_alloc
       mem_allocated_ARRAY2 = 0
       mem_allocated_ARRAY4 = 0
       mem_allocated_ARRAY = 0
+      mem_allocated_PNOSpaceInfo = 0
       mem_allocated_MP2DENS = 0
       mem_allocated_TRACEBACK = 0
       mem_allocated_MP2GRAD = 0
@@ -669,6 +729,7 @@ INTERFACE mem_alloc
       max_mem_used_ARRAY2 = 0
       max_mem_used_ARRAY4 = 0
       max_mem_used_ARRAY = 0
+      max_mem_used_PNOSpaceInfo = 0
       max_mem_used_MP2DENS = 0
       max_mem_used_TRACEBACK = 0
       max_mem_used_MP2GRAD = 0
@@ -746,6 +807,7 @@ INTERFACE mem_alloc
       mem_tp_allocated_ARRAY2 = 0
       mem_tp_allocated_ARRAY4 = 0
       mem_tp_allocated_ARRAY = 0
+      mem_tp_allocated_PNOSpaceInfo = 0
       mem_tp_allocated_MP2DENS = 0
       mem_tp_allocated_TRACEBACK = 0
       mem_tp_allocated_MP2GRAD = 0
@@ -756,6 +818,7 @@ INTERFACE mem_alloc
       max_mem_tp_used_ARRAY2 = 0
       max_mem_tp_used_ARRAY4 = 0
       max_mem_tp_used_ARRAY = 0
+      max_mem_tp_used_PNOSpaceInfo = 0
       max_mem_tp_used_MP2DENS = 0
       max_mem_tp_used_TRACEBACK = 0
       max_mem_tp_used_MP2GRAD = 0
@@ -844,6 +907,7 @@ INTERFACE mem_alloc
       mem_allocated_ARRAY2 = mem_allocated_ARRAY2+mem_tp_allocated_ARRAY2
       mem_allocated_ARRAY4 = mem_allocated_ARRAY4+mem_tp_allocated_ARRAY4
       mem_allocated_ARRAY = mem_allocated_ARRAY+mem_tp_allocated_ARRAY
+      mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo+mem_tp_allocated_PNOSpaceInfo
       mem_allocated_MP2DENS = mem_allocated_MP2DENS+mem_tp_allocated_MP2DENS
       mem_allocated_TRACEBACK = mem_allocated_TRACEBACK+mem_tp_allocated_TRACEBACK
       mem_allocated_MP2GRAD = mem_allocated_MP2GRAD+mem_tp_allocated_MP2GRAD
@@ -854,6 +918,7 @@ INTERFACE mem_alloc
       max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
       max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
       max_mem_used_ARRAY_tmp = max_mem_used_ARRAY_tmp+max_mem_tp_used_ARRAY
+      max_mem_used_PNOSpaceInfo_tmp = max_mem_used_PNOSpaceInfo_tmp+max_mem_tp_used_PNOSpaceInfo
       max_mem_used_MP2DENS_tmp = max_mem_used_MP2DENS_tmp+max_mem_tp_used_MP2DENS
       max_mem_used_TRACEBACK_tmp = max_mem_used_TRACEBACK_tmp+max_mem_tp_used_TRACEBACK
       max_mem_used_MP2GRAD_tmp = max_mem_used_MP2GRAD_tmp+max_mem_tp_used_MP2GRAD
@@ -899,6 +964,16 @@ INTERFACE mem_alloc
       !$OMP END CRITICAL
    end subroutine collect_thread_memory
 
+   !> \brief Print global mem
+   !> \author T. Kjaergaard
+   !> \date 2014
+   subroutine stats_globalmem(lupri)
+      implicit none
+      !> Logical unit number for output file.
+      integer,intent(in) :: lupri
+      call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
+      call print_maxmem(lupri,max_mem_used_global,'TOTAL')
+    end subroutine stats_globalmem
 
    !> \brief Print current and max. amount of memory allocated for different data types.
    !> \author S. Host
@@ -960,6 +1035,8 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):             ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):      ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
       WRITE(LUPRI,'("  Allocated memory (TRACEBACK):         ",i9," byte  &
@@ -1016,6 +1093,7 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
       CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
       CALL print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+      CALL print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
       CALL print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS') 
       CALL print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
       CALL print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1108,6 +1186,8 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
       WRITE(LUPRI,'("  Allocated MPI memory (TRACEBACK):       ",i9," byte  &
@@ -1164,6 +1244,7 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
       CALL print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
       CALL print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+      CALL print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
       CALL print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
       CALL print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
       CALL print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
@@ -1256,6 +1337,8 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
       WRITE(LUPRI,'("  Allocated memory (TRACEBACK):       ",i9," byte  &
@@ -1310,6 +1393,7 @@ INTERFACE mem_alloc
       CALL print_maxmem(lupri,max_mem_tp_used_ARRAY2,'ARRAY2')
       CALL print_maxmem(lupri,max_mem_tp_used_ARRAY4,'ARRAY4')
       CALL print_maxmem(lupri,max_mem_tp_used_ARRAY,'ARRAY')
+      CALL print_maxmem(lupri,max_mem_tp_used_PNOSpaceInfo,'PNOSpaceInfo')
       CALL print_maxmem(lupri,max_mem_tp_used_MP2DENS,'MP2DENS')
       CALL print_maxmem(lupri,max_mem_tp_used_TRACEBACK,'TRACEBACK')
       CALL print_maxmem(lupri,max_mem_tp_used_MP2GRAD,'MP2GRAD')
@@ -1427,93 +1511,95 @@ subroutine scf_stats_debug_mem(lupri,it)
       WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
       call print_maxmem(lupri,max_mem_used_global,'TOTAL')
       if (max_mem_used_type_matrix > 0_long) call print_maxmem(lupri,max_mem_used_type_matrix,'type(matrix)')
-   if (max_mem_used_real > 0_long) call print_maxmem(lupri,max_mem_used_real,'real')
-   if (max_mem_used_mpi > 0_long) call print_maxmem(lupri,max_mem_used_mpi,'MPI')
-   if (max_mem_used_complex > 0_long) call print_maxmem(lupri,max_mem_used_complex,'complex')
-   if (max_mem_used_integer > 0_long) call print_maxmem(lupri,max_mem_used_integer,'integer')
-   if (max_mem_used_logical > 0_long) call print_maxmem(lupri,max_mem_used_logical,'logical')
+      if (max_mem_used_real > 0_long) call print_maxmem(lupri,max_mem_used_real,'real')
+      if (max_mem_used_mpi > 0_long) call print_maxmem(lupri,max_mem_used_mpi,'MPI')
+      if (max_mem_used_complex > 0_long) call print_maxmem(lupri,max_mem_used_complex,'complex')
+      if (max_mem_used_integer > 0_long) call print_maxmem(lupri,max_mem_used_integer,'integer')
+      if (max_mem_used_logical > 0_long) call print_maxmem(lupri,max_mem_used_logical,'logical')
 
-   if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
+      if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
 
-   if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-   if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
-   if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
-   if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
-   if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
-   if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
-   if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
-   if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
-   if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
-   if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
-   if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
-   if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
-   if (max_mem_used_ODBATCH > 0_long) call print_maxmem(lupri,max_mem_used_ODBATCH,'ODBATCH')
-   if (max_mem_used_LSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_LSAOTENSOR,'LSAOTENSOR')
-   if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
-   if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
-   if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-   if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
-   if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
-   if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
+      if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
+      if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
+      if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
+      if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+      if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
+      if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
+      if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
+      if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
+      if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+      if (max_mem_used_PNOSpaceInfo > 0_long) call print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
+      if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
+      if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
+      if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
+      if (max_mem_used_ODBATCH > 0_long) call print_maxmem(lupri,max_mem_used_ODBATCH,'ODBATCH')
+      if (max_mem_used_LSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_LSAOTENSOR,'LSAOTENSOR')
+      if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
+      if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
+      if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
+      if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
+      if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
+      if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
 
 
-   if (max_mem_used_linkshell > 0_long) call print_maxmem(lupri,max_mem_used_linkshell,'linkshell')
-   if (max_mem_used_integrand > 0_long) call print_maxmem(lupri,max_mem_used_integrand,'integrand')
-   if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
-   if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
-   if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
-   if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
-   if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
-   if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
+      if (max_mem_used_linkshell > 0_long) call print_maxmem(lupri,max_mem_used_linkshell,'linkshell')
+      if (max_mem_used_integrand > 0_long) call print_maxmem(lupri,max_mem_used_integrand,'integrand')
+      if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
+      if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
+      if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
+      if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
+      if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
+      if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
 #ifdef MOD_UNRELEASED
-   if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
-   if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
+      if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
+      if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
 #endif
-   WRITE(LUPRI,*)
-   call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
-   if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
-if (mem_allocated_real > 0_long) call print_mem_alloc(lupri,mem_allocated_real,'real')
-if (mem_allocated_mpi > 0_long) call print_mem_alloc(lupri,mem_allocated_mpi,'MPI')
-if (mem_allocated_complex > 0_long) call print_mem_alloc(lupri,mem_allocated_complex,'complex')
-if (mem_allocated_integer > 0_long) call print_mem_alloc(lupri,mem_allocated_integer,'integer')
-if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
-if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
-if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
-if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
-if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
-if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
-if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
-if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
-if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
-if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
-if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
-if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
-if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
-if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
-if (mem_allocated_ODBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_ODBATCH,'ODBATCH')
-if (mem_allocated_LSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_LSAOTENSOR,'LSAOTENSOR')
-if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
-if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
-if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
-if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
-if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
-if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
-if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
+      WRITE(LUPRI,*)
+      call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
+      if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
+      if (mem_allocated_real > 0_long) call print_mem_alloc(lupri,mem_allocated_real,'real')
+      if (mem_allocated_mpi > 0_long) call print_mem_alloc(lupri,mem_allocated_mpi,'MPI')
+      if (mem_allocated_complex > 0_long) call print_mem_alloc(lupri,mem_allocated_complex,'complex')
+      if (mem_allocated_integer > 0_long) call print_mem_alloc(lupri,mem_allocated_integer,'integer')
+      if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
+      if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
+      if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
+      if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
+      if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
+      if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
+      if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
+      if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
+      if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
+      if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
+      if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
+      if (mem_allocated_PNOSpaceInfo > 0_long) call print_mem_alloc(lupri,mem_allocated_PNOSpaceInfo,'PNOSpaceInfo')
+      if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
+      if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
+      if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
+      if (mem_allocated_ODBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_ODBATCH,'ODBATCH')
+      if (mem_allocated_LSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_LSAOTENSOR,'LSAOTENSOR')
+      if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
+      if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
+      if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
+      if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
+      if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
+      if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
+      if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
+      
+      
+      if (mem_allocated_linkshell > 0_long) call print_mem_alloc(lupri,mem_allocated_linkshell,'linkshell')
+      if (mem_allocated_integrand > 0_long) call print_mem_alloc(lupri,mem_allocated_integrand,'integrand')
+      if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
 
-
-if (mem_allocated_linkshell > 0_long) call print_mem_alloc(lupri,mem_allocated_linkshell,'linkshell')
-if (mem_allocated_integrand > 0_long) call print_mem_alloc(lupri,mem_allocated_integrand,'integrand')
-if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
-if (mem_allocated_IntWork > 0_long) call print_mem_alloc(lupri,mem_allocated_IntWork,'IntWork')
-if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
-if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
-if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
+      if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
+      if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
+      if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
 #ifdef MOD_UNRELEASED
-if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
-if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
+      if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
+      if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
 #endif
-WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-WRITE(LUPRI,*)
+      WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
+      WRITE(LUPRI,*)
    ENDIF
 end subroutine scf_stats_debug_mem
 
@@ -1530,90 +1616,92 @@ subroutine debug_mem_stats(lupri)
    WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
    call print_maxmem(lupri,max_mem_used_global,'TOTAL')
    if (max_mem_used_type_matrix > 0_long) call print_maxmem(lupri,max_mem_used_type_matrix,'type(matrix)')
-if (max_mem_used_real > 0_long) call print_maxmem(lupri,max_mem_used_real,'real')
-if (max_mem_used_mpi > 0_long) call print_maxmem(lupri,max_mem_used_mpi,'MPI')
-if (max_mem_used_complex > 0_long) call print_maxmem(lupri,max_mem_used_complex,'complex')
-if (max_mem_used_integer > 0_long) call print_maxmem(lupri,max_mem_used_integer,'integer')
-if (max_mem_used_logical > 0_long) call print_maxmem(lupri,max_mem_used_logical,'logical')
-if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
-if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
-if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
-if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
-if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
-if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
-if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
-if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
-if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
-if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
-if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
-if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
-if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
-if (max_mem_used_ODBATCH > 0_long) call print_maxmem(lupri,max_mem_used_ODBATCH,'ODBATCH')
-if (max_mem_used_LSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_LSAOTENSOR,'LSAOTENSOR')
-if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
-if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
-if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
-if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
-if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
-
-if (max_mem_used_linkshell > 0_long) call print_maxmem(lupri,max_mem_used_linkshell,'linkshell')
-if (max_mem_used_integrand > 0_long) call print_maxmem(lupri,max_mem_used_integrand,'integrand')
-if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
-if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
-if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
-if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
-if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
-if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
+   if (max_mem_used_real > 0_long) call print_maxmem(lupri,max_mem_used_real,'real')
+   if (max_mem_used_mpi > 0_long) call print_maxmem(lupri,max_mem_used_mpi,'MPI')
+   if (max_mem_used_complex > 0_long) call print_maxmem(lupri,max_mem_used_complex,'complex')
+   if (max_mem_used_integer > 0_long) call print_maxmem(lupri,max_mem_used_integer,'integer')
+   if (max_mem_used_logical > 0_long) call print_maxmem(lupri,max_mem_used_logical,'logical')
+   if (max_mem_used_character > 0_long) call print_maxmem(lupri,max_mem_used_character,'character')
+   if (max_mem_used_AOBATCH > 0_long) call print_maxmem(lupri,max_mem_used_AOBATCH,'AOBATCH')
+   if (max_mem_used_DECORBITAL > 0_long) call print_maxmem(lupri,max_mem_used_DECORBITAL,'DECORBITAL')
+   if (max_mem_used_DECFRAG > 0_long) call print_maxmem(lupri,max_mem_used_DECFRAG,'DECFRAG')
+   if (max_mem_used_BATCHTOORB > 0_long) call print_maxmem(lupri,max_mem_used_BATCHTOORB,'BATCHTOORB')
+   if (max_mem_used_DECAOBATCHINFO > 0_long) call print_maxmem(lupri,max_mem_used_DECAOBATCHINFO,'DECAOBATCHINFO')
+   if (max_mem_used_MYPOINTER > 0_long) call print_maxmem(lupri,max_mem_used_MYPOINTER,'MYPOINTER')
+   if (max_mem_used_ARRAY2 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY2,'ARRAY2')
+   if (max_mem_used_ARRAY4 > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY4,'ARRAY4')
+   if (max_mem_used_ARRAY > 0_long) call print_maxmem(lupri,max_mem_used_ARRAY,'ARRAY')
+   if (max_mem_used_PNOSpaceInfo > 0_long) call print_maxmem(lupri,max_mem_used_PNOSpaceInfo,'PNOSpaceInfo')
+   if (max_mem_used_MP2DENS > 0_long) call print_maxmem(lupri,max_mem_used_MP2DENS,'MP2DENS')
+   if (max_mem_used_TRACEBACK > 0_long) call print_maxmem(lupri,max_mem_used_TRACEBACK,'TRACEBACK')
+   if (max_mem_used_MP2GRAD > 0_long) call print_maxmem(lupri,max_mem_used_MP2GRAD,'MP2GRAD')
+   if (max_mem_used_ODBATCH > 0_long) call print_maxmem(lupri,max_mem_used_ODBATCH,'ODBATCH')
+   if (max_mem_used_LSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_LSAOTENSOR,'LSAOTENSOR')
+   if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
+   if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
+   if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
+   if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
+   if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
+   if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
+   
+   if (max_mem_used_linkshell > 0_long) call print_maxmem(lupri,max_mem_used_linkshell,'linkshell')
+   if (max_mem_used_integrand > 0_long) call print_maxmem(lupri,max_mem_used_integrand,'integrand')
+   if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
+   if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
+   if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
+   if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
+   if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
+   if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
 #ifdef MOD_UNRELEASED
-if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
-if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
+   if (max_mem_used_lvec_data > 0_long) call print_maxmem(lupri,max_mem_used_lvec_data,'lvec_data')
+   if (max_mem_used_lattice_cell > 0_long) call print_maxmem(lupri,max_mem_used_lattice_cell,'lattice_cell')
 #endif
-WRITE(LUPRI,*)
-call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
-if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
-if (mem_allocated_real > 0_long) call print_mem_alloc(lupri,mem_allocated_real,'real')
-if (mem_allocated_mpi > 0_long) call print_mem_alloc(lupri,mem_allocated_mpi,'MPI')
-if (mem_allocated_complex > 0_long) call print_mem_alloc(lupri,mem_allocated_complex,'complex')
-if (mem_allocated_integer > 0_long) call print_mem_alloc(lupri,mem_allocated_integer,'integer')
-if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
-if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
-if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
-if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
-if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
-if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
-if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
-if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
-if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
-if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
-if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
-if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
-if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
-if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
-if (mem_allocated_ODBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_ODBATCH,'ODBATCH')
-if (mem_allocated_LSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_LSAOTENSOR,'LSAOTENSOR')
-if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
-if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
-if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
-if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
-if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
-if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
-
-
-if (mem_allocated_linkshell > 0_long) call print_mem_alloc(lupri,mem_allocated_linkshell,'linkshell')
-if (mem_allocated_integrand > 0_long) call print_mem_alloc(lupri,mem_allocated_integrand,'integrand')
-if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
-if (mem_allocated_IntWork > 0_long) call print_mem_alloc(lupri,mem_allocated_IntWork,'IntWork')
-if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
-if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
-if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
-if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
+   WRITE(LUPRI,*)
+   call print_mem_alloc(lupri,mem_allocated_global,'TOTAL')
+   if (mem_allocated_type_matrix > 0_long) call print_mem_alloc(lupri,mem_allocated_type_matrix,'type(matrix)')
+   if (mem_allocated_real > 0_long) call print_mem_alloc(lupri,mem_allocated_real,'real')
+   if (mem_allocated_mpi > 0_long) call print_mem_alloc(lupri,mem_allocated_mpi,'MPI')
+   if (mem_allocated_complex > 0_long) call print_mem_alloc(lupri,mem_allocated_complex,'complex')
+   if (mem_allocated_integer > 0_long) call print_mem_alloc(lupri,mem_allocated_integer,'integer')
+   if (mem_allocated_logical > 0_long) call print_mem_alloc(lupri,mem_allocated_logical,'logical')
+   if (mem_allocated_character > 0_long) call print_mem_alloc(lupri,mem_allocated_character,'character')
+   if (mem_allocated_AOBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_AOBATCH,'AOBATCH')
+   if (mem_allocated_DECORBITAL > 0_long) call print_mem_alloc(lupri,mem_allocated_DECORBITAL,'DECORBITAL')
+   if (mem_allocated_DECFRAG > 0_long) call print_mem_alloc(lupri,mem_allocated_DECFRAG,'DECFRAG')
+   if (mem_allocated_BATCHTOORB > 0_long) call print_mem_alloc(lupri,mem_allocated_BATCHTOORB,'BATCHTOORB')
+   if (mem_allocated_DECAOBATCHINFO > 0_long) call print_mem_alloc(lupri,mem_allocated_DECAOBATCHINFO,'DECAOBATCHINFO')
+   if (mem_allocated_MYPOINTER > 0_long) call print_mem_alloc(lupri,mem_allocated_MYPOINTER,'MYPOINTER')
+   if (mem_allocated_ARRAY2 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY2,'ARRAY2')
+   if (mem_allocated_ARRAY4 > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY4,'ARRAY4')
+   if (mem_allocated_ARRAY > 0_long) call print_mem_alloc(lupri,mem_allocated_ARRAY,'ARRAY')
+   if (mem_allocated_PNOSpaceInfo > 0_long) call print_mem_alloc(lupri,mem_allocated_PNOSpaceInfo,'PNOSpaceInfo')
+   if (mem_allocated_MP2DENS > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2DENS,'MP2DENS')
+   if (mem_allocated_TRACEBACK > 0_long) call print_mem_alloc(lupri,mem_allocated_TRACEBACK,'TRACEBACK')
+   if (mem_allocated_MP2GRAD > 0_long) call print_mem_alloc(lupri,mem_allocated_MP2GRAD,'MP2GRAD')
+   if (mem_allocated_ODBATCH > 0_long) call print_mem_alloc(lupri,mem_allocated_ODBATCH,'ODBATCH')
+   if (mem_allocated_LSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_LSAOTENSOR,'LSAOTENSOR')
+   if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
+   if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
+   if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
+   if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
+   if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
+   if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
+   
+   
+   if (mem_allocated_linkshell > 0_long) call print_mem_alloc(lupri,mem_allocated_linkshell,'linkshell')
+   if (mem_allocated_integrand > 0_long) call print_mem_alloc(lupri,mem_allocated_integrand,'integrand')
+   if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
+   if (mem_allocated_IntWork > 0_long) call print_mem_alloc(lupri,mem_allocated_IntWork,'IntWork')
+   if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
+   if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
+   if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
+   if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
 #ifdef MOD_UNRELEASED
-if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
-if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
+   if (mem_allocated_lvec_data > 0_long) call print_mem_alloc(lupri,mem_allocated_lvec_data,'lvec_data')
+   if (mem_allocated_lattice_cell > 0_long) call print_mem_alloc(lupri,mem_allocated_lattice_cell,'lattice_cell')
 #endif
-WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
-WRITE(LUPRI,*)
+   WRITE(LUPRI,'("*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*")')
+   WRITE(LUPRI,*)
 
   end subroutine debug_mem_stats
 
@@ -2467,7 +2555,7 @@ SUBROUTINE lsmpi_allocate_d(A,n1,comm,local,simple)
    simp = .false.
    if(present(simple))simp = simple
 
-   if(present(comm))then
+   if(present(comm).and..not.simp)then
 #ifdef VAR_MPI
       loc = .false.
       if(present(local))loc=local
@@ -4465,6 +4553,51 @@ END SUBROUTINE MP2GRAD_deallocate_1dim
 
 
 
+!----- ALLOCATE PNOSpaceInfo POINTERS -----!
+SUBROUTINE PNOSPACEINFO_allocate_1dim(SpaceItem,n)
+  implicit none
+  integer,intent(in) :: n
+  type(PNOSpaceInfo), intent(inout), pointer :: SpaceItem(:)
+  integer :: ierr
+  integer(kind=long) :: nsize
+
+  SpaceItem => null()
+
+  allocate(SpaceItem(n),STAT = ierr )
+
+  if (ierr.ne. 0) then
+     WRITE(*,*) 'ERROR(PNOSPACEINFO_allocate_1dim) Status/nel',ierr,"/",n
+     call memory_error_quit('ERROR(PNOSPACEINFO_allocate_1dim) status /= 0',nsize)
+  endif
+
+  nsize = size(SpaceItem,kind=long)*mem_PNOSpaceInfosize
+  call mem_allocated_mem_PNOSpaceInfo(nsize)
+ 
+END SUBROUTINE PNOSPACEINFO_allocate_1dim
+
+
+SUBROUTINE PNOSpaceInfo_deallocate_1dim(PNOSpaceInfoITEM)
+  implicit none
+  TYPE(PNOSpaceInfo),pointer,intent(inout) :: PNOSpaceInfoITEM(:)
+  integer :: IERR
+  integer (kind=long) :: nsize
+  nsize = size(PNOSpaceInfoITEM,KIND=long)*mem_PNOSpaceInfosize
+  call mem_deallocated_mem_PNOSpaceInfo(nsize)
+
+  if (.not.ASSOCIATED(PNOSpaceInfoITEM)) then
+     print *,'Memory previously released!!'
+     call memory_error_quit('Error in PNOSpaceInfo_deallocate_1dim - memory previously released',nsize)
+  endif
+  DEALLOCATE(PNOSpaceInfoITEM,STAT = IERR)
+  IF (IERR.NE. 0) THEN
+     write(*,*) 'Error in PNOSpaceInfo_deallocate_1dim',IERR
+     CALL MEMORY_ERROR_QUIT('Error in PNOSpaceInfo_deallocate_1dim',nsize)
+  ENDIF
+  NULLIFY(PNOSpaceInfoITEM)
+END SUBROUTINE PNOSpaceInfo_deallocate_1dim
+
+
+
 !----- ALLOCATE ODBATCH POINTERS -----!
 
 SUBROUTINE ODBATCH_allocate_1dim(ODBATCHITEM,n)
@@ -5916,6 +6049,49 @@ subroutine mem_deallocated_mem_ARRAY(nsize)
    ENDIF
 end subroutine mem_deallocated_mem_ARRAY
 
+  subroutine mem_allocated_mem_PNOSpaceInfo(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_PNOSpaceInfo = mem_tp_allocated_PNOSpaceInfo + nsize
+        max_mem_tp_used_PNOSpaceInfo = MAX(max_mem_tp_used_PNOSpaceInfo,mem_tp_allocated_PNOSpaceInfo)
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global  + nsize
+        max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
+     ELSE
+        mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo + nsize
+        max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,mem_allocated_PNOSpaceInfo)
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global  + nsize
+        max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
+     ENDIF
+   end subroutine mem_allocated_mem_PNOSpaceInfo
+
+   subroutine mem_deallocated_mem_PNOSpaceInfo(nsize)
+     implicit none
+     integer (kind=long), intent(in) :: nsize
+     IF(mem_InsideOMPsection)THEN!we add to thread private variables
+        mem_tp_allocated_PNOSpaceInfo = mem_tp_allocated_PNOSpaceInfo - nsize
+        if (mem_tp_allocated_PNOSpaceInfo < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+        !Count also the total memory:
+        mem_tp_allocated_global = mem_tp_allocated_global - nsize
+        if (mem_tp_allocated_global < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+     ELSE
+        mem_allocated_PNOSpaceInfo = mem_allocated_PNOSpaceInfo - nsize
+        if (mem_allocated_PNOSpaceInfo < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+        !Count also the total memory:
+        mem_allocated_global = mem_allocated_global - nsize
+        if (mem_allocated_global < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_PNOSpaceInfo - probably integer overflow!',nsize)
+        endif
+     ENDIF
+   end subroutine mem_deallocated_mem_PNOSpaceInfo
 subroutine mem_allocated_mem_MP2DENS(nsize)
    implicit none
    integer (kind=long), intent(in) :: nsize
@@ -7385,9 +7561,11 @@ subroutine copy_from_mem_stats(longintbufferInt)
    longintbufferInt(72) = max_mem_used_mpi
    longintbufferInt(73) = mem_allocated_DECAOBATCHINFO
    longintbufferInt(74) = max_mem_used_DECAOBATCHINFO
+   longintbufferInt(75) = mem_allocated_PNOSpaceInfo
+   longintbufferInt(76) = max_mem_used_PNOSpaceInfo
 #ifdef MOD_UNRELEASED
-   longintbufferInt(75) = mem_allocated_lvec_data
-   longintbufferInt(76) = mem_allocated_lattice_cell
+   longintbufferInt(77) = mem_allocated_lvec_data
+   longintbufferInt(78) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
@@ -7468,9 +7646,11 @@ subroutine copy_to_mem_stats(longintbufferInt)
    max_mem_used_mpi = longintbufferInt(72)
    mem_allocated_DECAOBATCHINFO = longintbufferInt(73)
    max_mem_used_DECAOBATCHINFO = longintbufferInt(74)
+   mem_allocated_PNOSpaceInfo = longintbufferInt(75)
+   max_mem_used_PNOSpaceInfo = longintbufferInt(76)
 #ifdef MOD_UNRELEASED
-   mem_allocated_lvec_data = longintbufferInt(75)
-   mem_allocated_lattice_cell = longintbufferInt(76)
+   mem_allocated_lvec_data = longintbufferInt(77)
+   mem_allocated_lattice_cell = longintbufferInt(78)
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!

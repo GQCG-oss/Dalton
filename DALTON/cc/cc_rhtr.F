@@ -76,6 +76,9 @@ C
 #include "ccnoddy.h"
 #include "r12int.h"
 #include "ccr12int.h"
+Cho
+#include "ccdeco.h"
+Cbo
 C
       DIMENSION INDEXA(MXCORB_CC)
       DIMENSION RHO1(LRHO1,NSIMTR),C1AM(LRHO1,NSIMTR)
@@ -89,6 +92,9 @@ C
 C
       LOGICAL FCKCON,NEWGS,CC1BSA,ETRAN,LCONT,LRES,LAMP,CC2R12,LMKVAJKL
       LOGICAL DEBUGV,LVIJKL,LVABKL,LVAJKL,LCC2R12A3,CCSDR12
+Cho
+      LOGICAL TINFO, IOPTPV
+Cho
       PARAMETER (DEBUGV = .FALSE.)
 C
       INTEGER IGLMRHS(8,8),IGLMVIS(8,8),NGLMDS(8),ICMO(8,8),NCMO(8),
@@ -102,7 +108,9 @@ C
          CALL AROUND(' START OF CC_RHTR ')
          IF (DIRECT) WRITE(LUPRI,*) ' Atomic direct calculation'
       ENDIF
-C
+Cho
+      TINFO   = IPRINT .GE. 5
+Cho
       CC1BSA  = CC1B
       IF ( CC1A ) THEN
          CC1B    = .TRUE.
@@ -376,6 +384,9 @@ C
          KLPC1  = KLAMPC + NGLMDT(ISYMTR)*(IV-1)
          KLHC1  = KLAMHC + NGLMDT(ISYMTR)*(IV-1)
          KDNSC1 = KDENSC + N2BST(ISYMTR)*(IV-1)
+Cho
+         KFCKC1 = KFOCKC + N2BST(ISYMTR)*(IV-1)
+Cho
 C
 C-----------------------------------------
 C        Transform lamda matrices with C1.
@@ -423,6 +434,32 @@ C
             CALL CC_PRAODEN(WORK(KDNSC1),ISYMTR)
          ENDIF
 C
+Casm
+C        If Cholesky CCS construct now C1-transformed Fock matrices
+C
+         IF (CHOINT .AND. CCS) THEN
+C
+            DTIME  = SECOND()
+            KFC1TR = KEND1
+            KEND2  = KFC1TR + N2BST(ISYMTR)
+            LWRK2  = LWORK  - KEND2
+            IF (LWRK2 .LT. 0) STOP 'Not enough space for CHOFCK3'
+C
+            IOPTPV = .TRUE.
+            CALL SCF_CHOFCK3(WORK(KDNSC1),WORK(KFCKC1),WORK(KEND2),
+     &                       LWRK2,ISYMTR,TINFO,IOPTPV)
+            CALL FOCK_TRANSP(WORK(KFCKC1),WORK(KFC1TR),ISYMTR)
+C
+            IF (IPRINT .GT. 50) THEN
+               CALL AROUND('CC_RHTR: C1 transformed Fock matrix')
+               CALL CC_PRFCKAO(WORK(KFCKC1),ISYMTR)
+            END IF
+C
+            DTIME  = SECOND() - DTIME 
+            TIMFCK = TIMFCK + DTIME
+C
+         END IF
+Casm
   50  CONTINUE
 C
 C--------------------------------------------------
@@ -442,9 +479,10 @@ C------------------------------------------------
 C     Read one-electron integrals in Fock-matrix.
 C------------------------------------------------
 C
-      TIMFCK = SECOND()
+      DTIME = SECOND()
       CALL CCRHS_ONEAO(WORK(KFOCK),WORK(KEND1),LWRK1)
-      TIMFCK = SECOND() - TIMFCK
+      DTIME  = SECOND() - DTIME
+      TIMFCK = TIMFCK + DTIME
 C
 C------------------------------------------------
 C     Read one-electron integrals into Fock-matrix for
@@ -455,9 +493,24 @@ C
          DTIME  = SECOND()
          FF = EFIELD(IF)
          CALL CC_ONEP(WORK(KFOCK),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
-         DTIME  = DTIME - SECOND()
+         DTIME  = SECOND() - DTIME
          TIMFCK = TIMFCK + DTIME
   13  CONTINUE
+C
+Casm
+C     For Cholesky CCS construct now usual Fock matrix
+C
+      IF (CHOINT .AND. CCS) THEN
+         DTIME  = SECOND()
+         IOPTPV = .TRUE.
+         ISYDEN = 1
+         CALL SCF_CHOFCK3(WORK(KDENSI),WORK(KFOCK),WORK(KEND1),LWRK1,
+     &                    ISYDEN,TINFO,IOPTPV)
+         DTIME  = SECOND() - DTIME
+         TIMFCK = TIMFCK + DTIME
+         GOTO 101
+      END IF
+Casm
 C
 C----------------------------------------------------
 C     Solvent contribution to one-electron
@@ -1045,6 +1098,8 @@ C
       KEND1 = KENDS2
       LWRK1 = LWRKS2
 C
+  101 CONTINUE    ! Come directly here if Cholesky CCS
+C
 C--------------------------------------------
 C     Allocate space for the gamma matrix.
 C--------------------------------------------
@@ -1330,7 +1385,7 @@ C
 C-------------------------------------
 C     C1 transformed Fock Matrix.
 C     first make
-C     F-dot: F'ai = SUM-k-(Lai,kk-bar).
+C     F-dot: F`ai = SUM-k-(Lai,kk-bar).
 C-------------------------------------
 C
       ISYFCK = ISYMTR
@@ -3164,3 +3219,52 @@ C
 C
       RETURN
       END
+C
+      subroutine fock_transp(fock,fcktra,isymij)
+c
+c     transpose AO Fock matrix
+c     asm. september 2013
+c
+#include "implicit.h"
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "priunit.h"
+c
+      dimension fock(*), fcktra(*)
+c
+c     First, interchange symmetry blocks
+c
+      if (isymij .ne. 1) then
+         do isymj = 1,nsym
+            isymi = muld2h(isymij,isymj)
+c
+            ist_ij = iaodis(isymi,isymj) + 1
+            ist_ji = iaodis(isymj,isymi) + 1
+            nbasij = nbas(isymi)*nbas(isymj)
+c
+            call dcopy(nbasij,fock(ist_ij),1,fcktra(ist_ji),1)
+c
+         end do
+      else
+         call dcopy(n2bst(isymij),fock,1,fcktra,1)
+      end if
+c
+c     Now, transpose each block
+c
+      do isymj = 1,nsym
+         isymi = muld2h(isymij,isymj)
+         do j = 1,nbas(isymj)
+            do i = 1,nbas(isymi)
+c
+               ij = iaodis(isymi,isymj) + nbas(isymj)*(i-1) + j
+               ji = iaodis(isymi,isymj) + nbas(isymi)*(j-1) + i
+c
+               fock(ji) = fcktra(ij)
+c
+            end do
+         end do
+      end do
+c
+      return
+      end
+

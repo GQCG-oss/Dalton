@@ -1216,13 +1216,18 @@ contains
     implicit none
     type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
+    integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
 
-    write(iunit) orb%orbitalnumber
-    write(iunit) orb%centralatom
-    write(iunit) orb%numberofatoms
-    write(iunit) orb%atoms
+    orbitalnumber64 = orb%orbitalnumber
+    centralatom64   = orb%centralatom
+    numberofatoms64 = orb%numberofatoms
+    atoms64         = orb%atoms
 
-    return
+    write(iunit) orbitalnumber64
+    write(iunit) centralatom64
+    write(iunit) numberofatoms64
+    write(iunit) atoms64
+
   end subroutine orbital_write
 
   !> \brief Read orbital from file
@@ -1236,49 +1241,48 @@ contains
     integer(kind=8),pointer :: atoms64(:)
     integer(kind=4),pointer :: atoms32(:)
 
-    ConvertFrom64Bit: if(DECinfo%convert64to32) then
-       ! file uses 64 bit integers but current run uses 32 bit integers
+    !ConvertFrom64Bit: if(DECinfo%convert64to32) then
        read(iunit) orbitalnumber64
        read(iunit) centralatom64
        read(iunit) numberofatoms64
        call mem_alloc(atoms64,numberofatoms64)
        read(iunit) atoms64
-       ! Convert 64 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = int(orbitalnumber64,4)
-       orb%centralatom = int(centralatom64,4)
-       orb%numberofatoms = int(numberofatoms64,4)
+
+       orb%orbitalnumber = int(orbitalnumber64)
+       orb%centralatom   = int(centralatom64)
+       orb%numberofatoms = int(numberofatoms64)
        call mem_alloc(orb%atoms,orb%numberofatoms)
        do i=1,orb%numberofatoms
-          orb%atoms(i) = int(atoms64(i),4)
+          orb%atoms(i) = int(atoms64(i))
        end do
        call mem_dealloc(atoms64)
 
-    elseif(DECinfo%convert32to64)then
+    !elseif(DECinfo%convert32to64)then
 
-       read(iunit) orbitalnumber32
-       read(iunit) centralatom32
-       read(iunit) numberofatoms32
-       call mem_alloc(atoms32,numberofatoms32)
-       read(iunit) atoms32
-       ! Convert 32 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = orbitalnumber32
-       orb%centralatom = centralatom32
-       orb%numberofatoms = numberofatoms32
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       do i=1,orb%numberofatoms
-          orb%atoms(i) = atoms32(i)
-       end do
-       call mem_dealloc(atoms32)
+    !   read(iunit) orbitalnumber32
+    !   read(iunit) centralatom32
+    !   read(iunit) numberofatoms32
+    !   call mem_alloc(atoms32,numberofatoms32)
+    !   read(iunit) atoms32
+    !   ! Convert 32 bit integers to 32 bit and store in decorbital type
+    !   orb%orbitalnumber = orbitalnumber32
+    !   orb%centralatom = centralatom32
+    !   orb%numberofatoms = numberofatoms32
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   do i=1,orb%numberofatoms
+    !      orb%atoms(i) = atoms32(i)
+    !   end do
+    !   call mem_dealloc(atoms32)
 
-    else
+    !else
 
-       read(iunit) orb%orbitalnumber
-       read(iunit) orb%centralatom
-       read(iunit) orb%numberofatoms
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       read(iunit) orb%atoms
+    !   read(iunit) orb%orbitalnumber
+    !   read(iunit) orb%centralatom
+    !   read(iunit) orb%numberofatoms
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   read(iunit) orb%atoms
 
-    end if ConvertFrom64Bit
+    !end if ConvertFrom64Bit
 
   end function orbital_read
 
@@ -1537,6 +1541,268 @@ contains
   end subroutine check_lcm_against_canonical
 
 
+  !> \brief Check the norm of the occupied orbitals on the other Subsystem
+  !> \author Thomas Kjaergaard
+  !> \date November 2014
+  subroutine check_Occupied_SubSystemLocality(MyMolecule,MyLsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LSDALTON info
+    type(lsitem), intent(inout) :: MyLsitem
+    !
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
+    real(realk),pointer :: Cocc1(:,:),Cocc2(:,:)
+    integer :: nbasis,nocc,nvirt,natoms,noccsub(2),nsize
+    integer,pointer :: nOrb(:),centralatom(:)
+    integer :: i,isys,iatom,ibasissub(2),nbasisSub(2)
+    real(realk), external :: ddot
+
+    nbasis = MyMolecule%nbasis
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
+    nBasis = MyMolecule%nbasis
+    nAtoms = MyMolecule%natoms
+
+    call mem_alloc(OccOrbitals,nOcc)
+    call mem_alloc(UnoccOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, UnoccOrbitals)
+    !I do not need the UnoccOrbitals
+    do i=1,nvirt
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(UnoccOrbitals)
+
+    call mem_alloc(CentralAtom,nocc)
+    do i=1,nocc
+       CentralAtom(i) = OccOrbitals(i)%centralatom
+    enddo
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+
+    !determine number of occupied orbitals assigned to which subsystems
+    noccsub = 0 
+    do i=1,nocc
+       isys = Mymolecule%SubSystemIndex(centralatom(i))
+       noccsub(isys) = noccsub(isys) + 1       
+    enddo
+    !determine the number of AO orbitals for each atom
+    call mem_alloc(nOrb,nAtoms)
+    do iAtom=1,nAtoms
+       nOrb(iAtom) = mylsitem%input%molecule%ATOM(IAtom)%nContOrbREG
+    enddo
+    !determine the number of AO orbitals in each subsystem
+    ibasisSub = 0     
+    do iAtom=1,nAtoms
+       isys = Mymolecule%SubSystemIndex(iAtom)
+       ibasisSub(isys) = ibasisSub(isys) + nOrb(iAtom)
+    enddo
+    nbasisSub = ibasisSub
+    !make 2 seperate MO coefficient matrices
+    !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
+    call mem_alloc(Cocc1,nbasisSub(2),noccsub(1))
+    call BuildSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,Cocc1,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    !MOs assigned to SubSystem 2 and AOs belonging to Subsystem 1
+    call mem_alloc(Cocc2,nbasisSub(1),noccsub(2))
+    call BuildSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,Cocc2,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    ! Delete orbitals
+    call mem_dealloc(nOrb)
+    call mem_dealloc(CentralAtom)
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a)') '================================================'
+    write(DECinfo%output,'(1X,a)') '         Occupied SubSystem Locality            '
+    write(DECinfo%output,'(1X,a)') '================================================'
+
+    write(DECinfo%output,'(1X,a,A)') ' The Occupied Orbitals Assigned to SubSystem: ',&
+         & mylsitem%input%molecule%SubsystemLabel(1)
+    nsize = nbasisSub(2)*noccsub(1)
+    write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
+    write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(2),noccsub(1)
+    call output(Cocc1,1,nbasisSub(2),1,noccsub(1),nbasisSub(2),noccsub(1),1,DECinfo%output)
+
+    write(DECinfo%output,'(1X,a,A)') ' The Occupied Orbitals Assigned to SubSystem: ',&
+         & mylsitem%input%molecule%SubsystemLabel(2)
+    nsize = nbasisSub(1)*noccsub(2)
+    write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
+    write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(1),noccsub(2)
+    call output(Cocc2,1,nbasisSub(1),1,noccsub(2),nbasisSub(1),noccsub(2),1,DECinfo%output)
+
+    WRITE(DECinfo%output,*)'Full CMO '
+    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+
+    call mem_dealloc(Cocc1)
+    call mem_dealloc(Cocc2)
+  end subroutine check_Occupied_SubSystemLocality
+
+  !> \brief Check the norm of the occupied orbitals on the other Subsystem
+  !> \author Thomas Kjaergaard
+  !> \date November 2014
+  subroutine force_Occupied_SubSystemLocality(MyMolecule,MyLsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(inout) :: MyMolecule
+    !> LSDALTON info
+    type(lsitem), intent(inout) :: MyLsitem
+    !
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
+    real(realk),pointer :: Cocc1(:,:),Cocc2(:,:)
+    integer :: nbasis,nocc,nvirt,natoms,noccsub(2),nsize
+    integer,pointer :: nOrb(:),centralatom(:)
+    integer :: i,isys,iatom,ibasissub(2),nbasisSub(2)
+    real(realk), external :: ddot
+
+    nbasis = MyMolecule%nbasis
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
+    nBasis = MyMolecule%nbasis
+    nAtoms = MyMolecule%natoms
+
+    call mem_alloc(OccOrbitals,nOcc)
+    call mem_alloc(UnoccOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, UnoccOrbitals)
+    !I do not need the UnoccOrbitals
+    do i=1,nvirt
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(UnoccOrbitals)
+
+    call mem_alloc(CentralAtom,nocc)
+    do i=1,nocc
+       CentralAtom(i) = OccOrbitals(i)%centralatom
+    enddo
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+
+    !determine number of occupied orbitals assigned to which subsystems
+    noccsub = 0 
+    do i=1,nocc
+       isys = Mymolecule%SubSystemIndex(centralatom(i))
+       noccsub(isys) = noccsub(isys) + 1       
+    enddo
+    !determine the number of AO orbitals for each atom
+    call mem_alloc(nOrb,nAtoms)
+    do iAtom=1,nAtoms
+       nOrb(iAtom) = mylsitem%input%molecule%ATOM(IAtom)%nContOrbREG
+    enddo
+    !determine the number of AO orbitals in each subsystem
+    ibasisSub = 0     
+    do iAtom=1,nAtoms
+       isys = Mymolecule%SubSystemIndex(iAtom)
+       ibasisSub(isys) = ibasisSub(isys) + nOrb(iAtom)
+    enddo
+    nbasisSub = ibasisSub
+    !make 2 seperate MO coefficient matrices
+    !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
+
+    call ZeroSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    call ZeroSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    WRITE(DECinfo%output,*)'CMO after force_Occupied_SubSystemLocality'
+    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+
+    ! Delete orbitals
+    call mem_dealloc(nOrb)
+    call mem_dealloc(CentralAtom)
+
+  end subroutine force_Occupied_SubSystemLocality
+
+  !suboutine can be used for both subsystems combinations but made (name conventions)
+  !for the case where:
+  !this occupied orbital have been assigned to subsystem 1
+  !we therefore loop over all AO basis functions that belog to 
+  !subsystem 2     
+  subroutine BuildSubsystemCMO(isysInput,nbas2,nocc1,nocc,nAtoms,nbasis,&
+       & nOrb,Co,CoccSub,CentralAtom,SubSystemIndex)      
+    implicit none
+    integer :: nbas2,nocc1,nocc,isysInput,nAtoms,nbasis
+    integer,intent(in) :: nOrb(nAtoms)
+    real(realk),intent(in) :: Co(nbasis,nocc)
+    real(realk),intent(inout) :: CoccSub(nbas2,nocc1)
+    integer,intent(in) :: CentralAtom(nOcc),SubSystemIndex(nAtoms)
+    !
+    integer :: noccsub,i,iatom,isys
+    integer :: ibasis,ibasisSub,iAO,isys2
+    noccsub = 0 
+    do i=1,nocc
+       isys = SubSystemIndex(CentralAtom(i))
+       IF(isys.EQ.isysInput)THEN
+          noccsub = noccsub + 1       
+          ibasis = 0 
+          ibasisSub = 0 
+          do iAtom=1,nAtoms
+             isys2 = SubSystemIndex(iAtom)
+             IF(isys2.NE.isys)THEN
+                !include this in the Cocc (assuming isysinput=1)
+                !this occupied orbital have been assigned to subsystem 1
+                !we therefore loop over all AO basis functions that belog to 
+                !subsystem 2 
+                do iAO = 1,nOrb(iAtom)
+                   CoccSub(ibasisSub+iAO,noccsub)=Co(ibasis+iAO,i)
+                enddo
+                ibasisSub=ibasisSub+nOrb(iAtom)
+             ENDIF
+             ibasis=ibasis+nOrb(iAtom)
+          end do
+       ENDIF
+    enddo
+  end subroutine BuildSubsystemCMO
+
+  !suboutine can be used for both subsystems combinations but made (name conventions)
+  !for the case where:
+  !this occupied orbital have been assigned to subsystem 1
+  !we therefore loop over all AO basis functions that belog to 
+  !subsystem 2     
+  subroutine ZeroSubsystemCMO(isysInput,nbas2,nocc1,nocc,nAtoms,nbasis,&
+       & nOrb,Co,CentralAtom,SubSystemIndex)      
+    implicit none
+    integer :: nbas2,nocc1,nocc,isysInput,nAtoms,nbasis
+    integer,intent(in) :: nOrb(nAtoms)
+    real(realk),intent(inout) :: Co(nbasis,nocc)
+    integer,intent(in) :: CentralAtom(nOcc),SubSystemIndex(nAtoms)
+    !
+    integer :: noccsub,i,iatom,isys
+    integer :: ibasis,ibasisSub,iAO,isys2
+    noccsub = 0 
+    do i=1,nocc
+       isys = SubSystemIndex(CentralAtom(i))
+       IF(isys.EQ.isysInput)THEN
+          noccsub = noccsub + 1       
+          ibasis = 0 
+          ibasisSub = 0 
+          do iAtom=1,nAtoms
+             isys2 = SubSystemIndex(iAtom)
+             IF(isys2.NE.isys)THEN
+                !include this in the Cocc (assuming isysinput=1)
+                !this occupied orbital have been assigned to subsystem 1
+                !we therefore loop over all AO basis functions that belog to 
+                !subsystem 2 
+                do iAO = 1,nOrb(iAtom)
+                   Co(ibasis+iAO,i) = 0.0E0_realk
+                enddo
+                ibasisSub=ibasisSub+nOrb(iAtom)
+             ENDIF
+             ibasis=ibasis+nOrb(iAtom)
+          end do
+       ENDIF
+    enddo
+  end subroutine ZeroSubsystemCMO
 
   !> \brief Write all orbitals to file "DECorbitals.info"
   !> with occupied orbitals before unoccupied orbitals.
@@ -2157,7 +2423,7 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-!    if(DECinfo%PL>0) then ! print specific info for each orbital
+    if(DECinfo%PL>0) then ! print specific info for each orbital
        do i=1,nocc
           write(DECinfo%output,*) 'Occupied orbital: ', i
           write(DECinfo%output,*) '************************************************'
@@ -2186,7 +2452,7 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*)
 
-    !end if
+    end if
 
 
   end subroutine print_orbital_info

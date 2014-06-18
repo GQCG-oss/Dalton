@@ -140,7 +140,7 @@ CONTAINS
        call mem_dealloc(optwrk) 
        nnull = nbast_cabs
        DO I=1,SIZE(SV)
-          IF(ABS(SV(I)).GT.1.0E-12)THEN
+          IF(ABS(SV(I)).GT.1.0E-12_realk)THEN
              nnull=nnull-1
           ENDIF
        ENDDO
@@ -245,7 +245,7 @@ CONTAINS
     call mat_identity(tmp2)
     call mat_add(1E0_realk,tmp,-1E0_realk,tmp2,tmp3)
     
-    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-10)THEN
+    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-10_realk)THEN
        write(lupri,*)'sqrt(Ccabs^T*Scabs*Ccabs - I)',sqrt(mat_sqnorm2(tmp3)/tmp%nrow)  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthonormal',-1)
@@ -275,7 +275,7 @@ CONTAINS
     call mat_init (tmp, nbast, Cmo_cabs%ncol)
     call mat_mul(Cmo,Smix,'T','N',1.0E0_realk,0.0E0_realk,tmp2)
     call mat_mul(tmp2,Cmo_cabs,'N','N',1.0E0_realk,0.0E0_realk,tmp)  
-    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-10)THEN
+    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-10_realk)THEN
        write(lupri,*)'Ccabs^T*Scabs*Ccabs = '  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthogonal to MOs',-1)

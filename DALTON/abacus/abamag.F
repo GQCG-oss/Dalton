@@ -2019,10 +2019,10 @@ C
      &                        MXPHP,WORK,LWORK)
                   IF (NOCONV) THEN
                      WRITE (LUPRI,'(/3A,2F10.5)')
-     &                  ' No convergence for ',TRPLAB(IREC),
+     &                  '@ WARNING No convergence for ',TRPLAB(IREC),
      &                  '. Last residual and threshold:', FINRES, THRTRP
                   ELSE
-                     WRITE (LUPRI,'(/3A,2F10.5)')
+                     WRITE (LUPRI,'(3A,2F10.5)')
      &                  '    Convergence for ',TRPLAB(IREC),
      &                  '. Last residual and threshold:', FINRES, THRTRP
                   END IF
@@ -2048,7 +2048,7 @@ C
                IREC2 = 2*IREC
                CALL WRITDX(LURDT,IREC2,IRAT*NVARPT,WORK(NVARPT+1))
 ckr               IDORCT(IREC) = 1
-               CALL ABAWRITRS
+               CALL ABAWRIT_RESTART
                IF (IPRTRP .GT. 5) THEN
                   CALL HEADER('Response and residual vectors in '//
      &                'TRPRS1 for symmetry '//CHRNOS(ISYM)//':',-1)

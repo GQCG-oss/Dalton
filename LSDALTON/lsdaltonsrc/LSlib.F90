@@ -52,6 +52,31 @@ call lsfree_all(OnMaster,lupri,luerr,tstart,tend,memslave)
 
 END SUBROUTINE LSlib_free
 
+#ifdef VAR_MPI
+SUBROUTINE LSlib_set_external_comm(external_comm)
+use infpar_module, only : call_mpi_init
+use lsmpi_type,    only : MPI_COMM_LSDALTON
+use precision,     only : ls_mpik
+implicit none
+integer(kind=ls_mpik),intent(IN) :: external_comm
+
+MPI_COMM_LSDALTON = external_comm
+call_mpi_init = .FALSE.
+
+END SUBROUTINE LSlib_set_external_comm
+
+SUBROUTINE LSlib_exit_slave()
+use infpar_module,      only : infpar
+use lsmpi_type,         only : ls_mpibcast
+use Integralparameters, only : LSMPIQUIT
+use lslib_state
+implicit none
+
+CALL ls_mpibcast(LSMPIQUIT,infpar%master,ls%setting%comm)
+
+END SUBROUTINE LSlib_exit_slave
+#endif
+
 !> \brief Returns the number of basis functions
 !> \author S. Reine
 !> \date 2013-01-20
@@ -1419,7 +1444,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   !
   TYPE(integralconfig)   :: integral
   character(len=80) :: BasisString2
-  TYPE(BASISSETLIBRARYITEM) :: LIBRARY  
+  TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)  
   integer,pointer     :: UNIQUECHARGES(:)
   Integer             :: nbas,I,J,nUCharge
   integer(kind=ls_mpik)::ierr,mynum,nodtot
@@ -1473,41 +1498,19 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
         ENDIF
      ENDDO ATOMloop2
   ENDDO
-  LIBRARY%BASISSETNAME(1) = BasisString2
-  LIBRARY%nbasissets = 1
-  LIBRARY%nCharges(1) = nUCharge
-  LIBRARY%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
-  LIBRARY%pointcharges = .FALSE.
-  LIBRARY%phantom = .FALSE.
-  LIBRARY%DunningsBasis = .TRUE.
+
+  call nullifyMainBasis(input%BASIS)
+  LIBRARY(RegBasParam)%BASISSETNAME = BasisString2
+  LIBRARY(RegBasParam)%nbasissets = 1
+  LIBRARY(RegBasParam)%nCharges(1) = nUCharge
+  LIBRARY(RegBasParam)%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
+  LIBRARY(RegBasParam)%pointcharges = .FALSE.
+  LIBRARY(RegBasParam)%phantom = .FALSE.
+  LIBRARY(RegBasParam)%DunningsBasis = .TRUE.
   call mem_dealloc(UNIQUECHARGES)  
-  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%REGULAR,LIBRARY,&
-       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.)
-  input%BASIS%AUXILIARY%natomtypes = 0
-  input%BASIS%AUXILIARY%nChargeindex = 0
-  input%BASIS%AUXILIARY%labelindex = 0
-  nullify(input%BASIS%AUXILIARY%Chargeindex)
-
-  input%BASIS%CABS%natomtypes = 0
-  input%BASIS%CABS%nChargeindex = 0
-  input%BASIS%CABS%labelindex = 0
-  nullify(input%BASIS%CABS%Chargeindex)
-
-  input%BASIS%JK%natomtypes = 0
-  input%BASIS%JK%nChargeindex = 0
-  input%BASIS%JK%labelindex = 0
-  nullify(input%BASIS%JK%Chargeindex)
-
-  input%BASIS%GCtrans%natomtypes = 0
-  input%BASIS%GCtrans%nChargeindex = 0
-  input%BASIS%GCtrans%labelindex = 0
-  nullify(input%BASIS%GCtrans%Chargeindex)
-  input%BASIS%GCtransAlloc = .FALSE.
-
-  input%BASIS%VALENCE%natomtypes = 0
-  input%BASIS%VALENCE%nChargeindex = 0
-  input%BASIS%VALENCE%labelindex = 0
-  nullify(input%BASIS%VALENCE%Chargeindex)
+  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%BINFO(RegBasParam),LIBRARY,&
+       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.,RegBasParam)
+  input%BASIS%WBASIS(RegBasParam)=.TRUE.
 
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)

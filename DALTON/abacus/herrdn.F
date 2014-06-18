@@ -470,7 +470,6 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
-#include "optinf.h"
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -609,32 +608,17 @@ C
       KSEG   = KNRC   +  KBLOCK*KSETS
       KLAST  = KSEG   +  KBLOCK*KSETS
 C
-C     Allocate 100 000 for WORK in READ_MOL and
-C     use rest of memory for blocks
-C     /sep 05 hjaaj
 C
-      LWRK   = LWORK  -  KLAST - 100000
-      L_PER_BLCK = KSETS*(KPRIM + 2*KCMAT)
-      MXBLCK = MAX( 30, LWRK / L_PER_BLCK )
-      MXBLCK = MIN( MXBLCK, KBLOCK)
-C
-      KA     = KLAST
-      KC     = KA     +  MXBLCK*KPRIM*KSETS
-      KCC    = KC     +  MXBLCK*KCMAT*KSETS
-      KLAST  = KCC    +  MXBLCK*KCMAT*KSETS
-C     WRITE(LUPRI,'(A,2I16)') 'KLAST, LWORK',KLAST,LWORK
-      IF(KLAST.GT.LWORK) GOTO 5020
-      LWRK   = LWORK  -  KLAST + 1
 C
 C     ********************************************
 C     ***** Read input file and process data *****
 C     ********************************************
 C
-      CALL READ_MOL(LUINFO,WORK(KLAST),LWRK,WORK(KNONT),WORK(KIQM),
+      CALL READ_MOL(LUINFO,WORK(KLAST),LWORK,WORK(KNONT),WORK(KIQM),
      &            WORK(KBLCK),WORK(KJCO),WORK(KNUC),
-     &            WORK(KNRC),WORK(KSEG),WORK(KA),
-     &            WORK(KC),WORK(KCC),
-     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,MXBLCK,HERMIT)
+     &            WORK(KNRC),WORK(KSEG),
+     &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,HERMIT)
+
 C     CALL RDLINE(LUINFO)
 C     READ (MLINE(NMLINE),'(A6)') KEYWRD
 C     IF (KEYWRD .NE. 'FINISH') GOTO 5030
@@ -658,8 +642,8 @@ C5030 CONTINUE
       END ! SUBROUITNE READIN
 C  /* Deck read_mol */
       SUBROUTINE READ_MOL(LUINFO,WORK,LWORK,
-     &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &           KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,MXBLCK,HERMIT)
+     &           NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+     &           KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,HERMIT)
 C******************************************************************************
 C
 C     Reads and processes input file of molecular data
@@ -712,12 +696,13 @@ C******************************************************************************
       DIMENSION NONT(KATOM),IQM(KATOM,KSETS),NBLCK(KATOM,KSETS),
      &          JCO(KANG,KATOM,KSETS),ISGEN(KATOM),
      &          NUC(KBLOCK,KSETS),NRC(KBLOCK,KSETS),
-     &          ALPHA(KPRIM,KBLOCK,KSETS),
-     &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS), WORK(LWORK)
+     &          WORK(LWORK)
 C
 C       Local variables
 C
+      real(8), allocatable :: alpha(:, :, :)
+      real(8), allocatable :: cprim(:, :, :, :)
+      real(8), allocatable :: cprimu(:, :, :, :)
       CHARACTER*80 BASREF(10,KATOM,3)
       CHARACTER*1 KASYM(3,3),ID3,SPDCAR,CRT
       CHARACTER*72 TTITLE(2)
@@ -873,11 +858,16 @@ C
       SPHNRM = .NOT.(DOCART .OR. DOOWN)
 C     ... SPHNRM only true if sperical, i.e. the only case
 C         where we know the 5 d's have same norm. Used for Huckel.
+
+      allocate(alpha(kprim, kblock, ksets))
+      allocate(cprim(kprim, kprim, kblock, ksets))
+      allocate(cprimu(kprim, kprim, kblock, ksets))
+
       CALL BASINP(LUINFO,WORK,LWORK,NONTYP,NSYMOP,NONT,
      &            IQM,NBLCK,JCO,BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &            KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,
-     &            ANG,ZMAT,MXSPD,ADDSYM,MXBLCK)
+     &            ANG,ZMAT,MXSPD,ADDSYM)
 C
 C     *************************************************
 C     ***** Process ZMAT coordinates if requested *****
@@ -977,6 +967,10 @@ C
      &            BASREF,
      &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,
      &            KSETS,KBLOCK,KPRIM,KASYM,NSYMOP,HERMIT)
+
+      deallocate(alpha)
+      deallocate(cprim)
+      deallocate(cprimu)
 C
       IF (IPREAD .GE. 2) THEN
          CALL HEADER('Copy of .mol input',0)
@@ -1069,7 +1063,7 @@ C  /* Deck basinp */
      &                  IQM,NBLCK,JCO,BASREF,
      &                  NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,ISGEN,
      &                  KATOM,KANG,KSETS,KBLOCK,KPRIM,KAOVEC,
-     &                  ANG,ZMAT_INPUT,MXSPD,ADDSYM,MXBLCK)
+     &                  ANG,ZMAT_INPUT,MXSPD,ADDSYM)
 C***********************************************************************
 C
 C       Read orbital and geometry input data
@@ -1652,14 +1646,6 @@ C
             NBLCK(I,J) = NBLOCK
             IBLOCK(J)  = IBLOCK(J) + NBLCK(I,J)
             NOORBTS    = NOORBTS .AND.IQM(I,J).EQ.0
-            IF (IBLOCK(J) .GT. MXBLCK) THEN
-               WRITE (LUPRI,*) ' Too many blocks of basis functions '//
-     &              'in .mol input:',IBLOCK(J),MXBLCK
-               WRITE (LUPRI,*) ' Increase work memory in Dalton '//
-     &              '("dalton -M mb" option) and be welcome back'
-               CALL QUIT('Too many basis function blocks in input, '//
-     &              'see output file')
-            END IF
             IF (IQM(I,J).GT.0) THEN
                IF(IPREAD .GT. 3) THEN
                   WRITE(LUPRI,'(2X,A5,A)') BSET,' set:'
@@ -2604,10 +2590,15 @@ C     ******************************************
 C     ***** Printing of atomic coordinates *****
 C     ******************************************
 C
-      IF (.NOT. SLAVE) CALL PRICAR(WORK,LWORK)
+      IF (.NOT. SLAVE) THEN
 
-      if (.NOT.SLAVE .AND. PEQM) THEN
-        CALL PE_IFC_INIT()
+         CALL PRICAR(WORK,LWORK)
+
+         IF (PEQM) THEN
+#if defined(BUILD_PELIB)
+            CALL PE_IFC_INIT()
+#endif
+         END IF
       END IF
 C
  1010 FORMAT(I14,' large AO-blocks of ',A1,' type')
@@ -2898,10 +2889,11 @@ C     sufficient, as it will not stop duplication of AOs within a single
 C     block, as for instance may happen if you use Pople-type basis sets
 C     K.Ruud, Nov.-2006
 C
+         NWARN = NWARN + 1
          WRITE (LUPRI,'(//A/A/)')
-     &      ' WARNING GTOINP >>> If primitive exponents'//
+     &      '@ WARNING GTOINP >>> If primitive exponents'//
      &         ' are duplicated in several blocks,',
-     &      ' WARNING GTOINP >>> Douglas-Kroll will not work correctly'
+     &      '@ WARNING GTOINP >>> Douglas-Kroll will not work correctly'
       END IF
       RETURN
 C
@@ -4151,7 +4143,7 @@ C  /* Deck symout */
 C*****************************************************************************
 C
 C     Print routine for symmetry
-C     Extended to write a SYMINFO file for use with mean-field SO integrals
+C     Extended to write a AMFI_SYMINFO.TXT file for use with mean-field SO integrals
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -4184,11 +4176,12 @@ C
 casm
 
 C
-C     Write SYMINFO file
+C     Write AMFI_SYMINFO.TXT file
 C
       LUSYMF = -1
       IDUMMY = -1
-      CALL GPOPEN(LUSYMF,'SYMINFO',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(LUSYMF,'AMFI_SYMINFO.TXT',' ',' ','FORMATTED',
+     &   IDUMMY,.FALSE.)
       WRITE (LUSYMF,'(A,/A)')
      &     'Symmetry information from Dalton (Hermit module)',
      &     'funct #, unique centre #, L, M , Func.type #, # of '//
@@ -4447,6 +4440,9 @@ C
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
+C     **********************************************************
+C     ***** Calculate symmetry-adapted nuclear coordinates *****
+C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4458,6 +4454,7 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
+#include "trkoor.h"
       DIMENSION WORK(LWORK)
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4543,18 +4540,25 @@ C
   520    CONTINUE
       END IF
 C
-C     ***************************
-C     **** Initialize IPTCOR ****
-C     ***************************
+C     **************************************
+C     **** Initialize NCRREP and IPTCOR ****
+C     **************************************
 C
-      NCOOR  = 3*NUCDEP
+      NCOOR  = 3*NUCDEP ! also defining NCOOR in trkoor.h
       KCSTRA = 1
       KSCTRA = KCSTRA + NCOOR*NCOOR
       KLAST  = KSCTRA + NCOOR*NCOOR
       IF (KLAST.GT.LWORK) CALL STOPIT('NUCPRO','TRACOR',KLAST,LWORK)
+
+C     Initialize NCRREP(irep,1)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,IPREAD)
+
+C     Initialize NCRREP(irep,2)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),2,NCOOR,IPREAD)
+
+C     Initialize IPTCOR
       CALL TRACR(NCOOR)
+
       END
 C  /* Deck pricar */
       SUBROUTINE PRICAR(WORK,LWORK)
@@ -4731,8 +4735,17 @@ C
 C     Print internuclear distances (if not an atom)
 C
          LUIP = -100
-         IF ((IPREAD .GT. 0) .OR. (GEOALL))
-     &   CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,WORK(ISTRT),LWORK)
+         IF ((IPREAD .GT. 0) .OR. (GEOALL)) THEN
+            CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,LUIP,
+     &         WORK(ISTRT),LWORK)
+            IF (NUCDEP .GT. 2 .AND. NBONDS .LE. 0) THEN
+               NWARN = NWARN + 1
+               WRITE (LUPRI,'(//A/A/)') '@ WARNING:  No bonds - '//
+     &       ' no atom pairs are within normal bonding distances'
+     &       ,'@ WARNING:  maybe coordinates were in Bohr, '//
+     &        'but Dalton were told they were in Angstrom ?'
+            END IF
+         END IF
 C
 C        As a new default, we (almost) always print a rotational analysis, kr-02
 C
@@ -6418,7 +6431,7 @@ C  /* Deck molout */
 C
 C     This routine based on TECORBOUT dumps a MOLECULE.INP file suitable
 C     for direct processing by DALTON
-C     Now also dumps a file MNF.INP for use for SO mean-field approximation
+C     Now also dumps a file AMFI_MNF.INP for use for SO mean-field approximation
 C     Written by K.Ruud 160297
 C
 #include "implicit.h"
@@ -6451,8 +6464,9 @@ C
       LUTMP2 = -1
       LUSHB  = -1
       CALL GPOPEN(
-     &          LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
-      CALL GPOPEN(LUTMP2, 'MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+     &     LUTMP1,'DALTON.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
+      CALL GPOPEN(
+     &     LUTMP2, 'AMFI_MNF.INP',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       CALL GPOPEN(LUSHB, 'LUSH.BAS',' ',' ','FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUSHB)
 C
@@ -6590,7 +6604,7 @@ C  /* Deck crtest */
 #include "cbieri.h"
 C
       IF (RUNERI.AND.DOCART) THEN
-         NWARN = NWARN + 1
+         NINFO = NINFO + 1
          RUNERI = .FALSE.
          WRITE (LUPRI,'(A)')
      &' INFO: Only spherical-harmonic basis is implemented in ERI.'//
@@ -6862,6 +6876,13 @@ C
 C     Since the number of atom types have not been specified,
 C     assume old input format
 C
+
+         NWARN = NWARN + 1
+         WRITE(LUPRI,'(///A/A/A///)') '@ WARNING - deprecated '//
+     &   'old .mol fixed format input has been detected:',
+     &   LINE4_in, '@ WARNING - '//
+     &   'this input format may not be supported in future releases.'
+
          READ (LINE4_in,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5)',ERR=199) CRT,
      &        NONTYP,KCHARG1,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),ID3,THRS
          IF (LINE(21:30) .EQ. '          ') THRS = -1.0D0

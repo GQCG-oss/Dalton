@@ -1084,6 +1084,7 @@ CONTAINS
     ENDDO
     TENSOR%nLSAO = I
     CALL MEM_ALLOC(TENSOR%LSAO,I)
+    call nullifyTENSORLSAO(TENSOR%LSAO)
 !    call lstimer('START',ts,te,6)
     call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
 !    call lstimer('tensmem',ts,te,6)
