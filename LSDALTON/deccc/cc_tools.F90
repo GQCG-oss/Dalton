@@ -66,9 +66,9 @@ module cc_tools_module
       !>input the full doubles ampitudes in the order nv nv no no
       real(realk),intent(in) :: t2(nv,nv,no,no)
       !> output amplitudes with indices restricted c<d,i<j
-      real(realk),pointer :: tpl(:)
+      real(realk), intent(inout) :: tpl(:)
       !> output amplitudes with indices restricted c>d,i<j
-      real(realk),pointer :: tmi(:)
+      real(realk), intent(inout) :: tmi(:)
       integer :: dims(4)
       integer ::i,j,d, ilej,cged,crvd
       integer :: counter,counter2
@@ -290,6 +290,7 @@ module cc_tools_module
       integer(kind=long)    :: o2v2
       logical               :: rest_o2_occ, rest_sio4,qu
       real(realk), pointer  :: h1(:,:,:,:), t1(:,:,:)
+      !$ integer, external  :: omp_get_thread_num,omp_get_num_threads,omp_get_max_threads
 
 
       rest_o2_occ   = .false.

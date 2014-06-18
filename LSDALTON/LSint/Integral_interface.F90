@@ -5409,7 +5409,7 @@ ENDIF
 
 
 IF (PRINT_EK3) THEN
-   write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
+   IF (addxc) write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
    write(*,*)     "E(k2)=Tr(k2 d2) ", traceK2D2
    write(lupri,*) "E(k2)=Tr(k2 d2) ", traceK2D2
    write(*,*)     "E(x2)= ", fac*EX2(1)

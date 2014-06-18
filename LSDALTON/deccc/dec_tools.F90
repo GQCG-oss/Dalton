@@ -364,9 +364,6 @@ module dec_tools_module
      call build_batchesofAOS(DECinfo%output,mylsitem%setting,max_allowed,&
         & nb,batch%max_dim,batch%batchsize,batch%batchdim,batch%batchindex,&
         &batch%nbatches,batch%orb2batch,'R')
-     if(master.and.DECinfo%PL>1)&
-        &write(DECinfo%output,*) 'BATCH: Number of batches   = ', batch%nbatches,&
-        & 'with maximum size',batch%max_dim
 
      ! Translate batchindex to orbital index
      ! -------------------------------------
