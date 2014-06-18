@@ -1,4 +1,18 @@
 #!/bin/bash
+
+# Use in the test directory like: ./MakeRunTest linsca/linsca_admmQ
+
+# it will generate the basic files 
+# linsca/linsca_admmQ/linsca_admmQ.dal
+# linsca/linsca_admmQ/linsca_admmQ.mol
+# linsca/linsca_admmQ/result/linsca_admmQ_linsca_admmQ.out
+# linsca/linsca_admmQ/test
+
+# you need to modify the test directory yourself and test 
+# then you need to "git add" and push
+
+# The script assumes you have build directoy in the root directory 
+
 echo "Processing file $1"
 testcase=$1               #with the path. 
 item=`basename $testcase` #without the path.
@@ -50,7 +64,9 @@ sys.exit(test.return_code)
 
 #cp ref/$item.ref $testcase/result/$item.out
 cd $testcase
-../../../../build-debug/lsdalton -noarch $item.dal $item.mol
+
+# Here we assume the location of the build directory to get the lsdalton. 
+../../../../build/lsdalton -noarch $item.dal $item.mol
 mkdir result
 mv $item.out result/$item_$item.out
 #
