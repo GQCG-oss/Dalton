@@ -222,6 +222,10 @@ module cc_debug_routines_module
        if( .not.present(fraginfo).and. fragment_job )then
          call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the fragment information if it is a fragment job",-1)
        endif
+
+       !if( .not. associated(VOVO%val)) then
+       !  call lsquit("ERROR(ccsolver_debug):PNO ccsd requires the VOVO integrals",-1)
+       !endif
      endif
 
 
@@ -447,7 +451,7 @@ module cc_debug_routines_module
 
          call mem_alloc( fraginfo%CLocPNO, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &fraginfo%CLocPNO,fraginfo%nspaces,fragment_job,f=fraginfo)
+         &fraginfo%CLocPNO,fraginfo%nspaces,f=fraginfo)
          pno_cv => fraginfo%CLocPNO
 
        else
@@ -455,7 +459,7 @@ module cc_debug_routines_module
          nspaces = nocc * ( nocc + 1 ) / 2
          call mem_alloc( pno_cv, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &pno_cv,nspaces,fragment_job,f=fraginfo)
+         &pno_cv,nspaces,f=fraginfo)
 
        endif
 
@@ -587,6 +591,7 @@ module cc_debug_routines_module
 
            pqfock = array2_similarity_transformation(xocc,ifock,yvirt,[nocc,nvirt])
            qpfock = array2_similarity_transformation(xvirt,ifock,yocc,[nvirt,nocc])
+
            iajb = get_gmo_simple(gao,xocc,yvirt,xocc,yvirt)
 
         end if T1Related
@@ -652,11 +657,11 @@ module cc_debug_routines_module
               !if(iter == 1) t2(iter)%val = m2%val
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
                 &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
                 &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
@@ -881,7 +886,7 @@ module cc_debug_routines_module
         if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
              break_iterations=.true.
 
-        if(DECinfo%use_singles .and. (.not. break_iterations) ) then
+        if(DECinfo%use_singles .and. (.not. break_iterations)) then
           call array4_free(iajb)
         end if
 
@@ -1016,7 +1021,7 @@ module cc_debug_routines_module
 
      ! Write finalization message
      !---------------------------
-     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,DECinfo%use_singles, &
      &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
 
 
@@ -1078,22 +1083,32 @@ module cc_debug_routines_module
 
        if(.not.fragment_job)then
          do i = 1, nspaces
-           if( pno_cv(i)%allocd ) call free_PNOSpaceInfo(pno_cv(i))
+
+           if( pno_cv(i)%allocd )then
+              call free_PNOSpaceInfo(pno_cv(i))
+           endif
+
            do j = 1, i - 1
              cc = (j - i + 1) + i*(i-1)/2
              if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
            enddo
          enddo
+
          call mem_dealloc( pno_cv )
 
        else
          do i = 1, nspaces
-           if( fraginfo%CLocPNO(i)%allocd ) call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
+
+           if( fraginfo%CLocPNO(i)%allocd )then
+              call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
+           endif
+
            do j = 1, i - 1
              cc = (j - i + 1) + i*(i-1)/2
              if( pno_S(cc)%allocd )  call free_PNOSpaceInfo( pno_S(cc) )
            enddo
          enddo
+
          call mem_dealloc( fraginfo%CLocPNO )
          pno_cv => null()
        endif

@@ -255,7 +255,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2013.2 (2013), see http://daltonprogram.org'
+     &'   Release DALTON2013.3 (2013), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -288,7 +288,7 @@ C
      *'Thomas Enevoldsen,','Univ. of Southern Denmark,','Denmark',
      &  '(SOPPA)',
      *'Janus J. Eriksen,','Aarhus University,','Denmark',
-     &  '(PE-MP2/SOPPA, TDA)',
+     &  '(Polarizable embedding model, TDA)',
      *'Berta Fernandez,','U. of Santiago de Compostela,','Spain',
      &  '(doublet spin, ESR in RESPONS)',
      *'Lara Ferrighi,','Aarhus University,','Denmark',
@@ -305,6 +305,8 @@ C
      &  '(CC module)',
      *'Asger Halkier,','Aarhus University,','Denmark',
      &  '(CC module)',
+     *'Erik D. Hedegaard,','Univ. of Southern Denmark,','Denmark',
+     & '(Polarizable embedding model, QM/MM)',
      *'Hanne Heiberg,','University of Oslo,','Norway',
      &  '(geometry analysis, selected one-electron integrals)',
      *'Trygve Helgaker,','University of Oslo,','Norway',
@@ -338,9 +340,11 @@ C
      *'Henrik Koch,','NTNU,', 'Norway',
      &  '(CC module, Cholesky decomposition)',
      *'Jacob Kongsted,','Univ. of Southern Denmark,','Denmark',
-     &  '(Polarizable embedding, QM/MM)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Andrea Ligabue,','University of Modena,','Italy',
      &  '(CTOCD, AOSOPPA)',
+     *'Nanna H. List','Univ. of Southern Denmark,','Denmark',
+     &  '(Polarizable embedding model)',
      *'Ola B. Lutnaes,','University of Oslo,','Norway',
      &  '(DFT Hessian)',
      *'Juan I. Melo,','University of Buenos Aires,','Argentina',
@@ -358,13 +362,15 @@ C
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
      *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
-     &  '(Polarizable embedding, PE library, QM/MM)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Anders Osted,','Copenhagen University,','Denmark',
      &  '(QM/MM)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
      *'Filip Pawlowski,','Kazimierz Wielki University,','Poland',
      &  '(CC3)',
+     *'Morten N. Pedersen,','Univ. of Southern Denmark,','Denmark',
+     &  '(Polarizable embedding model)',
      *'Thomas B. Pedersen,','University of Oslo,','Norway',
      &  '(Cholesky decomposition)',
      *'Patricio F. Provasi,','University of Northeastern,','Argentina',
@@ -390,11 +396,11 @@ C
      *'Bernd Schimmelpfennig,','Forschungszentrum Karlsruhe,',
      &  'Germany','(AMFI module)',
      *'Kristian Sneskov,','Aarhus University,','Denmark',
-     &  '(QM/MM, PE-CC)',
+     &  '(Polarizable embedding model, QM/MM)',
      *'Arnfinn H. Steindal,','UiT The Arctic U. of Norway,',
-     &  'Norway','(parallel QM/MM)',
+     &  'Norway','(parallel QM/MM, Polarizable embedding model)',
      *'Casper Steinmann,','Univ. of Southern Denmark,','Denmark',
-     &  '(QFIT)',
+     &  '(QFIT, Polarizable embedding model)',
      *'K. O. Sylvester-Hvid,','University of Copenhagen,','Denmark',
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
@@ -566,7 +572,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.2'
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.3'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN

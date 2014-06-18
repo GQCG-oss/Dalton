@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
+! FILE: rspsoppa.F
 C
 C  /* Deck setsoppa */
       SUBROUTINE SETSOPPA
@@ -62,7 +62,7 @@ C
       KIJ2AD = KIJ1AD + (N2ISHX * NSYM + 1)/IRAT
       KIJ3AD = KIJ2AD + (N2ISHX * NSYM + 1)/IRAT
       KIADR1 = KIJ3AD + (N2ISHX * NSYM + 1)/IRAT
-      KAB2   = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
+      KAB2   = KIADR1 + (NH * NP + 1)/IRAT
 C
 C  A(2) matrix does not exist in XINDX yet
 C
@@ -138,10 +138,10 @@ C
       END
 C
 C  /* Deck set2soppa */
-      SUBROUTINE SET2SOPPA(ABSADR,ABTADR,IJSADR,IJTADR,IJ1ADR,IJ2ADR,
-     &                     IJ3ADR,IADR1)
+      SUBROUTINE SET2SOPPA(ABSADR,ABTADR,IJSADR,IJTADR,
+     &                     IJ1ADR,IJ2ADR,IJ3ADR,IADR1)
 #include "implicit.h"
-      INTEGER A,AA,B,BEND,ASYM,BSYM,ABSYM,ABSNDX,ABTNDX,ABSADR,ABTADR
+      INTEGER A,AA,B,BEND,ASYM,BSYM,ABSYM,ABSNDX,ABTNDX
       PARAMETER (IBIG = -100 000 000)
 #include "maxorb.h"
 #include "maxash.h"
@@ -151,10 +151,10 @@ C  /* Deck set2soppa */
 #include "infmp2.h"
 #include "infind.h"
 C
-      DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT),
-     &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
-     &          IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
-     &          IJ3ADR(NISHT,NISHT,NSYM), IADR1(MAXVIR,MAXOCC)
+      INTEGER ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT),
+     &        IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
+     &        IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
+     &        IJ3ADR(NISHT,NISHT,NSYM), IADR1(NP,NH)
 C
       CALL QENTER('SET2SOPPA')
 C
@@ -163,6 +163,8 @@ C  (singlet properties) and new IJ offsets for triplet properties
 C
 C  Moved out of SETSOPPA by K.Ruud, Dec.-96
 C
+      ABSADR(:,:) = 0
+      ABTADR(:,:) = 0
       DO ABSYM=1,NSYM
          ABSNDX = 0
          ABTNDX = 0
@@ -255,7 +257,7 @@ C
          ENDDO
       ENDDO
 C
-C  Find also IADR1 (the copy from the call to MP2SET has been overwritten)
+C  Find also IADR1
 C
       CALL PHADR1(IADR1,1)
 C
@@ -446,7 +448,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "inforb.h"
 #include "orbtypdef.h"
 #include "infrsp.h"
@@ -663,7 +665,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "inforb.h"
 #include "infind.h"
 #include "infrsp.h"
@@ -909,7 +911,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "inforb.h"
 #include "infind.h"
 #include "infrsp.h"
@@ -1034,14 +1036,14 @@ C
       END
 C  /* Deck sopdiag */
       SUBROUTINE SOPDIAG(KSYMOP,FC,DIAG,ABSADR,ABTADR,IJSADR,IJTADR,
-     &                   IJ1ADR,IJ2ADR,IJ3ADR,WRK,LWRK)
+     &                   IJ1ADR,IJ2ADR,IJ3ADR,WRK,LWRK,IPRINT)
 C
 C Copyright 11/4-1994 by Erik K. Dalskov
 C
 C Purpose: Construct D-matrix in SOPPA
 C
 #include "implicit.h"
-      INTEGER ABSADR, ABTADR, A, AA, B, BB, ABSYM, BSYM
+#include "priunit.h"
 C
 C
 #include "maxorb.h"
@@ -1053,16 +1055,17 @@ C
 #include "infrsp.h"
 #include "infind.h"
 C
-      DIMENSION ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT), 
+      INTEGER   ABSADR(NORBT,NORBT), ABTADR(NORBT,NORBT), 
      &          IJSADR(NISHT,NISHT,NSYM), IJTADR(NISHT,NISHT,NSYM),
      &          IJ1ADR(NISHT,NISHT,NSYM), IJ2ADR(NISHT,NISHT,NSYM),
      &          IJ3ADR(NISHT,NISHT,NSYM)
-      DIMENSION DIAG(*),FC(*),WRK(*)
+      REAL*8    DIAG(*),FC(*),WRK(*)
+      INTEGER   A, AA, B, BB, ABSYM, BSYM
 C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LWRK
-      CALL MEMGET('REAL',KEPSIL,NORBT,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EPSIL',KEPSIL,NORBT,WRK,KFREE,LFREE)
       JEPSIL = KEPSIL - 1
       IS = 0
       DO IM=1,NSYM
@@ -1077,6 +1080,28 @@ C
             IS = IS + NORBM
          ENDIF
       ENDDO
+      IF (IPRINT .GT. 100) THEN
+         write (lupri,'(/A)') 'Orbital energies in SOPDIAG:'
+         write (lupri,'(10F13.6)') (WRK(JEPSIL+I),I=1,NORBT)
+         write (lupri,'(/A)') 'Orbitals frozen in MP2 in SOPDIAG:'
+         write (lupri,'(4(3X,5I3))') (IFRMP2(I),I=1,NORBT)
+         write (lupri,'(/A,I4)') '2p-2h E[2] diagonal, symmetry',KSYMOP
+         IF (TRPLET) THEN
+         ELSE
+            write (lupri,'(/A)') 'IJSADR :'
+            call ioutput(IJSADR(1,1,KSYMOP),1,NISHT,1,NISHT,
+     &         NISHT,NISHT,-1,LUPRI)
+            write (lupri,'(/A)') 'IJTADR :'
+            call ioutput(IJTADR(1,1,KSYMOP),1,NISHT,1,NISHT,
+     &         NISHT,NISHT,-1,LUPRI)
+            write (lupri,'(/A)') 'ABSADR :'
+            call ioutput(ABSADR(1,1),1,NORBT,1,NORBT,
+     &         NORBT,NORBT,-1,LUPRI)
+            write (lupri,'(/A)') 'ABTADR :'
+            call ioutput(ABTADR(1,1),1,NORBT,1,NORBT,
+     &         NORBT,NORBT,-1,LUPRI)
+         END IF
+      END IF
 C
       DO II=1,NH
          I = IPHORD(II)
@@ -1084,6 +1109,9 @@ C
          DO JJ=1,II
             J = IPHORD(JJ)
             IF (IFRMP2(J) .NE. 0) GO TO 200
+            IJSYM = MULD2H(ISMO(I),ISMO(J))
+            ABSYM = MULD2H(IJSYM,KSYMOP)
+            ENIJ  = WRK(JEPSIL+I) + WRK(JEPSIL+J)
             IF (TRPLET) THEN
                IJ1OFF = IJ1ADR(II,JJ,KSYMOP)
                IJ2OFF = IJ2ADR(II,JJ,KSYMOP)
@@ -1091,10 +1119,12 @@ C
             ELSE
                IJSOFF = IJSADR(II,JJ,KSYMOP)
                IJTOFF = IJTADR(II,JJ,KSYMOP)
+               IF (IPRINT .GT. 100) THEN
+                  write (lupri,'(A,5I5,2I20)')
+     &            'II,I,JJ,J,IJSYM,IJSOFF,IJTOFF',
+     &             II,I,JJ,J,IJSYM,IJSOFF,IJTOFF
+               END IF
             END IF
-            IJSYM = MULD2H(ISMO(I),ISMO(J))
-            ABSYM = MULD2H(IJSYM,KSYMOP)
-            ENIJ  = WRK(JEPSIL+I) + WRK(JEPSIL+J)
             DO AA=1,NP
                A = IPHORD(NH+AA)
                ENAIJ = WRK(JEPSIL+A) - ENIJ
@@ -1124,7 +1154,14 @@ C
                         IF ((I .NE. J) .AND. (A .NE. B)) THEN
                            NABT = ABTADR(AA,BB)
                            DIAG(IJTOFF+NABT) = ENABIJ
+                        ELSE
+                           NABT = -1
                         ENDIF
+                        IF (IPRINT .GT. 100) THEN
+                           write (lupri,'(A,5I5,2I20,F15.8)')
+     &                     'AA,A,BB,B,ABSYM,NABS,NABT,ENABIJ',
+     &                      AA,A,BB,B,ABSYM,NABS,NABT,ENABIJ
+                        END IF
                      ENDIF
                   ENDIF
                ENDDO
@@ -2017,7 +2054,7 @@ C
 #include "maxorb.h"
 #include "maxash.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "inforb.h"
 #include "infind.h"
 #include "infrsp.h"
@@ -2319,7 +2356,7 @@ C
 #include "inforb.h"
 #include "infsop.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "infind.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -2484,7 +2521,7 @@ C
 #include "inforb.h"
 #include "infsop.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 #include "infind.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -2888,3 +2925,4 @@ C
      &       //' The total norm of the excitation out of these',
      &         ' elements is',1P,D11.4)
       END
+!  -- end of rspsoppa.F --

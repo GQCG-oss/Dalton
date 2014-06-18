@@ -37,7 +37,7 @@ module full
 contains
 
   !> \brief Main part for full molecular coupled-cluster calculations.
-  subroutine full_driver(MyMolecule,mylsitem,D)
+  subroutine full_driver(MyMolecule,mylsitem,D,EHF,Ecorr)
 
     implicit none
     !> Full molecule structure
@@ -46,7 +46,12 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> HF density matrix
     type(matrix),intent(in) :: D
-    real(realk) :: Ecorr,EHF,Eerr
+    !> HF Energy 
+    real(realk),intent(inout) :: EHF
+    !> Correlation Energy 
+    real(realk),intent(inout) :: Ecorr
+    !local variables
+    real(realk) :: Eerr
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -1670,16 +1675,18 @@ contains
        endidx = MyMolecule%nocc
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
-            & print_level,fragment_job,&
-            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.,local)
+            & print_level,&
+            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj,&
+            & VOVO,.false.,local,DECinfo%use_pnos)
        call mem_dealloc(ppfock)
 
     else
 
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, fragment_job,&
+            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & MyMolecule%ppfock,MyMolecule%qqfock,&
-            & energy, Tai, Taibj, VOVO,.false.,local)
+            & energy, Tai, Taibj, VOVO,.false.,local,DECinfo%use_pnos)
+
     end if
 
     call array4_free(VOVO)

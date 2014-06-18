@@ -1984,7 +1984,6 @@ C
 #include "twocom.h"
 #include "nuclei.h"
 #include "energy.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
@@ -1993,6 +1992,9 @@ C
 #include "inftap.h"
 #include "inforb.h"
 #include "incore.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
 C For MPE event logging
 C      evIDb2 = MPE_Log_get_event_number()
@@ -2435,6 +2437,7 @@ C
             CALL ADDGRD(GRADNN)
             CALL ADDGRD(GRADNA)
             CALL ADDGRD(GRADEE)
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             CALL HEADER('Molecular gradient',-1)
             CALL ADDGRD(GRADFS)
@@ -2443,6 +2446,7 @@ C
                CALL ADDGRD(GSOLTT)
                CALL ADDGRD(GSOLNN)
             END IF
+            CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
             GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)

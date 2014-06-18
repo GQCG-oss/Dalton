@@ -1477,7 +1477,7 @@ CS00 = ls%setting%scheme%DFT%CS00
 ls%setting%scheme%DFT%CS00 = .FALSE.
 !turn off ADMM exchange due missing idempotency 
 ADMM_EXCHANGE = ls%setting%scheme%ADMM_EXCHANGE
-ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
+IF (ls%setting%scheme%ADMM1) ls%setting%scheme%ADMM_EXCHANGE = .FALSE.
 ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
 ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
 ! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 

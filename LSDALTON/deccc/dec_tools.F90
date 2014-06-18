@@ -1,11 +1,12 @@
 !this file contains the lower-order tools as opposed to the dec_utils which
 !conains higher routines
 module dec_tools_module
+  use precision
+  use dec_typedef_module
   use fundamental
   use memory_handling
-  use precision
   use files
-  use dec_typedef_module
+  use BUILDAOBATCH
 
 
   !> Maximum number of files to be opened at the same time
@@ -345,4 +346,52 @@ module dec_tools_module
 
   end subroutine solve_eigenvalue_problem_unitoverlap
 
+  subroutine init_batch_info(mylsitem,batch,max_allowed,nb)
+     implicit none
+     type(lsitem), intent(inout) :: mylsitem
+     type(int_batch),intent(inout) :: batch
+     integer, intent(in)  :: max_allowed,nb
+     integer :: i,iorb,k
+     logical :: master
+     master = .true.
+#ifdef VAR_MPI
+     master = (infpar%lg_mynum == infpar%master)
+#endif
+
+     ! Orbital to batch information
+     ! ----------------------------
+     call mem_alloc(batch%orb2batch,nb)
+     call build_batchesofAOS(DECinfo%output,mylsitem%setting,max_allowed,&
+        & nb,batch%max_dim,batch%batchsize,batch%batchdim,batch%batchindex,&
+        &batch%nbatches,batch%orb2batch,'R')
+
+     ! Translate batchindex to orbital index
+     ! -------------------------------------
+     call mem_alloc(batch%batch2orb,batch%nbatches)
+     do i=1,batch%nbatches
+        call mem_alloc(batch%batch2orb(i)%orbindex,batch%batchdim(i))
+        batch%batch2orb(i)%orbindex = 0
+        batch%batch2orb(i)%norbindex = 0
+     end do
+     do iorb=1,nb
+        i = batch%orb2batch(iorb)
+        batch%batch2orb(i)%norbindex = batch%batch2orb(i)%norbindex+1
+        K = batch%batch2orb(i)%norbindex
+        batch%batch2orb(i)%orbindex(K) = iorb
+     end do
+  end subroutine init_batch_info
+
+  subroutine free_batch_info(batch)
+     type(int_batch),intent(inout) :: batch
+     integer :: i
+     call mem_dealloc(batch%orb2batch)
+     call mem_dealloc(batch%batchdim)
+     call mem_dealloc(batch%batchsize)
+     call mem_dealloc(batch%batchindex)
+     do i=1,batch%nbatches
+        call mem_dealloc(batch%batch2orb(i)%orbindex)
+        batch%batch2orb(i)%orbindex => null()
+     end do
+     call mem_dealloc(batch%batch2orb)
+  end subroutine free_batch_info
 end module dec_tools_module

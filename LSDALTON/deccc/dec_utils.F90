@@ -153,9 +153,11 @@ end function max_batch_dimension
      frag%slavetime_idle(ccmodel) = tottime_idle
 
      if(DECinfo%PL>0)then
-        write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
-        write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
-        write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
+        if(time_tot>0.1E-13)then
+           write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
+           write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
+           write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
+        endif
      endif
 
      call mem_dealloc(time_tot_node)
@@ -4115,7 +4117,7 @@ end function max_batch_dimension
     write(lupri,*)
     write(lupri,'(13X,a)') '**********************************************************'
     if(DECinfo%full_molecular_cc) then
-       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'CC ENERGY SUMMARY', '*'
+       write(lupri,'(13X,a,19X,a,20X,a)') '*', 'CC ENERGY SUMMARY', '*'
     else
        write(lupri,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
     end if
@@ -4688,6 +4690,67 @@ end function max_batch_dimension
     end do
 
   end subroutine print_pair_fragment_energies
+
+
+  !> \brief Print specific set  of pair fragment energies (modified version 
+  !         of kasper's print_pair_fragment_energies routine)
+  !> \author Pablo Baudin
+  !> \date June 2014
+  subroutine print_spec_pair_fragment_energies(natoms,npairs,pair_set,FragEnergies,&
+       & dofrag, DistanceTable, headline, greplabel)
+
+    implicit none
+
+    !> Number of pairs to print:
+    integer,intent(in) :: npairs
+    !> Number of atoms in the molecule:
+    integer,intent(in) :: natoms
+    !> Atomic indices of the pairs
+    integer,intent(in) :: pair_set(npairs,2)
+    ! Fragment energies 
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Logical vector describing which atoms have orbitals assigned 
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Distances between all atoms (a.u.)
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    !> Character string to print as headline
+    character(*),intent(in) :: headline
+    !> Label to print after each energy for easy grepping
+    character(*),intent(in) :: greplabel
+    integer :: i,P,Q
+    real(realk) :: pairdist, thr
+
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*) trim(headline)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(2X,a)') 'Atom1  Atom2     Dist(Ang)        Energy'
+    thr=1.0E-15_realk
+    do i=1,npairs
+      P=pair_set(i,1)
+      Q=pair_set(i,2)
+
+      ! Skip if no fragment
+      if(.not. dofrag(P)) cycle
+      if(.not. dofrag(Q)) cycle
+
+      pairdist = DistanceTable(P,Q)
+
+      ! Only print if pair distance is below threshold and nonzero
+      DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold &
+           & .and. abs(FragEnergies(P,Q)) > thr  ) then
+
+        write(DECinfo%output,'(I6,2X,I6,2X,g14.5,2X,g20.10,2a)') &
+             & P,Q,pairdist*bohr_to_angstrom, FragEnergies(P,Q),"    ",greplabel
+      end if DistanceCheck
+
+    end do
+
+  end subroutine print_spec_pair_fragment_energies
 
 
   !> \brief Get total number of atomic fragments + pair fragments

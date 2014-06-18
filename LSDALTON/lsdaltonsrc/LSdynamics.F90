@@ -359,6 +359,9 @@ If (.NOT. dyn%NHchain) then
 Endif
 !
 Call LSHeader(lupri, 'Energy conservation (au)')
+Write(*,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
 Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
                             '   Potential energy: ',traj%CurrPotential, &
                             '   Kinetic energy: ', traj%CurrKinetic
@@ -370,6 +373,9 @@ If (dyn%NHchain) then
 Endif
 ! Estimating temperature
 Temperature = 2.0E0_realk*traj%CurrKinetic/(3.0E0_realk*NAtoms*Boltzmann) 
+Print *, 'traj%CurrKinetic=',traj%CurrKinetic
+Print *, 'NAtoms          =',NAtoms
+Print *, 'Boltzmann       =',Boltzmann
 Print *, 'Temperature     =',Temperature
 Write(lupri,'(31X,A,F14.8)') 'Temperature: ',Temperature
 If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature

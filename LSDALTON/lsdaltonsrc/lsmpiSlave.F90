@@ -148,8 +148,6 @@ subroutine lsmpi_slave(comm)
          call set_dec_settings_on_slaves
       case(CCSDDATA);
          call ccsd_data_preparation
-      case(CCSD_COMM_PROC_MASTER);
-         call get_master_comm_proc_to_wrapper
       case(MO_INTEGRAL_SIMPLE);
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);

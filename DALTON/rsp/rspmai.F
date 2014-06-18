@@ -142,15 +142,10 @@ C
 C
 C  If SOPPA then set up information from MP2 and find number of 2p-2h
 C  excitations and offsets to various index arrays.
-C  The call to MP2SET is only for a dummy array IADR1 which will
-C  be properly set up later (in SET2SOPPA). 970206-ekd
 C
       IF (SOPPA) THEN
-         KIADR1 = 1
-         KLAST  = KIADR1 + (MAXOCC * MAXVIR + 1)/IRAT
-         LWSOP = LWRK - KLAST + 1
-         IF (LWSOP .LT. 1) CALL ERRWRK('RSPDRV 0',KLAST-1,LWSOP)
-         CALL MP2SET(WRK(KIADR1))
+         CALL MP2SET
+         CALL PHADR1(WRK,1) ! to calculate NPHTOT(1) needed in RSPACT
          CALL SETSOPPA
       END IF
 C
@@ -891,21 +886,11 @@ C
     2          CONTINUE
                   AVDIA  = .FALSE.
                GO TO 100
-    3          CONTINUE
+    3          CONTINUE ! .SOPPA
                   SOPPA = .TRUE.
-                  IF (PARCAL) CALL PARQUIT('SOPPA RESPONSE')
                   IF (SOPPA .AND. EMBEDDING) THEN
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' This is a solvent-SOPPA calculation w/ dynamic'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' solvent response at RPA level only,'
-                    WRITE (LUPRI,'(/A)')
-     &              '@ **INFO**'//
-     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
 cjje: change this if full solvent soppa is ever implemented
-                    SOPRPA = .TRUE.
+                    GO TO 24 ! go to .SOPRPA option
                   END IF
                GO TO 100
     4          CONTINUE
@@ -959,7 +944,7 @@ cjje: change this if full solvent soppa is ever implemented
    17          CONTINUE
                   SOPW4 = .TRUE.
                GO TO 100
-   18          CONTINUE
+   18          CONTINUE ! .SOPPA(CCSD)
                   SOPPA = .TRUE.
                   CCPPA = .TRUE.
                GO TO 100
@@ -987,9 +972,9 @@ C              .PROP2Average
  23            CONTINUE
                   CISRPA = .TRUE.
                GO TO 100
- 24            CONTINUE
+ 24            CONTINUE ! .SOPRPA
                  SOPRPA = .TRUE.
-                 SOPPA = .TRUE.
+                 SOPPA  = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
      &            ' This is a solvent-SOPPA calculation w/ dynamic'
@@ -1000,8 +985,8 @@ C              .PROP2Average
      &           '@ **INFO**'//
      &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
-                  WRITE (LUPRI,'(/A)')
-     &             'Vacuum calc. - use .SOPPA instead'
+                  WRITE (LUPRI,'(/A)') '**RESPONSE INPUT ERROR: '//
+     &             'Vacuum calculation - use .SOPPA instead of .SOPRPA'
                   CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
                  END IF
                GO TO 100
@@ -1098,17 +1083,17 @@ C              .PROP2Average
      &      ' .DFT-SO: DFT spin-orbit integrals calculated.'
       END IF
       IF (CCPPA .AND. RSPCI) THEN
-         WRITE (LUPRI,'(/A)')
-     &      ' Input ERROR: CI response and ".SOPPCC" are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         WRITE (LUPRI,'(/A)') ' Input ERROR:'//
+     &      ' CI response and ".SOPPA(CCSD)" are incompatible.'
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (HIRPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".HIRPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       ELSEIF (SOPPA .AND. RSPCI) THEN
          WRITE (LUPRI,'(/A)')
      &      ' Input ERROR: CI response and ".SOPPA " are incompatible.'
-         CALL QUIT('RSPINP: Input error')
+         CALL QUIT('**RESPONSE: Input error')
       END IF
 C
 C *** END OF RSPINP
@@ -3948,7 +3933,7 @@ C
                CALL SOPDIAG(KSYMOP,FC,WRK(KECDIA),XINDX(KABSAD),
      *                      XINDX(KABTAD),XINDX(KIJSAD),XINDX(KIJTAD),
      *                      XINDX(KIJ1AD),XINDX(KIJ2AD),XINDX(KIJ3AD),
-     *                      WRK(KWRK1),LWRK1)
+     *                      WRK(KWRK1),LWRK1,IPRRSP)
             ELSE
 C              LUIT2 = 0 means do not write CI diag. to file
                LUIT2S = LUIT2

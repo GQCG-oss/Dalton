@@ -569,7 +569,7 @@ subroutine get_levelshift(grad,CFG,X,xred,iter,alpha,Levelshift)
 implicit none
  integer, intent(in) ::iter
  type(RedSpaceItem)  :: CFG
- real(realk)  :: xred(iter-1)
+ real(realk),intent(inout)  :: xred(iter-1)
  type(matrix) :: X
  type(matrix),intent(in) ::grad
  real(realk)  :: alpha1,alpha2,alpha
@@ -602,7 +602,7 @@ subroutine BracketAlpha(CFG,X,xred,iter,alpha1,alpha2,done,Levelshift)
 implicit none
 type(RedSpaceItem)     :: CFG
 integer,intent(in)     :: iter
-real(realk),intent(in) :: xred(iter-1)
+real(realk),intent(inout) :: xred(iter-1)
 real(realk)            :: alpha1,alpha2,alpha
 logical                :: done
 type(matrix)           :: X
