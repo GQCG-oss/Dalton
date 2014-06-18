@@ -2281,6 +2281,7 @@ contains
         AtomicFragment%EoccFOP=0E0_realk
         AtomicFragment%EvirtFOP=0E0_realk
         AtomicFragment%energies=0E0_realk
+        AtomicFragment%ccmodel = DECinfo%ccmodel
         call dec_fragment_time_get(times_fragopt)
         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
            &AtomicFragment%ccmodel,'Fragment optmization')
@@ -2760,7 +2761,9 @@ contains
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
     real(realk) :: nov    
-    StepsizeLoop6 = StepsizeLoop*6 
+    integer :: AverageOrbitalPerAtoms
+    AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
+    StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
 
     IF(DECinfo%onlyOccPart)THEN
        !increase with StepsizeLoop6 virtual orbitals
@@ -2823,7 +2826,9 @@ contains
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
     real(realk) :: nov    
-    StepsizeLoop6 = StepsizeLoop*6 
+    integer :: AverageOrbitalPerAtoms
+    AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
+    StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
     nov = (nocc*1.0E0_realk/(nvirt*1.0E0_realk))
     Xocc = NINT(2*StepsizeLoop6*nov)
     Yvirt = 2*StepsizeLoop6-Xocc
@@ -3316,7 +3321,7 @@ contains
     logical :: reduction_converged
     integer :: i,iter,nocc_old,nvirt_old,nocc_new,nvirt_new,nocc_orig,nvirt_orig,ii
     integer :: nHigherOcc,nHigherVirt,nLowerOcc,nLowerVirt,loopI,nDimOcc,nDimVirt
-    logical :: bin_reduction_converged,ModVirt,bin_virt_conv,bin_occ_conv
+    logical :: bin_reduction_converged,ModVirt,bin_virt_conv,bin_occ_conv,O2V2choice
     real(realk)  :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
     real(realk)  :: LagEnergyOld, OccEnergyOld,VirtEnergyOld
     real(realk),pointer :: SortedOccContribs(:),SortedVirtContribs(:)
@@ -3325,7 +3330,7 @@ contains
     integer,pointer :: BruteForceTrackListOcc(:),BruteForceTrackListVirt(:)
     real(realk) :: FmaxOcc(nocc),FmaxVirt(nunocc)
     integer,pointer :: OrbOccFockTrackMyAtom(:),OrbVirtFockTrackMyAtom(:)
-    integer :: k,j,noccEOS,nunoccEOS
+    integer :: k,j,noccEOS,nunoccEOS,nO2V2_ModOcc,nO2V2_ModVirt
 
     ! Initialize logical vectors controlling occupied and virtual AOS during reduction scheme
     call mem_alloc(OccAOS_old,nocc)
@@ -3356,6 +3361,8 @@ contains
 
     noccEOS = AtomicFragment%noccEOS
     nunoccEOS = AtomicFragment%nunoccEOS
+
+    O2V2choice = .FALSE.
 
     IF(BruteForce)THEN
        call mem_alloc(BruteForceOccContribs,nocc)
@@ -3566,10 +3573,21 @@ contains
        call mem_dealloc(SortedVirtContribs)
 
        reduction_converged = .FALSE.
+       bin_reduction_converged = .FALSE.
 
        nDimOcc  = nHigherOcc-nLowerOcc
        nDimVirt = nHigherVirt-nLowerVirt
-       ModVirt = nDimVirt.GE.nDimOcc 
+       
+       IF(O2V2choice)THEN
+          nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+          nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+          nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+       ELSE
+          ModVirt = nDimVirt.GE.nDimOcc 
+       ENDIF
+
        IF(ModVirt)THEN
           nvirt_old = nLowerVirt
           nocc_old  = nHigherOcc
@@ -3584,12 +3602,24 @@ contains
           nDimOcc  = nHigherOcc-nLowerOcc     !diff between converged space and nonconverged space
           nDimVirt = nHigherVirt-nLowerVirt
           !determine if we should do a step in Virtual or Occupied space
-          IF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
+          IF(O2V2choice)THEN
+             !take the step that have biggest potential to reduce the dim O**2*V**2
+             IF(bin_reduction_converged)THEN
+                nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
+                nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
+             ELSE
+                nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+                nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+             ENDIF
+             nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+             nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+             ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+          ELSEIF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
              !First converge Virtual space - then remove Occupied 
              ModVirt = .TRUE.
              IF(bin_virt_conv)ModVirt = .FALSE.
           ELSEIF(DistanceRemoval.AND.DECinfo%onlyVirtPart)THEN
-             !First converge Occupied space - then remove Occupied 
+             !First converge Occupied space - then remove Vitual 
              ModVirt = .FALSE.
              IF(bin_occ_conv)ModVirt = .TRUE.
           ELSE

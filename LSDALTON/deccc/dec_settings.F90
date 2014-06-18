@@ -87,7 +87,7 @@ contains
     DECinfo%PNOoverlapthr        = 1.0E-5_realk
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
-    DECinfo%MOCCSD               = .false.
+    DECinfo%NO_MO_CCSD           = .false.
     DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
@@ -309,7 +309,7 @@ contains
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
-          DECinfo%MOCCSD      = .false.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -318,6 +318,7 @@ contains
           DECinfo%CCDhack=.true.
           DECinfo%use_singles=.true. 
           DECinfo%solver_par=.true.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CCSD')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
@@ -474,7 +475,7 @@ contains
        case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
        case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
@@ -614,6 +615,11 @@ contains
   !> \date October 2010
   subroutine check_dec_input()
     implicit none
+    integer :: nodtot
+    nodtot = 1
+#ifdef VAR_MPI
+    nodtot = infpar%nodtot
+#endif
 
     ! Check that array4OnFile is only called for the cases where it is implemented
 
@@ -739,7 +745,16 @@ contains
 
     endif
 
+   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+      call lsquit("ERROR(check_dec_input):Do not use &
+         &.CCSDforce_scheme in a DEC calculation",-1)
+   endif
 
+   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+      call lsquit("ERROR(check_dec_input):You forced a scheme in &
+      &the CCSD part which is dependent on running at least 2 &
+      &MPI processes with only one process",-1)
+   endif
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements

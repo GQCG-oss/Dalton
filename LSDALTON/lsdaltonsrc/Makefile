@@ -20,7 +20,7 @@ F90_OBJS = \
 	Profile.o\
 	IchorTesting.o\
 	IchorProfile.o\
-	SCFinteractionEnergy.o\
+	InteractionEnergy.o\
 	LSDALTON.o
 SMALLF90_OBJS = \
         lsdalton_wrapper.o

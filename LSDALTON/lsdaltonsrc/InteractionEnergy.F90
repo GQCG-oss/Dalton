@@ -1,4 +1,4 @@
-module SCFinteractionEnergyMod
+module InteractionEnergyMod
   use precision
   use matrix_module!, only: matrix
   use TYPEDEFTYPE!, only: lsitem
@@ -8,15 +8,16 @@ module SCFinteractionEnergyMod
   use lstiming!, only: lstimer
   use WRITEMOLEFILE!, only: write_molecule_output
   use Energy_and_deriv
+  use dec_typedef_module,only: DECinfo
 !===========================================================!
 !    The main driver for geometry optimization in LSDALTON  !
 !===========================================================!
 ! Written by Thomas Kjaergaard 2014
 !
   private
-  public :: SCFinteractionEnergy
+  public :: InteractionEnergy
 CONTAINS
-  SUBROUTINE SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)
+  SUBROUTINE InteractionEnergy(E,config,H1,F,D,S,CMO,ls)
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem)                    :: ls 
@@ -45,7 +46,7 @@ CONTAINS
     WRITE(config%lupri,'(A)') '========================================================='
     WRITE(config%lupri,*)''
 
-  end SUBROUTINE SCFinteractionEnergy
+  end SUBROUTINE InteractionEnergy
 
   subroutine SubSystemEnergy(Esub,config,H1,F,D,S,CMO,ls,subIndex)
     Implicit none
@@ -63,7 +64,7 @@ CONTAINS
     logical,pointer :: Phantom(:)
     integer :: I,J,R,jcharge,jtype,norbJ,nOrbI,itype,icharge,iOrb,jOrb
     integer :: restart_lun,dens_lun
-    logical :: CFG_restart,CFG_purifyrestart,dens_exsist,OnMaster,gcbasis
+    logical :: CFG_restart,CFG_purifyrestart,dens_exsist,OnMaster,gcbasis,OnlyOccPart
     type(matrix) :: D1(1),TMP
     real(realk),pointer :: Dfull(:,:),D1full(:,:)
     Character(len=80) :: SubIndexString(2)
@@ -204,7 +205,18 @@ CONTAINS
        config%diag%CFG_purifyrestart = .FALSE.
     ENDIF
 
+    IF(config%doDEC)call mat_init(CMO,H1%nrow,H1%ncol)
+    OnlyOccPart = DECinfo%OnlyOccPart
+    IF(config%doDEC.AND.(.not. DECinfo%full_molecular_cc))THEN
+     IF(.NOT.DECinfo%OnlyOccPart)THEN
+      WRITE(lupri,'(A)')'Note due to the presence of Phantom atoms in the SubSystem calculation'
+      WRITE(lupri,'(A)')'The .ONLYOCCPART keyword is activated during the SubSystem calculation'
+     ENDIF
+     DECinfo%OnlyOccPart  = .TRUE.
+    ENDIF
     call Get_Energy(Esub,Etmp,config,H1,F,D1,S,ls,CMO,Natoms,lupri,luerr)
+    IF(config%doDEC)call mat_free(CMO)
+    DECinfo%OnlyOccPart = OnlyOccPart
 
     config%diag%CFG_restart = CFG_restart
     config%diag%CFG_purifyrestart = CFG_purifyrestart
@@ -251,7 +263,7 @@ CONTAINS
 
   end SUBROUTINE SubSystemEnergy
 !
-end module SCFinteractionEnergyMod
+end module InteractionEnergyMod
 
 
 

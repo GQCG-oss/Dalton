@@ -76,7 +76,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
-  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
+  use InteractionEnergyMod, only: InteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -461,7 +461,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
               ! Single point DEC calculation using current HF files
               DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F(1),D(1),S,CMO)
+                 call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
               endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)
@@ -518,8 +518,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      ENDIF
 #endif     
 
-        if (config%SCFinteractionEnergy) then
-           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
+        if (config%InteractionEnergy) then
+           CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
         !PROPERTIES SECTION
 

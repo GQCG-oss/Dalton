@@ -17,39 +17,36 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decccsd_mo_local.info <<'%EOF%'
-   DEC-CCSD energy using fragment calculations without long-range t1
+cat > deccc2.info <<'%EOF%'
+   DEC-CC2 energy using fragment calculations without long-range t1
    -----------------------------------------------------------------
    Molecule:         3 BH molecules with stretched bonds
-   Wave Function:    MO-CCSD / STO-3G
-   Test Purpose:     Test DEC energy for MO-CCSD/pseudo local scheme,
-                     No one sided communication (Pablo Baudin)
+   Wave Function:    MO-CC2 / STO-3G
+   Test Purpose:     Test DEC energy for MO-CC2 (Pablo Baudin)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decccsd_mo_local.mol <<'%EOF%'
+cat > deccc2.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
                                                         
-Atomtypes=4 Nosymmetry Angstrom SubSystems
-Charge=5.0 Atoms=2 SubSystem=A
+Atomtypes=2 Nosymmetry Angstrom 
+Charge=5.0 Atoms=3
 B          0.000000      0.0000000    0.0000000
 B          3.000000      0.0000000    1.4500000
-Charge=5.0 Atoms=1 SubSystem=B
 B          6.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=2 SubSystem=A
+Charge=1.0 Atoms=3
 H          0.000000      1.4500000    0.0000000
 H          3.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=1 SubSystem=B
 H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decccsd_mo_local.dal <<'%EOF%'
+cat > deccc2.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -61,17 +58,13 @@ TRILEVEL
 **INFO
 .DEBUG_MPI_MEM
 **DEC
-.CCSD
-.MOCCSD
-.CCSDFORCE_SCHEME
- 5
+.CC2
 .MPIsplit
  0
 .FOT
- 4
+ 5
 .MEMORY
  2.0
-.PRINTINTERACTIONENERGY
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -81,8 +74,8 @@ TRILEVEL
 #######################################################################
 
 #######################################################################
-echo $CHECK_SHELL >decccsd_mo_local.check
-cat >>decccsd_mo_local.check <<'%EOF%'
+echo $CHECK_SHELL >deccc2.check
+cat >>deccc2.check <<'%EOF%'
 
 log=$1
 
@@ -98,32 +91,26 @@ TEST[1]=`expr   $CRIT1`
 CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.199" $log | wc -l`
+# CC2 ENERGY
+CRIT1=`$GREP "Correlation energy  : * \-0\.106" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"
 
-# CCSD INTERACTION ENERGY
-CRIT1=`$GREP "Interaction Correlation energy  : * \-0\.000422" $log | wc -l`
-TEST[3]=`expr   $CRIT1`
-CTRL[3]=1
-ERROR[3]="CCSD interaction correlation energy is not correct"
-
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[4]=`expr  $CRIT1`                                                    
-CTRL[4]=1                                                                 
-ERROR[4]="Memory leak -"
+TEST[3]=`expr  $CRIT1`                                                    
+CTRL[3]=1                                                                 
+ERROR[3]="Memory leak -"
 
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
-TEST[5]=`expr  $CRIT1`                                                    
-CTRL[5]=1                                                                 
-ERROR[5]="Memory leak for array4 -" 
+TEST[4]=`expr  $CRIT1`                                                    
+CTRL[4]=1                                                                 
+ERROR[4]="Memory leak for array4 -" 
 
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4  
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

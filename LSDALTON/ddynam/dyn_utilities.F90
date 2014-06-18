@@ -626,9 +626,12 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk 
+  print*,'Vels',Vels
+  print*,'Mass',Mass
   Do i = 1,N
      Kinetic = Kinetic + (DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )*Mass(i) )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic_Cart
 !====================!
 ! Calc_Kinetic       !
@@ -642,9 +645,11 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk  
+  print*,'Vels',Vels
   Do i = 1,N
      Kinetic = Kinetic + DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic
 !===================!
 ! Calc_AngMom_Cart  !

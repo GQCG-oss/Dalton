@@ -17,36 +17,34 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > deccc2_mo.info <<'%EOF%'
-   DEC-CC2 energy using fragment calculations without long-range t1
-   -----------------------------------------------------------------
-   Molecule:         3 BH molecules with stretched bonds
-   Wave Function:    MO-CC2 / STO-3G
-   Test Purpose:     Test DEC energy for MO-CC2 (Pablo Baudin)
+cat > fullccsd_4.info <<'%EOF%'
+   DEC-CCSD energy for full molecule
+   --------------------------------
+   Molecule:         HF
+   Wave Function:    CCSD / cc-pVDZ
+   Test Purpose:     Test full molecule CCSD energy using DEC program (Kasper K)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > deccc2_mo.mol <<'%EOF%'
-BASIS                                                   
-STO-3G
-                                                        
-                                                        
-Atomtypes=2 Nosymmetry Angstrom 
-Charge=5.0 Atoms=3
-B          0.000000      0.0000000    0.0000000
-B          3.000000      0.0000000    1.4500000
-B          6.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=3
-H          0.000000      1.4500000    0.0000000
-H          3.000000      0.0000000    0.0000000
-H          6.000000      0.0000000    1.4500000
+cat > fullccsd_4.mol <<'%EOF%'
+BASIS
+cc-pVDZ
+
+
+Atomtypes=2  Angstrom Nosymmetry
+Charge=9.0 Atoms=1
+F         -0.17632        0.11634       -1.09866
+Charge=1.0 Atoms=1
+H          0.70368        0.11634       -1.09866
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > deccc2_mo.dal <<'%EOF%'
+cat > fullccsd_4.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -54,29 +52,31 @@ cat > deccc2_mo.dal <<'%EOF%'
 .START
 TRILEVEL
 .CONVTHR
- 1.0d-5
+1.0d-5
 **INFO
 .DEBUG_MPI_MEM
-**DEC
-.CC2
-.MOCCSD
-.MPIsplit
- 0
-.FOT
- 5
+**CC
+.FrozenCore
+.CCSDforce_scheme
+4
+.CCSD
+.ccThr
+1e-9
 .MEMORY
- 2.0
-*END OF INPUT  
+1.0
+*END OF INPUT
 %EOF%
 #######################################################################
 
-
-
-#######################################################################
+ 
 
 #######################################################################
-echo $CHECK_SHELL >deccc2_mo.check
-cat >>deccc2_mo.check <<'%EOF%'
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >fullccsd_4.check
+cat >>fullccsd_4.check <<'%EOF%'
 
 log=$1
 
@@ -87,23 +87,24 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-99\.893559" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# CC2 ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.106" $log | wc -l`
+# CCSD ENERGY
+CRIT1=`$GREP "Correlation energy  : * \-0\.20526[3-4]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy is not correct"
+
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
 TEST[3]=`expr  $CRIT1`                                                    
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak -"
-
+                                                                          
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
 TEST[4]=`expr  $CRIT1`                                                    
@@ -111,7 +112,7 @@ CTRL[4]=1
 ERROR[4]="Memory leak for array4 -" 
 
 PASSED=1
-for i in 1 2 3 4  
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
@@ -129,6 +130,7 @@ else
 fi
 
 %EOF%
+
 
 
 
