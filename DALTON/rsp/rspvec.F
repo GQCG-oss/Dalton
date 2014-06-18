@@ -2271,7 +2271,6 @@ C ---------------------------------------------------------------endofmcd-------
          IF (PHOSPH .OR. MNFPHO .OR. ECPHOS .OR. PHOSPV .OR.            !MK
      & CPPHOL .OR. CPPHOV) THEN                                         !MK
             WRITE (LUPRI,'(/A/A,I3/A,I3/A/)')
-         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
             IEXCSY = MULD2H(MSYMC,IREFSY)
             WRITE (LUPRI,'(/A/A,I3,3A/A,I3/A/)')
      &         ' Phosphorescence electric dipole transition rates',
