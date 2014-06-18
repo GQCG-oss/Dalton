@@ -608,7 +608,7 @@ C
 #include "gnrinf.h"
 C
       LOGICAL NEWDEF
-      PARAMETER ( NTABLE = 31)                                          !MK
+      PARAMETER ( NTABLE = 33)                                          !MK
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*8 LABEL
 C
@@ -619,7 +619,8 @@ C
      *            '.DIPLNX', '.DIPLNY', '.DIPLNZ', '.FREQUE',
      *            '.SINGLE', '.PHOSPH', '.MNFPHO', '.TWO-PH',
      *            '.MCDBTE', '.MCDPRJ', '.ECPHOS', '.PHOSPV',           !MK
-     *            '.DIPVEL', '.CPPHOL', '.CPPHOV'/                      !MK
+     *            '.DIPVEL', '.CPPHOL', '.CPPHOV', '.CPPHMF',           !MK
+     *            '.CPPHEC'/                                            !MK
 C
 C READ IN  INPUT
 C
@@ -639,7 +640,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                 17,18,19,20,21,22,23,24,25,26,27,28,29,30,31), I !MK
+     &                 17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,
+     &                 32,33), I                                        !MK
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -860,13 +862,55 @@ C                 B operators
                   LABEL='ZANGMOM'                                       !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
                GO TO 100                                                !MK
+ 32            CONTINUE                                                 !MK
+                  CPPHMF = .TRUE.                                       !MK
+                  LABEL='XDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='YDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='ZDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='XANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='YANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='ZANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='X1MNF-SO'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='Y1MNF-SO'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='Z1MNF-SO'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+               GO TO 100                                                !MK
+ 33            CONTINUE                                                 !MK
+                  CPPHEC = .TRUE.                                       !MK
+                  LABEL='XDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='YDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='ZDIPVEL '                                      !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='X1SPNSCA'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='Y1SPNSCA'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='Z1SPNSCA'                                      !MK
+                  BSMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='XANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='YANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+                  LABEL='ZANGMOM'                                       !MK
+                  ASMOP( INDPRP(LABEL)) = .TRUE.                        !MK
+               GO TO 100                                                !MK
  23            CONTINUE
                   MNFPHO = .TRUE.
-                  LABEL='XDIPLEN '
+                  LABEL='XDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPLEN '
+                  LABEL='YDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPLEN '
+                  LABEL='ZDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='X1MNF-SO'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
@@ -877,11 +921,11 @@ C                 B operators
                GO TO 100
  27            CONTINUE
                   ECPHOS = .TRUE.
-                  LABEL='XDIPLEN '
+                  LABEL='XDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPLEN '
+                  LABEL='YDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPLEN '
+                  LABEL='ZDIPVEL '                                      !MK
                   ASMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='X1SPNSCA'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
@@ -1008,7 +1052,7 @@ C
      &     //' with effective charge spin-orbit operator.'
          END IF
          IF (PHOSPH .OR. MNFPHO .OR. ECPHOS .OR. PHOSPV .OR.            !MK
-     &       CPPHOL .OR. CPPHOV) THEN                                   !MK
+     &       CPPHOL .OR. CPPHOV .OR. CPPHMF .OR. CPPHEC) THEN           !MK
                  IF (JSPABC .GT. 0 .AND. ISPINA .NE. 0 .AND.
      &          ISPINB .NE. 1 .AND. ISPINC .NE. 1) THEN
                NWARN = NWARN + 1

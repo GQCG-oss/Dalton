@@ -1187,7 +1187,8 @@ C     Initialization of INFHSO for HSOINP
       DATA TESTZY/.FALSE./, DOSO1/.TRUE./, DOSO2/.TRUE./, IPRHSO/0/
       DATA X2MAT/.FALSE./, A2MAT/.FALSE./, X2GRAD/.FALSE./,
      &     PHOSPH/.FALSE./, MNFPHO/.FALSE./, ECPHOS/.FALSE./,           !MK
-     &     PHOSPV/.FALSE./, CPPHOL/.FALSE./, CPPHOV/.FALSE./            !MK
+     &     PHOSPV/.FALSE./, CPPHOL/.FALSE./, CPPHOV/.FALSE./,           !MK
+     &     CPPHMF/.FALSE./, CPPHEC/.FALSE./                             !MK
 C     Initialization of INFHYP
       DATA HYPCAL/.FALSE./
       DATA QRSPEC/.FALSE./,QRSHG/.FALSE./,QRPOCK/.FALSE./
@@ -4538,19 +4539,20 @@ C
 #include "rspprp.h"
 #include "infpp.h"
 C
-      PARAMETER ( NTABLE = 11 )                                         !MK
+      PARAMETER ( NTABLE = 13 )                                         !MK
       CHARACTER WORD*7, STRING*7, TABLE(NTABLE)*7
       PARAMETER ( STRING = '*QUADRA' )
       DATA TABLE /'.SINGLE', '.DOUBLE', '.PHOSPH', '.TWO-PH',
      &            '.MNFPHO', '.TPCD  ', '.ESA   ', '.ECPHOS',           !MK
-     &            '.PHOSPV', '.CPPHOL', '.CPPHOV'/                      !MK
+     &            '.PHOSPV', '.CPPHOL', '.CPPHOV', '.CPPHMF',           !MK
+     &            '.CPPHEC'/                                            !MK
 C
   100 READ (LUCMD, '(A7)',END=2100) WORD
       CALL UPCASE(WORD)
       IF (WORD(1:1).EQ.'*') GO TO 11
       DO I = 1, NTABLE
          IF (WORD .EQ. TABLE(I)) THEN
-            GO TO (1,2,3,4,5,4,6,8,3,3,3), I                            !MK
+            GO TO (1,2,3,4,5,4,6,8,3,3,3,5,8), I                        !MK
          END IF
       END DO
       GO TO 100
