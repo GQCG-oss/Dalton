@@ -279,7 +279,7 @@ module cc_tools_module
       !real(realk),intent(in) :: amps(nv*nv*no*no)
       !type(array),intent(in) :: amps
       real(realk) :: scaleitby
-      integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
+      integer(kind=8)       :: pos,pos2,pos21,i,j,k,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
       integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
       integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2
       logical               :: second_trafo_step
@@ -609,15 +609,17 @@ module cc_tools_module
 
             ! add up contributions in the residual with keeping track of i<j
             !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-            !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-            do j=no,1,-1
-               !$OMP DO 
+            !$OMP PRIVATE(i,j,k,pos1,pos2) IF( no > 2 )
+            do j=no,2,-1
                do i=j,1,-1
-                  pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-                  pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                  if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
+                  pos1=((i+j*(j-1)/2)-1)*nv*nv
+                  pos2=(i-1)*nv*nv+(j-1)*no*nv*nv
+                  !$OMP DO 
+                  do k=1,nv*nv
+                     w2(k+pos2) = w2(k+pos1)
+                  enddo
+                  !$OMP END DO
                enddo
-               !$OMP END DO
             enddo
             !$OMP BARRIER
             !$OMP DO 
@@ -703,15 +705,17 @@ module cc_tools_module
 
             if(.not.rest_o2_occ)then
                !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
-               do j=no,1,-1
-                  !$OMP DO 
+               !$OMP PRIVATE(i,j,k,pos1,pos2) IF( no > 2 )
+               do j=no,2,-1
                   do i=j,1,-1
                      pos1=1+((i+j*(j-1)/2)-1)*nv*nv
                      pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-                     if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
+                     !$OMP DO 
+                     do k=1,nv*nv
+                        w2(k+pos2) = w2(k+pos1)
+                     enddo
+                     !$OMP END DO
                   enddo
-                  !$OMP END DO
                enddo
                !$OMP BARRIER
                !$OMP DO 
@@ -1215,7 +1219,7 @@ module cc_tools_module
       integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
       real(realk) :: nrm1,nrm2,nrm3,nrm4
       integer ::  mv((nv*nv)/2),st
-      integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
+      integer(kind=8) :: o2v2,pos1,pos2,i,j,k,pos
       logical :: traf,np
       integer :: o(4)
 
@@ -1282,15 +1286,17 @@ module cc_tools_module
 
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-      !$OMP PRIVATE(i,j,pos1,pos2)
-      do j=no,1,-1
-         !$OMP DO 
+      !$OMP PRIVATE(i,j,k,pos1,pos2)
+      do j=no,2,-1
          do i=j,1,-1
-            pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-            pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+            pos1=((i+j*(j-1)/2)-1)*nv*nv
+            pos2=(i-1)*nv*nv+(j-1)*no*nv*nv
+            !$OMP DO 
+            do k=1,nv*nv
+               w1(k+pos2) = w1(k+pos1)
+            enddo
+            !$OMP END DO
          enddo
-         !$OMP END DO
       enddo
       !$OMP BARRIER
       !$OMP DO 
