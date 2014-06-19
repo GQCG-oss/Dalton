@@ -468,7 +468,7 @@ ENDIF
    ENDIF
 #else
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GE. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
 
@@ -581,7 +581,7 @@ ELSE
 ENDIF
 #ifndef VAR_MPI
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GE. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),&
      &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -679,7 +679,7 @@ ENDIF
 
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GE. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -872,7 +872,7 @@ ENDIF
   END DO
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GE. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
