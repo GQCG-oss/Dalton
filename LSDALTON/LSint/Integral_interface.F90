@@ -5214,7 +5214,7 @@ integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_ADMMQ, scaling_ADMMP, printConstFactor, printLambda
-logical             :: isADMMQ,addxc,DODISP
+logical             :: isADMMQ,separateX,DODISP
 logical             :: isADMMS, isADMMP,PRINT_EK3
 real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
@@ -5223,9 +5223,9 @@ isADMMQ = setting%scheme%ADMMQ
 isADMMS = setting%scheme%ADMMS
 isADMMP = setting%scheme%ADMMP
 PRINT_EK3 = setting%scheme%PRINT_EK3
-addxc = setting%scheme%admm_addxc
-addxc = addxc.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
-addxc = addxc.OR.setting%scheme%cam    !Hack for camb3lyp - for now SR
+separateX = setting%scheme%admm_separateX
+separateX = separateX.OR.(.NOT.setting%do_dft) !Hack for HF - for now SR
+separateX = separateX.OR.setting%scheme%cam    !Hack for camb3lyp - for now SR
 
 IF (setting%scheme%cam) THEN
   GGAXfactor = 1.0E0_realk
@@ -5384,7 +5384,7 @@ setting%scheme%dft%igrid = Grid_Default
 call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
 setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
-IF (addxc) THEN
+IF (separateX) THEN
   CALL mat_init(F3(1),nbast,nbast)
   CALL mat_zero(F3(1))
   call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
@@ -5401,7 +5401,7 @@ ENDIF
 IF (setting%do_dft) THEN
   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),GGAXfactor)
   !Augment the functional with the admm gga exchange contribution X
-   IF (.NOT.addxc) THEN
+   IF (.NOT.separateX) THEN
      call II_DFTaddFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),GGAXfactor)
    ENDIF
 ENDIF
@@ -5409,12 +5409,12 @@ ENDIF
 
 
 IF (PRINT_EK3) THEN
-   IF (addxc) write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
+   IF (separateX) write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
    write(*,*)     "E(k2)=Tr(k2 d2) ", traceK2D2
    write(lupri,*) "E(k2)=Tr(k2 d2) ", traceK2D2
    write(*,*)     "E(x2)= ", fac*EX2(1)
    write(lupri,*) "E(x2)= ", fac*EX2(1)
-   IF (addxc) THEN
+   IF (separateX) THEN
       write(*,*)     "E(X3)= ", EX3(1)
       write(lupri,*) "E(X3)= ", EX3(1)
       write(*,*)     "E(X3)-E(x2)= ",EdXC
