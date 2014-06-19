@@ -1260,8 +1260,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            INTEGRAL%ADMMQ         = .TRUE.
         CASE ('.ADMM-FUNC');
            READ(LUCMD,*) INTEGRAL%ADMM_FUNC
-        CASE ('.ADMM-ADDXC');
-           INTEGRAL%ADMM_ADDXC = .TRUE.
+        CASE ('.ADMM-separateX'); !EXPERIMENTAL
+                                  !Calculates X and XC independently, default is to calculate
+                                  !X+XC with one call to dft (and x with a separate call)
+           INTEGRAL%ADMM_separateX = .TRUE.
         CASE ('.ADMM-GC'); ! EXPERIMENTAL
            INTEGRAL%ADMM_GCBASIS  = .TRUE.
            INTEGRAL%ADMM_JKBASIS  = .FALSE.

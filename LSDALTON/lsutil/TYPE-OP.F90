@@ -149,7 +149,7 @@ DALTON%ADMMQ         = .FALSE.
 DALTON%ADMMS         = .FALSE.
 DALTON%ADMMP         = .FALSE.
 DALTON%ADMM_FUNC     = 'B88X'
-DALTON%ADMM_ADDXC    = .FALSE.
+DALTON%ADMM_separateX= .FALSE.
 DALTON%ADMM_GCBASIS  = .FALSE.
 DALTON%ADMM_JKBASIS  = .FALSE.
 DALTON%ADMM_2ERI     = .FALSE.
@@ -970,7 +970,7 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMQ',DALTON%ADMMQ
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMS',DALTON%ADMMS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMMP',DALTON%ADMMP
 WRITE(LUPRI,'(2X,A35,7X,A30)')'ADMM_FUNC',DALTON%ADMM_FUNC
-WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_ADDXC',DALTON%ADMM_ADDXC
+WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_separateX',DALTON%ADMM_separateX
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_JKBASIS',DALTON%ADMM_JKBASIS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'ADMM_GCBASIS',DALTON%ADMM_GCBASIS
 WRITE(LUPRI,'(2X,A35,7X,L1)')'PRINT_EK3',DALTON%PRINT_EK3
@@ -2752,7 +2752,7 @@ scheme%ADMM1                 = dalton_inp%ADMM1
 scheme%ADMMQ                 = dalton_inp%ADMMQ
 scheme%ADMMS                 = dalton_inp%ADMMS
 scheme%ADMMP                 = dalton_inp%ADMMP
-scheme%ADMM_ADDXC            = dalton_inp%ADMM_ADDXC
+scheme%ADMM_separateX        = dalton_inp%ADMM_separateX
 scheme%ADMM_GCBASIS          = dalton_inp%ADMM_GCBASIS 
 scheme%ADMM_JKBASIS          = dalton_inp%ADMM_JKBASIS 
 scheme%ADMM_2ERI             = dalton_inp%ADMM_2ERI 
@@ -2886,7 +2886,7 @@ WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_2ERI             ', scheme%ADMM_2ERI
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMQ                 ', scheme%ADMMQ
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMS                 ', scheme%ADMMS
 WRITE(IUNIT,'(3X,A22,L7)') 'ADMMP                 ', scheme%ADMMP
-WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_ADDXC            ', scheme%ADMM_ADDXC
+WRITE(IUNIT,'(3X,A22,L7)') 'ADMM_separateX        ', scheme%ADMM_separateX
 WRITE(IUNIT,'(3X,A22,L7)') 'PRINT_EK3             ', scheme%PRINT_EK3
 WRITE(IUNIT,'(3X,A22,G14.2)') 'THRESHOLD             ', scheme%THRESHOLD
 WRITE(IUNIT,'(3X,A22,G14.2)') 'CS_THRESHOLD          ', scheme%CS_THRESHOLD
