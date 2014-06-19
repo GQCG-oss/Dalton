@@ -103,12 +103,12 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/libatlas.dylib;/usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | 0286f23abf9b66c0e9b23aaa90bce821c66050a1
- Configuration time       | 2014-06-19 11:08:42.925981
+ Last Git revision        | 08ffbb578617bac198a2f1e864f9c7cd51314cb1
+ Configuration time       | 2014-06-19 16:16:57.995327
  Ground state molecular gradient calculations are carried out.
 
 Start simulation
-     Date and time (Linux)  : Thu Jun 19 14:17:34 2014
+     Date and time (Linux)  : Thu Jun 19 16:20:37 2014
      Host name              : kjmac10-reine.local                     
                       
  -----------------------------------------
@@ -349,7 +349,6 @@ total         14                               11
 ---------------------------------------------------------------------
                       
  The Coulomb energy contribution    86.556753463045851     
-    This is an OpenMP calculation using   4 threads.
  The Exchange energy contribution    14.417724065681847     
  The Fock energy contribution   -72.139029397363998     
   Iteration 0 energy:  -95.264230098064800     
@@ -359,8 +358,7 @@ Matrix AO D  has nnz=        57 sparsity:     47.107 %
   SCF Convergence criteria for gradient norm:  8.00000000000000038E-004
 ** Get Fock matrix number   1
  The Coulomb energy contribution    85.498101777628619     
-    This is an OpenMP calculation using   4 threads.
- The Exchange energy contribution    13.736484447624376     
+ The Exchange energy contribution    13.736484447624377     
  The Fock energy contribution   -71.761617330004270     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
@@ -370,18 +368,16 @@ Matrix AO D  has nnz=        57 sparsity:     47.107 %
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   2
- The Coulomb energy contribution    85.480484410622168     
-    This is an OpenMP calculation using   4 threads.
- The Exchange energy contribution    13.741165773719418     
- The Fock energy contribution   -71.739318636902766     
+ The Coulomb energy contribution    85.480484410622211     
+ The Exchange energy contribution    13.741165773719421     
+ The Fock energy contribution   -71.739318636902780     
   2    -90.5328919898   -0.00599385136    0.00      0.00000    0.00    0.0000000    5.59E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   3
- The Coulomb energy contribution    85.517231675160673     
-    This is an OpenMP calculation using   4 threads.
- The Exchange energy contribution    13.745518646456393     
+ The Coulomb energy contribution    85.517231675160602     
+ The Exchange energy contribution    13.745518646456384     
  The Fock energy contribution   -71.771713028704255     
   3    -90.5332357748   -0.00034378503   -1.00      0.00000    0.00    0.0000000    2.46E-02  ###
 ** Make average of the last F and D matrices
@@ -389,18 +385,16 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   4
  The Coulomb energy contribution    85.513537734801901     
-    This is an OpenMP calculation using   4 threads.
- The Exchange energy contribution    13.745338541642338     
- The Fock energy contribution   -71.768199193159532     
+ The Exchange energy contribution    13.745338541642351     
+ The Fock energy contribution   -71.768199193159546     
   4    -90.5332717106   -0.00003593578   -1.00      0.00000    0.00    0.0000000    2.04E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   5
- The Coulomb energy contribution    85.513995264698295     
-    This is an OpenMP calculation using   4 threads.
- The Exchange energy contribution    13.745382530919583     
- The Fock energy contribution   -71.768612733778710     
+ The Coulomb energy contribution    85.513995264698394     
+ The Exchange energy contribution    13.745382530919601     
+ The Fock energy contribution   -71.768612733778781     
   5    -90.5332723147   -0.00000060415   -1.00      0.00000    0.00    0.0000000    1.83E-04  ###
 SCF converged in      5 iterations
 
@@ -420,10 +414,10 @@ Total no. of matmuls in SCF optimization:         20
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
     1           -90.52689813841034549569      0.253908847985927D+00
-    2           -90.53289198976953855436      0.558954373833186D-01
-    3           -90.53323577479791595124      0.246032863907355D-01
-    4           -90.53327171057347300120      0.203734999145678D-02
-    5           -90.53327231471868685730      0.183452548733451D-03
+    2           -90.53289198976958118692      0.558954373833291D-01
+    3           -90.53323577479785910782      0.246032863907765D-01
+    4           -90.53327171057345879035      0.203734999144913D-02
+    5           -90.53327231471861580303      0.183452548736399D-03
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -446,7 +440,7 @@ Total no. of matmuls in SCF optimization:         20
  Number of virt. orb. in molecule =           23
 
 
- OCCUPIED: (Orbital index, MOS) =            6   1.3842134897571208     
+ OCCUPIED: (Orbital index, MOS) =            5   1.3842134897571206     
  VIRTUAL : (Orbital index, MOS) =           23   2.7219423994201151     
 
 
@@ -458,24 +452,21 @@ Matrix AO D  has nnz=        57 sparsity:      6.333 %
   Relative convergence threshold for solver:  1.00000000000000002E-002
   SCF Convergence criteria for gradient norm:  8.00000000000000065E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    85.513995264698295     
-    This is an OpenMP calculation using   4 threads.
+ The Coulomb energy contribution    85.513995264698366     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       38774
 
   Max allocated memory, Grid                    3.051 MB
 
-  KS electrons/energy:   13.95117195616573  -13.79324739234218 rel.err:-0.35E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.8595337858416006     
+  KS electrons/energy:   13.95117195616577  -13.79324739234223 rel.err:-0.35E-02
+ Tr(x2d2)=  -8.8595337858416059     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       38774
 
   Max allocated memory, Grid                    3.051 MB
 
-  KS electrons/energy:   13.99999132277651  -13.74455973247700 rel.err:-0.62E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -13.773635193462383     
+  KS electrons/energy:   13.99999132277648  -13.74455973247703 rel.err:-0.62E-06
+ ADMM exchange energy contribution:   -13.773635193462340     
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -484,92 +475,71 @@ Total Number of grid points:       38774
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   2
- The Coulomb energy contribution    78.439265312604292     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97800205028259  -12.85720444786491 rel.err:-0.16E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2450813395583857     
-  KS electrons/energy:   13.99999193058728  -12.88473163599207 rel.err:-0.58E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.862599149073034     
+ The Coulomb energy contribution    78.439265312604022     
+  KS electrons/energy:   13.97800205028259  -12.85720444786490 rel.err:-0.16E-02
+ Tr(x2d2)=  -8.2450813395583662     
+  KS electrons/energy:   13.99999193058730  -12.88473163599207 rel.err:-0.58E-06
+ ADMM exchange energy contribution:   -12.862599149072906     
   2    -91.3787490243   -0.86591170693    0.00      0.00000    0.00    0.0000000    1.16E+00  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   3
- The Coulomb energy contribution    79.225642241410242     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97470275051539  -12.93146037241913 rel.err:-0.18E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2938907819662866     
-  KS electrons/energy:   13.99999195793284  -12.96615753384855 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.933694514057947     
+ The Coulomb energy contribution    79.225642241410114     
+  KS electrons/energy:   13.97470275051536  -12.93146037241909 rel.err:-0.18E-02
+ Tr(x2d2)=  -8.2938907819662671     
+  KS electrons/energy:   13.99999195793281  -12.96615753384852 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.933694514058033     
   3    -91.4029936502   -0.02424462587   -1.00      0.00000    0.00    0.0000000    3.13E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   4
- The Coulomb energy contribution    78.997209866169243     
-    This is an OpenMP calculation using   4 threads.
+ The Coulomb energy contribution    78.997209866169044     
   KS electrons/energy:   13.97569177150901  -12.90831670972208 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2787405800206102     
-  KS electrons/energy:   13.99999199393732  -12.94097299549596 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.911193360736775     
+ Tr(x2d2)=  -8.2787405800205836     
+  KS electrons/energy:   13.99999199393732  -12.94097299549593 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.911193360736689     
   4    -91.4057690188   -0.00277536863   -1.00      0.00000    0.00    0.0000000    1.07E-01  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   5
- The Coulomb energy contribution    79.008707267666736     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97561737408913  -12.90950478361923 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2795067451256248     
-  KS electrons/energy:   13.99999199900322  -12.94189788117262 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.912153840051658     
+ The Coulomb energy contribution    79.008707267666153     
+  KS electrons/energy:   13.97561737408909  -12.90950478361913 rel.err:-0.17E-02
+ Tr(x2d2)=  -8.2795067451255822     
+  KS electrons/energy:   13.99999199900324  -12.94189788117255 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.912153840051360     
   5    -91.4060544809   -0.00028546209   -1.00      0.00000    0.00    0.0000000    1.65E-02  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   6
- The Coulomb energy contribution    79.012627021815547     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97553513451082  -12.90977892658448 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2796895028423503     
-  KS electrons/energy:   13.99999199872184  -12.94225790472014 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.912368066605666     
+ The Coulomb energy contribution    79.012627021815078     
+  KS electrons/energy:   13.97553513451085  -12.90977892658440 rel.err:-0.17E-02
+ Tr(x2d2)=  -8.2796895028423148     
+  KS electrons/energy:   13.99999199872185  -12.94225790472004 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.912368066605609     
   6    -91.4060642816   -0.00000980066   -1.00      0.00000    0.00    0.0000000    4.88E-03  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   7
- The Coulomb energy contribution    79.012890956924551     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97553998536295  -12.90984283493508 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2797300252348567     
-  KS electrons/energy:   13.99999199858946  -12.94231010130048 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.912427261417179     
+ The Coulomb energy contribution    79.012890956924238     
+  KS electrons/energy:   13.97553998536292  -12.90984283493505 rel.err:-0.17E-02
+ Tr(x2d2)=  -8.2797300252348425     
+  KS electrons/energy:   13.99999199858950  -12.94231010130047 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.912427261417193     
   7    -91.4060652718   -0.00000099028   -1.00      0.00000    0.00    0.0000000    3.68E-04  ###
 ** Make average of the last F and D matrices
 ** Get new density 
 No. of matmuls in get_density:     1
 ** Get Fock matrix number   8
- The Coulomb energy contribution    79.012722731142418     
-    This is an OpenMP calculation using   4 threads.
-  KS electrons/energy:   13.97553932190732  -12.90982454938580 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
- Tr(x2d2)=  -8.2797180306783975     
-  KS electrons/energy:   13.99999199856689  -12.94229402260533 rel.err:-0.57E-06
-  Max allocated memory, XC                      1.515 MB
- ADMM exchange energy contribution:   -12.912410249815878     
+ The Coulomb energy contribution    79.012722731142077     
+  KS electrons/energy:   13.97553932190729  -12.90982454938572 rel.err:-0.17E-02
+ Tr(x2d2)=  -8.2797180306783691     
+  KS electrons/energy:   13.99999199856686  -12.94229402260529 rel.err:-0.57E-06
+ ADMM exchange energy contribution:   -12.912410249815821     
   8    -91.4060652792   -0.00000000734   -1.00      0.00000    0.00    0.0000000    4.75E-05  ###
 SCF converged in      8 iterations
 
@@ -611,14 +581,14 @@ Calculation of virtual orbital energies converged in     9 iterations!
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -90.51283731739630411539      0.455493866135575D+01
-    2           -91.37874902432179169409      0.115724641957299D+01
-    3           -91.40299365019116351050      0.313474487184210D+00
-    4           -91.40576901882178617598      0.107092955772156D+00
-    5           -91.40605448090737183975      0.164801797592548D-01
-    6           -91.40606428156409890562      0.488440178623008D-02
-    7           -91.40606527184075957848      0.367588825697236D-03
-    8           -91.40606527918248502829      0.475039114129849D-04
+    1           -90.51283731739617621770      0.455493866135591D+01
+    2           -91.37874902432190538093      0.115724641957309D+01
+    3           -91.40299365019086508255      0.313474487184257D+00
+    4           -91.40576901882172933256      0.107092955772243D+00
+    5           -91.40605448090711604436      0.164801797592511D-01
+    6           -91.40606428156388574280      0.488440178621474D-02
+    7           -91.40606527184081642190      0.367588825683948D-03
+    8           -91.40606527918234291974      0.475039114434642D-04
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -649,37 +619,32 @@ Calculation of virtual orbital energies converged in     9 iterations!
                      Coulomb contribution to gradient
                      --------------------------------
 
-   H       -0.0000000000            0.0000000000           -0.2343618415
+   H        0.0000000000            0.0000000000           -0.2343618415
    N       -0.0000000000           -0.0000000000          -14.8191289988
    C        0.0000000000            0.0000000000           15.0534908403
-    This is an OpenMP calculation using   4 threads.
-    This is an OpenMP calculation using   4 threads.
 
 
                      grad_k2 contribution to gradient
                      --------------------------------
 
-   H        0.0000000000           -0.0000000000           -0.0382614778
-   N       -0.0000000000            0.0000000000            1.2914490832
+   H       -0.0000000000           -0.0000000000           -0.0382614778
+   N        0.0000000000            0.0000000000            1.2914490832
    C       -0.0000000000           -0.0000000000           -1.2531876054
-  KS electrons/energy:   13.97553932190734  -12.90982454938578 rel.err:-0.17E-02
-  Max allocated memory, XC                      1.010 MB
-  Max allocated memory, XC                      3.064 MB
+  KS electrons/energy:   13.97553932190733  -12.90982454938575 rel.err:-0.17E-02
 
 
                     grad_xc2 contribution to gradient
                     ---------------------------------
 
-   H       -0.0000000000            0.0000000000            0.0636480261
+   H        0.0000000000            0.0000000000            0.0636480261
    N       -0.0000000000           -0.0000000000           -0.9239872704
    C        0.0000000000            0.0000000000            0.8605826824
-  Max allocated memory, XC                      4.552 MB
 
 
                     grad_XC3 contribution to gradient
                     ---------------------------------
 
-   H        0.0000000000           -0.0000000000            0.0435552708
+   H       -0.0000000000           -0.0000000000            0.0435552708
    N        0.0000000000            0.0000000000            0.5679585124
    C       -0.0000000000           -0.0000000000           -0.6117506999
 
@@ -687,7 +652,7 @@ Calculation of virtual orbital energies converged in     9 iterations!
                     ADMM_proj contribution to gradient
                     ----------------------------------
 
-   H        0.0000000000            0.0000000000            0.0910546563
+   H       -0.0000000000            0.0000000000            0.0910546563
    N        0.0000000000            0.0000000000           -0.1846828564
    C       -0.0000000000           -0.0000000000            0.0936282002
 
@@ -695,7 +660,7 @@ Calculation of virtual orbital energies converged in     9 iterations!
                     exchange contribution to gradient
                     ---------------------------------
 
-   H        0.0000000000           -0.0000000000            0.1599964754
+   H       -0.0000000000           -0.0000000000            0.1599964754
    N        0.0000000000            0.0000000000            0.7507374688
    C       -0.0000000000           -0.0000000000           -0.9107274227
 
@@ -703,7 +668,7 @@ Calculation of virtual orbital energies converged in     9 iterations!
                    twoElectron contribution to gradient
                    ------------------------------------
 
-   H       -0.0000000000            0.0000000000           -0.0743653661
+   H        0.0000000000            0.0000000000           -0.0743653661
    N       -0.0000000000           -0.0000000000          -14.0683915300
    C        0.0000000000            0.0000000000           14.1427634176
 
@@ -711,7 +676,7 @@ Calculation of virtual orbital energies converged in     9 iterations!
                    nuc-el attr contribution to gradient
                    ------------------------------------
 
-   H        0.0000000000           -0.0000000000           -4.3690455378
+   H       -0.0000000000           -0.0000000000           -4.3690455378
    N        0.0000000000            0.0000000000           32.7101809388
    C       -0.0000000000           -0.0000000000          -28.3411354010
 
@@ -719,7 +684,7 @@ Calculation of virtual orbital energies converged in     9 iterations!
                      kinetic contribution to gradient
                      --------------------------------
 
-   H       -0.0000000000            0.0000000000            0.2052280197
+   H        0.0000000000            0.0000000000            0.2052280197
    N       -0.0000000000           -0.0000000000           -1.5550105004
    C        0.0000000000            0.0000000000            1.3497824807
 
@@ -727,29 +692,29 @@ Calculation of virtual orbital energies converged in     9 iterations!
                   reorthonomal contribution to gradient
                   -------------------------------------
 
-   H       -0.0000000000            0.0000000000           -0.2039075250
-   N        0.0000000000           -0.0000000000           -0.4059489760
-   C       -0.0000000000            0.0000000000            0.6098565010
+   H        0.0000000000            0.0000000000           -0.2039075250
+   N       -0.0000000000           -0.0000000000           -0.4059489760
+   C        0.0000000000            0.0000000000            0.6098565010
 
 
                          Molecular gradient (au)
                          -----------------------
 
    H        0.0000000000            0.0000000000            2.6779095908
-   N        0.0000000000           -0.0000000000           -3.1058367343
-   C        0.0000000000           -0.0000000000            0.4279336650
+   N       -0.0000000000            0.0000000000           -3.1058367343
+   C       -0.0000000000           -0.0000000000            0.4279336650
 
 
- RMS gradient norm (au):      1.3743907263627704
+ RMS gradient norm (au):      1.3743907263627702
 
 
- >>>  CPU Time used in LSDALTON RSP is   5.38 seconds
- >>> wall Time used in LSDALTON RSP is   2.01 seconds
+ >>>  CPU Time used in LSDALTON RSP is   5.22 seconds
+ >>> wall Time used in LSDALTON RSP is   1.44 seconds
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    5.3767370000000021         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    5.2186339999999980         **
  *****************************************************
- >>>  CPU Time used in *SCF is  20.78 seconds
- >>> wall Time used in *SCF is   8.86 seconds
+ >>>  CPU Time used in *SCF is  19.91 seconds
+ >>> wall Time used in *SCF is   5.87 seconds
 
 Total no. of matmuls used:                       137
 Total no. of Fock/KS matrix evaluations:          14
@@ -837,14 +802,14 @@ Max no. of matrices allocated in Level 3:         44
   Max allocated memory, ODitem                         9.920 kB
   Max allocated memory, LStensor                     153.159 kB
   Max allocated memory, FMM                            0.000 Byte
-  Max allocated memory, XC                             4.552 MB
+  Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- >>>  CPU Time used in LSDALTON is  24.50 seconds
- >>> wall Time used in LSDALTON is  10.28 seconds
+ >>>  CPU Time used in LSDALTON is  23.47 seconds
+ >>> wall Time used in LSDALTON is   6.91 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Jun 19 14:17:44 2014
+     Date and time (Linux)  : Thu Jun 19 16:20:44 2014
      Host name              : kjmac10-reine.local                     
