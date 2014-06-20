@@ -14,9 +14,6 @@ f.add(string = 'Final DFT energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Should be zero',
-      rel_tolerance = 1.0e-8)
-
 f.add(string = 'Allocated memory (TOTAL)')
 
 test.run(['LSDALTON_Link.dal'], ['HCN5.mol'], {'out': f})
