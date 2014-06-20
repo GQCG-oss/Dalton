@@ -453,11 +453,13 @@ contains
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       ! Those keyword should probably not be released but are necesary for some essantial test cases:
        case('.CRASHCALC') 
           DECinfo%CRASHCALC= .true.
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
+       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
 
 
 #ifdef MOD_UNRELEASED
@@ -563,7 +565,6 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_N_JOBS')
