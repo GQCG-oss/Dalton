@@ -448,15 +448,16 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
-
-
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
 
 
 #ifdef MOD_UNRELEASED
@@ -519,9 +520,6 @@ contains
           DECinfo%PrintInteractionEnergy  = .true.
        case('.SOSEX')
          DECinfo%SOS = .true.
-       case('.STRESSTEST')     
-          !Calculate biggest 2 atomic fragments and the biggest pair fragment
-          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
