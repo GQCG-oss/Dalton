@@ -14,8 +14,17 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'MOLECULAR GRADIENT RESULTS',
-      to_string   = 'RMS gradient norm',
+#f.add(from_string = 'MOLECULAR GRADIENT RESULTS',
+#      to_string   = 'RMS gradient norm',
+#      rel_tolerance = 1.0e-8)
+# do not work due to timings and other stuff like number of OpenMP threads
+
+f.add(from_string = 'contribution to gradient',
+      num_lines   = 6,
+      rel_tolerance = 1.0e-8)
+
+f.add(from_string = 'Molecular gradient (au)',
+      num_lines   = 6,
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Allocated memory (TOTAL)')
