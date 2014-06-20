@@ -4827,7 +4827,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
     !> orbital indices for loops:
-    integer :: i, j, k, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
+    integer :: i, j, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
     !> variable indices for arrays:
     integer :: pos1, pos2, ncopy
     integer :: mv((nvir*nvir)/2), st
@@ -4990,7 +4990,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !$OMP WORKSHARE 
       tmp1 = 0.0E0_realk
       !$OMP END WORKSHARE
-      ! get occ indices from full: sigma[K l, i<=j] <= sigma[P r, i<=j]
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1,P_sta,dimP,ntot,tmp2,dimK,n_ij)&
+      !$OMP PRIVATE(i,j,r,pos1,pos2)
+      !$OMP DO
       do i=1,n_ij
         do r=1,nocc
           pos1 = 1 + (r-1)*dimP + (i-1)*dimP*ntot
@@ -4998,24 +5000,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           call dcopy(dimK,tmp2(pos1),1,tmp1(pos2),1) 
         end do
       end do
-      ! Copy contracted array into proper place in the full array
-      ! first spread i<=j indices to full ij indices
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1)&
-      !$OMP PRIVATE(i,j,k,pos1,pos2)
-      do j=nocc,2,-1
+      !$OMP END DO
+      do j=nocc,1,-1
+        !$OMP DO
         do i=j,1,-1
-          pos1=((i+j*(j-1)/2)-1)*nocc*nocc
-          pos2=(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
-          !$OMP DO
-          do k=1, nocc*nocc
-            tmp1(k+pos2) = tmp1(k+pos1)
-          end do
-          !$OMP END DO
+          pos1=1+((i+j*(j-1)/2)-1)*nocc*nocc
+          pos2=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          if(j/=1) tmp1(pos2:pos2+nocc*nocc-1) = tmp1(pos1:pos1+nocc*nocc-1)
         enddo
+        !$OMP END DO
       enddo
       !$OMP BARRIER
       !$OMP DO
-      ! then square the array, copy full index ij to full index ji:
       do j=nocc,1,-1
         do i=j,1,-1
           pos1=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
@@ -5052,17 +5048,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Sum up sigma PQ batches contributions to A2.2 part of CCSD residual:
     !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,nvir,tmp1)&
-    !$OMP PRIVATE(i,j,k,pos1,pos2)
-    do j=nocc,2,-1
+    !$OMP PRIVATE(i,j,pos1,pos2)
+    do j=nocc,1,-1
+      !$OMP DO
       do i=j,1,-1
-        pos1=((i+j*(j-1)/2)-1)*nvir*nvir
-        pos2=(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-        !$OMP DO
-        do k=1, nvir*nvir
-          tmp1(k+pos2) = tmp1(k+pos1)
-        end do
-        !$OMP END DO
+        pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
+        pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        if(j/=1) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
       enddo
+      !$OMP END DO
     enddo
     !$OMP BARRIER
     !$OMP DO
