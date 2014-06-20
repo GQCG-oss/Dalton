@@ -448,15 +448,18 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
-
-
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       ! Those keyword should probably not be released but are necesary for some essantial test cases:
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
+       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
 
 
 #ifdef MOD_UNRELEASED
@@ -519,9 +522,6 @@ contains
           DECinfo%PrintInteractionEnergy  = .true.
        case('.SOSEX')
          DECinfo%SOS = .true.
-       case('.STRESSTEST')     
-          !Calculate biggest 2 atomic fragments and the biggest pair fragment
-          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -565,7 +565,6 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_N_JOBS')
