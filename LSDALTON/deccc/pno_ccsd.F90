@@ -95,6 +95,7 @@ module pno_ccsd_module
      integer :: iorb,nthreads
      type(int_batch) :: a_batch, g_batch
      real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,treord,trest,tfin
+     real(realk) :: mo_time(6)
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -111,7 +112,8 @@ module pno_ccsd_module
 #endif
   
      call time_start_phase(PHASE_WORK, twall = tw)
-     tinit = tw
+     tinit   = tw
+     mo_time = 0.0E0_realk
   
      o2v2 = (i8*no**2)*nv**2
      use_triangular = .true.
@@ -299,7 +301,7 @@ module pno_ccsd_module
      !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv_vvoo,gvvvv,&
      !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
      !$OMP Gkj, maxsize, nspaces, ovf,  s_idx,o1,sio4,&
-     !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
+     !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) REDUCTION(+:mo_time)
      call init_threadmemvar()
 
      call mem_alloc( w1, maxsize )
@@ -343,6 +345,9 @@ module pno_ccsd_module
         !A2.2
         !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(1) )
+
+
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -350,6 +355,9 @@ module pno_ccsd_module
         call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
            &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
 
+
+        call time_start_phase(PHASE_WORK, twall = mo_time(2), ttot = mo_time(1) )
+        mo_time(3) = mo_time(3) + mo_time(1)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part2, C2, D2 !! 
@@ -362,6 +370,8 @@ module pno_ccsd_module
            &o,w1,w2,w3,w4,w5,goovv_vvoo,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
 
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(1), ttot = mo_time(2) )
+        mo_time(4) = mo_time(4) + mo_time(2)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  B1 Term !!!!!!!!!!!!
@@ -430,6 +440,9 @@ module pno_ccsd_module
 
         endif
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(2), ttot = mo_time(1) )
+        mo_time(5) = mo_time(5) + mo_time(1)
+
         d   => null()
         t   => null()
         idx => null()
@@ -439,6 +452,7 @@ module pno_ccsd_module
      enddo LoopContribs
      !$OMP END DO NOWAIT
 
+     call time_start_phase(PHASE_WORK, twall = mo_time(1) )
 
      ! Add the missing singles contributions
      !$OMP DO SCHEDULE(DYNAMIC)
@@ -674,6 +688,9 @@ module pno_ccsd_module
      enddo LoopSingles
      !$OMP END DO NOWAIT
 
+     call time_start_phase(PHASE_WORK, ttot = mo_time(1) )
+     mo_time(6) = mo_time(6) + mo_time(1)
+
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
      call mem_dealloc( w3 )
@@ -686,6 +703,12 @@ module pno_ccsd_module
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
+
+     write (*,'(" PNO: TIME MO part:")')
+     write (*,'(" PNO: common contribs      :",g10.3,"s")')mo_time(3)
+     write (*,'(" PNO: overlapping contribs :",g10.3,"s")')mo_time(4)
+     write (*,'(" PNO: B1                   :",g10.3,"s")')mo_time(5)
+     write (*,'(" PNO: C1                   :",g10.3,"s")')mo_time(6)
 
      call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
         & 'PNO: MO part                         :' )
