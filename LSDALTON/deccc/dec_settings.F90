@@ -684,6 +684,10 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
+    ! Never ignores pairs when full molecule is included in fragments
+    if(DECinfo%InclFullMolecule) then
+       DECinfo%PairEstimateIgnore=.true.
+    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT

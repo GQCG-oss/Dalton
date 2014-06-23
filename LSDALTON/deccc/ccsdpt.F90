@@ -4898,8 +4898,10 @@ contains
   end subroutine ccsdpt_contract_abc_222
 
 
+
+
   !> \brief: calculate E[5] contribution to single fragment ccsd(t) energy correction
-  !> \author: Janus Eriksen
+  !> \author: Janus Eriksen and Kasper Kristensen
   !> \date: september 2012
   subroutine ccsdpt_energy_e5_frag(MyFragment,ccsd_singles,ccsdpt_singles)
 
@@ -4909,14 +4911,23 @@ contains
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
-    !> integers
-    integer :: nocc_eos, nvirt_eos, i,a, i_eos, a_eos
-    !> temp energy
     real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a
 
-    ! init dimensions
-    nocc_eos = MyFragment%noccEOS
-    nvirt_eos = MyFragment%nunoccEOS
+    noccAOS = MyFragment%noccAOS
+    nunoccAOS = MyFragment%nunoccAOS
+
+    ! Sanity check
+    if(MyFragment%nEOSatoms/=1) then
+       print *, 'nEOSatoms ',MyFragment%nEOSatoms
+       call lsquit('ccsdpt_energy_e5_frag called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
 
     ! ***********************
     !   do E[5] energy part
@@ -4930,64 +4941,67 @@ contains
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
 
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,a,a_eos,energy_tmp),&
-    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
-    !$OMP REDUCTION(+:ccsdpt_e5)
-    do i=1,nocc_eos
-       i_eos = MyFragment%idxo(i)
-       do a=1,nvirt_eos
-          a_eos = MyFragment%idxu(a)
+    iloop: do i=1,noccAOS
+       ! Only include contribution if consistent with secondary assignment
+       if(.not. SEC_occ(i)) cycle iloop
+       aloop: do a=1,nunoccAOS
+          if(.not. SEC_unocc(a)) cycle aloop
 
-          energy_tmp = ccsd_singles%elm2(a_eos,i_eos) * ccsdpt_singles%elm2(a_eos,i_eos)
+          energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
-       end do 
-    end do 
-    !$OMP END PARALLEL DO
-
+       end do aloop
+    end do iloop
     MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
+
+
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
 
-    ! ******************************
-    !   done with E[5] energy part
-    ! ******************************
+  end subroutine ccsdpt_energy_e5_frag
 
-  end subroutine ccsdpt_energy_e5_frag 
 
   !> \brief: calculate E[5] contribution to pair fragment ccsd(t) energy correction
   !> \author: Janus Eriksen
   !> \date: september 2012
-  subroutine ccsdpt_energy_e5_pair(Fragment1,Fragment2,PairFragment,ccsd_singles,ccsdpt_singles)
+  subroutine ccsdpt_energy_e5_pair(PairFragment,ccsd_singles,ccsdpt_singles)
 
     implicit none
 
-    !> fragment # 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
-    !> fragment # 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
-    !> integers
-    integer :: nocc_eos, nvirt_eos, i, a, idx, adx, AtomI, AtomA, i_eos, a_eos
-    !> logicals to avoid double counting
-    logical :: occ_in_frag_1, virt_in_frag_1, occ_in_frag_2, virt_in_frag_2
+    real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(PairFragment%noccAOS), SEC_unocc(PairFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a,atomi,atoma
 
-    ! init dimensions
-    nocc_eos = PairFragment%noccEOS
-    nvirt_eos = PairFragment%nunoccEOS
+    noccAOS = PairFragment%noccAOS
+    nunoccAOS = PairFragment%nunoccAOS
+
+    ! Sanity check
+    if(PairFragment%nEOSatoms/=2) then
+       print *, 'nEOSatoms ',PairFragment%nEOSatoms
+       call lsquit('ccsdpt_energy_e5_pair called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(PairFragment,SEC_occ,SEC_unocc)
+
 
     ! ***********************
     !   do E[5] energy part
@@ -4998,96 +5012,46 @@ contains
     PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
     PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
-    do i=1,nocc_eos
-       i_eos = PairFragment%idxo(i)
-       AtomI = PairFragment%occAOSorb(i_eos)%CentralAtom
-       do a=1,nvirt_eos
-          a_eos = PairFragment%idxu(a)
-          AtomA = PairFragment%unoccAOSorb(a_eos)%CentralAtom
+    ! init temp energy
+    ccsdpt_e5 = 0.0E0_realk
 
-          ! occ in frag # 1, virt in frag # 2
+    iloop: do i=1,noccAOS
+       ! Only include contribution if consistent with secondary assignment
+       if(.not. SEC_occ(i)) cycle iloop
+       atomi = PairFragment%occAOSorb(i)%secondaryatom
+       aloop: do a=1,nunoccAOS
+          if(.not. SEC_unocc(a)) cycle aloop
+          atoma = PairFragment%unoccAOSorb(a)%secondaryatom
 
-          occ_in_frag_1 = .false.
-          do idx = 1,Fragment1%nEOSatoms
-             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
-                occ_in_frag_1 = .true.
-             end if
-          end do
-
-          virt_in_frag_2 = .false.
-          do adx = 1,Fragment2%nEOSatoms
-             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
-                virt_in_frag_2 = .true.
-             end if
-          end do
-
-          if (occ_in_frag_1 .and. virt_in_frag_2) then
-             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
-               & * ccsdpt_singles%elm2(a_eos,i_eos)
+          ! Only include if atomi/=atoma
+          ! (the atomi=atoma contributions were included for atomic fragments)
+          if(atomi/=atoma) then
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
           end if
 
-          ! virt in frag # 1, occ in frag # 2
-                            
-          occ_in_frag_2 = .false. 
-          do idx = 1,Fragment2%nEOSatoms
-             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
-                occ_in_frag_2 = .true.
-             end if
-          end do 
-             
-          virt_in_frag_1 = .false.
-          do adx = 1,Fragment1%nEOSatoms
-             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
-                virt_in_frag_1 = .true.
-             end if
-          end do
-             
-          if (occ_in_frag_2 .and. virt_in_frag_1) then
-             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
-               & * ccsdpt_singles%elm2(a_eos,i_eos)
-          end if
-
-          ! sanity checks
-
-          if (.not. (occ_in_frag_1 .or. occ_in_frag_2)) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: occ orbital neither in frag 1 or 2',DECinfo%output)        
-          end if
-          if (.not. (virt_in_frag_1 .or. virt_in_frag_2)) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: virt orbital neither in frag 1 or 2',DECinfo%output)
-          end if
-          if (occ_in_frag_1 .and. occ_in_frag_2) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: occ orbital both in frag 1 or 2',DECinfo%output)
-          end if
-          if (virt_in_frag_1 .and. virt_in_frag_2) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: virt orbital both in frag 1 or 2',DECinfo%output)
-          end if
-
-       end do
-    end do
+       end do aloop
+    end do iloop
+    PairFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
 
-    ! ******************************
-    !   done with E[5] energy part
-    ! ******************************
 
   end subroutine ccsdpt_energy_e5_pair
+
 
 
   !> \brief: calculate E[4] contribution to single fragment ccsd(t) energy correction
@@ -5648,6 +5612,8 @@ contains
     !   do E[4] energy part
     ! ***********************
 
+    eccsdpt_matrix_cou = 0.0_realk
+    eccsdpt_matrix_exc = 0.0_realk
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
     ccsdpt_e4 = 0.0E0_realk
@@ -5824,15 +5790,16 @@ contains
     !   do E[5] energy part
     ! ***********************
 
-    ccsdpt_e5 = 0.0E0_realk
+    e5_matrix = 0.0_realk
+    ccsdpt_e5 = 0.0_realk
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
     !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
     !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
     do i=1,nocc
-    AtomI = occ_orbitals(i+offset)%CentralAtom
+    AtomI = occ_orbitals(i+offset)%secondaryatom
        do a=1,nvirt
-       AtomA = unocc_orbitals(a)%CentralAtom
+       AtomA = unocc_orbitals(a)%secondaryatom
 
            energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
            e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp

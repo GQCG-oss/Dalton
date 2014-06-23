@@ -1088,7 +1088,7 @@ contains
                           & PairFragment%Cv,PairFragment%mylsitem,&
                           & t2,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
-       call ccsdpt_energy_e5_pair(Fragment1,Fragment2,PairFragment,t1,ccsdpt_t1)
+       call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
        call array_free(ccsdpt_t1)
@@ -2272,8 +2272,8 @@ contains
      DistMyAtom= mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
      ! Sort atoms according to distance from central atom
      call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,mymolecule%DistanceTable,natoms,natoms,MyAtom)
-     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-     nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.)
+     nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
      ! Only do fragment optimization if there are orbitals assigned to central atom.
      if( (nocc_per_atom(MyAtom) == 0) .and. (nunocc_per_atom(MyAtom) == 0) ) then
         write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom

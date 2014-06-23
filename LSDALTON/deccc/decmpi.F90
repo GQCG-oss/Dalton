@@ -442,6 +442,7 @@ contains
     do i=1,nocc
        call ls_mpi_buffer(OccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(OccOrbitals(i)%centralatom,master)
+       call ls_mpi_buffer(OccOrbitals(i)%secondaryatom,master)
        call ls_mpi_buffer(OccOrbitals(i)%numberofatoms,master)
 
        ! Pointer for atoms for orbital "i"
@@ -462,6 +463,7 @@ contains
     do i=1,nunocc
        call ls_mpi_buffer(UnoccOrbitals(i)%orbitalnumber,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%centralatom,master)
+       call ls_mpi_buffer(UnoccOrbitals(i)%secondaryatom,master)
        call ls_mpi_buffer(UnoccOrbitals(i)%numberofatoms,master)
 
        ! Pointer for atoms for orbital "i"

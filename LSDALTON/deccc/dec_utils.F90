@@ -5288,4 +5288,51 @@ end function max_batch_dimension
  end subroutine remove_core_orbitals_from_last_index_newarr
 
 
+ 
+ !> Set logical arrays according to secondary assignment
+ !>
+ !> SEC_occ(i) = .true.   
+ !>
+ !> if the secondary atom of occ orbital "i" is identical to the central atom
+ !> defining the atomic fragments (or to one of the central atoms for pair fragments).
+ !> Otherwise SEC_occ=.false.  (and similarly for SEC_unocc).
+ subroutine secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
+   implicit none
+
+   !> fragment info
+   type(decfrag), intent(inout) :: MyFragment
+   !> Logical arrays defined as described above
+   logical,intent(inout) :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+   integer :: noccAOS,nunoccAOS,i,P
+
+
+   noccAOS = MyFragment%noccAOS
+   nunoccAOS = MyFragment%nunoccAOS
+   SEC_occ=.false.
+   SEC_unocc=.false.
+   do i=1,noccAOS
+      ! Set SEC_occ(i) to true if secondary atom equals (one of the) atom(s) 
+      ! defining atomic (pair) fragment
+      do P=1,MyFragment%nEOSatoms
+         if(MyFragment%occAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
+            SEC_occ(i)=.true.
+         end if
+      end do
+   end do
+
+   ! Same for unocc orbitals
+   do i=1,nunoccAOS
+      do P=1,MyFragment%nEOSatoms
+         if(MyFragment%unoccAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
+            SEC_unocc(i)=.true.
+         end if
+      end do
+   end do
+
+
+ end subroutine secondary_assigning
+
+
+
 end module dec_fragment_utils

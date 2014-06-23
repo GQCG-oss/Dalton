@@ -485,10 +485,15 @@ module dec_typedef_module
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
-     !> Cental atom in the population
+     !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
      integer :: numberofatoms
+     !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
+     !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
+     !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+     !> of occupied AND virtual orbitals in the original assignment.
+     integer :: secondaryatom
 
      !> List of significant atoms
      integer, pointer :: atoms(:) => null()

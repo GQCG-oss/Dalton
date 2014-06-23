@@ -785,8 +785,8 @@ contains
     call mem_alloc( nocc_per_atom,   natoms )
     call mem_alloc( nunocc_per_atom, natoms )
 
-    nocc_per_atom   = get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom = get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    nocc_per_atom   = get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.)
+    nunocc_per_atom = get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
 
     ! Determine logical vectors describing which atoms to include in fragment,
     ! i.e., atoms where the distance to MyAtom is smaller than init_radius
@@ -2266,8 +2266,7 @@ contains
     call mem_alloc(fragment%occAOSorb,Fragment%noccAOS)
     do j=1,Fragment%noccAOS
        idx = fragment%occAOSidx(j)
-       fragment%occAOSorb(j) = orbital_init(idx,OccOrbitals(idx)%centralatom, &
-            OccOrbitals(idx)%numberofatoms,OccOrbitals(idx)%atoms)
+       call copy_orbital(OccOrbitals(idx),fragment%occAOSorb(j))
     end do
     ! --
 
@@ -2275,8 +2274,7 @@ contains
     call mem_alloc(fragment%unoccAOSorb,Fragment%nunoccAOS)
     do j=1,Fragment%nunoccAOS
        idx = fragment%unoccAOSidx(j)
-       fragment%unoccAOSorb(j) = orbital_init(idx,UnoccOrbitals(idx)%centralatom, &
-            UnoccOrbitals(idx)%numberofatoms,UnoccOrbitals(idx)%atoms)
+       call copy_orbital(UnoccOrbitals(idx),fragment%unoccAOSorb(j))
     end do
     ! --
 
