@@ -65,11 +65,12 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    type(matrix) :: x, Dchol !For debug
    type(matrix) :: unitmat
    type(matrix), pointer :: Dpointer, Fpointer
-   LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel,gradalloc
+   LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel,gradalloc,ForcePrint
    real(realk) :: acceptratio, limitratio
    real(realk) :: h
    type(matrix) :: Dtest
    !
+   ForcePrint = .TRUE.
    ndmat = 1
    OnMaster=.true.
    NotLastSCFLevel = config%integral%LOW_ACCURACY_START
@@ -363,7 +364,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
 
-      CALL LSTIMER('SCF iteration',t1,t2,config%lupri)
+      CALL LSTIMER('SCF iteration',t1,t2,config%lupri,ForcePrint)
 
       IF(NotLastSCFLevel)THEN
          IF(gradnrm < config%opt%set_convergence_threshold) then 
@@ -372,7 +373,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          ENDIF
       ENDIF
    END DO
-   CALL LSTIMER('**ITER',TSTR,TEN,config%LUPRI)
+   CALL LSTIMER('**ITER',TSTR,TEN,config%LUPRI,ForcePrint)
    IF(gradalloc)THEN
       call mat_free(grad)
    ENDIF
