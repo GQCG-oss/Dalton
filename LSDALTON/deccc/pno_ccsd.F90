@@ -70,7 +70,7 @@ module pno_ccsd_module
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
      real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
      real(realk),pointer :: r1(:,:),r2(:,:)
-     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), gooov(:)
+     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), goovv_vvoo(:), gooov(:)
      real(realk),pointer :: Gai(:,:), Gkj(:,:)
      integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
@@ -94,7 +94,7 @@ module pno_ccsd_module
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: iorb,nthreads
      type(int_batch) :: a_batch, g_batch
-     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,trest,tfin
+     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,treord,trest,tfin
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -261,12 +261,17 @@ module pno_ccsd_module
      call mem_dealloc( iFock )
      call mem_dealloc( w1    )
 
-     call time_start_phase(PHASE_WORK, twall = trest, ttot = tfock, labelttot = &
+     call time_start_phase(PHASE_WORK, twall = treord, ttot = tfock, labelttot = &
         & 'PNO: fock matrix construction        :' )
 
      Lvoov = p20 * Lvoov
      call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
+     call mem_alloc( goovv_vvoo,  o2v2 )
+     call array_reorder_4d( p10, goovv, no, no ,nv, nv, [3,4,1,2], nul, goovv_vvoo)
+     call mem_dealloc( goovv )
 
+     call time_start_phase(PHASE_WORK, twall = trest, ttot = treord, labelttot = &
+        & 'PNO: sorting integrals for MO part   :' )
 
      call mem_alloc(Gkj, no, no)
      Gkj = oof
@@ -291,7 +296,7 @@ module pno_ccsd_module
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
      !$OMP oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-     !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+     !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv_vvoo,gvvvv,&
      !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
      !$OMP Gkj, maxsize, nspaces, ovf,  s_idx,o1,sio4,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
@@ -354,7 +359,7 @@ module pno_ccsd_module
         !pair index, this could in principle also be solved with if statements
         !in the previous full loop and only doing the following work in a subset
         call get_common_idx_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,&
-           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
+           &o,w1,w2,w3,w4,w5,goovv_vvoo,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
 
 
 
@@ -709,7 +714,7 @@ module pno_ccsd_module
      call mem_dealloc( pno_t2 )
      call mem_dealloc( pno_o2 )
      call mem_dealloc( sio4  )
-     call mem_dealloc( goovv )
+     call mem_dealloc( goovv_vvoo )
      call mem_dealloc( Lvoov )
      call mem_dealloc( gooov )
      call mem_dealloc( p_idx )
@@ -835,6 +840,7 @@ module pno_ccsd_module
      integer, intent(out),optional :: red1, red2, ns1,ns2
      integer :: Sidx
 
+
      !Get the overlap identificaton and transformation props
 
      if(n1>n2)then
@@ -855,10 +861,8 @@ module pno_ccsd_module
         if(present(red2))red2 = pS(Sidx)%red2
         if(present(ns1)) ns1 = pS(Sidx)%ns1
         if(present(ns2)) ns2 = pS(Sidx)%ns2
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
-           print *,"S mat wrong",pS(Sidx)%iaos(1),n1,pS(Sidx)%iaos(2),n2
-        endif
+
+        if(.not.pS(Sidx)%allocd)call lsquit("ERROR(get_overlap_ptr):overlap not allocd",-1)
 
      else if(n2>n1)then
 
@@ -878,11 +882,8 @@ module pno_ccsd_module
         if(present(red2))red2 = pS(Sidx)%red2
         if(present(ns1)) ns1 = pS(Sidx)%ns1
         if(present(ns2)) ns2 = pS(Sidx)%ns2
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
-           print *,"S mat wrong",pS(Sidx)%iaos(1),n2,pS(Sidx)%iaos(2),n1
-        endif
 
+        if(.not.pS(Sidx)%allocd)call lsquit("ERROR(get_overlap_ptr):overlap not allocd",-1)
      else
 
         !skip the transformation if the amplitudes reference the same space
@@ -891,6 +892,7 @@ module pno_ccsd_module
         ldS       =  0
 
      endif
+
   end subroutine get_overlap_ptr
 
 
@@ -1066,13 +1068,13 @@ module pno_ccsd_module
 
         !trafo from n1 to n2 
         Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
-        cyc       =  .not. S(Sidx)%allocd
+        cyc       =  .not. S(Sidx)%contributes
 
      else if(n2>n1)then
 
         !trafo from n2 to n1
         Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
-        cyc       =  .not. S(Sidx)%allocd
+        cyc       =  .not. S(Sidx)%contributes
 
      else
 
@@ -1101,17 +1103,17 @@ module pno_ccsd_module
   !> \date december 2013
   ! 
   ! TODO: make this routine independent of the internal mem_allocations
-  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2,pC)
+  subroutine do_overlap_trafo(nv,ns1,ns2,pos_of_overlap,CV,S,m,n,k,A,C,ptr,ptr2,pC)
      implicit none
-     integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
-     type(PNOSpaceInfo),intent(inout) :: S(:)
+     integer, intent(in) :: nv,pos_of_overlap,m,n,k,ns1,ns2
+     type(PNOSpaceInfo),intent(inout) :: S(:),CV(:)
      real(realk),intent(in),target :: A(:)
      real(realk),intent(inout),target :: C(:)
      real(realk),pointer,optional :: ptr(:),ptr2(:)
      real(realk),optional :: pC
      real(realk),pointer :: S1(:,:)
      real(realk),pointer :: tmp1(:),tmp2(:), U(:,:), VT(:,:)
-     integer :: ldS1,ldU,ldVT
+     integer :: ldS1,ldU,ldVT,Sidx,maxns,minns,cc
      logical :: skiptrafo
      character :: tr1,tr2
      real(realk), parameter :: nul = 0.0E0_realk
@@ -1121,6 +1123,13 @@ module pno_ccsd_module
 
      preC = 0.0E0_realk
      if(present(pC))preC = pC
+
+     if(DECinfo%pno_S_on_the_fly.and.ns1/=ns2)then
+        maxns = max(ns1,ns2)
+        minns = min(ns1,ns2)
+        Sidx = (minns - maxns + 1) + maxns*(maxns-1)/2
+        call get_overlap_matrix_from_pno_spaces(nv,CV(maxns),CV(minns),S(Sidx),.true.)
+     endif
 
      call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
 
@@ -1183,6 +1192,9 @@ module pno_ccsd_module
 
      endif
 
+     if(DECinfo%pno_S_on_the_fly.and.ns1/=ns2)then
+        if( S(Sidx)%allocd )  call free_PNOSpaceInfo( S(Sidx) )
+     endif
   end subroutine do_overlap_trafo
 
 
@@ -1209,11 +1221,6 @@ module pno_ccsd_module
 
      call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
 
-     if( DECinfo%noPNOoverlaptrunc ) then
-        thr = -1.0E0_realk * huge(thr)
-     else
-        thr = DECinfo%PNOoverlapthr
-     endif
 
      mem_overlap_spaces = 0.0E0_realk
 
@@ -1221,7 +1228,6 @@ module pno_ccsd_module
      allremoved = 0
      ofmindim   = 0
      ofmaxdim   = 0
-
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
      !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount,mem_overlap_spaces)&
@@ -1232,7 +1238,7 @@ module pno_ccsd_module
      call init_threadmemvar()
 
      !CURRENT HACK FOR PGI COMPILER, SOMETHING WITH THE ALLOCATIONS IN THE LOOP
-     !(AND MAYBE STACK MEMORY), FIXME: MOVE ALLOCATION OUTSIDE OF PARALLEL REGION
+     !(AND MAYBE STACK MEMORY)
 
      !$OMP SINGLE
 
@@ -1245,123 +1251,17 @@ module pno_ccsd_module
            ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
            c = (j - i + 1) + i*(i-1)/2
 
-           ns1 = pno_cv(i)%ns2
-           ns2 = pno_cv(j)%ns2
+           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd)
 
-           pno_S(c)%ns1 = ns1
-           pno_S(c)%ns2 = ns2
-
-           keep_pair = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
-
-           if( keep_pair )then
-
-
-              pno_S(c)%s_associated = .false.
-              call mem_alloc(pno_S(c)%d,ns1,ns2)
-
-              s1 => pno_cv(i)%d
-              s2 => pno_cv(j)%d
-
-              call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,pno_S(c)%d,ns1)
-
-              if(with_svd)then
-                 allocpcount = allocpcount + 1
-                 !get the minimum dimension, the maximum dimension and the dimension
-                 !of the kernel of the transformation
-                 mindim = min(ns1,ns2)
-                 maxdim = max(ns1,ns2)
-                 kerdim = maxdim - mindim
-
-                 !Characterize the type of overlap just produced, does it need to be
-                 !considered at all -> calculate the singular values for checking
-                 lwork = max(1,3*mindim+maxdim,5*mindim)
-                 call mem_alloc(sv,min(ns1,ns2))
-                 call mem_alloc(work,lwork)
-                 call mem_alloc(U,ns1,ns1)
-                 call mem_alloc(VT,ns2,ns2)
-                 sv = 0.0E0_realk; INFO=0
-                 call dgesvd('A','A',ns1,ns2,pno_S(c)%d,ns1,sv,U,ns1,VT,ns2,work,lwork,INFO)
-                 if(INFO/=0)call &
-                    &lsquit("ERROR(get_pno_overlap_matrices): dgesvd failed",-1)
-
-                 !screen singular values according to a predefined threshold
-                 do diag=1,mindim
-                    if(sv(diag)<thr)then
-                       exit
-                    endif
-                 enddo
-                 ! go one step back to where the singular value is still above thr
-                 ! and calculate the number of elements to remove additionally to the
-                 ! kernel dimension
-                 if(diag/=mindim)diag = diag - 1
-                 remove = mindim - diag
-
-                 ! Find the number of elements in the trafo, note that kerdim == 0 if
-                 ! ns1 == ns2, therefore an if else is enough
-                 if(ns1>ns2)then
-                    red1 = ns1 - remove - kerdim
-                    red2 = ns2 - remove
-                 else
-                    red1 = ns1 - remove
-                    red2 = ns2 - remove - kerdim
-                 endif
-
-                 ofmindim   = ofmindim   + mindim
-                 ofmaxdim   = ofmaxdim   + maxdim
-                 allremoved = allremoved + remove
-
-                 keep_pair = ( red1 > 0 .and. red2 > 0 )
-
-                 if(red1/=diag.or.red2/=diag)call &
-                    &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
-
-
-                 call mem_dealloc( pno_S(c)%d )
-
-                 if( keep_pair )then
-                    pno_S(c)%s_associated = .true.
-                    call mem_alloc( pno_S(c)%s1, ns1,  red1 )
-                    call mem_alloc( pno_S(c)%s2, red2, ns2  )
-                    call mem_alloc( pno_S(c)%d,  red1, red2 )
-                    pno_S(c)%red1 = red1
-                    pno_S(c)%red2 = red2
-
-                    pno_S(c)%s1 = U(:,1:red1)
-                    pno_S(c)%s2 = VT(1:red2,:)
-                    pno_S(c)%d  = nul
-                    do dg = 1, diag
-                       pno_S(c)%d(dg,dg) = sv(dg)
-                    enddo
-
-                    mem_overlap_spaces = mem_overlap_spaces + (ns1*red1 + red2*ns2 + red1 * red2 ) * 8.0E0_realk
-
-                 endif
-
-
-                 call mem_dealloc( U )
-                 call mem_dealloc( VT )
-                 call mem_dealloc( work )
-                 call mem_dealloc( sv )
+           if(pno_S(c)%allocd)then
+              if( with_svd )then
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &(size(pno_S(c)%s1) + size(pno_S(c)%d) + size(pno_S(c)%s2) ) * 8.0E0_realk
+              else
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &( size(pno_S(c)%d) ) * 8.0E0_realk
               endif
-
-
-              if( keep_pair ) then
-
-                 pno_S(c)%n = 2
-                 call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
-                 pno_S(c)%iaos = [i,j]
-
-              endif
-
-              pno_S(c)%allocd = keep_pair
-
-           else
-
-              pno_S(c)%allocd = .false.
-
            endif
-
-
         enddo
      enddo
      !$OMP END SINGLE
@@ -1370,12 +1270,168 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
      call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
-     & getting overlap spaces:")
+        & getting overlap spaces:")
      write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
 
+
+     if(DECinfo%pno_S_on_the_fly.or.mem_overlap_spaces/(1024.0E0_realk**3) > 0.2*DECinfo%memory)then
+        DECinfo%pno_S_on_the_fly = .true.
+        print *,"Switching to calculating pno overlap information on the fly"
+        do i=1,n
+           do j=1,n
+              if(j>=i) cycle
+              c = (j - i + 1) + i*(i-1)/2
+              if( pno_S(c)%allocd )  call free_PNOSpaceInfo( pno_S(c) )
+           enddo
+        enddo
+     endif
+
+
   end subroutine get_pno_overlap_matrices
+  
+  subroutine get_overlap_matrix_from_pno_spaces(nv,pno1,pno2,S12,with_svd)
+     implicit none
+     integer, intent(in) :: nv
+     type(PNOSpaceInfo),intent(in) :: pno1,pno2
+     type(PNOSpaceInfo),intent(inout) :: S12
+     logical, intent(in) :: with_svd
+     integer :: t1,t2,dg, n1, maxindex, minindex
+     integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
+     real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
+     real(realk) :: norm,thr
+     real(realk),parameter :: p10 = 1.0E0_realk
+     real(realk),parameter :: nul = 0.0E0_realk
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces
+     logical :: keep_pair
+
+     !FIXME: REMOVE ALLOCATION INSIDE THIS SUBROUTINE
+
+     if( DECinfo%noPNOoverlaptrunc ) then
+        thr = -1.0E0_realk * huge(thr)
+     else
+        thr = DECinfo%PNOoverlapthr
+     endif
+
+     ns1 = pno1%ns2
+     ns2 = pno2%ns2
+
+     S12%ns1 = ns1
+     S12%ns2 = ns2
+
+     keep_pair = ( pno1%allocd .and. pno2%allocd )
+
+     if( keep_pair )then
+
+
+        S12%s_associated = .false.
+        call mem_alloc(S12%d,ns1,ns2)
+
+        s1 => pno1%d
+        s2 => pno2%d
+
+        call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,S12%d,ns1)
+
+        if(with_svd)then
+
+           !get the minimum dimension, the maximum dimension and the dimension
+           !of the kernel of the transformation
+           mindim = min(ns1,ns2)
+           maxdim = max(ns1,ns2)
+           kerdim = maxdim - mindim
+
+           !Characterize the type of overlap just produced, does it need to be
+           !considered at all -> calculate the singular values for checking
+           lwork = max(1,3*mindim+maxdim,5*mindim)
+           call mem_alloc(sv,min(ns1,ns2))
+           call mem_alloc(work,lwork)
+           call mem_alloc(U,ns1,ns1)
+           call mem_alloc(VT,ns2,ns2)
+           sv = 0.0E0_realk; INFO=0
+           call dgesvd('A','A',ns1,ns2,S12%d,ns1,sv,U,ns1,VT,ns2,work,lwork,INFO)
+           if(INFO/=0)call &
+              &lsquit("ERROR(get_pno_overlap_matrices): dgesvd failed",-1)
+
+           !screen singular values according to a predefined threshold
+           do diag=1,mindim
+              if(sv(diag)<thr)then
+                 exit
+              endif
+           enddo
+           ! go one step back to where the singular value is still above thr
+           ! and calculate the number of elements to remove additionally to the
+           ! kernel dimension
+           if(diag/=mindim)diag = diag - 1
+           remove = mindim - diag
+
+           ! Find the number of elements in the trafo, note that kerdim == 0 if
+           ! ns1 == ns2, therefore an if else is enough
+           if(ns1>ns2)then
+              red1 = ns1 - remove - kerdim
+              red2 = ns2 - remove
+           else
+              red1 = ns1 - remove
+              red2 = ns2 - remove - kerdim
+           endif
+
+           keep_pair = ( red1 > 0 .and. red2 > 0 )
+
+           if(red1/=diag.or.red2/=diag)call &
+              &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
+
+
+           call mem_dealloc( S12%d )
+
+           if( keep_pair )then
+
+              S12%s_associated = .true.
+
+              call mem_alloc( S12%s1, ns1,  red1 )
+              call mem_alloc( S12%s2, red2, ns2  )
+              call mem_alloc( S12%d,  red1, red2 )
+
+              S12%red1 = red1
+              S12%red2 = red2
+
+              S12%s1 = U(:,1:red1)
+              S12%s2 = VT(1:red2,:)
+              S12%d  = nul
+
+              do dg = 1, diag
+                 S12%d(dg,dg) = sv(dg)
+              enddo
+
+
+           endif
+
+
+           call mem_dealloc( U )
+           call mem_dealloc( VT )
+           call mem_dealloc( work )
+           call mem_dealloc( sv )
+        endif
+
+
+        if( keep_pair ) then
+
+           S12%n = 2
+           call mem_alloc(S12%iaos,S12%n)
+           maxindex = max(pno1%iaos(1),pno2%iaos(1))
+           minindex = min(pno1%iaos(1),pno2%iaos(1))
+           S12%iaos = [maxindex,minindex]
+
+        endif
+
+        S12%allocd      = keep_pair
+        S12%contributes = keep_pair
+
+     else
+
+        S12%allocd      = .false.
+        S12%contributes = .false.
+
+     endif
+  end subroutine get_overlap_matrix_from_pno_spaces
 
   subroutine init_pno_residual_and_sio4(cv,o2,sio4,n,no)
      implicit none
@@ -2938,7 +2994,7 @@ module pno_ccsd_module
               ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
               call array_reorder_2d( p20, t21, pnv1, pnv1, paircontrib(:,3-pair), nul, w3)
               call array_reorder_2d( m10, t21, pnv1, pnv1, paircontrib(:,pair), p10, w3)
-              call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pnv1,pnv1,w3,w2,ptr=h1)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,pnv1,pnv1,w3,w2,ptr=h1)
 
               !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
               call dgemm('n','n',pnv,pnv,pnv1,m10, h1,pnv,w1,pnv1,p10,w5,pnv)
@@ -2963,7 +3019,7 @@ module pno_ccsd_module
            ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
            call array_reorder_4d( p20, t21, pnv1, rpd1, pnv1, rpd1, [1,3,2,4], nul, w3)
            call array_reorder_4d( m10, t21, pnv1, rpd1, pnv1, rpd1, [1,3,4,2], p10, w3)
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd1*pnv1*rpd1,pnv1,w3,w2,ptr=h1)
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,rpd1*pnv1*rpd1,pnv1,w3,w2,ptr=h1)
 
 
            !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
@@ -3154,11 +3210,9 @@ module pno_ccsd_module
         if(ns==ns2)then
            call array_reorder_4d( p10, w4, pnv, pnv,rpd,rpd, [2,4,1,3], p10, o )
         else
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
            call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
-           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
-           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
         endif
         !call print_tensor_unfolding_with_labels(o,&
         !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AFTER')
@@ -3292,8 +3346,9 @@ module pno_ccsd_module
         !get the order kjac -> ckja, please note, that this loop is only
         !inside OneIdxSpaceLoop2 because I only use 3 working matrices, p10
         !might easily move the following part outside the loop and add stuff
-        !up during the loops
-        call ass_D1to4( goovv, p2o, [no, no,nv,  nv] )
+        !up during the loops -> please note that we use the reordered goovv, to
+        !avoid cache misses here
+        call ass_D1to4( goovv, p2o, [nv,  nv, no, no] )
         if( PS )then
 
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3381,7 +3436,7 @@ module pno_ccsd_module
                     k = oidx1(nidx1+diff11+1,3)
                  endif
 
-                 p4(:,1,:,1) = p2o(k,j,:,:)
+                 p4(:,1,:,1) = p2o(:,:,k,j)
 
                  ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
                  call dgemm('t','n', pnv, nv, nv,  p10, d, nv, p4, nv, nul, w2, pnv)
@@ -3391,7 +3446,7 @@ module pno_ccsd_module
 
                  do kc=1,pno1
 
-                    p4(:,1,:,kc) = p2o(idx1(kc),j,:,:)
+                    p4(:,1,:,kc) = p2o(:,:,idx1(kc),j)
                     call dgemm('t','n', pnv, nv, nv, p10, d, nv, p4(1,1,1,kc), nv, nul, w2, pnv)
                     call dgemm('n','n', pnv, pnv1,nv, p10, w2, pnv, d1, nv, nul, w4(1+(kc-1)*pnv*pnv1), pnv)
 
@@ -3536,7 +3591,7 @@ module pno_ccsd_module
                     nidx_h2 = nidx2
                  endif
 
-                 call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1i,ptr2=h2i)
+                 call do_overlap_trafo(nv,ns,ns2,2,pno_cv,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1i,ptr2=h2i)
 
                  call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1i, rpd2*pnv2, nul, h2i, pnv1*rpd1)
 
@@ -3598,7 +3653,7 @@ module pno_ccsd_module
                  !call print_tensor_unfolding_with_labels(w1(1+(kc-1)*pnv1**2:),&
                  !   &[pnv,1],'bi',2,[pnv1,1],'ck',2,'t before- pair')
 
-                 call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+                 call do_overlap_trafo(nv,ns,ns1,1,pno_cv, pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
 
                  !call print_tensor_unfolding_with_labels(h1,&
                  !   &[pnv,1],'bi',2,[pnv1,1],'ck',2,'t - pair')
@@ -3638,12 +3693,12 @@ module pno_ccsd_module
               endif
 #endif
               do j=1,pno
-                 p1(1,j,:,:) = p2o(oidx1(nidx1+diff11+1,3),idx(j),:,:)
+                 p1(1,j,:,:) = p2o(:,:,oidx1(nidx1+diff11+1,3),idx(j))
               enddo
            else
               do j=1,pno
                  do k=1,pno1
-                    p1(k,j,:,:) = p2o(idx1(k),idx(j),:,:)
+                    p1(k,j,:,:) = p2o(:,:,idx1(k),idx(j))
                  enddo
               enddo
            endif
@@ -3740,7 +3795,7 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,2,pno_cv,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
 
@@ -3814,7 +3869,7 @@ module pno_ccsd_module
 
            !call print_tensor_unfolding_with_labels(w1,&
            !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'t before- rect')
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'t - rect')
@@ -4063,7 +4118,7 @@ module pno_ccsd_module
                  nidx_h2 = nidx2
               endif
 
-              call do_overlap_trafo(ns,ns2,1,pno_S, pnv, nidx_h2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S, pnv, nidx_h2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call array_reorder_4d( p10, h1, pnv, nidx_h2, pnv2, rpd2, [4,3,1,2], nul, h2 )
 
@@ -4105,7 +4160,7 @@ module pno_ccsd_module
 
            kcounter2: do kc = 1, rpd1
 
-              call do_overlap_trafo(ns,ns1,1,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
 
               !call print_tensor_unfolding_with_labels(h1,&
               !   &[pnv,1],'bj',2,[pnv1,1],'ck',2,'u2 pair')
@@ -4263,7 +4318,7 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns2,1,pno_S, pnv, nidx2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S, pnv, nidx2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call array_reorder_4d( p10, h1, pnv, nidx2, pnv2, rpd2, [4,3,1,2], nul, h2 )
 
@@ -4351,7 +4406,7 @@ module pno_ccsd_module
 
            endif
 
-           call do_overlap_trafo(ns,ns1,1,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1],'bj',2,[pnv1,rpd1],'ck',2,'u2 rect')
@@ -4604,13 +4659,13 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
 
               call dgemm('n','n',pnv*pnv1,rpd,rpd1,m10,h1,pnv*pnv1,w4,rpd1,nul,h2,pnv*pnv1)
               call array_reorder_4d(p10,h2,pnv,1,pnv1,rpd,[3,4,1,2], nul, h1)
 
               !transform b index to the correct space
-              call do_overlap_trafo(ns,ns1,1,pno_S, pnv,rpd*pnv,pnv1,h1,h2,ptr=h1)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv,pnv1,h1,h2,ptr=h1)
 
               call array_reorder_2d(p10,h1,pnv,pnv,paircontrib(:,3-pair1),p10,o)
 
@@ -4752,7 +4807,7 @@ module pno_ccsd_module
               enddo
            endif
 
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,nidx1*pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1,pnv],'aib',3,[rpd1],'k',1,'t2 rect')
@@ -4768,7 +4823,7 @@ module pno_ccsd_module
            call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,rpd,[3,4,1,2], nul, h1)
 
            !transform b index to the correct space
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
 
            call ass_D1to4( h1, p2o, [pnv,rpd,pnv,nidx1] )
            call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd] )

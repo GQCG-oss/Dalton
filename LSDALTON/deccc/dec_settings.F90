@@ -77,6 +77,7 @@ contains
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%pno_S_on_the_fly     = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7_realk
@@ -472,6 +473,7 @@ contains
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.

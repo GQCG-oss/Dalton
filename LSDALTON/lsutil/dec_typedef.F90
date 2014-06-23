@@ -174,7 +174,7 @@ module dec_typedef_module
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
-     logical :: noPNOtrafo, noPNOtrunc
+     logical :: noPNOtrafo, noPNOtrunc, pno_S_on_the_fly
      logical :: noFAtrafo, noFAtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
@@ -1212,7 +1212,7 @@ module dec_typedef_module
      real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
      real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
 
-     logical              :: allocd                 ! logical to show the allocation status
+     logical              :: allocd,contributes     ! logical to show the allocation and contribution status
      logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
      logical              :: PS                     ! save wheter it is a triangular pair space
   end type PNOSpaceInfo
