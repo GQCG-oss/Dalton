@@ -1151,7 +1151,7 @@ module pno_ccsd_module
         maxns = max(ns1,ns2)
         minns = min(ns1,ns2)
         Sidx = (minns - maxns + 1) + maxns*(maxns-1)/2
-        call get_overlap_matrix_from_pno_spaces(nv,CV(maxns),CV(minns),S(Sidx),.true.)
+        call get_overlap_matrix_from_pno_spaces(nv,CV(maxns),CV(minns),S(Sidx),.true.,.false.)
      endif
 
      call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
@@ -1239,7 +1239,7 @@ module pno_ccsd_module
      real(realk),parameter :: p10 = 1.0E0_realk
      real(realk),parameter :: nul = 0.0E0_realk
      real(realk) :: time_overlap_spaces,mem_overlap_spaces
-     logical :: keep_pair
+     logical :: keep_pair, just_check
      integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
      call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
@@ -1253,8 +1253,8 @@ module pno_ccsd_module
      ofmaxdim   = 0
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
-     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount,mem_overlap_spaces)&
-     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
+     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
      !$OMP keep_pair)
@@ -1273,16 +1273,21 @@ module pno_ccsd_module
 
            ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
            c = (j - i + 1) + i*(i-1)/2
+           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > 0.2*DECinfo%memory)
 
-           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd)
+           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd,just_check)
 
            if(pno_S(c)%allocd)then
               if( with_svd )then
+                 !$OMP CRITICAL
                  mem_overlap_spaces = mem_overlap_spaces + &
                     &(size(pno_S(c)%s1) + size(pno_S(c)%d) + size(pno_S(c)%s2) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
               else
+                 !$OMP CRITICAL
                  mem_overlap_spaces = mem_overlap_spaces + &
                     &( size(pno_S(c)%d) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
               endif
            endif
         enddo
@@ -1298,7 +1303,8 @@ module pno_ccsd_module
      write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
 
 
-     if(DECinfo%pno_S_on_the_fly.or.mem_overlap_spaces/(1024.0E0_realk**3) > 0.2*DECinfo%memory)then
+     if(DECinfo%pno_S_on_the_fly.or.just_check)then
+
         DECinfo%pno_S_on_the_fly = .true.
         print *,"Switching to calculating pno overlap information on the fly"
         do i=1,n
@@ -1308,17 +1314,18 @@ module pno_ccsd_module
               if( pno_S(c)%allocd )  call free_PNOSpaceInfo( pno_S(c) )
            enddo
         enddo
+
      endif
 
 
   end subroutine get_pno_overlap_matrices
   
-  subroutine get_overlap_matrix_from_pno_spaces(nv,pno1,pno2,S12,with_svd)
+  subroutine get_overlap_matrix_from_pno_spaces(nv,pno1,pno2,S12,with_svd,just_check)
      implicit none
      integer, intent(in) :: nv
      type(PNOSpaceInfo),intent(in) :: pno1,pno2
      type(PNOSpaceInfo),intent(inout) :: S12
-     logical, intent(in) :: with_svd
+     logical, intent(in) :: with_svd, just_check
      integer :: t1,t2,dg, n1, maxindex, minindex
      integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
      real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
@@ -1447,6 +1454,17 @@ module pno_ccsd_module
 
         S12%allocd      = keep_pair
         S12%contributes = keep_pair
+
+        if(just_check)then
+
+           call mem_dealloc( S12%iaos )
+           call mem_dealloc( S12%s1   )
+           call mem_dealloc( S12%s2   )
+           call mem_dealloc( S12%d    )
+
+           S12%allocd = .false.
+
+        endif
 
      else
 
