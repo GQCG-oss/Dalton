@@ -1238,12 +1238,14 @@ module pno_ccsd_module
      real(realk) :: norm,thr
      real(realk),parameter :: p10 = 1.0E0_realk
      real(realk),parameter :: nul = 0.0E0_realk
-     real(realk) :: time_overlap_spaces,mem_overlap_spaces
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces,FracOfMem
      logical :: keep_pair, just_check
      integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
      call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
 
+     call get_currently_available_memory(FracOfMem)
+     FracOfMem = 0.2E0_realk * FracOfMem
 
      mem_overlap_spaces = 0.0E0_realk
 
@@ -1257,7 +1259,7 @@ module pno_ccsd_module
      !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-     !$OMP keep_pair)
+     !$OMP keep_pair,just_check,FracOfMem)
      call init_threadmemvar()
 
      !CURRENT HACK FOR PGI COMPILER, SOMETHING WITH THE ALLOCATIONS IN THE LOOP
@@ -1273,7 +1275,10 @@ module pno_ccsd_module
 
            ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
            c = (j - i + 1) + i*(i-1)/2
-           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > 0.2*DECinfo%memory)
+
+           !$OMP CRITICAL
+           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > FracOfMem)
+           !$OMP END CRITICAL
 
            call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd,just_check)
 
