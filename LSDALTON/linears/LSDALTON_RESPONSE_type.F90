@@ -6,6 +6,8 @@ module lsdalton_response_type_mod
      logical :: doResponse
      !> Dipole Moment
      logical :: doDipole
+     !> Dipole Moment Matrix
+     logical :: doDipoleMatrix
      !> Gradient
      logical :: doGrad
 #ifdef MOD_UNRELEASED
@@ -49,6 +51,7 @@ contains
 
     tasksitem%doResponse = .false.
     tasksitem%doDipole = .false.
+    tasksitem%doDipoleMatrix = .false.
     tasksitem%doGrad = .false.
 #ifdef MOD_UNRELEASED
     tasksitem%doNumHess = .false.
