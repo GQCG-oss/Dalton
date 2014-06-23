@@ -4975,8 +4975,8 @@ end subroutine write_transition_density_matrix
  !> \author Thomas Kjaergaard
  !> \date 2010-03
  !>
- !> Main driver to determine the full dipole moment matrix $\mu_{xy}$ where $\mu_{11}$ is the 
- !> dipole moment of the ground state while $\mu_{22}$ are the state dipole moments of the first 
+ !> Main driver to determine the full dipole moment matrix $\mu_{xy}$ where $\mu_{00}$ is the 
+ !> dipole moment of the ground state while $\mu_{11}$ are the state dipole moments of the first 
  !> excited state, and $\mu_{ij}$ it the transition dipole moment between state i and j. 
  !> <br><br>
  !> The input structure for response functions is as follows:
