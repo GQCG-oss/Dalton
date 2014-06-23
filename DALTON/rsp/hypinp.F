@@ -906,11 +906,11 @@ C                 B operators
                GO TO 100                                                !MK
  23            CONTINUE
                   MNFPHO = .TRUE.
-                  LABEL='XDIPVEL '                                      !MK
+                  LABEL='XDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPVEL '                                      !MK
+                  LABEL='YDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPVEL '                                      !MK
+                  LABEL='ZDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='X1MNF-SO'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
@@ -921,11 +921,11 @@ C                 B operators
                GO TO 100
  27            CONTINUE
                   ECPHOS = .TRUE.
-                  LABEL='XDIPVEL '                                      !MK
+                  LABEL='XDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='YDIPVEL '                                      !MK
+                  LABEL='YDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
-                  LABEL='ZDIPVEL '                                      !MK
+                  LABEL='ZDIPLEN '
                   ASMOP( INDPRP(LABEL)) = .TRUE.
                   LABEL='X1SPNSCA'
                   BSMOP( INDPRP(LABEL)) = .TRUE.
