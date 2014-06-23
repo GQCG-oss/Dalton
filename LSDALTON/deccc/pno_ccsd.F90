@@ -2218,7 +2218,7 @@ module pno_ccsd_module
            call time_start_phase(PHASE_WORK, twall = times(1), at = times(4) )
 
            !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
-           !$OMP SHARED(nspaces,&
+           !$OMP SHARED(nspaces,nthreads_level1_int_dir,&
            !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
            !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
            !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
@@ -2349,7 +2349,7 @@ module pno_ccsd_module
            call time_start_phase(PHASE_WORK, at = times(6), twall = times(2)  )
 
            !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
-           !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,&
+           !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,nthreads_level1_int_dir,&
            !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
            !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
            !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
