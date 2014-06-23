@@ -20,7 +20,8 @@ use response_wrapper_module,only: get_dipole_moment, &
      & mcdresponse_driver, free_transition_density_matrices, &
      & alpharesponse_driver, betaresponse_driver, &
      & gammaresponse_driver, dtparesponse_driver, &
-     & nmrshieldresponse_driver, get_excitation_energies
+     & nmrshieldresponse_driver, get_excitation_energies, &
+     & dipolemomentmatrix_driver
 use lstiming,      only: lstimer
 use lsdalton_rsp_contribs,  only: rsp_oneave
 use rspsolver,     only: rsp_molcfg, init_rsp_molcfg
@@ -92,6 +93,11 @@ contains
           call OPAresponse_driver(molcfg,F,D,S)
        endif
 
+
+       IF(config%response%tasks%doDipoleMatrix)THEN
+          call DipoleMomentMatrix_driver(molcfg%lupri,molcfg%setting,&
+               & molcfg%decomp,molcfg%solver,F,D,S)
+       ENDIF
        ! KK: Place all response properties involving excited states here:
        ! ''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
