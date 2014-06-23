@@ -1602,6 +1602,9 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
        SELECT CASE(WORD)
        CASE('*DIPOLE')
           config%response%tasks%doDipole=.true.
+       CASE('*DIPOLEMOMENTMATRIX')
+          config%response%tasks%doDipoleMatrix=.true.
+          config%response%tasks%doResponse=.true.
        ! Kasper K
        CASE('*ALPHA')
            config%response%tasks%doALPHA=.true.
