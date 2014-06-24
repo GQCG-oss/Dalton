@@ -846,6 +846,7 @@ contains
     do i=1,MyFragment%noccLOC ! occ orbitals
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%centralatom,master)
+       call ls_mpi_buffer(MyFragment%occAOSorb(i)%secondaryatom,master)
        call ls_mpi_buffer(MyFragment%occAOSorb(i)%numberofatoms,master)
 
        ! Pointers inside decorbital sub-type (which again is inside decfrag type)
@@ -862,6 +863,7 @@ contains
     do i=1,MyFragment%nunoccLOC ! unocc orbitals
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%orbitalnumber,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%centralatom,master)
+       call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%secondaryatom,master)
        call ls_mpi_buffer(MyFragment%unoccAOSorb(i)%numberofatoms,master)
        if(.not. AddToBuffer) then ! allocate for slave
           Nullify(MyFragment%unoccAOSorb(i)%atoms)
