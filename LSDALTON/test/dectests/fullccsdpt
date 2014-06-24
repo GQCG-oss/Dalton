@@ -45,7 +45,7 @@ H    0.0000     -0.7572 -0.4692
 #######################################################################
 cat > fullccsdpt.dal <<'%EOF%'
 **GENERAL
-.NOGCBASIS
+!.NOGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
