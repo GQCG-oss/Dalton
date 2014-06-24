@@ -1019,7 +1019,7 @@ Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs
 Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 integer               :: nAtoms,iDmat,I,J
-real(realk)           :: Factor, symthresh,OLDTHRESH
+real(realk)           :: Factor, OLDTHRESH
 integer               :: Oper
 Integer                :: symLHS(ndlhs),symRHS(ndrhs)
 Integer                :: nlhs,nrhs,Dascreen_thrlog
@@ -1041,10 +1041,7 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
 ! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
 ! Symmetric, anti-symmetric and anti-symmetric, symmetric paris vanish.
-!thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
-symthresh = 1.0E-14_realk
-call II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrhs,symthresh)
+call II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrhs)
 
 
 IF (nlhs.EQ. 0) RETURN
@@ -1207,7 +1204,7 @@ Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
 !Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 integer               :: nAtoms,iDmat,I,J
-real(realk)           :: Factor, symthresh,OLDTHRESH
+real(realk)           :: Factor, OLDTHRESH
 Integer                :: symLHS(ndlhs),symRHS(ndrhs)
 Integer                :: nlhs,nrhs,Dascreen_thrlog
 !Type(matrixp)          :: DLHS(2*ndlhs),DRHS(2*ndrhs)
@@ -1230,10 +1227,7 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
 
 ! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
 ! Symmetric, anti-symmetric and anti-symmetric, symmetric paris vanish.
-!thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
-symthresh = 1.0E-14_realk
-call II_split_dmatsFULL(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHStmp,DRHStmp,symLHS,symRHS,nlhs,nrhs,symthresh)
+call II_split_dmatsFULL(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHStmp,DRHStmp,symLHS,symRHS,nlhs,nrhs)
 
 IF (nlhs.EQ. 0) RETURN
 
@@ -3343,14 +3337,13 @@ Integer,intent(inout)       :: symLHS(ndlhs),symRHS(ndrhs)
 Integer,intent(inout)       :: nlhs,nrhs
 Type(matrixp),intent(inout) :: DLHS(ndlhs),DRHS(ndrhs)
 !
-Real(realk), parameter :: symthresh = 1.0E-14_realk
 Integer                :: idmat,isym
 
 IF (ndlhs.NE.ndrhs) CALL lsquit('Erorr in II_symmetrize_dmats: ndlhs different from ndrhs.',-1)
 
 nlhs = 0
 DO idmat=1,ndlhs
-  isym = mat_get_isym(DmatLHS(idmat)%p,symthresh)
+  isym = mat_get_isym(DmatLHS(idmat)%p)
   symLHS(idmat) = isym
   If (isym.EQ. 1) THEN
     nlhs = nlhs + 1
@@ -3370,7 +3363,7 @@ ENDDO
 
 nrhs = 0
 DO idmat=1,ndrhs
-  isym = mat_get_isym(DmatRHS(idmat)%p,symthresh)
+  isym = mat_get_isym(DmatRHS(idmat)%p)
   symRHS(idmat) = isym
   If (isym.EQ. 1) THEN
     nrhs = nrhs + 1
@@ -3454,24 +3447,22 @@ END SUBROUTINE II_free_symmetrized_dmats
 !> \param symRHS The symmetry of RHS density matrices
 !> \param nlhs The output number of LHS density matrices
 !> \param nrhs The output number of RHS density matrices
-SUBROUTINE II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrhs,symthresh)
+SUBROUTINE II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrhs)
   implicit none
   Integer,intent(in)          :: ndlhs,ndrhs
   Type(matrixp),intent(IN)    :: DmatLHS(ndlhs),DmatRHS(ndrhs)
   Integer,intent(inout)       :: symLHS(ndlhs),symRHS(ndrhs)
   Integer,intent(inout)       :: nlhs,nrhs
   Type(matrixp),intent(inout) :: DLHS(2*ndlhs),DRHS(2*ndrhs)
-  Real(realk),intent(in) :: symthresh 
   !
   Integer                :: idmat,isym, ILHS, IRHS
 
   IF (ndlhs.NE.ndrhs) CALL lsquit('Error in II_split_dmats: ndlhs different from ndrhs.',-1)
 
   ! Make symmetry check
-!  symthresh = 1.0E-14_realk
   do idmat=1,ndlhs
-     ILHS = mat_get_isym(DmatLHS(idmat)%p,symthresh)
-     IRHS = mat_get_isym(DmatRHS(idmat)%p,symthresh)
+     ILHS = mat_get_isym(DmatLHS(idmat)%p)
+     IRHS = mat_get_isym(DmatRHS(idmat)%p)
 
      if(ILHS==IRHS) then ! Set symmetries to those found by mat_get_isym
         symLHS(idmat) = ILHS
@@ -3594,24 +3585,22 @@ END SUBROUTINE II_free_split_dmats
 !> \param nlhs The output number of LHS density matrices
 !> \param nrhs The output number of RHS density matrices
 SUBROUTINE II_split_dmatsfull(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHS,DRHS,&
-     & symLHS,symRHS,nlhs,nrhs,symthresh)
+     & symLHS,symRHS,nlhs,nrhs)
   implicit none
   Integer,intent(in)          :: ndlhs,ndrhs,nbast
   real(realk),intent(IN)      :: DmatLHS(nbast,nbast,ndlhs),DmatRHS(nbast,nbast,ndrhs)
   Integer,intent(inout)       :: symLHS(ndlhs),symRHS(ndrhs)
   Integer,intent(inout)       :: nlhs,nrhs
   real(realk),pointer         :: DLHS(:,:,:),DRHS(:,:,:)
-  Real(realk),intent(in) :: symthresh 
   !
   Integer                :: idmat,isym, ILHS, IRHS
 
   IF (ndlhs.NE.ndrhs) CALL lsquit('Error in II_split_dmats: ndlhs different from ndrhs.',-1)
 
   ! Make symmetry check
-!  symthresh = 1.0E-14_realk
   do idmat=1,ndlhs
-     ILHS = matfull_get_isym(DmatLHS(:,:,idmat),nbast,nbast,symthresh)
-     IRHS = matfull_get_isym(DmatRHS(:,:,idmat),nbast,nbast,symthresh)
+     ILHS = matfull_get_isym(DmatLHS(:,:,idmat),nbast,nbast)
+     IRHS = matfull_get_isym(DmatRHS(:,:,idmat),nbast,nbast)
      if(ILHS==IRHS) then ! Set symmetries to those found by mat_get_isym
         symLHS(idmat) = ILHS
         symRHS(idmat) = IRHS
@@ -4057,7 +4046,7 @@ type(matrix)          :: Dmat(1),Kx(3)
 !
 type(matrix)          :: tempm1,DMAT_AO
 type(matrix),pointer  :: D2(:),Kx2(:)
-real(realk) :: KFAC,maxCoor,OLDTHRESH,TS,TE,thresh
+real(realk) :: KFAC,maxCoor,OLDTHRESH,TS,TE
 Real(realk),pointer   :: DFULLRHS(:,:,:)
 integer      :: Oper,isym,ndmat2,idmat,i
 logical,pointer :: symmetricD(:)
@@ -4065,9 +4054,7 @@ IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk)RETURN
 call time_II_operations1()
 CALL LSTIMER('START ',TS,TE,LUPRI)
 
-thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
-ISYM = mat_get_isym(Dmat(1),thresh)
+ISYM = mat_get_isym(Dmat(1))
 IF(ISYM.EQ.1)THEN !sym
    ndmat2 = 1
    call mem_alloc(symmetricD,1)
@@ -4210,16 +4197,14 @@ INTEGER               :: LUPRI,LUERR,nbast
 type(matrix)          :: Dmat(1),Jx(3)
 !
 INTEGER               :: idmat,isym,ndmat
-real(realk) :: TS,TE,thresh
+real(realk) :: TS,TE
 type(matrix),pointer  :: Jx2(:)
 type(matrix) :: D2(1)
 call time_II_operations1()
 CALL LSTIMER('START ',TS,TE,LUPRI)
 
 ndmat = 1
-thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
-ISYM = mat_get_isym(Dmat(1),thresh)
+ISYM = mat_get_isym(Dmat(1))
 IF(ISYM.EQ.1)THEN !sym
    !we can use the jengine where we only differentiate on the LHS
    !as the magderiv on the RHS is zero for sym D mat
@@ -5049,16 +5034,13 @@ LOGICAL,intent(in)    :: Dsym
 !
 real(realk),pointer :: D2(:,:,:),TMP(:,:,:)
 integer :: isym(1)
-real(realk) :: thresh
 IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 call time_II_operations1()
 
 ! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
 ! Make symmetry check
 IF(.NOT.DSYM)THEN
-   thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-   !you can chose a screening threshold below 14 but not this thresh.
-   ISYM(1) = matfull_get_isym(D,nbast,nbast,thresh)
+   ISYM(1) = matfull_get_isym(D,nbast,nbast)
    IF(ISYM(1).EQ.1.OR.ISYM(1).EQ.2)THEN !sym or antisym
       call II_get_exchange_mat1_full(LUPRI,LUERR,SETTING,nbast,D,F,1,AO1,AO3,AO2,AO4,Oper)
    ELSEIF(ISYM(1).EQ.3)THEN !nonsym
@@ -6476,18 +6458,15 @@ LOGICAL               :: Dsym
 !
 integer :: isym(ndmat),idmat,idmat2,ndmat2
 type(matrix),pointer :: D2(:),F2(:)
-real(realk) :: thresh
 IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
 call time_II_operations1()
 
 ! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
 ! Make symmetry check
 IF(.NOT.DSYM)THEN
-   thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-   !you can chose a screening threshold below 15 but not this thresh.
    idmat2 = 0
    do idmat=1,ndmat
-      ISYM(idmat) = mat_get_isym(D(idmat),thresh)
+      ISYM(idmat) = mat_get_isym(D(idmat))
       IF(ISYM(idmat).EQ.1.OR.ISYM(idmat).EQ.2)THEN !sym or antisym
          idmat2 = idmat2 + 1
       ELSEIF(ISYM(idmat).EQ.3)THEN !nonsym

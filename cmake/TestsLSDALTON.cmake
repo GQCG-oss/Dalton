@@ -91,6 +91,7 @@ endif()
     add_lslib_test(LSlib/LSlib_cam_dfJ_admm                          "linsca;lslib")
 
     add_lsdalton_runtest(linsca/linsca_energy                        "linsca;quick")
+    add_lsdalton_runtest(linsca/linsca_symtest                       "linsca;quick")
     add_lsdalton_test(linsca/linsca_counterpoise                     "linsca")
     add_lsdalton_test(linsca/linsca_energy_Si                        "linsca")
     add_restart_test(linsca/linsca_energy_restart                    "linsca;quick;restart")

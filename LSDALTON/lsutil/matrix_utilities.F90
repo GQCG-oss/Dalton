@@ -17,6 +17,9 @@ use matrix_operations
 use matrix_operations_aux, only: mat_to_full2, mat_set_from_full2,mat_density_from_orbs
 use files
 use memory_handling
+
+real(realk),parameter  :: matsymthresh = 1.0E-11_realk
+
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)
     implicit none
@@ -1040,26 +1043,30 @@ contains
   !> \author S. Reine
   !> \date 2010-04-19
   !> \param A The matrix
-  !> \param thresh Elementwise threshold
   !> \param mat_get_isym The symmetry of the matrix A
   !> The mat_get_isym can return the following values:
   !>     1    A is symmetric
   !>     2    A is anti-symmetric
   !>     3    no symmetry
   !>     4    zero matrix
-  function mat_get_isym(A,thresh)
+  function mat_get_isym(A)
   implicit none
   type(Matrix), intent(in) :: A
-  real(realk),intent(in)   :: thresh
   integer                  :: mat_get_isym
 ! 
   Integer :: isym
   type(matrix) :: B,C
   real(realk)  :: norm
- 
+  !the threshold matsymthresh was previously given as input but a problem 
+  !arised when different threshold was used to determine the symmetry 
+  !a different levels of the code. Specifically using one matsymthresh to determine
+  !that a density was symmetric - provide sym=.true. as input to the integral 
+  !code that tested the symmetry with a different threshold and found a 
+  !different result. 1.0E-10 was used as default most places before. 
+
   norm = sqrt(mat_sqnorm2(A)/min(A%nrow,A%ncol))
-! If the square-norm is below thresh it is a zero matrix
-  IF (norm.LT.thresh) THEN
+! If the square-norm is below matsymthresh it is a zero matrix
+  IF (norm.LT.matsymthresh) THEN
     isym = 4
   ELSE IF (A%nrow.EQ.A%ncol) THEN
     call mat_init(B,A%nrow,A%ncol)
@@ -1067,14 +1074,14 @@ contains
     norm = sqrt(mat_sqnorm2(B)/A%nrow)
 !   If the anti-symmetrix part of the matrix is zero (to within a rms-norm threshold) 
 !   the matrix must be symmetric
-    IF (norm.LT.thresh) THEN
+    IF (norm.LT.matsymthresh) THEN
       isym = 1
     ELSE
       call mat_init(C,A%nrow,A%ncol)
       call mat_add(1E0_realk,A,-1E0_realk,B,C)
       norm = sqrt(mat_sqnorm2(C)/A%nrow)
 !     If A - anti-sym(A) = 0
-      IF (norm.LT.thresh) THEN
+      IF (norm.LT.matsymthresh) THEN
         isym = 2
       ELSE
         isym = 3
@@ -1094,29 +1101,33 @@ contains
   !> \author T. kjaergaard
   !> \date 2011
   !> \param A The matrix
-  !> \param thresh Elementwise threshold
   !> \param mat_get_isym The symmetry of the matrix A
   !> The mat_get_isym can return the following values:
   !>     1    A is symmetric
   !>     2    A is anti-symmetric
   !>     3    no symmetry
   !>     4    zero matrix
-  function matfull_get_isym(A,ndim1,ndim2,thresh)
+  function matfull_get_isym(A,ndim1,ndim2)
   implicit none
   integer,intent(in)     :: ndim1,ndim2
   real(realk),intent(in) :: A(ndim1,ndim2) 
-  real(realk),intent(in) :: thresh
   integer                :: matfull_get_isym
 ! 
   Integer :: isym,nsize,i,j
   real(realk),pointer :: B(:,:),C(:,:)
   real(realk) :: norm
   real(realk), external :: ddot
-  
+  !the threshold matsymthresh was previously given as input but a problem 
+  !arised when different threshold was used to determine the symmetry 
+  !a different levels of the code. Specifically using one matsymthresh to determine
+  !that a density was symmetric - provide sym=.true. as input to the integral 
+  !code that tested the symmetry with a different threshold and found a 
+  !different result. 1.0E-10 was used as default most places before. 
+
   nsize=ndim1*ndim2
   norm = sqrt(ddot(nsize,A,1,A,1)/min(ndim1,ndim2))
-  ! If the square-norm is below thresh it is a zero matrix
-  IF (norm.LT.thresh) THEN
+  ! If the square-norm is below matsymthresh it is a zero matrix
+  IF (norm.LT.matsymthresh) THEN
      isym = 4
   ELSE IF (ndim1.EQ.ndim2) THEN
      call mem_alloc(B,ndim1,ndim2)
@@ -1133,7 +1144,7 @@ contains
      norm = sqrt(ddot(nsize,B,1,B,1)/ndim1)
      !   If the anti-symmetrix part of the matrix is zero (to within a rms-norm threshold) 
      !   the matrix must be symmetric
-     IF (norm.LT.thresh) THEN
+     IF (norm.LT.matsymthresh) THEN
         isym = 1
      ELSE
         call mem_alloc(C,ndim1,ndim2)
@@ -1141,7 +1152,7 @@ contains
         call daxpy(nsize,-1E0_realk,B,1,C,1)
         norm = sqrt(ddot(nsize,C,1,C,1)/ndim1)
         !     If A - anti-sym(A) = 0
-        IF (norm.LT.thresh) THEN
+        IF (norm.LT.matsymthresh) THEN
            isym = 2
         ELSE
            isym = 3
