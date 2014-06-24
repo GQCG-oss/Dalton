@@ -91,7 +91,7 @@ module lspdm_tensor_operations_module
   !with some additional information. Here the storage fort tiled distributed and
   !replicated arrays is allocated, if 500  is not enough, please change here
   !> amount of arrays which are storable in the persistent array
-  integer, parameter :: n_arrays = 1500
+  integer, parameter :: n_arrays = 50000
   !> persistent array type-def
   type persistent_array
     !> collection of arrays

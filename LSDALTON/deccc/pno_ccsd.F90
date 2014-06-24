@@ -850,9 +850,9 @@ module pno_ccsd_module
   !>\brief extract the information from the SpaceInfo structure in a nice and useful shape outside of this routine
   !>\author Patrick Ettenhuber
   !>\date december 2013
-  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
+  subroutine get_overlap_ptr(Sidx,n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
      implicit none
-     integer,intent(in) :: n1,n2
+     integer,intent(in) :: Sidx,n1,n2
      type(PNOSpaceInfo), intent(in) :: pS(:)
      character, intent(out) :: tr1,tr2
      logical, intent(out) :: st
@@ -861,15 +861,12 @@ module pno_ccsd_module
      real(realk), pointer, intent(out) :: U(:,:),VT(:,:)
      integer, intent(out) :: ldU, ldVT
      integer, intent(out),optional :: red1, red2, ns1,ns2
-     integer :: Sidx
-
 
      !Get the overlap identificaton and transformation props
 
      if(n1>n2)then
 
         !trafo from n1 to n2 
-        Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
         tr1       =  't'
         tr2       =  'n'
         st        =  .false.
@@ -890,7 +887,6 @@ module pno_ccsd_module
      else if(n2>n1)then
 
         !trafo from n2 to n1
-        Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
         tr1       =  'n'
         tr2       =  't'
         st        =  .false.
@@ -1142,19 +1138,28 @@ module pno_ccsd_module
      real(realk), parameter :: nul = 0.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
      real(realk) :: preC
+     integer :: tid
+#ifdef VAR_OMP
+     integer, external :: omp_get_thread_num
+#endif
 
 
      preC = 0.0E0_realk
      if(present(pC))preC = pC
 
+     maxns = max(ns1,ns2)
+     minns = min(ns1,ns2)
+     Sidx = (minns - maxns + 1) + maxns*(maxns-1)/2
+
      if(DECinfo%pno_S_on_the_fly.and.ns1/=ns2)then
-        maxns = max(ns1,ns2)
-        minns = min(ns1,ns2)
-        Sidx = (minns - maxns + 1) + maxns*(maxns-1)/2
+#ifdef VAR_OMP
+        tid  = omp_get_thread_num()
+        Sidx = tid + 1
+#endif
         call get_overlap_matrix_from_pno_spaces(nv,CV(maxns),CV(minns),S(Sidx),.true.,.false.)
      endif
 
-     call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
+     call get_overlap_ptr(Sidx,ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
 
 
      if(.not. skiptrafo)then
@@ -1245,7 +1250,7 @@ module pno_ccsd_module
      call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
 
      call get_currently_available_memory(FracOfMem)
-     FracOfMem = 0.2E0_realk * FracOfMem
+     FracOfMem = 0.1E0_realk * FracOfMem
 
      mem_overlap_spaces = 0.0E0_realk
 
@@ -1256,18 +1261,13 @@ module pno_ccsd_module
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
      !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces)&
+     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-     !$OMP keep_pair,just_check,FracOfMem)
+     !$OMP keep_pair,just_check)
      call init_threadmemvar()
 
-     !CURRENT HACK FOR PGI COMPILER, SOMETHING WITH THE ALLOCATIONS IN THE LOOP
-     !(AND MAYBE STACK MEMORY)
-
-     !$OMP SINGLE
-
-     !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
      do i=1,n
         do j=1,n
 
@@ -1297,8 +1297,7 @@ module pno_ccsd_module
            endif
         enddo
      enddo
-     !$OMP END SINGLE
-     !OMP END DO NOWAIT
+     !$OMP END DO NOWAIT
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
