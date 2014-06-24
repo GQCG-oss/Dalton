@@ -290,6 +290,7 @@ Real(realk), pointer :: Cartesian_Coordinates(:)
 Real(realk), pointer :: Cartesian_Velocities(:)
 Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ![Hartree/(K)]
 ! Allocate some memory if integration in mass-weighted
+print*,'dyn%Mass_Weight',dyn%Mass_Weight
 If (dyn%Mass_Weight) then
    Call mem_alloc(Cartesian_Coordinates,3*NAtoms)
    Cartesian_Coordinates = Traj%Coordinates
@@ -321,21 +322,29 @@ If (dyn%NHChain) then
   Enddo
 Endif
 ! 
-  If (dyn%PrintLevel >= 1) Then
+!  If (dyn%PrintLevel >= 1) Then
     Call LSHeader(lupri, 'Current forces (au)')
     Call Print_Vector(lupri, NAtoms, traj%Labels, -traj%Gradient)
-  End If
-  If (dyn%PrintLevel >= 3) Then
+    Call Print_Vector(6, NAtoms, traj%Labels, -traj%Gradient)
+!  End If
+!  If (dyn%PrintLevel >= 3) Then
      Call LSHeader(lupri, 'Current velocities (au)')
      If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
         Call Print_Vector(lupri, NAtoms, traj%Labels, traj%Velocities)
      Else   ! Mass-weighted
         Call Print_Vector(lupri, NAtoms, traj%Labels, Cartesian_Velocities)
      Endif
-  End If
+     Call LSHeader(6, 'Current velocities (au)')
+     If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
+        Call Print_Vector(6, NAtoms, traj%Labels, traj%Velocities)
+     Else   ! Mass-weighted
+        Call Print_Vector(6, NAtoms, traj%Labels, Cartesian_Velocities)
+     Endif
+!  End If
 !
 ! Determine kinetic energy, total energy and angular momentum
 !
+Print *, 'traj%Velocities',traj%Velocities
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_Kinetic_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Velocities,traj%CurrKinetic)
 Else  ! Mass-weighted

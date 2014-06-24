@@ -1312,10 +1312,11 @@ End subroutine Rotational_analysis
 ! mass-weighting
 Subroutine Mass_weight_vector(NAtoms,Vector,Mass,Mode)
 Implicit none
-Integer :: NAtoms, i
-Real(realk) :: Vector(NAtoms*3)
-Real(realk) :: Mass(NAtoms)
-Character(len=6) :: Mode
+Integer,intent(in) :: NAtoms
+Real(realk),intent(inout) :: Vector(NAtoms*3)
+Real(realk),intent(in) :: Mass(NAtoms)
+Character(len=6),intent(in) :: Mode
+Integer ::  i
 ! Do mass-weighting
 If (Mode .EQ. 'WEIGHT' ) then
    Do i = 1, NAtoms
