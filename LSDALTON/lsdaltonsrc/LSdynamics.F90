@@ -290,7 +290,6 @@ Real(realk), pointer :: Cartesian_Coordinates(:)
 Real(realk), pointer :: Cartesian_Velocities(:)
 Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ![Hartree/(K)]
 ! Allocate some memory if integration in mass-weighted
-print*,'dyn%Mass_Weight',dyn%Mass_Weight
 If (dyn%Mass_Weight) then
    Call mem_alloc(Cartesian_Coordinates,3*NAtoms)
    Cartesian_Coordinates = Traj%Coordinates
@@ -322,12 +321,12 @@ If (dyn%NHChain) then
   Enddo
 Endif
 ! 
-!  If (dyn%PrintLevel >= 1) Then
+  If (dyn%PrintLevel >= 1) Then
     Call LSHeader(lupri, 'Current forces (au)')
     Call Print_Vector(lupri, NAtoms, traj%Labels, -traj%Gradient)
     Call Print_Vector(6, NAtoms, traj%Labels, -traj%Gradient)
-!  End If
-!  If (dyn%PrintLevel >= 3) Then
+  End If
+  If (dyn%PrintLevel >= 3) Then
      Call LSHeader(lupri, 'Current velocities (au)')
      If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
         Call Print_Vector(lupri, NAtoms, traj%Labels, traj%Velocities)
@@ -340,15 +339,15 @@ Endif
      Else   ! Mass-weighted
         Call Print_Vector(6, NAtoms, traj%Labels, Cartesian_Velocities)
      Endif
-!  End If
+  End If
 !
 ! Determine kinetic energy, total energy and angular momentum
 !
-Print *, 'traj%Velocities',traj%Velocities
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_Kinetic_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Velocities,traj%CurrKinetic)
 Else  ! Mass-weighted
-  Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
+  Call Calc_Kinetic(NAtoms*3,NAtoms,Cartesian_Velocities,traj%CurrKinetic)
+!  Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
 Endif
 If (dyn%NHchain) then
   Call NHC_Hamiltonian(NAtoms,dyn%CLen,traj%CurrPotential+traj%CurrKinetic,&
@@ -382,10 +381,6 @@ If (dyn%NHchain) then
 Endif
 ! Estimating temperature
 Temperature = 2.0E0_realk*traj%CurrKinetic/(3.0E0_realk*NAtoms*Boltzmann) 
-Print *, 'traj%CurrKinetic=',traj%CurrKinetic
-Print *, 'NAtoms          =',NAtoms
-Print *, 'Boltzmann       =',Boltzmann
-Print *, 'Temperature     =',Temperature
 Write(lupri,'(31X,A,F14.8)') 'Temperature: ',Temperature
 If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature
 !

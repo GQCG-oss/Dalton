@@ -1109,6 +1109,7 @@ Real(realk) :: Principle_Axes(3,3)
 Real(realk) :: Principle_Inertia(3)
 Real(realk) :: TraRotVec(NAtoms*3,6)
 Real(realk) :: TransformPM(NAtoms*3,NAtoms*3) ! Transformation to principle axes
+Real(realk) :: TransformPMT(NAtoms*3,NAtoms*3) ! Transpose of TransformPM
 Real(realk) :: Proj_MatPM(NAtoms*3,NAtoms*3)  ! Projection in principle axes frame
 Real(realk) :: Proj_Mat(NAtoms*3,NAtoms*3)  ! Projection in general frame
 Real(realk) :: TotalMass, VecNorm
@@ -1141,11 +1142,18 @@ Enddo
 TraRotVec(1:(NAtoms*3):3, 1) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
 TraRotVec(2:(NAtoms*3):3, 2) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
 TraRotVec(3:(NAtoms*3):3, 3) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
+
 ! Mass-weight coordinates
 Call Mass_weight_vector(NAtoms,Coordinates,Mass,'WEIGHT') 
 ! Set up the rotation vectors
-Scale_Vector = MATMUL(Transpose(TransformPM),Coordinates)
+
+!For some strange reason this does not work:
+!Scale_Vector = MATMUL(Transpose(TransformPM),Coordinates)
+!so we do this instead:
+TransformPMT = Transpose(TransformPM)
+Scale_Vector = MATMUL(TransformPMT,Coordinates)
 RotCount = 0
+
 Do I = 1, 3
   If (Abs(Principle_Inertia(I)) > 1E-12_realk) Then
     RotCount = RotCount + 1
@@ -1172,6 +1180,7 @@ Proj_MatPM = -MatMul(TraRotVec, Transpose(TraRotVec))
 Do I = 1, NAtoms*3
   Proj_MatPM(I,I) = Proj_MatPM(I,I) + 1E0_realk
 End Do
+
 If (print_level >= 9) Then
 !  Call Underline(lupri, 'MW geometry in principal axes', -1)
 !  Call Output(Scale_Vector, 1, 1, 1, NAtoms*3, 1, NAtoms*3, 1, lupri)
