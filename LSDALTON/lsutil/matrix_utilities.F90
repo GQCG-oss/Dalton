@@ -373,19 +373,82 @@ contains
       TYPE(Matrix),intent(in) :: S
       !> AO gradient 4*(FDS - SDF) (output)
       TYPE(Matrix),intent(inout) :: grad
-      TYPE(Matrix) :: FDS, SDF, SD
-      
-      CALL mat_init(FDS, F%nrow, F%ncol)
+      TYPE(Matrix) :: FDS, SDF
+      !use grad as temporary matrix
       CALL mat_init(SDF, F%nrow, F%ncol)
-      call mat_init(SD , F%nrow, F%ncol)
-      CALL mat_mul(S,   D,'n','n', 1E0_realk, 0E0_realk, SD)
-      CALL mat_mul(SD, F,'n','n', 4E0_realk, 0E0_realk, SDF)
-      call mat_mul(F,SD,'n','t',4.0E0_realk,0E0_realk, FDS)
+      CALL mat_init(FDS, F%nrow, F%ncol)
+      CALL mat_mul(S,   D,'n','n', 1E0_realk, 0E0_realk, grad)
+      CALL mat_mul(grad, F,'n','n', 4E0_realk, 0E0_realk, SDF)
+      call mat_mul(F,grad,'n','t',4.0E0_realk,0E0_realk, FDS)
       CALL mat_add(1E0_realk, SDF, -1E0_realk, FDS, grad) ! res = SDF - tmp
       CALL mat_free(FDS)
       CALL mat_free(SDF)
-      call mat_free(SD)
    END SUBROUTINE get_AO_gradient
+
+   SUBROUTINE get_AO_gradientNorm(F,D,S, gradnorm)
+      IMPLICIT NONE
+      !> Fock/KS matrix
+      TYPE(Matrix),intent(in) :: F
+      !> Density matrix
+      TYPE(Matrix),intent(in) :: D
+      !> Overlap matrix
+      TYPE(Matrix),intent(in) :: S
+      !> AO gradient 4*(FDS - SDF) (output)
+      real(realk),intent(inout) :: gradnorm
+      TYPE(Matrix) :: grad
+      CALL mat_init(grad, F%nrow, F%ncol)
+      call get_AO_gradient(F,D,S, grad)
+      gradnorm = sqrt(mat_sqnorm2(grad))
+      CALL mat_free(grad)
+   END SUBROUTINE get_AO_gradientNorm
+
+   SUBROUTINE get_AO_gradientFull(F,D,S,grad,nbast)
+      IMPLICIT NONE
+      !dimension (number of basis functions)
+      integer,intent(in) :: nbast
+      !> Fock/KS matrix
+      real(realk),intent(in) :: F(nbast,nbast)
+      !> Density matrix
+      real(realk),intent(in) :: D(nbast,nbast)
+      !> Overlap matrix
+      real(realk),intent(in) :: S(nbast,nbast)
+      !> AO gradient 4*(FDS - SDF) (output)
+      real(realk),intent(inout) :: grad(nbast,nbast)
+      real(realk),pointer :: FDS(:,:), SDF(:,:)
+      !use grad as temporary matrix
+      call mem_alloc(SDF,nbast,nbast)
+      call mem_alloc(FDS,nbast,nbast)
+
+      call DGEMM('N','N',nbast,nbast,nbast,1E0_realk,S,nbast,D,nbast,0E0_realk,grad,nbast)
+      call DGEMM('N','N',nbast,nbast,nbast,4E0_realk,grad,nbast,F,nbast,0E0_realk,SDF,nbast)
+      call DGEMM('N','T',nbast,nbast,nbast,4E0_realk,F,nbast,grad,nbast,0E0_realk,FDS,nbast)
+
+      call dcopy(nbast*nbast,SDF,1,grad,1)
+      call daxpy(nbast*nbast,-1E0_realk,FDS,1,grad,1)
+
+      call mem_dealloc(SDF)
+      call mem_dealloc(FDS)
+   END SUBROUTINE get_AO_gradientFull
+
+   SUBROUTINE get_AO_gradientNormFull(F,D,S,gradnorm,nbast)
+      IMPLICIT NONE
+      !dimension (number of basis functions)
+      integer,intent(in) :: nbast
+      !> Fock/KS matrix
+      real(realk),intent(in) :: F(nbast,nbast)
+      !> Density matrix
+      real(realk),intent(in) :: D(nbast,nbast)
+      !> Overlap matrix
+      real(realk),intent(in) :: S(nbast,nbast)
+      !> AO gradient 4*(FDS - SDF) (output)
+      real(realk),intent(inout) :: gradnorm
+      real(realk),pointer :: grad(:,:)
+      real(realk), external :: ddot
+      CALL mem_alloc(grad, nbast,nbast)
+      call get_AO_gradientFull(F,D,S, grad,nbast)
+      gradnorm = sqrt(ddot(nbast*nbast,grad,1,grad,1))
+      CALL mem_dealloc(grad)
+   END SUBROUTINE get_AO_gradientNormFull
 
    !> \brief Get gradient in orthonormal AO basis.
    !> \author S. Host
