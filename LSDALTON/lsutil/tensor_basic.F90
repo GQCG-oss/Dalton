@@ -245,6 +245,10 @@ module tensor_basic_module
         call mem_alloc(arr%elm1,arr%nelms)
       endif
 
+      if( array_debug_mode )then
+         arr%elm1 = 0.0E0_realk
+      endif
+
 !$OMP CRITICAL
       array_dense_allocd_mem = array_dense_allocd_mem + vector_size
       array_memory_in_use = array_memory_in_use + vector_size

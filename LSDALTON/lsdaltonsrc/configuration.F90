@@ -145,6 +145,7 @@ implicit none
   !F12 calc?
   config%doF12=.false.
   config%doTestMPIcopy = .false.
+  config%type_array_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -1053,11 +1054,12 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
-        CASE('.TIME');         call SET_LSTIME_PRINT(.TRUE.)
-        CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
-        CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
-        CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
-        CASE('.TESTMPICOPY'); config%doTestMPIcopy = .true.
+        CASE('.TIME');              call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');           config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');         config%decomp%cfg_gcbasis    = .false.
+        CASE('.FORCEGCBASIS');      config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY');       config%doTestMPIcopy         = .true.
+        CASE('.TYPE_ARRAY_DEBUG');  config%type_array_debug      = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
