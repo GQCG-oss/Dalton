@@ -2735,7 +2735,7 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    !> alternating filenames for the doubles amplitudes
    character(3),intent(in)    :: safefilet21,safefilet22
    !> singles guess amplitudes for the next iteration
-   type(array), intent(in), optional :: t1
+   type(array), intent(inout), optional :: t1
    !> alternating filenames for the singles amplitudes
    character(3),intent(in), optional :: safefilet11,safefilet12
    integer :: fu_t21,fu_t22
