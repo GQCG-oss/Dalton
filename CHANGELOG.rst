@@ -9,7 +9,7 @@ Common
 DALTON
 ------
 
-- write me ...
+- Memory bugfix for serial PCM calculations, causing a segmentation fault for large PCM cavities.  
 
 
 LSDALTON

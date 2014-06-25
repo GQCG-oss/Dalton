@@ -762,7 +762,8 @@ module pno_ccsd_module
      type(PNOSpaceInfo), intent(in) :: cv(:)
      integer, intent(out) :: idx(:,:),nidx 
      integer, intent(out), optional :: ndidx1,ndidx2
-     integer :: n,nc1,nc2,pos
+     integer :: n,nc1,nc2,pos,ncidx1,ncidx2
+     logical :: yeah_this_is_one
 
      if(present(ndidx1)) ndidx1 = 0
      if(present(ndidx2)) ndidx2 = 0
@@ -787,39 +788,71 @@ module pno_ccsd_module
 
 
         if(present(ndidx1))then
-           ndidx1 = 0
+
+           ndidx1 = cv(n1)%n - nidx
+           ncidx1 = 0
+
            do nc1 = 1,cv(n1)%n
+
+              yeah_this_is_one = .true.
+
               do n=1, nidx
-                 if(cv(n1)%iaos(nc1) /= idx(n,3))then
-                    pos    = pos    + 1
-                    ndidx1 = ndidx1 + 1
-                    ! pos in first that equals second 
-                    idx(pos,1) = nc1
-                    ! pos in second that equals first - set invalid since there is none
-                    idx(pos,2) = -1
-                    ! the aos idx they refer to
-                    idx(pos,3) = cv(n1)%iaos(nc1)
+                 if( nc1 == idx(n,1))then
+                    yeah_this_is_one = .false.
                  endif
               enddo
+
+              if( yeah_this_is_one )then
+                 pos    = pos    + 1
+                 ncidx1 = ncidx1 + 1
+                 ! pos in first that equals second 
+                 idx(pos,1) = nc1
+                 ! pos in second that equals first - set invalid since there is none
+                 idx(pos,2) = -1
+                 ! the aos idx they refer to
+                 idx(pos,3) = cv(n1)%iaos(nc1)
+              endif
            enddo
+
+           if( ncidx1 /= ndidx1 )then
+              print *,ncidx1,ndidx1
+              call lsquit("ERROR: stuff dont work",-1)
+           endif
+
         endif
 
         if(present(ndidx2))then
-           ndidx2 = 0
+
+           ndidx2 = cv(n2)%n - nidx
+           ncidx2 = 0
+
            do nc2 = 1,cv(n2)%n
+
+              yeah_this_is_one = .true.
+
               do n=1, nidx
-                 if(cv(n2)%iaos(nc2) /= idx(n,3))then
-                    pos    = pos    + 1
-                    ndidx2 = ndidx2 + 1
-                    ! pos in first that equals second - set invalid since there is none
-                    idx(pos,1) = -1
-                    ! pos in second that equals first
-                    idx(pos,2) = nc2
-                    ! the aos idx they refer to
-                    idx(pos,3) = cv(n2)%iaos(nc2)
+                 if( nc2 == idx(n,2))then
+                    yeah_this_is_one = .false.
                  endif
               enddo
+
+              if( yeah_this_is_one )then
+                 pos    = pos    + 1
+                 ncidx2 = ncidx2 + 1
+                 ! pos in first that equals second - set invalid since there is none
+                 idx(pos,1) = -1
+                 ! pos in second that equals first
+                 idx(pos,2) = nc2
+                 ! the aos idx they refer to
+                 idx(pos,3) = cv(n2)%iaos(nc2)
+              endif
            enddo
+ 
+           if( ncidx2 /= ndidx2 )then
+              print *,ncidx2,ndidx2
+              call lsquit("ERROR: stuff dont work",-1)
+           endif
+
         endif
 
      else
