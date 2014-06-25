@@ -1443,9 +1443,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array4) :: iajb_a4
    type(array)            :: tmp
    character(ARR_MSG_LEN) :: msg
+   integer(kind=8)        :: o2v2
+   real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces
    logical                :: restart, w_cp, restart_from_converged,collective,use_singles
    character(4)           :: atype
+
+   call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
@@ -1470,13 +1474,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    collective       = .true.
    fragment_job     = present(frag)
+   
+   o2v2             = (i8*nv**2)*no**2
+   mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
 
-   call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
+   call get_currently_available_memory(MemFree)
 
    !Set defaults
-   restart     = .false.
-   w_cp        = .false.
-   saferun     = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   restart          = .false.
+   w_cp             = .false.
+   saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+
+   if( saferun .and. (2.0E0_realk*mem_o2v2 > 0.5E0_realk*MemFree) )then
+      print *,"WARNING(ccsolver_par): detected high memory requirements, I will"
+      print *,"therefore not save any amplitudes to file. This requires a makeover"
+
+      saferun = .false.
+   endif
 
 
    nnodes      = 1

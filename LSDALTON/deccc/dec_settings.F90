@@ -399,6 +399,7 @@ contains
 
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
+
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
