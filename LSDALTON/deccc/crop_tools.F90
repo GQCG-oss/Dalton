@@ -568,7 +568,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no)
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
-      real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
+      real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
       !> temp array2 and array4 structures
       real(realk),pointer :: tmp(:)
       integer(kind=8) :: wrksize
@@ -621,7 +621,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: vo(nv*no)
       !> unitary transformation matrices
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
-      real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
+      real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
       real(realk) :: UoccT(no*no), UvirtT(nv*nv)
       !> temp array2 and array4 structures
       real(realk),pointer :: tmp(:)
