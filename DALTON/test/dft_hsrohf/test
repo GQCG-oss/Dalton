@@ -9,9 +9,9 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'TEST STRING',
-      rel_tolerance = 1.0e-7)
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
 
-test.run(['rsp_g_b3lypx.dal'], ['tmp.mol'], {'out': f})
+test.run(['dft_hsrohf.dal'], ['CH2-_STO-3G.mol'], {'out': f})
 
 sys.exit(test.return_code)
