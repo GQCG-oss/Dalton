@@ -2126,6 +2126,7 @@ contains
     call dec_set_model_names(DECitem)
     call ls_mpi_buffer(DECitem%ccModel,Master)
     call ls_mpi_buffer(DECitem%use_singles,Master)
+    call ls_mpi_buffer(DECitem%gcbasis,Master)
     call ls_mpi_buffer(DECitem%HFrestart,Master)
     call ls_mpi_buffer(DECitem%DECrestart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)

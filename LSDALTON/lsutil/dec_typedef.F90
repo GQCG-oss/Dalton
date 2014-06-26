@@ -102,6 +102,8 @@ module dec_typedef_module
      integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
      !> Use singles
      logical :: use_singles
+     !> is the density and other matrices in the grand-canonical basis?
+     logical :: gcbasis
 
 
      !> Restart options
