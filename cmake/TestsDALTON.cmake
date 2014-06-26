@@ -409,7 +409,7 @@ add_dalton_test(geoopt_prop3_ex               "dalton;long")
 add_dalton_test(rsp_excipolar                 "dalton;long")
 add_dalton_test(rsp_twophot                   "dalton;long")
 
-add_dalton_test(dft_stex                      "dalton;dft")
+add_dalton_runtest(dft_stex                   "dalton;dft;runtest;multistep")
 add_dalton_test(dft_hsrohf                    "dalton;dft;short;essential")
 
 add_dalton_test(hfreqfromE                    "dalton;numder")
