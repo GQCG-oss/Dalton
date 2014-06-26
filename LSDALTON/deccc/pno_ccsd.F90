@@ -2170,9 +2170,9 @@ module pno_ccsd_module
      real(realk), parameter :: nul = 0.0E0_realk
      integer :: tid, edit,orig_nthr
 #ifdef VAR_OMP
-     !$ logical :: nested
-     !$ logical, external :: omp_get_nested
-     !$ integer, external :: omp_get_thread_num, omp_get_num_threads
+     logical :: nested
+     logical, external :: omp_get_nested
+     integer, external :: omp_get_thread_num, omp_get_num_threads
      nested    = omp_get_nested()
      call omp_set_nested(.true.)
 #endif
