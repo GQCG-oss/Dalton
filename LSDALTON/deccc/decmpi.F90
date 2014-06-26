@@ -1831,7 +1831,7 @@ contains
 
        ! Giga flops for fragment
 #ifdef VAR_PAPI
-       Gflops = jobs%flops(i)*1.0e-9
+       Gflops = jobs%flops(i)*1.0e-9_realk
 #else
        Gflops=-1.0_realk
 #endif
@@ -2144,7 +2144,7 @@ contains
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
-    call ls_mpi_buffer(DECitem%MOCCSD,Master)
+    call ls_mpi_buffer(DECitem%NO_MO_CCSD,Master)
     call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
@@ -2192,7 +2192,6 @@ contains
     call ls_mpi_buffer(DECitem%force_Occ_SubSystemLocality,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%skipfull,Master)
-    call ls_mpi_buffer(DECitem%full_print_frag_energies,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)

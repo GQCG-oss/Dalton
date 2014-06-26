@@ -363,10 +363,6 @@ C
          FIRST1 = .FALSE.
       ENDIF
       IF (PEQM) THEN
-        IF (.NOT. TDHF) THEN
-            CALL QUIT('ERROR: MCSCF linear response not implemented'//
-     &                ' with the PE library.')
-        ENDIF
 #ifdef BUILD_PELIB
         CALL PE_RSPLIN(NCSIM, NOSIM, BCVECS, BOVECS, WRK(KCREF), CMO,
      &                 INDXCI, UDV, WRK(KDV), WRK(KUDVTR), WRK(KDVTR),
@@ -377,10 +373,11 @@ C
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
-     *   ' CONTRIBUTIONS FROM QMMMLNO TO LINEAR TRANSFORMATION'
-         CALL QMMMLNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,
+     *   ' CONTRIBUTIONS FROM QMMMLTR TO LINEAR TRANSFORMATION'
+         CALL QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,WRK(KCREF),CMO,INDXCI,
      &               UDV,WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
-     &               EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
+     &               WRK(KDVT),WRK(KDVTTR),
+     &               EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          IF (IPQMMM .GT. 1) CALL TIMER('QMMMLNO',TIMSTR,TIMEND)
       ENDIF
       IF (FLAG(16)) THEN
@@ -1143,7 +1140,7 @@ C
 C
 C  Input:   ordinary and 1-index
 C           transformed inactive solvent-matrices (RXAC and RYAC),
-C           tral and reference CI-vectors (BCVECS and CREF)
+C           trial and reference CI-vectors (BCVECS and CREF)
 C
 C  Output:  New CI-part of sigma vector (SVECS)
 C

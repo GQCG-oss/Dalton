@@ -159,6 +159,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/hersol.F
     DALTON/abacus/hersym.F
     DALTON/abacus/hertst.F
+    DALTON/abacus/her_lslib.F
     DALTON/abacus/huckel.F
     DALTON/abacus/abalresc.F
     DALTON/abacus/linearlr.F

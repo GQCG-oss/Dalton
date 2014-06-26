@@ -61,7 +61,7 @@ TIGHT
 .MP2
 .FRAGMENTEXPANSIONRI
 .FOT
-2
+3
 .MEMORY
 2.0
 *END OF INPUT
@@ -93,7 +93,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0.321" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  \: * \-0.3[3-4]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Total correlation energy is not correct"

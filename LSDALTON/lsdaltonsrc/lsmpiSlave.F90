@@ -17,13 +17,15 @@ subroutine lsmpi_init(OnMaster)
    nInteger8 = 0
    nCha      = 0
 
+   if (call_mpi_init) then
 #ifdef VAR_CHEMSHELL
-   MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
+     MPI_COMM_LSDALTON = lsdalton_chemsh_comm()
 #else
+     call MPI_INIT( ierr )
+     MPI_COMM_LSDALTON        = MPI_COMM_WORLD
+#endif
+   endif
 
-   call MPI_INIT( ierr )
-
-   MPI_COMM_LSDALTON        = MPI_COMM_WORLD
    lsmpi_enabled_comm_procs = .false.
 
    !asynchronous progress is off per default, might be switched on with an
@@ -31,7 +33,6 @@ subroutine lsmpi_init(OnMaster)
    LSMPIASYNCP             = .false.
    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 
-#endif
 
    call MPI_COMM_GET_PARENT( infpar%parent_comm, ierr )
    call get_rank_for_comm( MPI_COMM_LSDALTON, infpar%mynum  )
@@ -147,8 +148,6 @@ subroutine lsmpi_slave(comm)
          call set_dec_settings_on_slaves
       case(CCSDDATA);
          call ccsd_data_preparation
-      case(CCSD_COMM_PROC_MASTER);
-         call get_master_comm_proc_to_wrapper
       case(MO_INTEGRAL_SIMPLE);
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);

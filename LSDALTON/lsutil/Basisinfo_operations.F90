@@ -313,10 +313,14 @@ SUBROUTINE init_basissetinfo_types(BasisInfo,natomtypes)
 implicit none
 TYPE(BASISSETINFO),intent(inout) :: BasisInfo
 INTEGER,intent(in)               :: natomtypes
+!
+integer :: i
 
 BasisInfo%natomtypes=natomtypes
 CALL MEM_ALLOC(BasisInfo%AtomType,natomtypes)
-
+do I=1,natomtypes
+   call nullifyAtomtype(BasisInfo%AtomType(I))
+enddo
 END SUBROUTINE init_basissetinfo_types
 
 !> \brief initialise shell in basissetinfo structure
@@ -382,6 +386,10 @@ do i = 1,nsize
 enddo
 CALL MEM_ALLOC(BasisInfo%AtomType(natomtype)%SHELL(nAngmom)%&
                        &segment(segments)%Exponents,nrow)
+do i = 1,nrow
+   BasisInfo%AtomType(natomtype)%SHELL(nAngmom)%&
+                   &segment(segments)%Exponents(i) = 0.0E0_realk
+enddo
 
 END SUBROUTINE init_basissetinfo_elms
 

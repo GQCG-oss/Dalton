@@ -236,7 +236,7 @@ subroutine LinearTransformations(CFG,X,HX,G)
  end if
 
  if (CFG%orbspread) then
-       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_input)
+       call orbspread_hesslin(HX,X,0.0_realk,X%nrow,CFG%orbspread_inp)
        return
  end if
 
@@ -367,7 +367,7 @@ if (CFG%PFM) then
 end if
 
 if (CFG%orbspread) then
-   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_input)
+   call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_inp)
 elseif (CFG%PM) then
    call charge_precond(b_current,res,CFG%mu,CFG%PM_input)
 end if
@@ -569,7 +569,7 @@ subroutine get_levelshift(grad,CFG,X,xred,iter,alpha,Levelshift)
 implicit none
  integer, intent(in) ::iter
  type(RedSpaceItem)  :: CFG
- real(realk)  :: xred(iter-1)
+ real(realk),intent(inout)  :: xred(iter-1)
  type(matrix) :: X
  type(matrix),intent(in) ::grad
  real(realk)  :: alpha1,alpha2,alpha
@@ -602,7 +602,7 @@ subroutine BracketAlpha(CFG,X,xred,iter,alpha1,alpha2,done,Levelshift)
 implicit none
 type(RedSpaceItem)     :: CFG
 integer,intent(in)     :: iter
-real(realk),intent(in) :: xred(iter-1)
+real(realk),intent(inout) :: xred(iter-1)
 real(realk)            :: alpha1,alpha2,alpha
 logical                :: done
 type(matrix)           :: X

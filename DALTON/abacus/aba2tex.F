@@ -272,7 +272,6 @@ C
 #include "gnrinf.h"
 #include "infpar.h"
 #include "infinp.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "energy.h"
 #include "expopt.h"
@@ -281,6 +280,9 @@ C
 #include "esg.h"
 C defined parallel calculation types 
 #include "iprtyp.h"
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MXDMAT = 2*MXCOOR)
@@ -622,6 +624,7 @@ C
                CALL ADDGRD(GRADNN)
                CALL ADDGRD(GRADNA)
                CALL ADDGRD(GRADEE)
+               CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Molecular gradient',-1)
                CALL ADDGRD(GRADFS)
@@ -630,6 +633,7 @@ C
                   CALL ADDGRD(GSOLTT)
                   CALL ADDGRD(GSOLNN)
                END IF
+               CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                NCDEP3 = 3*NUCDEP
                GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
@@ -868,7 +872,6 @@ C
 #include "gnrinf.h"
 #include "infpar.h"
 #include "infinp.h"
-#include "taymol.h"
 #include "taysol.h"
 #include "energy.h"
 #include "expopt.h"

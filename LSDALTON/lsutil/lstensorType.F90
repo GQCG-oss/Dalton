@@ -89,8 +89,32 @@ MODULE LSTENSOR_TYPETYPE
 
 contains
 
-!Added to avoid "has no symbols" linking warning
-subroutine LSTENSOR_TYPETYPE_void()
-end subroutine LSTENSOR_TYPETYPE_void
+!!Added to avoid "has no symbols" linking warning
+!subroutine LSTENSOR_TYPETYPE_void()
+!end subroutine LSTENSOR_TYPETYPE_void
+
+subroutine nullifyTENSORLSAO(LSAO)
+implicit none
+TYPE(LSAOTENSOR) :: LSAO(:)
+!
+integer :: nsize,I
+nsize = SIZE(LSAO)
+do I=1,nsize
+   LSAO(I)%nelms = 0 
+   nullify(LSAO(I)%elms)
+   nullify(LSAO(I)%nOrb)
+   nullify(LSAO(I)%startLocalOrb)
+   nullify(LSAO(I)%startGlobalOrb)
+   nullify(LSAO(I)%nAngmom)
+   LSAO(I)%maxBat = 0 
+   LSAO(I)%maxAng  = 0 
+   LSAO(I)%nLocal = 0 
+   LSAO(I)%ATOM = 0 
+   LSAO(I)%AOBATCH = 0 
+#ifdef VAR_MPI
+   LSAO(I)%GLSAOindex = 0 
+#endif
+enddo
+end subroutine nullifyTENSORLSAO
 
 END MODULE LSTENSOR_TYPETYPE

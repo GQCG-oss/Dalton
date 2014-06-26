@@ -1,0 +1,16 @@
+BASIS                                                                          
+3-21G                                                                          
+CHBrClF                                                                        
+--------------------------------------------                                   
+Atomtypes=5 Generators=0   Angstrom                                            
+Charge=6.0 Atoms=1                                                             
+C     0.000000   0.000000    0.000000                                          
+Charge=1.0 Atoms=1                                                             
+H     0.000000   0.000000    1.089000                                          
+Charge=17.0 Atoms=1                                                            
+Cl    1.649918   0.000000   -0.583327                                          
+Charge=35.0 Atoms=1                                                            
+Br   -0.895669   1.551344   -0.633333                                          
+Charge=9.0 Atoms=1                                                             
+F   -0.626968  -1.085940   -0.443333                                          
+FINISH

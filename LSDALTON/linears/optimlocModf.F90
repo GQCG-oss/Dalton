@@ -32,7 +32,6 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   integer,       intent(in)    :: nocc
   integer,       intent(in)    :: m(2)
   integer                      :: nvirt, nbas, ncore, nval
-  type(orbspread_data)         :: inp
   real(realk) :: TIMSTR,TIMEND
   type(matrix) :: SC,CSC,S
   logical :: ForcePrint
@@ -42,10 +41,10 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   CALL LSTIMER('START ',TIMSTR,TIMEND,ls%lupri)
   
   !initializations
-  nvirt=CMO%ncol - nocc
-  nbas =CMO%nrow
   ncore = count_ncore(ls)
   nval = nocc - ncore
+  nvirt=CMO%ncol - nocc
+  nbas =CMO%nrow
   CFG%lupri = ls%lupri
 
   !Compute OrbLoc%SU needed for localization
@@ -64,7 +63,7 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   end if
 
 
-  if (CFG%orbspread)  call orbspread_propint(inp,ls)
+  if (CFG%orbspread)  call orbspread_propint(CFG%orbspread_inp,ls)
   if (CFG%PFM)   call kurt_initAO(CFG%PFM_input,ls,cmo%ncol)
 
   
@@ -72,18 +71,18 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',ncore,' CORE ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
   CFG%PFM_input%m=m(1)
-  call localization(CMO,m(1),ncore,nbas,0,ls,CFG,inp,.true.)
+  call localization(CMO,m(1),ncore,nbas,0,ls,CFG,.true.)
   write(ls%lupri,'(a)') '  %LOC%  '
   write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nval,' VALENCE ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
-  call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,inp,.false.)
+  call localization(CMO,m(1),nval,nbas,ncore,ls,CFG,.false.)
   write(ls%lupri,'(a)') '  %LOC%  '
   write(ls%lupri,'(a,i5,a)') '  %LOC% *******  LOCALIZE ',nvirt,' VIRTUAL ORBITALS ******'
   write(ls%lupri,'(a)') '  %LOC%  '
   CFG%PFM_input%m=m(2)
-  call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,inp,.false.)
+  call localization(CMO,m(2),nvirt,nbas,nocc,ls,CFG,.false.)
 
-  if (CFG%orbspread) call orbspread_propint_free(inp)
+  if (CFG%orbspread) call orbspread_propint_free(CFG%orbspread_inp)
   if (CFG%PFM)  call kurt_freeAO(CFG%PFM_input)
   if (CFG%PM) call mat_free(CFG%PM_input%SU)
 
@@ -112,7 +111,7 @@ end subroutine optimloc
 !>  calls localization with appropriate dimension and check for problems
 !> \author Ida-Marie Hoeyvik
 !> \date 2014
-subroutine localization(MO,m,norb,nbas,offset,ls,CFG,inp,core) 
+subroutine localization(MO,m,norb,nbas,offset,ls,CFG,core) 
 implicit none
 !> Matrix containg all MO coefficents
 type(matrix),intent(inout) :: MO 
@@ -133,7 +132,6 @@ logical, intent(in)  :: core
 !> items for localizer etc
 type(RedSpaceItem)   :: CFG
 type(lsitem)         :: ls
-type(orbspread_data) :: inp
 
 ! when m=0, no localization is to be performed
 if (m == 0) return
@@ -154,9 +152,9 @@ call mem_dealloc(tmp)
 
 ! if core, make sure m = 1 for orbspread and fourthmoment
 if (core .and. (CFG%orbspread.or.CFG%PFM)) then
-   call localize_davidson(MOblock,1,inp,ls,CFG)
+   call localize_davidson(MOblock,1,ls,CFG)
 else
-   call localize_davidson(MOblock,m,inp,ls,CFG)
+   call localize_davidson(MOblock,m,ls,CFG)
 endif
 
 call mem_alloc(tmp,nbas*norb)
@@ -168,10 +166,9 @@ call mem_dealloc(tmp)
 
 end subroutine localization
 
-subroutine localize_davidson(CMO,m,orbspread_input,ls,CFG)
+subroutine localize_davidson(CMO,m,ls,CFG)
   implicit none
   type(RedSpaceItem) :: CFG
-  type(orbspread_data) :: orbspread_input
   type(lsitem) :: ls
   type(matrix) :: CMO
   integer :: m
@@ -179,7 +176,7 @@ subroutine localize_davidson(CMO,m,orbspread_input,ls,CFG)
   call davidson_reset(CFG)
 
   if (CFG%orbspread) then
-     call orbspread_localize_davidson(CFG,CMO,m,orbspread_input,ls)
+     call orbspread_localize_davidson(CFG,CMO,m,ls)
      return
   elseif (CFG%PFM) then
      call PFM_localize_davidson(CFG,CMO,m,ls)

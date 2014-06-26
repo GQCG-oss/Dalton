@@ -142,7 +142,7 @@ Type(trajtype),intent(inout) :: Traj
 Real(realk) :: CM(3) ! Centre of mass
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
 Integer :: nbast
-Real(realk), parameter :: kB = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: kB = 3.166815E0_realk*10E-6_realk ! [Hartree/(K)]
 ! Allocating memory
 If (dyn%TimRev) then
    ! Density propagation
@@ -288,7 +288,7 @@ Type(dyntype)  :: dyn
 Real(realk) :: Temperature
 Real(realk), pointer :: Cartesian_Coordinates(:)
 Real(realk), pointer :: Cartesian_Velocities(:)
-Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ![Hartree/(K)]
 ! Allocate some memory if integration in mass-weighted
 If (dyn%Mass_Weight) then
    Call mem_alloc(Cartesian_Coordinates,3*NAtoms)
@@ -359,6 +359,9 @@ If (.NOT. dyn%NHchain) then
 Endif
 !
 Call LSHeader(lupri, 'Energy conservation (au)')
+Write(*,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
+                            '   Potential energy: ',traj%CurrPotential, &
+                            '   Kinetic energy: ', traj%CurrKinetic
 Write(lupri,'(3(A,F13.6))') ' Total energy: ', traj%CurrEnergy, &
                             '   Potential energy: ',traj%CurrPotential, &
                             '   Kinetic energy: ', traj%CurrKinetic
@@ -369,10 +372,12 @@ If (dyn%NHchain) then
 &conserved quantity and not T+V!'
 Endif
 ! Estimating temperature
-Temperature = 2*traj%CurrKinetic/(3*NAtoms*Boltzmann) 
-Print *, 'Temperature=',Temperature
-Write(lupri,'(31X,A,F14.8)') 'Temperature: ',&
-&Temperature
+Temperature = 2.0E0_realk*traj%CurrKinetic/(3.0E0_realk*NAtoms*Boltzmann) 
+Print *, 'traj%CurrKinetic=',traj%CurrKinetic
+Print *, 'NAtoms          =',NAtoms
+Print *, 'Boltzmann       =',Boltzmann
+Print *, 'Temperature     =',Temperature
+Write(lupri,'(31X,A,F14.8)') 'Temperature: ',Temperature
 If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature
 !
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
@@ -681,7 +686,7 @@ Integer :: lupri,NAtoms,i
 Type(lsitem), intent(in) :: ls 
 Type(dyntype), intent(inout) :: dyn
 Type(trajtype), intent(inout) :: traj
-Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6 ! [Hartree/(K)]
+Real(realk), parameter :: Boltzmann = 3.166815E0_realk*10E-6_realk ! [Hartree/(K)]
 !
 Call DoublelinesInt(lupri, 'Final information for trajectory ', 1, 44)
 Write(lupri,'(A,F10.5)') ' Final time       : ', traj%TrajTime

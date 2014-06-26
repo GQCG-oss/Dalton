@@ -2153,7 +2153,7 @@ CONTAINS
 
 !     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
 !     basis as ADMM basis for level 3)
-      ADMMexchange = ls%input%dalton%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
+      ADMMexchange = ls%setting%scheme%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
       IF ((ls%optlevel.EQ.2).AND.ls%input%dalton%ADMM_GCBASIS) ADMMexchange = .FALSE.
 
 ! *********************************************************************************
@@ -2352,22 +2352,16 @@ CONTAINS
         LOGICAL, intent(in)           :: do_dft
         !
         INTEGER                       :: iBmat
-        LOGICAL                       :: ADMMexchange  , ADMMGCBASIS    
+        LOGICAL                       :: ADMMexchange 
         ! -- ADMM modifications
         !     replace GdBs = J(B) + K(B)
         !    by      GdBs = J(B) + K(b) + X(B) - X(b) if ADMM
         IF(present(setting))THEN
             ADMMexchange = setting%scheme%ADMM_EXCHANGE
-            ADMMGCBASIS  = setting%scheme%ADMM_GCBASIS
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
-            ADMMGCBASIS  = lsint_fock_data%ls%setting%scheme%ADMM_GCBASIS
-        ENDIF
-        IF (ADMMGCBASIS) THEN
-            ADMMexchange = .FALSE.
         ENDIF
         IF (ADMMexchange) THEN 
-            call lsquit('ADMM is not fully tested yet for RESPONSE',-1)
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         ELSE 
@@ -2514,13 +2508,6 @@ CONTAINS
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
             logical                :: GC3,GC2,testNelectrons,grid_done
-            real(realk)         :: GGAXfactor
-            !
-            IF (setting%scheme%cam) THEN
-              GGAXfactor = 1.0E0_realk
-            ELSE
-              GGAXfactor = setting%scheme%exchangeFactor
-            ENDIF
             !
             nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
@@ -2589,9 +2576,7 @@ CONTAINS
 
             ! ADMM approx. to exchange mat
             ! ---------------------------------------------------------------           
-            IF(setting%scheme%ADMM_DFBASIS) THEN
-                AO2 = AOdfAux
-            ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+            IF (setting%scheme%ADMM_JKBASIS) THEN
                 AO2 = AOdfJK
             ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
                 AO2 = AOVAL
@@ -2622,7 +2607,7 @@ CONTAINS
             call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
-                & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+                & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
@@ -2630,7 +2615,7 @@ CONTAINS
                 call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
-                    & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+                    & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
 
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
@@ -2658,7 +2643,7 @@ CONTAINS
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons
-                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
                 setting%scheme%dft%testNelectrons = .FALSE. 
                 
                 !Level 2 XC matrix
@@ -2671,7 +2656,7 @@ CONTAINS
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
                                         & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(-GGAXfactor,TMPF3,K(ibmat))
+                call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2680,7 +2665,7 @@ CONTAINS
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons
-                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM1
                 setting%scheme%dft%testNelectrons = .FALSE. 
                 
                 !Level 3 XC matrix
@@ -2689,7 +2674,7 @@ CONTAINS
                 call set_default_AOs(AO3,AOdfold)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
-                call mat_daxpy(GGAXfactor,Gx3(ibmat),K(ibmat))
+                call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
                                 
                 IF (setting%do_dft) &
       &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)

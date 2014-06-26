@@ -385,6 +385,7 @@ C        MCSCF calculation
      &         POTNUC,(EMCSCF-POTNUC-ESOLT)
          END IF
          IF (FLAG(16) .OR. PCM) WRITE (LUPRI,5025) ESOLT
+         IF (PEQM) WRITE(LUPRI,5026) ESOLT
          WRITE (LUPRI,5030) GRDNRM
       ELSE IF (DORHF) THEN
          IF (DOHFSRDFT) THEN

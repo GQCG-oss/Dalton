@@ -1301,10 +1301,10 @@ contains
       ! 6: PDM scheme: batches are distributed in PDM using
       !    one sided communication.
 
-      if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
+      if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
         print *,"!!FORCING MO-CCSD LOCAL SCHEME!!"
         local = .true.
-      else if (DECinfo%force_scheme.and.DECinfo%en_mem==6) then
+      else if (DECinfo%force_scheme.and.DECinfo%en_mem==5) then
         print *,"!!FORCING MO-CCSD PDM SCHEME!!"
         local = .false.
       else

@@ -1596,18 +1596,12 @@ Real(realk),pointer :: DfullRHS(:,:,:)
 Real(realk),pointer :: Ffull(:,:,:)
 Real(realk)         :: TSTART,TEND
 Character(80)       :: Filename
-logical :: inc_scheme,do_inc,SaveInMemory
+logical :: inc_scheme,do_inc
 integer :: nmat,nrow,ncol
 integer :: i,j,natoms
 real(realk) :: tmp_sum
 Real(realk),pointer   :: eigValphaBeta(:), copy_alpBeta(:,:)
 Real(realk)         :: minEigv,maxEigv,conditionNum
-
-#ifdef VAR_SCALAPACK
-   SaveInMemory = .TRUE.
-#else
-   SaveInMemory = .FALSE.
-#endif
 
 IF (matrix_type .EQ. mtype_unres_dense)THEN
   IF (SETTING%SCHEME%FMM) call lsquit('Not allowed combination in II_get_regular_df_coulomb_mat. FMM and unrestricted',-1)
@@ -1669,71 +1663,26 @@ do Idmat=1,nmat
    CALL ls_freeDmatFromSetting(setting)
    call LSTIMER('GALPHA',TSTART,TEND,LUPRI)
    !(alpha|beta)
-   IF(.NOT.SaveInMemory)THEN
-      call mat_init(alphabeta,naux,naux)
-   ENDIF
+   call mat_init(alphabeta,naux,naux)
    call io_get_filename(Filename,'ALBE',AODFdefault,AOEmpty,AODFdefault,AOEmpty,0,0,&
         &CoulombOperator,Contractedinttype,.FALSE.,LUPRI,LUERR)
 
 !  Either calculate the (alpha|beta) matrix and its cholesky-factorization and write
 !  OR read cholesky-factorization from file
-   IF(SaveInMemory.AND.SaveAlphaBeta)THEN
-      !do nothing matrix is already in memory 
+   IF (io_file_exist(Filename,SETTING%IO)) THEN
+      call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ELSE
-      IF (io_file_exist(Filename,SETTING%IO)) THEN
-         call io_read_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
-      ELSE
-         !build Matrix 
-         IF(SaveInMemory)THEN
-            call mat_init(AlphaBetaSave,naux,naux)
-            call mat_zero(AlphaBetaSave)
-         ELSE
-            call mat_zero(alphabeta)
-         ENDIF
-         call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
-         call ls_getIntegrals(AODFdefault,AOempty,&
-              &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-         IF(SaveInMemory)THEN
-            call retrieve_Output(lupri,setting,alphabetaSave,.FALSE.)
-         ELSE
-            call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
-         ENDIF
-#if 0
-         IF(.NOT.SaveInMemory)THEN
-            ! checking eigenvalues of the full (alpha|beta) matrix
-            call mem_alloc(copy_alpBeta,nAux,nAux)
-            !      DO j=i,nAux
-            !         DO i=1,nAux
-            !            copy_alpBeta(i,j) = alphabeta(i,j)
-            !         ENDDO
-            !      ENDDO
-            call mat_to_full(alphabeta,1E0_realk,copy_alpBeta)
-            call mem_alloc(eigValphaBeta,nAux)
-            call II_get_eigv_square_mat(lupri,luerr,copy_alpBeta,eigValphaBeta,nAux) 
-            call check_min_max_Array_elem(minEigV,maxEigV,conditionNum,eigValphaBeta,nAux,lupri,luerr)
-            call mem_dealloc(eigValphaBeta)
-            call mem_dealloc(copy_alpBeta)
-            write(lupri,*) "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-            write(*,*)     "(alpha|beta) full: minEigV of all (alpha|beta) matrix: ",minEigV
-            write(lupri,*) "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-            write(*,*)     "(alpha|beta) full: maxEigV of all (alpha|beta) matrix: ",maxEigV
-            write(lupri,*) "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-            write(*,*)     "(alpha|beta) full: Condition Number (abs(max)/abs(min): ",conditionNum
-            !call LSQUIT('Testing eigenvalues of the FULL (alpha|beta) matrix - quitting II_get_regular_df_coulomb_mat()',-1)
-         ENDIF
-#endif
-         IF(SaveInMemory)THEN
-            !Make Choleksy-factorization
-            CALL mat_dpotrf(alphabetaSave)            
-            SaveAlphaBeta = .TRUE.
-         ELSE
-            !Make Choleksy-factorization
-            CALL mat_dpotrf(alphabeta)
-            !Save Cholesky-factors to file
-            call io_add_filename(SETTING%IO,Filename,LUPRI)
-            call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
-         ENDIF
-      ENDIF
+      !build Matrix 
+      call mat_zero(alphabeta)
+      call initIntegralOutputDims(setting%output,naux,1,naux,1,1)
+      call ls_getIntegrals(AODFdefault,AOempty,&
+           &AODFdefault,AOempty,CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+      call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
+      !Make Choleksy-factorization
+      CALL mat_dpotrf(alphabeta)
+      !Save Cholesky-factors to file
+      call io_add_filename(SETTING%IO,Filename,LUPRI)
+      call io_write_mat(alphabeta,Filename,SETTING%IO,LUPRI,LUERR)
    ENDIF
    call LSTIMER('ALBE  ',TSTART,TEND,LUPRI)
 
@@ -1742,15 +1691,9 @@ do Idmat=1,nmat
    CALL mat_assign(calpha,galpha)
 
    !  Solve the system A*X = B, using the Cholesky-factorization if A and overwriting B with X.
-   IF(SaveInMemory)THEN
-      CALL mat_dpotrs(alphabetasave,calpha)
-   ELSE
-      CALL mat_dpotrs(alphabeta,calpha)
-   ENDIF
+   CALL mat_dpotrs(alphabeta,calpha)
 
-   IF(.NOT.SaveInMemory)THEN
-      call mat_free(alphabeta)
-   ENDIF
+   call mat_free(alphabeta)
    call mat_free(galpha)
 
    

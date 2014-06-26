@@ -18,7 +18,7 @@ use basis_typetype,only: nullifyBasisset,nullifyMainBasis,&
      & BasParamLABEL,nBasisBasParam,GCTBasParam
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
-use READMOLEFILE, only: read_molfile_and_build_molecule
+use READMOLEFILE, only: read_molfile_and_build_molecule,Geometry_analysis  
 use BuildBasisSet, only: Build_BASIS
 use lstiming, only: lstimer
 use molecule_module, only: build_fragment
@@ -155,6 +155,8 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
   CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
        & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%basis,&
        & latt_config)
+
+CALL Geometry_analysis(intinp%MOLECULE,LUPRI)  
 
 integral%nelectrons = intinp%MOLECULE%nelectrons 
 integral%molcharge = INT(intinp%MOLECULE%charge)

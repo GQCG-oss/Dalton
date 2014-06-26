@@ -60,6 +60,7 @@ module ccsd_module
 !         & array4_write_file
 !         & array_change_atype_to_d,print_norm
     use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
+    use pno_ccsd_module
 
 
     public :: getDoublesResidualMP2_simple,&
@@ -680,151 +681,84 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
-             & MOinfo,mo_ccsd,iter,local,rest)
+             & MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,rest,frag)
     implicit none
     !> CC model
-    integer,intent(inout) :: ccmodel
-    logical, intent(in)   :: w_cp
-    type(array)           :: delta_fock
-    type(array)           :: omega2
-    type(array)           :: t2
-    type(array)           :: fock
-    type(array)           :: iajb
-    integer,intent(in)    :: no,nv
-    type(array)           :: ppfock
-    type(array)           :: qqfock
-    type(array)           :: pqfock
-    type(array)           :: qpfock
-    type(array)           :: xo
-    type(array)           :: xv
-    type(array)           :: yo
-    type(array)           :: yv
-    integer,intent(in)    :: nb
-    type(lsitem)          :: MyLsItem
-    type(array)           :: omega1
-    type(array)           :: t1
-    type(array)           :: pgmo_diag
-    type(array)           :: pgmo_up
-    type(MObatchInfo)     :: MOinfo
-    logical,intent(in)    :: mo_ccsd
-    integer,intent(in)    :: iter
-    logical,intent(in)    :: local
-    logical,intent(inout) :: rest
+    integer,intent(in)    :: ccmodel
+    logical, intent(in)      :: w_cp
+    type(array)              :: delta_fock
+    type(array)              :: omega2
+    type(array)              :: t2
+    type(array)              :: fock
+    type(array)              :: iajb
+    integer,intent(in)       :: no,nv
+    type(array)              :: ppfock
+    type(array)              :: qqfock
+    type(array)              :: pqfock
+    type(array)              :: qpfock
+    type(array)              :: xo
+    type(array)              :: xv
+    type(array)              :: yo
+    type(array)              :: yv
+    integer,intent(in)       :: nb
+    integer,intent(in)       :: nspaces
+    type(lsitem)             :: MyLsItem
+    type(array)              :: omega1
+    type(array)              :: t1
+    type(array)              :: pgmo_diag
+    type(array)              :: pgmo_up
+    type(MObatchInfo)        :: MOinfo
+    logical,intent(in)       :: mo_ccsd
+    type(PNOSpaceInfo)       :: pno_cv(:), pno_S(:)
+    integer,intent(in)       :: iter
+    logical,intent(in)       :: local
+    logical,intent(in)       :: use_pnos
+    logical,intent(inout)    :: rest
+    type(decfrag),intent(in),optional :: frag
     !internal variables
     logical :: parent
     integer :: lg_me,lg_nnod
-#ifdef VAR_MPI
-    integer :: addr01(infpar%pc_nodtot)
-    integer :: addr02(infpar%pc_nodtot)
-    integer :: addr03(infpar%pc_nodtot)
-    integer :: addr04(infpar%pc_nodtot)
-    integer :: addr05(infpar%pc_nodtot)
-    integer :: addr06(infpar%pc_nodtot)
-    integer :: addr07(infpar%pc_nodtot)
-    integer :: addr08(infpar%pc_nodtot)
-    integer :: addr09(infpar%pc_nodtot)
-    integer :: addr10(infpar%pc_nodtot)
-    integer :: addr11(infpar%pc_nodtot)
-    integer :: addr12(infpar%pc_nodtot)
-    integer :: addr13(infpar%pc_nodtot)
-    integer :: addr14(infpar%pc_nodtot)
-    parent  = (infpar%parent_comm == MPI_COMM_NULL)
-    lg_nnod = infpar%lg_nodtot
-    lg_me   = infpar%lg_mynum
-
-    if( lspdm_use_comm_proc  )then
-      if (parent) call ls_mpibcast(CCSD_COMM_PROC_MASTER,infpar%master,infpar%pc_comm)
-      call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
-      call ls_mpi_buffer(lg_nnod,infpar%master)
-      call ls_mpi_buffer(lg_me,infpar%master)
-      call ls_mpi_buffer(nb,infpar%master)
-      call ls_mpi_buffer(no,infpar%master)
-      call ls_mpi_buffer(nv,infpar%master)
-      call ls_mpi_buffer(iter,infpar%master)
-      call ls_mpi_buffer(local,infpar%master)
-      call ls_mpi_buffer(ccmodel,infpar%master)
-      call ls_mpi_buffer(rest,infpar%master)
-
-      if(parent)addr01=delta_fock%addr_loc
-      call ls_mpi_buffer(addr01,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)delta_fock=get_arr_from_parr(addr01(infpar%pc_mynum+1))
-
-      if(parent)addr02=omega2%addr_loc
-      call ls_mpi_buffer(addr02,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)omega2=get_arr_from_parr(addr02(infpar%pc_mynum+1))
-
-      if(parent)addr03=t2%addr_loc
-      call ls_mpi_buffer(addr03,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)t2=get_arr_from_parr(addr03(infpar%pc_mynum+1))
-
-      if(parent)addr04=fock%addr_loc
-      call ls_mpi_buffer(addr04,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)fock=get_arr_from_parr(addr04(infpar%pc_mynum+1))
-
-      if(parent)addr05=iajb%addr_loc
-      call ls_mpi_buffer(addr05,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)iajb=get_arr_from_parr(addr05(infpar%pc_mynum+1))
-
-      if(parent)addr06=ppfock%addr_loc
-      call ls_mpi_buffer(addr06,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)ppfock=get_arr_from_parr(addr06(infpar%pc_mynum+1))
-
-      if(parent)addr07=qqfock%addr_loc
-      call ls_mpi_buffer(addr07,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)qqfock=get_arr_from_parr(addr07(infpar%pc_mynum+1))
-
-      if(parent)addr08=pqfock%addr_loc
-      call ls_mpi_buffer(addr08,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)pqfock=get_arr_from_parr(addr08(infpar%pc_mynum+1))
-
-      if(parent)addr09=qpfock%addr_loc
-      call ls_mpi_buffer(addr09,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)qpfock=get_arr_from_parr(addr09(infpar%pc_mynum+1))
-
-      if(parent)addr10=xo%addr_loc
-      call ls_mpi_buffer(addr10,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)xo=get_arr_from_parr(addr10(infpar%pc_mynum+1))
-
-      if(parent)addr11=xv%addr_loc
-      call ls_mpi_buffer(addr11,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)xv=get_arr_from_parr(addr11(infpar%pc_mynum+1))
-
-      if(parent)addr12=yo%addr_loc
-      call ls_mpi_buffer(addr12,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)yo=get_arr_from_parr(addr12(infpar%pc_mynum+1))
-
-      if(parent)addr13=yv%addr_loc
-      call ls_mpi_buffer(addr13,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)yv=get_arr_from_parr(addr13(infpar%pc_mynum+1))
-
-      if(parent)addr14=omega1%addr_loc
-      call ls_mpi_buffer(addr14,infpar%pc_nodtot,infpar%master)
-      if(.not.parent)omega1=get_arr_from_parr(addr14(infpar%pc_mynum+1))
-
-      call mpicopy_lsitem(MyLsItem,infpar%pc_comm)
-      call mpicopy_dec_settings(DECinfo)
-      call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%pc_comm)
-    endif
-
-#endif
 
 #ifdef MOD_UNRELEASED
-    if (mo_ccsd) then 
-       call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,iajb,nb,no,nv,&
-            & iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,delta_fock,fock,ppfock,&
-            & pqfock,qpfock,qqfock,local)
-    else 
-       call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-            & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-            & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
-    end if
+    if(use_pnos)then
+
+       !TODO: remove these sortings
+       call array_reorder(t2,[1,3,2,4])
+       call array_reorder(omega2,[1,3,2,4])
+
+       call get_ccsd_residual_pno_style(t1%elm1,t2%elm1,omega1%elm1,&
+          &omega2%elm1,iajb%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
+          &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
+          &qqfock%elm1,delta_fock%elm1,iter,f=frag)
+
+       !TODO: remove these sortings
+       call array_reorder(t2,[1,3,2,4])
+       call array_reorder(omega2,[1,3,2,4])
+
+    else
+
+       if (mo_ccsd) then 
+
+          call get_mo_ccsd_residual(ccmodel,pgmo_diag,pgmo_up,t1,omega1,t2,omega2,&
+             & iajb,nb,no,nv,iter,MOinfo,mylsitem,xo%elm2,xv%elm2,yo%elm2,yv%elm2,&
+             & delta_fock,fock,ppfock, pqfock,qpfock,qqfock,local)
+
+       else 
+
+          call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
+             & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,&
+             & xo%elm1,xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,&
+             & rest=rest)
+
+       end if
+    endif
 #else
     call get_ccsd_residual_integral_driven(ccmodel,delta_fock%elm1,omega2,t2,&
-         & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-         & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
+       & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
+       & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1%elm1,iter,local,rest=rest)
 #endif
 
-  end subroutine ccsd_residual_wrapper
+ end subroutine ccsd_residual_wrapper
 
 
 
@@ -881,7 +815,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      implicit none
 
      !> CC model
-     integer,intent(inout) :: ccmodel
+     integer,intent(in) :: ccmodel
      !> Number of basis functions
      integer,intent(in) :: nb
      !> Number of occupied orbitals
@@ -1001,7 +935,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
      integer(kind=8) :: nb4,o2v2,no4
      integer :: tlen,tred,nor,nvr,goffs,aoffs
-     integer :: prev_alphaB,mpi_buf
+     integer :: prev_alphaB,mpi_buf,ccmodel_copy
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !TEST AND DEVELOPMENT VARIABLES!!!!!
@@ -1039,6 +973,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      time_Bcnd_comm       = 0.0E0_realk
      time_Esing_work      = 0.0E0_realk
      time_Esing_comm      = 0.0E0_realk
+     commtime             = 0.0E0_realk
 
 
      ! Set default values for the path throug the routine
@@ -1103,7 +1038,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      StartUpSlaves: if(master .and. lg_nnod>1) then
         call time_start_phase(PHASE_COMM)
         call ls_mpibcast(CCSDDATA,infpar%master,infpar%lg_comm)
-        call mpi_communicate_ccsd_calcdata(ccmodel,omega2,t2,govov,xo,xv,yo,yv,MyLsItem,nb,nv,no,iter,local)
+        ccmodel_copy = ccmodel
+        call mpi_communicate_ccsd_calcdata(ccmodel_copy,omega2,t2,govov,xo,xv,yo,yv,MyLsItem,nb,nv,no,iter,local)
         call time_start_phase(PHASE_WORK, at = time_init_comm)
      endif StartUpSlaves
 
@@ -1736,7 +1672,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !of gamma batch
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
                     &xo,yo,xv,yv,omega2,sio4%d,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
-                    &time_intloop_B1work, time_intloop_B1comm )
+                    &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
 
                  !start a new timing phase after these terms
                  call time_start_phase(PHASE_WORK)
@@ -1755,7 +1691,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
            call lsmpi_poke()
            ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,no,nv,nb,fa,fg,la,lg,xo,sio4%d)
+           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%d)
            call lsmpi_poke()
 
 
@@ -1919,9 +1855,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(tasks,tasksc)
      endif
 
+#endif
+
      call time_start_phase(PHASE_WORK, at = time_intloop_comm , twall = time_intloop_stop)
-
-
 
      ! Print timings for the first part
      !*********************************
@@ -1945,7 +1881,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
      endif
 
-#endif
 
 
      ! Reallocate 1 temporary array
@@ -1993,9 +1928,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_WORK, twall = time_Bcnd )
 
+        !call print_tensor_unfolding_with_labels(sio4%d,&
+        !   &[no,no],'kl',2,[nor],'i<j',1,'SIO4 FULL')
+
         !get B2.2 contributions
         !**********************
-        call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,nb,omega2,scheme,lock_outside,&
+        call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
 
@@ -2315,7 +2253,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         &omega2,o2v2,s,pd,lock_outside,tw,tc)
      implicit none
      !> CC model
-     integer,intent(inout) :: ccmodel
+     integer,intent(in) :: ccmodel
      integer(kind=8),intent(in)::o2v2
      real(realk),intent(inout)::ppf(:)
      real(realk),intent(inout)::qqf(:)
@@ -2339,7 +2277,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=ls_mpik) :: me,nnod,nod
      integer :: ml1,fai1,l1,tl1,lai1
      integer :: ml2,fai2,l2,tl2,lai2
-     integer :: fri,tri
+     integer :: fri,tri,ccmodel_copy
      character(ARR_MSG_LEN) :: msg
      real(realk) :: nrm
      integer(kind=8) :: w3size
@@ -2360,8 +2298,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
      master=(infpar%lg_mynum==infpar%master)
      if((s==2.or.s==1).and.master)then
+        ccmodel_copy = ccmodel
         call time_start_phase(PHASE_COMM, at = tw)
-        call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
+        call share_E2_with_slaves(ccmodel_copy,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
         call time_start_phase(PHASE_WORK, at = tc)
      endif
 #endif
@@ -3051,1152 +2990,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call time_start_phase(PHASE_WORK, at = tw )
   end subroutine get_cnd_terms_mo
 
-  !> \brief Get the b2.2 contribution constructed in the kobayashi scheme after
-  !the loop to avoid steep scaling ste  !> \author Patrick Ettenhuber
-  !> \date December 2012
-  subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,nb,om2,s,lock_outside,tw,tc)
-    implicit none
-    !> the sio4 matrix from the kobayashi terms on input
-    real(realk), intent(in) :: sio4(:)
-    !> amplitudes
-    !real(realk), intent(in) :: t2(*)
-    type(array), intent(inout) :: t2
-    !> some workspave
-    real(realk), intent(inout) :: w1(:)
-    real(realk), pointer :: w2(:)
-    !> number of occupied, virutal and ao indices
-    integer, intent(in) :: no,nv,nb
-    !> residual to be updated
-    !real(realk), intent(inout) :: om2(*)
-    type(array), intent(inout) :: om2
-    !> integer specifying the calc-scheme
-    integer, intent(in) :: s
-    logical, intent(in) :: lock_outside
-    !> work and communication time in B2 term
-    real(realk), intent(inout) :: tw,tc
-    integer :: nor
-    integer :: ml,l,tl,fai,lai
-    integer :: tri,fri
-    integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
-    real(realk) :: nrm1,nrm2,nrm3,nrm4
-    integer ::  mv((nv*nv)/2),st
-    integer(kind=8) :: o2v2,pos1,pos2,i,j,pos
-    logical :: traf
-
-    call time_start_phase(PHASE_WORK)
-
-    me    = 0
-    massa = 0
-    nnod  = 1
-#ifdef VAR_MPI
-    massa = infpar%master
-    nnod  = infpar%lg_nodtot
-    me    = infpar%lg_mynum
-    mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
-#endif
-    o2v2=(i8*no)*no*nv*nv
-      
-    !Setting transformation variables for each rank
-    !**********************************************
-    call mo_work_dist(nv*nv,fai,tl,traf)
-
-    if(DECinfo%PL>3.and.me==0)then
-      write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
-    endif
-    
-    nor=no*(no+1)/2
-
-    ! do contraction
-    if((s==4.or.s==3).and.traf)then
-
-
-      w1=0.0E0_realk
-      call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-
-
-    else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-      call mem_alloc(w2,tl*no*no)
-
-      call time_start_phase(PHASE_COMM, at = tw )
-
-      if(lock_outside)call arr_lock_wins(t2,'s',mode)
-      call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
-      if(lock_outside)call arr_unlock_wins(t2,.true.)
-
-      call time_start_phase(PHASE_WORK, at = tc )
-
-      w1=0.0E0_realk
-      call dgemm('n','n',tl,nor,no*no,0.5E0_realk,w2,tl,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-      call mem_dealloc(w2)
-#endif
-
-    endif
-   
-
-    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do j=no,1,-1
-      !$OMP DO 
-      do i=j,1,-1
-        pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-        pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-      enddo
-      !$OMP END DO
-    enddo
-    !$OMP BARRIER
-    !$OMP DO 
-    do j=no,1,-1
-      do i=j,1,-1
-        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-        if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-      enddo
-    enddo
-    !$OMP END DO
-    !$OMP END PARALLEL
-
-    do j=no,1,-1
-      do i=j,1,-1
-        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-      enddo
-    enddo
-
-    if((s==4.or.s==3).and.traf)then
-
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-      call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
-#else
-      !$OMP WORKSHARE
-      om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
-      !$OMP END WORKSHARE
-#endif
-
-    else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-      call time_start_phase(PHASE_COMM, at = tw )
-
-      if(lock_outside)call arr_lock_wins(om2,'s',mode)
-      call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside)
-
-      call time_start_phase(PHASE_WORK, at = tc )
-#endif
-
-    endif
-
-    call time_start_phase(PHASE_COMM, at = tw )
-  end subroutine get_B22_contrib_mo
-
-  !> \brief subroutine to add contributions to the sio4 matrix which enters the
-  !B2.2 term in the "non"-parallel region
-  !> \author Patrick Ettenhuber
-  !> \Date September 2012
-  subroutine add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
-    implicit none
-    !> workspace containing the pariteially transformed integrals ordered as I(i
-    !gamma alpha j)
-    real(realk),pointer :: w0(:)
-    !> arbitrary workspace of correct size
-    real(realk),pointer :: w2(:),w3(:)
-    !> number of occupied, virutal and ao indices
-    integer, intent(in) :: no,nv,nb
-    !> first alpha and first gamma indices of the current loop
-    integer, intent(in) :: fa,fg
-    !> lengths of the alpha ang gamma batches in the currnet loop
-    integer, intent(in) :: la,lg
-    !> transformation matrix for t1 transformed integrals "Lambda p"
-    real(realk),intent(in) :: xo(nb*no)
-    !> sio4 storage space to update during the batched loops
-    real(realk),pointer :: sio4(:)
-    integer :: nor,pos,i,j
-    integer(kind=8) :: pos1, pos2
-
-    nor=no*(no+1)/2
-
-    ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
-    call array_reorder_4d(1.0E0_realk,w0,no,lg,la,no,[2,3,1,4],0.0E0_realk,w2)
-    ! (w2):I[alpha gamma i <= j] <- (w3):I[alpha gamma i j]
-    do j=1,no
-      do i=1,j
-        pos1=1_long+((i+j*(j-1)/2)-1)*la*(lg*i8)
-        pos2=1_long+(i-1)*la*lg+(j-1)*la*lg*(no*i8)
-        !call dcopy(la*lg,w2(1+(i-1)*la*lg+(j-1)*la*lg*no),1,w3(pos),1)
-        w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
-      enddo
-    enddo
-    ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
-    call array_reorder_3d(1.0E0_realk,w3,lg,la,nor,[2,3,1],0.0E0_realk,w2)
-    ! (w2):I[ l i <= j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i <= j alpha]
-    call dgemm('t','n',no,nor*lg,la,1.0E0_realk,xo(fa),nb,w2,la,0.0E0_realk,w3,no)
-    ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [alpha k ]^T I[l i <= j alpha]^T
-    call dgemm('t','t',no,nor*no,lg,1.0E0_realk,xo(fg),nb,w3,nor*no,1.0E0_realk,sio4,no)
-
-  end subroutine add_int_to_sio4
-
-
-  !> \brief calculate a and b terms in a kobayashi fashion
-  !> \author Patrick Ettenhuber
-  !> \date December 2012
-  subroutine get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
-  &xo,yo,xv,yv,om2,sio4,s,wszes,lo,twork,tcomm)
-    implicit none
-    !> workspace with exchange integrals
-    real(realk),intent(inout) :: w0(:)
-    !> empty workspace of correct sizes
-    real(realk),intent(inout) :: w1(:),w2(:),w3(:)
-    !> the t+ and t- combinations with a value of the amplitudes with the
-    !diagonal elements divided by two
-    real(realk),intent(inout) :: tpl(:),tmi(:)
-    !> number of occupied, virutal and ao indices
-    integer, intent(in) :: no,nv,nb
-    !> first alpha and first gamma indices of the current loop
-    integer, intent(in) :: fa,fg
-    !> lengths of the alpha ang gamma batches in the currnet loop
-    integer, intent(in) :: la,lg
-    !> the doubles residual to update
-    !real(realk), intent(inout) :: om2(:)
-    type(array), intent(inout) :: om2
-    !> the lambda transformation matrices
-    real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
-    !> the sio4 matrix to calculate the b2.2 contribution
-    real(realk),intent(inout) ::sio4(:)
-    !> scheme
-    integer,intent(in) :: s
-    logical,intent(in) :: lo
-    !timing information
-    real(realk) :: twork,tcomm
-    !> W0 SIZE
-    integer(kind=8),intent(in) :: wszes(4)
-    integer :: goffs,aoffs,tlen,tred,nor,nvr
-          
-    call time_start_phase(PHASE_WORK)
-
-    nor=no*(no+1)/2
-    nvr=nv*(nv+1)/2
-    
-    !Determine the offsets in the alpha and gamma indices, which arise from
-    !non uniform batch distributions, e.g. consider:
-    !Case 1:   gamma _____
-    !               |\    |
-    !               |_\___|
-    !  alpha        |  \  |
-    !               |___\_| here an offset in gamma for the second gamma batch is
-    !               needed, since the elements to be considered do not
-    !               begin with the first element in that batch
-    goffs=0
-    if(fa-fg>0)goffs=fa-fg
-    !Case 2:   gamma ______
-    !               |\ |   |
-    !               | \|   |
-    !  alpha        |  |\  |
-    !               |__|_\_| here an offset in alpha for the second alpha batch is
-    !               needed, since the elements to be considered do not
-    !               begin with the first element in that batch
-    aoffs=0
-    if(fg-fa>0)aoffs=fg-fa
-    
-    !Determine the dimension of the triangular part in the current batch
-    !and the total number of elements (tred) in the triangular plus
-    !rectangular parts
-    tred=0
-    tlen=min(min(min(la,lg),fg+lg-fa),fa+la-fg)
-    
-    !calculate amount of triangular elements in the current batch
-    if(fa+la-1>=fg)tred= tlen*(tlen+1)/2
-    !add the rectangular contribution if lg is larger than tlen 
-    if(fa>=fg.and.fg+lg-fa-tlen>0)tred=tred+(fg+lg-fa-tlen)*la
-    if(fa<fg)tred=tred+lg*aoffs
-    if(fa<fg.and.fa+la>fg) tred=tred+(lg-tlen)*(la-aoffs)
-    !if only rectangular
-    if(tlen<=0)then
-      tlen=0
-      aoffs=0
-      goffs=0
-      tred=la*lg
-    endif
-    !!SYMMETRIC COMBINATION
-    !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-    call get_I_plusminus_le(w0,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
-    call lsmpi_poke()
-    !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
-    call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-    call lsmpi_poke()
-    !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-    call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-    call lsmpi_poke()
-    !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
-    call get_I_cged(w2,w0,tred,nv)
-    call lsmpi_poke()
-    !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-    call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
-    call lsmpi_poke()
-    
-    
-    !!ANTI-SYMMETRIC COMBINATION
-    !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
-    call get_I_plusminus_le(w0,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
-    call lsmpi_poke()
-    !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
-    call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
-    call lsmpi_poke()
-    !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-    call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
-    call lsmpi_poke()
-    !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
-    call get_I_cged(w2,w0,tred,nv)
-    call lsmpi_poke()
-    !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-    call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
-    call lsmpi_poke()
-    
-    !COMBINE THE TWO SIGMAS OF W3 IN W2
-    !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-    !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
-    call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,&
-    &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes,lo,twork,tcomm)  
-
-    call time_start_phase(PHASE_WORK, at=twork)
-  end subroutine get_a22_and_prepb22_terms_ex
-
-  !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
-  !> \author Patrick Ettenhuber
-  !> \date October 2012
-  subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor,&
-        &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside,twork,tcomm)
-     implicit none
-     !\> omega should be the residual matrix which contains the second parts
-     !of the A2 and B2 term
-     !real(realk),intent(inout) :: omega(nv*nv*no*no)
-     type(array),intent(inout) :: omega
-     !> w0 is just some workspace on input
-     real(realk),intent(inout) :: w0(:)
-     !> w2 is just some workspace on input
-     real(realk),intent(inout) :: w2(:)
-     !> w3 contains the symmetric and antisymmetric combinations 
-     real(realk),intent(inout) :: w3(:)
-     !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
-     !contribution after the loop, update them in the loops
-     real(realk),intent(inout) :: sio4(:)
-     !> Lambda p virutal part
-     real(realk),intent(in) :: xvirt(:)
-     !> Lambda p occupied part
-     real(realk),intent(in) :: xocc(:)
-     !> number of reduced occupied indices 
-     integer,intent(in) :: nor
-     !> total number of upper triangular elements in the batch
-     integer,intent(in) :: tlen
-     !> first element of alpha and gamma in the current batch
-     integer,intent(in) :: fa,fg
-     !> length of alpha and gamma in the current batch
-     integer,intent(in) :: la, lg
-     !> number of triangular elements in the batch
-     integer,intent(in) :: tred
-     !>number of occupied, virtual and ao indices
-     integer,intent(in) :: no, nv, nb
-     !>offsets in the currnt alpha and gamma batches to get to the first upper
-     !triangular element
-     integer,intent(in) :: goffs, aoffs
-     !> scheme
-     integer,intent(in) :: s
-     logical,intent(in) :: lock_outside
-     !> size of w0
-     integer(kind=8),intent(in):: wszes(4)
-     !timing information
-     real(realk) :: twork,tcomm
-     !> the doubles amplitudes
-     !real(realk),intent(in) :: amps(nv*nv*no*no)
-     !type(array),intent(in) :: amps
-     real(realk) :: scaleitby
-     integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
-     integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
-     integer :: l1,l2,lsa,lsg,gamm_i_b,a,b,full1T,full2T,jump,ft1,ft2
-     logical               :: second_trafo_step
-     real(realk),pointer   :: dumm(:)
-     integer               :: mv((nv*nv)/2),st,dims(2)
-     real(realk),pointer   :: source(:,:),drain(:,:)
-     integer(kind=ls_mpik) :: mode
-     integer(kind=long)    :: o2v2
-
-     o2v2 = int((i8*no)*no*nv*nv,kind=long)
-#ifdef VAR_MPI
-     mode = MPI_MODE_NOCHECK
-#endif
-
-     scaleitby=0.5E0_realk
-     second_trafo_step=.false.
-     lsa=fa+la-1
-     lsg=fg+lg-1
-
-     !building the sigma matrices is a complicated matter, due to non-uniform
-     !batchsizes. A distiction between the different possible cases has to be
-     !made and the elements copied respectively
-     case_sel=0
-     if(fa>=fg)then
-        if(lsa>=lsg)then
-           !case 0 is a triagular submatrix:
-           !                                full2=tlen
-           ! ---|                          |----|
-           ! \  |                          | \  |  full1=tlen
-           !  \ |   build full from that   |  \ |
-           !   \|                          |---\|
-           case_sel=1
-           full1=tlen
-           full2=tlen
-           full1T=tlen
-           full2T=tlen
-           l1=0
-           l2=0
-        else if(lsa<lsg)then
-           !case 1 is a  submatrix of the type:
-           !                                   full2=lg-goffs
-           ! ------|                          |------|
-           ! \     |                          | \    |
-           !  \    |   build full from that   |  \   |full1=la
-           !   \---|                          |___\__|
-           !                                  |   |0 |
-           !            full1T=lg-goffs-tlen  |___|__|
-           case_sel=2                         !full2T=la 
-           full1=la
-           full2=lg-goffs
-           full1T=lg-goffs-tlen
-           full2T=la
-           l1=la
-           l2=0
-           second_trafo_step=.true.
-        endif
-     else
-        if(lsa>=lsg)then
-           !case 2 is a  submatrix of the type:
-           !                                 full2=lg
-           ! |---|                         |------|
-           ! |   |                         |0 |   |
-           ! |   |  build full from that   |__|   | full1=aoffs+tlen
-           !  \  |                         |  |\  |
-           !   \ |                         |  | \ |
-           !    \|     full1T=lg           |__|__\|
-           !                               full2T=aoffs
-           case_sel=3
-           full1=aoffs+tlen
-           full2=tlen
-           full1T=tlen
-           full2T=aoffs
-           l1=aoffs
-           l2=aoffs
-           second_trafo_step=.true.
-        else if(lsa<lsg)then
-           if(lsa>=fg)then
-              !case 3 is a  submatrix of the type: 
-              !                                       full2=lg
-              ! |-----|                         |--------|
-              ! |     |                         |0 |     |
-              ! |     |  build full from that   |__|     |
-              !  \    |                         |  |\    |  full1 = la
-              !   \   |                         |  | \   |
-              !    \--|                         |  |__\__|
-              !                     full1T=lg   |     | 0|
-              !                                 |_____|__|
-              !                                    full2T = la
-              case_sel=4
-              full1=la
-              full2=lg
-              full1T=lg
-              full2T=la
-              l1=aoffs
-              l2=aoffs
-              second_trafo_step=.true.
-           else
-              !case 4 is a  submatrix of dimensions la lg, and can thus be transformed in
-              !full anyways
-              case_sel=5
-              full1=la
-              full2=lg
-              full1T=lg
-              full2T=la
-              l1=la
-              l2=0
-              second_trafo_step=.true.
-           endif
-        endif
-     endif
-     if(case_sel==0)call lsquit("ERROR(combine_and_transform_sigma):case not known",DECinfo%output)
-
-     !print *,"-------------------------------------------------------------------------------------"
-     !print *,"       case        dim1        dim2            la          lg        tlen        tred"
-     !print *,case_sel,full1,full2,la,lg,tlen,tred
-     !print *,"-------------------------------------------------------------------------------------"
-
-
-
-     !Zero the elements to update for testing, not needed in a performance
-     !implementation
-     pos=(i8*nor)*full1*full2
-     if(second_trafo_step)pos=pos+(i8*nor)*full1T*full2T
-     w0(1_long:pos)=0.0E0_realk
-
-     !set required variables
-     ttri      = tlen * (tlen+1)/2
-     tsq       = tlen *  tlen
-     pos       = 1
-     occ       = 1
-     dim_big   = (i8 * full1 ) * full2
-     dim_small = (i8 * full1T) * full2T
-
-     !$OMP PARALLEL DEFAULT(NONE)&
-     !$OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-     !$OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-     !$OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-     !$OMP dims,i)
-     !$OMP DO
-     do occ=1,nor
-        do gamm=1,lg-goffs
-           gamm_i_b=gamm+goffs
-           !SYMMETRIC COMBINATION OF THE SIGMAS
-
-           !calculate the old position
-           !**************************
-           if(case_sel==3.or.case_sel==4)then
-              pos=1+(gamm      -1)*full1+(occ-1)*dim_big
-           else
-              pos=1+(gamm+aoffs-1)*full1+(occ-1)*dim_big
-           endif
-
-           !calculate the new position
-           !**************************
-           if(gamm>tlen)then
-
-              !get the elements from the rectangular part of the batch
-
-              nel2cp = l1
-              pos2   = 1_long + ttri+(gamm-tlen-1)*(la-aoffs)+(occ-1)*((la-aoffs)*(lg-goffs-tlen)+ttri)
-
-              if(case_sel==4)then
-                 nel2cp = nel2cp + tlen
-                 pos2   = pos2   + tlen * aoffs + (gamm-tlen-1) * (la-tlen)+(occ-1)*(aoffs*lg)
-              endif
-
-              if(second_trafo_step)then
-                 jump = full1T
-                 ft1  = full1T
-                 ft2  = full2T
-              else
-                 jump = full1
-                 ft1  = full1
-                 ft2  = full2
-              endif
-
-           else
-              !get the elements from the triangular part of the batch
-              pos2   = 1  + (gamm*(gamm-1)/2)+(gamm-1)*aoffs+(occ-1)*tred
-              nel2cp = l2 + gamm
-              jump   = full1
-              ft1    = full1
-              ft2    = full2
-           endif
-
-           !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
-           w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
-
-           !get corresponding position in sigma- and add to output
-           pos21=pos2+tred*nor
-           !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-           w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
-
-           !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
-           pos = gamm+aoffs+(occ-1)*ft1*ft2
-
-           if(second_trafo_step.and.gamm>tlen) pos = pos+full1*full2*nor-tlen
-
-           if(case_sel==3.or.case_sel==4)then
-              !fill diagonal part
-              if(gamm>tlen)then
-                 ncph=0
-              else
-                 ncph=gamm
-              endif
-              !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-              !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
-
-              !because of the intrinsic omp-parallelizaton of daxpy the following
-              !lines replace the daxpy calls
-              pos = aoffs+gamm+(occ-1)*dim_big
-              do i=0,ncph-1
-                 w0(pos+i*full1)=w0(pos+i*full1) + w3(pos2 +aoffs+i)
-                 w0(pos+i*full1)=w0(pos+i*full1) - w3(pos21+aoffs+i)
-              enddo
-
-              !fill small matrix
-              if(gamm>tlen)then
-                 ncph=nel2cp
-              else
-                 ncph=nel2cp-gamm
-              endif
-              !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-              !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-              pos = gamm+(occ-1)*full1T*full2T+dim_big*nor
-              do i=0,ncph-1
-                 w0(pos+i*full1T) = w0(pos+i*full1T) + w3(pos2 +i)
-                 w0(pos+i*full1T) = w0(pos+i*full1T) - w3(pos21+i)
-              enddo
-           else
-              !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-              !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-              do i=0,nel2cp-1
-                 w0(pos+i*jump) = w0(pos+i*jump) + w3(pos2 +i)
-                 w0(pos+i*jump) = w0(pos+i*jump) - w3(pos21+i)
-              enddo
-           endif
-        enddo
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL
-     call lsmpi_poke()
-
-
-     !Print the individual contributions
-     !if(.false.)then
-     !  do occ=1,nor
-     !    print *,"symmetric"
-     !    print *,w3(1+(occ-1)*tred:tred+(occ-1)*tred)
-     !    !print *,"antisymmetric"
-     !    !print *,w3(nor*tred+1+(occ-1)*tred:nor*tred+tred+(occ-1)*tred)
-     !    print *,"a g -> 1. and l.",1+(occ-1)*full1*full2,full1*full2+(occ-1)*full1*full2
-     !    do alpha=1,full1
-     !      print *,(w0(alpha+(gamm-1)*full1+(occ-1)*full1*full2),gamm=1,full2)
-     !    enddo
-     !    print *,""
-     !    if(second_trafo_step)then
-     !      print *,"g a -> 1. and l.",dim_big*nor+1+(occ-1)*full1T*full2T,dim_big*nor+full1T*full2T+(occ-1)*full1T*full2T
-     !      do gamm=1,full1T
-     !        print *,(w0(dim_big*nor+gamm+(alpha-1)*full1T+(occ-1)*full1T*full2T),alpha=1,full2T)
-     !      enddo
-     !      print *,""
-     !    endif
-     !    print *,""
-     !  enddo
-     !endif
-
-     !add up the contributions for the sigma [ alpha gamma ] contributions
-     ! get the order sigma[ gamma i j alpha ]
-     call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
-     call lsmpi_poke()
-     !transform gamma -> b
-     call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
-     call lsmpi_poke()
-     !transform alpha -> a , order is now sigma [ a b i j]
-     call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
-     call lsmpi_poke()
-
-
-     ! add up contributions in the residual with keeping track of i<j
-     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-     !$OMP PRIVATE(i,j,pos1,pos2)
-     do j=no,1,-1
-        !$OMP DO 
-        do i=j,1,-1
-           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-           if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-        enddo
-        !$OMP END DO
-     enddo
-     !$OMP BARRIER
-     !$OMP DO 
-     do j=no,1,-1
-        do i=j,1,-1
-           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-           pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-           if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-        enddo
-     enddo
-     !$OMP END DO
-     !$OMP END PARALLEL
-
-     do j=no,1,-1
-        do i=j,1,-1
-           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-           call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-        enddo
-     enddo
-
-     if(s==4.or.s==3)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
-#else
-        !$OMP WORKSHARE
-        omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-        !$OMP END WORKSHARE
-#endif
-     else if(s==2)then
-        call time_start_phase(PHASE_COMM, at=twork)
-#ifdef VAR_MPI
-        if( lock_outside )call arr_lock_wins(omega,'s',mode)
-        !$OMP WORKSHARE
-        w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
-        !$OMP END WORKSHARE
-        call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
-#endif
-        call time_start_phase(PHASE_WORK, at=tcomm)
-     endif
-     call lsmpi_poke()
-
-     !If the contributions are split in terms of the sigma matrix this adds the
-     !sigma [gamma alpha] contributions
-     if(second_trafo_step)then
-        !get the order sigma [gamma i j alpha]
-        pos2 = 1+full1*full2*nor
-        if(case_sel==3.or.case_sel==4)then
-           l1=fa
-           l2=fg
-        else
-           l1=fa
-           l2=fg+goffs+tlen
-        endif
-        call mat_transpose(full1T,full2T*nor,1.0E0_realk,&
-           &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
-        call lsmpi_poke()
-
-#ifdef  VAR_MPI
-        if( lock_outside .and. s==2 )then
-           call time_start_phase(PHASE_COMM, at=twork)
-           call arr_unlock_wins(omega,.true.)
-           call time_start_phase(PHASE_WORK, at=tcomm)
-        endif
-#endif 
-
-        !transform gamma -> a
-        call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
-        call lsmpi_poke()
-        !transform alpha -> , order is now sigma[b a i j]
-        call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
-        call lsmpi_poke()
-        !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-        !$OMP PRIVATE(i,j,pos1,pos2)
-        do j=no,1,-1
-           !$OMP DO 
-           do i=j,1,-1
-              pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-              pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-              if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-           enddo
-           !$OMP END DO
-        enddo
-        !$OMP BARRIER
-        !$OMP DO 
-        do j=no,1,-1
-           do i=j,1,-1
-              pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-              pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-              if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-           enddo
-        enddo
-        !$OMP END DO
-        !$OMP END PARALLEL
-
-        do j=no,1,-1
-           do i=j,1,-1
-              pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-              call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
-           enddo
-        enddo
-        if(s==4.or.s==3)then
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-           call assign_in_subblocks(omega%elm1,'+',w2,o2v2,scal2=scaleitby)
-#else
-           !$OMP WORKSHARE
-           omega%elm1(1_long:o2v2) = omega%elm1(1_long:o2v2) + scaleitby * w2(1_long:o2v2)
-           !$OMP END WORKSHARE
-#endif
-        else if(s==2)then
-           !$OMP WORKSHARE
-           w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
-           !$OMP END WORKSHARE
-           call time_start_phase(PHASE_COMM, at=twork)
-           call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
-           call time_start_phase(PHASE_WORK, at=tcomm)
-        endif
-        call lsmpi_poke()
-     endif
-
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !Construct the B2 term from the intermediates in w0
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !add up the contributions for the sigma [ alpha gamma ] contributions
-     ! get the order sigma[ gamma i j alpha ]
-     call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
-     call lsmpi_poke()
-#ifdef VAR_MPI
-     if(lock_outside.and.s==2)then
-        call arr_unlock_wins(omega,.true.)
-     endif
-#endif
-     !transform gamma -> l
-     call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
-     call lsmpi_poke()
-     !transform alpha -> a , order is now sigma [ k l i j]
-     call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,1.0E0_realk,sio4,no)
-     call lsmpi_poke()
-
-
-
-     !If the contributions are split in terms of the sigma matrix this adds the
-     !sigma [gamma alpha i j] contributions
-     if(second_trafo_step)then
-        !get the order sigma [gamma i j alpha]
-        pos2 = 1+full1*full2*nor
-        if(case_sel==3.or.case_sel==4)then
-           l1=fa
-           l2=fg
-        else
-           l1=fa
-           l2=fg+goffs+tlen
-        endif
-        call mat_transpose(full1T,full2T*nor,1.0E0_realk,&
-           &w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
-        call lsmpi_poke()
-        !transform gamma -> l
-        call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)
-        call lsmpi_poke()
-        !transform alpha -> k, order is now sigma[k l i j]
-        call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,1.0E0_realk,sio4,no)
-        call lsmpi_poke()
-     endif
-
-
-  end subroutine combine_and_transform_sigma
-
-
-  !> \brief Construct integral matrix which uses symmetries in the virtual
-  !> indices
-  !> \author Patrick Ettenhuber
-  !> \date October 2012
-  subroutine get_I_cged(Int_out,Int_in,m,nv)
-    implicit none
-    !> integral output with indices reduced to c>=d
-    real(realk),intent(inout)::Int_out(:)
-    !>full integral input m*c*d
-    real(realk),intent(in) :: Int_in(:)
-    !> leading dimension m and virtual dimension
-    integer,intent(in)::m,nv
-    integer ::d,pos,pos2,a,b,c,cged
-    logical :: doit
-#ifdef VAR_OMP
-    integer :: tid,nthr
-    integer, external :: omp_get_thread_num,omp_get_max_threads
-!    nthr = omp_get_max_threads()
-!    nthr = min(nthr,nv)
-!    call omp_set_num_threads(nthr)
-#endif
-    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-    !OMP PRIVATE(pos,pos2,d,tid,doit)
-#ifdef VAR_OMP
-!    tid = omp_get_thread_num()
-#else 
-!    doit = .true.
-#endif
-!    doit = .true.
-    pos =1
-    do d=1,nv
-#ifdef VAR_OMP
-!      doit = (mod(d,nthr) == tid)
-#endif
-!      if(doit) then
-        pos2=1+(d-1)*m+(d-1)*nv*m
-!        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
-        Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
-!      endif
-      pos=pos+m*(nv-d+1)
-    enddo
-    !OMP END PARALLEL
-#ifdef VAR_OMP
-    !call omp_set_num_threads(omp_get_max_threads())
-#endif
-  end subroutine get_I_cged
-
-
-  !> \brief Construct symmetric and antisymmentric combinations of an itegral
-  !matrix 
-  !> \author Patrick Ettenhuber
-  !> \date October 2012
-  subroutine get_I_plusminus_le(w0,w1,w2,op,fa,fg,la,lg,nb,tlen,tred,goffs)
-    implicit none
-    !> blank workspace
-    real(realk),intent(inout) :: w0(:),w2(:)
-    !> workspace containing the integrals
-    real(realk),intent(in) :: w1(:)
-    !> integer specifying the first element in alpha and gamma batch
-    integer,intent(in) :: fa,fg
-    !> integer specifying the length of alpha and gamma batches
-    integer,intent(in) :: la,lg
-    !> number of upper triangular elements in the current batch
-    integer,intent(in) :: tred
-    !> number of elements in triangular part
-    integer,intent(in) :: tlen
-    !> number of ao indices
-    integer,intent(in) :: nb
-    !> offset in the gamma batch
-    integer,intent(in) :: goffs
-    !> character specifying which operation to use
-    character, intent(in) :: op
-    integer :: i,alpha,beta,gamm,delta,cagc,cagi,bs,bctr
-    integer :: alpha_b,beta_b,gamm_b,delta_b,elements,aleg
-    integer :: globg, globa, loca,eldiag,elsqre,nbnb,nrnb
-    real(realk) ::chk,chk2,el
-    real(realk),pointer :: trick(:,:,:)
-    logical :: modb
-    bs=int(sqrt(((8.0E6_realk)/1.6E1_realk)))
-    !bs=5
-    !print *,"block size",bs,(bs*bs*8)/1024.0E0_realk
-    nbnb=(nb/bs)*bs
-    modb=(mod(nb,bs)>0)
-    bctr = bs-1
-    cagi=tred
-
-    call ass_D1to3(w2,trick,[nb,nb,cagi])
-    if(op=='p')then
-      call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-      aleg=0
-      do gamm=0,lg-1
-        do alpha=0,la-1
-          if(fa+alpha<=fg+gamm)then
-            !aleg = (alpha+(gamm*(gamm+1))/2) 
-            eldiag = aleg*nb*nb
-            elsqre = alpha*nb*nb+gamm*nb*nb*la
-            !print *,alpha,gamm,1+eldiag,nb*nb+eldiag,1+elsqre,nb*nb+elsqre,aleg,cagi,nb*nb
-            if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
-            call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
-            !$OMP DEFAULT(NONE)
-            if(nbnb>0)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do beta_b=delta_b+bs,nbnb,bs
-                  do delta=0,bctr
-                    do beta=0,bctr
-                      el=trick(beta+beta_b,delta_b+delta,aleg+1)
-                         trick(beta+beta_b,delta_b+delta,aleg+1)=&
-                        &trick(beta+beta_b,delta_b+delta,aleg+1) + &
-                      &trick(delta_b+delta,beta+beta_b,aleg+1)
-                       trick(delta_b+delta,beta+beta_b,aleg+1)=&
-                      &trick(delta_b+delta,beta+beta_b,aleg+1) + &
-                      &el
-                    enddo
-                  enddo
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            if(nbnb>0.and.modb)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do delta=0,bctr
-                  do beta=nbnb+1,nb
-                    el=trick(beta,delta_b+delta,aleg+1)
-                       trick(beta,delta_b+delta,aleg+1)=&
-                      &trick(beta,delta_b+delta,aleg+1) + &
-                    &trick(delta_b+delta,beta,aleg+1)
-                     trick(delta_b+delta,beta,aleg+1)=&
-                    &trick(delta_b+delta,beta,aleg+1) + &
-                    &el
-                  enddo
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            if(nbnb>0)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do delta=0,bctr
-                  do beta=delta+1,bctr
-                    el=trick(beta+delta_b,delta_b+delta,aleg+1)
-                       trick(beta+delta_b,delta_b+delta,aleg+1)=&
-                      &trick(beta+delta_b,delta_b+delta,aleg+1) + &
-                    &trick(delta_b+delta,beta+delta_b,aleg+1)
-                     trick(delta_b+delta,beta+delta_b,aleg+1)=&
-                    &trick(delta_b+delta,beta+delta_b,aleg+1) + &
-                    &el
-                  enddo
-                   trick(delta+delta_b,delta_b+delta,aleg+1)=&
-                  &trick(delta+delta_b,delta_b+delta,aleg+1) + &
-                  &trick(delta_b+delta,delta+delta_b,aleg+1)
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            !$OMP END PARALLEL 
-            if(modb)then
-              do delta=nbnb+1,nb
-                do beta=delta+1,nb
-                  el=trick(beta,delta,aleg+1)
-                     trick(beta,delta,aleg+1)=&
-                    &trick(beta,delta,aleg+1) + &
-                  &trick(delta,beta,aleg+1)
-                   trick(delta,beta,aleg+1)=&
-                  &trick(delta,beta,aleg+1) + &
-                  &el
-                enddo
-                trick(delta,delta,aleg+1)=&
-                &trick(delta,delta,aleg+1) + &
-                &trick(delta,delta,aleg+1)
-              enddo
-            endif
-            aleg=aleg+1
-          endif
-        enddo
-      enddo
-      call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-    endif
-
-
-    !Calculate the antisymmetric combination in the same way
-    if(op=='m')then
-      call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,4,1,3],0.0E0_realk,w2)
-      aleg=0
-      do gamm=0,lg-1
-        do alpha=0,la-1
-          if(fa+alpha<=fg+gamm)then
-            !aleg = (alpha+(gamm*(gamm+1))/2) 
-            eldiag = aleg*nb*nb
-            elsqre = alpha*nb*nb+gamm*nb*nb*la
-            call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
-            !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-            !$OMP DEFAULT(NONE)
-            if(nbnb>0)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do beta_b=delta_b+bs,nbnb,bs
-                  do delta=0,bctr
-                    do beta=0,bctr
-                      el=trick(beta+beta_b,delta_b+delta,aleg+1)
-                         trick(beta+beta_b,delta_b+delta,aleg+1)=&
-                        &trick(delta_b+delta,beta+beta_b,aleg+1)- &
-                        &trick(beta+beta_b,delta_b+delta,aleg+1) 
-                       trick(delta_b+delta,beta+beta_b,aleg+1)=&
-                      &el - trick(delta_b+delta,beta+beta_b,aleg+1) 
-                    enddo
-                  enddo
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            if(nbnb>0.and.modb)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do delta=0,bctr
-                  do beta=nbnb+1,nb
-                    el=trick(beta,delta_b+delta,aleg+1)
-                       trick(beta,delta_b+delta,aleg+1)=&
-                      &trick(delta_b+delta,beta,aleg+1)- &
-                      &trick(beta,delta_b+delta,aleg+1) 
-                     trick(delta_b+delta,beta,aleg+1)=&
-                    &el -trick(delta_b+delta,beta,aleg+1)
-                  enddo
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            if(nbnb>0)then
-              !$OMP DO
-              do delta_b=1,nbnb,bs
-                do delta=0,bctr
-                  do beta=delta+1,bctr
-                    el=trick(beta+delta_b,delta_b+delta,aleg+1)
-                       trick(beta+delta_b,delta_b+delta,aleg+1)=&
-                    &trick(delta_b+delta,beta+delta_b,aleg+1) - &
-                      &trick(beta+delta_b,delta_b+delta,aleg+1)
-                     trick(delta_b+delta,beta+delta_b,aleg+1)=&
-                    &el - trick(delta_b+delta,beta+delta_b,aleg+1)
-                  enddo
-                   trick(delta_b+delta,delta+delta_b,aleg+1)=&
-                  &trick(delta_b+delta,delta+delta_b,aleg+1) - &
-                  &trick(delta+delta_b,delta_b+delta,aleg+1)
-                enddo
-              enddo
-              !$OMP END DO NOWAIT
-            endif
-            !$OMP END PARALLEL 
-            if(modb)then
-              do delta=nbnb+1,nb
-                do beta=delta+1,nb
-                  el=trick(beta,delta,aleg+1)
-                     trick(beta,delta,aleg+1)=&
-                    &trick(delta,beta,aleg+1) - &
-                  &trick(beta,delta,aleg+1)
-                   trick(delta,beta,aleg+1)=&
-                  &el- trick(delta,beta,aleg+1)
-                enddo
-                 trick(delta,delta,aleg+1)=&
-                &trick(delta,delta,aleg+1) - &
-                &trick(delta,delta,aleg+1)
-              enddo
-            endif
-            aleg=aleg+1
-          endif
-        enddo
-      enddo
-      call array_reorder_3d(1.0E0_realk,w2,nb,nb,cagi,[2,3,1],0.0E0_realk,w0)
-    endif
-    nullify(trick)
-  end subroutine get_I_plusminus_le
-    
-
-  !> \brief Reorder t to use symmetry in both occupied and virtual indices,
-  !> thereby restricting the first virtual to be less equal to the second and
-  !> make symmetric and antisymmetric combinations of these 
-  !> \author Patrick Ettenhuber
-  !> \date October 2012
-  subroutine get_tpl_and_tmi(t2,nv,no,tpl,tmi)
-    implicit none
-    !> number of virtual and occupied orbitals
-    integer, intent(in) :: nv, no
-    !>input the full doubles ampitudes
-    real(realk),intent(in) :: t2(nv,nv,no,no)
-    !> output amplitudes with indices restricted c<d,i<j
-    real(realk),pointer :: tpl(:)
-    !> output amplitudes with indices restricted c>d,i<j
-    real(realk),pointer :: tmi(:)
-    integer :: dims(4)
-    integer ::i,j,d, ilej,cged,crvd
-    integer :: counter,counter2
-    dims(1)=nv;dims(2)=nv;dims(3)=no;dims(4)=no
-    !amplitudes are assumed to be ordered cdij, now construction of c<=d,i>=j
-    if(dims(1)/=dims(2) .or. dims(3)/=dims(4))then
-      call lsquit("ERROR(get_tpl):amplitudes are in the wrong order",DECinfo%output)
-    endif
-    !get the combined reduced virtual dimension
-    crvd = dims(1) * (dims(1)+1) / 2
-    !OMP PARALLEL PRIVATE(i,j,d,cged,ilej) SHARED(crvd,t2,tmi,tpl,dims) DEFAULT(NONE)
-    !OMP DO
-    do j=1,dims(3)
-      do i=1,j
-        cged=1
-        ilej = i + (j-1) * j / 2
-        do d=1,dims(2)
-          !copy the elements c>d into tpl and tmi
-          call dcopy(dims(2)-d+1,t2(d,d,i,j),1,tpl(cged+(ilej-1)*crvd),1)
-          call dcopy(dims(2)-d+1,t2(d,d,i,j),1,tmi(cged+(ilej-1)*crvd),1)
-
-          !add and subtract the counterparts for tpl and tmi respectively
-          call daxpy(dims(1)-d+1,-1.0E0_realk,t2(d,d,i,j),dims(1),tmi(cged+(ilej-1)*crvd),1)
-          call daxpy(dims(1)-d+1,1.0E0_realk,t2(d,d,i,j),dims(1),tpl(cged+(ilej-1)*crvd),1)
-
-          !take care of plus combination diagonal elements to be only half
-          tpl(cged+(ilej-1)*crvd)=0.5*tpl(cged+(ilej-1)*crvd)
-         
-          !count in the triangular part of the matrix
-          cged = cged+dims(2)-d+1
-        enddo
-      enddo
-    enddo
-    !OMP END DO
-    !OMP END PARALLEL
-  end subroutine get_tpl_and_tmi
 
 
 
@@ -4230,10 +3023,22 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! For MO-CCSD part
     ntot    = nocc + nvir
     nbas    = MyFragment%nbasis
-    mo_ccsd = .false.
-    if (DECinfo%MOCCSD) mo_ccsd = .true.
-    if (DECinfo%force_scheme) scheme=DECinfo%en_mem
+    mo_ccsd = .true.
+    if (DECinfo%NO_MO_CCSD.or.(nbas>400)) mo_ccsd = .false.
 
+    if (DECinfo%force_scheme) then
+      scheme=DECinfo%en_mem
+      if (scheme<5) then
+        DECinfo%NO_MO_CCSD = .true.
+        mo_ccsd            = .false.
+      else if (scheme>=5) then 
+        mo_ccsd            = .true.
+        if (DECinfo%NO_MO_CCSD) call lsquit('ERROR(CCSD): Inconsistent input, CCSD schemes &
+           & 5 and 6 require the MO based algorithm. (Remove NO_MO_CCSD keyword)', DECinfo%output)
+      end if
+    end if
+
+        
 #ifdef MOD_UNRELEASED
     ! The two if statments are necessary as mo_ccsd might become false
     ! after the first statement (if not enought memory).
@@ -5293,7 +4098,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
-    real(realk) :: energy_tmp_1, energy_tmp_2, energy_res_cou, energy_res_exc
+    real(realk) :: energy_tmp_1, energy_tmp_2
 
     ! *************************************************************
     ! ************** do energy for full molecule ******************
@@ -5303,15 +4108,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !   do CCSD energy part
     ! ***********************
 
-    energy_res_cou = 0.0E0_realk
-    energy_res_exc = 0.0E0_realk
     !MODIFY FOR NEW MODEL
 
     ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
+    !$OMP REDUCTION(+:eccsdpt_matrix_cou),&
     !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
@@ -5341,7 +4144,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     call array_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
+    !$OMP REDUCTION(+:eccsdpt_matrix_exc),&
     !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset,DECinfo)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
@@ -5457,7 +4260,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> MO pack integrals; amplitudes and residuals:
     integer, intent(in) :: nbas, nocc, nvir, iter
     type(array), intent(inout) :: pgmo_diag, pgmo_up
@@ -5510,6 +4313,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer, pointer :: joblist(:)
     logical :: master
     integer(kind=ls_mpik) :: tile_master, myrank, nnod
+    integer :: ccmodel_copy
  
     !> Working arrays:
     real(realk), pointer :: tmp0(:), tmp1(:), tmp2(:) 
@@ -5664,8 +4468,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Wake up slaves and communicate important data
     call time_start_phase(PHASE_COMM)
     StartUpSlaves: if (master.and.nnod>1) then
+      ccmodel_copy = ccmodel
       call ls_mpibcast(MOCCSDDATA,infpar%master,infpar%lg_comm)
-      call mpi_communicate_moccsd_data(ccmodel,pgmo_diag,pgmo_up,t1,t2,omega2, &
+      call mpi_communicate_moccsd_data(ccmodel_copy,pgmo_diag,pgmo_up,t1,t2,omega2, &
              & govov,nbas,nocc,nvir,iter,MOinfo,MyLsItem,local)
     end if StartUpSlaves
     call time_start_phase(PHASE_WORK)
@@ -5936,7 +4741,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
@@ -6001,7 +4806,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     implicit none
 
     !> CC model
-    integer,intent(inout) :: ccmodel
+    integer,intent(in) :: ccmodel
     !> dimensions for arrays:
     integer, intent(in) :: ntot, nocc, nvir
     integer, intent(in) :: dimP, dimQ, P_sta, Q_sta
@@ -6022,7 +4827,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
     !> orbital indices for loops:
-    integer :: i, j, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
+    integer :: i, j, k, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
     !> variable indices for arrays:
     integer :: pos1, pos2, ncopy
     integer :: mv((nvir*nvir)/2), st
@@ -6185,9 +4990,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !$OMP WORKSHARE 
       tmp1 = 0.0E0_realk
       !$OMP END WORKSHARE
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1,P_sta,dimP,ntot,tmp2,dimK,n_ij)&
-      !$OMP PRIVATE(i,j,r,pos1,pos2)
-      !$OMP DO
+      ! get occ indices from full: sigma[K l, i<=j] <= sigma[P r, i<=j]
       do i=1,n_ij
         do r=1,nocc
           pos1 = 1 + (r-1)*dimP + (i-1)*dimP*ntot
@@ -6195,18 +4998,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           call dcopy(dimK,tmp2(pos1),1,tmp1(pos2),1) 
         end do
       end do
-      !$OMP END DO
-      do j=nocc,1,-1
-        !$OMP DO
+      ! Copy contracted array into proper place in the full array
+      ! first spread i<=j indices to full ij indices
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1)&
+      !$OMP PRIVATE(i,j,k,pos1,pos2)
+      do j=nocc,2,-1
         do i=j,1,-1
-          pos1=1+((i+j*(j-1)/2)-1)*nocc*nocc
-          pos2=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
-          if(j/=1) tmp1(pos2:pos2+nocc*nocc-1) = tmp1(pos1:pos1+nocc*nocc-1)
+          pos1=((i+j*(j-1)/2)-1)*nocc*nocc
+          pos2=(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          !$OMP DO
+          do k=1, nocc*nocc
+            tmp1(k+pos2) = tmp1(k+pos1)
+          end do
+          !$OMP END DO
         enddo
-        !$OMP END DO
       enddo
       !$OMP BARRIER
       !$OMP DO
+      ! then square the array, copy full index ij to full index ji:
       do j=nocc,1,-1
         do i=j,1,-1
           pos1=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
@@ -6243,15 +5052,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Sum up sigma PQ batches contributions to A2.2 part of CCSD residual:
     !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,nvir,tmp1)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do j=nocc,1,-1
-      !$OMP DO
+    !$OMP PRIVATE(i,j,k,pos1,pos2)
+    do j=nocc,2,-1
       do i=j,1,-1
-        pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
-        pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-        if(j/=1) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
+        pos1=((i+j*(j-1)/2)-1)*nvir*nvir
+        pos2=(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        !$OMP DO
+        do k=1, nvir*nvir
+          tmp1(k+pos2) = tmp1(k+pos1)
+        end do
+        !$OMP END DO
       enddo
-      !$OMP END DO
     enddo
     !$OMP BARRIER
     !$OMP DO
@@ -7164,46 +5975,6 @@ subroutine calculate_E2_and_permute_slave()
   call mem_dealloc(Had)
   call mem_dealloc(w1)
 end subroutine calculate_E2_and_permute_slave
-subroutine get_master_comm_proc_to_wrapper
-  use precision
-  use typedeftype,only:lsitem,array
-  use infpar_module
-  use tensor_interface_module
-  use ccsd_module, only: ccsd_residual_wrapper
-  implicit none
-  logical               :: w_cp
-  type(array)           :: delta_fock
-  type(array)           :: omega2
-  type(array)           :: t2
-  type(array)           :: fock
-  type(array)           :: iajb
-  integer               :: no,nv
-  type(array)           :: ppfock
-  type(array)           :: qqfock
-  type(array)           :: pqfock
-  type(array)           :: qpfock
-  type(array)           :: xo
-  type(array)           :: xv
-  type(array)           :: yo
-  type(array)           :: yv
-  integer               :: nb
-  type(lsitem)          :: MyLsItem
-  type(array)           :: omega1
-  type(array)           :: t1
-  type(array)           :: pgmo_diag
-  type(array)           :: pgmo_up
-  type(MObatchInfo)     :: MOinfo
-  logical               :: mo_ccsd
-  integer               :: iter,ccmodel
-  logical               :: local
-  logical               :: rest
-  
-  call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
-             & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
-             & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
-             & MOinfo,mo_ccsd,iter,local,rest)
-
-end subroutine get_master_comm_proc_to_wrapper
 
 
 #ifdef MOD_UNRELEASED

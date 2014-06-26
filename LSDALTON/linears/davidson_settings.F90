@@ -84,7 +84,7 @@ real(realk),pointer :: Pmat(:,:)
 !* Orbital localization settings  *
 !**********************************
 ! Info used when localizing orbitals using PSM
- type(orbspread_data),pointer :: orbspread_input
+ type(orbspread_data) :: orbspread_inp
 ! Info used when localizing orbitals with Pipek/Lowdin
  type(PMitem)  :: PM_input
 ! Info used when localizing orbitals using PFM

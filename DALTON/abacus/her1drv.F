@@ -254,8 +254,8 @@ C     in relativistic calculations). /Mar2001 hjaaj
       KJCENT = KJSYMC +  (NUCDEP + 1)/IRAT
       KGEXP  = KJCENT +  (NUCDEP + 1)/IRAT
       KCSTRA = KGEXP  +  NUCDEP
-      KSCTRA = KCSTRA + MXCOOR*MXCOOR
-      KTLMD  = KSCTRA + MXCOOR*MXCOOR
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KTLMD  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (SOLVNT) THEN
          KHESKE = KTLMD + LMNTOT*6*NUCDEP
          IF (MAXDIF .GE. 2) THEN
@@ -436,9 +436,9 @@ C
          CALL DZERO(GRADFS,3*NUCDEP)
 #endif
          IF (SECDER) THEN
-            CALL HESZER(HESSKE)
-            CALL HESZER(HESSNA)
-            CALL HESZER(HESFS2)
+            HESSKE(:,:) = 0.0D0
+            HESSNA(:,:) = 0.0D0
+            HESFS2(:,:) = 0.0D0
          END IF
          IF (DIFDIP) THEN
             CALL DZERO(DDIPE,9*NUCDEP)
@@ -454,8 +454,8 @@ C
             CALL DZERO(GSOLTT,3*NUCDEP)
             CALL DZERO(GSOLNN,3*NUCDEP)
             IF (SECDER) THEN
-               CALL HESZER(HSOLT2)
-               CALL HESZER(HSOLNN)
+               HSOLT2(:,:) = 0.0D0
+               HSOLNN(:,:) = 0.0D0
             END IF
          ELSEIF (PCM) THEN
             ESOLTT = D0

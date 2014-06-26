@@ -48,7 +48,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
-#include "optinf.h"
       DIMENSION WORK(LWORK), NONT(KATOM)
       CHARACTER KASYM(3,3)*1, CLASS*15
 

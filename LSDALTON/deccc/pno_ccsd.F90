@@ -13,6 +13,7 @@ module pno_ccsd_module
   use IntegralInterfaceDEC
   
   
+  use cc_tools_module
   use dec_fragment_utils
   
   public :: get_ccsd_residual_pno_style, &
@@ -22,21 +23,39 @@ module pno_ccsd_module
   
   private
   
+  !SET OMP INFORMATION LOOP
+  integer, parameter :: beg_array   = 1
+  integer, parameter :: end_array   = 2
+  integer, parameter :: nloops      = 3
+  integer, parameter :: first_loop  = 1
+  integer, parameter :: second_loop = 2
+  integer, parameter :: third_loop  = 3
+  integer, parameter :: w1_tag      = 1
+  integer, parameter :: w2_tag      = 2
+  integer, parameter :: w3_tag      = 3
+  integer, parameter :: w4_tag      = 4
+  integer, parameter :: w5_tag      = 5
+  integer :: nthreads_level1_int_dir(nloops), max_nthr_int_loop
+  integer,pointer :: info_omp1(:,:,:,:)
+
+
   contains
+
+
   
   !> \author Patrick Ettenhuber
   !> \date November 2013
   !> \brief this subroutine calculates the ccsd residual by transforming each
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
-  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
+  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,govov,no,nv,nb,xo,xv,yo,yv,&
         &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
      logical, intent(in) :: fj
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
-     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
+     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no), govov(no*nv*no*nv)
      real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
      real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
@@ -44,45 +63,38 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
      !INTERNAL VARIABLES
-     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:),pno_govov(:),pno_gvovo(:)
+     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
+     integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
      real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
-     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:)
-     real(realk),pointer :: gvvvv(:), gvovo(:), govov(:), goooo(:), goovv(:), gvvov(:), gooov(:)
-     integer :: i, j, a, b, i_idx, la, lg, fa, fg
+     real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
+     real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
+     real(realk),pointer :: r1(:,:),r2(:,:)
+     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), gooov(:)
+     real(realk),pointer :: Gai(:,:), Gkj(:,:)
+     integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
      character(ARR_MSG_LEN) :: msg
      real(realk),pointer :: d(:,:), d1(:,:), d2(:,:),t(:), t22(:), t21(:), o(:),vof(:),ovf(:)
-     real(realk),pointer :: Lvoov(:)  
-     real(realk) :: nnorm, norm 
+     real(realk),pointer :: Lvoov(:)
      integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
      integer, pointer :: s_idx(:,:,:), s_nidx(:)
-     integer :: pno,pno1,pno2,pnv,pnv1,pnv2, k, l, nidx1, nidx2, spacemax,bpc,epc,ic,jc
-     logical :: skiptrafo,skiptrafo2,save_gvvvv_is,cyc,use_triangular,PS,add_contrib
+     integer :: pno,pno1,pno2,pnv,pnv1,pnv2,k,l,nidx1,nidx2,spacemax,maxvirt,maxocc,bpc,epc,ic,jc
+     integer :: max_pnor,max_pnvr,beg1,beg2
+     logical :: cyc,use_triangular,PS
      real(realk), pointer :: iFock(:,:), Dens(:,:)
      integer(kind=8) :: maxsize, myload
      integer :: pair,paircontribs,paircontrib(2,2),rpd
-     integer :: order1(4)
-     integer :: suborder(2)
-     logical :: master
+     type(array), pointer :: sio4(:)
+     logical :: master, add_contrib
+     type(pno_query_info) :: query
+
      !Integral stuff
      integer :: alphaB,gammaB,dimAlpha,dimGamma
      integer :: dim1,dim2,dim3,MinAObatch
-     integer :: GammaStart, GammaEnd, AlphaStart, AlphaEnd
      integer :: iorb,nthreads
-     type(batchtoorb), pointer :: batch2orbAlpha(:)
-     type(batchtoorb), pointer :: batch2orbGamma(:)
-     Character(80)        :: FilenameCS,FilenamePS
-     Character(80),pointer:: BatchfilenamesCS(:,:)
-     Character(80),pointer:: BatchfilenamesPS(:,:)
-     Character            :: INTSPEC(5)
-     logical :: FoundInMem,fullRHS, doscreen
-     integer :: MaxAllowedDimAlpha,MaxActualDimAlpha,nbatchesAlpha
-     integer :: MaxAllowedDimGamma,MaxActualDimGamma,nbatchesGamma
-     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-     TYPE(DECscreenITEM)    :: DecScreen
-     real(realk) :: MemFree
+     type(int_batch) :: a_batch, g_batch
+     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,trest,tfin
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -90,7 +102,16 @@ module pno_ccsd_module
      real(realk), parameter :: m05 = -0.5E0_realk
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
+#ifdef VAR_OMP
+     logical :: nested
+     logical, external :: omp_get_nested
+
+     nested = omp_get_nested()
+     call omp_set_nested(.true.)
+#endif
   
+     call time_start_phase(PHASE_WORK, twall = tw)
+     tinit = tw
   
      o2v2 = (i8*no**2)*nv**2
      use_triangular = .true.
@@ -102,290 +123,116 @@ module pno_ccsd_module
 
      if(fj.and..not.present(f))call lsquit("ERROR(get_ccsd_residual_pno_style):wrong input fj without f",-1)
 
+     ! if  we have a fragment job the basis of the atomic (pair) site has to be
+     ! treated in a special way, either LO or FNO basis, this will be element 1
+     ! in all the array arrays
+     maxocc = 2
+     if(present(f))maxocc = max(f%noccEOS,maxocc)
+     maxvirt = 0
+     do ns = 1, nspaces
+        maxvirt = max(pno_cv(ns)%ns2,maxvirt)
+     enddo
 
      call mem_alloc( pno_t2, nspaces  )
      call mem_alloc( pno_o2, nspaces  )
-     call mem_alloc( gvvvv,  nv**4    )
-     call mem_alloc( gvovo,  o2v2     )
-     call mem_alloc( govov,  o2v2     )
-     call mem_alloc( goooo,  no**4    )
+     call mem_alloc( sio4,   nspaces  )
      call mem_alloc( goovv,  o2v2     )
      call mem_alloc( Lvoov,  o2v2     )
-     call mem_alloc( gvvov,  nv**3*no )
      call mem_alloc( gooov,  no**3*nv )
      call mem_alloc( p_nidx, nspaces  )
      call mem_alloc( p_idx,  nspaces  , nspaces )
      call mem_alloc( s_nidx, no )
-     call mem_alloc( s_idx,  2       , nspaces , no )
+     call mem_alloc( s_idx,  2        , nspaces , no )
      call mem_alloc( ovf,    no*nv    )
      call mem_alloc( vof,    nv*no    )
 
-     maxsize=nb**4
-     call mem_alloc( w1, maxsize )
-     call mem_alloc( w2, nb**3*max(nv,no) )
-     call mem_alloc( w3, maxsize )
+     call mem_alloc( Gai,    nb       , no      )
 
-     ! if  we have a fragment job the basis of the atomic (pair) site has to be
-     ! treated in a special way, either LO or FNO basis, this will be element 1
-     ! in all the array arrays
-     spacemax = 2
-     if(present(f))spacemax = max(f%noccEOS,spacemax)
-     spacemax = spacemax + 2 + 2
 
-     !Get pair interaction space information
-     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
+     !zero the relevant quatnities
+     !$OMP WORKSHARE
+     Gai   = 0.0E0_realk
+     goovv = 0.0E0_realk
+     Lvoov = 0.0E0_realk
+     gooov = 0.0E0_realk
+     !$OMP END WORKSHARE
+
+     call time_start_phase(PHASE_WORK, twall = tamps, ttot = tinit, labelttot =&
+        & 'PNO: init and zeroing                :' )
 
      !Get all the pno amplitudes with index restrictions i<=j
      call get_pno_amplitudes(t2,pno_cv,pno_t2,nspaces,no,nv)
 
-     !initialize the pno_residual according to the allocated pno_cv
-     call init_pno_residual(pno_cv,pno_o2,nspaces)
+     call time_start_phase(PHASE_WORK, twall = tome, ttot = tamps, labelttot = &
+        & 'PNO: extract and transform amplitudes:' )
 
+     !initialize the pno_residual and the sio4 according to the allocated pno_cv
+     call init_pno_residual_and_sio4(pno_cv,pno_o2,sio4,nspaces,no)
 
+     call time_start_phase(PHASE_WORK, twall = tbatchc, ttot = tome, labelttot = &
+        & 'PNO: initialize residual and sio4    :' )
 
      !call II_get_AbsoluteValueOcc_overlap(DECinfo%output,DECinfo%output,setting,nb,no,out)
 
-     !INTEGRAL DIRECT STUFF HAPPENINING HERE
-     ! Set integral info
-     ! *****************
-     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
-     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
-     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
-     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
-     INTSPEC(5)               = 'C' !C = Coulomb operator
-     doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
 
      !==================================================
      !                  Batch construction             !
      !==================================================
 
+     call get_batch_sizes_pno_residual(mylsitem,no,nv,nb,maxocc,maxvirt,nspaces,a_batch,&
+       &g_batch,sio4,pno_cv,pno_t2,pno_o2,query)
 
-     ! Get free memory and determine maximum batch sizes
-     ! -------------------------------------------------
-     if(master)then
-        call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
-        call get_currently_available_memory(MemFree)
-        !call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
-        !   &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local)
-        MaxAllowedDimAlpha = nb
-        MaxAllowedDimGamma = nb
-     endif
-     ! ************************************************
-     ! * Determine batch information for Gamma batch  *
-     ! ************************************************
-
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchGamma,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
-        & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-        &nbatchesGamma,orb2BatchGamma,'R')
-     if(master.and.DECinfo%PL>1)&
-        &write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
-        & 'with maximum size',MaxActualDimGamma
-
-     ! Translate batchindex to orbital index
-     ! -------------------------------------
-     call mem_alloc(batch2orbGamma,nbatchesGamma)
-     do i=1,nbatchesGamma
-        call mem_alloc(batch2orbGamma(i)%orbindex,batchdimGamma(i))
-        batch2orbGamma(i)%orbindex = 0
-        batch2orbGamma(i)%norbindex = 0
-     end do
-     do iorb=1,nb
-        i = orb2batchGamma(iorb)
-        batch2orbGamma(i)%norbindex = batch2orbGamma(i)%norbindex+1
-        K = batch2orbGamma(i)%norbindex
-        batch2orbGamma(i)%orbindex(K) = iorb
-     end do
-
-
-     ! ************************************************
-     ! * Determine batch information for Alpha batch  *
-     ! ************************************************
-
-     ! Orbital to batch information
-     ! ----------------------------
-     call mem_alloc(orb2batchAlpha,nb)
-     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-        & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
-     if(master.and.DECinfo%PL>1)&
-        &write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
-        &, 'with maximum size',MaxActualDimAlpha
-
-     !Translate batchindex to orbital index
-     !-------------------------------------
-     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
-     do i=1,nbatchesAlpha
-        call mem_alloc(batch2orbAlpha(i)%orbindex,batchdimAlpha(i) )
-        batch2orbAlpha(i)%orbindex = 0
-        batch2orbAlpha(i)%norbindex = 0
-     end do
-     do iorb=1,nb
-        i = orb2batchAlpha(iorb)
-        batch2orbAlpha(i)%norbindex = batch2orbAlpha(i)%norbindex+1
-        K = batch2orbAlpha(i)%norbindex
-        batch2orbAlpha(i)%orbindex(K) = iorb
-     end do
 
      ! ************************************************
      ! *  Allocate matrices used in the batched loop  *
      ! ************************************************
+     s1 = query%size_array(1) 
+     call mem_alloc( w1, s1 )
+     s2 = query%size_array(2)
+     call mem_alloc( w2, s2 )
+     s3 = query%size_array(3) 
+     call mem_alloc( w3, s3 )
+     s4 = query%size_array(4) 
+     call mem_alloc( w4, s4 )
+     s5 = query%size_array(5)
+     call mem_alloc( w5, s5 )
 
-     ! ************************************************
-     ! *  precalculate the full schreening matrix     *
-     ! ************************************************
+     call free_query_info(query)
 
-     ! This subroutine builds the full screening matrix.
-     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
-        & nbatchesAlpha,nbatchesGamma,INTSPEC)
-     if(mylsitem%setting%scheme%cs_screen.or.mylsitem%setting%scheme%ps_screen)then
-        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,&
-           & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-           & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-           & batchindexAlpha,batchindexGamma,&
-           & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-     endif
+     call time_start_phase(PHASE_WORK, twall = tint_dir, ttot = tbatchc, labelttot = &
+        & 'PNO: build batches                   :' )
 
-     myload = 0
+     ! Do the batched interal loop
+     call pno_residual_integral_direct_loop(mylsitem,w1,s1,w2,s2,w3,s3,w4,s4,w5,s5,no,nv,nb,&
+        &maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,xo,xv,yo,yv,gooov,&
+        &goovv,govov,Lvoov,Gai)
 
-     fullRHS = nbatchesGamma.EQ.1.AND.nbatchesAlpha.EQ.1
-
-     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
-        dimGamma   = batchdimGamma(gammaB)                         ! Dimension of gamma batch
-        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
-        GammaEnd   = batch2orbGamma(gammaB)%orbindex(dimGamma)     ! Last index in gamma batch
-        !short hand notation
-        fg         = GammaStart
-        lg         = dimGamma
-
-
-        BatchAlpha: do alphaB = 1, nbatchesAlpha
-
-           !check if the current job is to be done by current node
-           !call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-           !  &nbatchesGamma,tasks,tasksw,print_debug)
-           !break the loop if alpha become too large, necessary to account for all
-           !of the mpi and non mpi schemes, this is accounted for, because static,
-           !and dynamic load balancing are enabled
-           if(alphaB>nbatchesAlpha) exit
-
-           dimAlpha   = batchdimAlpha(alphaB)                              ! Dimension of alpha batch
-           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
-           AlphaEnd   = batch2orbAlpha(alphaB)%orbindex(dimAlpha)          ! Last index in alpha batch
-
-           !short hand notation
-           fa         = AlphaStart
-           la         = dimAlpha
-           myload     = myload + la * lg
-
-           IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
-           IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
-
-           call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
-              & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
-              & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,INTSPEC,fullRHS)
-
-           w3 = w1
-           !gvvvv
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xv,nv,yv,nv,w2)
-           call dcopy(nv**4,w1,1,gvvvv,1)
-           !goooo
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yo,no,w2)
-           call dcopy(no**4,w1,1,goooo,1)
-           !govov
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2)
-           call dcopy(nv**2*no**2,w1,1,govov,1)
-           !goovv
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2)
-           call dcopy(nv**2*no**2,w1,1,goovv,1)
-           !Lvoov = 2gvoov - gvvoo
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2)
-           call array_reorder_4d( p20, w1, nv, no ,no, nv, [1,2,3,4], nul, Lvoov)
-           call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
-           !gvvov
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yv,nv,xo,no,yv,nv,w2)
-           call dcopy(nv**3*no,w1,1,gvvov,1)
-           !gooov
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2)
-           call dcopy(nv*no**3,w1,1,gooov,1)
-           !gvovo
-           w1 = w3
-           call successive_4ao_mo_trafo(nb,w1,xv,nv,yo,no,xv,nv,yo,no,w2)
-           call dcopy(nv**2*no**2,w1,1,gvovo,1)
-
-           if(fa<=fg+lg-1)then
-              do ns = 1, nspaces
-                 !  no_pair
-                 !  nv_pair
-                 !  xo_pair
-                 !  xv_pair
-                 !  yo_pair
-                 !  yv_pair
-                 !  call get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl(ns),tmi(ns),no_pair,nv_pair,nb,fa,fg,la,lg,&
-                 !    &xo_pair,yo_pair,xv_pair,yv_pair,omega2(ns),sio4(ns),4,[w0%n,w1%n,w2%n,w3%n],.false.,.false.,.false.)
-              enddo
-           endif
-        enddo BatchAlpha
-     enddo BatchGamma
-     
-
-     ! Free integral stuff
-     ! *******************
-     nullify(Mylsitem%setting%LST_GAB_LHS)
-     nullify(Mylsitem%setting%LST_GAB_RHS)
-     call free_decscreen(DECSCREEN)
+     call time_start_phase(PHASE_WORK, twall = tfock, ttot = tint_dir, labelttot = &
+        & 'PNO: integral direct loop            :' )
 
      ! Free gamma stuff
-     call mem_dealloc(orb2batchGamma)
-     call mem_dealloc(batchdimGamma)
-     call mem_dealloc(batchsizeGamma)
-     call mem_dealloc(batchindexGamma)
-     do i=1,nbatchesGamma
-        call mem_dealloc(batch2orbGamma(i)%orbindex)
-        batch2orbGamma(i)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbGamma)
-
+     call free_batch_info(g_batch)
      ! Free alpha stuff
-     call mem_dealloc(orb2batchAlpha)
-     call mem_dealloc(batchdimAlpha)
-     call mem_dealloc(batchsizeAlpha)
-     call mem_dealloc(batchindexAlpha)
-     do i=1,nbatchesAlpha
-        call mem_dealloc(batch2orbAlpha(i)%orbindex)
-        batch2orbAlpha(i)%orbindex => null()
-     end do
-     call mem_dealloc(batch2orbAlpha)
+     call free_batch_info(a_batch)
 
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
      call mem_dealloc( w3 )
+     call mem_dealloc( w4 )
+     call mem_dealloc( w5 )
 
 
-     maxsize=max(max(i8*no,i8*nv)**4,i8*nb*max(nv,nb))
-     call mem_alloc( w1, maxsize )
-     call mem_alloc( w2, maxsize )
-     call mem_alloc( w3, maxsize )
-     call mem_alloc( w4, maxsize )
-     call mem_alloc( w5, maxsize )
+
+     !SWITCH TO MO PART
+     s1 = i8*nb*max(nv,no)
+     call mem_alloc( w1, s1 )
 
      !!!!!!!!!!!!!!!!!!!
      !GET FOCK MATRICES!
      !!!!!!!!!!!!!!!!!!!
-
      !allocate the density matrix
-     call mem_alloc(iFock,nb,nb)
-     call mem_alloc(Dens,nb,nb)
+     call mem_alloc( iFock, nb, nb )
+     call mem_alloc( Dens,  nb, nb )
      !calculate inactive fock matrix in ao basis
      call dgemm('n','t',nb,nb,no,1.0E0_realk,yo,nb,xo,nb,0.0E0_realk,Dens,nb)
      iFock = 0.0E0_realk
@@ -398,7 +245,7 @@ module pno_ccsd_module
      call daxpy(nb**2,1.0E0_realk,Dens,1,iFock,1)
      call daxpy(nb**2,1.0E0_realk,ifo,1,iFock,1)
      !Free the density matrix
-     call mem_dealloc(Dens)
+     call mem_dealloc( Dens )
      !Transform inactive Fock matrix into the different mo subspaces
      ! -> Foo
      call dgemm('t','n',no,nb,nb,1.0E0_realk,xo,nb,iFock,nb,0.0E0_realk,w1,no)
@@ -410,187 +257,43 @@ module pno_ccsd_module
      call dgemm('n','n',nv,no,nb,1.0E0_realk,w1,nv,yo,nb,0.0E0_realk,vof,nv)
      ! -> Fvv
      call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,vvf,nv)
-     call mem_dealloc(iFock)
+
+     call mem_dealloc( iFock )
+     call mem_dealloc( w1    )
+
+     call time_start_phase(PHASE_WORK, twall = trest, ttot = tfock, labelttot = &
+        & 'PNO: fock matrix construction        :' )
+
+     Lvoov = p20 * Lvoov
+     call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
 
 
-     !!DEBUG: A2 term
-     !!**************
-     !u = p20*t2
-     !call array_reorder_4d( m10, t2,   nv, no, nv, no, [1,4,3,2], p10, u  )
-     !ref = gvovo
+     call mem_alloc(Gkj, no, no)
+     Gkj = oof
 
-     !!A2.2 contribution
-     !call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
-     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
-     !call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
-     !call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
-
-     !call print_norm(w3,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !!DEBUG: B2 term
-     !!**************
-     !!ref = 0.0E0_realk
-     !call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
-     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
-     !call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
-     !! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
-     !call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
-     !! B(ijkl) t(klab) = B2(ijab) 
-     !call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
-     !call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
-
-     !call print_norm(w1,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !!DEBUG: C2 term
-     !!**************
-     !!ref = 0.0E0_realk
-     !call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
-     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
-     !call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
-     !!C intermediate w1(ckja) -  0.5 w3(ckld) w2(ldja)
-     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
-     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,4,3,2], nul, w2 ) ! bkci -> bick
-     !!call print_tensor_unfolding_with_labels(w2,&
-     !!  &[nv,no],'bi',2,[nv,no],'ck',2,'FULL T2')
-     !!call print_tensor_unfolding_with_labels(w1,&
-     !!  &[nv,no],'ck',2,[no,nv],'ja',2,'FULL Goovv')
-     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m10, w2, no*nv, w1, no*nv, nul, w3, no*nv)
-
-     !!call print_tensor_unfolding_with_labels(w3,&
-     !!  &[nv,no],'bi',2,[no,nv],'ja',2,'FULL ERG GEMM')
-     !!USE THE SYMMETRIZED CONTRIBUTION, i.e. P_{ij}^{ab} (1+0.5P_{ij}) * w3
-     !call array_reorder_4d( p10, w3, nv, no, no, nv, [4,2,1,3], nul, w2 ) ! bija -> aibj
-     !call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
-     !call array_reorder_4d( p10, w3, nv, no, no, nv, [1,3,4,2], p10, w2 ) ! ajib -> aibj
-     !call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
-
-     !ref = ref + w2(1:o2v2)
-
-     !!call print_tensor_unfolding_with_labels(ref,&
-     !!  &[nv,no],'ai',2,[nv,no],'bj',2,'FULL ERG C')
-     !call print_norm(w2,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG C2/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !!DEBUG: D2 term
-     !!**************
-     !call array_reorder_4d( p10, Lvoov, nv, no, no, nv, [4,3,1,2], nul, w1 ) ! aikc -> ckai
-     !call array_reorder_4d( p10, u,     nv, no, nv, no, [4,3,1,2], nul, w2 ) ! aidl -> ldai
-     !call array_reorder_4d( p20, govov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
-     !call array_reorder_4d( m10, govov, no, nv, no, nv, [4,1,3,2], p10, w3 ) ! ldkc -> clkd
-     !call dgemm('n','n',nv*no,nv*no,no*nv, p05, w3,nv*no,w2,no*nv, p10, w1, nv*no)
-
-     !call dgemm('n','n',nv*no,nv*no,nv*no, p05, u ,nv*no,w1,nv*no, nul, w2, nv*no)
-     !w3(1:o2v2) = w2(1:o2v2)
-
-     !call array_reorder_4d( p10, w2, nv, no, nv, no, [3,4,1,2], p10, w3 )
-     !ref = ref + w3(1:o2v2)
-
-
-     !call print_norm(w3,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG D2/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !!DEBUG: E2 term
-     !!**************
-     !!part 1 vv
-     !call ass_D2to1(vvf,h1,[nv,nv])
-     !w1(1:nv**2) = h1(1:nv**2)
-     !h1 => null()
-     !call array_reorder_4d( p10, govov, no, nv, no, nv, [3,2,1,4], nul, w3 )
-     !call dgemm('n','n',nv,nv,no*nv*no, m10, u,nv,w3,no*nv*no, p10, w1, nv)
-     !call array_reorder_4d( p10, t2, nv, no, nv, no, [3,4,1,2], nul, w2)
-     !call dgemm( 'n','n',nv,no*nv*no,nv,p10,w1,nv,w2,nv,nul,w3,nv)
-     !w2(1:o2v2) = w3(1:o2v2)
-     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
-
-     !ref = ref + w2(1:o2v2)
-
-     !call print_norm(w2,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !!part 2
-     !call ass_D2to1(oof,h1,[no,no])
-     !w1(1:no**2) = h1(1:no**2)
-     !h1 => null()
-     !call array_reorder_4d( p10, govov, no, nv, no, nv, [1,4,3,2], nul, w2)
-     !call dgemm('n','n',no,no,nv*no*nv, p10, w2,no,u,nv*no*nv, p10, w1, no)
-     !call dgemm('n','n',nv*no*nv,no,no, m10, t2, nv*no*nv,w1,no, nul, w2, nv*no*nv)
-     !w3(1:o2v2) = w2(1:o2v2)
-     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
-
-     !ref = ref + w2(1:o2v2)
-
-     !call print_norm(w2,o2v2,nnorm,.true.)
-     !call print_norm(ref,o2v2,norm,.true.)
-     !write (*,*)' DEBUG E22/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !ref1 = vof
-
-     !!DEBUG SINGLES A1
-     !!****************
-     !call array_reorder_4d( p10, u, nv, no, nv, no, [3,2,1,4], nul, w1) ! ckdi -> dkci
-     !call dgemm( 'n','n',nv, no, nv**2*no, p10,gvvov,nv,w1,nv**2*no,nul,w2,nv)
-
-     !ref1 = ref1 + w2(1:nv*no)
-
-     !call print_norm(w2,i8*nv*no,nnorm,.true.)
-     !call print_norm(ref1,i8*nv*no,norm,.true.)
-     !write (*,*)' DEBUG A1/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !!DEBUG SINGLES B1
-     !!****************
-     !call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
-     !call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
-
-     !ref1 = ref1 + w2(1:nv*no)
-
-     !call print_norm(w2,i8*nv*no,nnorm,.true.)
-     !call print_norm(ref1,i8*nv*no,norm,.true.)
-     !write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
-
-     !!DEBUG SINGLES C1
-     !!****************
-     !call array_reorder_2d( p10, ovf, no, nv, [2,1], nul, w2)
-     !call dgemv('n',no*nv,no*nv,p10,u,no*nv,w2,1, nul,w1,1)
-
-     !ref1 = ref1 + w1(1:nv*no)
-
-     !call print_norm(w1,i8*nv*no,nnorm,.true.)
-     !call print_norm(ref1,i8*nv*no,norm,.true.)
-     !write (*,*)' DEBUG C1/TOT:',sqrt(nnorm),sqrt(norm)
-
-
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     ! ref is not written after this point!
-     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-     call mem_dealloc( w1 )
-     call mem_dealloc( w2 )
-     call mem_dealloc( w3 )
-     call mem_dealloc( w4 )
-     call mem_dealloc( w5 )
-
+     ! D1 term
      call ass_D2to1(o1,h1,[nv,no])
      h1 = vof
      h1 => null()
+     ! A1 term
+     call dgemm('t','n',nv,no,nb,p10,xv,nb,Gai,nb,p10,o1, nv)
+     call dgemm('t','n',no,no,nb,p10,xo,nb,Gai,nb,p10,Gkj,no)
+     call mem_dealloc( Gai )
+
+     !Get pair interaction space information
+     call get_pair_space_info(pno_cv,p_idx,p_nidx,s_idx,s_nidx,nspaces,no)
+
+     spacemax = maxocc + 2 + 2
+
+     maxsize  = max(i8*no,i8*nv)**4
 
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
-     !$OMP skiptrafo, skiptrafo2,oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
+     !$OMP oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
      !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
-     !$OMP vvf,goooo,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
-     !$OMP oof, maxsize, nspaces, ovf, gvvov, s_idx,o1,&
+     !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
+     !$OMP Gkj, maxsize, nspaces, ovf,  s_idx,o1,sio4,&
      !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
      call init_threadmemvar()
 
@@ -623,27 +326,24 @@ module pno_ccsd_module
 
         o   => pno_o2(ns)%elm1
 
-        o = 0.0E0_realk
-
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  A2 Term !!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         !A2.1
         !Get the integral contribution, sort it first like the integrals then transform it
-        call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
-           &pno_cv(ns)%n,PS)
+        !call extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,&
+        !   &pno_cv(ns)%n,PS)
 
         !A2.2
-        call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
-
+        !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
         !!!!!!!!!!!!!!!!!!!!!!!!!
 
         call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
-           &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+           &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
 
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -654,7 +354,7 @@ module pno_ccsd_module
         !pair index, this could in principle also be solved with if statements
         !in the previous full loop and only doing the following work in a subset
         call get_common_idx_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,&
-           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,oof,p_idx,p_nidx,oidx1,oidx2,nspaces)
+           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
 
 
 
@@ -765,109 +465,111 @@ module pno_ccsd_module
 
 
 
-           !!!!!!!!!!!!!!!!!!!!!!!!!
-           !!!  A1 Term !!!!!!!!!!!!
-           !!!!!!!!!!!!!!!!!!!!!!!!!
-
-           if( PS )then
-              bpc = 3
-              epc = 2
-              do pair = 1, paircontribs
-
-                 add_contrib = .false.
-
-                 k = idx(paircontrib(1,pair))
-                 i = nc
-
-                 add_contrib = (k<i.and.i==idx(2)).or.(k>i.and.i==idx(1))  
-
-                 if(add_contrib     .and.pair==1)bpc = 1
-                 if(.not.add_contrib.and.pair==1)bpc = 2
-                 if(add_contrib     .and.pair==2)epc = 2
-                 if(.not.add_contrib.and.pair==2)epc = 1
-
-              enddo
-
-              do pair = bpc, epc
-
-                 k = idx(paircontrib(1,pair))
-                 i = nc
-
-#ifdef VAR_LSDEBUG
-                 if ( k == i )call lsquit("THIS IS WRONG AND SHOULD NEVER HAPPEN",-1)
-#endif
-
-                 !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
-                 !are constructed fully -> akcd
-                 call ass_D1to4( w1,    p1, [nv, nv,rpd,nv] )
-                 call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
-                 do b=1,nv
-                    do ic=1,nv
-                       do a=1,nv
-                          p1(ic,a,1,b) = p2(a,ic, k,b)
-                       enddo
-                    enddo
-                 enddo
-
-                 call dgemm('n','n',nv*nv,pnv,nv,p10,w1,nv*nv,d,nv,nul,w2,nv*nv)
-                 call dgemm('t','n',nv*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pnv)
-
-                 !extract amplitudes as u kcdi with i = nc2
-                 if(k>i)then
-                    call array_reorder_2d(p20,t,pnv,pnv,[2,1],nul,w3)
-                    call array_reorder_2d(m10,t,pnv,pnv,[1,2],p10,w3)
-                 else
-                    call array_reorder_2d(p20,t,pnv,pnv,[1,2],nul,w3)
-                    call array_reorder_2d(m10,t,pnv,pnv,[2,1],p10,w3)
-                 endif
-
-                 call dgemv('n',nv,pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
-
-                 !$OMP CRITICAL
-                 o1(:,nc) = o1(:,nc) + w2(1:nv)
-                 !$OMP END CRITICAL
-              enddo
-           else
-
-              !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
-              !are constructed fully -> akcd
-              call ass_D1to4( w1,    p1, [nv, nv,rpd,nv] )
-              call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
-              do b=1,nv
-                 do jc=1,pno
-                    do ic=1,nv
-                       do a=1,nv
-                          p1(ic,a,jc,b) = p2(a,ic, idx(jc),b)
-                       enddo
-                    enddo
-                 enddo
-              enddo
-              p1 => null()
-              p2 => null()
-
-              call dgemm('n','n',nv*nv*pno,pnv,nv,p10,w1,nv*nv*pno,d,nv,nul,w2,nv*nv*pno)
-              call dgemm('t','n',nv*pno*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pno*pnv)
-
-              !extract amplitudes as u kcdi with i = nc2
-              call ass_D1to4( w3, p3, [pno,pnv,pnv,1] )
-              call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
-              do b=1,pnv
-                 do jc=1,pno
-                    do a=1,pnv
-                       p3(jc,a,b,1) = p20 * p2(a,jc,b,i_idx) - p2(a,i_idx,b,jc)
-                    enddo
-                 enddo
-              enddo
-              p2 => null()
-              p3 => null()
-
-              call dgemv('n',nv,pno*pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
-
-              !$OMP CRITICAL
-              o1(:,nc) = o1(:,nc) + w2(1:nv)
-              !$OMP END CRITICAL
-
-           endif
+            !A1 has been commented out to avoid the explicit calculation of
+            !gvvov
+!           !!!!!!!!!!!!!!!!!!!!!!!!!
+!           !!!  A1 Term !!!!!!!!!!!!
+!           !!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!           if( PS )then
+!              bpc = 3
+!              epc = 2
+!              do pair = 1, paircontribs
+!
+!                 add_contrib = .false.
+!
+!                 k = idx(paircontrib(1,pair))
+!                 i = nc
+!
+!                 add_contrib = (k<i.and.i==idx(2)).or.(k>i.and.i==idx(1))  
+!
+!                 if(add_contrib     .and.pair==1)bpc = 1
+!                 if(.not.add_contrib.and.pair==1)bpc = 2
+!                 if(add_contrib     .and.pair==2)epc = 2
+!                 if(.not.add_contrib.and.pair==2)epc = 1
+!
+!              enddo
+!
+!              do pair = bpc, epc
+!
+!                 k = idx(paircontrib(1,pair))
+!                 i = nc
+!
+!#ifdef VAR_LSDEBUG
+!                 if ( k == i )call lsquit("THIS IS WRONG AND SHOULD NEVER HAPPEN",-1)
+!#endif
+!
+!                 !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
+!                 !are constructed fully -> akcd
+!                 call ass_D1to4( w1,    p1, [nv, nv,rpd,nv] )
+!                 call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
+!                 do b=1,nv
+!                    do ic=1,nv
+!                       do a=1,nv
+!                          p1(ic,a,1,b) = p2(a,ic, k,b)
+!                       enddo
+!                    enddo
+!                 enddo
+!
+!                 call dgemm('n','n',nv*nv,pnv,nv,p10,w1,nv*nv,d,nv,nul,w2,nv*nv)
+!                 call dgemm('t','n',nv*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pnv)
+!
+!                 !extract amplitudes as u kcdi with i = nc2
+!                 if(k>i)then
+!                    call array_reorder_2d(p20,t,pnv,pnv,[2,1],nul,w3)
+!                    call array_reorder_2d(m10,t,pnv,pnv,[1,2],p10,w3)
+!                 else
+!                    call array_reorder_2d(p20,t,pnv,pnv,[1,2],nul,w3)
+!                    call array_reorder_2d(m10,t,pnv,pnv,[2,1],p10,w3)
+!                 endif
+!
+!                 call dgemv('n',nv,pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
+!
+!                 !$OMP CRITICAL
+!                 o1(:,nc) = o1(:,nc) + w2(1:nv)
+!                 !$OMP END CRITICAL
+!              enddo
+!           else
+!
+!              !extract gvvov(adkc) as dakc and transform d and c, keep a since singles
+!              !are constructed fully -> akcd
+!              call ass_D1to4( w1,    p1, [nv, nv,rpd,nv] )
+!              call ass_D1to4( gvvov, p2, [nv, nv, no, nv] )
+!              do b=1,nv
+!                 do jc=1,pno
+!                    do ic=1,nv
+!                       do a=1,nv
+!                          p1(ic,a,jc,b) = p2(a,ic, idx(jc),b)
+!                       enddo
+!                    enddo
+!                 enddo
+!              enddo
+!              p1 => null()
+!              p2 => null()
+!
+!              call dgemm('n','n',nv*nv*pno,pnv,nv,p10,w1,nv*nv*pno,d,nv,nul,w2,nv*nv*pno)
+!              call dgemm('t','n',nv*pno*pnv,pnv,nv,p10,w2,nv,d,nv,nul,w1,nv*pno*pnv)
+!
+!              !extract amplitudes as u kcdi with i = nc2
+!              call ass_D1to4( w3, p3, [pno,pnv,pnv,1] )
+!              call ass_D1to4( t,  p2, [pnv,pno,pnv,pno] )
+!              do b=1,pnv
+!                 do jc=1,pno
+!                    do a=1,pnv
+!                       p3(jc,a,b,1) = p20 * p2(a,jc,b,i_idx) - p2(a,i_idx,b,jc)
+!                    enddo
+!                 enddo
+!              enddo
+!              p2 => null()
+!              p3 => null()
+!
+!              call dgemv('n',nv,pno*pnv*pnv,p10,w1,nv,w3, 1, nul,w2,1)
+!
+!              !$OMP CRITICAL
+!              o1(:,nc) = o1(:,nc) + w2(1:nv)
+!              !$OMP END CRITICAL
+!
+!           endif
 
            !!!!!!!!!!!!!!!!!!!!!!!!!
            !!!  C1 Term !!!!!!!!!!!!
@@ -980,6 +682,8 @@ module pno_ccsd_module
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
+     call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
+        & 'PNO: MO part                         :' )
 
      !this subroutine assumes that symmetrization has already occured and only a
      !backtransformation to the original space is carried out
@@ -991,25 +695,22 @@ module pno_ccsd_module
 
      !call print_norm(o2,o2v2)
      !call print_norm(o1,i8*no*nv)
-
+     
      do ns = 1, nspaces
 
         if(  pno_cv(ns)%allocd )then
            call array_free( pno_t2(ns) )
            call array_free( pno_o2(ns) )
+           call array_free( sio4(ns)   )
         endif
 
      enddo
 
      call mem_dealloc( pno_t2 )
      call mem_dealloc( pno_o2 )
-     call mem_dealloc( gvvvv )
-     call mem_dealloc( gvovo )
-     call mem_dealloc( govov )
-     call mem_dealloc( goooo )
+     call mem_dealloc( sio4  )
      call mem_dealloc( goovv )
      call mem_dealloc( Lvoov )
-     call mem_dealloc( gvvov )
      call mem_dealloc( gooov )
      call mem_dealloc( p_idx )
      call mem_dealloc( p_nidx )
@@ -1017,9 +718,13 @@ module pno_ccsd_module
      call mem_dealloc( s_idx )
      call mem_dealloc( vof )
      call mem_dealloc( ovf )
+     call mem_dealloc( Gkj )
 
-     !o2 = 0.0E0_realk
-     !o1 = 0.0E0_realk
+#ifdef VAR_OMP
+     call omp_set_nested(nested)
+#endif
+     call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
+        & 'PNO: finalization                    :' )
 
   end subroutine get_ccsd_residual_pno_style
 
@@ -1498,14 +1203,19 @@ module pno_ccsd_module
      real(realk) :: norm,thr
      real(realk),parameter :: p10 = 1.0E0_realk
      real(realk),parameter :: nul = 0.0E0_realk
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces
      logical :: keep_pair
      integer :: allremoved, ofmindim, ofmaxdim, allocpcount
+
+     call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
 
      if( DECinfo%noPNOoverlaptrunc ) then
         thr = -1.0E0_realk * huge(thr)
      else
         thr = DECinfo%PNOoverlapthr
      endif
+
+     mem_overlap_spaces = 0.0E0_realk
 
      allocpcount= 0
      allremoved = 0
@@ -1514,7 +1224,7 @@ module pno_ccsd_module
 
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
-     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount,mem_overlap_spaces)&
      !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
@@ -1623,6 +1333,8 @@ module pno_ccsd_module
                        pno_S(c)%d(dg,dg) = sv(dg)
                     enddo
 
+                    mem_overlap_spaces = mem_overlap_spaces + (ns1*red1 + red2*ns2 + red1 * red2 ) * 8.0E0_realk
+
                  endif
 
 
@@ -1659,28 +1371,42 @@ module pno_ccsd_module
      call mem_TurnOffThread_Memory()
 
      print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
+     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
+     & getting overlap spaces:")
+     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
 
   end subroutine get_pno_overlap_matrices
 
-  subroutine init_pno_residual(cv,o2,n)
+  subroutine init_pno_residual_and_sio4(cv,o2,sio4,n,no)
      implicit none
-     integer, intent(in) :: n
+     integer, intent(in) :: n,no
      type(PNOSpaceInfo),intent(in) :: cv(n)
-     type(array),intent(inout) :: o2(n)
-     integer :: nn, pnv,rpd
+     type(array),intent(inout) :: o2(n),sio4(n)
+     integer :: nn, pnv,pno,rpd
 
      do nn=1,n
 
         pnv = cv(nn)%ns2
+        pno = cv(nn)%n
         rpd = cv(nn)%rpd
 
         if(cv(nn)%allocd)then
 
            o2(nn) = array_init([pnv,rpd,pnv,rpd],4)
+           call array_zero(o2(nn))
+
+
+           if( cv(nn)%PS )then
+              sio4(nn) = array_init([no,no],2)
+           else
+              sio4(nn) = array_init([no,no,pno,pno],4)
+           endif
+
+           call array_zero(sio4(nn))
 
         endif
      enddo
-  end subroutine init_pno_residual
+  end subroutine init_pno_residual_and_sio4
 
   subroutine get_pno_amplitudes(t2,cv,pno_t2,n,no,nv)
      implicit none
@@ -1748,23 +1474,35 @@ module pno_ccsd_module
 
      call mem_dealloc(tmp1)
      call mem_dealloc(tmp2)
+
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb, n
      real(realk), intent(in) :: t_mp2(nv,no,nv,no)
      type(PNOSpaceInfo),pointer :: cv(:)
-     logical,intent(in) :: fj
      type(decfrag),intent(in),optional :: f
      !INTERNAL
      real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
      integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-     integer :: pno_gvvvv_size,find_pos(no,no)
+     integer :: find_pos(no,no),maxocc,maxminocc
      logical :: doit
+     logical :: fj
+     real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
+     integer :: tid
+     real(realk) :: time_pno_spaces, mem_pno_spaces
+#ifdef VAR_OMP
+     integer, external :: omp_get_num_threads, omp_get_thread_num
+     integer :: nt_s, nt_n
+#endif
+
+     call time_start_phase(PHASE_WORK, twall = time_pno_spaces )
+     mem_pno_spaces = 0.0E0_realk
 
      find_pos = -1
+     fj = present(f)
 
      counter = 0
      if(fj) counter = 1
@@ -1799,13 +1537,46 @@ module pno_ccsd_module
 
      calc_parameters = 0
      det_parameters  = 0
-     pno_gvvvv_size  = 0
 
-     call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,pno_gvvvv_size)&
-     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2)&
-     !$OMP PRIVATE(counter,virteival,U,PD,doit)
-     call init_threadmemvar()
+
+     if( fj )then
+        maxocc = f%noccEOS
+        if(DECinfo%PNOtriangular)then
+           maxminocc = 1
+        else
+           maxminocc = 2
+        endif
+     else
+        if(DECinfo%PNOtriangular)then
+           maxocc    = 1
+           maxminocc = 1
+        else
+           maxocc    = 2
+           maxminocc = 2
+        endif
+     endif
+
+
+
+     !call mem_TurnONThread_Memory()
+     !OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
+     !OMP mem_pno_spaces)&
+     !OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
+     !OMP maxocc,maxminocc)&
+     !OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
+     !call init_threadmemvar()
+
+     tid = 0
+#ifdef VAR_OMP
+     tid = omp_get_thread_num()
+#endif
+
+     !if( tid == 0 )then
+     !   call mem_alloc(w1,2*nv*maxocc*nv*maxocc)
+     !else
+     !   call mem_alloc(w1,2*nv*maxminocc*nv*maxminocc)
+     !endif
+
 
      if(fj)then
 
@@ -1814,7 +1585,7 @@ module pno_ccsd_module
         endif
 
 
-        !$OMP SINGLE
+        !$OMP MASTER
         call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
         call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
         call mem_alloc(cv(1)%iaos,f%noccEOS)
@@ -1824,20 +1595,20 @@ module pno_ccsd_module
         cv(1)%is_FA_space  = .true.
         cv(1)%PS           = .false.
         counter            = 1
-        print *,"EOS SPACE WITH",f%noccEOS
 
         calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
         det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
-        pno_gvvvv_size  = pno_gvvvv_size  + cv(1)%ns2**4
+
+        mem_pno_spaces  = mem_pno_spaces  + (cv(1)%ns2**2)*8.0E0_realk
 
         if(.not.cv(1)%allocd)then
            call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
               & according to the current threshold, skipping this fragment should be&
               & implemented",-1)
         endif
-        !$OMP END SINGLE
+        !$OMP END MASTER
 
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doi :do i = 1, no
            doj: do j = 1, no
 
@@ -1886,15 +1657,15 @@ module pno_ccsd_module
                     endif
 
                     calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                    pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                    mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
                  endif
               endif
            enddo doj
         enddo doi
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      else
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doiful :do i = 1, no
            dojful: do j = 1, no
 
@@ -1938,22 +1709,27 @@ module pno_ccsd_module
                  endif
 
                  calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                 pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                 mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
               endif
 
            enddo dojful
         enddo doiful
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      endif
 
-     call collect_thread_memory()
-     !$OMP END PARALLEL
-     call mem_TurnOffThread_Memory()
+     !call mem_dealloc(w1)
 
-     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
-     !print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
+     !call collect_thread_memory()
+     !OMP END PARALLEL
+     !call mem_TurnOffThread_Memory()
 
+     print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
+
+     call time_start_phase(PHASE_WORK, ttot = time_pno_spaces, labelttot = " PNO:&
+     & getting pno spaces:")
+
+     write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
 
   end subroutine get_pno_trafo_matrices
 
@@ -2057,6 +1833,922 @@ module pno_ccsd_module
 
   end subroutine truncate_trafo_mat_from_EV
 
+
+  subroutine get_batch_sizes_pno_residual(mylsitem,no,nv,nb,maxocc,maxvirt,nspaces,a_batch,&
+        &g_batch,sio4,pno_cv,pno_t2,pno_o2,query)
+     implicit none
+     type(lsitem), intent(inout) :: mylsitem
+     integer, intent(in) :: no,nv,nb,maxocc,maxvirt,nspaces
+     type(int_batch),intent(inout) :: a_batch, g_batch
+     type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
+     type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
+     type(pno_query_info),intent(inout) :: query
+     logical :: converged
+     integer :: MaxAllowedDimGamma, MaxAllowedDimAlpha,newsize,oldsize,MinAObatch
+     integer :: gamma_size,alpha_size, basic,narray,ns
+     real(realk) :: MemFree,used_mem, Frac_of_mem
+     real(realk), pointer :: dummy1(:), dummy2(:,:)
+     integer(kind=8) :: nelms
+     integer :: edit,max_nthreads,max_w_per_thr(5,nloops),loop,thread
+     !$ integer, external :: omp_get_num_threads, omp_get_max_threads
+
+     !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
+     basic = 11
+     call init_query_info(query,basic+(nspaces*5*nloops))
+
+     call get_currently_available_memory(MemFree)
+
+#ifdef VAR_MPI
+     !call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+#endif
+
+     nthreads_level1_int_dir = 1
+     max_nthr_int_loop       = 1
+#ifdef VAR_OMP
+     max_nthr_int_loop       = omp_get_max_threads()
+#endif
+
+     frac_of_mem = 0.8_realk*MemFree
+
+     call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
+        
+     converged  = .false.
+     gamma_size = nb
+
+     do while(.not. converged)
+
+        call init_batch_info(mylsitem,g_batch,gamma_size,nb)
+
+        do alpha_size = gamma_size,MinAObatch,-1
+
+           call init_batch_info(mylsitem,a_batch,alpha_size,nb)
+
+           query%size_array = 0
+
+           call pno_residual_integral_direct_loop(mylsitem,dummy1,0_long,dummy1,0_long,dummy1,0_long,dummy1,0_long,&
+              &dummy1,0_long,no,nv,nb,maxocc,maxvirt,nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,dummy2,dummy2,dummy2,dummy2,&
+              & dummy1,dummy1,dummy1,dummy1,dummy2, query = query )
+
+           !analyze query information
+           nelms = 0
+           do narray = 1, basic
+              nelms = nelms + query%size_array(narray)
+           enddo
+
+           used_mem = (nelms*8.0E0_realk)/(1.024E3_realk**3)
+
+           converged = ( used_mem < frac_of_mem )
+
+           if(converged)then
+              exit
+           else
+              call free_batch_info(a_batch)
+           endif
+
+        enddo
+
+        if(.not.converged)then
+
+           call free_batch_info(g_batch)
+
+           oldsize    = gamma_size
+           gamma_size = oldsize - 1
+
+           if( gamma_size < MinAObatch )then
+              call lsquit("ERROR(get_batch_sizes_pno_residual): Not enough&
+                 & memory for a pno calculation",-1)
+           endif
+
+        endif
+
+     enddo
+
+     !do narray = 1, query%n_arrays
+     !   print*,"Array",narray," of size:",query%size_array(narray)
+     !enddo
+
+     max_w_per_thr = 0
+     do loop = 1, nloops
+        do narray = 1,5
+           do ns = 1, nspaces
+              edit = basic - 1 + (ns-1) * nloops * 5 + (loop - 1)  * 5
+              max_w_per_thr(narray,loop) = max(max_w_per_thr(narray,loop),query%size_array(edit+narray))
+           enddo
+        end do
+        print *,max_w_per_thr(:,loop)
+     enddo
+
+
+#ifdef VAR_OMP
+     nthreads_level1_int_dir(first_loop)  = omp_get_max_threads()
+     nthreads_level1_int_dir(second_loop) = omp_get_max_threads()
+     nthreads_level1_int_dir(third_loop)  = omp_get_max_threads()
+
+
+     do narray = 1, 5
+
+        if(max_w_per_thr(narray,first_loop)/=0.and.(narray/=1))then
+           nthreads_level1_int_dir(first_loop)  =&
+              & min(nthreads_level1_int_dir(first_loop), query%size_array(narray)/max_w_per_thr(narray,first_loop))
+        endif
+        if(max_w_per_thr(narray,second_loop)/=0.and.(narray/=3))then
+           nthreads_level1_int_dir(second_loop) =&                                                      
+              & min(nthreads_level1_int_dir(second_loop),query%size_array(narray)/max_w_per_thr(narray,second_loop))
+        endif
+        if(max_w_per_thr(narray,third_loop)/=0.and.(narray/=4.and.narray/=5))then
+           nthreads_level1_int_dir(third_loop)  =&                                                      
+              & min(nthreads_level1_int_dir(third_loop), query%size_array(narray)/max_w_per_thr(narray,third_loop))
+        endif
+
+     enddo
+#endif
+
+     max_nthr_int_loop = max(nthreads_level1_int_dir(first_loop),&
+        & nthreads_level1_int_dir(second_loop),&
+        & nthreads_level1_int_dir(third_loop))
+
+     print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
+
+     call mem_alloc(info_omp1,2,max_nthr_int_loop,5,nloops)
+
+     !initialize with invalid numbers
+     info_omp1 = -1
+
+     do loop = 1, nloops
+        do narray = 1, 5
+           do thread=1, max_nthr_int_loop
+              if(thread<=nthreads_level1_int_dir(loop))then
+                 info_omp1(1,thread,narray,loop) = 1 + (thread-1)*max_w_per_thr(narray,loop)
+                 info_omp1(2,thread,narray,loop) = ( thread )*max_w_per_thr(narray,loop)
+                 !print *,"INFO FOR thread",thread," and array ",narray," in loop ",loop
+                 !print *,info_omp1(1,thread,narray,loop), info_omp1(2,thread,narray,loop)
+              endif
+           enddo
+        enddo
+     enddo
+
+     if(DECinfo%PL>2)write(*,'("INFO: allocating ",g10.3," GB in PNO integral &
+        &direct loop with #a:",I6," and #g:",I6)')used_mem,a_batch%nbatches,g_batch%nbatches
+
+  end subroutine get_batch_sizes_pno_residual
+
+
+  subroutine pno_residual_integral_direct_loop(mylsitem,w1,s1,w2,s2,w3,s3,w4,s4,w5,s5,no,nv,nb,maxocc,maxvirt,&
+         & nspaces,a_batch,g_batch,sio4,pno_cv,pno_t2,pno_o2,xo,xv,yo,yv,&
+         & gooov,goovv,govov,Lvoov,Gai, query )
+
+     implicit none
+     !Arguments
+     type(lsitem), intent(inout) :: mylsitem
+     integer(kind=8),intent(in)  :: s1,   s2,   s3,    s4,   s5
+     real(realk), target, intent(inout)  :: w1(:),w2(:),w3(:), w4(:),w5(:)
+     integer, intent(in) :: no, nv, nb, maxocc,maxvirt,nspaces
+     type(int_batch),intent(in) :: a_batch, g_batch
+     type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
+     type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
+     real(realk), intent(in) :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
+     real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
+     type(pno_query_info),optional, intent(inout) :: query
+     !internal variables
+     integer(kind=8) :: myload,var_inp(4)
+     integer :: ns
+     integer, pointer :: idx(:)
+     real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h2(:),h3(:),r1(:,:)
+     real(realk), pointer :: xo_pair(:,:,:),xv_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
+     real(realk), pointer :: tpl(:,:), tmi(:,:)
+     integer :: max_pnor, max_pnvr
+     integer :: pno_comb
+     integer :: pair,paircontribs,paircontrib(2,2),rpd,pno,pnv
+     integer :: goffs,aoffs,tlen,tred,nor,nvr,pos1,pos2,beg1,beg2,ic,i
+     integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg
+     integer :: offset_for_omp,contract
+     logical :: FoundInMem,fullRHS, doscreen, PS, EOS, add_contrib
+     type(DECscreenITEM)    :: DecScreen
+     character :: INTSPEC(5)
+     logical :: master, I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE, this_is_query, this_is_not_query
+     real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
+     real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
+     real(realk), parameter :: p20 = 2.0E0_realk
+     real(realk), parameter :: p10 = 1.0E0_realk
+     real(realk), parameter :: m10 = -1.0E0_realk
+     real(realk), parameter :: m05 = -0.5E0_realk
+     real(realk), parameter :: p05 = 0.5E0_realk
+     real(realk), parameter :: nul = 0.0E0_realk
+     integer :: tid, edit,orig_nthr
+#ifdef VAR_OMP
+     !$ logical :: nested
+     !$ logical, external :: omp_get_nested
+     !$ integer, external :: omp_get_thread_num, omp_get_num_threads
+     nested    = omp_get_nested()
+     call omp_set_nested(.true.)
+#endif
+
+     master        = .true.
+     tw            = 0.0E0_realk
+     tc            = 0.0E0_realk
+     times         = 0.0E0_realk
+     times_in_loops= 0.0E0_realk
+     this_is_query = present(query)
+
+     this_is_not_query = .not. this_is_query
+
+     paircontribs  = 2
+     paircontrib(1:2,1) = [1,2]
+     paircontrib(1:2,2) = [2,1]
+
+     max_pnor = maxocc  * (maxocc  + 1)/2
+     max_pnvr = maxvirt * (maxvirt + 1)/2
+
+     if(this_is_query)then
+
+        !make sure this offset is the last accessed element in this if statement
+        offset_for_omp = 10 
+
+        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5*nloops) )then
+           call lsquit("ERROR(pno_residual_integral_direct_loop):query not&
+              & possible, n_arrays needs to be set correctly, please check&
+              & offset_for_omp",-1)
+        endif
+
+        query%size_array(6)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(7)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(8)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(9)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(10) = i8*max_pnvr*max_pnor*max_nthr_int_loop
+        query%size_array(11) = i8*max_pnvr*max_pnor*max_nthr_int_loop
+
+        var_inp = 0
+     else
+        call mem_alloc( xo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( yo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( xv_pair, nb, maxvirt, max_nthr_int_loop   )
+        call mem_alloc( yv_pair, nb, maxvirt, max_nthr_int_loop   )
+
+        call mem_alloc( tpl, max_pnor*max_pnvr, max_nthr_int_loop )
+        call mem_alloc( tmi, max_pnor*max_pnvr, max_nthr_int_loop )
+     endif
+
+
+     ! Set integral info
+     ! *****************
+     INTSPEC(1)               = 'R' !R = Regular Basis set on the 1th center 
+     INTSPEC(2)               = 'R' !R = Regular Basis set on the 2th center 
+     INTSPEC(3)               = 'R' !R = Regular Basis set on the 3th center 
+     INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
+     INTSPEC(5)               = 'C' !C = Coulomb operator
+     doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
+
+     ! ***********************************************
+     ! *  precalculate the full screening matrix     *
+     ! ***********************************************
+
+     if(.not.this_is_query)then
+        ! This subroutine builds the full screening matrix.
+        call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
+           & a_batch%nbatches,g_batch%nbatches,INTSPEC)
+        if(mylsitem%setting%scheme%cs_screen.or.mylsitem%setting%scheme%ps_screen)then
+           call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
+              & nb,a_batch%nbatches,g_batch%nbatches,&
+              & a_batch%batchsize,g_batch%batchsize,a_batch%batchindex,g_batch%batchindex,&
+              & a_batch%batchdim,g_batch%batchdim,INTSPEC,DECinfo%output,DECinfo%output)
+           call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
+              & nb,a_batch%nbatches,g_batch%nbatches,a_batch%batchsize,g_batch%batchsize,&
+              & a_batch%batchindex,g_batch%batchindex,&
+              & a_batch%batchdim,g_batch%batchdim,INTSPEC,DECinfo%output,DECinfo%output)
+        endif
+
+        call time_start_phase(PHASE_WORK, twall = tbeg )
+
+     endif
+
+     myload = 0
+
+     fullRHS = g_batch%nbatches.EQ.1.AND.a_batch%nbatches.EQ.1
+
+
+     !INTEGRAL DIRECT STUFF HAPPENINING HERE
+     BatchGamma: do gammaB = 1,g_batch%nbatches  ! AO batches
+        lg = g_batch%batchdim(gammaB)              ! Dimension of gamma batch
+        fg = g_batch%batch2orb(gammaB)%orbindex(1) ! First index in gamma batch
+        xg = g_batch%batch2orb(gammaB)%orbindex(lg)
+
+
+        BatchAlpha: do alphaB = 1, a_batch%nbatches
+
+           !check if the current job is to be done by current node
+           !call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
+           !  &nbatchesGamma,tasks,tasksw,print_debug)
+           !break the loop if alpha become too large, necessary to account for all
+           !of the mpi and non mpi schemes, this is accounted for, because static,
+           !and dynamic load balancing are enabled
+           !if(alphaB>a_batch%nbatches) exit
+           !print *,"JOB ",alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+           if(DECinfo%PL>2.and.this_is_not_query)then
+#ifdef VAR_MPI
+              write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
+                 &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+#else
+              write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+                 &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+#endif
+           endif
+
+           la = a_batch%batchdim(alphaB)                              ! Dimension of alpha batch
+           fa = a_batch%batch2orb(alphaB)%orbindex(1)                 ! First index in alpha batch
+           xa = a_batch%batch2orb(alphaB)%orbindex(la)
+
+           !short hand notation
+           myload     = myload + la * lg
+
+           I_PLUS_MINUS_DONE   = .false.
+           SORT_INT_TO_W2_DONE = .false.
+
+
+           if(this_is_query)then
+
+              query%size_array(1) = max(query%size_array(1),(i8*la*nb)*lg*nb)
+
+              var_inp = 0
+
+           else
+
+              call time_start_phase(PHASE_WORK, twall = times(1) )
+
+              IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
+              IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
+
+              call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
+                 & Mylsitem%setting,w1,a_batch%batchindex(alphaB),g_batch%batchindex(gammaB),&
+                 & a_batch%batchsize(alphaB),g_batch%batchsize(gammaB),la,nb,lg,nb,INTSPEC,fullRHS)
+
+              call time_start_phase(PHASE_WORK, ttot = times(1) )
+              times(3) = times(3) + times(1)
+
+           endif
+
+
+           !TODO: IMPLEMENT LOOP OVER occ occ on the outside for simple one
+           !sided updates if integrals are stored in batches in occ-occ and
+           !reorder such that the first trafo is to occ
+           if(this_is_query)then
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*la*nb)*lg*nv)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*lg*nv)*la*nb)
+              query%size_array(w4_tag) = max(query%size_array(w4_tag),(i8*lg*nv)*la*no)
+              !goovv              tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*nv*nv)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nv)
+              !gooov and Lvoov    tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*no*no)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*nv*nv)*la*no)
+           else
+              call dgemm('n','n',la*nb*lg,nv,nb,p10,w1,la*nb*lg,yv,nb,nul,w2,la*nb*lg)
+              call array_reorder_4d(p10,w2,la,nb,lg,nv,[3,4,1,2],nul,w3)
+              call dgemm('n','n',lg*nv*la,no,nb,p10,w3,lg*nv*la,yo,nb,nul,w4,lg*nv*la)
+              !goovv
+              call dgemm('t','n',nv,nv*la*no,lg,p10,xv(fg,1),nb,w4,lg,nul,w2,nv)
+              call array_reorder_4d(p10,w2,nv,nv,la,no,[3,4,1,2],nul,w3)
+              call dgemm('t','n',no,no*nv*nv,la,p10,xo(fa,1),nb,w3,la,p10,goovv,no)
+              !gooov and Lvoov
+              call dgemm('t','n',no,nv*la*no,lg,p10,xo(fg,1),nb,w4,lg,nul,w2,no)
+              call array_reorder_4d(p10,w2,no,nv,la,no,[3,4,1,2],nul,w3)
+              call dgemm('t','n',no,no*no*nv,la,p10,xo(fa,1),nb,w3,la,p10,gooov,no)
+              call dgemm('t','n',nv,no*no*nv,la,p10,xv(fa,1),nb,w3,la,p10,Lvoov,nv)
+           endif
+
+           call time_start_phase(PHASE_WORK, twall = times(1), at = times(4) )
+
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,&
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(first_loop))
+
+           tid = 0
+#ifdef VAR_OMP
+           tid = omp_get_thread_num()
+#endif
+
+           if(this_is_not_query)then
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,first_loop):info_omp1(end_array,tid+1,w2_tag,first_loop))
+              my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,first_loop):info_omp1(end_array,tid+1,w3_tag,first_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,first_loop):info_omp1(end_array,tid+1,w4_tag,first_loop))
+
+              my_w1 => null()
+              my_w5 => null()
+           endif
+
+           !$OMP DO SCHEDULE(DYNAMIC)
+           do ns = 1, nspaces
+
+              if(.not.pno_cv(ns)%allocd)then
+
+                 cycle 
+
+              endif
+
+              d   => pno_cv(ns)%d
+              t   => pno_t2(ns)%elm1
+              idx => pno_cv(ns)%iaos
+              pnv =  pno_cv(ns)%ns2
+              pno =  pno_cv(ns)%n
+              rpd =  pno_cv(ns)%rpd
+              PS  =  pno_cv(ns)%PS
+              EOS =  pno_cv(ns)%is_FA_space 
+
+              o   => pno_o2(ns)%elm1
+
+              nor=rpd*(rpd+1)/2
+
+              if(this_is_query)then
+
+                 edit = offset_for_omp+(ns-1)*nloops*5+(first_loop-1)*5
+
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*lg*rpd)*la*rpd)
+
+                 !VOVO
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*pnv*rpd)*la*rpd)
+
+                 !SIO4
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*no*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*rpd*rpd)*no*no)
+
+              else
+
+                 !Get the transformation matrices
+                 !  xo_pair 
+                 do i = 1, pno
+                    xo_pair(:,i,tid+1) = xo(:,idx(i))
+                 enddo
+                 !  xv_pair
+                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
+                 !  yo_pair
+                 do i = 1, pno
+                    yo_pair(:,i,tid+1) = yo(:,idx(i))
+                 enddo
+                 !  yv_pair
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(1,1) )
+#endif
+
+                 !gvovo contribution
+                 if( PS )then
+                    beg1 = 2
+                    beg2 = 1
+                 else
+                    beg1 = 1
+                    beg2 = 1
+                 endif
+                 !VOVO and sio4
+                 call dgemm('n','n',la*nb*lg,rpd,nb,p10,w1,la*nb*lg,yo_pair(1,beg1,tid+1),nb,nul,my_w2,la*nb*lg)
+                 call array_reorder_4d(p10,my_w2,la,nb,lg,rpd,[3,4,1,2],nul,my_w3)
+                 call dgemm('n','n',lg*rpd*la,rpd,nb,p10,my_w3,lg*rpd*la,yo_pair(1,beg2,tid+1),nb,nul,my_w4,lg*rpd*la)
+                 !VOVO contribution
+                 call dgemm('t','n',pnv,rpd*la*rpd,lg,p10,xv_pair(fg,1,tid+1),nb,my_w4,lg,nul,my_w2,pnv)
+                 call array_reorder_4d(p10,my_w2,pnv,rpd,la,rpd,[3,4,1,2],nul,my_w3)
+                 call dgemm('t','n',pnv,rpd*pnv*rpd,la,p10,xv_pair(fa,1,tid+1),nb,my_w3,la,p10,o,pnv)
+                 !sio4
+                 call dgemm('t','n',no,rpd*la*rpd,lg,p10,xo(fg,1),nb,my_w4,lg,nul,my_w2,no)
+                 call array_reorder_4d(p10,my_w2,no,rpd,la,rpd,[2,4,1,3],nul,my_w3)
+                 call dgemm('n','n',rpd*rpd*no,no,la,p10,my_w3,rpd*rpd*no,xo(fa,1),nb,p10,sio4(ns)%elm1,rpd*rpd*no)
+
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(3,1) )
+#endif
+
+              endif
+
+           enddo
+           !$OMP END DO NOWAIT
+           !$OMP END PARALLEL
+
+
+           call time_start_phase(PHASE_WORK, ttot = times(1))
+           times(5) = times(5) + times(1)
+
+           !shift intrgrals to w2 in the order \delta \gamma \alpha \beta
+           if(this_is_query)then
+
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nb)
+
+           else if(.not.SORT_INT_TO_W2_DONE)then
+
+              !\alpha \beta \gamma \delta -> \delta \gamma \alpha \beta
+              call array_reorder_4d(p10,w1,la,nb,lg,nb,[4,3,1,2],nul,w3)
+              SORT_INT_TO_W2_DONE = .true.
+
+           endif
+
+           call time_start_phase(PHASE_WORK, at = times(6), twall = times(2)  )
+
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit,r1) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(second_loop))
+           tid = 0
+#ifdef VAR_OMP
+           tid = omp_get_thread_num()
+#endif
+           if(this_is_not_query)then
+              my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,second_loop):info_omp1(end_array,tid+1,w1_tag,second_loop))
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,second_loop):info_omp1(end_array,tid+1,w2_tag,second_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,second_loop):info_omp1(end_array,tid+1,w4_tag,second_loop))
+              my_w5 => w5(info_omp1(beg_array,tid+1,w5_tag,second_loop):info_omp1(end_array,tid+1,w5_tag,second_loop))
+
+              my_w3 => null()
+           endif
+           !$OMP DO SCHEDULE(DYNAMIC)
+           do ns = 1, nspaces
+
+              if(.not.pno_cv(ns)%allocd)then
+
+                 cycle 
+
+              endif
+
+              d   => pno_cv(ns)%d
+              t   => pno_t2(ns)%elm1
+              idx => pno_cv(ns)%iaos
+              pnv =  pno_cv(ns)%ns2
+              pno =  pno_cv(ns)%n
+              rpd =  pno_cv(ns)%rpd
+              PS  =  pno_cv(ns)%PS
+
+              o   => pno_o2(ns)%elm1
+
+              if(this_is_query)then
+
+                 edit = offset_for_omp+(ns-1)*nloops*5+(second_loop-1)*5
+
+                 !CAREFUL: THIS ACCOUNTS FOR BOTH CASES PS AND NOT PS, WHEN
+                 !CHANGING THE ROUTINE BELOW, THE QUERY HAS TO BE ADAPTED
+                 !ACCORDINGLY
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*nb)
+                 query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*lg)*la*pnv)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*pnv)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*pnv*pnv)*rpd*rpd)
+
+                 if( pnv < lg )then
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*la*pnv)*rpd*pnv)
+                 else
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*pnv)*rpd*lg)
+                 endif
+
+                 query%size_array(edit+w5_tag) = max(query%size_array(edit+w5_tag),(i8*la*rpd))
+
+              else
+                 !Get the transformation matrices
+                 !  xo_pair 
+                 do i = 1, pno
+                    xo_pair(:,i,tid+1) = xo(:,idx(i))
+                 enddo
+                 !  yv_pair
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(1,2)  )
+#endif
+
+                 !Get G_{\alpha i}
+
+                 if( PS )then
+                    call ass_D1to2(my_w5,r1,[la,rpd])
+                    do pair = 1,2
+                       call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,pair,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                       call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                       call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
+
+                       !u{cldj}(j,dlc)
+                       call array_reorder_2d(p20,t,pnv,pnv,paircontrib(:,3-pair),nul,my_w4)
+                       call array_reorder_2d(m10,t,pnv,pnv,paircontrib(:,pair),  p10,my_w4)
+
+                       !this hopefully optimizes the construction of this term
+                       if( pnv < lg )then
+                          call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                          h1 => my_w1
+                          h2 => my_w4
+                          contract = pnv*rpd*pnv
+                       else
+                          call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                          h1 => my_w2
+                          h2 => my_w1
+                          contract = pnv*rpd*lg
+                       endif
+
+
+                       call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
+
+
+                       !$OMP CRITICAL
+                       Gai(fa:xa,idx(3-pair)) = Gai(fa:xa,idx(3-pair)) + r1(:,1)
+                       !$OMP END CRITICAL
+                    enddo
+                 else
+                    call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,1,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                    call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                    call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
+
+                    !u{cldj}(j,dlc)
+                    call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[4,3,2,1],nul,my_w4)
+                    call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[2,3,4,1],p10,my_w4)
+
+                    !this hopefully optimizes the construction of this term
+                    if( pnv < lg )then
+                       call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                       h1 => my_w1
+                       h2 => my_w4
+                       contract = pnv*rpd*pnv
+                    else
+                       call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                       h1 => my_w2
+                       h2 => my_w1
+                       contract = pnv*rpd*lg
+                    endif
+
+
+                    call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
+
+                    call ass_D1to2(my_w5,r1,[la,rpd])
+                    !$OMP CRITICAL
+                    do ic = 1, rpd
+                       Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
+                    enddo
+                    !$OMP END CRITICAL
+
+                 endif
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(2,2) )
+#endif
+              endif
+
+           enddo
+           !$OMP END DO NOWAIT
+           !$OMP END PARALLEL
+
+           call time_start_phase(PHASE_WORK, ttot = times(2), twall = times(1) )
+           times(7) = times(7) + times(2)
+
+           !ADD THE gvvvv contribution, note that we destroy the original
+           !integrals in w1 and replace them by those with restricted indices in
+           !alpha and gamma -- the following code is copied from
+           !get_a22_and_prepb22_terms_ex, where more info can be found
+           if(fa<=fg+lg-1)then
+
+              goffs=0
+              if(fa-fg>0)goffs=fa-fg
+              aoffs=0
+              if(fg-fa>0)aoffs=fg-fa
+              tred=0
+              tlen=min(min(min(la,lg),fg+lg-fa),fa+la-fg)
+
+              if(fa+la-1>=fg)tred= tlen*(tlen+1)/2
+              if(fa>=fg.and.fg+lg-fa-tlen>0)tred=tred+(fg+lg-fa-tlen)*la
+              if(fa<fg)tred=tred+lg*aoffs
+              if(fa<fg.and.fa+la>fg) tred=tred+(lg-tlen)*(la-aoffs)
+              if(tlen<=0)then
+                 tlen=0
+                 aoffs=0
+                 goffs=0
+                 tred=la*lg
+              endif
+
+
+
+              if(.not.I_PLUS_MINUS_DONE)then
+
+                 if(this_is_query)then
+                    query%size_array(1) = max(query%size_array(1),(i8*nb*lg)*la*nb)
+                    var_inp = 0
+                 else
+                    call array_reorder_4d(p10,w3,nb,lg,la,nb,[3,4,2,1],nul,w1)
+                 endif
+
+                 call get_I_plusminus_le(w4,w1,w3,'p',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                    &qu = this_is_query, quarry = var_inp(1:3))
+                 call get_I_plusminus_le(w5,w1,w3,'m',fa,fg,la,lg,nb,tlen,tred,goffs,&
+                    &qu = this_is_query, quarry = var_inp(1:3))
+
+
+                 if(this_is_query)then
+                    !note that the mem requirements for w4 and w5 are the same
+                    query%size_array(w1_tag) = max(query%size_array(w1_tag),var_inp(2))
+                    query%size_array(w3_tag) = max(query%size_array(w3_tag),var_inp(3))
+                    query%size_array(w4_tag) = max(query%size_array(w4_tag),var_inp(1))
+                    query%size_array(w5_tag) = max(query%size_array(w5_tag),var_inp(1))
+                 endif
+
+                 I_PLUS_MINUS_DONE = .true.
+
+              endif
+
+              call time_start_phase(PHASE_WORK, at = times(8), twall = times(1) )
+
+              !OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+              !OMP SHARED(nspaces,paircontrib,xa,xg,Gai,goffs,aoffs,tlen,tred,&
+              !OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
+              !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+              !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
+              !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
+              !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
+              !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
+              tid = 0
+#ifdef VAR_OMP
+              tid = omp_get_thread_num()
+#endif
+              if(this_is_not_query)then
+                 my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,third_loop):info_omp1(end_array,tid+1,w1_tag,third_loop))
+                 my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,third_loop):info_omp1(end_array,tid+1,w2_tag,third_loop))
+                 my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,third_loop):info_omp1(end_array,tid+1,w3_tag,third_loop))
+
+                 my_w4 => null()
+                 my_w5 => null()
+              endif
+
+              !OMP DO SCHEDULE(DYNAMIC)
+              do ns = 1, nspaces
+
+                 if(.not.pno_cv(ns)%allocd)then
+
+                    cycle 
+
+                 endif
+
+
+                 d   => pno_cv(ns)%d
+                 t   => pno_t2(ns)%elm1
+                 idx => pno_cv(ns)%iaos
+                 pnv =  pno_cv(ns)%ns2
+                 pno =  pno_cv(ns)%n
+                 rpd =  pno_cv(ns)%rpd
+                 PS  =  pno_cv(ns)%PS
+
+                 o   => pno_o2(ns)%elm1
+
+                 nor=rpd*(rpd+1)/2
+                 nvr=pnv*(pnv+1)/2
+
+                 if(this_is_query)then
+
+                    edit = offset_for_omp+(ns-1)*nloops*5+(third_loop-1)*5
+
+                    if(.not.PS)then
+                       query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*pnv*rpd)
+                    endif
+
+                    !The sizes are the same for both blocks + an -
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*nb*tred)*pnv)
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*tred*pnv)*pnv)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
+
+                    var_inp = 0
+
+                 else
+
+                    !Get the transformation matrices
+                    !  xo_pair 
+                    do i = 1, pno
+                       xo_pair(:,i,tid+1) = xo(:,idx(i))
+                    enddo
+                    !  xv_pair
+                    call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
+                    !  yo_pair
+                    do i = 1, pno
+                       yo_pair(:,i,tid+1) = yo(:,idx(i))
+                    enddo
+                    !  yv_pair
+                    call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+
+                    call time_start_phase(PHASE_WORK, at = times_in_loops(1,3) )
+
+                    ! get tpl and tmi
+                    if( PS )then
+                       h1 => t
+                    else
+                       call array_reorder_4d(p10,t,pnv,rpd,pnv,rpd,[1,3,2,4],nul,my_w2)
+                       h1 => w2(1:pnv**2*rpd**2)
+                    endif
+                    call get_tpl_and_tmi(h1,pnv,rpd,tpl(:,tid+1),tmi(:,tid+1))
+
+                    call time_start_phase(PHASE_WORK, at = times_in_loops(2,3) )
+
+                    !Plus block
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w4,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
+                    !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
+                    !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
+                    call get_I_cged(my_w2,my_w1,tred,pnv)
+                    !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tpl(1,tid+1),nvr,nul,my_w3,tred)
+
+
+                    !Minus block
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w5,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
+                    !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
+                    !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
+                    call get_I_cged(my_w2,my_w1,tred,pnv)
+                    !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tmi(1,tid+1),nvr,nul,my_w3(tred*nor+1),tred)
+
+                    call time_start_phase(PHASE_WORK, twall = times(2), at = times_in_loops(3,3) )
+
+
+                    call ass_D2to1(xo,h1,[nb,no])
+                    call ass_D2to1(xv_pair(:,:,tid+1),h3,[nb,pnv])
+                 endif
+
+                 if( PS )then
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                       &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
+                       &rest_occ_om2=.true., act_no = no, query = this_is_query )  
+                 else
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                       &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
+                       &order=[1,3,2,4], act_no = no, sio4_ilej = .false., query = this_is_query )
+                 endif
+
+                 if( this_is_query )then
+
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),var_inp(1))
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),var_inp(2))
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),var_inp(3))
+
+                 else
+
+                    call time_start_phase(PHASE_WORK, ttot =  times(2))
+                    times_in_loops(4,3) =  times_in_loops(4,3) + times(2)
+                 endif
+
+
+              enddo
+              !OMP END DO NOWAIT
+              !OMP END PARALLEL
+
+              call time_start_phase( PHASE_WORK, ttot = times(1) )
+              times(9) = times(9) + times(1)
+
+           endif
+
+        enddo BatchAlpha
+     enddo BatchGamma
+     
+     if(.not.this_is_query)then
+        ! Free integral stuff
+        ! *******************
+        nullify(Mylsitem%setting%LST_GAB_LHS)
+        nullify(Mylsitem%setting%LST_GAB_RHS)
+        call free_decscreen(DECSCREEN)
+
+        !Free rest
+        call mem_dealloc( xo_pair )
+        call mem_dealloc( yo_pair )
+        call mem_dealloc( xv_pair )
+        call mem_dealloc( yv_pair )
+
+        call mem_dealloc( tpl )
+        call mem_dealloc( tmi )
+
+        call mem_dealloc(info_omp1)
+
+        call time_start_phase(PHASE_WORK, ttot = tbeg)
+        if(DECinfo%PL>2)then
+           write (*,'(" PNO: total time batched loop     :",1g10.3)')tbeg
+           write (*,'(" PNO: times split up in            ")')
+           write (*,'(" PNO: Integral calculation        :",1g10.3)')times(3)
+           write (*,'(" PNO: Conventional transformation :",1g10.3)')times(4)
+           write (*,'(" PNO: loop 1                      :",4g10.3)')times(5),&
+              &times_in_loops(1,1),times_in_loops(2,1),times_in_loops(3,1)
+           write (*,'(" PNO: sorting for Gai             :",1g10.3)')times(6)
+           write (*,'(" PNO: loop 2                      :",3g10.3)')times(7),&
+              &times_in_loops(1,2),times_in_loops(2,2)
+           write (*,'(" PNO: sorting for B2 term         :",1g10.3)')times(8)
+           write (*,'(" PNO: loop 3                      :",5g10.3)')times(9),&
+              &times_in_loops(1,3),times_in_loops(2,3),times_in_loops(3,3),times_in_loops(4,3)
+        endif
+
+#ifdef VAR_OMP
+        call omp_set_nested(nested)
+#endif
+     endif
+
+  end subroutine pno_residual_integral_direct_loop
+
+
   subroutine extract_from_gvovo_transform_add(gvovo,w1,w2,d,o,idx,rpd,pno,no,pnv,nv,n,PS)
      implicit none
      integer,intent(in) :: rpd,pno,no,pnv,nv,n
@@ -2135,30 +2827,45 @@ module pno_ccsd_module
 
 
   subroutine get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o2_space,&
-        &w1,w2,w3,w4,w5,goooo,govov,vvf,nspaces)
+        &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_t2(nspaces)
+     type(array), intent(in) :: pno_t2(nspaces),sio4(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
-     real(realk),intent(in) :: goooo(:),govov(:),vvf(:,:)
+     real(realk),intent(in) :: govov(:),vvf(:,:)
      character :: tr11,tr12,tr21,tr22
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:),h1(:), h2(:), r1(:,:),r2(:,:),d(:,:),d1(:,:)
      real(realk),pointer :: o(:),t(:),S1(:,:), t21(:)
+     real(realk),pointer :: sig(:,:,:,:),t1(:,:,:)
      logical :: skiptrafo, cyc, PS, PS1
-     integer :: space, a,i,b,j, nv,pno,pnv, ns2
-     integer :: pno1,pnv1,Sidx1,ldS1, rpd1,rpd
+     integer :: space, a,i,b,j, nv,pno,pnv, ns2,k,l,ilej
+     integer :: pno1,pnv1,Sidx1,ldS1, rpd1,rpd,pnor, pos1,pos2,pos3
      integer :: pair,paircontrib(2,2)
-     integer :: order1(4)
-     integer :: suborder(2)
      integer,pointer :: idx(:),idx1(:)
      integer(kind=8) :: o2v2
      integer, parameter :: paircontribs = 2
+     real(realk) :: tw, tc
+     integer :: mv(pno_cv(ns)%ns2**2/2), st
      real(realk), parameter :: nul =  0.0E0_realk
      real(realk), parameter :: p10 =  1.0E0_realk
      real(realk), parameter :: p20 =  2.0E0_realk
      real(realk), parameter :: m10 = -1.0E0_realk
+
+     !print *," CALCULATE CONTRIBUTION", ns
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+     !print *,""
+
+
+
+     tw = 0.0E0_realk
+     tc = 0.0E0_realk
 
      nv  =  pno_cv(ns)%ns1
      d   => pno_cv(ns)%d
@@ -2174,6 +2881,9 @@ module pno_ccsd_module
 
      paircontrib(1:2,1) = [1,2]
      paircontrib(1:2,2) = [2,1]
+
+     !jilk = ijkl
+     call ass_D1to4(sio4(ns)%elm1,sig,[rpd,rpd,no,no])
 
      !!!!!!!!!!!!!!!!!!!!!!!!!
      !!!  E2 Term part 1!!!!!! -- continued in the following loop and after the loop
@@ -2268,11 +2978,13 @@ module pno_ccsd_module
 
         !prepare 4 occupied integral goooo for B2 term
         call ass_D1to4( w3(1:rpd**2*rpd1**2), p1, [rpd,rpd,rpd1,rpd1] )
-        call ass_D1to4( goooo, p2, [ no, no,  no,  no] )
         !Get the integral contribution, sort it first like the integrals then transform it, govov
         call ass_D1to4( w1,    p3, [rpd1,nv,rpd1,nv] )
         call ass_D1to4( govov, p4, [no,  nv,no,  nv] )
 
+        !print *," CONRTIB LOOP", ns, ns2
+        !print *,""
+        !print *,""
 
         !CODE FOR PAIR SPACES WITH RESTRICTIONS
         if( PS1 )then
@@ -2280,89 +2992,176 @@ module pno_ccsd_module
            !loop over pair contributions kl and lk
            do pair = 1, paircontribs
 
-              p3(1,:,1,:) = p4(idx1(paircontrib(1,pair)),:,idx1(paircontrib(2,pair)),:)
+              !!p3(1,:,1,:) = p4(idx1(paircontrib(1,pair)),:,idx1(paircontrib(2,pair)),:)
 
-              !transform integral contribution
-              !govov(kcld) => govov(\bar{c} \bar{d} k l) or lk to the space of (ij) -> w2
-              call dgemm( 'n', 'n', nv, pnv, nv, p10, w1, nv, d, nv, nul, w3, nv )
-              call dgemm( 't', 'n', pnv, pnv, nv, p10, d, nv, w3, nv, nul, w4, pnv )
+              !!!transform integral contribution
+              !!!govov(kcld) => govov(\bar{c} \bar{d} k l) or lk to the space of (ij) -> w2
+              !!call dgemm( 'n', 'n', nv, pnv, nv, p10, w1, nv, d, nv, nul, w3, nv )
+              !!call dgemm( 't', 'n', pnv, pnv, nv, p10, d, nv, w3, nv, nul, w4, pnv )
 
-              if( PS )then
-                 p1(1,1,1,1) = p2(idx1(paircontrib(1,pair)),idx(1),idx1(paircontrib(2,pair)),idx(2))
-              else
-                 do j = 1,pno
-                    do i = 1,pno
-                       p1(i,j,1,1) = p2(idx1(paircontrib(1,pair)),idx(i),idx1(paircontrib(2,pair)),idx(j))
-                    enddo
+              !!if( PS )then
+              !!   p1(1,1,1,1) = p2(idx1(paircontrib(1,pair)),idx(1),idx1(paircontrib(2,pair)),idx(2))
+              !!else
+              !!   do j = 1,pno
+              !!      do i = 1,pno
+              !!         p1(i,j,1,1) = p2(idx1(paircontrib(1,pair)),idx(i),idx1(paircontrib(2,pair)),idx(j))
+              !!      enddo
+              !!   enddo
+              !!endif
+
+              !!!sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
+              !!call array_reorder_4d( p10, t, pnv, rpd, pnv, rpd, [2,4,1,3], nul, w1 )
+              !!call dgemm( 'n', 'n', rpd**2, rpd1**2, pnv**2, p10, w1, rpd**2, w4, pnv**2, p10, w3, rpd**2 )
+
+              !!!contract the B intermediate in w3 with the amplitudes (kl) from the
+              !!!inner loop and use the overlap to transform to the omega space, ijkl klab
+              !!call array_reorder_2d( p10, t21, pnv1, pnv1 , paircontrib(:,pair), nul, w1 )
+
+              !!!print *,"pair",pair,"contirb", paircontrib(:,3-pair)
+              !!call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, dble(pair-1), w2, rpd**2 )
+
+              do i = 1, rpd
+                 do j = 1, rpd
+                    w3(j+(i-1)*pno) = sig(j,i,idx1(paircontrib(1,pair)),idx1(paircontrib(2,pair)))
                  enddo
-              endif
+              enddo
 
-              !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
-              call array_reorder_4d( p10, t, pnv, rpd, pnv, rpd, [2,4,1,3], nul, w1 )
-              call dgemm( 'n', 'n', rpd**2, rpd1**2, pnv**2, p10, w1, rpd**2, w4, pnv**2, p10, w3, rpd**2 )
 
-              !contract the B intermediate in w3 with the amplitudes (kl) from the
-              !inner loop and use the overlap to transform to the omega space, ijkl klab
-              call array_reorder_2d( p10, t21, pnv1, pnv1 , paircontrib(:,pair), nul, w1 )
+              call array_reorder_2d( p10, t21, pnv1, pnv1, paircontrib(:,pair) , nul, w1 )
 
-              !print *,"pair",pair,"contirb", paircontrib(:,3-pair)
-              call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, dble(pair-1), w2, rpd**2 )
+              !call print_tensor_unfolding_with_labels(w1,&
+              !   &[pnv1,pnv1],'ab',2,[rpd1,rpd1],'lk',2,'AMPS P')
+
+              !call print_tensor_unfolding_with_labels(w3,&
+              !   &[rpd,rpd],'ij',2,[rpd1,rpd1],'lk',2,'INTS 1')
+
+              call dgemm( 'n', 't', pnv1**2,rpd*rpd,1, p10, w1, pnv1**2, w3,rpd*rpd, dble(pair-1), w4, pnv1**2 )
 
            enddo
 
            !CODE FOR RECTANGULAR SPACE IN \sum_kl
         else
-           do j=1,pno1
-              do i=1,pno1
-                 p3(i,:,j,:) = p4(idx1(i),:,idx1(j),:)
+
+           !!do j=1,pno1
+           !!   do i=1,pno1
+           !!      p3(i,:,j,:) = p4(idx1(i),:,idx1(j),:)
+           !!   enddo
+           !!enddo
+
+           !!!transform integral contribution
+           !!!govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
+           !!call dgemm( 'n', 'n', nv*rpd1**2, pnv, nv, p10, w1, nv*rpd1**2, d, nv, nul, w2, nv*rpd1**2 )
+           !!call array_reorder_4d( p10, w2, rpd1, nv, rpd1, pnv, [2,4,1,3], nul, w1 )
+           !!call dgemm( 't', 'n', pnv, rpd1**2*pnv, nv, p10, d, nv, w1, nv, nul, w4, pnv )
+
+           !!!prepare 4 occupied integral goooo for B2 term
+           !!if( PS )then
+           !!   do j=1,pno1
+           !!      do i=1,pno1
+           !!         p1(1,1,i,j) = p2(idx1(i),idx(1),idx1(j),idx(2))
+           !!      enddo
+           !!   enddo
+           !!else
+           !!   do j=1,pno1
+           !!      do i=1,pno1
+           !!         do b=1,pno
+           !!            do a=1,pno
+           !!               p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
+           !!            enddo
+           !!         enddo
+           !!      enddo
+           !!   enddo
+           !!endif
+           !!!sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
+           !!call array_reorder_4d( p10, t, pnv, rpd, pnv, rpd, [2,4,1,3], nul, w1 )
+           !!call dgemm( 'n', 'n', rpd**2, rpd1**2, pnv**2, p10, w1, rpd**2, w4, pnv**2, p10, w3, rpd**2 )
+
+           !!!contract the B intermediate in w3 with the amplitudes (kl) from the
+           !!!inner loop and use the overlap to transform to the omega space, ijkl klab
+           !!call array_reorder_4d( p10, t21, pnv1, rpd1, pnv1, rpd1, [2,4,1,3], nul, w1 )
+
+           !!call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, nul, w2, rpd**2 )
+
+           call ass_D1to4(w3,p1,[rpd,rpd,pno1,pno1])
+           do l=1,pno1
+              do k=1,pno1
+                 p1(:,:,l,k) = sig(:,:,idx1(l),idx1(k))
               enddo
            enddo
 
-           !transform integral contribution
-           !govov(kcld) => govov(\bar{c} \bar{d} k l) to the space of (ij) -> w2
-           call dgemm( 'n', 'n', nv*rpd1**2, pnv, nv, p10, w1, nv*rpd1**2, d, nv, nul, w2, nv*rpd1**2 )
-           call array_reorder_4d( p10, w2, rpd1, nv, rpd1, pnv, [2,4,1,3], nul, w1 )
-           call dgemm( 't', 'n', pnv, rpd1**2*pnv, nv, p10, d, nv, w1, nv, nul, w4, pnv )
+           call array_reorder_4d( p10, t21, pnv1, rpd1, pnv1, rpd1, [3,1,4,2], nul, w1 )
 
-           !prepare 4 occupied integral goooo for B2 term
-           if( PS )then
-              do j=1,pno1
-                 do i=1,pno1
-                    p1(1,1,i,j) = p2(idx1(i),idx(1),idx1(j),idx(2))
-                 enddo
-              enddo
-           else
-              do j=1,pno1
-                 do i=1,pno1
-                    do b=1,pno
-                       do a=1,pno
-                          p1(a,b,i,j) = p2(idx1(i),idx(a),idx1(j),idx(b))
-                       enddo
-                    enddo
-                 enddo
-              enddo
-           endif
-           !sort the amplitudes and contract cidj -> ijcd, ijcd cdkl + ijkl = ijkl
-           call array_reorder_4d( p10, t, pnv, rpd, pnv, rpd, [2,4,1,3], nul, w1 )
-           call dgemm( 'n', 'n', rpd**2, rpd1**2, pnv**2, p10, w1, rpd**2, w4, pnv**2, p10, w3, rpd**2 )
+           !call print_tensor_unfolding_with_labels(w1,&
+           !   &[pnv1,pnv1],'ba',2,[rpd1,rpd1],'lk',2,'AMPS R')
 
-           !contract the B intermediate in w3 with the amplitudes (kl) from the
-           !inner loop and use the overlap to transform to the omega space, ijkl klab
-           call array_reorder_4d( p10, t21, pnv1, rpd1, pnv1, rpd1, [2,4,1,3], nul, w1 )
+           !call print_tensor_unfolding_with_labels(w3,&
+           !   &[rpd,rpd],'ji',2,[rpd1,rpd1],'lk',2,'INTS R')
 
-           call dgemm( 'n', 'n', rpd**2, pnv1**2, rpd1**2, p10, w3, rpd**2, w1, rpd1**2, nul, w2, rpd**2 )
+           call dgemm( 'n', 't', pnv1**2, rpd**2 , rpd1**2, p10, w1, pnv1**2, w3, rpd**2, nul, w4, pnv1**2 )
 
         endif
+
+        !call print_tensor_unfolding_with_labels(w4,&
+        !   &[pnv1,pnv1],'ba',2,[rpd,rpd],'ij',2,'res - foo')
+
+        !Squareup and transpose subblocks
+        !if( .not.PS )then
+           !do j=pno,1,-1
+           !   do i=j,1,-1
+           !      pos1=1+((i+j*(j-1)/2)-1)*pnv1*pnv1
+           !      pos2=1+(i-1)*pnv1*pnv1+(j-1)*pno*pnv1*pnv1
+           !      if(j/=1) w4(pos2:pos2+pnv1*pnv1-1) = w4(pos1:pos1+pnv1*pnv1-1)
+           !   enddo
+           !enddo
+           !do j=pno,1,-1
+           !   do i=j,1,-1
+           !      pos1=1+(i-1)*pnv1*pnv1+(j-1)*pno*pnv1*pnv1
+           !      pos2=1+(j-1)*pnv1*pnv1+(i-1)*pno*pnv1*pnv1
+           !      if(i/=j) w4(pos2:pos2+pnv1*pnv1-1) = w4(pos1:pos1+pnv1*pnv1-1)
+           !   enddo
+           !enddo
+
+           !do j=pno,1,-1
+           !   do i=j,1,-1
+           !      pos1=1+(i-1)*pnv1*pnv1+(j-1)*pno*pnv1*pnv1
+           !      call alg513(w4(pos1:pnv1*pnv1+pos1-1),pnv1,pnv1,pnv1*pnv1,mv,(pnv1*pnv1)/2,st)
+           !   enddo
+           !enddo
+           !do j=pno,1,-1
+           !   do i=j,1,-1
+           !      pos1=1+((i+j*(j-1)/2)-1)*pnv1*pnv1
+           !      pos2=1+(i-1)*pnv1*pnv1+(j-1)*pno*pnv1*pnv1
+           !      pos3=1+(j-1)*pnv1*pnv1+(i-1)*pno*pnv1*pnv1
+           !      if(i/=j)then
+           !         w2(pos3:pos3+pnv1*pnv1-1) = w4(pos1:pos1+pnv1*pnv1-1)
+           !         !call array_reorder_2d(p10,w4(pos1:pos1+pnv1*pnv1-1),pnv1,pnv1,[1,2],nul,w2(pos3:pos3+pnv1*pnv1-1))
+           !      endif
+           !      call array_reorder_2d(p10,w4(pos1:pos1+pnv1*pnv1-1),pnv1,pnv1,[2,1],nul,w2(pos2:pos2+pnv1*pnv1-1))
+           !   enddo
+           !enddo
+           !call array_reorder_4d(p10,w2,pnv1,pnv1,rpd,rpd,[3,4,1,2],nul,w4)
+           !h2 => w4
+        !else
+           !h2 => w4
+        !endif
 
         ! transform back, or in the case of ns==ns2 just order correctly and add
-        ! the contributions directly to the residual
+        ! the contributions directly to the residual, and use symmetry of the
+        ! term here
+        !call print_tensor_unfolding_with_labels(o,&
+        !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA BEFORE')
+
         if(ns==ns2)then
-           call array_reorder_4d( p10, w2, rpd, rpd, pnv, pnv, [3,1,4,2], p10, o )
+           call array_reorder_4d( p10, w4, pnv, pnv,rpd,rpd, [2,4,1,3], p10, o )
         else
-           call do_overlap_trafo(ns,ns2,2,pno_S,rpd**2*pnv1, pnv, pnv1,w2,w1)
-           call array_reorder_4d( p10, w1, rpd, rpd, pnv1, pnv, [3,1,4,2], nul, w3 )
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd**2*pnv, pnv1,w3,o,pC=p10)
+           call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
+           call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
+           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
+           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
+           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
         endif
+        !call print_tensor_unfolding_with_labels(o,&
+        !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AFTER')
 
 
 
@@ -2416,8 +3215,8 @@ module pno_ccsd_module
      integer :: rpd1,pno1,pnv1,Sidx1,ldS1
      integer :: rpd2,pno2,pnv2,Sidx2,ldS2
      integer :: pair1,pair2,paircontrib(2,2)
-     integer :: order1(4), ldh1,ldh2,ldh3
-     integer :: suborder(2),i_idx,j_idx,pos_in_res,ipos_in_res
+     integer :: ldh1,ldh2,ldh3
+     integer :: i_idx,j_idx,pos_in_res,ipos_in_res
      integer :: nidx_h1, nidx_h2
      integer,pointer :: idx(:),idx1(:),idx2(:)
      integer(kind=8) :: o2v2
@@ -3664,133 +4463,133 @@ module pno_ccsd_module
 
 
               !THE INNER CONTRACTION LOOP - BUILDING THE E22 INTERMEDIATE
-              OneIdxSpaceLoop41: do nc2=1, p_nidx(ns)
+              !OneIdxSpaceLoop41: do nc2=1, p_nidx(ns)
 
-                 ! extract indices:
-                 ns2 = p_idx(nc2,ns)
+              !   ! extract indices:
+              !   ns2 = p_idx(nc2,ns)
 
-                 call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
+              !   call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
 
-                 if( cyc )then
+              !   if( cyc )then
 
-                    cycle OneIdxSpaceLoop41
+              !      cycle OneIdxSpaceLoop41
 
-                 endif
+              !   endif
 
-                 call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
+              !   call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
 
-                 d2   => pno_cv(ns2)%d
-                 t22  => pno_t2(ns2)%elm1
-                 idx2 => pno_cv(ns2)%iaos
-                 pnv2 =  pno_cv(ns2)%ns2
-                 pno2 =  pno_cv(ns2)%n
-                 rpd2 =  pno_cv(ns2)%rpd
-                 PS2  =  pno_cv(ns2)%PS
+              !   d2   => pno_cv(ns2)%d
+              !   t22  => pno_t2(ns2)%elm1
+              !   idx2 => pno_cv(ns2)%iaos
+              !   pnv2 =  pno_cv(ns2)%ns2
+              !   pno2 =  pno_cv(ns2)%n
+              !   rpd2 =  pno_cv(ns2)%rpd
+              !   PS2  =  pno_cv(ns2)%PS
 
-                 !FIXME: Cycle conditions simlify
-                 if( PS2 )then
+              !   !FIXME: Cycle conditions simlify
+              !   if( PS2 )then
 
-                    !ns2 refers to a pair space with restrictions
+              !      !ns2 refers to a pair space with restrictions
 
-                    if(ns==ns2)then
-                       l = idx2(paircontrib(1,pair1))
-                    else
-                       l = oidx2(nidx2+1+1,3)
-                    endif
+              !      if(ns==ns2)then
+              !         l = idx2(paircontrib(1,pair1))
+              !      else
+              !         l = oidx2(nidx2+1+1,3)
+              !      endif
 
 
-                    if(      ( ns /= ns1 .and. oidx1(1,3) /= i )&!.and. .not. ns == ns2) &
-                       &.or. ( ns /= ns2 .and. oidx2(1,3) /= j )&!.and. .not. ns == ns1) &
-                       &.and. .not. (ns == ns1 .and. ns == ns2 ) .and. PS)then
-                       cycle OneIdxSpaceLoop41
-                    endif
+              !      if(      ( ns /= ns1 .and. oidx1(1,3) /= i )&!.and. .not. ns == ns2) &
+              !         &.or. ( ns /= ns2 .and. oidx2(1,3) /= j )&!.and. .not. ns == ns1) &
+              !         &.and. .not. (ns == ns1 .and. ns == ns2 ) .and. PS)then
+              !         cycle OneIdxSpaceLoop41
+              !      endif
 
-                 else if( rpd2 == 1 )then
+              !   else if( rpd2 == 1 )then
 
-                    !FIXME: ns2 refers to a single space, should be the same as below
-                    !and can therefore be removed 
+              !      !FIXME: ns2 refers to a single space, should be the same as below
+              !      !and can therefore be removed 
 
-                    l = idx2(1)
+              !      l = idx2(1)
 
-                    !cycle if l = i, which can never happen because then j = i
-                    !whcih is impossible for pair space. these contributions are
-                    !added through the ractangular part of the code
-                    if( l == i )then
-                       !print *,"CYCLE 2  ",ns,ns1,ns2,PS1,PS2,i,j,k,l,"(",idx,")(",idx1,")(",idx2,")"
-                       cycle OneIdxSpaceLoop41
-                    endif
+              !      !cycle if l = i, which can never happen because then j = i
+              !      !whcih is impossible for pair space. these contributions are
+              !      !added through the ractangular part of the code
+              !      if( l == i )then
+              !         !print *,"CYCLE 2  ",ns,ns1,ns2,PS1,PS2,i,j,k,l,"(",idx,")(",idx1,")(",idx2,")"
+              !         cycle OneIdxSpaceLoop41
+              !      endif
 
-                 else
+              !   else
 
-                    !cycle if the overlapping index corresponds to i
+              !      !cycle if the overlapping index corresponds to i
 
-                    if((oidx2(1,3) == i .and. ns/=ns2) .or. (oidx1(1,3) /= i.and.ns/=ns1))then
-                       cycle OneIdxSpaceLoop41
-                    endif
+              !      if((oidx2(1,3) == i .and. ns/=ns2) .or. (oidx1(1,3) /= i.and.ns/=ns1))then
+              !         cycle OneIdxSpaceLoop41
+              !      endif
 
-                 endif
+              !   endif
 
-                 !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
-                 !such that the order klcd is obtained
-                 call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
-                 call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
-                 if( PS1 )then
-                    if( PS2 )then
-                       p1(:,1,1,:) = p2i(k,:,l,:)
-                    else
-                       do lc=1,pno2
-                          p1(:,1,lc,:) = p2i(k,:,idx2(lc),:)
-                       enddo
-                    endif
-                 else
-                    if( PS2 )then
-                       do kc=1,pno1
-                          p1(:,kc,1,:) = p2i(idx1(kc),:,l,:)
-                       enddo
-                    else
-                       do lc=1,pno2
-                          do kc=1,pno1
-                             p1(:,kc,lc,:) = p2i(idx1(kc),:,idx2(lc),:)
-                          enddo
-                       enddo
-                    endif
-                 endif
-                 ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
-                 call dgemm('n','n',nv*rpd1*rpd2,pnv2,nv,  p10, w1, nv*rpd1*rpd2,d2,nv,nul, w3, nv*rpd1*rpd2)
-                 call dgemm('t','n',rpd1*rpd2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, rpd1*rpd2*pnv2)
+              !   !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
+              !   !such that the order klcd is obtained
+              !   call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
+              !   call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
+              !   if( PS1 )then
+              !      if( PS2 )then
+              !         p1(:,1,1,:) = p2i(k,:,l,:)
+              !      else
+              !         do lc=1,pno2
+              !            p1(:,1,lc,:) = p2i(k,:,idx2(lc),:)
+              !         enddo
+              !      endif
+              !   else
+              !      if( PS2 )then
+              !         do kc=1,pno1
+              !            p1(:,kc,1,:) = p2i(idx1(kc),:,l,:)
+              !         enddo
+              !      else
+              !         do lc=1,pno2
+              !            do kc=1,pno1
+              !               p1(:,kc,lc,:) = p2i(idx1(kc),:,idx2(lc),:)
+              !            enddo
+              !         enddo
+              !      endif
+              !   endif
+              !   ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
+              !   call dgemm('n','n',nv*rpd1*rpd2,pnv2,nv,  p10, w1, nv*rpd1*rpd2,d2,nv,nul, w3, nv*rpd1*rpd2)
+              !   call dgemm('t','n',rpd1*rpd2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, rpd1*rpd2*pnv2)
 
-                 !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
-                 call ass_D1to4( w3,  p3, [rpd2,pnv2,pnv2,nidx2] )
-                 call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
-                 if( PS2 )then
-                    if( l > j ) then
-                       call array_reorder_2d(p20,t22,pnv2,pnv2,[2,1],nul,w3)
-                       call array_reorder_2d(m10,t22,pnv2,pnv2,[1,2],p10,w3)
-                    else
-                       call array_reorder_2d(p20,t22,pnv2,pnv2,[1,2],nul,w3)
-                       call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
-                    endif
-                 else
-                    do jc=1,nidx2
-                       do ic=1,pno2
-                          p3(ic,:,:,jc) = p20 * p2i(:,ic,:,oidx2(jc,2)) - p2i(:,oidx2(jc,2),:,ic)
-                       enddo
-                    enddo
-                 endif
+              !   !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
+              !   call ass_D1to4( w3,  p3, [rpd2,pnv2,pnv2,nidx2] )
+              !   call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
+              !   if( PS2 )then
+              !      if( l > j ) then
+              !         call array_reorder_2d(p20,t22,pnv2,pnv2,[2,1],nul,w3)
+              !         call array_reorder_2d(m10,t22,pnv2,pnv2,[1,2],p10,w3)
+              !      else
+              !         call array_reorder_2d(p20,t22,pnv2,pnv2,[1,2],nul,w3)
+              !         call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
+              !      endif
+              !   else
+              !      do jc=1,nidx2
+              !         do ic=1,pno2
+              !            p3(ic,:,:,jc) = p20 * p2i(:,ic,:,oidx2(jc,2)) - p2i(:,oidx2(jc,2),:,ic)
+              !         enddo
+              !      enddo
+              !   endif
 
-                 call dgemm('n','n', rpd1, nidx2, rpd2*pnv2**2, p10, w1, rpd1, w3, rpd2*pnv2**2, nul, w2, rpd1 )
+              !   call dgemm('n','n', rpd1, nidx2, rpd2*pnv2**2, p10, w1, rpd1, w3, rpd2*pnv2**2, nul, w2, rpd1 )
 
-                 call ass_D1to2( w2, r2, [rpd1,nidx2] )
-                 call ass_D1to2( w4, r1, [rpd1,rpd] )
-                 if( PS1 )then
-                    r1(1,1) = r1(1,1) + r2(1,1)
-                 else
-                    do kc=1,pno1
-                       r1(kc,1) = r1(kc,1) + r2(kc,1)
-                    enddo
-                 endif
+              !   call ass_D1to2( w2, r2, [rpd1,nidx2] )
+              !   call ass_D1to2( w4, r1, [rpd1,rpd] )
+              !   if( PS1 )then
+              !      r1(1,1) = r1(1,1) + r2(1,1)
+              !   else
+              !      do kc=1,pno1
+              !         r1(kc,1) = r1(kc,1) + r2(kc,1)
+              !      enddo
+              !   endif
 
-              enddo OneIdxSpaceLoop41
+              !enddo OneIdxSpaceLoop41
 
 
               !extract amplitudes like in C2 as aibk
@@ -3839,103 +4638,103 @@ module pno_ccsd_module
            !   &[no],'k',1,[no],'j',1,'full oof')
 
            !THE INNER CONTRACTION LOOP - BUILDING THE E22 INTERMEDIATE
-           OneIdxSpaceLoop42: do nc2=1, p_nidx(ns)
-              ! extract indices:
-              ns2 = p_idx(nc2,ns)
+           !OneIdxSpaceLoop42: do nc2=1, p_nidx(ns)
+           !   ! extract indices:
+           !   ns2 = p_idx(nc2,ns)
 
-              call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
+           !   call check_if_contributes(ns,ns2,pno_cv,pno_S,cyc)
 
-              if( cyc )then
+           !   if( cyc )then
 
-                 cycle OneIdxSpaceLoop42
+           !      cycle OneIdxSpaceLoop42
 
-              endif
+           !   endif
 
-              call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
+           !   call get_overlap_idx(ns,ns2,pno_cv,oidx2,nidx2,ndidx1=diff21,ndidx2=diff22)
 
-              d2   => pno_cv(ns2)%d
-              t22  => pno_t2(ns2)%elm1
-              idx2 => pno_cv(ns2)%iaos
-              pnv2 =  pno_cv(ns2)%ns2
-              pno2 =  pno_cv(ns2)%n
-              rpd2 =  pno_cv(ns2)%rpd
-              PS2  =  pno_cv(ns2)%PS
+           !   d2   => pno_cv(ns2)%d
+           !   t22  => pno_t2(ns2)%elm1
+           !   idx2 => pno_cv(ns2)%iaos
+           !   pnv2 =  pno_cv(ns2)%ns2
+           !   pno2 =  pno_cv(ns2)%n
+           !   rpd2 =  pno_cv(ns2)%rpd
+           !   PS2  =  pno_cv(ns2)%PS
 
-              !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
-              !such that the order klcd is obtained
-              call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
-              call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
-              if( PS1 )then
-                 if( PS2 )then
-                    p1(:,1,1,:) = p2i(oidx1(nidx1+diff11+1,3),:,oidx2(nidx2+diff21+1,3),:)
-                 else
-                    do jc=1,pno2
-                       p1(:,1,jc,:) = p2i(oidx1(nidx1+diff11+1,3),:,idx2(jc),:)
-                    enddo
-                 endif
-              else
-                 if( PS2 ) then
-                    do ic=1,pno1
-                       p1(:,ic,1,:) = p2i(idx1(ic),:,oidx2(nidx2+diff21+1,3),:)
-                    enddo
-                 else
-                    do jc=1,pno2
-                       do ic=1,pno1
-                          p1(:,ic,jc,:) = p2i(idx1(ic),:,idx2(jc),:)
-                       enddo
-                    enddo
-                 endif
-              endif
-              ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
-              call dgemm('n','n',nv*rpd1*rpd2,pnv2,nv,  p10, w1, nv*rpd1*rpd2,d2,nv,nul, w3, nv*rpd1*rpd2)
-              call dgemm('t','n',rpd1*rpd2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, rpd1*rpd2*pnv2)
+           !   !Get the integrals g(kdlc) as (dklc) and transform c and d to (lj)
+           !   !such that the order klcd is obtained
+           !   call ass_D1to4( w1,    p1, [nv,rpd1,rpd2,nv] )
+           !   call ass_D1to4( govov, p2i, [no, nv, no,  nv] )
+           !   if( PS1 )then
+           !      if( PS2 )then
+           !         p1(:,1,1,:) = p2i(oidx1(nidx1+diff11+1,3),:,oidx2(nidx2+diff21+1,3),:)
+           !      else
+           !         do jc=1,pno2
+           !            p1(:,1,jc,:) = p2i(oidx1(nidx1+diff11+1,3),:,idx2(jc),:)
+           !         enddo
+           !      endif
+           !   else
+           !      if( PS2 ) then
+           !         do ic=1,pno1
+           !            p1(:,ic,1,:) = p2i(idx1(ic),:,oidx2(nidx2+diff21+1,3),:)
+           !         enddo
+           !      else
+           !         do jc=1,pno2
+           !            do ic=1,pno1
+           !               p1(:,ic,jc,:) = p2i(idx1(ic),:,idx2(jc),:)
+           !            enddo
+           !         enddo
+           !      endif
+           !   endif
+           !   ! transform c to \bar(c} in (lj) and d to \bar{d} in (lj)
+           !   call dgemm('n','n',nv*rpd1*rpd2,pnv2,nv,  p10, w1, nv*rpd1*rpd2,d2,nv,nul, w3, nv*rpd1*rpd2)
+           !   call dgemm('t','n',rpd1*rpd2*pnv2,pnv2,nv,p10, w3, nv, d2, nv, nul, w1, rpd1*rpd2*pnv2)
 
-              !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
-              call ass_D1to4( w3,  p3, [rpd2,pnv2,pnv2,nidx2] )
-              call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
-              if( PS2 )then
-                 if( oidx2(nidx2+diff21+1,2) > oidx2(1,2) ) then
-                    call array_reorder_2d(p20,t22,pnv2,pnv2,[2,1],nul,w3)
-                    call array_reorder_2d(m10,t22,pnv2,pnv2,[1,2],p10,w3)
-                 else
-                    call array_reorder_2d(p20,t22,pnv2,pnv2,[1,2],nul,w3)
-                    call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
-                 endif
-              else
-                 do jc=1,nidx2
-                    do ic=1,pno2
-                       p3(ic,:,:,jc) = p20 * p2i(:,ic,:,oidx2(jc,2)) - p2i(:,oidx2(jc,2),:,ic)
-                    enddo
-                 enddo
-              endif
+           !   !get the u amplitudes in the order cldj -> (lcdj) = 2 t(lcdj) - t(jcdl)
+           !   call ass_D1to4( w3,  p3, [rpd2,pnv2,pnv2,nidx2] )
+           !   call ass_D1to4( t22, p2i, [pnv2,rpd2, pnv2,rpd2] )
+           !   if( PS2 )then
+           !      if( oidx2(nidx2+diff21+1,2) > oidx2(1,2) ) then
+           !         call array_reorder_2d(p20,t22,pnv2,pnv2,[2,1],nul,w3)
+           !         call array_reorder_2d(m10,t22,pnv2,pnv2,[1,2],p10,w3)
+           !      else
+           !         call array_reorder_2d(p20,t22,pnv2,pnv2,[1,2],nul,w3)
+           !         call array_reorder_2d(m10,t22,pnv2,pnv2,[2,1],p10,w3)
+           !      endif
+           !   else
+           !      do jc=1,nidx2
+           !         do ic=1,pno2
+           !            p3(ic,:,:,jc) = p20 * p2i(:,ic,:,oidx2(jc,2)) - p2i(:,oidx2(jc,2),:,ic)
+           !         enddo
+           !      enddo
+           !   endif
 
-              call dgemm('n','n', rpd1, nidx2, rpd2*pnv2**2, p10, w1, rpd1, w3, rpd2*pnv2**2, nul, w2, rpd1 )
+           !   call dgemm('n','n', rpd1, nidx2, rpd2*pnv2**2, p10, w1, rpd1, w3, rpd2*pnv2**2, nul, w2, rpd1 )
 
-              call ass_D1to2( w2, r2, [rpd1,nidx2] )
-              call ass_D1to2( w4, r1, [rpd1,rpd] )
-              if( PS1 )then
-                 if( PS2 )then
-                    r1(1,oidx2(1,1)) = r1(1,oidx2(1,1)) + r2(1,1)
-                 else
-                    do j=1,nidx2
-                       r1(1,oidx2(j,1)) = r1(1,oidx2(j,1)) + r2(1,j)
-                    enddo
-                 endif
-              else
-                 if( PS2 )then
-                    do i=1,pno1
-                       r1(i,oidx2(1,1)) = r1(i,oidx2(1,1)) + r2(i,1)
-                    enddo
-                 else
-                    do j=1,nidx2
-                       do i=1,pno1
-                          r1(i,oidx2(j,1)) = r1(i,oidx2(j,1)) + r2(i,j)
-                       enddo
-                    enddo
-                 endif
-              endif
+           !   call ass_D1to2( w2, r2, [rpd1,nidx2] )
+           !   call ass_D1to2( w4, r1, [rpd1,rpd] )
+           !   if( PS1 )then
+           !      if( PS2 )then
+           !         r1(1,oidx2(1,1)) = r1(1,oidx2(1,1)) + r2(1,1)
+           !      else
+           !         do j=1,nidx2
+           !            r1(1,oidx2(j,1)) = r1(1,oidx2(j,1)) + r2(1,j)
+           !         enddo
+           !      endif
+           !   else
+           !      if( PS2 )then
+           !         do i=1,pno1
+           !            r1(i,oidx2(1,1)) = r1(i,oidx2(1,1)) + r2(i,1)
+           !         enddo
+           !      else
+           !         do j=1,nidx2
+           !            do i=1,pno1
+           !               r1(i,oidx2(j,1)) = r1(i,oidx2(j,1)) + r2(i,j)
+           !            enddo
+           !         enddo
+           !      endif
+           !   endif
 
-           enddo OneIdxSpaceLoop42
+           !enddo OneIdxSpaceLoop42
 
            !extract amplitudes like in C2 as aibk
            if( PS1 )then
@@ -4019,10 +4818,54 @@ module pno_ccsd_module
   end subroutine get_common_idx_summation_for_current_aibj
 
 
+  subroutine successive_4ao_mo_trafo_exch(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ1,WRKWXYZ2,fa,la,fg,lg,res,query,is_this_query)
+     implicit none
+     integer, intent(in) :: ao,w,x,y,z,fa,la,fg,lg
+     real(realk), intent(inout) :: WXYZ(:),WRKWXYZ1(:),WRKWXYZ2(:),res(w*x*y*z)
+     real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
+     integer(kind=8), optional, intent(inout) :: query(3)
+     logical, optional, intent(in) :: is_this_query
+     integer :: split_ao1, parts1, fe1, le1, leng
+     logical :: qu
+
+     qu = .false.
+     if(present(query).and.present(is_this_query))qu = is_this_query
+     !leng   = ao
+     !parts1 = ao/leng
+
+     if(qu)then
+        ! Trafo 1
+        query(1) = max(query(1),la*ao*lg*ao)
+        query(2) = max(query(2),z*la*ao*lg)
+        !Trafo 2
+        query(3) = max(query(3),y*z*la*ao)
+        !Trafo 3
+        query(2) = max(query(2),x*y*z*la)
+     else
+
+        !do split_ao1 = 1, parts1
+
+        !   fe1 = split_ao1*leng
+        !   le1 = leng
+        !   if(split_ao1 == parts1.and.mod(ao,leng)/=0) le1 = mod(ao,leng)
+
+           !ZZ(ao,z)^T    WXYZ(la ao lg, ao)^T -> WRKWXYZ1 (z, la ao lg)
+           call dgemm('t','t',z,la*ao*lg,ao,1.0E0_realk,ZZ,ao,WXYZ,la*ao*lg,0.0E0_realk,WRKWXYZ1,z)
+           !YY(ao,y)^T WRKWXYZ1 (z la ao, lg)^T ->    WXYZ(y, z la ao)
+           call dgemm('t','t',y,z*la*ao,lg,1.0E0_realk,YY(fg,1),ao,WRKWXYZ1,z*la*ao,0.0E0_realk,WRKWXYZ2,y)
+           !XX(ao,x)^T    WXYZ(y z la, ao)^T   -> WRKWXYZ1 (x y z la)
+           call dgemm('t','t',x,y*z*la,ao,1.0E0_realk,XX,ao,WRKWXYZ2,y*z*la,0.0E0_realk,WRKWXYZ1,x)
+        !enddo
+
+        !WW(ao,w)^T    WXYZ(x y z, la)^T   -+>  res(w x y z)
+        call dgemm('t','t',w,x*y*z,la,1.0E0_realk,WW(fa,1),ao,WRKWXYZ1,x*y*z,1.0E0_realk,res,w)
+     endif
+
+  end subroutine successive_4ao_mo_trafo_exch
   subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
      implicit none
      integer, intent(in) :: ao,w,x,y,z
-     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(ao*ao*ao*w)
+     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(w*ao*ao*ao)
      real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
      !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
      call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
@@ -4058,65 +4901,183 @@ module pno_ccsd_module
   end subroutine  free_PNOSpaceInfo
 
 
-  subroutine print_tensor_unfolding_with_labels(mat,d1,l1,m1,d2,l2,m2,label)
+  subroutine init_query_info(query,n)
      implicit none
-     integer, intent(in) :: m1,m2
-     integer, intent(in) :: d1(m1),d2(m2)
-     character,intent(in) :: l1(m1),l2(m2)
-     real(realk), intent(in) :: mat(*)
-     character*(*), intent(in) :: label
-     integer :: i,a,b,id1(m1),id2(m2),cd1,cd2
+     type(pno_query_info) :: query
+     integer, intent(in) :: n
+     query%n_arrays = n
+     call mem_alloc(query%size_array,n)
+     query%size_array = 0
+  end subroutine init_query_info
 
-     print *,label(1:len(label))
-     write (*,'("(")',advance='no') 
-     cd1 = 1
-     do i=1,m1
-        if(i>1)write (*,'(X)',advance='no')
-        write (*,'(A)',advance='no') l1(i)
-        cd1 = cd1 * d1(i)
-     enddo
-     write (*,'(")  /  (")',advance='no') 
-     cd2 = 1
-     do i=1,m2
-        if(i>1)write (*,'(X)',advance='no')
-        write (*,'(A)',advance='no') l2(i)
-        cd2 = cd2 * d2(i)
-     enddo
-     write (*,'(")  ")',advance='no') 
+  subroutine free_query_info(query)
+     implicit none
+     type(pno_query_info) :: query
+     query%n_arrays = 0
+     call mem_dealloc(query%size_array)
+  end subroutine free_query_info
 
-     do b = 1, cd2
-        call get_midx(b,id2,d2,m2)
-        write (*,'(12X,"(")',advance='no')
-        do i = 1, m2
-           if(i>1)write (*,'("/")',advance='no')
-           write (*,'(I4)',advance='no') id2(i)
-        enddo
-        write (*,'(")")',advance='no')
-     enddo
-     write(*,*)
+ !subroutine not_implemented ccsd
+     !!DEBUG: A2 term
+     !!**************
+     !u = p20*t2
+     !call array_reorder_4d( m10, t2,   nv, no, nv, no, [1,4,3,2], p10, u  )
+     !ref = gvovo
 
-     do a = 1, cd1
-        call get_midx(a,id1,d1,m1)
-        write (*,'(" (")',advance='no') 
-        do i = 1, m1
-           if(i>1)write (*,'("/")',advance='no')
-           write (*,'(I4)',advance='no') id1(i)
-        enddo
-        write (*,'(") ")',advance='no') 
-        do b = 1, cd2
-           write (*,'(g18.5)',advance='no') mat(a+(b-1)*cd1)
-           if(b<cd2)write (*,'(",",X)',advance='no')
-        enddo
-        if(a<cd1)then
-           write (*,'(";")')
-        else
-           write (*,*)
-        endif
-     enddo
+     !!A2.2 contribution
+     !call array_reorder_4d( p10, gvvvv, nv, nv, nv, nv, [1,3,2,4], nul, w1  )
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,3,2,4], nul, w2  )
+     !call dgemm( 'n', 'n', nv**2, no**2, nv**2, p10, w1, nv**2, w2, nv**2, nul, w3, nv**2 )
+     !!call array_reorder_4d( p10, w3,    nv, nv, no, no, [1,3,2,4], p10, ref )
+
+     !call print_norm(w3,o2v2,nnorm,.true.)
+     !norm = 0.0E0_realk
+     !!call print_norm(ref,o2v2,norm,.true.)
+     !write(*,*)' DEBUG A2/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!DEBUG: B2 term
+     !!**************
+     !!ref = 0.0E0_realk
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [2,4,1,3], nul, w1  ) ! kcld -> cdkl
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,4,1,3], nul, w2  ) ! cidj -> ijcd
+     !call array_reorder_4d( p10, goooo, no, no, no, no, [2,4,1,3], nul, w3  ) ! kilj -> ijkl
+     !! g(ijkl) + t(ijcd) g(cdkl) = B(klij)
+     !call dgemm( 'n', 'n', no**2, no**2, nv**2, p10, w2, no**2, w1, nv**2, p10, w3, no**2)
+     !! B(ijkl) t(klab) = B2(ijab) 
+     !call dgemm( 'n', 'n', no**2, nv**2, no**2, p10, w3, no**2, w2, no**2, nul, w1, no**2)
+     !call array_reorder_4d( p10, w1, no, no, nv, nv, [3,1,4,2], p10, ref )
+
+     !call print_norm(w1,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG B2/TOT:',sqrt(nnorm),sqrt(norm)
 
 
+     !!DEBUG: C2 term
+     !!**************
+     !!ref = 0.0E0_realk
+     !call array_reorder_4d( p10, goovv, no, no, nv, nv, [4,1,2,3], nul, w1 ) ! kjac -> ckja
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [2,3,4,1], nul, w2 ) ! aldj -> ldja
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [4,1,3,2], nul, w3 ) ! kdlc -> ckld
+     !!C intermediate w1(ckja) -  0.5 w3(ckld) w2(ldja)
+     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m05, w3, no*nv, w2, no*nv, p10, w1, no*nv)
+     !call array_reorder_4d( p10, t2,    nv, no, nv, no, [1,4,3,2], nul, w2 ) ! bkci -> bick
+     !!call print_tensor_unfolding_with_labels(w2,&
+     !!  &[nv,no],'bi',2,[nv,no],'ck',2,'FULL T2')
+     !!call print_tensor_unfolding_with_labels(w1,&
+     !!  &[nv,no],'ck',2,[no,nv],'ja',2,'FULL Goovv')
+     !call dgemm( 'n', 'n', no*nv, no*nv, no*nv, m10, w2, no*nv, w1, no*nv, nul, w3, no*nv)
 
-  end subroutine print_tensor_unfolding_with_labels
+     !!call print_tensor_unfolding_with_labels(w3,&
+     !!  &[nv,no],'bi',2,[no,nv],'ja',2,'FULL ERG GEMM')
+     !!USE THE SYMMETRIZED CONTRIBUTION, i.e. P_{ij}^{ab} (1+0.5P_{ij}) * w3
+     !call array_reorder_4d( p10, w3, nv, no, no, nv, [4,2,1,3], nul, w2 ) ! bija -> aibj
+     !call array_reorder_4d( p05, w3, nv, no, no, nv, [4,3,1,2], p10, w2 ) ! bjia -> aibj
+     !call array_reorder_4d( p10, w3, nv, no, no, nv, [1,3,4,2], p10, w2 ) ! ajib -> aibj
+     !call array_reorder_4d( p05, w3, nv, no, no, nv, [1,2,4,3], p10, w2 ) ! aijb -> aibj
+
+     !ref = ref + w2(1:o2v2)
+
+     !!call print_tensor_unfolding_with_labels(ref,&
+     !!  &[nv,no],'ai',2,[nv,no],'bj',2,'FULL ERG C')
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG C2/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!DEBUG: D2 term
+     !!**************
+     !call array_reorder_4d( p10, Lvoov, nv, no, no, nv, [4,3,1,2], nul, w1 ) ! aikc -> ckai
+     !call array_reorder_4d( p10, u,     nv, no, nv, no, [4,3,1,2], nul, w2 ) ! aidl -> ldai
+     !call array_reorder_4d( p20, govov, no, nv, no, nv, [4,3,1,2], nul, w3 ) ! ldkc -> ckld
+     !call array_reorder_4d( m10, govov, no, nv, no, nv, [4,1,3,2], p10, w3 ) ! ldkc -> clkd
+     !call dgemm('n','n',nv*no,nv*no,no*nv, p05, w3,nv*no,w2,no*nv, p10, w1, nv*no)
+
+     !call dgemm('n','n',nv*no,nv*no,nv*no, p05, u ,nv*no,w1,nv*no, nul, w2, nv*no)
+     !w3(1:o2v2) = w2(1:o2v2)
+
+     !call array_reorder_4d( p10, w2, nv, no, nv, no, [3,4,1,2], p10, w3 )
+     !ref = ref + w3(1:o2v2)
 
 
+     !call print_norm(w3,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG D2/TOT:',sqrt(nnorm),sqrt(norm)
+
+
+     !!DEBUG: E2 term
+     !!**************
+     !!part 1 vv
+     !call ass_D2to1(vvf,h1,[nv,nv])
+     !w1(1:nv**2) = h1(1:nv**2)
+     !h1 => null()
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [3,2,1,4], nul, w3 )
+     !call dgemm('n','n',nv,nv,no*nv*no, m10, u,nv,w3,no*nv*no, p10, w1, nv)
+     !call array_reorder_4d( p10, t2, nv, no, nv, no, [3,4,1,2], nul, w2)
+     !call dgemm( 'n','n',nv,no*nv*no,nv,p10,w1,nv,w2,nv,nul,w3,nv)
+     !w2(1:o2v2) = w3(1:o2v2)
+     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
+
+     !ref = ref + w2(1:o2v2)
+
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG E21/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!part 2
+     !call ass_D2to1(oof,h1,[no,no])
+     !w1(1:no**2) = h1(1:no**2)
+     !h1 => null()
+     !call array_reorder_4d( p10, govov, no, nv, no, nv, [1,4,3,2], nul, w2)
+     !call dgemm('n','n',no,no,nv*no*nv, p10, w2,no,u,nv*no*nv, p10, w1, no)
+     !call dgemm('n','n',nv*no*nv,no,no, m10, t2, nv*no*nv,w1,no, nul, w2, nv*no*nv)
+     !w3(1:o2v2) = w2(1:o2v2)
+     !call array_reorder_4d( p10, w3, nv, no, nv, no, [3,4,1,2], p10, w2)
+
+     !ref = ref + w2(1:o2v2)
+
+     !call print_norm(w2,o2v2,nnorm,.true.)
+     !call print_norm(ref,o2v2,norm,.true.)
+     !write (*,*)' DEBUG E22/TOT:',sqrt(nnorm),sqrt(norm)
+
+
+     !ref1 = vof
+
+     !!DEBUG SINGLES A1
+     !!****************
+     !call array_reorder_4d( p10, u, nv, no, nv, no, [3,2,1,4], nul, w1) ! ckdi -> dkci
+     !call dgemm( 'n','n',nv, no, nv**2*no, p10,gvvov,nv,w1,nv**2*no,nul,w2,nv)
+
+     !ref1 = ref1 + w2(1:nv*no)
+
+     !call print_norm(w2,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG A1/TOT:',sqrt(nnorm),sqrt(norm)
+
+
+     !!DEBUG SINGLES B1
+     !!****************
+     !call array_reorder_4d( p10, gooov, no, no, no, nv, [1,4,3,2], nul, w1)
+     !call dgemm('n','n',nv, no,nv*no**2,m10,u,nv,w1,nv*no**2,nul,w2,nv)
+
+     !ref1 = ref1 + w2(1:nv*no)
+
+     !call print_norm(w2,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG B1/TOT:',sqrt(nnorm),sqrt(norm)
+
+     !!DEBUG SINGLES C1
+     !!****************
+     !call array_reorder_2d( p10, ovf, no, nv, [2,1], nul, w2)
+     !call dgemv('n',no*nv,no*nv,p10,u,no*nv,w2,1, nul,w1,1)
+
+     !ref1 = ref1 + w1(1:nv*no)
+
+     !call print_norm(w1,i8*nv*no,nnorm,.true.)
+     !call print_norm(ref1,i8*nv*no,norm,.true.)
+     !write (*,*)' DEBUG C1/TOT:',sqrt(nnorm),sqrt(norm)
+
+
+     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     ! ref is not written after this point!
+     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !end subroutine not_implemented_ccsd
 end module pno_ccsd_module

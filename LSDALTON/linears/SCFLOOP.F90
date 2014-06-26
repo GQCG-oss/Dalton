@@ -72,7 +72,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    !
    ndmat = 1
    OnMaster=.true.
-   NotLastSCFLevel = config%opt%purescf.OR.config%integral%LOW_ACCURACY_START
+   NotLastSCFLevel = config%integral%LOW_ACCURACY_START
    gradalloc = .FALSE.
    CALL LSTIMER('START',TSTR,TEN,config%LUPRI)
    !INITIALISE SCF CYCLE THINGS 
