@@ -31,7 +31,7 @@ cat > LSlib_cam_dfJ_admm.info <<'%EOF%'
 #######################################################################
 cat > LSlib_cam_dfJ_admm.mol <<'%EOF%'
 BASIS
-6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21++G
+6-31+G* Aux=df-def2 ADMM=3-21++G
 HCN molecule
 STRUCTURE IS NOT OPTIMIZED.
 Atomtypes=3 Nosymmetry

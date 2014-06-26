@@ -189,8 +189,6 @@ LOGICAL       :: ADMMQ
 LOGICAL       :: ADMMP
 CHARACTER(80) :: ADMM_FUNC
 LOGICAL       :: ADMM_separateX
-LOGICAL       :: ADMM_GCBASIS
-LOGICAL       :: ADMM_JKBASIS
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: PRINT_EK3
 
@@ -345,8 +343,6 @@ LOGICAL     :: ADMMQ
 LOGICAL     :: ADMMS
 LOGICAL     :: ADMMP
 LOGICAL     :: ADMM_separateX
-LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_JKBASIS
 LOGICAL     :: ADMM_2ERI
 LOGICAL     :: PRINT_EK3
 !Coulomb attenuated method CAM parameters

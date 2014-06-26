@@ -32,7 +32,7 @@ cat > linsca_admmQ.info <<'%EOF%'
 #######################################################################
 cat > linsca_admmQ.mol <<'%EOF%'
 BASIS
-6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
+6-31G* Aux=df-def2 ADMM=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry

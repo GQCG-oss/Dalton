@@ -977,17 +977,11 @@ call time_II_operations1()
 ! *********************************************************************************
 ! *                      ADMM exchange
 ! *********************************************************************************
-!     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
-!     basis as ADMM basis for level 3)
 ADMMexchange = setting%scheme%ADMM_EXCHANGE
-IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
 IF (ADMMexchange) THEN
    !FixMe Should also work for incremental scheme
    IF(incremental_scheme)THEN
       call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
-   ENDIF
-   IF (setting%scheme%ADMM_GCBASIS) THEN !.AND.(ls%input%basis%valence%nAtomtypes.EQ.0)
-      call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
    ENDIF
    CALL II_get_ADMM_K_gradient(kGrad,DmatLHS,DmatRHS,ndlhs,ndrhs,setting,lupri,luerr)
  ELSE
@@ -1139,7 +1133,6 @@ Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
 logical                       :: ADMMexchange
 call time_II_operations1()
 ADMMexchange = setting%scheme%ADMM_EXCHANGE
-IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
 IF (ADMMexchange) THEN
    WRITE(*,*)     "The ADMM approximation isn't implemented for unrestricted cases yet."
    WRITE(LUPRI,*) "The ADMM approximation isn't implemented for unrestricted cases yet."
@@ -5187,12 +5180,12 @@ TYPE(Matrix),intent(inout)    :: F,dXC
 type(lssetting),intent(inout) :: setting
 logical,intent(in)            :: dsym
 !
-logical             :: GC3,GC2
+logical             :: GC3
 TYPE(Matrix)        :: D2(1),TMP,TMPF,F2(1),F3(1),tmp22,tmp33,k2_xc2,S32,T23,S33
 character(len=80)   :: WORD
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
-integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3,nelectrons
+integer             :: nbast,nbast2,AOdfold,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: lambda, constrain_factor, scaling_ADMMQ, scaling_ADMMP, printConstFactor, printLambda
@@ -5223,28 +5216,8 @@ nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
 CALL lstimer('START',ts,te,lupri)
-IF (setting%scheme%ADMM_JKBASIS) THEN
-  AO2 = AOdfJK
-ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
-  AO2 = AOVAL
-ELSE 
-   WRITE(*,*)     "The ADMM auxiliary basis hasn't been properly defined. &
-                   &Check the manual."
-   WRITE(*,*)     "ADMM basis set usage in the MOLECULE INPUT example:"
-   WRITE(*,*)     "BASIS"
-   WRITE(*,*)     "6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G"
-   WRITE(*,*)     "..."
-   WRITE(LUPRI,*)     "The ADMM auxiliary basis hasn't been properly defined. &
-                      &Check the manual."
-   WRITE(LUPRI,*)     "ADMM basis set usage in the MOLECULE INPUT:"
-   WRITE(LUPRI,*)     "BASIS"
-   WRITE(LUPRI,*)     "6-31+G* Aux=df-def2 CABS=STO-2G JK=3-21G"
-   WRITE(LUPRI,*)     "..."
-  call lsquit('II_get_admm_exchange_mat:Auxiliary Density Matrix &
-               &Calculation requested, but no basis given',-1)
-ENDIF
 
-nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+nbast2 = getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
 IF (nbast .EQ. nbast2) THEN
    ! This avoids a simple issue when basis sets have the same size:
    ! the filename to store the grid will be the same, overwritting the 
@@ -5266,10 +5239,8 @@ call mat_init(k2_xc2,nbast2,nbast2)
 
 call mat_zero(dXC)
 
-!ADMM/Level 2 basis is GC basis only if ADMM_GCBASIS option is active and optlevel 3
 GC3 = setting%IntegralTransformGC
-GC2 = (optlevel.EQ.3) .AND. setting%scheme%ADMM_GCBASIS
-setting%IntegralTransformGC = GC2
+setting%IntegralTransformGC =.FALSE.
 
 !Select regular basis to either optlevel 2 or 3
 IF (optlevel.EQ.3) THEN
@@ -5284,19 +5255,19 @@ ENDIF
 
 ! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(printLambda,&
-            &printConstFactor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+            &printConstFactor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
 
 constrain_factor = 1.0E0_realk
 lambda = 0E0_realk 
 IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN   
    call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
+            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
 ENDIF
 
 !We transform the full Density to a level 2 density D2
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
-                  & nbast,AO2,AO3,setting%scheme%ADMM1,&
-                  & GC2,GC3,constrain_factor)
+                  & nbast,AOadmm,AO3,setting%scheme%ADMM1,&
+                  & .FALSE.,GC3,constrain_factor)
      
 !Store original AO-indeces (AOdf will not change, but is still stored)
 AORold  = AORdefault
@@ -5305,7 +5276,7 @@ AOdfold = AODFdefault
 !****Calculation of Level 2 exchange matrix from level 2 Density matrix starts here
 
 !ADMM (level 2) AO settings 
-call set_default_AOs(AO2,AOdfold)
+call set_default_AOs(AOadmm,AOdfold)
 
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(F2(1))
@@ -5316,7 +5287,7 @@ call mat_daxpy(1E0_realk,F2(1),k2_xc2)
 tracek2d2 = mat_trAB(F2(1),D2(1))
 
 call Transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
-                        & AO2,AO3,GC2,GC3,constrain_factor)
+                        & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
 fac = 1E0_realk
 IF (isADMMP) fac = constrain_factor**(4.E0_realk)
 call mat_daxpy(fac,TMPF,F)
@@ -5354,7 +5325,7 @@ write(lupri,*)     "Tr(x2d2)=", traceX2D2
 
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,&
-                          & AO2,AO3,GC2,GC3,constrain_factor)
+                          & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
  
 call mat_daxpy(-fac,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
@@ -5426,8 +5397,8 @@ IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
   CALL mat_init(T23,nbast2,nbast)
 
   CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GC3,GC3)
-  CALL II_get_mixed_overlap(lupri,luerr,setting,S32,AO3,AO2,GC3,GC2)
-  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AO2,AO3,GC2,GC3,constrain_factor)
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S32,AO3,AOadmm,GC3,.FALSE.)
+  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
 
   CALL mat_mul(S32,T23,'n','n',-1E0_realk,0E0_realk,tmp33)
   call mat_scal(constrain_factor, tmp33)
@@ -5688,7 +5659,7 @@ type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:)
 real(realk),pointer :: ADMM_proj(:,:),ADMM_charge_term(:,:)
-integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
+integer             :: nbast,nbast2,AO3,idmat,nAtoms
 real(realk)         :: ts,te,hfweight
 real(realk)         :: Exc2(1), E_x2
 type(Matrix),target :: D2
@@ -5724,20 +5695,11 @@ unres  = matrix_type .EQ. mtype_unres_dense
 
   
 DO idmat=1,ndrhs
-   IF (setting%scheme%ADMM_JKBASIS) THEN
-     AO2 = AOdfJK
-   ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
-     AO2 = AOVAL
-   ELSE 
-     call lsquit('II_get_ADMM_K_gradient:Auxiliary Density Matrix Calculation requested, but no basis given',-1)
-   ENDIF
    
-   nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+   nbast2 = getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
    
-   !ADMM/Level 2 basis is GC basis only if ADMM_GCBASIS option is active and optlevel 3
    GC3 = setting%IntegralTransformGC
-   GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
-   setting%IntegralTransformGC = GC2
+   setting%IntegralTransformGC = .FALSE.
    
    AO3 = AORdefault ! assuming optlevel.EQ.3
 
@@ -5745,7 +5707,7 @@ DO idmat=1,ndrhs
    IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
       call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
                & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
-               & nbast2,nbast,AO2,AO3,GC2,GC3)
+               & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
    ELSE
       constrain_factor = 1.0E0_realk
       lambda = 0E0_realk  
@@ -5755,8 +5717,8 @@ DO idmat=1,ndrhs
    call mat_init(D2,nbast2,nbast2)
    call mat_zero(D2)
    call transform_D3_to_D2(DmatLHS(idmat)%p,D2,setting,lupri,luerr,&
-                           & nbast2,nbast,AO2,AO3,&
-                           & setting%scheme%ADMM1,GC2,GC3,&
+                           & nbast2,nbast,AOadmm,AO3,&
+                           & setting%scheme%ADMM1,.FALSE.,GC3,&
                            & constrain_factor)
  
    !Store original AO-indeces (AOdf will not change, but is still stored)
@@ -5765,7 +5727,7 @@ DO idmat=1,ndrhs
    
    !!****Calculation of Level 2 exchange gradient from level 2 Density matrix starts here
    !ADMM (level 2) AO settings 
-   call set_default_AOs(AO2,AOdfold)
+   call set_default_AOs(AOadmm,AOdfold)
    
    D2p(1)%p => D2
    
@@ -5861,7 +5823,7 @@ DO idmat=1,ndrhs
    IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
       call get_ADMM_K_gradient_constrained_charge_term(ADMM_charge_term,k2,xc2,&
                   & E_x2,DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,1E0_realk,&
-                  & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+                  & AOadmm,AO3,.FALSE.,GC3,setting,lupri,luerr,&
                   & lambda)
       call DSCAL(3*nAtoms,2E0_realk,ADMM_charge_term,1)
       call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_charge_term,nAtoms,'ADMM-Chrg')  
@@ -5873,7 +5835,7 @@ DO idmat=1,ndrhs
    ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,E_x2,&
                & DmatLHS(idmat)%p,D2,nbast2,nbast,nAtoms,1E0_realk,&
-               & AO2,AO3,GC2,GC3,setting,lupri,luerr,&
+               & AOadmm,AO3,.FALSE.,GC3,setting,lupri,luerr,&
                & lambda,constrain_factor) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DSCAL(3*nAtoms,2E0_realk,ADMM_proj,1)
    call LS_PRINT_GRADIENT(lupri,setting%molecule(1)%p,ADMM_proj,nAtoms,'ADMM_proj')  

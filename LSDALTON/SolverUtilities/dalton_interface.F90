@@ -2150,10 +2150,7 @@ CONTAINS
       Dsym = .TRUE. !symmetric Density matrix
       ls%input%nfock = ls%input%nfock + 1
 
-!     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
-!     basis as ADMM basis for level 3)
       ADMMexchange = ls%setting%scheme%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
-      IF ((ls%optlevel.EQ.2).AND.ls%input%dalton%ADMM_GCBASIS) ADMMexchange = .FALSE.
 
 ! *********************************************************************************
 ! *                       Fock matrix with ADMM exchange
@@ -2163,9 +2160,6 @@ CONTAINS
          !FixMe Should also work for incremental scheme
          IF(incremental_scheme)THEN
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
-         ENDIF
-         IF (ls%input%dalton%ADMM_GCBASIS.AND.(ls%input%basis%WBASIS(VALBasParam))) THEN
-           call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
          ENDIF
 
 
@@ -2501,11 +2495,11 @@ CONTAINS
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
             real(realk)            :: hfweight
-            integer                :: i,iBmat,nbast,nbast2,AO2,AO3
+            integer                :: i,iBmat,nbast,nbast2,AO3
             integer                :: AOdfold,AORold
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
-            logical                :: GC3,GC2,testNelectrons,grid_done
+            logical                :: GC3,testNelectrons,grid_done
             !
             nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
@@ -2574,22 +2568,12 @@ CONTAINS
 
             ! ADMM approx. to exchange mat
             ! ---------------------------------------------------------------           
-            IF (setting%scheme%ADMM_JKBASIS) THEN
-                AO2 = AOdfJK
-            ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
-                AO2 = AOVAL
-            ELSE 
-                call lsquit('II_get_ADMM_K_gradient:Auxiliary Density &
-                  & Matrix Calculation requested, but no basis given',-1)
-            ENDIF
         
-            nbast2=getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+            nbast2=getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
 
             !ADMM/Level 2 basis is GC basis 
-            ! only if ADMM_GCBASIS option is active and optlevel 3
             GC3 = setting%IntegralTransformGC
-            GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
-            setting%IntegralTransformGC = GC2
+            setting%IntegralTransformGC = .FALSE.
             
             !Store original AO-indeces (AOdf will not change,
             !                            but is still stored)
@@ -2605,7 +2589,7 @@ CONTAINS
             call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
-                & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
+                & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3)
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
@@ -2613,7 +2597,7 @@ CONTAINS
                 call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
-                    & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
+                    & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3)
 
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
@@ -2622,13 +2606,13 @@ CONTAINS
                 call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
-                call set_default_AOs(AO2,AOdfold)
+                call set_default_AOs(AOadmm,AOdfold)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
                 call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
                 call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
                                 
                 ! X3(B)- X2(b): XC-correction
@@ -2653,7 +2637,7 @@ CONTAINS
                 !Transform level 2 XC matrix to level 3
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
                 call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
