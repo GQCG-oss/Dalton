@@ -1224,57 +1224,48 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
         CASE ('.ADMM1');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMM1         = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMM1           = .TRUE.
         CASE ('.ADMM2');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
         CASE ('.ADMMS');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMS         = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMS           = .TRUE.
         CASE ('.ADMMP');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMP         = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMP           = .TRUE.
         CASE ('.ADMMQ');
            IF (INTEGRAL%ADMM_EXCHANGE) THEN
              CALL LSQUIT('Illegal input under **INTEGRAL. Only one choice of ADMM basis.',lupri)
            ENDIF
-           INTEGRAL%ADMM_EXCHANGE = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .TRUE.
-           INTEGRAL%ADMMQ         = .TRUE.
+           INTEGRAL%ADMM_EXCHANGE   = .TRUE.
+           INTEGRAL%ADMMQ           = .TRUE.
         CASE ('.ADMM-FUNC');
            READ(LUCMD,*) INTEGRAL%ADMM_FUNC
         CASE ('.ADMM-separateX'); !EXPERIMENTAL
                                   !Calculates X and XC independently, default is to calculate
                                   !X+XC with one call to dft (and x with a separate call)
-           INTEGRAL%ADMM_separateX = .TRUE.
-        CASE ('.ADMM-GC'); ! EXPERIMENTAL
-           INTEGRAL%ADMM_GCBASIS  = .TRUE.
-           INTEGRAL%ADMM_JKBASIS  = .FALSE.
+           INTEGRAL%ADMM_separateX  = .TRUE.
         CASE ('.ADMM-2ERI'); ! EXPERIMENTAL
            INTEGRAL%ADMM_2ERI       = .TRUE.
         CASE ('.PRINT_EK3'); ! EXPERIMENTAL
         ! calculate and print full Exchange when doing ADMM exchange approx.
         ! > Debugging purpose only
-	   INTEGRAL%PRINT_EK3  = .TRUE.
+	   INTEGRAL%PRINT_EK3       = .TRUE.
         CASE ('.SREXC'); 
            INTEGRAL%MBIE_SCREEN = .TRUE.
            INTEGRAL%SR_EXCHANGE = .TRUE.
@@ -3376,12 +3367,16 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       CALL lsQUIT('F12 input inconsitensy: add CABS basis set',config%lupri)
    endif
 !ADMM basis input
-   if(config%integral%ADMM_JKBASIS .AND. (.NOT. config%integral%basis(JKBasParam)))then
-      WRITE(config%LUPRI,'(/A)') &
-           &     'You have specified an ADMM-JK calculation in the dalton input but not supplied a JK fitting basis set as required'
-      WRITE(config%LUPRI,'(/A)') &
-           &     'Please read the ADMM part in the manual and supply JK basis set'
-      CALL lsQUIT('ADMM fitting input inconsitensy: add JK fitting basis set',config%lupri)
+   if(config%integral%ADMM_EXCHANGE) THEN
+      IF (.NOT. config%integral%basis(ADMBasParam)) THEN
+        WRITE(config%LUPRI,'(/A)') &
+     &   'You have specified an ADMM calculation in the dalton input but not supplied a '
+        WRITE(config%LUPRI,'(A)') &
+     &   'ADMM fitting basis set in the molecule input as required'
+        WRITE(config%LUPRI,'(/A)') &
+             &     'Please read the ADMM part in the manual and supply an ADMM basis set'
+        CALL lsQUIT('ADMM fitting input inconsitensy: add ADMM fitting basis set',config%lupri)
+      ENDIF
    endif
 
    if(config%response%tasks%doResponse.AND.(config%integral%pari_J.OR.config%integral%pari_K))then
