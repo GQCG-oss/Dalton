@@ -290,9 +290,12 @@ C
       CALL GETTIM(CPUMP2,WALMP2)
       IF (IPRMP2 .GE. 0) WRITE (LUPRI,'(//A//A/A)')
      * ' >>>>> Output from SIRIUS MP2 module <<<<<'
-     *,' Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,'
+     *,' Reference: H.J.Aa.Jensen, P.Jørgensen, H.Ågren, and J.Olsen,'
      *,'            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)'
 C
+      IF (SRMP2_SRINTS .AND. .NOT.DO_RSDHF) THEN
+         FLAG(25) = .FALSE. ! do not calculate MP2 coefficients for SOPPA if we quit after MP2
+      END IF
 C
       KFRSAV= 1
       KFREE = KFRSAV
@@ -390,7 +393,7 @@ C        ... force new sort of AO integrals
       END IF
 C
 cmjp If response calculation then make space for the correlation coefficients.
-      IF (FLAG(25) .AND. .NOT.SRMP2_SRINTS) THEN
+      IF ( FLAG(25) ) THEN
          CALL MEMGET2('REAL','KAPPA',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
       ELSE
@@ -828,7 +831,7 @@ C
 C     Write the correlation coefficients and second order one-density to
 C     the interface file LUSIFC
 C
-      IF (FLAG(25)) THEN
+      IF ( FLAG(25) ) THEN
          CALL MP2IFC(WRK(KDONE),WRK(KKAPPA))
       END IF
 C
@@ -1294,7 +1297,7 @@ C
       IMP  = IPHORD(NH+JMP)
       IAH  = IPHORD(JAH)
       ENMA = MP2_LSHIFT - ORBEN(IMP) + ORBEN(IAH)
-      IF (IPRMP2 .GE. 30) THEN
+      IF (IPRMP2 .GE. 25) THEN
          WRITE (LUPRI,'(//A/,2(/A,2I5))')
      *      ' >>> TEST OUTPUT FROM MP2DEN',
      *      ' particle indices JMP, IMP     : ',JMP,IMP,
@@ -1306,7 +1309,7 @@ C
      *      ' Orbital energy of AH orbital  :', ORBEN(IAH)
 
          write(lupri,*) 'DONE matrix MP2MUL start:'
-         call output(done,1,4,1,4,norbt, norbt,1,lupri)
+         call output(done,1,NORBT,1,4,norbt, norbt,-1,lupri)
       END IF
       EMP2BF = EMP2
       DO 100 IH = 1,NH
@@ -1323,11 +1326,34 @@ C    Routine modified to include scaled mp2 calculations
                H2D(INP,IBH) = ( MP2_SCALEFAC(1)*H2M(INP,IBH)
      *                        + MP2_SCALEFAC(2)*H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
+            ELSE IF (DCPT2) THEN
+C Frank Heiden modifying for DCPT2 functionality
+c               H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
+c     *         4.0D0 * (D2*H2M(INP,IBH) -
+c     *         H2PHD(IP,IH,IAHMP))**2.0D0))
+
+!              H2D(INP,IBH) = 0.5D0*(ENMANB - SQRT(ENMANB**2.0D0 +
+!    *         4.0D0 * (D2*H2M(INP,IBH) -
+!    *         H2PHD(IP,IH,IAHMP))**2.0D0))+
+!    *         0.25D0*(ENMAB - SQRT(ENMAB**2.0D0 +
+!    *         4.0D0*(H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))**2.0D0))
+               IF (ABS(H2M(INP,IBH)) .LE. 1.0D-8) THEN
+                  H2D(INP,IBH) = 0.0D0
+               ELSE
+                  H2D(INP,IBH) = -ENMANB/H2M(INP,IBH) *
+     &             ( 0.5D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
+     &                 (H2M(INP,IBH)/ENMANB)**2))
+     &             + 0.25D0* (1.0D0 - SQRT(1.0D0 + 4.0D0*
+     &                 ((H2M(INP,IBH)-H2PHD(IP,IH,IAHMP))/ENMANB)**2))
+     &             )
+               END IF
+c               WRITE(*,*)
+c     &         " DCPT2 work loop", ENMANB,H2M(INP,IBH),H2D(INP,IBH)
             ELSE
                H2D(INP,IBH) = ( D2*H2M(INP,IBH) - H2PHD(IP,IH,IAHMP))
      *                        / ENMANB
             END IF
-            IF (IPRMP2 .GE. 30) THEN
+            IF (IPRMP2 .GE. 25) THEN
                TVALUE = TVALUE + H2D(INP,IBH)*H2D(INP,IBH)
                IF (IPRMP2 .GE. 50 .AND.
      *             H2D(INP,IBH).NE.D0 .AND. H2M(INP,IBH).NE.D0) THEN
@@ -1407,12 +1433,12 @@ C
      &              H2D(IOFFI+NRHFI,IOFFJ+NFRMPJ), NORBT,1.D0,
      &              DONE(IOFFI+NFRMPI,IOFFI+NRHFI),NORBT)
  1000 CONTINUE
-      IF (IPRMP2 .GE. 30) THEN
+      IF (IPRMP2 .GE. 25) THEN
          WRITE (LUPRI,'(1P,2(/A,2D11.4))')
      *   ' del(EMP2), EMP2 after this distribution :',EMP2-EMP2BF,EMP2,
      *   ' T = sum (a(MA,NB)**2) after this distr. :',TVALUE
          write(lupri,*) 'DONE matrix MP2MUL end:'
-         call output(done,1,4,1,4,norbt, norbt,1,lupri)
+         call output(done,1,NORBT,1,4,norbt, norbt,-1,lupri)
       END IF
  8000 CALL QEXIT('MP2DEN')
       RETURN
