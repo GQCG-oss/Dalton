@@ -60,9 +60,9 @@ contains
     !> nocc, nvirt, and nbasis for fragment or full molecule
     integer, intent(in) :: nocc, nvirt, nbasis
     !> ppfock and qqfock for fragment or full molecule
-    real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
+    real(realk), intent(in) :: ppfock(:,:), qqfock(:,:)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(:,:), Cv(:,:)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
