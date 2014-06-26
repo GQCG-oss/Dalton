@@ -522,24 +522,24 @@ module crop_tools_module
                & DECinfo%ccMaxIter, ' iterations!'
             call lsquit('CC equation not solved!',DECinfo%output)
          end if
-         write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
-         write(DECinfo%output,'(a,f16.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
+         write(DECinfo%output,'(a,g8.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
+         write(DECinfo%output,'(a,g8.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
 
          if(fj) then
             write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
          else
             if(gm)then
                if(us)then
-                  write(DECinfo%output,'(a,f16.10)')  'Singles multiplier norm  = ',snorm
+                  write(DECinfo%output,'(a,g8.3)')  'Singles multiplier norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,f16.10)')  'Doubles multiplier norm  = ',dnorm
-               write(DECinfo%output,'(a,f16.10)')  'Total multiplier norm    = ',tnorm
+               write(DECinfo%output,'(a,g8.3)')  'Doubles multiplier norm  = ',dnorm
+               write(DECinfo%output,'(a,g8.3)')  'Total multiplier norm    = ',tnorm
             else
                if(us)then
-                  write(DECinfo%output,'(a,f16.10)')  'Singles amplitudes norm  = ',snorm
+                  write(DECinfo%output,'(a,g8.3)')  'Singles amplitudes norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,f16.10)')  'Doubles amplitudes norm  = ',dnorm
-               write(DECinfo%output,'(a,f16.10)')  'Total amplitudes norm    = ',tnorm
+               write(DECinfo%output,'(a,g8.3)')  'Doubles amplitudes norm  = ',dnorm
+               write(DECinfo%output,'(a,g8.3)')  'Total amplitudes norm    = ',tnorm
                write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
             endif
          end if
