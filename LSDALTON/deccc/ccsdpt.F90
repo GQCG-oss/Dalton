@@ -90,6 +90,14 @@ contains
     type(array4) :: ccsdpt_doubles_2
     type(array),intent(inout) :: ccsdpt_doubles
     type(array),intent(inout) :: ccsdpt_singles
+    logical :: master
+
+    call time_start_phase(PHASE_WORK)
+
+    master = .true.
+#ifdef VAR_MPI
+    master = (infpar%lg_mynum == infpar%master)
+#endif
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -105,44 +113,57 @@ contains
     call array_zero(ccsdpt_singles)
     call array_zero(ccsdpt_doubles)
 
+    call mem_alloc(eivalocc,nocc)
+    call mem_alloc(eivalvirt,nvirt)
+    C_can_occ  = array2_init(occAO)
+    C_can_virt = array2_init(virtAO)
+
+    if (master) then
+      ! *************************************
+      ! get arrays for transforming integrals
+      ! *************************************
+      ! C_can_occ, C_can_virt:  MO coefficients for canonical basis
+      ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
+      ! note: Uocc and Uvirt have indices (local,canonical)
+
+      Uocc       = array2_init(occdims)
+      Uvirt      = array2_init(virtdims)
+      call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
+                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+
+      ! ***************************************************
+      ! transform ccsd doubles amplitudes to diagonal basis
+      ! ***************************************************
+      call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
+
+    end if
+
 #ifdef VAR_MPI
-
-    call time_start_phase(PHASE_WORK)
-
     nodtotal = infpar%lg_nodtot
 
-    ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
+    call time_start_phase(PHASE_COMM)
 
-       call time_start_phase(PHASE_COMM)
+   ! bcast the JOB specifier and distribute data to all the slaves within local group
+    waking_the_slaves: if ((nodtotal .gt. 1) .and. master) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%elm4,mylsitem)
-
-       call time_start_phase(PHASE_WORK)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_doubles%elm4,mylsitem)
 
     end if waking_the_slaves
 
+    ! Communicate important information:
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(eivalocc,nocc,infpar%master)
+    call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
+    call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
+    call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    call time_start_phase(PHASE_WORK)
 #endif
-
-    ! *************************************
-    ! get arrays for transforming integrals
-    ! *************************************
-    ! C_can_occ, C_can_virt:  MO coefficients for canonical basis
-    ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
-    ! note: Uocc and Uvirt have indices (local,canonical)
-
-    call mem_alloc(eivalocc,nocc)
-    call mem_alloc(eivalvirt,nvirt)
-    Uocc       = array2_init(occdims)
-    Uvirt      = array2_init(virtdims)
-    C_can_occ  = array2_init(occAO)
-    C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
-                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
     ! get vo³, v²o², and v³o integrals in proper sequence
@@ -152,8 +173,7 @@ contains
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
 #ifdef VAR_MPI
-
-    if (infpar%lg_mynum .eq. infpar%master) then
+    if (master) then
 
        print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
        call print_norm(jaik,jaik_norm)
@@ -164,18 +184,11 @@ contains
        print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
 
     end if
-
 #endif
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
-
-    ! ***************************************************
-    ! transform ccsd doubles amplitudes to diagonal basis
-    ! ***************************************************
-
-    call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
 
 
     ! ********************************
@@ -256,7 +269,7 @@ contains
 
     end if reducing_to_master
 
-    if (infpar%lg_mynum .eq. infpar%master) then
+    if (master) then
 
        print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
        call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
@@ -269,19 +282,17 @@ contains
     end if
 
     ! release stuff located on slaves
-    releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
+    releasing_the_slaves: if ((nodtotal .gt. 1) .and. .not. master) then
 
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       call array2_free(Uocc)
-       call array2_free(Uvirt)
        call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
        call array4_free(abij)
-       call array_free(cbai)
        call array4_free(jaik)
+       call array_free(cbai)
 
        ! now, release the slaves  
        return
@@ -308,8 +319,8 @@ contains
     ! ***** do canonical --> local transformation *****
     ! *************************************************
 
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -6678,26 +6689,9 @@ end module ccsdpt_module
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%elm4,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2%elm4,mylsitem)
 
     !FIXME: split MPI messages!!!!!!!!!!
-
-    ! init and receive ppfock
-    call mem_alloc(ppfock,nocc,nocc)
-    call ls_mpibcast(ppfock,nocc,nocc,infpar%master,infpar%lg_comm)
-
-    ! init and receive qqfock
-    call mem_alloc(qqfock,nvirt,nvirt)
-    call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
-
-    ! init and receive Co
-    call mem_alloc(Co,nbasis,nocc)
-    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
-
-    ! init and receive Cv
-    call mem_alloc(Cv,nbasis,nvirt)
-    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
-
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
     call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
@@ -6718,13 +6712,6 @@ end module ccsdpt_module
     call array_free(ccsdpt_t1)
     call array_free(ccsd_t2)
     call array_free(ccsdpt_t2)
-
-    ! finally, release fragment or full molecule quantities
-    call ls_free(mylsitem)
-    call mem_dealloc(ppfock)
-    call mem_dealloc(qqfock)
-    call mem_dealloc(Co)
-    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 
