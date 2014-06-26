@@ -346,8 +346,7 @@ Endif
 If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
   Call Calc_Kinetic_Cart(NAtoms*3,NAtoms,traj%Mass,traj%Velocities,traj%CurrKinetic)
 Else  ! Mass-weighted
-  Call Calc_Kinetic(NAtoms*3,NAtoms,Cartesian_Velocities,traj%CurrKinetic)
-!  Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
+  Call Calc_Kinetic(NAtoms*3,NAtoms,traj%Velocities,traj%CurrKinetic)
 Endif
 If (dyn%NHchain) then
   Call NHC_Hamiltonian(NAtoms,dyn%CLen,traj%CurrPotential+traj%CurrKinetic,&
