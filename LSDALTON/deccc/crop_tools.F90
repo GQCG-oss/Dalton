@@ -487,20 +487,31 @@ module crop_tools_module
    ! li is the number of the last iteration
    ! ce is the correlation energy
    ! t* are timings
-   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,t1,t2)
+   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,t1,t2,m1,m2)
       implicit none
       logical, intent(in)        :: bi,gm,fj,us
       integer, intent(in)        :: li
       real(realk), intent(in)    :: ce,tew,tsw,tec,tsc
       type(array2),intent(inout) :: t1
       type(array4),intent(inout) :: t2
+      type(array2),intent(inout),optional :: m1
+      type(array4),intent(inout),optional :: m2
       real(realk) :: snorm,dnorm,tnorm
       tnorm = 0.0E0_realk
       dnorm = 0.0E0_realk
       snorm = 0.0E0_realk
 
-      if(us)call print_norm(t1,snorm,.true.)
-      call print_norm(t2,dnorm,.true.)
+      if(gm)then
+         if(us)then
+            if(.not. present(m1) ) call lsquit('ERROR(print_ccjob_summary) no singles multipliers present',-1)
+            call print_norm(m1,snorm,.true.)
+         endif
+         if(.not. present(m2) ) call lsquit('ERROR(print_ccjob_summary) no doubles multipliers present',-1)
+         call print_norm(m2,dnorm,.true.)
+      else
+         if(us)call print_norm(t1,snorm,.true.)
+         call print_norm(t2,dnorm,.true.)
+      endif
       tnorm = sqrt(snorm+dnorm)
       if(us)snorm = sqrt(snorm)
       dnorm = sqrt(dnorm)
@@ -530,16 +541,16 @@ module crop_tools_module
          else
             if(gm)then
                if(us)then
-                  write(DECinfo%output,'(a,g8.3)')  'Singles multiplier norm  = ',snorm
+                  write(DECinfo%output,'(a,g12.7)')  'Singles multiplier norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,g8.3)')  'Doubles multiplier norm  = ',dnorm
-               write(DECinfo%output,'(a,g8.3)')  'Total multiplier norm    = ',tnorm
+               write(DECinfo%output,'(a,g12.7)')  'Doubles multiplier norm  = ',dnorm
+               write(DECinfo%output,'(a,g12.7)')  'Total multiplier norm    = ',tnorm
             else
                if(us)then
-                  write(DECinfo%output,'(a,g8.3)')  'Singles amplitudes norm  = ',snorm
+                  write(DECinfo%output,'(a,g12.7)')  'Singles amplitudes norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,g8.3)')  'Doubles amplitudes norm  = ',dnorm
-               write(DECinfo%output,'(a,g8.3)')  'Total amplitudes norm    = ',tnorm
+               write(DECinfo%output,'(a,g12.7)')  'Doubles amplitudes norm  = ',dnorm
+               write(DECinfo%output,'(a,g12.7)')  'Total amplitudes norm    = ',tnorm
                write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
             endif
          end if

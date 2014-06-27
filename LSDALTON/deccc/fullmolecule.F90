@@ -1068,7 +1068,7 @@ contains
     integer(kind=8) :: longdim1,longdim2
     integer(kind=4) :: dim1_32,dim2_32
     real(realk),pointer :: Dfull(:,:)
-
+    logical :: gcbasis
     ! Open density file
     funit=-1
     call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
@@ -1099,7 +1099,31 @@ contains
 
     ! Read density elements
     read(funit) Dfull
-    call lsclose(funit,'KEEP')
+
+    read(funit) gcbasis
+
+    ! Basis set Sanity check
+    if (gcbasis .and. .not. DECinfo%GCBASIS) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
+        WRITE(DECinfo%output,*) 'while your LSDALTON.INP uses the standard input basis. '
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in standard basis, dens.restart in GC basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the standard input basis, while your'
+        WRITE(DECinfo%output,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in GC basis, dens.restart in standard input basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using GC basis consistently'
+     else if (.not. DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using standard basis consistently'
+     else
+        call lsquit('Basis check is messed up!!',DECinfo%output)
+     endif
+
+     call lsclose(funit,'KEEP')
 
     ! Init density matrix
     call mat_init(D,nbasis,nbasis)

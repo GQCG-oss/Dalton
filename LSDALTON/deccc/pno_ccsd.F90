@@ -1286,6 +1286,7 @@ module pno_ccsd_module
      FracOfMem = 0.1E0_realk * FracOfMem
 
      mem_overlap_spaces = 0.0E0_realk
+     just_check         = .false.
 
      allocpcount= 0
      allremoved = 0
@@ -1294,10 +1295,10 @@ module pno_ccsd_module
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
      !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem)&
+     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem,just_check)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-     !$OMP keep_pair,just_check)
+     !$OMP keep_pair)
      call init_threadmemvar()
 
      !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
@@ -2069,7 +2070,7 @@ module pno_ccsd_module
               max_w_per_thr(narray,loop) = max(max_w_per_thr(narray,loop),query%size_array(edit+narray))
            enddo
         end do
-        print *,max_w_per_thr(:,loop)
+        !print *,max_w_per_thr(:,loop)
      enddo
 
 
@@ -2101,7 +2102,9 @@ module pno_ccsd_module
         & nthreads_level1_int_dir(second_loop),&
         & nthreads_level1_int_dir(third_loop))
 
-     print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
+     if(DECinfo%PL>3)then
+        print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
+     endif
 
      call mem_alloc(info_omp1,2,max_nthr_int_loop,5,nloops)
 
@@ -2154,7 +2157,7 @@ module pno_ccsd_module
      integer :: pno_comb
      integer :: pair,paircontribs,paircontrib(2,2),rpd,pno,pnv
      integer :: goffs,aoffs,tlen,tred,nor,nvr,pos1,pos2,beg1,beg2,ic,i
-     integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg
+     integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg,a
      integer :: offset_for_omp,contract
      logical :: FoundInMem,fullRHS, doscreen, PS, EOS, add_contrib
      type(DECscreenITEM)    :: DecScreen
@@ -2356,7 +2359,7 @@ module pno_ccsd_module
            !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
            !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
            !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
-           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,&
+           !$OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,&
            !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
            !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)&
            !$OMP NUM_THREADS(nthreads_level1_int_dir(first_loop))
@@ -2397,6 +2400,7 @@ module pno_ccsd_module
 
               nor=rpd*(rpd+1)/2
 
+
               if(this_is_query)then
 
                  edit = offset_for_omp+(ns-1)*nloops*5+(first_loop-1)*5
@@ -2418,13 +2422,17 @@ module pno_ccsd_module
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i,tid+1) = xo(:,idx(i))
+                    do a = 1, nb
+                       xo_pair(a,i,tid+1) = xo(a,idx(i))
+                    enddo
                  enddo
                  !  xv_pair
                  call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                  !  yo_pair
                  do i = 1, pno
-                    yo_pair(:,i,tid+1) = yo(:,idx(i))
+                    do a = 1, nb
+                       yo_pair(a,i,tid+1) = yo(a,idx(i))
+                    enddo
                  enddo
                  !  yv_pair
                  call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
@@ -2487,7 +2495,7 @@ module pno_ccsd_module
            !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
            !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
            !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
-           !$OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
+           !$OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
            !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
            !$OMP my_w4,my_w5,tid,EOS,edit,r1) REDUCTION(+:times,times_in_loops)&
            !$OMP NUM_THREADS(nthreads_level1_int_dir(second_loop))
@@ -2546,8 +2554,11 @@ module pno_ccsd_module
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i,tid+1) = xo(:,idx(i))
+                    do a = 1,nb
+                       xo_pair(a,i,tid+1) = xo(a,idx(i))
+                    enddo
                  enddo
+
                  !  yv_pair
                  call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
 #ifndef VAR_OMP
@@ -2582,7 +2593,6 @@ module pno_ccsd_module
                           contract = pnv*rpd*lg
                        endif
 
-
                        call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
 
@@ -2611,7 +2621,6 @@ module pno_ccsd_module
                        h2 => my_w1
                        contract = pnv*rpd*lg
                     endif
-
 
                     call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
@@ -2695,7 +2704,7 @@ module pno_ccsd_module
               !OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
               !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
               !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
-              !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
               !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
               !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
               !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
@@ -2756,13 +2765,17 @@ module pno_ccsd_module
                     !Get the transformation matrices
                     !  xo_pair 
                     do i = 1, pno
-                       xo_pair(:,i,tid+1) = xo(:,idx(i))
+                       do a = 1, nb 
+                          xo_pair(a,i,tid+1) = xo(a,idx(i))
+                       enddo
                     enddo
                     !  xv_pair
                     call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                     !  yo_pair
                     do i = 1, pno
-                       yo_pair(:,i,tid+1) = yo(:,idx(i))
+                       do a = 1, nb
+                          yo_pair(a,i,tid+1) = yo(a,idx(i))
+                       enddo
                     enddo
                     !  yv_pair
                     call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)

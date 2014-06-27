@@ -1115,12 +1115,12 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2,mylsitem)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2,mylsitem)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: ppfock(:,:),qqfock(:,:),Co(:,:),Cv(:,:),ccsd_t2(:,:,:,:)
+    real(realk)        :: ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
 
     ! communicate mylsitem and integers
@@ -1136,17 +1136,7 @@ contains
     ! communicate rest of the quantities, master here, slaves back in the slave
     ! routine, due to crappy pointer/non-pointer issues (->allocations)
     if (infpar%lg_mynum .eq. infpar%master) then
-
-       call ls_mpibcast(ppfock,nocc,nocc,infpar%master,infpar%lg_comm)
- 
-       call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
-
-       call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
-
-       call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
- 
        call ls_mpibcast(ccsd_t2,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
-
     endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata
@@ -2126,6 +2116,7 @@ contains
     call dec_set_model_names(DECitem)
     call ls_mpi_buffer(DECitem%ccModel,Master)
     call ls_mpi_buffer(DECitem%use_singles,Master)
+    call ls_mpi_buffer(DECitem%gcbasis,Master)
     call ls_mpi_buffer(DECitem%HFrestart,Master)
     call ls_mpi_buffer(DECitem%DECrestart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)

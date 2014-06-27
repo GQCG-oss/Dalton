@@ -901,6 +901,7 @@ subroutine DEC_meaningful_input(config)
         WRITE(config%lupri,*)' '
      end if
 
+     DECinfo%GCBASIS = config%decomp%cfg_gcbasis
 
      ! DEC geometry optimization 
      ! *************************

@@ -1022,7 +1022,7 @@ module cc_debug_routines_module
      ! Write finalization message
      !---------------------------
      call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,DECinfo%use_singles, &
-     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final,m1 = m1, m2 = m2)
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
