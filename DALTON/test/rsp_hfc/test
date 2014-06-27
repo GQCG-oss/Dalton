@@ -9,9 +9,13 @@ from runtest_dalton import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(string = 'TEST STRING',
-      rel_tolerance = 1.0e-7)
 
-test.run(['spin_local.dal'], ['tmp.mol'], {'out': f})
+f.add(string = 'Final DFT energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'LAGRANGIAN:',
+      abs_tolerance = 1.0e-4)
+
+test.run(['rsp_hfc.dal'], ['TiF3_STO-3G_sym.mol'], {'out': f})
 
 sys.exit(test.return_code)
