@@ -2494,12 +2494,14 @@ CONTAINS
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
-            real(realk)            :: hfweight
+            real(realk)            :: hfweight,constrain_factor
             integer                :: i,iBmat,nbast,nbast2,AO3
             integer                :: AOdfold,AORold
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
             logical                :: GC3,testNelectrons,grid_done
+            !
+            constrain_factor =1E0_realk
             !
             nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
@@ -2589,7 +2591,7 @@ CONTAINS
             call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
-                & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3)
+                & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
@@ -2597,7 +2599,7 @@ CONTAINS
                 call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
-                    & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3)
+                    & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
 
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
@@ -2612,7 +2614,7 @@ CONTAINS
                 !Transform level 2 exact-exchange matrix to level 3
                 call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
                 call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
                                 
                 ! X3(B)- X2(b): XC-correction
@@ -2637,7 +2639,7 @@ CONTAINS
                 !Transform level 2 XC matrix to level 3
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
                 call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
@@ -2694,63 +2696,7 @@ CONTAINS
             call mat_free(Dmat_AO)
             call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
-          
             
-        SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,&
-                        & luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(in)    :: D     !level 3 matrix input 
-            type(matrix),intent(inout) :: D2 !level 2 matrix input 
-            type(lssetting) :: setting
-            integer :: n2,n3,AO3,AO2,lupri,luerr
-            logical :: McWeeny,GCAO2,GCAO3
-            real(realk)                :: constrain_factor
-            !
-            TYPE(MATRIX) :: S22,S23,T23
-            Logical :: purify_failed
-            !
-            constrain_factor = 1.0E0_realk
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
-                         &GCAO2,GCAO3,constrain_factor)
-            call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
-
-            IF (McWeeny) THEN
-                call mat_init(S22,n2,n3)
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call McWeeney_purify(S22,D2,purify_failed)
-                IF (purify_failed) THEN
-                    call LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
-                ENDIF
-                call mat_free(S22)
-            ENDIF
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORM_D3_TO_D2
-        
-        SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(inout) :: F  !level 3 matrix output 
-            type(matrix),intent(in)    :: F2 !level 2 matrix input 
-            type(lssetting) :: setting
-            Integer :: n2,n3,AO2,AO3,lupri,luerr
-            Logical :: GCAO2,GCAO3
-            real(realk)                :: constrain_factor
-            !
-            type(matrix) :: S23,T23
-            constrain_factor = 1.0E0_realk
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
-                         &GCAO2,GCAO3,constrain_factor)
-            call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORMED_F2_TO_F3
-      !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
           
           
