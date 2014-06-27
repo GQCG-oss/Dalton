@@ -155,17 +155,27 @@ contains
 
     if (infpar%lg_mynum .eq. infpar%master) then
 
-       print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
-       call print_norm(jaik,jaik_norm)
-       call print_norm(abij,abij_norm)
-       call print_norm(ccsd_doubles,ccsd_doubles_norm)
-       print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
-       print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
-       print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
+       print *,'proc no. ',infpar%lg_mynum,'done with ccsd(t) integrals'
 
     end if
 
 #endif
+
+!#ifdef VAR_MPI
+!
+!    if (infpar%lg_mynum .eq. infpar%master) then
+!
+!       print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
+!       call print_norm(jaik,jaik_norm)
+!       call print_norm(abij,abij_norm)
+!       call print_norm(ccsd_doubles,ccsd_doubles_norm)
+!       print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
+!       print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
+!       print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
+!
+!    end if
+!
+!#endif
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
@@ -256,17 +266,17 @@ contains
 
     end if reducing_to_master
 
-    if (infpar%lg_mynum .eq. infpar%master) then
-
-       print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
-       call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
-       call print_norm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
-       call print_norm(ccsdpt_singles,ccsdpt_singles_norm)
-       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
-       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
-       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
-
-    end if
+!    if (infpar%lg_mynum .eq. infpar%master) then
+!
+!       print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
+!       call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
+!       call print_norm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
+!       call print_norm(ccsdpt_singles,ccsdpt_singles_norm)
+!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
+!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
+!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
+!
+!    end if
 
     ! release stuff located on slaves
     releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
@@ -359,7 +369,7 @@ contains
     !> loop integers
     integer :: i,j,k,idx,ij_type,tuple_type
 #ifdef VAR_OPENACC
-    ! 9 is the unique number of handles
+    ! 10 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(10) :: async_id
 #else
     integer, dimension(10) :: async_id
@@ -447,18 +457,18 @@ contains
     async_id(7) = -7
     async_id(8) = -8
     async_id(9) = -9
-    async_id(9) = -10
+    async_id(10) = -10
 #endif
 
 ! copy in orbital energies and create triples amplitudes and work arrays
 !$acc enter data create(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k) &
-!$acc& copyin(eivalocc,eivalvirt) 
+!$acc& copyin(eivalocc,eivalvirt)
 
  ijrun_par: do ij_count = 1,b_size + 1
 
                ! get value of ij from job disttribution list
                ij = jobs(ij_count)
-    
+
                ! no more jobs to be done? otherwise leave the loop
                if (ij .lt. 0) exit
 
@@ -490,14 +500,14 @@ contains
 ! move ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 
-!$acc wait(async_id(1),async_id(5)) async(async_id(10)) 
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
 ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
-                  call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
+                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
 #else
-                  call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                          & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
+                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
+                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
 ! move integrals to the device
@@ -506,9 +516,11 @@ contains
 
 ! copyin ccsdpt intermediates
 !$acc enter data copyin(ccsdpt_singles(:,i),ccsdpt_singles(:,j)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(7))
-!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
+!$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
+!                  ! get the j'th v^3 tile only
+!                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
                   ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
                   call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
@@ -525,7 +537,7 @@ contains
                   if (i .eq. j) then
 
 ! move ccsd_doubles and integrals blocks to the device
-! (we need ccsd_doubles for i, but no need for ccsd_doubles since i == j)
+! (we need ccsd_doubles for i, but no need for ccsd_doubles for index j since i == j)
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
 !$acc wait(async_id(1),async_id(5)) async(async_id(10))
@@ -548,6 +560,7 @@ contains
 
 ! no need to get i'th tile as j'th tile is already present on the host node.
 ! just copy on the host node and copyin to the device.
+!                     vvvo_pdm_i = vvvo_pdm_j
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
                      call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
 #else
@@ -579,6 +592,8 @@ contains
 !$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
+!                     ! get the i'th v^3 tile only
+!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
                      ! get the i'th v^3 tile only
                      call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
@@ -593,7 +608,7 @@ contains
                   i_old = i
 
                case(3)
-    
+
                   if (i .eq. j) then
 
 ! move ccsd_doubles blocks to the device
@@ -618,6 +633,8 @@ contains
 !$acc enter data copyin(ccsdpt_doubles(:,:,i,j)) async(async_id(8))
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i)) async(async_id(9))
 
+!                     ! get the i'th v^3 tile
+!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
                      ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
@@ -654,6 +671,9 @@ contains
 !$acc enter data copyin(ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i)) async(async_id(8))
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,i),ccsdpt_doubles_2(:,:,:,j)) async(async_id(9))
 
+!                     ! get the i'th and j'th v^3 tiles
+!                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3)
+!                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3)
                      ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
                      call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
@@ -664,11 +684,11 @@ contains
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
 
                   end if
-    
+
                   ! store i and j indices
                   i_old = i
                   j_old = j
-    
+
                end select TypeOf_ij_combi
 
         krun_par: do k=1,j
@@ -709,6 +729,8 @@ contains
 !$acc enter data copyin(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
+!                        ! get the k'th tile
+!                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
                         call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
@@ -758,6 +780,8 @@ contains
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
 !$acc enter data copyin(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
 
+!                        ! get the k'th tile
+!                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3)
                         ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
                         call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
@@ -770,7 +794,7 @@ contains
 
                      ! generate tuple(s)
                      TypeOfTuple_par: select case(tuple_type)
-     
+
                      case(1)
 
 !$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
@@ -781,15 +805,19 @@ contains
                                                 & vvvo_pdm_i,vvvo_pdm_k,&
                                                 & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                 & trip_tmp,trip_ampl,async_id(5))
-     
+
+! delete reference to the ccsd_doubles
+!$acc wait(async_id(5)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+
                         ! generate triples amplitudes from trip arrays
-     
+
                         call trip_denom_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-     
+
                         ! now do the contractions
 
 !$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
-     
+
                         call ccsdpt_driver_ijk_case1(i,k,nocc,nvirt,vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                              & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                              & vvvo_pdm_i,vvvo_pdm_k,&
@@ -799,8 +827,8 @@ contains
                                              & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k) async(async_id(2))
 !$acc wait(async_id(6)) async(async_id(3))
@@ -815,7 +843,7 @@ contains
 !$acc exit data copyout(ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i)) async(async_id(8))
 !$acc wait(async_id(6)) async(async_id(9))
 !$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
- 
+
                      case(2)
 
 !$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
@@ -828,13 +856,13 @@ contains
                                                 & trip_tmp,trip_ampl,async_id(5))
 
                         ! generate triples amplitudes from trip arrays
-     
+
                         call trip_denom_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-     
+
 !$acc wait(async_id(5),async_id(8)) async(async_id(6))
 
                         ! now do the contractions
-     
+
                         call ccsdpt_driver_ijk_case2(i,j,nocc,nvirt,vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
                                              & ovoo(:,:,i,j),ovoo(:,:,j,i),ovoo(:,:,j,j),&
                                              & vvvo_pdm_i,vvvo_pdm_j,&
@@ -846,12 +874,13 @@ contains
 ! delete reference to device arrays such that the memory may be be re-used
 !$acc wait(async_id(6)) async(async_id(3))
 !$acc exit data delete(ovoo(:,:,j,k)) async(async_id(3))
+!$acc wait(async_id(6)) async(async_id(4))
 !$acc exit data delete(vvoo(:,:,j,k)) async(async_id(4))
 
 ! copyout ccsdpt intermediates
 !$acc wait(async_id(6)) async(async_id(8))
 !$acc exit data copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(8))
- 
+
                      case(3)
 
 !$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
@@ -866,10 +895,14 @@ contains
                                                 & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                 & trip_tmp,trip_ampl,async_id(5))
 
+! delete reference to the ccsd_doubles
+!$acc wait(async_id(5)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+
                         ! generate triples amplitudes from trip arrays
-     
+
                         call trip_denom_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,async_id(5))
-     
+
                         ! now do the contractions
 
 !$acc wait(async_id(5),async_id(7),async_id(8),async_id(9)) async(async_id(6))
@@ -887,8 +920,8 @@ contains
                                              & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_k) async(async_id(2))
 !$acc wait(async_id(6)) async(async_id(3))
@@ -904,15 +937,16 @@ contains
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j)) async(async_id(8))
 !$acc wait(async_id(6)) async(async_id(9))
 !$acc exit data copyout(ccsdpt_doubles_2(:,:,:,k)) async(async_id(9))
-     
+
                      end select TypeOfTuple_par
-  
+
                   end do krun_par
 
                if (j .eq. i) then
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i) async(async_id(2))
@@ -932,7 +966,8 @@ contains
                else ! i .gt. j
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i),ccsd_doubles(:,:,:,j)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo_pdm_i,vvvo_pdm_j) async(async_id(2))
@@ -1857,13 +1892,21 @@ contains
                             & vvvo_tile_3,trip_tmp,async_idx)
     call trip_amplitudes_ijk_occ(oindex1,oindex3,oindex1,no,nv,ccsd_doubles_portions_1,&
                             & ovoo_tile_13,trip_tmp,async_idx)
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3,gpu=.true.)
+#ifndef VAR_OPENACC
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
 #endif
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_ampl = trip_tmp
+!$acc end kernels
+#endif
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [2,1,3],1.0E0_realk,trip_ampl,async_idx)
@@ -2023,13 +2066,21 @@ contains
                             & vvvo_tile_2,trip_tmp,async_idx)
     call trip_amplitudes_ijk_occ(oindex2,oindex2,oindex1,no,nv,ccsd_doubles_portions_2,&
                             & ovoo_tile_12,trip_tmp,async_idx)
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3,gpu=.true.)
+#ifndef VAR_OPENACC
+    call assign_in_subblocks(trip_ampl,'=',trip_tmp,i8*nv**3)
 #else
 !$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
     trip_ampl = trip_tmp
 !$acc end kernels
 #endif
+#else
+!$acc kernels present(trip_ampl,trip_tmp) async(async_idx)
+    trip_ampl = trip_tmp
+!$acc end kernels
+#endif
+
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,&
                         & [1,3,2],1.0E0_realk,trip_ampl,async_idx)
@@ -4228,7 +4279,7 @@ contains
     !> temporary quantities
     integer :: contraction_type, no2
 #ifdef VAR_OPENACC
-    integer(kind=acc_handle_kind) :: async_id
+    integer(kind=acc_handle_kind) :: async_idx
 #else
     integer :: async_idx
 #endif
@@ -6435,20 +6486,20 @@ contains
            if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
               if(adapt_to_nnodes)then
                  if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
-#ifdef VAR_MPI
-                    print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
-#else
-                    print *,'we hit GammaOpt 1'
-#endif
+!#ifdef VAR_MPI
+!                    print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
+!#else
+!                    print *,'we hit GammaOpt 1'
+!#endif
                     GammaOpt = gamma
                     exit GammaLoop
                  endif
               else
-#ifdef VAR_MPI
-                 print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
-#else
-                 print *,'we hit GammaOpt 2'
-#endif
+!#ifdef VAR_MPI
+!                 print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
+!#else
+!                 print *,'we hit GammaOpt 2'
+!#endif
                  GammaOpt = gamma
                  exit GammaLoop
               endif
@@ -6458,29 +6509,29 @@ contains
 
         if (GammaOpt .eq. 0) then
 
-#ifdef VAR_MPI
-           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
-#else
-           print *,'we hit GammaOpt NEW'
-#endif
+!#ifdef VAR_MPI
+!           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
+!#else
+!           print *,'we hit GammaOpt NEW'
+!#endif
            GammaOpt = GammaDim
 
         endif 
 
-#ifdef VAR_MPI
-        print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
-#else
-        print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
-#endif
+!#ifdef VAR_MPI
+!        print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
+!#else
+!        print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
+!#endif
 
         ! If gamma batch size was set manually we use that value instead
         if(DECinfo%ccsdGbatch/=0) then
            write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
-#ifdef VAR_MPI
-           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
-#else
-           print *,'we hit GammaOpt 3'
-#endif
+!#ifdef VAR_MPI
+!           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
+!#else
+!           print *,'we hit GammaOpt 3'
+!#endif
            GammaOpt=DECinfo%ccsdGbatch
         end if 
 
@@ -6502,20 +6553,20 @@ contains
               if( adapt_to_nnodes  )then
 
                  if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
-#ifdef VAR_MPI
-                    print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
-#else
-                    print *,'we hit AlphaOpt 1'
-#endif
+!#ifdef VAR_MPI
+!                    print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
+!#else
+!                    print *,'we hit AlphaOpt 1'
+!#endif
                     AlphaOpt = alpha
                     exit AlphaLoop
                  endif
               else
-#ifdef VAR_MPI
-                 print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
-#else
-                 print *,'we hit AlphaOpt 2'
-#endif
+!#ifdef VAR_MPI
+!                 print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
+!#else
+!                 print *,'we hit AlphaOpt 2'
+!#endif
                  AlphaOpt = alpha
                  exit AlphaLoop
               endif
@@ -6525,29 +6576,29 @@ contains
 
         if (AlphaOpt .eq. 0) then
 
-#ifdef VAR_MPI
-           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
-#else
-           print *,'we hit AlphaOpt NEW'
-#endif
+!#ifdef VAR_MPI
+!           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
+!#else
+!           print *,'we hit AlphaOpt NEW'
+!#endif
            AlphaOpt = AlphaDim
 
         endif
 
-#ifdef VAR_MPI
-        print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
-#else
-        print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
-#endif
+!#ifdef VAR_MPI
+!        print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+!#else
+!        print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
+!#endif
 
         ! If alpha batch size was set manually we use that value instead
         if(DECinfo%ccsdAbatch/=0) then
            write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
-#ifdef VAR_MPI
-           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
-#else
-           print *,'we hit AlphaOpt 3'
-#endif
+!#ifdef VAR_MPI
+!           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
+!#else
+!           print *,'we hit AlphaOpt 3'
+!#endif
            AlphaOpt=DECinfo%ccsdAbatch
         end if
 
@@ -6556,12 +6607,12 @@ contains
         ! and store this number in alphadim.
         call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
 
-#ifdef VAR_MPI
-        print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
-           &', and AlphaOpt = ',AlphaOpt
-#else
-        print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
-#endif
+!#ifdef VAR_MPI
+!        print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
+!           &', and AlphaOpt = ',AlphaOpt
+!#else
+!        print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
+!#endif
 
         ! Print out and sanity check
         ! ==========================
