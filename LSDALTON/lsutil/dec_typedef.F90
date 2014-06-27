@@ -102,6 +102,8 @@ module dec_typedef_module
      integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
      !> Use singles
      logical :: use_singles
+     !> is the density and other matrices in the grand-canonical basis?
+     logical :: gcbasis
 
 
      !> Restart options
@@ -174,7 +176,7 @@ module dec_typedef_module
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
-     logical :: noPNOtrafo, noPNOtrunc
+     logical :: noPNOtrafo, noPNOtrunc, pno_S_on_the_fly
      logical :: noFAtrafo, noFAtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
@@ -186,8 +188,8 @@ module dec_typedef_module
      real(realk) :: EOSPNOthr
      !> use triangular counting in th occupied indices
      logical :: PNOtriangular
-     !> Use MO-based algorithm to solve the CCSD equations
-     logical :: MOCCSD
+     !> Prevent using MO-based algorithm to solve the CCSD equations
+     logical :: NO_MO_CCSD
      !> do not update the singles residual
      logical :: CCDhack
      !> Crash Calc Debug keyword - to test restart option
@@ -280,8 +282,6 @@ module dec_typedef_module
      integer :: PL
      !> only do fragment part of density or gradient calculation 
      logical :: SkipFull 
-     !> Print fragment energies for full CC calculation
-     logical :: full_print_frag_energies
      ! --
 
      !> Output options 
@@ -487,10 +487,15 @@ module dec_typedef_module
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
-     !> Cental atom in the population
+     !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
      integer :: numberofatoms
+     !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
+     !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
+     !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+     !> of occupied AND virtual orbitals in the original assignment.
+     integer :: secondaryatom
 
      !> List of significant atoms
      integer, pointer :: atoms(:) => null()
@@ -555,9 +560,9 @@ module dec_typedef_module
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: Cv(:,:) => null()
      !> CABS MO coefficients (mu,x)
-!     real(realk), pointer :: Ccabs(:,:) => null()
+     !     real(realk), pointer :: Ccabs(:,:) => null()
      !> RI MO coefficients 
-!     real(realk), pointer :: Cri(:,:) => null() 
+     !     real(realk), pointer :: Cri(:,:) => null() 
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -580,14 +585,14 @@ module dec_typedef_module
      real(realk), pointer :: DistanceTableOrbAtomVirt(:,:) => null()
      !> Which atoms are phantom atoms (only basis functions)
      Logical, pointer :: PhantomAtom(:) => null()
-     
+
 
      !> Occ-Occ Fock matrix in MO basis
      real(realk), pointer :: Fij(:,:) => null()
 
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
-      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     !> Cabs ri-Cabs ri exchange matrix in MO basis
      real(realk), pointer :: Krs(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
      real(realk), pointer :: Frs(:,:) => null() 
@@ -761,10 +766,10 @@ module dec_typedef_module
 
      !> Occ-Occ Fock matrix in MO basis
      real(realk), pointer :: Fij(:,:) => null()
-  
+
      !> Occ-CABS (one-electron + coulomb matrix) in MO basis
      real(realk), pointer :: hJir(:,:) => null() 
-      !> Cabs ri-Cabs ri exchange matrix in MO basis
+     !> Cabs ri-Cabs ri exchange matrix in MO basis
      real(realk), pointer :: Krs(:,:) => null() 
      !> Cabs ri-Cabs ri Fock matrix in MO basis
      real(realk), pointer :: Frs(:,:) => null() 
@@ -774,7 +779,7 @@ module dec_typedef_module
      real(realk), pointer :: Frm(:,:) => null()
      !> Cabs-(Occ+virt) Fock matrix in MO basis
      real(realk), pointer :: Fcp(:,:) => null()
-     
+
      ! Information for local orbitals
      ! ******************************
      !> Local occupied MO coefficients
@@ -829,7 +834,7 @@ module dec_typedef_module
      type(PNOSpaceInfo), pointer :: CLocPNO(:)
      !> number of spaces to consider
      integer :: nspaces
-    
+
 
      !> Integral program input
      type(lsitem) :: mylsitem
@@ -837,14 +842,14 @@ module dec_typedef_module
      ! End of EXPENSIVE BOX
      ! ==============================================================
 
-     
+
      ! Information for local orbitals
      ! ******************************
      !> Number of local occupied orbitals in fragment
      integer,pointer :: noccLOC
      !> Number of local unoccupied orbitals in fragment
      integer,pointer :: nunoccLOC
-     
+
 
 
 
@@ -1125,33 +1130,41 @@ module dec_typedef_module
   end type joblist
 
   !> Bookkeeping when distributing DEC MPI jobs.
-  TYPE traceback
-     INTEGER :: na,ng,ident
-  END TYPE traceback
+  type traceback
+     integer :: na,ng,ident
+  end type traceback
 
+  type int_batch
+     integer :: nbatches,max_dim
+     integer, pointer :: orb2batch(:)
+     integer, pointer :: batchdim(:)
+     integer, pointer :: batchsize(:)
+     integer, pointer :: batchindex(:)
+     type(batchtoorb), pointer :: batch2orb(:)
+  end type int_batch
 
   !> Integral batch handling
-  TYPE batchTOorb
-     INTEGER,pointer :: orbindex(:)
-     INTEGER :: norbindex
-  END TYPE batchTOorb
+  type batchTOorb
+     integer,pointer :: orbindex(:)
+     integer :: norbindex
+  end type batchTOorb
 
   !> MO Integral batch info:
   type MObatchInfo
 
-    !> number of batches:
-    integer :: nbatch
-    !> dimension of each of the nbatch1:
-    integer, pointer :: dimInd1(:) 
-    !> dimension of each of the nbatch2:
-    integer, pointer :: dimInd2(:)
-    !> MO index corresponding to the starting point of each batch:
-    integer, pointer :: StartInd1(:) 
-    integer, pointer :: StartInd2(:) 
-    !> Total dimension of the batch
-    integer, pointer :: dimTot(:)
-    !> Tile index for pdm arrays
-    integer, pointer :: tileInd(:,:)
+     !> number of batches:
+     integer :: nbatch
+     !> dimension of each of the nbatch1:
+     integer, pointer :: dimInd1(:) 
+     !> dimension of each of the nbatch2:
+     integer, pointer :: dimInd2(:)
+     !> MO index corresponding to the starting point of each batch:
+     integer, pointer :: StartInd1(:) 
+     integer, pointer :: StartInd2(:) 
+     !> Total dimension of the batch
+     integer, pointer :: dimTot(:)
+     !> Tile index for pdm arrays
+     integer, pointer :: tileInd(:,:)
 
   end type MObatchInfo
 
@@ -1195,20 +1208,24 @@ module dec_typedef_module
   !> if you modify this structure, also modify bufferadd_PNOSpaceInfo_struct in decmpi.F90
   type PNOSpaceInfo
 
-    integer              :: rpd                    ! corresponding dimension of the (restricted) pair space [i(<=)j], read reduced pair dimension
-    
-    integer              :: n                      ! number of occ orbitals in the corresponding space
-    integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space
+     integer              :: rpd                    ! corresponding dimension of the (restricted) pair space [i(<=)j], read reduced pair dimension
 
-    logical              :: s_associated           ! indicate whether s matrices are associated, i.e. a SVD  d = s1 d_new  s2^T  
-    integer              :: ns1,ns2,red1,red2      ! dimensions, depending on s_associated
-    real(realk), pointer :: d(:,:)  => null()      ! density matrix or overlap matrix. if s_associated d = d_new, either (ns1,ns2) or (red1,red2)
-    real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
-    real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
+     integer              :: n                      ! number of occ orbitals in the corresponding space
+     integer, pointer     :: iaos(:) => null()      ! orbital index in the aos space
 
-    logical              :: allocd                 ! logical to show the allocation status
-    logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
-    logical              :: PS                     ! save wheter it is a triangular pair space
+     logical              :: s_associated           ! indicate whether s matrices are associated, i.e. a SVD  d = s1 d_new  s2^T  
+     integer              :: ns1,ns2,red1,red2      ! dimensions, depending on s_associated
+     real(realk), pointer :: d(:,:)  => null()      ! density matrix or overlap matrix. if s_associated d = d_new, either (ns1,ns2) or (red1,red2)
+     real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
+     real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
+
+     logical              :: allocd,contributes     ! logical to show the allocation and contribution status
+     logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
+     logical              :: PS                     ! save wheter it is a triangular pair space
   end type PNOSpaceInfo
 
+  type pno_query_info
+     integer(kind=8)          :: n_arrays
+     integer(kind=8), pointer :: size_array(:)
+  end type pno_query_info
 end module dec_typedef_module

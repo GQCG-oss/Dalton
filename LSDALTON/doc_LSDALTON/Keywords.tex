@@ -25,7 +25,7 @@ should always end with *END OF INPUT.
 This input module contains general settings.
 \begin{description}
 
-\item[\Key{SCFINTERACTIONENERGY}] Calculation of the Counter Poise Corrected Interaction energy (Hartree-Fock and DFT). \newline
+\item[\Key{INTERACTIONENERGY}] Calculation of the Counter Poise Corrected Interaction energy (Hartree-Fock, DFT, DEC-MP2 and CCSD). \newline
 NB: Requires the use of SubSystem labels in the MOLECULE.INP file
 \item[\Key{SAMESUBSYSTEMS}] Assumes that the two subsystems of the Counter Poise Corrected Interaction energy calculation is identical.
 \item[\Key{SUBSYSTEMDENSITY}] Constructs a density matrix for the subsystems of the Counter Poise Corrected Interaction energy calculation using the full system density matrix.  
@@ -986,6 +986,7 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 %\verb|<Purification method>|\newline
 %Use purification scheme for density optimization 
 \item[\Key{RESTART}] The code automatically saves the density matrix in each SCF iteration in a file called dens.restart. This option restart the calculation from this density matrix. If the program cannot find the dens.restart file the keyword have no effect. 
+\item[\Key{SKIPSCFLOOP}] The code automatically saves the density matrix and the Fock/Kohn-Sham matrix at the end of the SCF iterations in two files called dens.restart and fock.restart. This option reads the files and skips the SCF iterations.
 \item[\Key{RH}] Use standard Roothaan-Hall scheme (diagonalization) for density optimization.
 %\item[\Key{SCALVIR}]
 %\item[\Key{SOEO}]
@@ -1480,6 +1481,28 @@ Threshold for when excited states are to be considered degenerate
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
 
+\subsection{*DIPOLE}\label{subsec:dipole}
+Calculation of the permanent dipole moment
+
+\subsection{*DIPOLEMOMENTMATRIX}\label{subsec:dipolematrix}
+Calculation of the full dipole moment matrix:\newline
+\begin{eqnarray}
+\mu = \left(\begin{array}{cccc}
+\mu_{00} & \mu_{01} & \mu_{02} & \dots \\
+\mu_{10} & \mu_{11} & \mu_{12} & \dots \\
+\mu_{20} & \mu_{21} & \mu_{22} & \dots \\
+\dots & \dots & \dots & \dots \\
+\end{array}\right)
+\end{eqnarray}
+\begin{itemize}
+\item $\mu_{00}$ denote the permanent dipole moment for the ground state
+\item $\mu_{0i}$ denote the transition dipole moment between the ground state and the i'th excited state
+\item $\mu_{ii}$ denote the Permanent dipole moment for the i'th excited states
+\item $\mu_{ij}$ denote the transition dipole moment between the i'th and j'th excited state
+\end{itemize}
+
+{\bf Requires specification of .NEXCIT!}\newline
+
 \subsection{*ALPHA}\label{subsec:alpha}
 Calculation of the (possibly complex) 
 electric dipole polarizability tensor $\alpha_{AB}$ and its isotropic average.
@@ -1664,8 +1687,7 @@ Nuclear magnetic shielding tensors and chemical shift can be calculated with thi
 Permanent dipole moment for excited states. 
 {\bf Always requires specification of .NEXCIT!}\newline
 If .EXSTATES is not specified, the excited state dipole moments
-for all excited states from 1 to NEXCIT
-are calculated. \newline
+for all excited states from 1 to NEXCIT are calculated. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_esd
 \begin{description}
 \item[\Key{EXSTATES}] \verb| | \newline

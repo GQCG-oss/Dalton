@@ -146,5 +146,47 @@ subroutine nullifyMainBasis(BAS)
   ENDDO
 end subroutine nullifyMainBasis
 
+subroutine nullifyAtomType(AT)
+implicit none
+type(atomtypeitem) :: AT
+!
+integer :: j
+AT%FAMILY = .FALSE.
+AT%nAngmom=0
+AT%ToTnorb=0
+AT%ToTnprim=0
+AT%Charge=0
+do J=1,80
+   AT%NAME(J:J) = ' '
+enddo
+do J=1,maxAOangmom
+   call nullifySHELL(AT%SHELL(J))
+end do
+end subroutine nullifyAtomType
+
+subroutine nullifyShell(sh)
+implicit none
+type(SHELL) :: SH
+!
+integer :: I
+
+SH%nprim = 0
+SH%norb = 0 
+SH%nsegments = 0 
+do I=1,maxBASISsegment
+   call nullifySegment(SH%segment(I))
+enddo
+end subroutine nullifyShell
+
+subroutine nullifySegment(se)
+implicit none
+type(Segment) :: Se
+Se%nrow = 0
+Se%ncol = 0 
+nullify(Se%elms)
+nullify(Se%Exponents)
+nullify(Se%UCCelms)
+end subroutine nullifySegment
+
 END MODULE basis_typetype
 

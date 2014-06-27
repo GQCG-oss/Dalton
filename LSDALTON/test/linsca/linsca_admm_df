@@ -31,7 +31,7 @@ cat > linsca_admm_df.info <<'%EOF%'
 #######################################################################
 cat > linsca_admm_df.mol <<'%EOF%'
 BASIS
-6-31G* Aux=df-def2 CABS=6-31G JK=3-21G
+6-31G* Aux=df-def2 ADMM=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry
@@ -48,7 +48,7 @@ C   0.0   0.0     0.0
 #######################################################################
 cat > linsca_admm_df.dal <<'%EOF%'
 **INTEGRALS
-.ADMM-JK
+.ADMM
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
@@ -85,9 +85,9 @@ CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"
 
 # GRADIENT test
-CRIT1=`$GREP "H * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] *   2\.677927532[0-9]" $log | wc -l`
-CRIT2=`$GREP "N * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] * \-3\.105817785[0-9]" $log | wc -l`
-CRIT3=`$GREP "C * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] *   0\.427896775[0-9]" $log | wc -l`
+CRIT1=`$GREP "H * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] *   2\.6779275" $log | wc -l`
+CRIT2=`$GREP "N * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] * \-3\.1058177" $log | wc -l`
+CRIT3=`$GREP "C * \-?0?\.000000000[0-9] * \-?0?\.000000000[0-9] *   0\.4278967" $log | wc -l`
 TEST[2]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="GRADIENT NOT CORRECT -"

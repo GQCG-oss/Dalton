@@ -821,8 +821,6 @@ C        ... write SIRIFC and CI info for WESTA program
          FLAG(25) = .TRUE.
          FLAG(26) = .TRUE.
       END IF
-      ! SIRIFC is now needed for MP2 /Feb.2014
-      IF (DOMP2 .OR. DONEVPT) FLAG(25) = .TRUE.
       IF (RNABAC .AND. SUPSYM) THEN
          SUPSYM = .FALSE.
          NWARN = NWARN + 1

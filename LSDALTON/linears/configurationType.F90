@@ -67,11 +67,11 @@ type ConfigItem
    logical              :: noDecEnergy
    !> Should Memory Information be printet 
    logical              :: PrintMemory
-   !> Perform SCF interaction energies using Counter Poise Correction
-   logical              :: SCFinteractionEnergy
-   !> Same SubSystems in SCF interaction energies
+   !> Perform interaction energy calculation using Counter Poise Correction
+   logical              :: InteractionEnergy
+   !> Same SubSystems in Interaction energies
    logical              :: SameSubSystems
-   !> Construct SubSystems Density matrix in SCF interaction energies
+   !> Construct SubSystems Density matrix in Interaction energies
    logical              :: SubSystemDensity
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
@@ -124,6 +124,10 @@ type ConfigItem
    logical              :: doF12
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
+   !> set debugging mode for the PDM type arrays
+   logical              :: type_array_debug
+   !> skip SCF calculations
+   logical              :: skipscfloop
 end type ConfigItem
 
 type LowAccuracyStartType

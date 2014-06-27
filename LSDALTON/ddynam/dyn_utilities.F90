@@ -626,9 +626,12 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk 
+  print*,'Vels',Vels
+  print*,'Mass',Mass
   Do i = 1,N
      Kinetic = Kinetic + (DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )*Mass(i) )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic_Cart
 !====================!
 ! Calc_Kinetic       !
@@ -642,9 +645,11 @@ Real(realk) :: Kinetic
 Real(realk), external :: DDOT
 Integer :: i
   Kinetic = 0E-7_realk  
+  print*,'Vels',Vels
   Do i = 1,N
      Kinetic = Kinetic + DDOT(3,Vels(3*i-2:3*i),1,Vels(3*i-2:3*i),1 )/2E0_realk
   Enddo
+  print*,'Kinetic',Kinetic
 End Subroutine Calc_Kinetic
 !===================!
 ! Calc_AngMom_Cart  !
@@ -1104,6 +1109,7 @@ Real(realk) :: Principle_Axes(3,3)
 Real(realk) :: Principle_Inertia(3)
 Real(realk) :: TraRotVec(NAtoms*3,6)
 Real(realk) :: TransformPM(NAtoms*3,NAtoms*3) ! Transformation to principle axes
+Real(realk) :: TransformPMT(NAtoms*3,NAtoms*3) ! Transpose of TransformPM
 Real(realk) :: Proj_MatPM(NAtoms*3,NAtoms*3)  ! Projection in principle axes frame
 Real(realk) :: Proj_Mat(NAtoms*3,NAtoms*3)  ! Projection in general frame
 Real(realk) :: TotalMass, VecNorm
@@ -1136,11 +1142,18 @@ Enddo
 TraRotVec(1:(NAtoms*3):3, 1) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
 TraRotVec(2:(NAtoms*3):3, 2) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
 TraRotVec(3:(NAtoms*3):3, 3) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
+
 ! Mass-weight coordinates
 Call Mass_weight_vector(NAtoms,Coordinates,Mass,'WEIGHT') 
 ! Set up the rotation vectors
-Scale_Vector = MATMUL(Transpose(TransformPM),Coordinates)
+
+!For some strange reason this does not work:
+!Scale_Vector = MATMUL(Transpose(TransformPM),Coordinates)
+!so we do this instead:
+TransformPMT = Transpose(TransformPM)
+Scale_Vector = MATMUL(TransformPMT,Coordinates)
 RotCount = 0
+
 Do I = 1, 3
   If (Abs(Principle_Inertia(I)) > 1E-12_realk) Then
     RotCount = RotCount + 1
@@ -1167,6 +1180,7 @@ Proj_MatPM = -MatMul(TraRotVec, Transpose(TraRotVec))
 Do I = 1, NAtoms*3
   Proj_MatPM(I,I) = Proj_MatPM(I,I) + 1E0_realk
 End Do
+
 If (print_level >= 9) Then
 !  Call Underline(lupri, 'MW geometry in principal axes', -1)
 !  Call Output(Scale_Vector, 1, 1, 1, NAtoms*3, 1, NAtoms*3, 1, lupri)
@@ -1307,10 +1321,11 @@ End subroutine Rotational_analysis
 ! mass-weighting
 Subroutine Mass_weight_vector(NAtoms,Vector,Mass,Mode)
 Implicit none
-Integer :: NAtoms, i
-Real(realk) :: Vector(NAtoms*3)
-Real(realk) :: Mass(NAtoms)
-Character(len=6) :: Mode
+Integer,intent(in) :: NAtoms
+Real(realk),intent(inout) :: Vector(NAtoms*3)
+Real(realk),intent(in) :: Mass(NAtoms)
+Character(len=6),intent(in) :: Mode
+Integer ::  i
 ! Do mass-weighting
 If (Mode .EQ. 'WEIGHT' ) then
    Do i = 1, NAtoms

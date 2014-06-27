@@ -106,8 +106,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+
     add_definitions(-DVAR_PGI)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90 -mcmodel=medium")
+
+# Patrick: mcmodel=medium is not available on PGI Free for MacOS X
+    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
+    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
+    endif()
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
@@ -173,11 +180,12 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
     add_definitions(-DVAR_CRAY)
 
+    set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+    # Patrick: For cray we want to use the system allocator since it is faster and has less memory requirements than the cray allocator
     if(ENABLE_TITANBUILD)
-       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ -hsystem_alloc")
-    else()
-       set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
     endif()
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")
     set(CMAKE_Fortran_FLAGS_PROFILE "-g")

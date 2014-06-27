@@ -159,8 +159,8 @@ C     **********************
 C
       SECOND = MAXDIF .EQ. 2
       NCDEP3 = 3*NUCDEP
-      CALL DZERO(GRADNN(1),NCDEP3)
-      IF (SECOND) CALL HESZER(HESSNN)
+      GRADNN(:) = 0.0D0
+      IF (SECOND) HESSNN(:,:) = 0.0D0
 C
 C     ******************************************
 C     ***** CALCULATE GRADIENT AND HESSIAN *****

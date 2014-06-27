@@ -45,7 +45,7 @@ He     2.00000   0.00000   0.00000
 #######################################################################
 cat > linsca_counterpoise.dal <<'%EOF%'
 **GENERAL
-.SCFINTERACTIONENERGY
+.INTERACTIONENERGY
 .SAMESUBSYSTEMS
 .SUBSYSTEMDENSITY
 .TIME

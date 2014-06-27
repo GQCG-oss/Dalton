@@ -46,7 +46,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
        & no_of_matmuls, mat_init, mat_free, mat_assign,mat_scal, &
        & mat_mul, mat_no_of_matmuls, mat_write_to_disk, mat_read_from_disk, mat_diag_f,&
        & mat_TrAB, mat_print
-  use configuration, only: config_shutdown, config_free,scf_purify
+  use configuration, only: config_shutdown, config_free
   use files, only: lsopen,lsclose
   use lsdalton_fock_module, only: lsint_fock_data
   use init_lsdalton_mod, only: open_lsdalton_files,init_lsdalton_and_get_lsitem
@@ -55,7 +55,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use lstiming, only: lstimer, init_timers, print_timers
   use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
-  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
+  use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2,read_fock_matrix_from_file
   use daltoninfo, only: ls_free 
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
@@ -76,7 +76,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use soeo_loop, only: soeoloop, soeo_restart
   ! GEO OPTIMIZER
   use ls_optimizer_mod, only: LS_RUNOPT
-  use SCFinteractionEnergyMod, only: SCFinteractionEnergy
+  use InteractionEnergyMod, only: InteractionEnergy
   use lsmpi_type, only: lsmpi_finalize
   use lsmpi_op, only: TestMPIcopySetting,TestMPIcopyScreen
   use lstensorMem, only: lstmem_init, lstmem_free
@@ -351,11 +351,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               write (config%lupri, *) 'WARNING: .SOEORST specified but soeosave.out does not exist'
               write (config%lupri, *) '         Making regular optimization to get matrices!'
            endif
-           if (config%opt%purescf) then
-              !We do one or 2 iterations with a fast and app. exchange/coulomb
-              !so we do not need to be converged as hard as level 4
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold*300E0_realk
-           endif
 
            IF(config%integral%LOW_ACCURACY_START)THEN
               call set_Low_accuracy_start_settings(lupri,ls,config,LAStype)
@@ -364,18 +359,16 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
               CALL Print_Memory_info(lupri,'after Low Accuracy Start')
            ENDIF
 
-           call scfloop(H1,F,D,S,E,ls,config)
-           CALL Print_Memory_info(lupri,'after scfloop')
-
-           !Level 4
-           if (config%opt%purescf) then
-              Write(lupri,*)'Begin Level 4'
-              print*,'Begin Level 4'
-              config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold
-              call scf_purify(lupri,ls,config,scfpurify)
+           if(config%skipscfloop)then              
+              WRITE(config%lupri,*)'The SCF Loop has been skipped!'
+              WRITE(config%lupri,*)'Warning: The use of the .SKIPSCFLOOP keyword assumes that the'
+              WRITE(config%lupri,*)'fock.restart exist and that it is the final Fock/Kohn-Sham matrix'
+              WRITE(config%lupri,*)'of the converged density matrix in dens.restart. Use at own risk.'
+              call read_fock_matrix_from_file(F(1))
+           else !default
               call scfloop(H1,F,D,S,E,ls,config)
-              CALL Print_Memory_info(lupri,'after scfpurify-scfloop')
            endif
+           CALL Print_Memory_info(lupri,'after scfloop')
         endif
 
         IF(config%decomp%cfg_DumpDensRestart)THEN !default true
@@ -468,7 +461,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
               ! Single point DEC calculation using current HF files
               DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F(1),D(1),S,CMO)
+                 call dec_main_prog_input(ls,F(1),D(1),S,CMO,E(1))
               endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)
@@ -525,8 +518,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      ENDIF
 #endif     
 
-        if (config%SCFinteractionEnergy) then
-           CALL SCFinteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
+        if (config%InteractionEnergy) then
+           CALL InteractionEnergy(E,config,H1,F,D,S,CMO,ls)           
         endif
         !PROPERTIES SECTION
 

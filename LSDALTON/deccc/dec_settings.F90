@@ -77,6 +77,7 @@ contains
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%pno_S_on_the_fly     = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7_realk
@@ -87,8 +88,7 @@ contains
     DECinfo%PNOoverlapthr        = 1.0E-5_realk
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
-    DECinfo%full_print_frag_energies = .false.
-    DECinfo%MOCCSD               = .false.
+    DECinfo%NO_MO_CCSD           = .false.
     DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
@@ -165,7 +165,7 @@ contains
     DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
     DECinfo%DFTreference            = .false.
-    DECinfo%ccConvergenceThreshold  = 1e-5
+    DECinfo%ccConvergenceThreshold  = 1e-5_realk
     DECinfo%CCthrSpecified          = .false.
     DECinfo%use_singles             = .false.
     DECinfo%use_preconditioner      = .true.
@@ -189,7 +189,7 @@ contains
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
     DECinfo%kappa_driver_debug=.false.
-    DECinfo%kappaTHR=1e-4
+    DECinfo%kappaTHR=1e-4_realk
     DECinfo%EerrFactor = 1.0_realk
     DECinfo%EerrOLD = 0.0_realk
 
@@ -310,7 +310,7 @@ contains
        case('.MP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
-          DECinfo%MOCCSD      = .false.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CC2')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true. 
@@ -319,6 +319,7 @@ contains
           DECinfo%CCDhack=.true.
           DECinfo%use_singles=.true. 
           DECinfo%solver_par=.true.
+          DECinfo%NO_MO_CCSD  = .true.
        case('.CCSD')
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
@@ -398,6 +399,7 @@ contains
 
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
+
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
@@ -448,15 +450,18 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
-
-
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       ! Those keyword should probably not be released but are necesary for some essantial test cases:
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
+       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
 
 
 #ifdef MOD_UNRELEASED
@@ -469,13 +474,14 @@ contains
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
        case('.NOFATRAFO');                DECinfo%noFAtrafo            = .true.; DECinfo%noFAtrunc=.true.
        case('.NOFATRUNCATION');           DECinfo%noFAtrunc            = .true.
        case('.NOPNOOVERLAPTRUNCATION');   DECinfo%noPNOoverlaptrunc    = .true.
-       case('.MOCCSD');                   DECinfo%MOCCSD               = .true.
+       case('.NO_MO_CCSD');               DECinfo%NO_MO_CCSD           = .true.
        case('.PNO_DEBUG');                DECinfo%PNOtriangular        = .false.
        case('.CCSDPREVENTCANONICAL');     DECinfo%CCSDpreventcanonical = .true.
        case('.CCSDEXPL');                 DECinfo%ccsd_expl            = .true.
@@ -489,7 +495,6 @@ contains
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
-       case('.PRINTFRAGS'); DECinfo%full_print_frag_energies=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
@@ -518,12 +523,8 @@ contains
        case('.PRINTINTERACTIONENERGY')     
           !Print the Interaction energy (see .INTERACTIONENERGY) 
           DECinfo%PrintInteractionEnergy  = .true.
-          DECinfo%full_print_frag_energies=.true.
        case('.SOSEX')
          DECinfo%SOS = .true.
-       case('.STRESSTEST')     
-          !Calculate biggest 2 atomic fragments and the biggest pair fragment
-          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -567,7 +568,6 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_N_JOBS')
@@ -617,6 +617,11 @@ contains
   !> \date October 2010
   subroutine check_dec_input()
     implicit none
+    integer :: nodtot
+    nodtot = 1
+#ifdef VAR_MPI
+    nodtot = infpar%nodtot
+#endif
 
     ! Check that array4OnFile is only called for the cases where it is implemented
 
@@ -682,6 +687,10 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
+    ! Never ignores pairs when full molecule is included in fragments
+    if(DECinfo%InclFullMolecule) then
+       DECinfo%PairEstimateIgnore=.true.
+    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT
@@ -742,7 +751,16 @@ contains
 
     endif
 
+   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+      call lsquit("ERROR(check_dec_input):Do not use &
+         &.CCSDforce_scheme in a DEC calculation",-1)
+   endif
 
+   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+      call lsquit("ERROR(check_dec_input):You forced a scheme in &
+      &the CCSD part which is dependent on running at least 2 &
+      &MPI processes with only one process",-1)
+   endif
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements

@@ -60,9 +60,9 @@ contains
     !> nocc, nvirt, and nbasis for fragment or full molecule
     integer, intent(in) :: nocc, nvirt, nbasis
     !> ppfock and qqfock for fragment or full molecule
-    real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
+    real(realk), intent(in) :: ppfock(:,:), qqfock(:,:)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: Co(nbasis,nocc), Cv(nbasis,nvirt)
+    real(realk), intent(in) :: Co(:,:), Cv(:,:)
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
@@ -90,6 +90,14 @@ contains
     type(array4) :: ccsdpt_doubles_2
     type(array),intent(inout) :: ccsdpt_doubles
     type(array),intent(inout) :: ccsdpt_singles
+    logical :: master
+
+    call time_start_phase(PHASE_WORK)
+
+    master = .true.
+#ifdef VAR_MPI
+    master = (infpar%lg_mynum == infpar%master)
+#endif
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -105,44 +113,57 @@ contains
     call array_zero(ccsdpt_singles)
     call array_zero(ccsdpt_doubles)
 
+    call mem_alloc(eivalocc,nocc)
+    call mem_alloc(eivalvirt,nvirt)
+    C_can_occ  = array2_init(occAO)
+    C_can_virt = array2_init(virtAO)
+
+    if (master) then
+      ! *************************************
+      ! get arrays for transforming integrals
+      ! *************************************
+      ! C_can_occ, C_can_virt:  MO coefficients for canonical basis
+      ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
+      ! note: Uocc and Uvirt have indices (local,canonical)
+
+      Uocc       = array2_init(occdims)
+      Uvirt      = array2_init(virtdims)
+      call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
+                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
+
+      ! ***************************************************
+      ! transform ccsd doubles amplitudes to diagonal basis
+      ! ***************************************************
+      call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
+
+    end if
+
 #ifdef VAR_MPI
-
-    call time_start_phase(PHASE_WORK)
-
     nodtotal = infpar%lg_nodtot
 
-    ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
+    call time_start_phase(PHASE_COMM)
 
-       call time_start_phase(PHASE_COMM)
+   ! bcast the JOB specifier and distribute data to all the slaves within local group
+    waking_the_slaves: if ((nodtotal .gt. 1) .and. master) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_doubles%elm4,mylsitem)
-
-       call time_start_phase(PHASE_WORK)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_doubles%elm4,mylsitem)
 
     end if waking_the_slaves
 
+    ! Communicate important information:
+    call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+    call ls_mpi_buffer(eivalocc,nocc,infpar%master)
+    call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
+    call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
+    call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+    call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+
+    call time_start_phase(PHASE_WORK)
 #endif
-
-    ! *************************************
-    ! get arrays for transforming integrals
-    ! *************************************
-    ! C_can_occ, C_can_virt:  MO coefficients for canonical basis
-    ! Uocc, Uvirt: unitary transformation matrices for canonical --> local basis (and vice versa)
-    ! note: Uocc and Uvirt have indices (local,canonical)
-
-    call mem_alloc(eivalocc,nocc)
-    call mem_alloc(eivalvirt,nvirt)
-    Uocc       = array2_init(occdims)
-    Uvirt      = array2_init(virtdims)
-    C_can_occ  = array2_init(occAO)
-    C_can_virt = array2_init(virtAO)
-    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,&
-                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
     ! get vo³, v²o², and v³o integrals in proper sequence
@@ -151,41 +172,9 @@ contains
 
     call get_CCSDpT_integrals(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,jaik,abij,cbai)
 
-#ifdef VAR_MPI
-
-    if (infpar%lg_mynum .eq. infpar%master) then
-
-       print *,'proc no. ',infpar%lg_mynum,'done with ccsd(t) integrals'
-
-    end if
-
-#endif
-
-!#ifdef VAR_MPI
-!
-!    if (infpar%lg_mynum .eq. infpar%master) then
-!
-!       print *,'proc no. ',infpar%lg_mynum,'integrals after get_CCSDpT_integrals'
-!       call print_norm(jaik,jaik_norm)
-!       call print_norm(abij,abij_norm)
-!       call print_norm(ccsd_doubles,ccsd_doubles_norm)
-!       print *,'proc no. ',infpar%lg_mynum,'jaik_norm = ',jaik_norm
-!       print *,'proc no. ',infpar%lg_mynum,'abij_norm = ',abij_norm
-!       print *,'proc no. ',infpar%lg_mynum,'ccsd_doubles_norm = ',ccsd_doubles_norm
-!
-!    end if
-!
-!#endif
-
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
     call array2_free(C_can_virt)
-
-    ! ***************************************************
-    ! transform ccsd doubles amplitudes to diagonal basis
-    ! ***************************************************
-
-    call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vovo=ccsd_doubles%elm1)
 
 
     ! ********************************
@@ -266,32 +255,18 @@ contains
 
     end if reducing_to_master
 
-!    if (infpar%lg_mynum .eq. infpar%master) then
-!
-!       print *,'proc no. ',infpar%lg_mynum,'after lsmpi_local_reduction'
-!       call print_norm(ccsdpt_doubles,ccsdpt_doubles_norm)
-!       call print_norm(ccsdpt_doubles_2,ccsdpt_doubles_2_norm)
-!       call print_norm(ccsdpt_singles,ccsdpt_singles_norm)
-!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_norm = ',ccsdpt_doubles_norm
-!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_doubles_2_norm = ',ccsdpt_doubles_2_norm
-!       print *,'proc no. ',infpar%lg_mynum,'ccsdpt_singles_norm = ',ccsdpt_singles_norm
-!
-!    end if
-
     ! release stuff located on slaves
-    releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
+    releasing_the_slaves: if ((nodtotal .gt. 1) .and. .not. master) then
 
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       call array2_free(Uocc)
-       call array2_free(Uvirt)
        call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
        call array4_free(abij)
-       call array_free(cbai)
        call array4_free(jaik)
+       call array_free(cbai)
 
        ! now, release the slaves  
        return
@@ -318,8 +293,8 @@ contains
     ! ***** do canonical --> local transformation *****
     ! *************************************************
 
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1,vo=ccsdpt_singles%elm1)
-    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+    call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
 
     ! now, release Uocc and Uvirt
     call array2_free(Uocc)
@@ -409,15 +384,6 @@ contains
     call create_ij_array_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
-
-!#ifdef VAR_MPI
-!    do ij_count=1,infpar%lg_nodtot
-!       if( ij_count - 1 == infpar%lg_mynum)then
-!          print *,infpar%lg_mynum," jobs 2 ",jobs
-!       endif
-!       call lsmpi_barrier(infpar%lg_comm)
-!    enddo
-!#endif
 
     ! release ij_array
     call mem_dealloc(ij_array)
@@ -4949,8 +4915,10 @@ contains
   end subroutine ccsdpt_contract_abc_222
 
 
+
+
   !> \brief: calculate E[5] contribution to single fragment ccsd(t) energy correction
-  !> \author: Janus Eriksen
+  !> \author: Janus Eriksen and Kasper Kristensen
   !> \date: september 2012
   subroutine ccsdpt_energy_e5_frag(MyFragment,ccsd_singles,ccsdpt_singles)
 
@@ -4960,14 +4928,23 @@ contains
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
-    !> integers
-    integer :: nocc_eos, nvirt_eos, i,a, i_eos, a_eos
-    !> temp energy
     real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a
 
-    ! init dimensions
-    nocc_eos = MyFragment%noccEOS
-    nvirt_eos = MyFragment%nunoccEOS
+    noccAOS = MyFragment%noccAOS
+    nunoccAOS = MyFragment%nunoccAOS
+
+    ! Sanity check
+    if(MyFragment%nEOSatoms/=1) then
+       print *, 'nEOSatoms ',MyFragment%nEOSatoms
+       call lsquit('ccsdpt_energy_e5_frag called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
 
     ! ***********************
     !   do E[5] energy part
@@ -4981,64 +4958,67 @@ contains
     ! init temp energy
     ccsdpt_e5 = 0.0E0_realk
 
-    !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,a,a_eos,energy_tmp),&
-    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
-    !$OMP REDUCTION(+:ccsdpt_e5)
-    do i=1,nocc_eos
-       i_eos = MyFragment%idxo(i)
-       do a=1,nvirt_eos
-          a_eos = MyFragment%idxu(a)
+    iloop: do i=1,noccAOS
+       ! Only include contribution if consistent with secondary assignment
+       if(.not. SEC_occ(i)) cycle iloop
+       aloop: do a=1,nunoccAOS
+          if(.not. SEC_unocc(a)) cycle aloop
 
-          energy_tmp = ccsd_singles%elm2(a_eos,i_eos) * ccsdpt_singles%elm2(a_eos,i_eos)
+          energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
           ccsdpt_e5 = ccsdpt_e5 + energy_tmp
 
-       end do 
-    end do 
-    !$OMP END PARALLEL DO
-
+       end do aloop
+    end do iloop
     MyFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_OCCpT) = MyFragment%energies(FRAGMODEL_OCCpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
+
+
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_VIRTpT) = MyFragment%energies(FRAGMODEL_VIRTpT) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) + MyFragment%energies(FRAGMODEL_OCCpT5)
+    MyFragment%energies(FRAGMODEL_VIRTpT5) = MyFragment%energies(FRAGMODEL_VIRTpT5) &
+         & + MyFragment%energies(FRAGMODEL_OCCpT5)
 
-    ! ******************************
-    !   done with E[5] energy part
-    ! ******************************
+  end subroutine ccsdpt_energy_e5_frag
 
-  end subroutine ccsdpt_energy_e5_frag 
 
   !> \brief: calculate E[5] contribution to pair fragment ccsd(t) energy correction
   !> \author: Janus Eriksen
   !> \date: september 2012
-  subroutine ccsdpt_energy_e5_pair(Fragment1,Fragment2,PairFragment,ccsd_singles,ccsdpt_singles)
+  subroutine ccsdpt_energy_e5_pair(PairFragment,ccsd_singles,ccsdpt_singles)
 
     implicit none
 
-    !> fragment # 1 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment1
-    !> fragment # 2 in the pair fragment
-    type(decfrag),intent(inout) :: Fragment2
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
-    !> integers
-    integer :: nocc_eos, nvirt_eos, i, a, idx, adx, AtomI, AtomA, i_eos, a_eos
-    !> logicals to avoid double counting
-    logical :: occ_in_frag_1, virt_in_frag_1, occ_in_frag_2, virt_in_frag_2
+    real(realk) :: energy_tmp, ccsdpt_e5
+    logical :: SEC_occ(PairFragment%noccAOS), SEC_unocc(PairFragment%nunoccAOS)
+    integer :: noccAOS,nunoccAOS,i,a,atomi,atoma
 
-    ! init dimensions
-    nocc_eos = PairFragment%noccEOS
-    nvirt_eos = PairFragment%nunoccEOS
+    noccAOS = PairFragment%noccAOS
+    nunoccAOS = PairFragment%nunoccAOS
+
+    ! Sanity check
+    if(PairFragment%nEOSatoms/=2) then
+       print *, 'nEOSatoms ',PairFragment%nEOSatoms
+       call lsquit('ccsdpt_energy_e5_pair called with wrong number of EOS atoms!',-1)
+    end if
+
+    ! Determine which occ and unocc orbitals to include in energy contributions
+    ! based on SECONDARY assignment.
+    call secondary_assigning(PairFragment,SEC_occ,SEC_unocc)
+
 
     ! ***********************
     !   do E[5] energy part
@@ -5049,96 +5029,46 @@ contains
     PairFragment%energies(FRAGMODEL_OCCpT5) = 0.0E0_realk
     PairFragment%energies(FRAGMODEL_VIRTpT5) = 0.0E0_realk
 
-    do i=1,nocc_eos
-       i_eos = PairFragment%idxo(i)
-       AtomI = PairFragment%occAOSorb(i_eos)%CentralAtom
-       do a=1,nvirt_eos
-          a_eos = PairFragment%idxu(a)
-          AtomA = PairFragment%unoccAOSorb(a_eos)%CentralAtom
+    ! init temp energy
+    ccsdpt_e5 = 0.0E0_realk
 
-          ! occ in frag # 1, virt in frag # 2
+    iloop: do i=1,noccAOS
+       ! Only include contribution if consistent with secondary assignment
+       if(.not. SEC_occ(i)) cycle iloop
+       atomi = PairFragment%occAOSorb(i)%secondaryatom
+       aloop: do a=1,nunoccAOS
+          if(.not. SEC_unocc(a)) cycle aloop
+          atoma = PairFragment%unoccAOSorb(a)%secondaryatom
 
-          occ_in_frag_1 = .false.
-          do idx = 1,Fragment1%nEOSatoms
-             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
-                occ_in_frag_1 = .true.
-             end if
-          end do
-
-          virt_in_frag_2 = .false.
-          do adx = 1,Fragment2%nEOSatoms
-             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
-                virt_in_frag_2 = .true.
-             end if
-          end do
-
-          if (occ_in_frag_1 .and. virt_in_frag_2) then
-             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
-               & * ccsdpt_singles%elm2(a_eos,i_eos)
+          ! Only include if atomi/=atoma
+          ! (the atomi=atoma contributions were included for atomic fragments)
+          if(atomi/=atoma) then
+             energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
+             ccsdpt_e5 = ccsdpt_e5 + energy_tmp
           end if
 
-          ! virt in frag # 1, occ in frag # 2
-                            
-          occ_in_frag_2 = .false. 
-          do idx = 1,Fragment2%nEOSatoms
-             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
-                occ_in_frag_2 = .true.
-             end if
-          end do 
-             
-          virt_in_frag_1 = .false.
-          do adx = 1,Fragment1%nEOSatoms
-             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
-                virt_in_frag_1 = .true.
-             end if
-          end do
-             
-          if (occ_in_frag_2 .and. virt_in_frag_1) then
-             PairFragment%energies(FRAGMODEL_OCCpT5) = PairFragment%energies(FRAGMODEL_OCCpT5) &
-               & + 2.0E0_realk * ccsd_singles%elm2(a_eos,i_eos) &
-               & * ccsdpt_singles%elm2(a_eos,i_eos)
-          end if
-
-          ! sanity checks
-
-          if (.not. (occ_in_frag_1 .or. occ_in_frag_2)) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: occ orbital neither in frag 1 or 2',DECinfo%output)        
-          end if
-          if (.not. (virt_in_frag_1 .or. virt_in_frag_2)) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: virt orbital neither in frag 1 or 2',DECinfo%output)
-          end if
-          if (occ_in_frag_1 .and. occ_in_frag_2) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: occ orbital both in frag 1 or 2',DECinfo%output)
-          end if
-          if (virt_in_frag_1 .and. virt_in_frag_2) then
-             call lsquit('Problem in evaluation of E[5] contr. &
-                  & to pair fragment energy: virt orbital both in frag 1 or 2',DECinfo%output)
-          end if
-
-       end do
-    end do
+       end do aloop
+    end do iloop
+    PairFragment%energies(FRAGMODEL_OCCpT5) = 2.0E0_realk * ccsdpt_e5
 
     ! insert into occ. part. scheme part
-    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_OCCpT) = PairFragment%energies(FRAGMODEL_OCCpT) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
 
     ! *********************************
     ! do unoccupied partitioning scheme
     ! *********************************
 
     ! singles contribution is the same as in occupied partitioning scheme
-    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_VIRTpT) = PairFragment%energies(FRAGMODEL_VIRTpT) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
     ! insert into virt_e5 part
-    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) + PairFragment%energies(FRAGMODEL_OCCpT5)
+    PairFragment%energies(FRAGMODEL_VIRTpT5) = PairFragment%energies(FRAGMODEL_VIRTpT5) &
+         & + PairFragment%energies(FRAGMODEL_OCCpT5)
 
-    ! ******************************
-    !   done with E[5] energy part
-    ! ******************************
 
   end subroutine ccsdpt_energy_e5_pair
+
 
 
   !> \brief: calculate E[4] contribution to single fragment ccsd(t) energy correction
@@ -5699,6 +5629,8 @@ contains
     !   do E[4] energy part
     ! ***********************
 
+    eccsdpt_matrix_cou = 0.0_realk
+    eccsdpt_matrix_exc = 0.0_realk
     energy_res_cou = 0.0E0_realk
     energy_res_exc = 0.0E0_realk
     ccsdpt_e4 = 0.0E0_realk
@@ -5875,15 +5807,16 @@ contains
     !   do E[5] energy part
     ! ***********************
 
-    ccsdpt_e5 = 0.0E0_realk
+    e5_matrix = 0.0_realk
+    ccsdpt_e5 = 0.0_realk
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
     !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
     !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
     do i=1,nocc
-    AtomI = occ_orbitals(i+offset)%CentralAtom
+    AtomI = occ_orbitals(i+offset)%secondaryatom
        do a=1,nvirt
-       AtomA = unocc_orbitals(a)%CentralAtom
+       AtomA = unocc_orbitals(a)%secondaryatom
 
            energy_tmp = ccsd_singles%elm2(a,i) * ccsdpt_singles%elm2(a,i)
            e5_matrix(AtomA,AtomI) = e5_matrix(AtomA,AtomI) + energy_tmp
@@ -6174,12 +6107,6 @@ contains
     call distribute_mpi_jobs(distribution,nbatchesAlpha,nbatchesGamma,&
     &batchdimAlpha,batchdimGamma,myload,infpar%lg_nodtot,infpar%lg_mynum)
 
-    !do alphaB=1,infpar%lg_nodtot
-    !   if( alphaB - 1 == infpar%lg_mynum)then
-    !      print *,infpar%lg_mynum," distribution ",distribution
-    !   endif
-    !   call lsmpi_barrier(infpar%lg_comm)
-    !enddo
 #endif
 
     ! Start looping over gamma and alpha batches and calculate integrals
@@ -6342,12 +6269,6 @@ contains
     ! dealloc distribution array
     call mem_dealloc(distribution)
 
-    
-    !if(infpar%lg_mynum  == 0)then
-    !   call print_norm(JAIB)
-    !   call print_norm(JAIK)
-    !endif
-    !call print_norm(CBAI)
 #endif
 
     ! free stuff
@@ -6486,22 +6407,16 @@ contains
            if(MemoryNeeded < MemoryAvailable .or. (gamma==minAObatch) ) then
               if(adapt_to_nnodes)then
                  if( (nbasis/gamma)*(nbasis/MinAOBatch) > nnod * 3 )then
-!#ifdef VAR_MPI
-!                    print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 1'
-!#else
-!                    print *,'we hit GammaOpt 1'
-!#endif
+
                     GammaOpt = gamma
                     exit GammaLoop
+
                  endif
               else
-!#ifdef VAR_MPI
-!                 print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 2'
-!#else
-!                 print *,'we hit GammaOpt 2'
-!#endif
+
                  GammaOpt = gamma
                  exit GammaLoop
+
               endif
            end if
 
@@ -6509,30 +6424,16 @@ contains
 
         if (GammaOpt .eq. 0) then
 
-!#ifdef VAR_MPI
-!           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt NEW'
-!#else
-!           print *,'we hit GammaOpt NEW'
-!#endif
            GammaOpt = GammaDim
 
         endif 
 
-!#ifdef VAR_MPI
-!        print *,'for proc no. = ',infpar%lg_mynum,', GammaOpt at the end of the GammaLoop is = ',GammaOpt
-!#else
-!        print *,'GammaOpt at the end of the GammaLoop is = ',GammaOpt
-!#endif
-
         ! If gamma batch size was set manually we use that value instead
         if(DECinfo%ccsdGbatch/=0) then
+
            write(DECinfo%output,*) 'Gamma batch size was set manually, use that value instead!'
-!#ifdef VAR_MPI
-!           print *,'for proc no. = ',infpar%lg_mynum,'we hit GammaOpt 3'
-!#else
-!           print *,'we hit GammaOpt 3'
-!#endif
            GammaOpt=DECinfo%ccsdGbatch
+
         end if 
 
         ! The optimal gamma batch size is GammaOpt.
@@ -6553,22 +6454,16 @@ contains
               if( adapt_to_nnodes  )then
 
                  if( (nbasis/GammaOpt)*(nbasis/alpha) > nnod * 3)then
-!#ifdef VAR_MPI
-!                    print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 1'
-!#else
-!                    print *,'we hit AlphaOpt 1'
-!#endif
+
                     AlphaOpt = alpha
                     exit AlphaLoop
+
                  endif
               else
-!#ifdef VAR_MPI
-!                 print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 2'
-!#else
-!                 print *,'we hit AlphaOpt 2'
-!#endif
+
                  AlphaOpt = alpha
                  exit AlphaLoop
+
               endif
            end if
 
@@ -6576,43 +6471,22 @@ contains
 
         if (AlphaOpt .eq. 0) then
 
-!#ifdef VAR_MPI
-!           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt NEW'
-!#else
-!           print *,'we hit AlphaOpt NEW'
-!#endif
            AlphaOpt = AlphaDim
 
         endif
 
-!#ifdef VAR_MPI
-!        print *,'for proc no. = ',infpar%lg_mynum,', AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
-!#else
-!        print *,'AlphaOpt at the end of the AlphaLoop is = ',AlphaOpt
-!#endif
-
         ! If alpha batch size was set manually we use that value instead
         if(DECinfo%ccsdAbatch/=0) then
+
            write(DECinfo%output,*) 'Alpha batch size was set manually, use that value instead!'
-!#ifdef VAR_MPI
-!           print *,'for proc no. = ',infpar%lg_mynum,'we hit AlphaOpt 3'
-!#else
-!           print *,'we hit AlphaOpt 3'
-!#endif
            AlphaOpt=DECinfo%ccsdAbatch
+
         end if
 
         ! The optimal alpha batch size is AlphaOpt.
         ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
         ! and store this number in alphadim.
         call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
-
-!#ifdef VAR_MPI
-!        print *,'for proc no. = ',infpar%lg_mynum,'final GammaOpt = ',GammaOpt,&
-!           &', and AlphaOpt = ',AlphaOpt
-!#else
-!        print *,'final GammaOpt = ',GammaOpt,', and AlphaOpt = ',AlphaOpt
-!#endif
 
         ! Print out and sanity check
         ! ==========================
@@ -6632,9 +6506,9 @@ contains
         write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
         write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
         write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9_realk
+        write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9_realk
         write(DECinfo%output,*)
 
 
@@ -6762,26 +6636,9 @@ end module ccsdpt_module
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,ccsd_t2%elm4,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2%elm4,mylsitem)
 
     !FIXME: split MPI messages!!!!!!!!!!
-
-    ! init and receive ppfock
-    call mem_alloc(ppfock,nocc,nocc)
-    call ls_mpibcast(ppfock,nocc,nocc,infpar%master,infpar%lg_comm)
-
-    ! init and receive qqfock
-    call mem_alloc(qqfock,nvirt,nvirt)
-    call ls_mpibcast(qqfock,nvirt,nvirt,infpar%master,infpar%lg_comm)
-
-    ! init and receive Co
-    call mem_alloc(Co,nbasis,nocc)
-    call ls_mpibcast(Co,nbasis,nocc,infpar%master,infpar%lg_comm)
-
-    ! init and receive Cv
-    call mem_alloc(Cv,nbasis,nvirt)
-    call ls_mpibcast(Cv,nbasis,nvirt,infpar%master,infpar%lg_comm)
-
     ! init and receive ccsd_doubles array4 structure
     ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
     call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
@@ -6802,13 +6659,6 @@ end module ccsdpt_module
     call array_free(ccsdpt_t1)
     call array_free(ccsd_t2)
     call array_free(ccsdpt_t2)
-
-    ! finally, release fragment or full molecule quantities
-    call ls_free(mylsitem)
-    call mem_dealloc(ppfock)
-    call mem_dealloc(qqfock)
-    call mem_dealloc(Co)
-    call mem_dealloc(Cv)
 
   end subroutine ccsdpt_slave
 

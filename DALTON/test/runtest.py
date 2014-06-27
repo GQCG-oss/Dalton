@@ -1,6 +1,6 @@
 
 """
-   runtest - numerically tolerant test library.
+   runtest - Numerically tolerant test library.
 
    Author:
       Radovan Bast (lastname at kth.se).
@@ -15,7 +15,7 @@
       https://github.com/rbast/runtest
 """
 
-RUNTEST_VERSION = 'v0.1.5'
+RUNTEST_VERSION = 'v0.1.7'
 
 import re
 import os
@@ -299,7 +299,7 @@ class Filter:
             out_numbers, out_location = self._extract_numbers(f, out_filtered)
 
             ref_filtered = self._filter_file(f, ref_name)
-            log_ref.write(''.join(out_filtered))
+            log_ref.write(''.join(ref_filtered))
             ref_numbers, ref_location = self._extract_numbers(f, ref_filtered)
 
             if len(out_numbers) == len(ref_numbers):
@@ -319,7 +319,7 @@ class Filter:
                 log_diff.write('extracted sizes do not match\n')
                 log_diff.write('own gave %i numbers:\n' % len(out_numbers))
                 log_diff.write(''.join(out_filtered) + '\n')
-                log_diff.write('refernce gave %i numbers:\n' % len(ref_numbers))
+                log_diff.write('reference gave %i numbers:\n' % len(ref_numbers))
                 log_diff.write(''.join(ref_filtered) + '\n')
 
         log_out.close()

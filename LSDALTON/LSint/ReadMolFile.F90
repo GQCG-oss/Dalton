@@ -606,7 +606,7 @@ call TestLength(LINE120,120,LINE,80)
         READ (LINE(IPOS+IPOS2:80),*) Charge
         MolecularCharge = nint(charge + 1E-8_realk)
         IF (abs(charge - MolecularCharge).GT. 1E-7_realk) THEN
-          WRITE(LUPRI,'(2X,A60)') 'Only integer charges allowed in current lsdalton version'
+          WRITE(LUPRI,'(2X,A)') 'Only integer charges allowed in current lsdalton version'
           CALL LSQUIT('Non-integer molecular charge',lupri)
         ENDIF
       ENDIF
@@ -682,10 +682,16 @@ call TestLength(LINE120,120,LINE,80)
 !*  OLD INDPUT FORMAT
 !*
 !******************************************************************
+    
+    WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+         &   'old .mol fixed format input has been detected:',&
+         &   LINE, ' WARNING - '//&
+         &   'this input format may not be supported in future releases.'    
 
     READ (LINE,'(BN,A1,I4,I3,A2,10A1,D10.2,6I5,A3)',IOSTAT=ios) CRT,&
     & Atomtypes,MolecularCharge,SYMTXT,((KASYM(I,J),I=1,3),J=1,3),&
     & ID3!,pbc_check
+
     IF(IOS .NE. 0) THEN
       WRITE (LUPRI,'(2X,A)') ' Error in the determination of the number &
      & of atomic types'
@@ -717,6 +723,23 @@ call TestLength(LINE120,120,LINE,80)
     ENDIF
     Subsystems=.FALSE.
 
+    WRITE(LUPRI,'(1X,A)')'New recommended format looks like:'
+    IF(MolecularCharge.NE.0)THEN
+       IF(Angstrom)THEN
+          WRITE(LUPRI,'(1X,A)')'Atomtypes=2 Charge=1.0 Angstrom'
+       ELSE
+          WRITE(LUPRI,'(1X,A)')'Atomtypes=2 Charge=1.0'
+       ENDIF
+       WRITE(LUPRI,'(1X,A)')'(example using 2 atomtypes and a molecular charge of one)'
+    ELSE
+       IF(Angstrom)THEN
+          WRITE(LUPRI,'(1X,A)')'Atomtypes=2 Angstrom'
+       ELSE
+          WRITE(LUPRI,'(1X,A)')'Atomtypes=2'
+       ENDIF
+       WRITE(LUPRI,'(1X,A)')'(example using 2 atomtypes)'
+    ENDIF
+    WRITE(LUPRI,'(1X,A)') 'Note only integer charges are allowed in current LsDalton version'
     !johannesfor reading lattice vectors in pbc
    ! IPOS = INDEX(LINE,'PBC')
    ! IF (pbc_check .eq. 'PBC' .or.pbc_check .eq. 'pbc') THEN
@@ -987,6 +1010,7 @@ ENDDO
      CALL LSHEADER(LUPRI,'Cartesian Coordinates Linsca (au)')
      CALL PRINT_GEOMETRY(MOLECULE,LUPRI)
   ENDIF
+
 #ifdef MOD_UNRELEASED
   IF(latt_config%setup_pbclatt) THEN
      !READ lattice vectors
@@ -1006,6 +1030,108 @@ ENDDO
   ENDIF
 
 END SUBROUTINE READ_GEOMETRY
+
+!basic rewrite of GEOANA_1 from DALTON
+subroutine Geometry_analysis(MOLECULE,LUPRI) 
+implicit none
+TYPE(MOLECULEINFO) :: MOLECULE
+integer :: lupri
+!
+Integer :: I,J,nShortYXbonds,nShortHXbonds,nBonds
+Integer :: ICHARGE,JCHARGE
+real(realk) :: X1,Y1,Z1,X2,Y2,Z2,DISTANCE,DISTANCE1,DISTANCE2,RADI,RADJ
+
+nShortYXbonds=0
+nShortHXbonds=0
+nBonds = 0
+do I=1,MOLECULE%natoms
+   IF(MOLECULE%ATOM(I)%pointcharge)CYCLE
+   IF(MOLECULE%ATOM(I)%phantom)CYCLE
+   ICHARGE = NINT(MOLECULE%ATOM(I)%CHARGE) 
+   X1 = MOLECULE%ATOM(I)%CENTER(1)
+   Y1 = MOLECULE%ATOM(I)%CENTER(2)
+   Z1 = MOLECULE%ATOM(I)%CENTER(3)
+   RADI = BondRadius(ICHARGE) !Radius in Angstrom
+   DISTANCE1 = X1*X1 + Y1*Y1 + Z1*Z1
+   do J=1,I-1
+      IF(MOLECULE%ATOM(J)%pointcharge)CYCLE
+      IF(MOLECULE%ATOM(J)%phantom)CYCLE
+      JCHARGE = NINT(MOLECULE%ATOM(J)%CHARGE) 
+      X2 = MOLECULE%ATOM(J)%CENTER(1)
+      Y2 = MOLECULE%ATOM(J)%CENTER(2)
+      Z2 = MOLECULE%ATOM(J)%CENTER(3)
+      RADJ = BondRadius(JCHARGE) !Radius in Angstrom
+      DISTANCE = DISTANCE1 + X2*X2 + Y2*Y2 + Z2*Z2 - 2*X1*X2 - 2*Y1*Y2 - 2*Z1*Z2
+      DISTANCE = SQRT(DISTANCE)*bohr_to_angstrom !now in Angstrom
+      IF (ICHARGE.NE.1.AND.JCHARGE.NE.1) THEN
+         IF (DISTANCE .LE. 1.0E0_realk)THEN ! R(Y-X) .lt. 1.0 Angstrom is usually an error
+            nShortYXbonds=nShortYXbonds+1
+         ENDIF
+      else
+         IF (DISTANCE .LE. 0.7E0_realk)THEN ! R(H-X) .lt. 0.7 Angstrom is usually an error
+            nShortHXbonds=nShortHXbonds+1
+         ENDIF
+      endif
+      IF(DISTANCE.LT.(1.2E0_realk*(RADI + RADJ)))THEN
+         nBonds = nBonds + 1
+      ENDIF
+   enddo   
+enddo
+
+ WRITE(LUPRI,'(A)')' '
+IF((nShortYXbonds.GT.0.OR.nShortHXbonds.GT.0).AND.MOLECULE%natoms.GT.1.AND.MOLECULE%natomsNPC.GT.1)THEN
+ WRITE(LUPRI,'(/A,2I5)')&
+        &          'WARNING: Number of short HX and YX bond lengths:',nShortHXbonds,nShortYXbonds
+ WRITE(LUPRI,'(A)')'WARNING: If not intentional, maybe your coordinates were in Angstrom,'
+ WRITE(LUPRI,'(A)')'WARNING: but "Angstrom" was not specified in .mol file'
+ENDIF
+IF(nBonds.EQ.0.AND.MOLECULE%natoms.GT.1)THEN
+ WRITE(LUPRI,'(A)')'WARNING:  No bonds - no atom pairs are within normal bonding distances'
+ WRITE(LUPRI,'(A)')'WARNING:  maybe coordinates were in Bohr, but program were told they were in Angstrom ?'
+END IF
+ WRITE(LUPRI,'(A)')' '
+contains
+!     rewrite of FUNCTION RADIUS(NCHARGE)
+!     Based on covalent radii and metallic radii in Angstrom.
+!     Returns -1 where data is unavailable
+!     Oct 2006 hjaaj: changed Hydrogen from 30 to 40 pm,
+!              such that H2 is printed as bonded ;-) .
+  real(realk) FUNCTION BondRadius(NCHARGE)
+    implicit none
+    integer :: NCHARGE
+!
+    real(realk) :: RAD(100)
+    DATA RAD / 40.E0_realk,  155.E0_realk,  160.E0_realk,  110.E0_realk,&
+         & 90.E0_realk,   80.E0_realk,   70.E0_realk,   68.E0_realk,   65.E0_realk,&
+         &154.E0_realk,  190.E0_realk,  160.E0_realk,  140.E0_realk,  110.E0_realk,&
+         &110.E0_realk,  105.E0_realk,  105.E0_realk,  190.E0_realk,  238.E0_realk,&
+         &200.E0_realk,  165.E0_realk,  145.E0_realk,  135.E0_realk,  130.E0_realk,&
+         &125.E0_realk,  125.E0_realk,  125.E0_realk,  125.E0_realk,  125.E0_realk,&
+         &140.E0_realk,  140.E0_realk,  130.E0_realk,  120.E0_realk,  120.E0_realk,&
+         &120.E0_realk,  200.E0_realk,  255.E0_realk,  215.E0_realk,  180.E0_realk,&
+         &160.E0_realk,  145.E0_realk,  140.E0_realk,  135.E0_realk,  130.E0_realk,&
+         &130.E0_realk,  135.E0_realk,  140.E0_realk,  155.E0_realk,  160.E0_realk,&
+         &160.E0_realk,  140.E0_realk,  140.E0_realk,  140.E0_realk,  220.E0_realk,&
+         &270.E0_realk,  220.E0_realk,  185.E0_realk,  180.E0_realk,  180.E0_realk,&
+         &180.E0_realk,  180.E0_realk,  180.E0_realk,  200.E0_realk,  180.E0_realk,&
+         &175.E0_realk,  175.E0_realk,  175.E0_realk,  175.E0_realk,  170.E0_realk,&
+         &170.E0_realk,  170.E0_realk,  155.E0_realk,  145.E0_realk,  140.E0_realk,&
+         &135.E0_realk,  135.E0_realk,  135.E0_realk,  135.E0_realk,  145.E0_realk,&
+         &155.E0_realk,  170.E0_realk,  175.E0_realk,  170.E0_realk,   -100.E0_realk,&
+         & -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,&
+         & -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,&
+         & -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,   -100.E0_realk,&
+         & -100.E0_realk/
+    
+    IF (NCHARGE .LT. 1 .OR. NCHARGE .GT. 100) THEN
+       print*,'ERROR, RADIUS called with CHARGE =',NCHARGE
+       CALL LSQUIT('RADIUS called with unvalid CHARGE',-1)
+    ELSE
+       BondRadius = 0.01E0_realk * RAD(NCHARGE) !Output in Angstrom
+       BondRadius = BondRadius
+    END IF
+  end FUNCTION BondRadius
+end subroutine Geometry_analysis
 
 subroutine DetermineUniqueLabel(UniqueLabel,SubsystemLabels,Atomtypes,SubsystemLabel,&
      & nSubsystemLabels,iSubsystemLabels)
@@ -1113,6 +1239,7 @@ CHARACTER(len=80),intent(inout)  :: Atomicbasisset(nBasisBasParam)
 CHARACTER(len=80),intent(inout)  :: SubsystemLabel
 LOGICAL,intent(inout) :: ATOMBASIS,BASIS(nBasisBasParam),pointcharge,phantom
 !
+LOGICAL :: OLDFORMAT
 CHARACTER(len=120) :: LINE120
 CHARACTER(len=80)  :: TEMPLINE
 INTEGER            :: IPOS,IPOS2,IPOS3,ios,I
@@ -1121,6 +1248,7 @@ call StringInit120(LINE120)
 call StringInit80(TEMPLINE)
 READ (LUINFO, '(A120)') LINE120
 call TestLength(LINE120,120,TEMPLINE,80)
+OLDFORMAT = .FALSE.
 
 IPOS = INDEX(TEMPLINE,'Cha')
 IF (IPOS .NE. 0 ) THEN
@@ -1144,12 +1272,18 @@ IF (IPOS .NE. 0 ) THEN
       ENDIF
    ENDIF
 ELSE !OLD INPUT STYLE
+   WRITE(LUPRI,'(///A/A/A///)') ' WARNING - deprecated '//&
+        &   'old .mol fixed format input has been detected:',&
+        &   TEMPLINE, ' WARNING - '//&
+        &   'this input format may not be supported in future releases.'
+   
    READ (TEMPLINE,'(BN,F10.0,I5)',IOSTAT=ios) AtomicCharge, nAtoms
    IF(IOS .NE. 0) THEN
       WRITE (LUPRI,'(2X,A50)') 'READ_LINE5: OLD: Error in the determination of the number of atoms'
       WRITE (LUPRI,'(2X,A50)') "READ_LINE5: OLD: Correct input structure is: Atoms=???"
       CALL LSQUIT('READ_LINE5: OLD: Error in determining the number of atoms',lupri)
    ENDIF
+   OLDFORMAT = .TRUE.
 ENDIF
 
 pointcharge = .FALSE.
@@ -1354,6 +1488,16 @@ IF (ATOMBASIS) THEN
    ENDIF
 ENDIF
 
+IF(OLDFORMAT)THEN
+   WRITE(LUPRI,'(1X,A)')'New recommended format looks like'
+   IF(ATOMBASIS)THEN
+      WRITE(LUPRI,'(1X,A,A)')'Charge=6.0 Atoms=2 Basis=',TRIM(AtomicBasisset(RegBasParam))
+   ELSE
+      WRITE(LUPRI,'(1X,A)')  'Charge=6.0 Atoms=2'
+   ENDIF
+   WRITE(LUPRI,'(1X,A)')'Using an example of 2 Carbon atoms of this type'
+   WRITE(LUPRI,'(1X,A60)')'Note only integer charges are allowed in current LsDalton version'
+ENDIF
 END SUBROUTINE READ_LINE5
 
 !> \brief determine if the basis is unique

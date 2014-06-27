@@ -223,9 +223,15 @@ DO I=1,J
   CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),IAUG)
   CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),POLFUN,IPOLST)
   NEND = INDEX(BASISSETLIBRARY(iBas)%BASISSETNAME(I),' ') - 1
-  DO IBAS2=1,NBASDIR
-    STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:NEND)//' '
-  ENDDO
+  IF(IAUG.EQ.0)THEN
+     DO IBAS2=1,NBASDIR
+        STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:NEND)//' '
+     ENDDO
+  ELSE
+     DO IBAS2=1,NBASDIR
+        STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(2:NEND)//' '
+     ENDDO
+  ENDIF
   IF(BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
   ELSE
@@ -620,7 +626,8 @@ INTEGER            :: IAUG,LUPRI
 
 IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
   BASTMP = BASNAM
-  BASNAM(1:79) = BASTMP(2:80)
+!  BASNAM(1:79) = BASTMP(2:80)
+!  BASNAM(80:80) = ' '
   IF (BASTMP(1:1) .EQ. 'd') THEN
     IAUG = 1
   ELSEIF (BASTMP(1:1) .EQ. 't') THEN
@@ -632,24 +639,28 @@ IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
     CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
   END IF
 ELSEIF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
-  BASTMP = BASNAM
-  BASNAM(1:75) = BASTMP(5:80)
-  IAUG = 1
+   CALL LSQUIT('ecp not supported',-1)
+   BASTMP = BASNAM
+   !  BASNAM(1:75) = BASTMP(5:80)
+   !  BASNAM(76:80) = '     '
+   IAUG = 1
 ELSEIF (BASNAM(2:8) .EQ. 'aug-ecp') THEN
-  BASTMP = BASNAM
-  BASNAM(1:74) = BASTMP(6:80)
-  IF (BASTMP(1:1) .EQ. 'd') THEN
-    IAUG = 1
-  ELSE IF (BASTMP(1:1) .EQ. 't') THEN
-    IAUG = 2
-  ELSE IF (BASTMP(1:1) .EQ. 'q') THEN
-    IAUG = 3
-  ELSE
-    WRITE (LUPRI,'(/A1,A)') BASTMP(1:1),' is an unknown augmentation level'
-    CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
-  END IF
+   CALL LSQUIT('ecp not supported',-1)
+   BASTMP = BASNAM
+   !  BASNAM(1:74) = BASTMP(6:80)
+   !  BASNAM(75:80) = '      '
+   IF (BASTMP(1:1) .EQ. 'd') THEN
+      IAUG = 1
+   ELSE IF (BASTMP(1:1) .EQ. 't') THEN
+      IAUG = 2
+   ELSE IF (BASTMP(1:1) .EQ. 'q') THEN
+      IAUG = 3
+   ELSE
+      WRITE (LUPRI,'(/A1,A)') BASTMP(1:1),' is an unknown augmentation level'
+      CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
+   END IF
 ELSE
-  IAUG=0
+   IAUG=0
 ENDIF
 
 END SUBROUTINE DETERMINE_AUGMENTATION

@@ -566,31 +566,31 @@ END SUBROUTINE mm_enable_stats
 
 !===============================================================================
 
-      SUBROUTINE GETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
-        use cbifmm
-      INTEGER NBUFLEN, NBUFI, NBUFR, NBUFN
-      LOGICAL LUSEBUFMM
-      LUSEBUFMM = USEBUFMM
-      NBUFLEN   = MMBUFLEN
-      NBUFI     = MAXBUFI
-      NBUFR     = MAXBUFR
-      NBUFN     = MAXBUFN
-      RETURN
-      END
+SUBROUTINE GETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
+   use cbifmm_module
+   INTEGER NBUFLEN, NBUFI, NBUFR, NBUFN
+   LOGICAL LUSEBUFMM
+   LUSEBUFMM = USEBUFMM
+   NBUFLEN   = MMBUFLEN
+   NBUFI     = MAXBUFI
+   NBUFR     = MAXBUFR
+   NBUFN     = MAXBUFN
+   RETURN
+END
 
-      SUBROUTINE SETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
-        use cbifmm
+SUBROUTINE SETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
+      use cbifmm_module
       INTEGER NBUFLEN, NBUFI, NBUFR, NBUFN 
       LOGICAL LUSEBUFMM
       USEBUFMM = LUSEBUFMM
-!      if (dopbc .and. pbcactive) then
-!         USEBUFMM = .FALSE.
-!!         write(lupri,*)'ATTENTION: set USEBUFMM = .FALSE. for pbc'
-!         write(*,*)'ATTENTION: set USEBUFMM = .FALSE. for pbc'
-!      endif
+      !      if (dopbc .and. pbcactive) then
+      !         USEBUFMM = .FALSE.
+      !!         write(lupri,*)'ATTENTION: set USEBUFMM = .FALSE. for pbc'
+      !         write(*,*)'ATTENTION: set USEBUFMM = .FALSE. for pbc'
+      !      endif
       MMBUFLEN = NBUFLEN
       MAXBUFI  = NBUFI
       MAXBUFR  = NBUFR
       MAXBUFN  = NBUFN
       RETURN
-      END
+END

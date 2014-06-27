@@ -360,6 +360,15 @@ C
       LOGICAL   LCONV, LNEWOCC, DODFT_SAVE
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
+
+!#define EXPERIMENTAL_DMAT_RESTART
+#ifdef EXPERIMENTAL_DMAT_RESTART
+      ! TODO: do not allocate extra matrix, not needed
+      !       but read directly into DCAO
+      !       then DSCAL by 2.0 to match Dalton
+      real(8), allocatable :: dmat_restart(:)
+      logical              :: is_gcbasis
+#endif
 C
       CALL QENTER('DIIS_CTL')
       KFREE  = KFRSAV
@@ -605,6 +614,47 @@ C
          HSFOCK = ((DODFT .AND. NASHT .GE. 1) .OR. HSROHF)
          CALL FCKDEN((NISHT.GT.0.OR.HSFOCK),(.NOT.ONLYFC),
      &                DCAO,DCAO(1+N2BASX),CMO,DV,WRK(KFREE),LFREE)
+
+#ifdef EXPERIMENTAL_DMAT_RESTART
+! radovan: experimental and untested feature, use at own risk
+!          reads AO dmat from LSDalton's dens.restart
+
+         if (itdiis == 1) then
+            iunit = -1
+            CALL GPOPEN(iunit,'dens.restart','UNKNOWN',' ',
+     &                 'UNFORMATTED',IDUMMY,
+     &                 .FALSE.)
+            nrow = 0
+            ncol = 0
+            read(iunit) nrow, ncol
+
+            ! check that dimensions match
+            if (nrow*ncol /= n2basx) then
+               call quit('dimensions do not match in restart')
+            end if
+
+            ! check that there is no symmetry
+            if (nsym > 1) then
+               call quit('nsym > 1 in restart')
+            end if
+
+            allocate(dmat_restart(nrow*ncol))
+            read(iunit) (dmat_restart(I),I=1,nrow*ncol)
+            read(iunit) is_gcbasis
+
+            ! check that gcbasis is .false.
+            if (is_gcbasis == .true.) then
+               call quit('is_gcbasis is true in restart')
+            end if
+
+            CALL GPCLOSE(iunit, 'KEEP')
+            dmat_restart = 2.0*dmat_restart
+            CALL DCOPY(nrow*ncol,dmat_restart,1,DCAO,1)
+            deallocate(dmat_restart)
+         end if
+#endif /* EXPERIMENTAL_DMAT_RESTART */
+
+
 C        CALL FCKDEN(GETDC,GETDV,DCAO,DVAO,CMO,DV,WRK,LWRK)
 C
 C     For a restricted open shell DFT calculation, or high spin
@@ -1831,7 +1881,7 @@ C
          CALL DGETAP(NORBI,WRK(KTMP1),ERRVEC(1+IIORB(ISYM)))
 C
          IF (IPR_DIIS .GE. 15) THEN
-            WRITE (LUPRI,'(/A/A/A,I3)')
+            WRITE (LUPRI,'(/A/A,I3/A)')
      &      ' (DIIS_EVC) 4 Fmo = 4 (DCmo FDmo + DVmo FCmo)',
      &      '        = 4 Ct SAO (DCAO FDAO + DVAO FCAO) C for symmetry',
      &      ISYM,

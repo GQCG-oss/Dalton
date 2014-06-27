@@ -1,5 +1,7 @@
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker
+
 def open_fig_container():
    fig = plt.figure()
    return fig
@@ -30,7 +32,10 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    elif ecorrtype=="v(T)":
       ov  = "v"
       ect = 2
-   else :
+   elif ecorrtype=="oEsti":
+      ov = "o"
+      ect = 3
+   else: 
       print "ERROR(plot_pair_energies):invalid choice of ecorrtype"
       exit()
    
@@ -95,6 +100,106 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
 
    return ax1
 
+# The plot_AF_energy_errors function plot the atomic fragment energy errors
+# of a dec calculation compared to a (full) reference job.
+#
+# Necessary inputs are the structure from a reference job "self0",
+# the structure from an actual (dec) calculation "self1" and fig obtained:
+def plot_AF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy errors", 
+    color='b', marker="o", label="series", to_plot=0):
+
+   if(to_plot==0):
+     ax1 = fig.add_subplot(111)
+   else:
+     ax1 = to_plot
+
+   # DEFINING WHICH KIND OF DATA TO USE:
+   ov  = "o"
+   ect = 0
+   if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
+      ov  = "o"
+      ect = 1
+   elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
+      ov  = "v"
+      ect = 1
+   elif ecorrtype=="o(T)":
+      ov  = "o"
+      ect = 2
+   elif ecorrtype=="v(T)":
+      ov  = "v"
+      ect = 2
+   elif ecorrtype=="oEsti":
+      ov = "o"
+      ect = 3
+   else: 
+      print "ERROR(plot_AF_energy_error):invalid choice of ecorrtype"
+      exit()
+   
+   ect = ect - 1
+   # read reference AF energies:
+   natoms=self.sfragjobs
+   AF_full=np.zeros((natoms))
+   xaxis=np.zeros((natoms),dtype=int)
+   for i in range(natoms):
+     xaxis[i] = i+1
+     AF_full[i] = self.sfrags[i].ecorrocc[ect]
+
+
+   # read actual AF energies and compute errors:
+   natdec=info.sfragjobs
+   # check:
+   if (natdec!=natoms):
+     print "natoms from ref:",natoms
+     print "natoms from dec:",natdec
+     exit("ERROR(plot_AF_energy_error):input structure not compatible")
+    
+   AF_dec=np.zeros((natoms))
+   AF_err=np.zeros((natoms))
+   AF_tot_err = 0.0
+   for i in range(natoms):
+     AF_dec[i] = info.sfrags[i].ecorrocc[ect]
+     AF_err[i] = AF_dec[i] - AF_full[i]
+     AF_tot_err += AF_err[i]
+    
+   # print total AF errors:
+   print "Total Atomic Fragment Energy error = ",AF_tot_err
+
+   #########################
+   #SETTING AXIS PROPERTIES#
+   #########################
+
+   if (to_plot==0):
+     xmin = min(xaxis)
+     xmax = max(xaxis) 
+     ymin = min(abs(AF_err)) 
+     ymax = max(abs(AF_err))
+   else:
+     xmin, xmax, ymin, ymax = ax1.axis()
+
+   ax1.set_title(title)
+
+   #y-axis properties
+   ax1.set_autoscaley_on(False)
+   ax1.set_yscale('log')
+   ax1.set_ylim([min(ymin,0.9*ymin),max(ymax,1.1*ymax)])
+   ax1.set_ylabel("AF energy errors [Eh]")
+
+   #x-axis properties
+   ax1.set_autoscalex_on(False)
+   #ax1.set_xscale('log')
+   xmin = min(xmin,0.9*xmin)
+   xmax = max(xmax,1.1*xmax)
+   ax1.set_xlim([xmin,xmax])
+   ax1.set_xlabel("Atomic center label")
+   ax1.set_xticks(range(int(xmin)+1,int(xmax)+1))
+   ax1.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
+
+   # plot Atomic Fragment errors:
+   ax1.scatter(xaxis, abs(AF_err), s=20,c=color, marker=marker, label = label)
+   ax1.axhline(y=info.fotfloat, color=color)
+   ax1.legend()
+
+   return ax1
 
 def show_plots():
    plt.show()

@@ -50,6 +50,7 @@ contains
 
 !Added to avoid "has no symbols" linking warning
 subroutine precision_void()
+   implicit none
 end subroutine precision_void
 
 END MODULE precision
