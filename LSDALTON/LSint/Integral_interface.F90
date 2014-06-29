@@ -5372,12 +5372,12 @@ IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
   CALL mat_init(S33,nbast,nbast)
 
   !R = T s^-1 T^T 
-  CALL get_R33(R33,AO3,AOadmm,GC3,nbast2,nbast,constrain_factor,setting,lupri,luerr)
+  CALL get_R33(R33,AOadmm,AO3,GC3,nbast2,nbast,constrain_factor,setting,lupri,luerr)
   CALL get_S33(S33,AO3,GC3,setting,lupri,luerr)
-  call mat_daxpy(1E0_realk,S33,R33)
+  call mat_daxpy(-1E0_realk,R33,S33)
 
   call get_large_Lambda(largeLambda,k2(1),x2(1),D2(1),EX2(1),constrain_factor,setting)
-  call mat_daxpy(largeLambda,R33,dXC)
+  call mat_daxpy(largeLambda,S33,dXC)
 
   CALL mat_free(S33)
   CALL mat_free(R33)
@@ -6693,65 +6693,24 @@ SUBROUTINE get_small_lambda(constrain_factor,D3,setting,lupri,luerr,n2,n3,&
    integer                    :: n2,n3,AO3,AO2,lupri,luerr
    logical                    :: GCAO2,GCAO3
    !
-   TYPE(MATRIX) :: temp,S23,T23,S33,S22,D2,tmp22
-   real(realk)  :: lambda,trace,traceDS
+   TYPE(MATRIX) :: R33
+   real(realk)  :: lambda,trace
    integer      :: nelectrons
-   logical      :: DEBUG
 
-   DEBUG = .FALSE.
-   CALL mat_init(T23,n2,n3)
-   CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,1E0_realk)
-   CALL mat_init(S23,n2,n3)
-   CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-   if(DEBUG) then
-     CALL mat_init(S33,n3,n3)
-     CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GCAO3,GCAO3)
-     traceDS = mat_trAB(D3,S33)
-     CALL mat_free(S33)
-   endif
+   CALL mat_init(R33,n3,n3)
+
+   CALL get_R33(R33,AO2,AO3,GCAO3,n2,n3,1E0_realk,setting,lupri,luerr)
+   trace = mat_trAB(D3,R33)
+
+   nelectrons = setting%molecule(1)%p%nelectrons
 
    ! The lagrangian multiplier
    ! lambda = 1 - sqrt[ 2/N Tr(D3 S32 T23) ] 
-   CALL mat_init(temp,n3,n3)
-   CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,temp)
-   CALL mat_free(S23)
-   CALL mat_free(T23)
-   trace = mat_trAB(D3,temp)
-
-   CALL mat_free(temp)
-   nelectrons = setting%molecule(1)%p%nelectrons
-   
    lambda = 1E0_realk - sqrt(2.0E0_realk*trace/nelectrons)
-   if(DEBUG) then
-      lambda = 1E0_realk - sqrt(1.0E0_realk*trace/traceDS)
-   endif
-
-   ! Scaling factor for the constrained reduced density matrix
    constrain_factor = 1.0E0_realk / (1E0_realk - lambda)
-   if(DEBUG) then
-      write(*,*)     "Tr(D S32 T23)=", trace
-      write(lupri,*) "Tr(D S32 T23)=", trace
-      write(lupri,*) "Tr(D3 S33)=", traceDS
-      write(*,*)     "nelectrons=", nelectrons
-      write(lupri,*) "nelectrons=", nelectrons
-      write(*,*)     "lambda=", lambda
-      write(lupri,*) "lambda=", lambda
-      write(*,*)     "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(lupri,*) "(1-lambda)^2=", (1E0_realk - lambda)**2
-      write(*,*)     "1/[(1-lambda)^2]=", constrain_factor**2
-      write(lupri,*) "1/[(1-lambda)^2]=", constrain_factor**2
-      write(*,*)     "factor = 1/(1-lambda)=", constrain_factor
-      write(lupri,*) "factor = 1/(1-lambda)=", constrain_factor
-      CALL mat_init(D2,n2,n2)
-      CALL mat_init(S22,n2,n2)
-      CALL mat_init(tmp22,n2,n2)
-      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-      write(lupri,*) 'Trace(d2 S22)=N? ', mat_trAB(D2,S22)
-      CALL mat_free(D2)
-      CALL mat_free(S22)
-      CALL mat_free(tmp22)
-      write(lupri,*) "norm D3 end getLambda energy", mat_sqnorm2(D3)
-   endif
+
+   CALL mat_free(R33)
+
 END SUBROUTINE get_small_lambda
 
 SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
@@ -6885,7 +6844,7 @@ ELSE
 ENDIF
 END SUBROUTINE get_S23
 
-SUBROUTINE get_R33(R33,AO3,AO2,GC3,nbast2,nbast3,constrain_factor,setting,lupri,luerr)
+SUBROUTINE get_R33(R33,AO2,AO3,GC3,nbast2,nbast3,constrain_factor,setting,lupri,luerr)
 implicit none
 TYPE(matrix),intent(INOUT)    :: R33
 TYPE(lssetting),intent(inout) :: setting
@@ -6898,21 +6857,21 @@ TYPE(matrix)  :: S23,T23
 
 write(Filename,'(A8,L1)') 'ADMM_R33',GC3
 IF (io_file_exist(Filename,setting%IO)) THEN
-  call io_read_mat(S23,Filename,setting%IO,LUPRI,LUERR)
+  call io_read_mat(R33,Filename,setting%IO,LUPRI,LUERR)
 ELSE
   CALL mat_init(S23,nbast2,nbast3)
   CALL mat_init(T23,nbast2,nbast3)
   
   CALL get_S23(S23,AO2,AO3,.FALSE.,GC3,setting,lupri,luerr)
-  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast3,AO2,AO3,.FALSE.,GC3,constrain_factor)
-  CALL mat_mul(S23,T23,'t','n',-constrain_factor,0E0_realk,R33)
-  IF(setting%scheme%ADMMP) THEN
-    call mat_scal(constrain_factor, R33)
-  ENDIF
+  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast3,AO2,AO3,.FALSE.,GC3,1E0_realk)
+  CALL mat_mul(S23,T23,'t','n',1E0_realk,0E0_realk,R33)
 
   CALL mat_free(S23)
   CALL mat_free(T23)
 ENDIF
+
+call mat_scal(constrain_factor*constrain_factor,R33)
+
 END SUBROUTINE get_R33
 
 
