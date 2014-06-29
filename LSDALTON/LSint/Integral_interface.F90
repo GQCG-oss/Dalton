@@ -5180,17 +5180,15 @@ type(lssetting),intent(inout) :: setting
 logical,intent(in)            :: dsym
 !
 logical             :: GC3
-TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),tmp22,tmp33,k2_xc2,S32,T23,S33
-character(len=80)   :: WORD
+TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
-real(realk)         :: lambda, constrain_factor, largeLambda, printConstFactor, printLambda
+real(realk)         :: constrain_factor, largeLambda
 logical             :: isADMMQ,separateX,DODISP
 logical             :: isADMMS, isADMMP,PRINT_EK3
-real(realk)         :: tracek2d2,tracex2d2,tracex3d3
  !
 nelectrons = setting%molecule(1)%p%nelectrons 
 isADMMQ = setting%scheme%ADMMQ
@@ -5233,9 +5231,6 @@ call mat_init(D2(1),nbast2,nbast2)
 call mat_init(k2(1),nbast2,nbast2)
 call mat_init(x2(1),nbast2,nbast2)
 call mat_init(TMPF,nbast,nbast)         
-call mat_init(tmp33,nbast,nbast) 
-call mat_init(tmp22,nbast2,nbast2)
-call mat_init(k2_xc2,nbast2,nbast2) 
 
 call mat_zero(dXC)
 
@@ -5251,17 +5246,9 @@ ELSE
   CALL LSQUIT('II_get_admm_exchange_mat:Error in ADMM, unknown optlevel',-1)
 ENDIF
        
-! Get the scaling factor derived from constraining the total charge
-
-! calculate Lambda for debugging purpose only, we overwrite the constants after anyway
-   call get_Lagrange_multiplier_charge_conservation_for_coefficients(printLambda,&
-            &printConstFactor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
-
 constrain_factor = 1.0E0_realk
-lambda = 0E0_realk 
 IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN   
-   call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-            &constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
+   call get_small_lambda(constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
 ENDIF
 
 !We transform the full Density to a level 2 density D2
@@ -5282,9 +5269,6 @@ CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(k2(1))
 call II_get_exchange_mat(LUPRI,LUERR,SETTING,D2,1,Dsym,k2)
 
-call mat_zero(k2_xc2)
-call mat_daxpy(1E0_realk,k2(1),k2_xc2)
-tracek2d2 = mat_trAB(k2(1),D2(1))
 
 call Transformed_F2_to_F3(TMPF,k2(1),setting,lupri,luerr,nbast2,nbast,&
                         & AOadmm,AO3,.FALSE.,GC3,constrain_factor)
@@ -5315,11 +5299,6 @@ IF (isADMMS) THEN
    EX2 = constrain_factor**(4./3.)*EX2            ! RE-SCALING EXC2 TO FIT k2
    call mat_scal(constrain_factor**(4./3.),x2(1)) ! RE-SCALING XC2 TO FIT k2  
 ENDIF
-IF (.NOT.(isADMMP)) THEN
-   call mat_daxpy(-1E0_realk,x2(1),k2_xc2)
-endif
-tracex2d2 = mat_trAB(x2(1),D2(1))
-write(lupri,*)     "Tr(x2d2)=", traceX2D2
 
 
 
@@ -5341,7 +5320,6 @@ IF (separateX) THEN
   CALL mat_init(F3(1),nbast,nbast)
   CALL mat_zero(F3(1))
   call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
-  tracex3d3 = mat_trAB(F3(1),D)
   
   CALL mat_daxpy(1E0_realk,F3(1),dXC)
   CALL mat_free(F3(1))
@@ -5362,9 +5340,6 @@ ENDIF
 
 
 IF (PRINT_EK3) THEN
-   IF (separateX) write(*,*)     "Tr(X3D3) after X3*2 =", tracex3d3
-   write(*,*)     "E(k2)=Tr(k2 d2) ", traceK2D2
-   write(lupri,*) "E(k2)=Tr(k2 d2) ", traceK2D2
    write(*,*)     "E(x2)= ", fac*EX2(1)
    write(lupri,*) "E(x2)= ", fac*EX2(1)
    IF (separateX) THEN
@@ -5391,33 +5366,22 @@ if(dodisp) setting%scheme%dft%dodisp = dodisp
 
 
 IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
-! term of Kadmm coming from dependance of K on lambda: K=[D,lambda(D)]
-  CALL mat_init(S32,nbast,nbast2)
-  CALL mat_init(T23,nbast2,nbast)
+! term of Kadmm coming from dependence of K on lambda: K=[D,lambda(D)]
 
-  CALL II_get_mixed_overlap(lupri,luerr,setting,S32,AO3,AOadmm,GC3,.FALSE.)
-  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
-  CALL mat_mul(S32,T23,'n','n',-constrain_factor,0E0_realk,tmp33)
-  IF(isADMMP) THEN
-    call mat_scal(constrain_factor, tmp33)
-  ENDIF
-
-  CALL mat_free(S32)
-  CALL mat_free(T23)
-
+  call mat_init(R33,nbast,nbast) 
   CALL mat_init(S33,nbast,nbast)
-  CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GC3,GC3)
-  call mat_daxpy(1E0_realk,S33,tmp33)
-  CALL mat_free(S33)
+
+  !R = T s^-1 T^T 
+  CALL get_R33(R33,AO3,AOadmm,GC3,nbast2,nbast,constrain_factor,setting,lupri,luerr)
+  CALL get_S33(S33,AO3,GC3,setting,lupri,luerr)
+  call mat_daxpy(1E0_realk,S33,R33)
 
   call get_large_Lambda(largeLambda,k2(1),x2(1),D2(1),EX2(1),constrain_factor,setting)
+  call mat_daxpy(largeLambda,R33,dXC)
 
-  call mat_daxpy(largeLambda,tmp33,dXC)
-
+  CALL mat_free(S33)
+  CALL mat_free(R33)
 ENDIF
-CALL mat_free(tmp33)
-CALL mat_free(tmp22)
-CALL mat_free(k2_xc2)
 call mat_free(TMPF)
 call mat_free(k2(1))
 call mat_free(x2(1))
@@ -5456,7 +5420,7 @@ integer             :: AOdfold,AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
-real(realk)         :: lambda, constrain_factor,nrm
+real(realk)         :: constrain_factor,nrm
 logical             :: PRINT_EK3
 logical             :: isADMMQ,isADMMS,isADMMP,DODISP
 integer             :: iAtom,iX
@@ -5491,12 +5455,10 @@ DO idmat=1,ndrhs
 
    ! Get the scaling factor derived from constraining the total charge
    IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
-      call get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-               & constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
+      call get_small_lambda(constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
    ELSE
       constrain_factor = 1.0E0_realk
-      lambda = 0E0_realk  
    ENDIF
 
    !!We transform the full Density to a level 2 density D2
@@ -6722,18 +6684,17 @@ SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,&
   CALL mat_free(S23)
 END SUBROUTINE TRANSFORMED_F2_TO_F3
 
-SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
-                  & constrain_factor,D3,setting,lupri,luerr,n2,n3,&
+SUBROUTINE get_small_lambda(constrain_factor,D3,setting,lupri,luerr,n2,n3,&
                   & AO2,AO3,GCAO2,GCAO3)
    implicit none
    type(matrix),intent(in)    :: D3     !level 3 matrix input 
-   real(realk),intent(inout)  :: lambda, constrain_factor
+   real(realk),intent(inout)  :: constrain_factor
    type(lssetting)            :: setting
    integer                    :: n2,n3,AO3,AO2,lupri,luerr
    logical                    :: GCAO2,GCAO3
    !
    TYPE(MATRIX) :: temp,S23,T23,S33,S22,D2,tmp22
-   real(realk)  :: trace, traceDS
+   real(realk)  :: lambda,trace,traceDS
    integer      :: nelectrons
    logical      :: DEBUG
 
@@ -6791,7 +6752,7 @@ SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients(lambda,&
       CALL mat_free(tmp22)
       write(lupri,*) "norm D3 end getLambda energy", mat_sqnorm2(D3)
    endif
-END SUBROUTINE get_Lagrange_multiplier_charge_conservation_for_coefficients
+END SUBROUTINE get_small_lambda
 
 SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,&
                   & AO2,AO3,GCAO2,GCAO3,constrain_factor)
@@ -6826,18 +6787,9 @@ ELSE
   CALL mat_init(S22inv,n2,n2)
   CALL mat_init(S23,n2,n3)
  
-  IF (ERI2C.AND..NOT.McWeeny) THEN
-    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-  ELSE
-    CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-  ENDIF
-  IF (ERI2C) THEN
-    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-  ELSE
-    CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
-  ENDIF
- 
-  CALL mat_inv(S22,S22inv)
+  call get_S22(S22,AO2,GCAO2,setting,lupri,luerr)
+  call get_S23(S23,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
+  call get_S22inv(S22,S22inv,setting,lupri,luerr)
   CALL mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
   
   CALL mat_free(S22inv)
@@ -6853,6 +6805,115 @@ IF (isADMMQ .OR. isADMMS) THEN
    call mat_scal(constrain_factor,T23)
 ENDIF
 END SUBROUTINE get_T23
+
+SUBROUTINE get_S22inv(S22,S22inv,setting,lupri,luerr)
+implicit none
+TYPE(matrix),intent(INOUT)    :: S22
+TYPE(matrix),intent(INOUT)    :: S22inv
+TYPE(lssetting),intent(inout) :: setting
+INTEGER,intent(IN)            :: lupri,luerr
+!
+Character(80) :: Filename
+
+Filename='ADMM_S22inv'
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(S22inv,Filename,setting%IO,LUPRI,LUERR)
+ELSE
+  CALL mat_inv(S22,S22inv)
+ENDIF
+END SUBROUTINE get_S22inv
+
+SUBROUTINE get_S22(S22,AO2,GCAO2,setting,lupri,luerr)
+implicit none
+TYPE(matrix),intent(INOUT)    :: S22
+TYPE(lssetting),intent(inout) :: setting
+Integer,intent(IN)            :: AO2,lupri,luerr
+Logical,intent(IN)            :: GCAO2
+!
+Character(80) :: Filename
+Logical :: McWeeny,ERI2C
+McWeeny = setting%scheme%ADMM1
+ERI2C   = setting%scheme%ADMM_2ERI
+Filename='ADMM_S22'
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(S22,Filename,setting%IO,LUPRI,LUERR)
+ELSE
+  IF (ERI2C.AND..NOT.McWeeny) THEN
+    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  ELSE
+    CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+  ENDIF
+ENDIF
+END SUBROUTINE get_S22
+
+SUBROUTINE get_S33(S33,AO3,GCAO3,setting,lupri,luerr)
+implicit none
+TYPE(matrix),intent(INOUT)    :: S33
+TYPE(lssetting),intent(inout) :: setting
+Integer,intent(IN)            :: AO3,lupri,luerr
+Logical,intent(IN)            :: GCAO3
+!
+Character(80) :: Filename
+write(Filename,'(A8,L1)') 'ADMM_S33',GCAO3
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(S33,Filename,setting%IO,LUPRI,LUERR)
+ELSE
+  CALL II_get_mixed_overlap(lupri,luerr,setting,S33,AO3,AO3,GCAO3,GCAO3)
+ENDIF
+END SUBROUTINE get_S33
+
+SUBROUTINE get_S23(S23,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
+implicit none
+TYPE(matrix),intent(INOUT)    :: S23
+TYPE(lssetting),intent(inout) :: setting
+Integer,intent(IN)            :: AO2,AO3,lupri,luerr
+Logical,intent(IN)            :: GCAO2,GCAO3
+!
+Character(80) :: Filename
+Logical :: McWeeny,ERI2C
+McWeeny = setting%scheme%ADMM1
+ERI2C   = setting%scheme%ADMM_2ERI
+write(Filename,'(A8,L1)') 'ADMM_S23',GCAO3
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(S23,Filename,setting%IO,LUPRI,LUERR)
+ELSE
+  IF (ERI2C) THEN
+    CALL II_get_2center_mixed_eri(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+  ELSE
+    CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+  ENDIF
+ENDIF
+END SUBROUTINE get_S23
+
+SUBROUTINE get_R33(R33,AO3,AO2,GC3,nbast2,nbast3,constrain_factor,setting,lupri,luerr)
+implicit none
+TYPE(matrix),intent(INOUT)    :: R33
+TYPE(lssetting),intent(inout) :: setting
+Integer,intent(IN)            :: AO2,AO3,nbast2,nbast3,lupri,luerr
+Logical,intent(IN)            :: GC3
+real(realk),intent(IN)        :: constrain_factor
+!
+Character(80) :: Filename
+TYPE(matrix)  :: S23,T23
+
+write(Filename,'(A8,L1)') 'ADMM_R33',GC3
+IF (io_file_exist(Filename,setting%IO)) THEN
+  call io_read_mat(S23,Filename,setting%IO,LUPRI,LUERR)
+ELSE
+  CALL mat_init(S23,nbast2,nbast3)
+  CALL mat_init(T23,nbast2,nbast3)
+  
+  CALL get_S23(S23,AO2,AO3,.FALSE.,GC3,setting,lupri,luerr)
+  CALL get_T23(setting,lupri,luerr,T23,nbast2,nbast3,AO2,AO3,.FALSE.,GC3,constrain_factor)
+  CALL mat_mul(S23,T23,'t','n',-constrain_factor,0E0_realk,R33)
+  IF(setting%scheme%ADMMP) THEN
+    call mat_scal(constrain_factor, R33)
+  ENDIF
+
+  CALL mat_free(S23)
+  CALL mat_free(T23)
+ENDIF
+END SUBROUTINE get_R33
 
 
 SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
