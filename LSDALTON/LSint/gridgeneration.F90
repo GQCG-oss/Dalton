@@ -185,6 +185,7 @@ END SUBROUTINE GENERATEGRID
 SUBROUTINE Computecoords(totalpoints,nRadialPoints,Natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
      & atomcenterX,atomcenterY,atomcenterZ,ihardness,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,&
      & maxNBUFLEN,ITERATIONS,PARTITIONING,Charge,nstart,FinalMaxNactBast,iprint,lupri,USE_MPI,numnodes,node,GridId)
+use integralparameters, only : AORdefault
 implicit none
 integer,intent(in) :: Natoms,NRADPT,ihardness,iprint,lupri,nbast,maxnbuflen,GridId
 !> X coordinate for each atom
@@ -237,7 +238,7 @@ integer :: nx,ny,nz,nkey,mykeysNumber,IMykey,privatetotalpoints
 !integer(kind=long),pointer :: key(:),uniquekey(:)
 type(bunchpoints),pointer :: keypointer(:)
 logical :: unique,postprocess
-character(len=22) :: filename
+character(len=27) :: filename
 integer,pointer :: npoints(:,:,:),mykeys(:)
 logical,pointer :: skip(:),skip2(:)
 #ifdef VAR_OMP
@@ -297,7 +298,7 @@ call mem_grid_TurnONThread_Memory()
 !$OMP ATOMIDX,postprocess,skip2,SSF_ATOMIC_CUTOFF,nx,ny,nz,npoints,GridBox,&
 !$OMP nkey,keypointer,LUGRID,ITERATIONS,filename,nprocessors,numnodes,node,mynum,mykeys,&
 !$OMP mykeysnumber,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,GlobalmaxGridpoints,&
-!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar,GridId,FinalMaxNactBast)
+!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar,GridId,FinalMaxNactBast,AORdefault)
 call init_grid_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
@@ -530,7 +531,7 @@ ENDIF
 !We now write the gridpoints to file(s)
 !In case of MPI we use one file for each processor with a unique name
 LUGRID=-1
-call get_quadfilename(filename,nbast,node,GridId)
+call get_quadfilename(filename,nbast,node,AORdefault,GridId)
 CALL LSOPEN(LUGRID,filename,'NEW','UNFORMATTED')
 
 #ifdef VAR_MPI
@@ -2372,10 +2373,10 @@ subroutine GRID_TURBO_RADIALPOINTS(Z,thrl,nRadialPoints)
   nRadialPoints = MIN_RAD_PT + accuracy_correction + z_correction
 end subroutine GRID_TURBO_RADIALPOINTS
 
-subroutine get_quadfilename(filename,nbast,node,gridid)
+subroutine get_quadfilename(filename,nbast,node,AOiden,gridid)
 implicit none
-character(len=22) :: filename
-integer,intent(in) :: nbast,gridid
+character(len=27) :: filename
+integer,intent(in) :: nbast,gridid,Aoiden
 integer(kind=ls_mpik),intent(in) :: node
 filename(1:11)='DALTON.QUAD'
 #ifdef VAR_MPI 
@@ -2390,7 +2391,11 @@ filename(17:21)=Char(nbast/10000+48)//Char(mod(nbast,10000)/1000+48)&
    &//Char(mod(mod(nbast,10000),1000)/100+48)&
    &//Char(mod(mod(mod(nbast,10000),1000),100)/10+48)&
    &//Char(mod(mod(mod(mod(nbast,10000),1000),100),10)+48)
-filename(22:22)=Char(GridId+48)
+filename(22:26)=Char(AOiden/10000+48)//Char(mod(AOiden,10000)/1000+48)&
+   &//Char(mod(mod(AOiden,10000),1000)/100+48)&
+   &//Char(mod(mod(mod(AOiden,10000),1000),100)/10+48)&
+   &//Char(mod(mod(mod(mod(AOiden,10000),1000),100),10)+48)
+filename(27:27)=Char(GridId+48)
 end subroutine get_quadfilename
 
 SUBROUTINE GRID_RADGC2(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI)
