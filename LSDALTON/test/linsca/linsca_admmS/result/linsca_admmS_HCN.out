@@ -102,11 +102,11 @@
  LAPACK                   | /usr/lib/libatlas.dylib;/usr/lib/liblapack.dylib
  Static linking           | OFF
  Last Git revision        | ed1303c69333988d046214b74f8b1ffb811232ba
- Configuration time       | 2014-06-30 14:29:56.787062
+ Configuration time       | 2014-06-30 15:09:32.100443
  Ground state molecular gradient calculations are carried out.
 
 Start simulation
-     Date and time (Linux)  : Mon Jun 30 14:36:19 2014
+     Date and time (Linux)  : Mon Jun 30 15:21:07 2014
      Host name              : kjmac10-reine.local                     
                       
  -----------------------------------------
@@ -335,8 +335,8 @@ Canonical basis by using the keyword
 
  End of configuration!
 
- >>>  CPU Time used in *INPUT is   0.01 seconds
- >>> wall Time used in *INPUT is   0.01 seconds
+ >>>  CPU Time used in *INPUT is   0.00 seconds
+ >>> wall Time used in *INPUT is   0.00 seconds
 Matrix type: mtype_dense
  
  A set of atomic calculations are performed in order to construct
@@ -372,11 +372,11 @@ Total Number of grid points:       18050
 
   Max allocated memory, Grid                    1.247 MB
 
- >>>  CPU Time used in gridgeneration2 is   0.02 seconds
+ >>>  CPU Time used in gridgeneration2 is   0.03 seconds
  >>> wall Time used in gridgeneration2 is   0.02 seconds
-  KS electrons/energy:    1.00000000000000   -0.22355801382064 rel.err: 0.49E-14
+  KS electrons/energy:    1.00000000000001   -0.22355801382064 rel.err: 0.53E-14
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.10 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.05 seconds
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -388,19 +388,19 @@ Total Number of grid points:       18050
  >>> wall Time used in st-Kbuild is   0.00 seconds
  The Exchange energy contribution   2.99949739031995580E-002
  The Fock energy contribution  -0.26995476512879601     
-  KS electrons/energy:    1.00000000000001   -0.21356084580467 rel.err: 0.12E-13
+  KS electrons/energy:    1.00000000000001   -0.21356084580467 rel.err: 0.89E-14
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.07 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.03 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.02 seconds
   2     -0.4403059204   -0.00143523997    0.00      0.00000    0.00    0.0000000    7.00E-03  ###
  >>>  CPU Time used in reg-Jengine is   0.00 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution   0.30102731127038218     
+ The Coulomb energy contribution   0.30102731127038229     
  >>>  CPU Time used in st-Kbuild is   0.00 seconds
  >>> wall Time used in st-Kbuild is   0.00 seconds
- The Exchange energy contribution   3.01027311270382139E-002
- The Fock energy contribution  -0.27092458014334403     
-  KS electrons/energy:    1.00000000000000   -0.21431327596395 rel.err: 0.27E-14
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.08 seconds
+ The Exchange energy contribution   3.01027311270382208E-002
+ The Fock energy contribution  -0.27092458014334408     
+  KS electrons/energy:    1.00000000000000   -0.21431327596395 rel.err: 0.29E-14
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.07 seconds
  >>> wall Time used in II_get_xc_Fock_mat is   0.03 seconds
   3     -0.4403161194   -0.00001019894   -1.00      0.00000    0.00    0.0000000    3.23E-05  ###
 
@@ -416,9 +416,9 @@ Total Number of grid points:       18050
  >>> wall Time used in reg-Jengine is   0.00 seconds
  The Coulomb energy contribution    32.444688265465764     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
- The Exchange energy contribution    1.3662540947987718     
- The Fock energy contribution   -31.078434170667009     
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution    1.3662540947987716     
+ The Fock energy contribution   -31.078434170667016     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       30120
  >>>  CPU Time used in Boxify is   0.00 seconds
@@ -428,56 +428,56 @@ Total Number of grid points:       30120
 
  >>>  CPU Time used in gridgeneration2 is   0.03 seconds
  >>> wall Time used in gridgeneration2 is   0.03 seconds
-  KS electrons/energy:    7.00000000002481   -6.17351663672328 rel.err: 0.35E-11
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.23 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.11 seconds
+  KS electrons/energy:    7.00000000002483   -6.17351663672326 rel.err: 0.35E-11
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.21 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.09 seconds
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
   1    -52.6551835695    0.00000000000    0.00      0.00000    0.00    0.0000000    2.92E+00  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    21.731335978063122     
+ The Coulomb energy contribution    21.731335978063118     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
- The Exchange energy contribution    1.1057563153659846     
- The Fock energy contribution   -20.625579662697138     
-  KS electrons/energy:    7.00000000002347   -4.84265083305835 rel.err: 0.34E-11
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution    1.1057563153659844     
+ The Fock energy contribution   -20.625579662697135     
+  KS electrons/energy:    7.00000000002348   -4.84265083305835 rel.err: 0.34E-11
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.08 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   2    -53.6963024617   -1.04111889221    0.00      0.00000    0.00    0.0000000    2.49E+00  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    25.565964171257331     
+ The Coulomb energy contribution    25.565964171257324     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
- The Exchange energy contribution    1.1903116863356269     
- The Fock energy contribution   -24.375652484921723     
-  KS electrons/energy:    7.00000000002393   -5.29887141439195 rel.err: 0.34E-11
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.21 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.08 seconds
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution    1.1903116863356267     
+ The Fock energy contribution   -24.375652484921719     
+  KS electrons/energy:    7.00000000002391   -5.29887141439195 rel.err: 0.34E-11
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   3    -54.3574335979   -0.66113113617   -1.00      0.00000    0.00    0.0000000    1.83E-01  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    25.879586711432538     
+ The Coulomb energy contribution    25.879586711432530     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
- The Exchange energy contribution    1.1974835261521128     
- The Fock energy contribution   -24.682103185280425     
-  KS electrons/energy:    7.00000000002388   -5.33728678518782 rel.err: 0.34E-11
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution    1.1974835261521122     
+ The Fock energy contribution   -24.682103185280429     
+  KS electrons/energy:    7.00000000002390   -5.33728678518782 rel.err: 0.34E-11
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.08 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   4    -54.3607811558   -0.00334755791   -1.00      0.00000    0.00    0.0000000    1.17E-03  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    25.881413950203438     
+ The Coulomb energy contribution    25.881413950203431     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
- The Exchange energy contribution    1.1975075485466924     
+ >>> wall Time used in st-Kbuild is   0.00 seconds
+ The Exchange energy contribution    1.1975075485466915     
  The Fock energy contribution   -24.683906401656746     
-  KS electrons/energy:    7.00000000002384   -5.33748600181603 rel.err: 0.34E-11
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.20 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.08 seconds
+  KS electrons/energy:    7.00000000002385   -5.33748600181605 rel.err: 0.34E-11
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   5    -54.3607813348   -0.00000017901   -1.00      0.00000    0.00    0.0000000    5.45E-04  ###
 
  Level 1 atomic calculation on 6-31G* Charge   6
@@ -492,21 +492,21 @@ Total Number of grid points:       30120
  >>> wall Time used in reg-Jengine is   0.00 seconds
  The Coulomb energy contribution    21.726141548067741     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
- >>> wall Time used in st-Kbuild is   0.01 seconds
+ >>> wall Time used in st-Kbuild is   0.00 seconds
  The Exchange energy contribution    1.0364791519525860     
  The Fock energy contribution   -20.689662396115164     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       30564
- >>>  CPU Time used in Boxify is   0.01 seconds
- >>> wall Time used in Boxify is   0.01 seconds
+ >>>  CPU Time used in Boxify is   0.00 seconds
+ >>> wall Time used in Boxify is   0.00 seconds
 
   Max allocated memory, Grid                    2.021 MB
 
- >>>  CPU Time used in gridgeneration2 is   0.04 seconds
+ >>>  CPU Time used in gridgeneration2 is   0.03 seconds
  >>> wall Time used in gridgeneration2 is   0.03 seconds
-  KS electrons/energy:    5.99999999976346   -4.68756611666639 rel.err:-0.39E-10
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.22 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.13 seconds
+  KS electrons/energy:    5.99999999976348   -4.68756611666639 rel.err:-0.39E-10
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.21 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.09 seconds
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -518,7 +518,7 @@ Total Number of grid points:       30564
  >>> wall Time used in st-Kbuild is   0.00 seconds
  The Exchange energy contribution   0.89063042631771749     
  The Fock energy contribution   -14.962125798665641     
-  KS electrons/energy:    5.99999999976740   -3.89553404856141 rel.err:-0.39E-10
+  KS electrons/energy:    5.99999999976739   -3.89553404856140 rel.err:-0.39E-10
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
  >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   2    -37.4900117302   -0.82217388823    0.00      0.00000    0.00    0.0000000    1.04E+00  ###
@@ -527,49 +527,49 @@ Total Number of grid points:       30564
  The Coulomb energy contribution    17.703863969028557     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
  >>> wall Time used in st-Kbuild is   0.00 seconds
- The Exchange energy contribution   0.93249332395707629     
+ The Exchange energy contribution   0.93249332395707640     
  The Fock energy contribution   -16.771370645071482     
-  KS electrons/energy:    5.99999999976555   -4.13413708342500 rel.err:-0.39E-10
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.20 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.07 seconds
+  KS electrons/energy:    5.99999999976555   -4.13413708342501 rel.err:-0.39E-10
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.18 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   3    -37.7109169421   -0.22090521189   -1.00      0.00000    0.00    0.0000000    2.47E-02  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    17.755125634717601     
+ The Coulomb energy contribution    17.755125634717608     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
  >>> wall Time used in st-Kbuild is   0.00 seconds
- The Exchange energy contribution   0.93358699619536201     
- The Fock energy contribution   -16.821538638522238     
-  KS electrons/energy:    5.99999999976552   -4.14087163910345 rel.err:-0.39E-10
+ The Exchange energy contribution   0.93358699619536245     
+ The Fock energy contribution   -16.821538638522242     
+  KS electrons/energy:    5.99999999976553   -4.14087163910345 rel.err:-0.39E-10
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
  >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   4    -37.7110510530   -0.00013411090   -1.00      0.00000    0.00    0.0000000    2.65E-03  ###
  >>>  CPU Time used in reg-Jengine is   0.01 seconds
  >>> wall Time used in reg-Jengine is   0.00 seconds
- The Coulomb energy contribution    17.750625342204813     
+ The Coulomb energy contribution    17.750625342204817     
  >>>  CPU Time used in st-Kbuild is   0.01 seconds
  >>> wall Time used in st-Kbuild is   0.00 seconds
- The Exchange energy contribution   0.93347520338641132     
- The Fock energy contribution   -16.817150138818402     
-  KS electrons/energy:    5.99999999976555   -4.14026877572043 rel.err:-0.39E-10
+ The Exchange energy contribution   0.93347520338641199     
+ The Fock energy contribution   -16.817150138818405     
+  KS electrons/energy:    5.99999999976553   -4.14026877572042 rel.err:-0.39E-10
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.19 seconds
  >>> wall Time used in II_get_xc_Fock_mat is   0.06 seconds
   5    -37.7110523122   -0.00000125920   -1.00      0.00000    0.00    0.0000000    1.34E-04  ###
 Matrix type: mtype_dense
- >>>  CPU Time used in *ATOM is   2.45 seconds
- >>> wall Time used in *ATOM is   1.02 seconds
+ >>>  CPU Time used in *ATOM is   2.33 seconds
+ >>> wall Time used in *ATOM is   0.81 seconds
  >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
  >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
  >>>  CPU Time used in OVERLAP is   0.00 seconds
- >>> wall Time used in OVERLAP is   0.02 seconds
+ >>> wall Time used in OVERLAP is   0.00 seconds
  >>>  CPU Time used in *S is   0.05 seconds
- >>> wall Time used in *S is   0.04 seconds
+ >>> wall Time used in *S is   0.02 seconds
  >>>  CPU Time used in NucElec is   0.01 seconds
- >>> wall Time used in NucElec is   0.01 seconds
+ >>> wall Time used in NucElec is   0.00 seconds
  >>>  CPU Time used in Kinetic is   0.00 seconds
  >>> wall Time used in Kinetic is   0.00 seconds
- >>>  CPU Time used in *H1 is   0.02 seconds
- >>> wall Time used in *H1 is   0.01 seconds
+ >>>  CPU Time used in *H1 is   0.01 seconds
+ >>> wall Time used in *H1 is   0.00 seconds
 
  First density: Atoms in molecule guess
 
@@ -581,16 +581,16 @@ Matrix type: mtype_dense
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
- >>>  CPU Time used in dfJ-Jengine is   0.06 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.05 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
- The Coulomb energy contribution    73.080916668753019     
+ The Coulomb energy contribution    73.080916668753048     
  >>>  CPU Time used in AUX-IN is   0.02 seconds
- >>> wall Time used in AUX-IN is   0.02 seconds
- >>>  CPU Time used in CS08_INPUT-Mole is   0.02 seconds
- >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.06 seconds
+ >>> wall Time used in AUX-IN is   0.01 seconds
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.05 seconds
  >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in AUX-EX is   0.06 seconds
+ >>>  CPU Time used in AUX-EX is   0.05 seconds
  >>> wall Time used in AUX-EX is   0.02 seconds
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       78734
@@ -599,11 +599,11 @@ Total Number of grid points:       78734
 
   Max allocated memory, Grid                    5.366 MB
 
- >>>  CPU Time used in gridgeneration2 is   0.08 seconds
- >>> wall Time used in gridgeneration2 is   0.06 seconds
-  KS electrons/energy:   14.00000024743395   -2.45335810341423 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.51 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.22 seconds
+ >>>  CPU Time used in gridgeneration2 is   0.07 seconds
+ >>> wall Time used in gridgeneration2 is   0.05 seconds
+  KS electrons/energy:   14.00000024743391   -2.45335810341424 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.44 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.16 seconds
  ADMM exchange energy contribution:   -2.6296873723349563     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       78734
@@ -612,14 +612,14 @@ Total Number of grid points:       78734
 
   Max allocated memory, Grid                    5.366 MB
 
- >>>  CPU Time used in gridgeneration2 is   0.07 seconds
- >>> wall Time used in gridgeneration2 is   0.06 seconds
-  KS electrons/energy:   14.00000016376076  -12.73490203263511 rel.err: 0.12E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   1.06 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.41 seconds
-  Iteration 0 energy:  -93.607916255992194     
- >>>  CPU Time used in *START is   1.72 seconds
- >>> wall Time used in *START is   0.70 seconds
+ >>>  CPU Time used in gridgeneration2 is   0.06 seconds
+ >>> wall Time used in gridgeneration2 is   0.05 seconds
+  KS electrons/energy:   14.00000016376074  -12.73490203263515 rel.err: 0.12E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.93 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.30 seconds
+  Iteration 0 energy:  -93.607916255992123     
+ >>>  CPU Time used in *START is   1.51 seconds
+ >>> wall Time used in *START is   0.52 seconds
  Preparing to do S^1/2 decomposition...
  >>>  CPU Time used in LWDIAG is   0.00 seconds
  >>> wall Time used in LWDIAG is   0.00 seconds
@@ -641,23 +641,23 @@ Matrix AO D  has nnz=       268 sparsity:     29.778 %
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
- >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    82.791949982153440     
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    82.791949982153866     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
- >>> wall Time used in AUX-IN is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in AUX-EX is   0.04 seconds
- >>> wall Time used in AUX-EX is   0.02 seconds
-  KS electrons/energy:   14.00000025662117   -2.67232773776568 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.43 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.16 seconds
- ADMM exchange energy contribution:   -2.6739651623575185     
-  KS electrons/energy:   14.00000018069293  -13.83620476514645 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.98 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.34 seconds
- >>>  CPU Time used in FCK_FO is   1.52 seconds
- >>> wall Time used in FCK_FO is   0.55 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.03 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:   14.00000025662105   -2.67232773776569 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.38 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.12 seconds
+ ADMM exchange energy contribution:   -2.6739651623574900     
+  KS electrons/energy:   14.00000018069293  -13.83620476514644 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.91 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.27 seconds
+ >>>  CPU Time used in FCK_FO is   1.39 seconds
+ >>> wall Time used in FCK_FO is   0.43 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
 *******************************************************************************************###
@@ -673,8 +673,8 @@ Matrix AO D  has nnz=       268 sparsity:     29.778 %
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.52 seconds
- >>> wall Time used in SCF iteration is   0.56 seconds
+ >>>  CPU Time used in SCF iteration is   1.39 seconds
+ >>> wall Time used in SCF iteration is   0.43 seconds
 ** Get Fock matrix number   2
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -684,30 +684,30 @@ No. of matmuls in get_density:     3
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
- >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.05 seconds
  >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.714930244802446     
+ The Coulomb energy contribution    79.714930244803099     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
  >>> wall Time used in AUX-IN is   0.01 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.02 seconds
  >>>  CPU Time used in AUX-EX is   0.04 seconds
  >>> wall Time used in AUX-EX is   0.02 seconds
-  KS electrons/energy:   14.00000025712217   -2.60256201892010 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.42 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.16 seconds
- ADMM exchange energy contribution:   -2.6043745149289634     
-  KS electrons/energy:   14.00000018134985  -13.48860763289028 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.91 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.33 seconds
- >>>  CPU Time used in FCK_FO is   1.44 seconds
- >>> wall Time used in FCK_FO is   0.54 seconds
+  KS electrons/energy:   14.00000025712200   -2.60256201892011 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.37 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.12 seconds
+ ADMM exchange energy contribution:   -2.6043745149289350     
+  KS electrons/energy:   14.00000018134982  -13.48860763289045 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.90 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.27 seconds
+ >>>  CPU Time used in FCK_FO is   1.38 seconds
+ >>> wall Time used in FCK_FO is   0.44 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   2    -91.8823178480   -0.14995706378    0.00      0.00000    1.00    0.0000000    6.17E-01  ###
 ** Make average of the last F and D matrices
  config%decomp%nocc, nbast:           7          30
- Fov maxelm  5.91260873172046800E-002
+ Fov maxelm  5.91260873173578907E-002
  Queue flushed!
  Used simple averaging
  >>>  CPU Time used in AVERAG is   0.00 seconds
@@ -717,8 +717,8 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.44 seconds
- >>> wall Time used in SCF iteration is   0.54 seconds
+ >>>  CPU Time used in SCF iteration is   1.39 seconds
+ >>> wall Time used in SCF iteration is   0.45 seconds
 ** Get Fock matrix number   3
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -730,22 +730,22 @@ No. of matmuls in get_density:     3
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
  >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.535413847646126     
+ The Coulomb energy contribution    79.535413847646737     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
  >>> wall Time used in AUX-IN is   0.00 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in AUX-EX is   0.03 seconds
- >>> wall Time used in AUX-EX is   0.01 seconds
-  KS electrons/energy:   14.00000025688277   -2.59819924333581 rel.err: 0.18E-07
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in AUX-EX is   0.04 seconds
+ >>> wall Time used in AUX-EX is   0.02 seconds
+  KS electrons/energy:   14.00000025688264   -2.59819924333582 rel.err: 0.18E-07
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.37 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.12 seconds
- ADMM exchange energy contribution:   -2.6001133375920915     
-  KS electrons/energy:   14.00000018096373  -13.46862430943740 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.92 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.31 seconds
- >>>  CPU Time used in FCK_FO is   1.40 seconds
- >>> wall Time used in FCK_FO is   0.47 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.11 seconds
+ ADMM exchange energy contribution:   -2.6001133375920347     
+  KS electrons/energy:   14.00000018096367  -13.46862430943742 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.91 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.30 seconds
+ >>>  CPU Time used in FCK_FO is   1.39 seconds
+ >>> wall Time used in FCK_FO is   0.46 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   3    -91.8862101413   -0.00389229326    0.00      0.00000    1.00    0.0000000    3.76E-01  ###
@@ -758,7 +758,7 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     3
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.40 seconds
+ >>>  CPU Time used in SCF iteration is   1.39 seconds
  >>> wall Time used in SCF iteration is   0.47 seconds
 ** Get Fock matrix number   4
  >>>  CPU Time used in GALPHA is   0.02 seconds
@@ -771,21 +771,21 @@ No. of matmuls in get_density:     3
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
  >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.418288590435310     
+ The Coulomb energy contribution    79.418288590436234     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
  >>> wall Time used in AUX-IN is   0.01 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
  >>>  CPU Time used in AUX-EX is   0.04 seconds
- >>> wall Time used in AUX-EX is   0.02 seconds
-  KS electrons/energy:   14.00000025671421   -2.59537962223175 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.36 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.11 seconds
- ADMM exchange energy contribution:   -2.5973645842685755     
-  KS electrons/energy:   14.00000018069155  -13.45555276761595 rel.err: 0.13E-07
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:   14.00000025671405   -2.59537962223177 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.40 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.13 seconds
+ ADMM exchange energy contribution:   -2.5973645842686324     
+  KS electrons/energy:   14.00000018069157  -13.45555276761605 rel.err: 0.13E-07
  >>>  CPU Time used in II_get_xc_Fock_mat is   0.93 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.31 seconds
- >>>  CPU Time used in FCK_FO is   1.41 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.30 seconds
+ >>>  CPU Time used in FCK_FO is   1.43 seconds
  >>> wall Time used in FCK_FO is   0.48 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
@@ -798,7 +798,7 @@ No. of matmuls in get_density:     3
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.41 seconds
+ >>>  CPU Time used in SCF iteration is   1.43 seconds
  >>> wall Time used in SCF iteration is   0.48 seconds
 ** Get Fock matrix number   5
  >>>  CPU Time used in GALPHA is   0.02 seconds
@@ -811,22 +811,22 @@ No. of matmuls in get_density:     1
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
  >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.200622732060879     
+ The Coulomb energy contribution    79.200622732061561     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
- >>> wall Time used in AUX-IN is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.03 seconds
- >>>  CPU Time used in AUX-EX is   0.04 seconds
- >>> wall Time used in AUX-EX is   0.03 seconds
-  KS electrons/energy:   14.00000025639384   -2.59025321357956 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.44 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.17 seconds
- ADMM exchange energy contribution:   -2.5923428323902158     
-  KS electrons/energy:   14.00000018016846  -13.43137753948274 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.98 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.35 seconds
- >>>  CPU Time used in FCK_FO is   1.54 seconds
- >>> wall Time used in FCK_FO is   0.59 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.03 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:   14.00000025639378   -2.59025321357957 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.38 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.12 seconds
+ ADMM exchange energy contribution:   -2.5923428323904005     
+  KS electrons/energy:   14.00000018016840  -13.43137753948282 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.93 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.29 seconds
+ >>>  CPU Time used in FCK_FO is   1.41 seconds
+ >>> wall Time used in FCK_FO is   0.46 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   5    -91.8889337041   -0.00120907259   -1.00      0.00000    0.00    0.0000000    4.38E-03  ###
@@ -838,8 +838,8 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.54 seconds
- >>> wall Time used in SCF iteration is   0.59 seconds
+ >>>  CPU Time used in SCF iteration is   1.41 seconds
+ >>> wall Time used in SCF iteration is   0.46 seconds
 ** Get Fock matrix number   6
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -850,23 +850,23 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
- >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.196332597352736     
+ >>> wall Time used in dfJ-Jengine is   0.01 seconds
+ The Coulomb energy contribution    79.196332597354029     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
  >>> wall Time used in AUX-IN is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in AUX-EX is   0.04 seconds
- >>> wall Time used in AUX-EX is   0.02 seconds
-  KS electrons/energy:   14.00000025639117   -2.59016837228195 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.43 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.17 seconds
- ADMM exchange energy contribution:   -2.5922594124533305     
-  KS electrons/energy:   14.00000018016527  -13.43092205943240 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.98 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.36 seconds
- >>>  CPU Time used in FCK_FO is   1.53 seconds
- >>> wall Time used in FCK_FO is   0.59 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in AUX-EX is   0.03 seconds
+ >>> wall Time used in AUX-EX is   0.01 seconds
+  KS electrons/energy:   14.00000025639106   -2.59016837228197 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.36 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.11 seconds
+ ADMM exchange energy contribution:   -2.5922594124533873     
+  KS electrons/energy:   14.00000018016533  -13.43092205943253 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.96 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.32 seconds
+ >>>  CPU Time used in FCK_FO is   1.43 seconds
+ >>> wall Time used in FCK_FO is   0.47 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   6    -91.8889341053   -0.00000040120   -1.00      0.00000    0.00    0.0000000    1.49E-03  ###
@@ -878,8 +878,8 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.53 seconds
- >>> wall Time used in SCF iteration is   0.59 seconds
+ >>>  CPU Time used in SCF iteration is   1.43 seconds
+ >>> wall Time used in SCF iteration is   0.47 seconds
 ** Get Fock matrix number   7
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -891,22 +891,22 @@ No. of matmuls in get_density:     1
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
  >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.197645205919926     
+ The Coulomb energy contribution    79.197645205920949     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
- >>> wall Time used in AUX-IN is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in AUX-IN is   0.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in AUX-EX is   0.04 seconds
+ >>>  CPU Time used in AUX-EX is   0.03 seconds
  >>> wall Time used in AUX-EX is   0.02 seconds
-  KS electrons/energy:   14.00000025639064   -2.59019492673577 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.43 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.16 seconds
- ADMM exchange energy contribution:   -2.5922855908554112     
-  KS electrons/energy:   14.00000018016438  -13.43105898534623 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.92 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.29 seconds
- >>>  CPU Time used in FCK_FO is   1.45 seconds
- >>> wall Time used in FCK_FO is   0.50 seconds
+  KS electrons/energy:   14.00000025639052   -2.59019492673578 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.40 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.17 seconds
+ ADMM exchange energy contribution:   -2.5922855908553828     
+  KS electrons/energy:   14.00000018016438  -13.43105898534636 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.97 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.34 seconds
+ >>>  CPU Time used in FCK_FO is   1.48 seconds
+ >>> wall Time used in FCK_FO is   0.56 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   7    -91.8889341306   -0.00000002525   -1.00      0.00000    0.00    0.0000000    1.42E-04  ###
@@ -918,8 +918,8 @@ No. of matmuls in get_density:     1
 No. of matmuls in get_density:     1
  >>>  CPU Time used in G_DENS is   0.00 seconds
  >>> wall Time used in G_DENS is   0.00 seconds
- >>>  CPU Time used in SCF iteration is   1.45 seconds
- >>> wall Time used in SCF iteration is   0.51 seconds
+ >>>  CPU Time used in SCF iteration is   1.48 seconds
+ >>> wall Time used in SCF iteration is   0.56 seconds
 ** Get Fock matrix number   8
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -928,31 +928,31 @@ No. of matmuls in get_density:     1
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in FIT-J is   0.02 seconds
- >>> wall Time used in FIT-J is   0.01 seconds
+ >>> wall Time used in FIT-J is   0.02 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
- >>> wall Time used in dfJ-Jengine is   0.02 seconds
- The Coulomb energy contribution    79.197567613197918     
+ >>> wall Time used in dfJ-Jengine is   0.03 seconds
+ The Coulomb energy contribution    79.197567613199425     
  >>>  CPU Time used in AUX-IN is   0.01 seconds
- >>> wall Time used in AUX-IN is   0.01 seconds
+ >>> wall Time used in AUX-IN is   0.02 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in AUX-EX is   0.03 seconds
- >>> wall Time used in AUX-EX is   0.01 seconds
-  KS electrons/energy:   14.00000025639096   -2.59019361975830 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.37 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.11 seconds
- ADMM exchange energy contribution:   -2.5922842595613531     
-  KS electrons/energy:   14.00000018016479  -13.43105222615376 rel.err: 0.13E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.93 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.29 seconds
- >>>  CPU Time used in FCK_FO is   1.40 seconds
- >>> wall Time used in FCK_FO is   0.45 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in AUX-EX is   0.04 seconds
+ >>> wall Time used in AUX-EX is   0.02 seconds
+  KS electrons/energy:   14.00000025639080   -2.59019361975831 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.40 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.15 seconds
+ ADMM exchange energy contribution:   -2.5922842595616089     
+  KS electrons/energy:   14.00000018016481  -13.43105222615391 rel.err: 0.13E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.96 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.35 seconds
+ >>>  CPU Time used in FCK_FO is   1.47 seconds
+ >>> wall Time used in FCK_FO is   0.57 seconds
  >>>  CPU Time used in G_GRAD is   0.00 seconds
  >>> wall Time used in G_GRAD is   0.00 seconds
   8    -91.8889341308   -0.00000000024   -1.00      0.00000    0.00    0.0000000    4.42E-06  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is  11.69 seconds
- >>> wall Time used in **ITER is   4.18 seconds
+ >>>  CPU Time used in **ITER is  11.39 seconds
+ >>> wall Time used in **ITER is   3.88 seconds
 
 Total no. of matmuls in SCF optimization:        271
  Postponing calculation of HOMO-LUMO gap to response part...
@@ -973,22 +973,170 @@ Total no. of matmuls in SCF optimization:        271
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -91.73236078423548178762      0.340764788903671D+01
-    2           -91.88231784801826051989      0.616690783463971D+00
-    3           -91.88621014127831188034      0.376111308777897D+00
-    4           -91.88772463153392777713      0.237372847456048D+00
-    5           -91.88893370412772299005      0.437976908672390D-02
-    6           -91.88893410533052019673      0.149066601543377D-02
-    7           -91.88893413058069370436      0.142142000630428D-03
-    8           -91.88893413081632388639      0.441902473721176D-05
+    1           -91.73236078423531125736      0.340764788903667D+01
+    2           -91.88231784801826051989      0.616690783464195D+00
+    3           -91.88621014127795660897      0.376111308777579D+00
+    4           -91.88772463153377145773      0.237372847455867D+00
+    5           -91.88893370412769456834      0.437976908552656D-02
+    6           -91.88893410533046335331      0.149066601481851D-02
+    7           -91.88893413058063686094      0.142141999983090D-03
+    8           -91.88893413081653704921      0.441902460450755D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final DFT energy:                  -91.888934130816
+      Final DFT energy:                  -91.888934130817
       Nuclear repulsion:                  36.800000000000
-      Electronic energy:                -128.688934130816
+      Electronic energy:                -128.688934130817
+
+
+
+
+        *************************************************************
+        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
+        *************************************************************
+
+
+
+
+                   nuclear rep contribution to gradient
+                   ------------------------------------
+
+   H        0.0000000000            0.0000000000            7.1200000000
+   N        0.0000000000            0.0000000000          -19.7866666667
+   C        0.0000000000            0.0000000000           12.6666666667
+ >>>  CPU Time used in nn-grad is   0.00 seconds
+ >>> wall Time used in nn-grad is   0.00 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   H       -0.0000000000           -0.0000000000           -0.0640368147
+   N        0.0000000000            0.0000000000          -16.0882926619
+   C        0.0000000000           -0.0000000000           16.1523294766
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+
+
+                     grad_k2 contribution to gradient
+                     --------------------------------
+
+   H        0.0000000000            0.0000000000           -0.0124629100
+   N       -0.0000000000           -0.0000000000            0.2733821355
+   C       -0.0000000000            0.0000000000           -0.2609192256
+  KS electrons/energy:   14.00000025639083   -2.59019361975831 rel.err: 0.18E-07
+ >>>  CPU Time used in II_get_xc_Fock_mat is   0.41 seconds
+ >>> wall Time used in II_get_xc_Fock_mat is   0.15 seconds
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   0.96 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.35 seconds
+
+
+                    grad_xc2 contribution to gradient
+                    ---------------------------------
+
+   H       -0.0000000000           -0.0000000000            0.0152874136
+   N        0.0000000000            0.0000000000           -0.1946383819
+   C        0.0000000000           -0.0000000000            0.1793480145
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.79 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.61 seconds
+
+
+                    grad_XC3 contribution to gradient
+                    ---------------------------------
+
+   H        0.0000000000            0.0000000000            0.0064700696
+   N       -0.0000000000           -0.0000000000            0.1305802066
+   C       -0.0000000000            0.0000000000           -0.1370492570
+
+
+                    ADMM-Chrg contribution to gradient
+                    ----------------------------------
+
+   H        0.0000000000            0.0000000000            0.0015833071
+   N       -0.0000000000           -0.0000000000           -0.0049529605
+   C       -0.0000000000            0.0000000000            0.0033696534
+
+
+                    ADMM_proj contribution to gradient
+                    ----------------------------------
+
+   H        0.0000000000            0.0000000000            0.0167592997
+   N       -0.0000000000           -0.0000000000           -0.0261210008
+   C       -0.0000000000            0.0000000000            0.0093617011
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   H        0.0000000000            0.0000000000            0.0276371799
+   N       -0.0000000000           -0.0000000000            0.1782499989
+   C       -0.0000000000            0.0000000000           -0.2058891135
+
+
+                   twoElectron contribution to gradient
+                   ------------------------------------
+
+   H       -0.0000000000           -0.0000000000           -0.0363996348
+   N        0.0000000000            0.0000000000          -15.9100426629
+   C        0.0000000000           -0.0000000000           15.9464403631
+ >>>  CPU Time used in two-grad is   3.49 seconds
+ >>> wall Time used in two-grad is   1.27 seconds
+
+
+                   nuc-el attr contribution to gradient
+                   ------------------------------------
+
+   H        0.0000000000            0.0000000000           -4.5448094992
+   N       -0.0000000000           -0.0000000000           34.1229977561
+   C       -0.0000000000            0.0000000000          -29.5781882569
+ >>>  CPU Time used in ne-grad is   0.02 seconds
+ >>> wall Time used in ne-grad is   0.01 seconds
+ >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.89 seconds
+ >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.66 seconds
+
+
+                  exchange-corr contribution to gradient
+                  --------------------------------------
+
+   H        0.0000000000            0.0000000000            0.0262336148
+   N       -0.0000000000           -0.0000000000            0.5796534541
+   C       -0.0000000000            0.0000000000           -0.6058821830
+ >>>  CPU Time used in xc-grad is   1.89 seconds
+ >>> wall Time used in xc-grad is   0.66 seconds
+
+
+                     kinetic contribution to gradient
+                     --------------------------------
+
+   H       -0.0000000000           -0.0000000000            0.1885528345
+   N       -0.0000000000            0.0000000000           -1.7322686944
+   C        0.0000000000           -0.0000000000            1.5437158599
+ >>>  CPU Time used in kin-grad is   0.01 seconds
+ >>> wall Time used in kin-grad is   0.00 seconds
+
+
+                  reorthonomal contribution to gradient
+                  -------------------------------------
+
+   H       -0.0000000000           -0.0000000000           -0.0953644777
+   N        0.0000000000            0.0000000000           -0.3870431029
+   C        0.0000000000           -0.0000000000            0.4824075806
+ >>>  CPU Time used in reorth-g is   0.01 seconds
+ >>> wall Time used in reorth-g is   0.00 seconds
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+   H        0.0000000000           -0.0000000000            2.6582128376
+   N       -0.0000000000           -0.0000000000           -3.1133699166
+   C       -0.0000000000           -0.0000000000            0.4551600303
+
+
+ RMS gradient norm (au):      1.3730071773382153
+
 
 
 
@@ -1016,27 +1164,27 @@ Total no. of matmuls in SCF optimization:        271
  >>> wall Time used in dfJ-Jengine is   0.04 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.70 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.02 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.89 seconds
- >>> wall Time used in II_get_xc_linrsp is   2.19 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.22 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.36 seconds
- >>>  CPU Time used in LINTRA is  11.16 seconds
- >>> wall Time used in LINTRA is   3.96 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.88 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.07 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.84 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.21 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.17 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.85 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.35 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.28 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.46 seconds
+ >>>  CPU Time used in LINTRA is  11.42 seconds
+ >>> wall Time used in LINTRA is   4.34 seconds
  Response convergence threshold is  1.00000000000000005E-004
 Residual norm for vector   1 is:   0.329160E+00    and eigenvalue =   0.46942543   It =   1 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.315280E+00    and eigenvalue =   0.46975787   It =   1 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  11.16 seconds
- >>> wall Time used in RSP_IT is   3.97 seconds
+ >>>  CPU Time used in RSP_IT is  11.43 seconds
+ >>> wall Time used in RSP_IT is   4.35 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           2
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1045,37 +1193,37 @@ Residual norm for vector   2 is:   0.315280E+00    and eigenvalue =   0.46975787
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in GALPHA is   0.04 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.02 seconds
  >>>  CPU Time used in ALBE is   0.00 seconds
  >>> wall Time used in ALBE is   0.00 seconds
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
- >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.07 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.70 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.94 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.73 seconds
- >>> wall Time used in II_get_xc_linrsp is   2.12 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.12 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.19 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.34 seconds
- >>>  CPU Time used in LINTRA is  10.94 seconds
- >>> wall Time used in LINTRA is   3.78 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.77 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.00 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.62 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.09 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.15 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.81 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.28 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.24 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.43 seconds
+ >>>  CPU Time used in LINTRA is  11.02 seconds
+ >>> wall Time used in LINTRA is   4.03 seconds
 Residual norm for vector   1 is:   0.665657E-01    and eigenvalue =   0.45893224   It =   2 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.648575E-01    and eigenvalue =   0.46003075   It =   2 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.95 seconds
- >>> wall Time used in RSP_IT is   3.79 seconds
+ >>>  CPU Time used in RSP_IT is  11.03 seconds
+ >>> wall Time used in RSP_IT is   4.04 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           3
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1084,7 +1232,7 @@ Residual norm for vector   2 is:   0.648575E-01    and eigenvalue =   0.46003075
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in GALPHA is   0.04 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.02 seconds
  >>>  CPU Time used in ALBE is   0.00 seconds
  >>> wall Time used in ALBE is   0.00 seconds
  >>>  CPU Time used in LINSOL is   0.00 seconds
@@ -1093,28 +1241,28 @@ Residual norm for vector   2 is:   0.648575E-01    and eigenvalue =   0.46003075
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.58 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.87 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.61 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.98 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.74 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.21 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
- >>>  CPU Time used in LINTRA is  10.70 seconds
- >>> wall Time used in LINTRA is   3.55 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.85 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.03 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.37 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.48 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.19 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.83 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.31 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.23 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.46 seconds
+ >>>  CPU Time used in LINTRA is  10.98 seconds
+ >>> wall Time used in LINTRA is   4.43 seconds
 Residual norm for vector   1 is:   0.396767E-01    and eigenvalue =   0.45807048   It =   3 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.394472E-01    and eigenvalue =   0.45917065   It =   3 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.71 seconds
- >>> wall Time used in RSP_IT is   3.56 seconds
+ >>>  CPU Time used in RSP_IT is  10.99 seconds
+ >>> wall Time used in RSP_IT is   4.44 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           4
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1123,7 +1271,7 @@ Residual norm for vector   2 is:   0.394472E-01    and eigenvalue =   0.45917065
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in GALPHA is   0.04 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.02 seconds
  >>>  CPU Time used in ALBE is   0.00 seconds
  >>> wall Time used in ALBE is   0.00 seconds
  >>>  CPU Time used in LINSOL is   0.00 seconds
@@ -1132,28 +1280,28 @@ Residual norm for vector   2 is:   0.394472E-01    and eigenvalue =   0.45917065
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.53 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.85 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.67 seconds
- >>> wall Time used in II_get_xc_linrsp is   2.06 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.69 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.00 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.72 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.10 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.12 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.18 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.35 seconds
- >>>  CPU Time used in LINTRA is  10.71 seconds
- >>> wall Time used in LINTRA is   3.63 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.17 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.34 seconds
+ >>>  CPU Time used in LINTRA is  10.90 seconds
+ >>> wall Time used in LINTRA is   3.82 seconds
 Residual norm for vector   1 is:   0.253606E-01    and eigenvalue =   0.45761618   It =   4 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.241259E-01    and eigenvalue =   0.45870972   It =   4 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.72 seconds
- >>> wall Time used in RSP_IT is   3.64 seconds
+ >>>  CPU Time used in RSP_IT is  10.92 seconds
+ >>> wall Time used in RSP_IT is   3.83 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           5
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1173,26 +1321,26 @@ Residual norm for vector   2 is:   0.241259E-01    and eigenvalue =   0.45870972
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.56 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.90 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.65 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.90 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.65 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.88 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.55 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.85 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.22 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
- >>>  CPU Time used in LINTRA is  10.76 seconds
- >>> wall Time used in LINTRA is   3.50 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.12 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.75 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.22 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.16 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.34 seconds
+ >>>  CPU Time used in LINTRA is  10.69 seconds
+ >>> wall Time used in LINTRA is   3.46 seconds
 Residual norm for vector   1 is:   0.136432E-01    and eigenvalue =   0.45751092   It =   5 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.130197E-01    and eigenvalue =   0.45861359   It =   5 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.77 seconds
- >>> wall Time used in RSP_IT is   3.52 seconds
+ >>>  CPU Time used in RSP_IT is  10.71 seconds
+ >>> wall Time used in RSP_IT is   3.48 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           6
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1212,25 +1360,25 @@ Residual norm for vector   2 is:   0.130197E-01    and eigenvalue =   0.45861359
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.65 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.94 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.70 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.91 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.66 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.04 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.58 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.85 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.78 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.19 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.35 seconds
- >>>  CPU Time used in LINTRA is  10.88 seconds
- >>> wall Time used in LINTRA is   3.58 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.18 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
+ >>>  CPU Time used in LINTRA is  10.74 seconds
+ >>> wall Time used in LINTRA is   3.59 seconds
 Residual norm for vector   1 is:   0.517615E-02    and eigenvalue =   0.45748170   It =   6 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.488326E-02    and eigenvalue =   0.45858640   It =   6 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.90 seconds
+ >>>  CPU Time used in RSP_IT is  10.77 seconds
  >>> wall Time used in RSP_IT is   3.60 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           7
  >>>  CPU Time used in GALPHA is   0.02 seconds
@@ -1251,26 +1399,26 @@ Residual norm for vector   2 is:   0.488326E-02    and eigenvalue =   0.45858640
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.61 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.92 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.75 seconds
- >>> wall Time used in II_get_xc_linrsp is   2.05 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.68 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.88 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.37 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.00 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.43 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.14 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.13 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.22 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.21 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.32 seconds
- >>>  CPU Time used in LINTRA is  10.94 seconds
- >>> wall Time used in LINTRA is   3.72 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.20 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
+ >>>  CPU Time used in LINTRA is  10.61 seconds
+ >>> wall Time used in LINTRA is   3.62 seconds
 Residual norm for vector   1 is:   0.359280E-02    and eigenvalue =   0.45747607   It =   7 CONV = F
  MO preconditioning
 Residual norm for vector   2 is:   0.343829E-02    and eigenvalue =   0.45858103   It =   7 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.96 seconds
- >>> wall Time used in RSP_IT is   3.74 seconds
+ >>>  CPU Time used in RSP_IT is  10.63 seconds
+ >>> wall Time used in RSP_IT is   3.64 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           8
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1288,28 +1436,28 @@ Residual norm for vector   2 is:   0.343829E-02    and eigenvalue =   0.45858103
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.69 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.88 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.55 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.01 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.61 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.91 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.62 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.98 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.43 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.13 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.20 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.19 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.32 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.44 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.15 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.23 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.17 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.34 seconds
  >>>  CPU Time used in LINTRA is  10.78 seconds
- >>> wall Time used in LINTRA is   3.60 seconds
-Residual norm for vector   1 is:   0.158580E-02    and eigenvalue =   0.45747290   It =   8 CONV = F
+ >>> wall Time used in LINTRA is   3.66 seconds
+Residual norm for vector   1 is:   0.158590E-02    and eigenvalue =   0.45747290   It =   8 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.142845E-02    and eigenvalue =   0.45857794   It =   8 CONV = F
+Residual norm for vector   2 is:   0.142829E-02    and eigenvalue =   0.45857794   It =   8 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.81 seconds
- >>> wall Time used in RSP_IT is   3.62 seconds
+ >>>  CPU Time used in RSP_IT is  10.80 seconds
+ >>> wall Time used in RSP_IT is   3.68 seconds
   ** RSP_SOLVER MICROITERATION NUMBER           9
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1318,7 +1466,7 @@ Residual norm for vector   2 is:   0.142845E-02    and eigenvalue =   0.45857794
  >>>  CPU Time used in LINSOL is   0.00 seconds
  >>> wall Time used in LINSOL is   0.00 seconds
  >>>  CPU Time used in GALPHA is   0.04 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
+ >>> wall Time used in GALPHA is   0.02 seconds
  >>>  CPU Time used in ALBE is   0.00 seconds
  >>> wall Time used in ALBE is   0.00 seconds
  >>>  CPU Time used in LINSOL is   0.00 seconds
@@ -1327,28 +1475,28 @@ Residual norm for vector   2 is:   0.142845E-02    and eigenvalue =   0.45857794
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.64 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.92 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.58 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.99 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.70 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.94 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.63 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.02 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.43 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.12 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.18 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.17 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
- >>>  CPU Time used in LINTRA is  10.73 seconds
- >>> wall Time used in LINTRA is   3.60 seconds
-Residual norm for vector   1 is:   0.931526E-03    and eigenvalue =   0.45747237   It =   9 CONV = F
+ >>>  CPU Time used in LINTRA is  10.87 seconds
+ >>> wall Time used in LINTRA is   3.68 seconds
+Residual norm for vector   1 is:   0.939338E-03    and eigenvalue =   0.45747238   It =   9 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.783997E-03    and eigenvalue =   0.45857754   It =   9 CONV = F
+Residual norm for vector   2 is:   0.772251E-03    and eigenvalue =   0.45857753   It =   9 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.76 seconds
- >>> wall Time used in RSP_IT is   3.63 seconds
+ >>>  CPU Time used in RSP_IT is  10.90 seconds
+ >>> wall Time used in RSP_IT is   3.71 seconds
   ** RSP_SOLVER MICROITERATION NUMBER          10
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1368,27 +1516,66 @@ Residual norm for vector   2 is:   0.783997E-03    and eigenvalue =   0.45857754
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.65 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.93 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.65 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.99 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.70 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.96 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.59 seconds
+ >>> wall Time used in II_get_xc_linrsp is   2.08 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.40 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.24 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.19 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
- >>>  CPU Time used in LINTRA is  10.81 seconds
- >>> wall Time used in LINTRA is   3.66 seconds
-Residual norm for vector   1 is:   0.582510E-03    and eigenvalue =   0.45747200   It =  10 CONV = F
+ >>>  CPU Time used in II_get_xc_linrsp is   0.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.12 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.75 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.20 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.34 seconds
+ >>>  CPU Time used in LINTRA is  10.82 seconds
+ >>> wall Time used in LINTRA is   3.77 seconds
+Residual norm for vector   1 is:   0.686475E-03    and eigenvalue =   0.45747225   It =  10 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.633098E-03    and eigenvalue =   0.45857800   It =  10 CONV = F
+Residual norm for vector   2 is:   0.484708E-03    and eigenvalue =   0.45857742   It =  10 CONV = F
  MO preconditioning
  >>>  CPU Time used in RSP_IT is  10.85 seconds
- >>> wall Time used in RSP_IT is   3.68 seconds
+ >>> wall Time used in RSP_IT is   3.79 seconds
   ** RSP_SOLVER MICROITERATION NUMBER          11
+ >>>  CPU Time used in GALPHA is   0.02 seconds
+ >>> wall Time used in GALPHA is   0.01 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in GALPHA is   0.04 seconds
+ >>> wall Time used in GALPHA is   0.01 seconds
+ >>>  CPU Time used in ALBE is   0.00 seconds
+ >>> wall Time used in ALBE is   0.00 seconds
+ >>>  CPU Time used in LINSOL is   0.00 seconds
+ >>> wall Time used in LINSOL is   0.00 seconds
+ >>>  CPU Time used in FIT-J is   0.02 seconds
+ >>> wall Time used in FIT-J is   0.01 seconds
+ >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
+ >>> wall Time used in dfJ-Jengine is   0.03 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.72 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.99 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.67 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.91 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild is   0.01 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.19 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
+ >>>  CPU Time used in LINTRA is  10.91 seconds
+ >>> wall Time used in LINTRA is   3.60 seconds
+Residual norm for vector   1 is:   0.404218E-03    and eigenvalue =   0.45747217   It =  11 CONV = F
+ MO preconditioning
+Residual norm for vector   2 is:   0.193988E-03    and eigenvalue =   0.45857737   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT is  10.95 seconds
+ >>> wall Time used in RSP_IT is   3.63 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
  >>>  CPU Time used in ALBE is   0.00 seconds
@@ -1407,64 +1594,25 @@ Residual norm for vector   2 is:   0.633098E-03    and eigenvalue =   0.45857800
  >>> wall Time used in dfJ-Jengine is   0.03 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.61 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.96 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.80 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.93 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.62 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.89 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.56 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.88 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.41 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.77 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.22 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.32 seconds
- >>>  CPU Time used in LINTRA is  10.97 seconds
- >>> wall Time used in LINTRA is   3.59 seconds
-Residual norm for vector   1 is:   0.209392E-03    and eigenvalue =   0.45747174   It =  11 CONV = F
- MO preconditioning
-Residual norm for vector   2 is:   0.379356E-03    and eigenvalue =   0.45857795   It =  11 CONV = F
- MO preconditioning
- >>>  CPU Time used in RSP_IT is  11.01 seconds
- >>> wall Time used in RSP_IT is   3.62 seconds
-  ** RSP_SOLVER MICROITERATION NUMBER          12
- >>>  CPU Time used in GALPHA is   0.02 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
- >>>  CPU Time used in ALBE is   0.00 seconds
- >>> wall Time used in ALBE is   0.00 seconds
- >>>  CPU Time used in LINSOL is   0.00 seconds
- >>> wall Time used in LINSOL is   0.00 seconds
- >>>  CPU Time used in GALPHA is   0.04 seconds
- >>> wall Time used in GALPHA is   0.01 seconds
- >>>  CPU Time used in ALBE is   0.00 seconds
- >>> wall Time used in ALBE is   0.00 seconds
- >>>  CPU Time used in LINSOL is   0.00 seconds
- >>> wall Time used in LINSOL is   0.00 seconds
- >>>  CPU Time used in FIT-J is   0.02 seconds
- >>> wall Time used in FIT-J is   0.01 seconds
- >>>  CPU Time used in dfJ-Jengine is   0.08 seconds
- >>> wall Time used in dfJ-Jengine is   0.03 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.04 seconds
- >>> wall Time used in LINK-Kbuild is   0.02 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.67 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.94 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.71 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.91 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.40 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.11 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.43 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.13 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   0.76 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.21 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.21 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.20 seconds
  >>> wall Time used in II_get_xc_linrsp is   0.33 seconds
- >>>  CPU Time used in LINTRA is  10.91 seconds
- >>> wall Time used in LINTRA is   3.56 seconds
-Residual norm for vector   1 is:   0.597059E-04    and eigenvalue =   0.45747154   It =  12 CONV = T
-Residual norm for vector   2 is:   0.268323E-03    and eigenvalue =   0.45857788   It =  12 CONV = F
+ >>>  CPU Time used in LINTRA is  10.72 seconds
+ >>> wall Time used in LINTRA is   3.50 seconds
+Residual norm for vector   1 is:   0.281827E-03    and eigenvalue =   0.45747214   It =  12 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is  10.95 seconds
- >>> wall Time used in RSP_IT is   3.59 seconds
+Residual norm for vector   2 is:   0.606979E-04    and eigenvalue =   0.45857736   It =  12 CONV = T
+ >>>  CPU Time used in RSP_IT is  10.76 seconds
+ >>> wall Time used in RSP_IT is   3.53 seconds
   ** RSP_SOLVER MICROITERATION NUMBER          13
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1478,19 +1626,19 @@ Residual norm for vector   2 is:   0.268323E-03    and eigenvalue =   0.45857788
  >>> wall Time used in dfJ-Jengine is   0.01 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.48 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.84 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.42 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.83 seconds
  >>>  CPU Time used in II_get_xc_linrsp is   5.27 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.92 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.00 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.27 seconds
- >>>  CPU Time used in LINTRA is   8.83 seconds
- >>> wall Time used in LINTRA is   3.06 seconds
-Residual norm for vector   1 is:   0.569831E-04    and eigenvalue =   0.45747148   It =  13 CONV = T
-Residual norm for vector   2 is:   0.169311E-03    and eigenvalue =   0.45857801   It =  13 CONV = F
+ >>> wall Time used in II_get_xc_linrsp is   1.90 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   0.98 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.28 seconds
+ >>>  CPU Time used in LINTRA is   8.74 seconds
+ >>> wall Time used in LINTRA is   3.04 seconds
+Residual norm for vector   1 is:   0.193893E-03    and eigenvalue =   0.45747213   It =  13 CONV = F
  MO preconditioning
- >>>  CPU Time used in RSP_IT is   8.86 seconds
- >>> wall Time used in RSP_IT is   3.08 seconds
+Residual norm for vector   2 is:   0.606952E-04    and eigenvalue =   0.45857736   It =  13 CONV = T
+ >>>  CPU Time used in RSP_IT is   8.78 seconds
+ >>> wall Time used in RSP_IT is   3.06 seconds
   ** RSP_SOLVER MICROITERATION NUMBER          14
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1501,22 +1649,22 @@ Residual norm for vector   2 is:   0.169311E-03    and eigenvalue =   0.45857801
  >>>  CPU Time used in FIT-J is   0.02 seconds
  >>> wall Time used in FIT-J is   0.01 seconds
  >>>  CPU Time used in dfJ-Jengine is   0.04 seconds
- >>> wall Time used in dfJ-Jengine is   0.01 seconds
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.46 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.86 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.32 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.90 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   0.99 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.28 seconds
- >>>  CPU Time used in LINTRA is   8.85 seconds
- >>> wall Time used in LINTRA is   3.06 seconds
-Residual norm for vector   1 is:   0.559912E-04    and eigenvalue =   0.45747146   It =  14 CONV = T
-Residual norm for vector   2 is:   0.116244E-03    and eigenvalue =   0.45857799   It =  14 CONV = F
+ >>> wall Time used in dfJ-Jengine is   0.02 seconds
+ >>>  CPU Time used in LINK-Kbuild is   0.05 seconds
+ >>> wall Time used in LINK-Kbuild is   0.02 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   2.44 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.84 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.31 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.84 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.00 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.29 seconds
+ >>>  CPU Time used in LINTRA is   8.84 seconds
+ >>> wall Time used in LINTRA is   3.00 seconds
+Residual norm for vector   1 is:   0.127618E-03    and eigenvalue =   0.45747212   It =  14 CONV = F
  MO preconditioning
+Residual norm for vector   2 is:   0.606936E-04    and eigenvalue =   0.45857736   It =  14 CONV = T
  >>>  CPU Time used in RSP_IT is   8.88 seconds
- >>> wall Time used in RSP_IT is   3.09 seconds
+ >>> wall Time used in RSP_IT is   3.03 seconds
   ** RSP_SOLVER MICROITERATION NUMBER          15
  >>>  CPU Time used in GALPHA is   0.02 seconds
  >>> wall Time used in GALPHA is   0.01 seconds
@@ -1530,32 +1678,32 @@ Residual norm for vector   2 is:   0.116244E-03    and eigenvalue =   0.45857799
  >>> wall Time used in dfJ-Jengine is   0.01 seconds
  >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
  >>> wall Time used in LINK-Kbuild is   0.01 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   2.46 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.81 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   5.42 seconds
- >>> wall Time used in II_get_xc_linrsp is   1.86 seconds
- >>>  CPU Time used in II_get_xc_linrsp is   1.01 seconds
- >>> wall Time used in II_get_xc_linrsp is   0.29 seconds
- >>>  CPU Time used in LINTRA is   8.96 seconds
- >>> wall Time used in LINTRA is   2.98 seconds
-Residual norm for vector   1 is:   0.554945E-04    and eigenvalue =   0.45747144   It =  15 CONV = T
-Residual norm for vector   2 is:   0.551890E-04    and eigenvalue =   0.45857794   It =  15 CONV = T
+ >>>  CPU Time used in II_get_xc_linrsp is   2.55 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.85 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   5.41 seconds
+ >>> wall Time used in II_get_xc_linrsp is   1.95 seconds
+ >>>  CPU Time used in II_get_xc_linrsp is   1.06 seconds
+ >>> wall Time used in II_get_xc_linrsp is   0.35 seconds
+ >>>  CPU Time used in LINTRA is   9.09 seconds
+ >>> wall Time used in LINTRA is   3.18 seconds
+Residual norm for vector   1 is:   0.696465E-04    and eigenvalue =   0.45747212   It =  15 CONV = T
+Residual norm for vector   2 is:   0.606929E-04    and eigenvalue =   0.45857736   It =  15 CONV = T
 
  *** THE REQUESTED              2 SOLUTION VECTORS CONVERGED
  Write            2  excitation vectors to disk
 
  The following excitation energies are used for the response calculation:
 
-           1  0.45747144346366203     
-           2  0.45857793828508459     
- Starting linear response function calculation for: << EL  ; EXCI>>
-
- >>>  CPU Time used in PropInt:DIPLEN is   0.01 seconds
- >>> wall Time used in PropInt:DIPLEN is   0.00 seconds
+           1  0.45747211972989077     
+           2  0.45857736319457909     
  Starting linear response function calculation for: << EL  ; EXCI>>
 
  >>>  CPU Time used in PropInt:DIPLEN is   0.01 seconds
  >>> wall Time used in PropInt:DIPLEN is   0.01 seconds
+ Starting linear response function calculation for: << EL  ; EXCI>>
+
+ >>>  CPU Time used in PropInt:DIPLEN is   0.01 seconds
+ >>> wall Time used in PropInt:DIPLEN is   0.00 seconds
 
 
 
@@ -1569,167 +1717,19 @@ Residual norm for vector   2 is:   0.551890E-04    and eigenvalue =   0.45857794
    Excitation                 Transition Dipole Moments                  Oscillator
     Energies              x                y                z            Strengths
  ====================================================================================
-   0.45747144       0.43381467       0.15337105E-01  -0.83528565E-06   0.57467684E-01
-   0.45857794       0.15066903E-01  -0.43647062      -0.43304106E-06   0.58310818E-01
+   0.45747212       0.28452238E-03   0.43408754      -0.12081157E-04   0.57468279E-01
+   0.45857736      -0.43673283       0.28660294E-03  -0.56527884E-07   0.58311367E-01
 
 
 
 
-
-
-
-        *************************************************************
-        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
-        *************************************************************
-
-
-
-
-                   nuclear rep contribution to gradient
-                   ------------------------------------
-
-   H        0.0000000000            0.0000000000            7.1200000000
-   N        0.0000000000            0.0000000000          -19.7866666667
-   C        0.0000000000            0.0000000000           12.6666666667
- >>>  CPU Time used in nn-grad is   0.00 seconds
- >>> wall Time used in nn-grad is   0.00 seconds
-
-
-                     Coulomb contribution to gradient
-                     --------------------------------
-
-   H       -0.2529890054            0.3235536019           -1.0589968475
-   N        0.0089405469            1.1160159837           -0.1794898802
-   C        0.2440484585           -1.4395695856            1.2384867277
- >>>  CPU Time used in LINK-Kbuild is   0.03 seconds
- >>> wall Time used in LINK-Kbuild is   0.01 seconds
-
-
-                     grad_k2 contribution to gradient
-                     --------------------------------
-
-   H        0.0000000000            0.0000000000           -0.0124629100
-   N       -0.0000000000           -0.0000000000            0.2733821355
-   C        0.0000000000            0.0000000000           -0.2609192256
-  KS electrons/energy:   14.00000025639097   -2.59019361975829 rel.err: 0.18E-07
- >>>  CPU Time used in II_get_xc_Fock_mat is   0.35 seconds
- >>> wall Time used in II_get_xc_Fock_mat is   0.10 seconds
- >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   0.91 seconds
- >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.24 seconds
-
-
-                    grad_xc2 contribution to gradient
-                    ---------------------------------
-
-   H       -0.0000000000           -0.0000000000            0.0152874136
-   N        0.0000000000            0.0000000000           -0.1946383819
-   C        0.0000000000           -0.0000000000            0.1793480145
- >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.73 seconds
- >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.48 seconds
-
-
-                    grad_XC3 contribution to gradient
-                    ---------------------------------
-
-   H        0.0000000000            0.0000000000            0.0064700696
-   N       -0.0000000000           -0.0000000000            0.1305802066
-   C       -0.0000000000            0.0000000000           -0.1370492570
-
-
-                    ADMM-Chrg contribution to gradient
-                    ----------------------------------
-
-   H        0.0000000000            0.0000000000            0.0015833071
-   N       -0.0000000000           -0.0000000000           -0.0049529605
-   C        0.0000000000            0.0000000000            0.0033696534
-
-
-                    ADMM_proj contribution to gradient
-                    ----------------------------------
-
-   H        0.0000000000            0.0000000000            0.0167592997
-   N       -0.0000000000           -0.0000000000           -0.0261210008
-   C        0.0000000000            0.0000000000            0.0093617011
-
-
-                    exchange contribution to gradient
-                    ---------------------------------
-
-   H        0.0000000000            0.0000000000            0.0276371799
-   N       -0.0000000000           -0.0000000000            0.1782499989
-   C        0.0000000000            0.0000000000           -0.2058891135
-
-
-                   twoElectron contribution to gradient
-                   ------------------------------------
-
-   H       -0.2529890054            0.3235536019           -1.0313596675
-   N        0.0089405469            1.1160159837           -0.0012398813
-   C        0.2440484585           -1.4395695856            1.0325976142
- >>>  CPU Time used in two-grad is   3.28 seconds
- >>> wall Time used in two-grad is   0.91 seconds
-
-
-                   nuc-el attr contribution to gradient
-                   ------------------------------------
-
-   H        0.0000000000            0.0000000000           -4.5448094992
-   N       -0.0000000000           -0.0000000000           34.1229977561
-   C        0.0000000000            0.0000000000          -29.5781882569
- >>>  CPU Time used in ne-grad is   0.02 seconds
- >>> wall Time used in ne-grad is   0.01 seconds
- >>>  CPU Time used in II_get_xc_geoderiv_molgrad is   1.83 seconds
- >>> wall Time used in II_get_xc_geoderiv_molgrad is   0.55 seconds
-
-
-                  exchange-corr contribution to gradient
-                  --------------------------------------
-
-   H        0.0000000000            0.0000000000            0.0262336148
-   N       -0.0000000000           -0.0000000000            0.5796534541
-   C        0.0000000000            0.0000000000           -0.6058821830
- >>>  CPU Time used in xc-grad is   1.83 seconds
- >>> wall Time used in xc-grad is   0.55 seconds
-
-
-                     kinetic contribution to gradient
-                     --------------------------------
-
-   H       -0.0000000000           -0.0000000000            0.1885528345
-   N        0.0000000000            0.0000000000           -1.7322686944
-   C       -0.0000000000           -0.0000000000            1.5437158599
- >>>  CPU Time used in kin-grad is   0.00 seconds
- >>> wall Time used in kin-grad is   0.00 seconds
-
-
-                  reorthonomal contribution to gradient
-                  -------------------------------------
-
-   H       -0.0000000000           -0.0000000000           -0.0953644777
-   N        0.0000000000            0.0000000000           -0.3870431029
-   C       -0.0000000000           -0.0000000000            0.4824075806
- >>>  CPU Time used in reorth-g is   0.01 seconds
- >>> wall Time used in reorth-g is   0.00 seconds
-
-
-                         Molecular gradient (au)
-                         -----------------------
-
-   H       -0.2529890054            0.3235536019            1.6632528049
-   N        0.0089405469            1.1160159837           12.7954328650
-   C        0.2440484585           -1.4395695856          -14.4586827185
-
-
- RMS gradient norm (au):      6.4900710514177549
-
-
- >>>  CPU Time used in LSDALTON RSP is  2 minutes 42 seconds
- >>> wall Time used in LSDALTON RSP is  54.63 seconds
+ >>>  CPU Time used in LSDALTON RSP is  2 minutes 43 seconds
+ >>> wall Time used in LSDALTON RSP is  57.00 seconds
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    162.46492100000000         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    162.96756200000002         **
  *****************************************************
  >>>  CPU Time used in *SCF is  2 minutes 54 seconds
- >>> wall Time used in *SCF is  58.81 seconds
+ >>> wall Time used in *SCF is  1 minute   1 second 
 
 Total no. of matmuls used:                      1681
 Total no. of Fock/KS matrix evaluations:           9
@@ -1781,7 +1781,7 @@ Total no. of Fock/KS matrix evaluations:           9
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                         71.950 MB
   Max allocated memory, type(matrix)                 717.248 kB
-  Max allocated memory, real(realk)                   40.830 MB
+  Max allocated memory, real(realk)                   40.709 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      428.460 kB
@@ -1822,8 +1822,8 @@ Total no. of Fock/KS matrix evaluations:           9
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
  >>>  CPU Time used in LSDALTON is  2 minutes 58 seconds
- >>> wall Time used in LSDALTON is  1 minute   1 second 
+ >>> wall Time used in LSDALTON is  1 minute   2 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Jun 30 14:37:19 2014
+     Date and time (Linux)  : Mon Jun 30 15:22:10 2014
      Host name              : kjmac10-reine.local                     

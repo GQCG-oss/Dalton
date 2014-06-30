@@ -21,7 +21,8 @@ f.add(string = 'Nuclear repulsion',
 
 f.add(from_string = 'ONE-PHOTON ABSORPTION RESULTS',
       num_lines   = 9,
-      rel_tolerance = 1.0e-8)
+      mask        = [1, 5],
+      abs_tolerance = 1.0e-6)
 
 f.add(from_string = 'contribution to gradient',
       num_lines   = 6,
