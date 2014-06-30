@@ -5250,6 +5250,7 @@ constrain_factor = 1.0E0_realk
 IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN   
    call get_small_lambda(constrain_factor,D,setting,lupri,luerr,nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
 ENDIF
+setting%scheme%ADMM_CONSTRAIN_FACTOR = constrain_factor
 
 !We transform the full Density to a level 2 density D2
 call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
@@ -5376,6 +5377,7 @@ IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
   call mat_daxpy(-1E0_realk,R33,S33)
 
   call get_large_Lambda(largeLambda,k2(1),x2(1),D2(1),EX2(1),constrain_factor,setting)
+  setting%scheme%ADMM_LARGE_LAMBDA = largeLambda
   call mat_daxpy(largeLambda,S33,dXC)
 
   CALL mat_free(S33)
@@ -5461,12 +5463,8 @@ DO idmat=1,ndrhs
    !
    !      constrain_factor = (1-lambda)^-1
    !
-   IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
-      call get_small_lambda(constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
-               & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
-   ELSE
-      constrain_factor = 1.0E0_realk
-   ENDIF
+   ! Assumes the energy has been calculated first - which stores the constrain_factor
+   constrain_factor = setting%scheme%ADMM_CONSTRAIN_FACTOR
 
    !!We transform the full Density to a level 2 density D2
    call mat_init(D2,nbast2,nbast2)
@@ -5650,7 +5648,8 @@ CONTAINS
       ENDIF
       call DAXPY(3*nAtoms,-1E0_realk,reOrtho_d2,1,ADMM_charge_term,1)
 
-      call get_large_Lambda(LambdaEnergy,k2,xc2,D2,E_x2,constrain_factor,setting)
+      ! Assumes the energy has been calculated first - which stores the Lambda
+      LambdaEnergy = setting%scheme%ADMM_LARGE_LAMBDA
       call DSCAL(3*nAtoms,LambdaEnergy,ADMM_charge_term,1)   
       
       ! free memory                                 
@@ -5703,7 +5702,8 @@ CONTAINS
       call mat_zero(A22)
       call mat_add(2E0_realk,k2,-2E0_realk, xc2, A22)
       IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN
-         call get_large_Lambda(LambdaE,k2,xc2,D2,E_x2,constrain_factor,setting)
+         ! Assumes the energy has been calculated first - which stores the Lambda
+         LambdaE = setting%scheme%ADMM_LARGE_LAMBDA
          IF (isADMMP) THEN
             ! scaling here to avoid scalign too much this Lambda_P s2 contribution
             ! since we scale the whole (k2-x2-lbd_P s2 / xi) by xi**2 afterward
