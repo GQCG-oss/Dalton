@@ -403,13 +403,13 @@ integer :: W1,W2,W3,W4,W5,W6,W7,W8,nthreads,tid,lugrid,idmat1,idmat2
 integer :: myBoxMemRequirement
 integer,pointer :: INXACT(:)
 TYPE(DFTDATATYPE) :: myDFTDATA
-character(len=27) :: filename
+character(len=22) :: filename
 logical :: grid_exists
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 LUGRID=-1
-call get_quadfilename(filename,nbast,node,AORdefault,GridId)
+call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
 IF(grid_exists)THEN 
    CALL LSOPEN(LUGRID,filename,'OLD','UNFORMATTED')
