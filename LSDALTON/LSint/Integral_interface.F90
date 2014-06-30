@@ -5183,7 +5183,7 @@ logical             :: GC3
 TYPE(Matrix)        :: D2(1),TMP,TMPF,k2(1),x2(1),F3(1),R33,S33
 logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
-integer             :: nbast,nbast2,AOdfold,AORold,AO3,nelectrons
+integer             :: nbast,nbast2,AORold,AO3,nelectrons
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor,fac
 real(realk)         :: constrain_factor, largeLambda
@@ -5256,14 +5256,13 @@ call transform_D3_to_D2(D,D2(1),setting,lupri,luerr,nbast2,&
                   & nbast,AOadmm,AO3,setting%scheme%ADMM1,&
                   & .FALSE.,GC3,constrain_factor)
      
-!Store original AO-indeces (AOdf will not change, but is still stored)
+!Store original AO-index
 AORold  = AORdefault
-AOdfold = AODFdefault
 
 !****Calculation of Level 2 exchange matrix from level 2 Density matrix starts here
 
 !ADMM (level 2) AO settings 
-call set_default_AOs(AOadmm,AOdfold)
+call set_default_AOs(AOadmm,AODFdefault)
 
 CALL lstimer('AUX-IN',ts,te,lupri)
 call mat_zero(k2(1))
@@ -5313,7 +5312,7 @@ setting%scheme%dft%testNelectrons = testNelectrons
 setting%scheme%dft%igrid = Grid_Default
 
 !****Calculation of Level 3 XC matrix from level 2 Density matrix starts here
-call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
+call set_default_AOs(AORold,AODFdefault)  !Revert back to original settings and free stuff 
 setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
 IF (separateX) THEN
@@ -5416,7 +5415,7 @@ type(Matrix),target :: D2
 type(Matrix)        :: k2,xc2,zeromat
 type(matrixp)       :: D2p(1)
 logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
-integer             :: AOdfold,AORold
+integer             :: AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
 real(realk)         :: GGAXfactor
@@ -5451,9 +5450,17 @@ DO idmat=1,ndrhs
    GC3 = setting%IntegralTransformGC
    setting%IntegralTransformGC = .FALSE.
    
-   AO3 = AORdefault ! assuming optlevel.EQ.3
+   AO3 = AORdefault
 
    ! Get the scaling factor derived from constraining the total charge
+   ! for the projection, obtained through the minimization
+   !
+   !      min [ <(rho-rho')^2> + lambda <rho-rho'> ]
+   !
+   ! and where
+   !
+   !      constrain_factor = (1-lambda)^-1
+   !
    IF (isADMMQ.OR.isADMMS.OR.isADMMP) THEN   
       call get_small_lambda(constrain_factor,DmatLHS(idmat)%p,setting,lupri,luerr,&
                & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3)
@@ -5469,13 +5476,12 @@ DO idmat=1,ndrhs
                            & setting%scheme%ADMM1,.FALSE.,GC3,&
                            & constrain_factor)
  
-   !Store original AO-indeces (AOdf will not change, but is still stored)
+   !Store original AO-index
    AORold  = AORdefault
-   AOdfold = AODFdefault
    
    !!****Calculation of Level 2 exchange gradient from level 2 Density matrix starts here
    !ADMM (level 2) AO settings 
-   call set_default_AOs(AOadmm,AOdfold)
+   call set_default_AOs(AOadmm,AODFdefault)
    
    D2p(1)%p => D2
    
@@ -5546,7 +5552,7 @@ DO idmat=1,ndrhs
    setting%scheme%dft%igrid = Grid_Default
    
    !****Calculation of Level 3 XC gradient
-   call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
+   call set_default_AOs(AORold,AODFdefault)  !Revert back to original settings and free stuff 
    setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
    call mem_alloc(grad_XC3,3,nAtoms)
@@ -5683,15 +5689,13 @@ CONTAINS
       isADMMQ = setting%scheme%ADMMQ
       NbEl = setting%molecule(1)%p%nelectrons
       call mat_init(T23,n2,n3)
-      call mat_zero(T23)
+      call mat_init(S22,n2,n2)
+      call mat_init(S22inv,n2,n2)       
+
       call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3,&
                   & constrain_factor)
-      ! S22^(-1)
-      call mat_init(S22,n2,n2)
-      call mat_zero(S22)
-      call mat_init(S22inv,n2,n2)       
-      call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-      call mat_inv(S22,S22inv)
+      call get_S22(S22,AO2,GCAO2,setting,lupri,luerr)
+      call get_S22inv(S22,S22inv,setting,lupri,luerr)
       
       !    A22 = 2*[ k2(d2) - xc2(d2) ]
       ! or A22 = 2*[ k2(d2) - xc2(d2) ] - LAMBDA_energy S22
@@ -6880,7 +6884,6 @@ SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
   implicit none
   type(matrix),intent(in)    :: D     !level 3 matrix input 
   type(matrix),intent(inout) :: D2 !level 2 matrix input 
-  type(matrix)               :: D2purify !level 2 McWeeny purified matrix
   type(lssetting) :: setting
   integer :: n2,n3,AO3,AO2,lupri,luerr
   logical :: McWeeny,GCAO2,GCAO3
@@ -6900,18 +6903,14 @@ SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,luerr,n2,n3,AO2,AO3,&
  
   IF (McWeeny) THEN
     CALL mat_init(S22,n2,n2)
-    CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-    CALL mat_init(D2purify,n2,n2)
-    CALL mat_assign(D2purify,D2)
-    CALL McWeeney_purify(S22,D2purify,purify_failed)
+    CALL get_S22(S22,AO2,GCAO2,setting,lupri,luerr)
+    CALL McWeeney_purify(S22,D2,purify_failed)
     IF (purify_failed) THEN
       write(lupri,'(1X,A)') 'McWeeny purification failed for ADMM D2 matrix- reverting to the non-purified D2'
     ELSE
       write(lupri,'(1X,A)') 'McWeeny purified ADMM D2 matrix'
-      CALL mat_assign(D2,D2purify)
     ENDIF
     CALL mat_free(S22)
-    CALL mat_free(D2purify)
   ENDIF
    CALL mat_free(T23)
    CALL mat_free(tmp23)
