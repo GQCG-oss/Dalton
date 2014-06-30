@@ -1723,3 +1723,52 @@ C
       ENDDO
       RETURN
       END
+      SUBROUTINE FNMCKE(DKEINT,NBAST,NNBASX,IPRINT)
+C
+C     Modify kinetic energy integrals for finite nuclear mass
+C     correction.  See J.R. Mohallem and C.P. Goncalves tca ???
+C
+C     The element <a|T|b> is scaled by the factor (1 + 1/M) if the
+C     atomic orbitals a and b belong the same atomic center.  M is the
+C     mass of the atom at that center relative to the electron mass.
+C
+C     DJ Jun 2014
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <infinp.h>
+#include <aosotr.h>
+#include <nuclei.h>
+#include <codata.h>
+      DIMENSION DKEINT(NNBASX)
+      PARAMETER (ONE=1.0D0)
+
+      WRITE(LUPRI,*) 'FNMCKE: Scaling the kinetic energy integrals'
+      IF (IPRINT.GE.50) THEN
+         WRITE(LUPRI,*) 'Integrals before scaling'
+         CALL OUTPAK(DKEINT,NBAST,1,LUPRI)
+      END IF
+
+      IAB = 0
+      DO IA = 1, NBAST
+         ICA = IPCEN(IA)
+         AMASS = XFAMU*DISOTP(NINT(CHARGE(ICA)),ISOTOP(ICA),'MASS')
+         FACT = ONE + ONE/AMASS
+         DO IB = 1, IA
+            IAB = IAB + 1
+            ICB = IPCEN(IB)
+            IF (ICA.EQ.ICB) THEN
+               DKEINT(IAB) = FACT*DKEINT(IAB)
+            END IF
+         END DO
+      END DO
+
+      IF (IPRINT.GE.50) THEN
+         WRITE(LUPRI,*) 'Integrals after scaling'
+         CALL OUTPAK(DKEINT,NBAST,1,LUPRI)
+      END IF
+
+      RETURN
+      END
