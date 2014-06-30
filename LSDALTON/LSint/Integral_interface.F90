@@ -5215,17 +5215,6 @@ unres = matrix_type .EQ. mtype_unres_dense
 CALL lstimer('START',ts,te,lupri)
 
 nbast2 = getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
-IF (nbast .EQ. nbast2) THEN
-   ! This avoids a simple issue when basis sets have the same size:
-   ! the filename to store the grid will be the same, overwritting the 
-   ! content of the ADMM basis with the regular basis and vice versa.
-   ! this should be fixed by using the actual name of the basis set into the 
-   ! filename storing the grid infos. 
-
-      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
-             &regular and ADMM auxiliary basis function &
-             &have the same number of basis function',-1)
-ENDIF
 
 call mat_init(D2(1),nbast2,nbast2)
 call mat_init(k2(1),nbast2,nbast2)
@@ -5353,31 +5342,21 @@ ENDIF
 
 if(dodisp) setting%scheme%dft%dodisp = dodisp
 
-!the remainder =================================================
-!call mat_zero(TMPF)
-!call II_get_exchange_mat(LUPRI,LUERR,SETTING,TMP,1,Dsym,TMPF)
-!WRITE(lupri,*)'The missing contribution'
-!call mat_print(TMPF,1,TMPF%nrow,1,TMPF%ncol,lupri)
-!WRITE(lupri,*)'The Missing Exchange energy contribution ',-mat_dotproduct(D,TMPF)
-!call mat_daxpy(1E0_realk,TMPF,F)
-!!the remainder =================================================
-!call mat_free(TMPF)
-!call mat_free(TMP)
 
-
-IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
 ! term of Kadmm coming from dependence of K on lambda: K=[D,lambda(D)]
+IF (isADMMQ .OR. isADMMS .OR. isADMMP) THEN
 
   call mat_init(R33,nbast,nbast) 
   CALL mat_init(S33,nbast,nbast)
 
-  !R = T s^-1 T^T 
+  !R = T^T s^-1 T
   CALL get_R33(R33,AOadmm,AO3,GC3,nbast2,nbast,constrain_factor,setting,lupri,luerr)
   CALL get_S33(S33,AO3,GC3,setting,lupri,luerr)
   call mat_daxpy(-1E0_realk,R33,S33)
 
   call get_large_Lambda(largeLambda,k2(1),x2(1),D2(1),EX2(1),constrain_factor,setting)
   setting%scheme%ADMM_LARGE_LAMBDA = largeLambda
+
   call mat_daxpy(largeLambda,S33,dXC)
 
   CALL mat_free(S33)
