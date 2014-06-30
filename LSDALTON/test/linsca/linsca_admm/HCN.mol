@@ -1,5 +1,5 @@
 BASIS
-6-31G* Aux=3-21G CABS=3-21G JK=3-21G
+6-31G* Aux=3-21G ADMM=3-21G
 HCN molecule
 
 Atomtypes=3 Nosymmetry

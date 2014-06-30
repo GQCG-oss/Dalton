@@ -146,9 +146,11 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
-        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis. The GC basis is default'
-        WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-        WRITE(config%lupri,*) 'add .GCBASIS under *LINSCA'
+        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis.'
+        WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+        WRITE(config%lupri,*) 'Either contruct a new dens.restart or '
+        WRITE(config%lupri,*) 'remove .NOGCBASIS or add .FORCEGCBASIS under *GENERAL'
         call lsquit('Calculation in standard basis, dens.restart in GC basis!',config%lupri)
      else if (config%decomp%cfg_gcbasis .and. .not. gcbasis) then
         IF(config%decomp%cfg_transformrestart)THEN
@@ -157,9 +159,10 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
-           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
-           WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
-           WRITE(config%lupri,*) 'do not use grand-canonical basis!'
+           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+           WRITE(config%lupri,*) 'The GC basis is default unless you use a dunnings basis set,'
+           WRITE(config%lupri,*) 'or you specify .NOGCBASIS under *GENERAL'
+           WRITE(config%lupri,*) 'Either contruct a new dens.restart or use GC basis!'
            WRITE(config%lupri,*) 'Alternativly you can add the keyword '
            WRITE(config%lupri,*) '.TRANSFORMRESTART'
            call lsquit('Calculation in GC basis, dens.restart in standard basis!',config%lupri)

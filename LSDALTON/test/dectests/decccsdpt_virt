@@ -113,13 +113,13 @@ CTRL[3]=1
 ERROR[3]="4th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.1251" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.661" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="5th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # Total CCSD(T) correlation energy (unocc. part. scheme)
-CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.1440" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.1439" $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="Total CCSD(T) correlation energy (unocc. part. scheme) is not correct"

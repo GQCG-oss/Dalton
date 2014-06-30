@@ -31,7 +31,7 @@ F90_OBJS = \
 	mm_W_contractors.o	\
 	mm_W_pair_builder.o	\
 	mm_W_worker.o           \
-	cbifmm_f90.o            \
+	cbifmm.o            \
         mm_densfit.o
 
 C_OBJS = \

@@ -92,6 +92,10 @@ contains
             &OccOrbitals,UnoccOrbitals,natoms,DECinfo%simulate_natoms)
     end if
 
+    ! Set secondary atom for orbitals (see set_secondary_atom_for_orbitals)
+    call set_secondary_atom_for_orbitals(natoms,nocc,nunocc,MyMolecule,mylsitem,&
+         & OccOrbitals,UnoccOrbitals)
+
     ! Print orbital info
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -102,7 +106,8 @@ contains
        write(DECinfo%output,*) 'Simple Lowdin-based orbital assignment: Summary'
        write(DECinfo%output,*) '-----------------------------------------------'
     end if
-    call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals)
+    call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,ncore=MyMolecule%ncore)
+
 
     ! Check that assigment is meaningful
     call dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
@@ -113,6 +118,129 @@ contains
             &OccOrbitals,UnoccOrbitals)
 
   end subroutine GenerateOrbitals_driver
+
+
+  !> \brief Set secondary central atom for orbitals. 
+  !> For example, if virtual orbital "a" is assigned to a hydrogen atom "H_A" for which 
+  !> there are no occupied orbitals assigned, the secondary          
+  !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+  !> of occupied AND virtual orbitals in the original assignment.
+  !> \author Kasper Kristensen
+  !> \date June 2014
+  subroutine set_secondary_atom_for_orbitals(natoms,nocc,nunocc,MyMolecule,mylsitem,&
+       & OccOrbitals,UnoccOrbitals)
+    implicit none
+
+    !> Number of atoms in the molecule
+    integer,intent(in) :: natoms
+    !> Number of occupied orbitals
+    integer,intent(in) :: nocc
+    !> Number of unoccupied orbitals
+    integer,intent(in) :: nunocc
+    !> Full molecule structure ( Note: MyMolecule is only changed if modbasis=.true.!)
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LSitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    !> Occupied orbitals to be generated
+    type(decorbital),intent(inout) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals to be generated
+    type(decorbital),intent(inout) :: UnoccOrbitals(nunocc)
+    integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms),offset,P,i,central,secondary
+    logical :: reset_secondary_atom(natoms),found
+    real(realk) :: dummy(natoms)
+    integer,pointer :: DistSortedIdx(:,:)
+
+
+    !> Set offset for frozen core to not consider core orbitals in bookkeeping.
+    if(DECinfo%frozencore) then
+       offset=MyMolecule%ncore
+    else
+       offset=0
+    end if
+
+    ! Number of orbitals assigned to each atom
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=offset)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
+
+    ! First, set secondary atom equal to central atom
+    do i=1,nocc
+       OccOrbitals(i)%secondaryatom=OccOrbitals(i)%centralatom
+    end do
+    do i=1,nunocc
+       UnoccOrbitals(i)%secondaryatom=UnoccOrbitals(i)%centralatom
+    end do
+
+    ! Now we determine if any atoms have zero occ and nonzero virtual orbitals assigned (or vice versa)
+    ! to determine which orbitals need a new secondary atom.
+    ! Also, for each atom we sort the other atoms according to distance.
+    reset_secondary_atom=.false.
+    call mem_alloc(DistSortedIdx,natoms,natoms)
+    do P=1,natoms
+       ! Reset secondary atom?
+       if(nocc_per_atom(P)==0 .and. nunocc_per_atom(P)/=0) reset_secondary_atom(P)=.true.
+       if(nocc_per_atom(P)/=0 .and. nunocc_per_atom(P)==0) reset_secondary_atom(P)=.true.
+       
+       ! Set sorted distance table
+       call GetSortedList(dummy,DistSortedIdx(:,P),mymolecule%DistanceTable,natoms,natoms,P)
+
+    end do
+
+
+    ! Reassign occupied orbitals
+    do i=1,nocc
+       central = OccOrbitals(i)%centralatom
+       if(reset_secondary_atom(central)) then
+
+          ! Find atom closest to current central atom which has both occ and virt orbitals assigned
+          found=.false.
+          Ploop: do P=1,natoms
+             ! Secondary atom from distance list
+             secondary = DistSortedIdx(P,central)
+             if(nocc_per_atom(secondary)/=0 .and. nunocc_per_atom(secondary)/=0) then
+                found=.true.
+                OccOrbitals(i)%secondaryatom = secondary
+                exit Ploop
+             end if
+          end do Ploop
+          ! Sanity check
+          if(.not. found) then
+             call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,&
+                  & ncore=MyMolecule%ncore)
+             call lsquit('set_secondary_atom_for_orbitals: Occupied orbital reassigning failed!')
+          end if
+
+       end if
+    end do
+
+    ! Reassign unoccupied orbitals
+    do i=1,nunocc
+       central = UnoccOrbitals(i)%centralatom
+       if(reset_secondary_atom(central)) then
+
+          ! Find atom closest to current central atom which has both occ and virt orbitals assigned
+          found=.false.
+          Ploop2: do P=1,natoms
+             ! Secondary atom from distance list
+             secondary = DistSortedIdx(P,central)
+             if(nocc_per_atom(secondary)/=0 .and. nunocc_per_atom(secondary)/=0) then
+                found=.true.
+                UnoccOrbitals(i)%secondaryatom = secondary
+                exit Ploop2
+             end if
+          end do Ploop2
+          ! Sanity check
+          if(.not. found) then
+             call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,&
+                  & ncore=MyMolecule%ncore)
+             call lsquit('set_secondary_atom_for_orbitals: Unoccupied orbital reassigning failed!')
+          end if
+
+       end if
+    end do
+
+    call mem_dealloc(DistSortedIdx)
+
+  end subroutine set_secondary_atom_for_orbitals
 
 
 
@@ -130,6 +258,9 @@ contains
     myorbital%orbitalnumber = orb_number
     myorbital%centralatom = central_atom
     myorbital%numberofatoms = num_atoms
+
+    ! Set secondary atom equal to central atom in initialization (may be changed later)
+    myorbital%secondaryatom = central_atom
 
     call mem_alloc(myorbital%atoms,num_atoms)
     myorbital%atoms = 0
@@ -188,24 +319,24 @@ contains
 !!$
 !!$
 !!$
-!!$  !> \brief Copy orbital (orbital also intialized here)
-!!$  subroutine copy_orbital(OriginalOrbital,OrbitalCopy)
-!!$
-!!$    implicit none
-!!$
-!!$    !> Original orbital
-!!$    type(decorbital),intent(in) :: OriginalOrbital
-!!$    !> Copy of original orbitals
-!!$    type(decorbital),intent(inout) :: OrbitalCopy
-!!$
-!!$    OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
-!!$    OrbitalCopy%centralatom = OriginalOrbital%centralatom
-!!$    OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
-!!$
-!!$    call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
-!!$    OrbitalCopy%atoms = OriginalOrbital%atoms
-!!$
-!!$  end subroutine copy_orbital
+  !> \brief Copy orbital (orbital also intialized here)
+  subroutine copy_orbital(OriginalOrbital,OrbitalCopy)
+    implicit none
+
+    !> Original orbital
+    type(decorbital),intent(in) :: OriginalOrbital
+    !> Copy of original orbitals
+    type(decorbital),intent(inout) :: OrbitalCopy
+
+    OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
+    OrbitalCopy%centralatom = OriginalOrbital%centralatom
+    OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
+    OrbitalCopy%secondaryatom = OriginalOrbital%secondaryatom
+
+    call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
+    OrbitalCopy%atoms = OriginalOrbital%atoms
+
+  end subroutine copy_orbital
 
 
 
@@ -2265,46 +2396,41 @@ contains
   !> \brief Count number of orbitals assigned to each atom.
   !> \author Kasper Kristensen
   !> \date October 2010
-  function get_number_of_orbitals_per_atom(Orbitals,norb,natoms,offset) &
+  function get_number_of_orbitals_per_atom(Orbitals,norb,natoms,mainass,offset) &
        & result(norb_per_atom)
 
-    !> Number of orbitals assigned to each atom
-    integer, dimension(natoms) :: norb_per_atom
+    implicit none
     !> Total number of orbitals in Orbitals vector
     integer, intent(in) :: norb
-    !> Orbital vector (may either be occupied or virtual orbitals)
-    type(decorbital), dimension(norb), intent(in) :: Orbitals
     !> Number of atoms in the molecule
     integer, intent(in) :: natoms
+    !> Orbital vector (may either be occupied or virtual orbitals)
+    type(decorbital), dimension(norb), intent(in) :: Orbitals
+    !> Count orbital based on main assignment (true) or secondary assignment (false)
+    logical,intent(in) :: mainass
     !> Not consider orbitals with indices 1:offset (default: consider all orbitals)
     integer,intent(in),optional :: offset
-    integer :: i,j,OtherAtom,MyAtom,norb_calc,startidx
+    !> Number of orbitals assigned to each atom
+    integer, dimension(natoms) :: norb_per_atom
+    integer :: j,MyAtom,startidx
 
     norb_per_atom=0
-    norb_calc=0
 
     if(present(offset)) then
-       startidx = offset+1  ! not consider orbital 1:offset
+       startidx = offset+1  ! not consider orbitals 1:offset
     else
        startidx=1 ! consider all orbitals
     end if
 
-    Atom_loop: do i=1,natoms
-       MyAtom=i
-
-       ! Count number of orbitals assigned to each atom
-       orbital_loop: do j=startidx,norb
-          OtherAtom=Orbitals(j)%centralatom
-
-          if( MyAtom == OtherAtom ) then
-             norb_per_atom(i) = norb_per_atom(i) +1
-             norb_calc = norb_calc + 1
+    do j=startidx,norb
+          if(mainass) then
+             ! main assignment
+             MyAtom=Orbitals(j)%centralatom
+          else ! secondary assigment
+             MyAtom=Orbitals(j)%secondaryatom
           end if
-
-       end do orbital_loop
-
-    end do Atom_loop
-
+          norb_per_atom(MyAtom) = norb_per_atom(MyAtom) +1
+    end do
 
   end function get_number_of_orbitals_per_atom
 
@@ -2351,7 +2477,7 @@ contains
   !> all atoms in the molecule.
   !> \author Kasper Kristensen
   subroutine print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,&
-       & UnoccOrbitals)
+       & UnoccOrbitals,ncore)
 
     implicit none
     !> Dalton LSITEM (just for printing atom type)
@@ -2366,10 +2492,18 @@ contains
     type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> Number of of core orbitals. If present only the assigning of valence orbitals will be printed
+    integer,intent(in),optional :: ncore
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j
+    integer :: SECnocc_per_atom(natoms), SECnunocc_per_atom(natoms)
+    integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j,offset
     real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
 
+    if(present(ncore)) then
+       offset=ncore
+    else
+       offset=0
+    end if
 
     ! Find average and maximum orbital extent
     ! ***************************************
@@ -2387,10 +2521,18 @@ contains
     ! ***************************
 
     ! Occupied
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    ! --------
+    ! Main assigning
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=offset)
+    ! Secondary assigning
+    SECnocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,offset=offset)
 
     ! Unoccupied
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    ! ----------
+    ! Main assigninig
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
+    ! Secondary assigning
+    SECnunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
 
     ! Print out number of orbitals
     ! ****************************
@@ -2399,12 +2541,16 @@ contains
     write(DECinfo%output,*) 'ORBITAL DISTRIBUTION INFORMATION'
     write(DECinfo%output,*) '********************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) '   Atom type     Occ Orbitals     Unocc Orbitals '
+    if(DECinfo%frozencore) then
+       write(DECinfo%output,*) '--- using frozen core approximation, only valence orbitals are printed'
+       write(DECinfo%output,*)
+    end if
+    write(DECinfo%output,*) '   Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary'
     do i=1,natoms
-       write(DECinfo%output,'(1X,I5,4X,A4,4X,I6,11X,I6)') i, MyLsitem%input%molecule%atom(i)%name,&
-            & nocc_per_atom(i), nunocc_per_atom(i)
+       write(DECinfo%output,'(1X,I5,4X,A4,4X,I6,11X,I6,11X,I6,11X,i6)') i, MyLsitem%input%molecule%atom(i)%name,&
+            & nocc_per_atom(i), nunocc_per_atom(i), SECnocc_per_atom(i), SECnunocc_per_atom(i)
     end do
-    write(DECinfo%output,'(1X,A,11X,I6,11X,I6)') 'Total:', nocc, nunocc
+    write(DECinfo%output,'(1X,A,11X,I6,11X,I6)') 'Total:', nocc-offset, nunocc
     write(DECinfo%output,*)
 
     ! Print out orbital extent summary
@@ -2496,11 +2642,11 @@ contains
     ! ***************************
 
     ! Occupied
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,&
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,&
          & offset=MyMolecule%ncore)
 
     ! Unoccupied
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
 
 
     something_wrong=.false.
@@ -2527,6 +2673,27 @@ contains
           nfrags=nfrags+1
        end if
     end do
+
+
+    ! Secondary assignment check
+    ! **************************
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,&
+         & offset=MyMolecule%ncore)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
+    something_wrong=.false.
+    do i=1,natoms
+       if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
+       if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
+       if(something_wrong) then
+          write(DECinfo%output,*) 'Atom = ',i
+          write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
+          write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+          call lsquit('Secondary orbital assigment is inconsistent &
+               & with DEC scheme',DECinfo%output)
+       end if
+    end do
+
+
 
 
     ! Repeat atomic fragment calcs after fragment optimization???
@@ -2628,12 +2795,12 @@ contains
 
     ! Number of orbitals per atom
     if(DECinfo%frozencore) then ! only count valence orbitals
-       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,offset=ncore)
+       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=ncore)
     else
-       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.)
     end if
 
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms,.true.)
 
     ! Which fragments to consider
     dofrag=.true.

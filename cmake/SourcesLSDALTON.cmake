@@ -223,7 +223,7 @@ set(FMM_SOURCES
     LSDALTON/mm/mm_sort.F90
     LSDALTON/mm/mm_stats.F90
     LSDALTON/mm/mm_tree_T_buffer.F90
-    LSDALTON/mm/cbifmm_f90.F90
+    LSDALTON/mm/cbifmm.F90
     )
 set(INTERESTLIB_SOURCES
     LSDALTON/interest/src/module_interest.f90

@@ -1405,6 +1405,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !work stuff
    real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
+   real(realk) :: ccenergy_check
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
    integer, dimension(4) :: ampl4_dims
    type(array)  :: fock,Co,Cv,Co2,Cv2
@@ -1442,9 +1443,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(array4) :: iajb_a4
    type(array)            :: tmp
    character(ARR_MSG_LEN) :: msg
+   integer(kind=8)        :: o2v2
+   real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces
    logical                :: restart, w_cp, restart_from_converged,collective,use_singles
    character(4)           :: atype
+
+   call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
@@ -1469,13 +1474,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    collective       = .true.
    fragment_job     = present(frag)
+   
+   o2v2             = (i8*nv**2)*no**2
+   mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
 
-   call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
+   call get_currently_available_memory(MemFree)
 
    !Set defaults
-   restart     = .false.
-   w_cp        = .false.
-   saferun     = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+   restart          = .false.
+   w_cp             = .false.
+   saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
+
+   if( saferun .and. (2.0E0_realk*mem_o2v2 > 0.5E0_realk*MemFree) )then
+      print *,"WARNING(ccsolver_par): detected high memory requirements, I will"
+      print *,"therefore not save any amplitudes to file. This requires a makeover"
+
+      saferun = .false.
+   endif
 
 
    nnodes      = 1
@@ -1607,8 +1622,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
-   Co   = array_minit( occ_dims, 2, local=local, atype=atype )
-   Cv   = array_minit( virt_dims,2, local=local, atype=atype )
+   Co   = array_minit( occ_dims, 2, local=local, atype="REAR" )
+   Cv   = array_minit( virt_dims,2, local=local, atype="REAR" )
    Co2  = array_minit( occ_dims, 2, local=local, atype=atype )
    Cv2  = array_minit( virt_dims,2, local=local, atype=atype )
    fock = array_minit( ao2_dims, 2, local=local, atype=atype )
@@ -1755,12 +1770,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_zero(iajb)
 
-
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
 
    call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
-
 
 
 
@@ -1772,7 +1785,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       t1(1) = array_minit( ampl2_dims, 2, local=local, atype='REPD' )
       t2(1) = array_minit( ampl4_dims, 4, local=local, atype='TDAR' )
 
-      call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+      call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
@@ -1783,7 +1796,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(ccmodel == MODEL_MP2 )then
          old_iter = 0
       else
-         call get_guess_vectors(restart,old_iter,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,&
+         call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
             & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
       endif
    endif
@@ -2172,23 +2185,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
-            !if .not.DECinfo%CCSDnosaferun option is set, make sure data is in dense
-            if(saferun)then
-
-               if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
-
-               if(use_singles)then
-                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
-                     &safefilet22,t1(iter+1),safefilet11,safefilet12)
-               else
-                  call save_current_guess(local,iter+old_iter,two_norm_total,ccenergy,t2(iter+1),safefilet21,&
-                     &safefilet22)
-               endif
-
-               if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
-                  &labelttot= ' -NG: NEW GUESS WRITE :', output = DECinfo%output) 
-
-            endif
          end if
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
@@ -2202,6 +2198,24 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          end if
          call array_free(t2_opt)
          call array_free(omega2_opt)
+
+         if(saferun.and..not.break_iterations)then
+
+            if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
+
+            if(use_singles)then
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,t2(iter+1),safefilet21,&
+                  &safefilet22,t1(iter+1),safefilet11,safefilet12)                   
+            else                                                                     
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,t2(iter+1),safefilet21,&
+                  &safefilet22)
+            endif
+
+            if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_write, &
+               &labelttot= ' CCIT: NEW GUESS WRITE :', output = DECinfo%output) 
+
+         endif
+
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_iter, &
             &labelttot= 'CCIT: ITERATION       :', output = DECinfo%output) 
@@ -2218,6 +2232,40 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end do CCIteration
 
    else
+
+#ifdef VAR_LSDEBUG
+
+      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+
+      EnergyForCCmodelRestart: select case(CCmodel)
+      case( MODEL_MP2 )
+         ccenergy_check = get_mp2_energy(t2(1),iajb,no,nv)
+      case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT )
+         ! CC2, CCSD, or CCSD(T) (for (T) calculate CCSD contribution here)
+         ccenergy_check = get_cc_energy(t1(1),t2(1),iajb,no,nv)
+      case(MODEL_RPA)
+         ccenergy_check = get_RPA_energy_arrnew(t2(1),iajb,no,nv)
+         if(DECinfo%SOS) then
+            ccenergy_check =ccenergy+get_SOSEX_cont_arrnew(t2(1),iajb,no,nv)
+         endif
+      case default
+         call lsquit("ERROR(ccsolver_par):energy expression for your model&
+            & not yet implemented",-1)
+      end select EnergyForCCmodelRestart
+
+      if( abs(ccenergy_check-ccenergy) > DECinfo%ccConvergenceThreshold )then
+         print *,"WARNING(ccsolver_par): Energy saved in restart and energy calculated" 
+         print *,"  from the newly calculated integrals and saved amplitudes are not  "
+         print *,"  the same up to the chosen convergence threshold"
+         print *,"  Convergence threshold:           ",DECinfo%ccConvergenceThreshold
+         print *,"  Difference between the energies: ",abs(ccenergy_check-ccenergy)
+         print *,"  old energy:                      ",ccenergy
+         print *,"  new energy:                      ",ccenergy_check
+         print *,"This usually indicates that there is something wrong with the basis"
+         print *,"chosen for the integrals and amplitudes"
+      endif
+
+#endif
 
       call print_ccjob_iterinfo(old_iter,two_norm_total,ccenergy,.false.,fragment_job)
 
@@ -2259,10 +2307,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(use_singles)then
-               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,&
                   &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(local,i+old_iter,two_norm_total,ccenergy,&
+               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,&
                   &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
@@ -2432,11 +2480,12 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vvf,vof,mylsitem,local,&
+subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
    & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
+   integer, intent(in) :: nb
    logical,intent(out) :: restart
-   real(realk), intent(out) :: norm,energy
+   real(realk), intent(out) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
    type(array), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
    logical, intent(in) :: local
@@ -2638,6 +2687,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
       READ(fu_t1) energy
       CLOSE(fu_t1)
       restart = .true.
+      call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
    else
       !do a=1,nv
       !   do i=1,no
@@ -2657,6 +2707,7 @@ subroutine get_guess_vectors(restart,iter_start,norm,energy,t2,iajb,Co,Cv,oof,vv
       READ(fu_t2) energy
       CLOSE(fu_t2)
       ! mv dense part to tiles:
+      call local_can_trans(no,nv,nb,Uo,Uv,vvoo=t2%elm1)
       if (.not.local) call array_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
@@ -2671,24 +2722,25 @@ end subroutine get_guess_vectors
 !iteration
 !> \author Patrick Ettenhuber
 !> \date Dezember 2012
-subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefilet22,&
+subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21,safefilet22,&
       &t1,safefilet11,safefilet12)
    implicit none
    logical, intent(in) :: local
    !> iteration number
-   integer,intent(in) :: iter
+   integer,intent(in) :: iter,nb
    !> write the corresponding residual norm into the file
-   real(realk), intent(in)    :: res_norm,energy
+   real(realk), intent(in)    :: res_norm,energy,Uo(:,:),Uv(:,:)
    !> doubles guess amplitudes for the next iteration
    type(array), intent(inout) :: t2
    !> alternating filenames for the doubles amplitudes
    character(3),intent(in)    :: safefilet21,safefilet22
    !> singles guess amplitudes for the next iteration
-   type(array), intent(in), optional :: t1
+   type(array), intent(inout), optional :: t1
    !> alternating filenames for the singles amplitudes
    character(3),intent(in), optional :: safefilet11,safefilet12
    integer :: fu_t21,fu_t22
    integer :: fu_t11,fu_t12
+   integer :: no, nv
    logical(8) :: file_status11,file_status12,file_status21,file_status22
    logical :: all_singles
    character(ARR_MSG_LEN) :: msg
@@ -2699,15 +2751,25 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
    character(11) :: fullname11, fullname12, fullname21, fullname22
    character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
 #endif
+
+   nv = t2%dims(1) 
+   no = t2%dims(3) 
+
    ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
    if (.not.local) call array_cp_tiled2dense(t2,.false.)
+
+   call can_local_trans(no,nv,nb,Uo,Uv,vvoo=t2%elm1)
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12)
    fu_t11=111
    fu_t12=112
    fu_t21=121
    fu_t22=122
+
    if(DECinfo%use_singles.and.all_singles)then
+
+      call can_local_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
+
       !msg="singles norm save"
       !call print_norm(t1,msg)
 #ifdef SYS_AIX
@@ -2762,6 +2824,9 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
          call lsquit("ERROR(ccdriver_par):impossible iteration&
             &number)",DECinfo%output)
       endif
+
+      call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
+
    endif
 
    fullname21=safefilet21//'.writing'
@@ -2809,6 +2874,9 @@ subroutine save_current_guess(local,iter,res_norm,energy,t2,safefilet21,safefile
       call lsquit("ERROR(ccdriver_par):impossible iteration&
          &number)",DECinfo%output)
    endif
+
+   call local_can_trans(no,nv,nb,Uo,Uv,vvoo=t2%elm1)
+
    ! deallocate dense part of doubles:
    if (.not.local) call memory_deallocate_array_dense(t2)
 end subroutine save_current_guess

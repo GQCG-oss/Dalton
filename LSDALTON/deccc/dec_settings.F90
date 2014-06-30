@@ -77,6 +77,7 @@ contains
     DECinfo%spawn_comm_proc      = .false.
     DECinfo%CCSDmultipliers      = .false.
     DECinfo%use_pnos             = .false.
+    DECinfo%pno_S_on_the_fly     = .false.
     DECinfo%noPNOtrafo           = .false.
     DECinfo%noPNOtrunc           = .false.
     DECinfo%simplePNOthr         = 1.0E-7_realk
@@ -398,6 +399,7 @@ contains
 
        case('.USE_SYS_MEM_INFO') 
           DECinfo%use_system_memory_info = .true.
+
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
@@ -448,15 +450,18 @@ contains
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE') 
           read(input,*) DECinfo%MPIgroupsize
-       case('.CRASHCALC') 
-          DECinfo%CRASHCALC= .true.
-
-
 #ifndef VAR_MPI
           print *, 'WARNING: You have specified MPI groupsize - but this is a serial run!'
           print *, '--> Hence, this keyword has no effect.'
           print *
 #endif
+       ! Those keyword should probably not be released but are necesary for some essantial test cases:
+       case('.CRASHCALC') 
+          DECinfo%CRASHCALC= .true.
+       case('.STRESSTEST')     
+          !Calculate biggest 2 atomic fragments and the biggest pair fragment
+          DECinfo%StressTest  = .true.
+       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
 
 
 #ifdef MOD_UNRELEASED
@@ -469,6 +474,7 @@ contains
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
+       case('.PNO_S_ON_THE_FLY');         DECinfo%pno_S_on_the_fly     = .true.
        case('.USE_PNOS');                 DECinfo%use_pnos             = .true.
        case('.NOPNOTRAFO');               DECinfo%noPNOtrafo           = .true.; DECinfo%noPNOtrunc=.true.
        case('.NOPNOTRUNCATION');          DECinfo%noPNOtrunc           = .true.
@@ -519,9 +525,6 @@ contains
           DECinfo%PrintInteractionEnergy  = .true.
        case('.SOSEX')
          DECinfo%SOS = .true.
-       case('.STRESSTEST')     
-          !Calculate biggest 2 atomic fragments and the biggest pair fragment
-          DECinfo%StressTest  = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
@@ -565,7 +568,6 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ONLY_N_JOBS')
@@ -685,6 +687,10 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
+    ! Never ignores pairs when full molecule is included in fragments
+    if(DECinfo%InclFullMolecule) then
+       DECinfo%PairEstimateIgnore=.true.
+    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT

@@ -2297,7 +2297,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
      master=(infpar%lg_mynum==infpar%master)
-     if((s==2.or.s==1).and.master)then
+     if((s==2).and.master)then
         ccmodel_copy = ccmodel
         call time_start_phase(PHASE_COMM, at = tw)
         call share_E2_with_slaves(ccmodel_copy,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
@@ -2360,7 +2360,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mo_work_dist(nv*no*no,fai2,tl2,traf2)
 
         if(DECinfo%PL>3.and.me==0)then
-           write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
+           write(DECinfo%output,'("Trafolength in striped E1:",I7," ",I7)')tl1,tl2
         endif
 
         w3size = max(tl1*no,tl2*nv)
@@ -2663,7 +2663,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            lead = tl
            !use w3 as buffer which is allocated largest possible
            w2size  = tlov
-           w3size  = max(o2v2,tlov + els2add)
+           w3size  = min(o2v2,tlov + els2add)
         else
            call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
         endif
@@ -3076,13 +3076,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
+    integer(kind=8) :: v2o2
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
     nba=minbsize
     nbg=minbsize
     nnod=1
-    e2a = 0
+    e2a  = 0
+    v2o2 = (i8*no*no)*nv*nv
 #ifdef VAR_MPI
     nnod=infpar%lg_nodtot
 #endif
@@ -3227,7 +3229,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,iter,2,scheme,.false.)
-      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8)
+      e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
 
@@ -3420,15 +3422,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       call array_default_batches(d1,mode,tdim,splt)
       call array_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-      nloctiles=ntiles/nnod
-      if(mod(ntiles,nnod)>0)nloctiles=nloctiles+1
+      nloctiles=ceiling(float(ntiles)/float(nnod))
       tsze = 1
       do i = 1, mode
         tsze = tsze * tdim(i)
       enddo
       !govov stays in pdm and is dense in second part
-      ! u 2 + H +G + space for one update tile 
-      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no) + i8*tsze
+      ! u2 + H +G + space for 2 update tile s
+      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
       !gvoov gvvoo
       memrq=memrq+ 2.0E0_realk*tsze*nloctiles
 
@@ -3439,10 +3440,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !uigcj sio4
       memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + 1.0E0_realk*nor*nvr*2_long
+      memin  = memin + 1.0E0_realk*(nor*nvr*i8)
       !w0
-      memin = memin + 1.0E0_realk*&
-      &(i8*nb*nb)*nba*nbg
+      memin = memin + 1.0E0_realk*(i8*nb*nb)*nba*nbg
       !w1
       memin = memin + 1.0E0_realk *&
       &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
@@ -4827,7 +4827,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     real(realk), intent(inout) :: tmp0(:), tmp1(:), tmp2(:)
 
     !> orbital indices for loops:
-    integer :: i, j, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
+    integer :: i, j, k, ij, n_ij, r, d, dimI, I_sta, dimK, K_sta, dimC, C_sta
     !> variable indices for arrays:
     integer :: pos1, pos2, ncopy
     integer :: mv((nvir*nvir)/2), st
@@ -4990,9 +4990,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !$OMP WORKSHARE 
       tmp1 = 0.0E0_realk
       !$OMP END WORKSHARE
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1,P_sta,dimP,ntot,tmp2,dimK,n_ij)&
-      !$OMP PRIVATE(i,j,r,pos1,pos2)
-      !$OMP DO
+      ! get occ indices from full: sigma[K l, i<=j] <= sigma[P r, i<=j]
       do i=1,n_ij
         do r=1,nocc
           pos1 = 1 + (r-1)*dimP + (i-1)*dimP*ntot
@@ -5000,18 +4998,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           call dcopy(dimK,tmp2(pos1),1,tmp1(pos2),1) 
         end do
       end do
-      !$OMP END DO
-      do j=nocc,1,-1
-        !$OMP DO
+      ! Copy contracted array into proper place in the full array
+      ! first spread i<=j indices to full ij indices
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,tmp1)&
+      !$OMP PRIVATE(i,j,k,pos1,pos2)
+      do j=nocc,2,-1
         do i=j,1,-1
-          pos1=1+((i+j*(j-1)/2)-1)*nocc*nocc
-          pos2=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
-          if(j/=1) tmp1(pos2:pos2+nocc*nocc-1) = tmp1(pos1:pos1+nocc*nocc-1)
+          pos1=((i+j*(j-1)/2)-1)*nocc*nocc
+          pos2=(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
+          !$OMP DO
+          do k=1, nocc*nocc
+            tmp1(k+pos2) = tmp1(k+pos1)
+          end do
+          !$OMP END DO
         enddo
-        !$OMP END DO
       enddo
       !$OMP BARRIER
       !$OMP DO
+      ! then square the array, copy full index ij to full index ji:
       do j=nocc,1,-1
         do i=j,1,-1
           pos1=1+(i-1)*nocc*nocc+(j-1)*nocc*nocc*nocc
@@ -5048,15 +5052,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Sum up sigma PQ batches contributions to A2.2 part of CCSD residual:
     !$OMP PARALLEL DEFAULT(NONE) SHARED(nocc,nvir,tmp1)&
-    !$OMP PRIVATE(i,j,pos1,pos2)
-    do j=nocc,1,-1
-      !$OMP DO
+    !$OMP PRIVATE(i,j,k,pos1,pos2)
+    do j=nocc,2,-1
       do i=j,1,-1
-        pos1=1+((i+j*(j-1)/2)-1)*nvir*nvir
-        pos2=1+(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
-        if(j/=1) tmp1(pos2:pos2+nvir*nvir-1) = tmp1(pos1:pos1+nvir*nvir-1)
+        pos1=((i+j*(j-1)/2)-1)*nvir*nvir
+        pos2=(i-1)*nvir*nvir+(j-1)*nocc*nvir*nvir
+        !$OMP DO
+        do k=1, nvir*nvir
+          tmp1(k+pos2) = tmp1(k+pos1)
+        end do
+        !$OMP END DO
       enddo
-      !$OMP END DO
     enddo
     !$OMP BARRIER
     !$OMP DO

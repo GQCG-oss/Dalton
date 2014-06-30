@@ -90,7 +90,6 @@ END INTERFACE
    ! access to H1 within this module, avoiding re-reading H1 from disk and
    ! avoiding extensive modifications to existing subroutine interfaces.
    type(MATRIX), pointer, save  :: lH1
-   real(realk),parameter :: Gbd_thresh = 1.0E-14_realk
 CONTAINS
   subroutine di_debug_general(lupri,luerr,ls,nbast,S,D,debugProp)
       implicit none
@@ -391,7 +390,7 @@ CONTAINS
       logical                        :: ReadOldProp,OnMaster
       real(realk)                    :: maxelm
       real(realk),pointer            :: expval(:)
-      real(realk),parameter          :: thresh=1.0E-14
+      real(realk),parameter          :: thresh=1.0E-12_realk
       character(len=8)   :: Label
       character(len=1)   :: CHRXYZ(-3:3)
       DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
@@ -429,7 +428,7 @@ CONTAINS
 
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP ANGMOM',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP ANGMOM',CHRXYZ(X),' IS SYMMETRIC'
@@ -451,7 +450,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.8)')'PROPTEST4 ANGMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -459,7 +458,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'ANGLON ')
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) !1 sym, 2 antisym, 3 nosym, 4 zero
+         ISYM = mat_get_isym(matarray(X)) !1 sym, 2 antisym, 3 nosym, 4 zero
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP ANGLON',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP ANGLON',CHRXYZ(X),' IS SYMMETRIC'
@@ -481,36 +480,36 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGLON',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 ANGLON',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 ANGLON',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
 
       !CALC 1ELPOT
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:1),1,'1ELPOT ')
-      ISYM = mat_get_isym(matarray(1),thresh) 
+      ISYM = mat_get_isym(matarray(1)) 
       WRITE(lupri,'(A,I2)')'SYMMETRY OF PROP 1ELPOT = ',ISYM
       IF(ReadOldProp)THEN
          !read and verify
          call mat_read_from_disk(propfile,OLDINT(1),OnMaster)
          call mat_add(1E0_realk,matarray(1),-1E0_realk,OLDINT(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST3 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST3 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.8)')'PROPTEST4 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
          call II_get_nucel_mat(LUPRI,LUERR,SETTING,matarray(1))
          call mat_add(-1E0_realk,matarray(1),-1E0_realk,OLDINT(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST1 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST1 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.14)')'PROPTEST2 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
       ELSE
          call II_get_nucel_mat(LUPRI,LUERR,SETTING,matarray(2))
          call mat_add(-1E0_realk,matarray(2),-1E0_realk,matarray(1),tempm1)
-         WRITE(lupri,'(A,I2)')'PROPTEST5 1ELPOT=',mat_get_isym(tempm1,thresh)
+         WRITE(lupri,'(A,I2)')'PROPTEST5 1ELPOT=',mat_get_isym(tempm1)
          WRITE(lupri,'(A,F18.14)')'PROPTEST6 1ELPOT=',ABS(mat_trab(tempm1,tempm1))
       ENDIF
 
       !CALC LONMOM1
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM1')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM1',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM1',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -521,7 +520,7 @@ CONTAINS
       !CALC LONMOM2
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM2')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM2',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM2',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -531,7 +530,7 @@ CONTAINS
       !CALC LONMOM
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'LONMOM ')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP LONMOM',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of LONMOM',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -543,7 +542,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 LONMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 LONMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 LONMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -551,7 +550,7 @@ CONTAINS
       !CALC MAGMOM
       call II_get_prop(LUPRI,LUERR,SETTING,matarray,3,'MAGMOM ')
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh) 
+         ISYM = mat_get_isym(matarray(X)) 
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP MAGMOM',CHRXYZ(X),' = ',ISYM
          WRITE(lupri,'(A,A1,A1,F18.9)')'Norm of MAGMOM',CHRXYZ(X),'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -563,7 +562,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 MAGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 MAGMOM',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.8)')'PROPTEST4 MAGMOM',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -572,7 +571,7 @@ CONTAINS
       call II_get_magderivOverlap(matarray,setting,lupri,luerr)
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAG',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAG',CHRXYZ(X),' IS SYMMETRIC'
@@ -593,7 +592,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAG',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAG',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAG',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -601,7 +600,7 @@ CONTAINS
       call II_get_magderivOverlapR(matarray,setting,lupri,luerr)
       !Test S1MAGR
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAGR',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAGR',CHRXYZ(X),' IS SYMMETRIC'
@@ -622,7 +621,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGR',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGR',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAGR',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD S1MAGR',CHRXYZ(X)
@@ -636,7 +635,7 @@ CONTAINS
       call II_get_magderivOverlapL(matarray,setting,lupri,luerr)
       !Test S1MAGL
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP S1MAGL',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP S1MAGL',CHRXYZ(X),' IS SYMMETRIC'
@@ -657,7 +656,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGL',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 S1MAGL',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 S1MAGL',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD S1MAGL',CHRXYZ(X)
@@ -691,7 +690,7 @@ CONTAINS
       DO X=1,3*NATOMS
          Label = 'PSO '//Char(X/100+48)//Char(mod(X,100)/10+48)&
               &//Char(mod(mod(X,100),10)+48)//' '         
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -705,7 +704,7 @@ CONTAINS
                  &//Char(mod(mod(X,100),10)+48)//' '         
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -762,7 +761,7 @@ CONTAINS
                     &//Char(mod(mod(X,100),10)+48)//'NSLO'//CHRXYZ(B)
                call mat_read_from_disk(propfile,OLDINT(B+(X-1)*3),OnMaster)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -801,7 +800,7 @@ CONTAINS
                Label = Char(X/100+48)//Char(mod(X,100)/10+48)&
                     &//Char(mod(mod(X,100),10)+48)//'NSNL'//CHRXYZ(B)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -839,7 +838,7 @@ CONTAINS
                Label = Char(X/100+48)//Char(mod(X,100)/10+48)&
                     &//Char(mod(mod(X,100),10)+48)//' NST'//CHRXYZ(B)
                call mat_add(1E0_realk,matarray(B+(X-1)*3),-1E0_realk,OLDINT(B+(X-1)*3),tempm1)
-               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+               WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
                WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             ENDDO
          ENDDO
@@ -861,7 +860,7 @@ CONTAINS
       !Test
       DO X=1,3
          WRITE(lupri,'(A,A1)')'PROP DIPVEL',CHRXYZ(X)
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP DIPVEL',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1)THEN
             WRITE(lupri,'(A,A,A)')'PROP DIPVEL',CHRXYZ(X),' IS SYMMETRIC'
@@ -882,7 +881,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPVEL',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPVEL',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 DIPVEL',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -890,7 +889,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:6),6,'ROTSTR ')
       DO X=1,6
          Label = ROTXYZ(X)//'ROTSTR'
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -903,7 +902,7 @@ CONTAINS
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             Label = ROTXYZ(X)//'ROTSTR'
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -911,7 +910,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:6),6,'THETA  ')
       DO X=1,6
          Label = ROTXYZ(X)//'THETA'
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A8,A,I2)')'SYMMETRY OF PROP ',Label,' = ',ISYM
          WRITE(lupri,'(A,A8,A1,F18.9)')'Norm of ',Label,'=',&
               &sqrt(mat_sqnorm2(matarray(X))/nbast)
@@ -924,7 +923,7 @@ CONTAINS
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             Label = ROTXYZ(X)//'THETA'
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A8,A1,I2)')'PROPTEST3 ',Label,'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A8,A1,F18.14)')'PROPTEST4 ',Label,'=',ABS(mat_trab(tempm1,tempm1))
             IF(ABS(mat_trab(tempm1,tempm1)).GT.1.0E-10)THEN
                WRITE(lupri,*)'OLD LABEL:',Label
@@ -938,7 +937,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:3),3,'DIPLEN ')
       !Test
       DO X=1,3
-         ISYM = mat_get_isym(matarray(X),thresh)
+         ISYM = mat_get_isym(matarray(X))
          WRITE(lupri,'(A,A1,A,I2)')'SYMMETRY OF PROP DIPLEN',CHRXYZ(X),' = ',ISYM
          if(ISYM.EQ.1.OR.isym.EQ.4)THEN
             WRITE(lupri,'(A,A,A)')'PROP DIPLEN',CHRXYZ(X),' IS SYMMETRIC OR ZERO'
@@ -957,7 +956,7 @@ CONTAINS
          DO X=1,3
             call mat_read_from_disk(propfile,OLDINT(X),OnMaster)
             call mat_add(1E0_realk,matarray(X),-1E0_realk,OLDINT(X),tempm1)
-            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPLEN',CHRXYZ(X),'=',mat_get_isym(tempm1,thresh)
+            WRITE(lupri,'(A,A1,A1,I2)')'PROPTEST3 DIPLEN',CHRXYZ(X),'=',mat_get_isym(tempm1)
             WRITE(lupri,'(A,A1,A1,F18.14)')'PROPTEST4 DIPLEN',CHRXYZ(X),'=',ABS(mat_trab(tempm1,tempm1))
          ENDDO
       ENDIF
@@ -965,7 +964,7 @@ CONTAINS
       call II_get_prop(LUPRI,LUERR,SETTING,matarray(1:1),1,'Overlap')
       !verify OVERLAP
       call mat_add(1E0_realk,matarray(1),-1E0_realk,S,tempm1)
-      WRITE(lupri,*)'PROPTEST1 OVERLAP ',mat_get_isym(tempm1,thresh)
+      WRITE(lupri,*)'PROPTEST1 OVERLAP ',mat_get_isym(tempm1)
       WRITE(lupri,*)'PROPTEST2 OVERLAP ',ABS(mat_trab(tempm1,tempm1))
       DO X=1,9*NATOMS
          call mat_free(matarray(X))
@@ -2151,10 +2150,7 @@ CONTAINS
       Dsym = .TRUE. !symmetric Density matrix
       ls%input%nfock = ls%input%nfock + 1
 
-!     Turn of ADMM at level 2 for ADMM_GCBASIS option (we then use the level 2
-!     basis as ADMM basis for level 3)
       ADMMexchange = ls%setting%scheme%ADMM_EXCHANGE.AND.(.NOT.ls%optlevel.EQ.1)
-      IF ((ls%optlevel.EQ.2).AND.ls%input%dalton%ADMM_GCBASIS) ADMMexchange = .FALSE.
 
 ! *********************************************************************************
 ! *                       Fock matrix with ADMM exchange
@@ -2164,9 +2160,6 @@ CONTAINS
          !FixMe Should also work for incremental scheme
          IF(incremental_scheme)THEN
             call lsquit('Auxiliary Density Matrix Calculation requires NOINCREM',-1)
-         ENDIF
-         IF (ls%input%dalton%ADMM_GCBASIS.AND.(ls%input%basis%WBASIS(VALBasParam))) THEN
-           call lsquit('Auxiliary Density Matrix GC-basis type Calculation requires TRILEVEL start guess',-1)
          ENDIF
 
 
@@ -2184,23 +2177,24 @@ CONTAINS
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
 
-         IF(PRINT_EK3)THEN
-            ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
-            call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
-            EK3 = mat_dotproduct(K(idmat),D(idmat))
-            call mat_zero(K(idmat))
-         ENDIF
+IF(PRINT_EK3)THEN
+   ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+   call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
+   EK3 = mat_dotproduct(K(idmat),D(idmat))
+   call mat_zero(K(idmat))
+ENDIF
 
             call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-         IF(PRINT_EK3)THEN
-            EK2 = mat_dotproduct(K(idmat),D(idmat))
-            write(*,*)     "E(K3)= ",EK3
-            write(lupri,*) "E(K3)= ",EK3
-            write(*,*)     "E(k2)= ",EK2
-            write(lupri,*) "E(k2)= ",EK2
-            write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
-            write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
-         ENDIF
+
+IF(PRINT_EK3)THEN
+   EK2 = mat_dotproduct(K(idmat),D(idmat))
+   write(*,*)     "E(K3)= ",EK3
+   write(lupri,*) "E(K3)= ",EK3
+   write(*,*)     "E(k2)= ",EK2
+   write(lupri,*) "E(k2)= ",EK2
+   write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+   write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+ENDIF
 
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
@@ -2313,7 +2307,7 @@ CONTAINS
         logical :: Dsym
 
         Dsym = .TRUE. !matrix either symmetric or antisymmetric
-        IF(mat_get_isym(Dens,Gbd_thresh).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
+        IF(mat_get_isym(Dens).EQ.3) Dsym = .FALSE. !NON symmetric Density matrix
         ndmat = 1
         IF(present(setting))THEN
            !This should be changed to a test like the MATSYM function
@@ -2423,43 +2417,42 @@ CONTAINS
         ENDIF
     END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single
     
-    
-      subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
-        !*********************************************************
-        ! Determine the G matrix for the 2-e contribution to sigma
-        ! vector in RSP
-        ! G([b,D]s) = 2-e part of Fock Matrix with a modified
-        !             density [b,D]s (here called Dens)
-        ! Sonia, October 2004
-        ! Thomas, Feb 2010 (fixed unrestricted + added lsdalton lsint)
-        !*********************************************************
-        implicit none
-        integer, intent(in) :: lupri,luerr,ndmat
-        type(Matrix), intent(in) :: Dens(nDmat)
-        type(Matrix), intent(inout) :: GbDs(nDmat)  !output
-        type(lssetting),optional :: setting !intent(inout)
-        !
-        integer :: idmat
-        logical :: Dsym
-
-        Dsym = .TRUE. !all matrices either symmetric or antisymmetric
-        DO idmat = 1,ndmat
-           IF(mat_get_isym(Dens(idmat),Gbd_thresh).EQ.3)THEN
-              Dsym = .FALSE. !NON symmetric Density matrix
-           ENDIF
-           IF(.NOT.Dsym)EXIT
-        ENDDO
-        IF(present(setting))THEN
-           call II_get_Fock_mat(lupri,luerr,&
+    subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
+      !*********************************************************
+      ! Determine the G matrix for the 2-e contribution to sigma
+      ! vector in RSP
+      ! G([b,D]s) = 2-e part of Fock Matrix with a modified
+      !             density [b,D]s (here called Dens)
+      ! Sonia, October 2004
+      ! Thomas, Feb 2010 (fixed unrestricted + added lsdalton lsint)
+      !*********************************************************
+      implicit none
+      integer, intent(in) :: lupri,luerr,ndmat
+      type(Matrix), intent(in) :: Dens(nDmat)
+      type(Matrix), intent(inout) :: GbDs(nDmat)  !output
+      type(lssetting),optional :: setting !intent(inout)
+      !
+      integer :: idmat
+      logical :: Dsym
+      
+      Dsym = .TRUE. !all matrices either symmetric or antisymmetric
+      DO idmat = 1,ndmat
+         IF(mat_get_isym(Dens(idmat)).EQ.3)THEN
+            Dsym = .FALSE. !NON symmetric Density matrix
+         ENDIF
+         IF(.NOT.Dsym)EXIT
+      ENDDO
+      IF(present(setting))THEN
+         call II_get_Fock_mat(lupri,luerr,&
               & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-        ELSE
-           call II_get_Fock_mat(lupri,luerr,&
+      ELSE
+         call II_get_Fock_mat(lupri,luerr,&
               & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-        ENDIF
-!        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-!        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
-
-      end subroutine di_GET_GbDsArray
+      ENDIF
+      !        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+      !        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+      
+    end subroutine di_GET_GbDsArray
 
 
     !*********************************************************
@@ -2502,14 +2495,14 @@ CONTAINS
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
-            real(realk)            :: hfweight
-            integer                :: i,iBmat,nbast,nbast2,AO2,AO3
-            integer                :: AOdfold,AORold
+            real(realk)            :: hfweight,constrain_factor,fac
+            integer                :: i,iBmat,nbast,nbast2,AO3
+            integer                :: AORold
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
-            logical                :: GC3,GC2,testNelectrons,grid_done
-            !
-            nbast  = Bmat(1)%nrow
+            logical                :: GC3,testNelectrons,grid_done
+
+            !Consistency checking
             IF(matrix_type .EQ. mtype_unres_dense) THEN
                 call lsquit('di_GET_GbDsArray_ADMM does not support &
                              &unrestricted matrices',lupri)
@@ -2519,13 +2512,17 @@ CONTAINS
                 call lsquit('II_get_Fock_mat incremental scheme not &
                            & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
             ENDIF
+
+            !Check for symmetry
             Dsym = .TRUE. !all matrices either symmetric or antisymmetric
             DO iBmat = 1,nBmat
-               IF(mat_get_isym(Bmat(iBmat),Gbd_thresh).EQ.3)THEN
+               IF(mat_get_isym(Bmat(iBmat)).EQ.3)THEN
                   Dsym = .FALSE. !NON symmetric Density matrix
                ENDIF
                IF(.NOT.Dsym)EXIT
             ENDDO
+
+            nbast  = Bmat(1)%nrow
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
             call mat_init(Dmat_AO,nbast,nbast)
@@ -2569,69 +2566,60 @@ CONTAINS
                 call mat_zero(K(i))
             ENDDO
 
-            ! REGULAR exchange mat
-            !!!!!call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
-            !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-            !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
-
             ! ADMM approx. to exchange mat
             ! ---------------------------------------------------------------           
-            IF (setting%scheme%ADMM_JKBASIS) THEN
-                AO2 = AOdfJK
-            ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
-                AO2 = AOVAL
-            ELSE 
-                call lsquit('II_get_ADMM_K_gradient:Auxiliary Density &
-                  & Matrix Calculation requested, but no basis given',-1)
-            ENDIF
         
-            nbast2=getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+
+            ! Number of basis functions in the auxiliary ADMM basis set
+            nbast2=getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
 
             !ADMM/Level 2 basis is GC basis 
-            ! only if ADMM_GCBASIS option is active and optlevel 3
             GC3 = setting%IntegralTransformGC
-            GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
-            setting%IntegralTransformGC = GC2
+            setting%IntegralTransformGC = .FALSE.
             
-            !Store original AO-indeces (AOdf will not change,
-            !                            but is still stored)
+            !Store original AO-index
             AORold  = AORdefault
-            AOdfold = AODFdefault
             
             !!****Calculation of Level 2 exchange gradient from
             !!     level 2 Density matrix starts here
             !ADMM (level 2) AO settings 
-                
+
+            constrain_factor = setting%scheme%ADMM_CONSTRAIN_FACTOR
+
             AO3 = AORdefault ! assuming optlevel.EQ.3
+
             call mat_init(D2_AO,nbast2,nbast2)
-            call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
-                & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
+                & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
+
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
                 call mat_init(B2_AO(ibmat),nbast2,nbast2)
-                call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
-                    & AO2,AO3,setting%scheme%ADMM1,GC2,GC3)
+                    & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
 
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
                 call mat_zero(k2(ibmat))
 
-                call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
-                call set_default_AOs(AO2,AOdfold)
+                call set_default_AOs(AOadmm,AODFdefault)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
                 call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+                call mat_daxpy(fac,TMPF3,K(ibmat))
                                 
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
@@ -2649,14 +2637,21 @@ CONTAINS
                 !Level 2 XC matrix
                 call mat_init(Gx2(ibmat),nbast2,nbast2)
                 call mat_zero(Gx2(ibmat))
-                call mat_zero(TMPF3)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
                 !Transform level 2 XC matrix to level 3
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
-                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
+                                        & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSEIF (setting%scheme%ADMMS) THEN
+                  fac = constrain_factor**(2E0_realk/3E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+
+                call mat_daxpy(-fac,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2671,7 +2666,7 @@ CONTAINS
                 !Level 3 XC matrix
                 call mat_init(Gx3(ibmat),nbast,nbast)
                 call mat_zero(Gx3(ibmat))
-                call set_default_AOs(AO3,AOdfold)
+                call set_default_AOs(AO3,AODFdefault)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
                 call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))
@@ -2712,63 +2707,7 @@ CONTAINS
             call mat_free(Dmat_AO)
             call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
-          
             
-        SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,&
-                        & luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(in)    :: D     !level 3 matrix input 
-            type(matrix),intent(inout) :: D2 !level 2 matrix input 
-            type(lssetting) :: setting
-            integer :: n2,n3,AO3,AO2,lupri,luerr
-            logical :: McWeeny,GCAO2,GCAO3
-            real(realk)                :: constrain_factor
-            !
-            TYPE(MATRIX) :: S22,S23,T23
-            Logical :: purify_failed
-            !
-            constrain_factor = 1.0E0_realk
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
-                         &GCAO2,GCAO3,constrain_factor)
-            call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
-
-            IF (McWeeny) THEN
-                call mat_init(S22,n2,n3)
-                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
-                call McWeeney_purify(S22,D2,purify_failed)
-                IF (purify_failed) THEN
-                    call LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
-                ENDIF
-                call mat_free(S22)
-            ENDIF
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORM_D3_TO_D2
-        
-        SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
-            implicit none
-            type(matrix),intent(inout) :: F  !level 3 matrix output 
-            type(matrix),intent(in)    :: F2 !level 2 matrix input 
-            type(lssetting) :: setting
-            Integer :: n2,n3,AO2,AO3,lupri,luerr
-            Logical :: GCAO2,GCAO3
-            real(realk)                :: constrain_factor
-            !
-            type(matrix) :: S23,T23
-            constrain_factor = 1.0E0_realk
-            call mat_init(T23,n2,n3)
-            call mat_init(S23,n2,n3)
-            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,&
-                         &GCAO2,GCAO3,constrain_factor)
-            call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
-            call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
-            call mat_free(T23)
-            call mat_free(S23)
-        END SUBROUTINE TRANSFORMED_F2_TO_F3
-      !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
           
           

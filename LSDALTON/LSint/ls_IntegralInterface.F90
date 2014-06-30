@@ -1310,6 +1310,12 @@ INT_INPUT%DO_DALINK = SETTING%SCHEME%DALINK
 IF(.NOT.INT_INPUT%DO_EXCHANGE)CALL LSQUIT('ERROR',-1)
 
 IF(INT_INPUT%DO_LINK)THEN 
+   !The Input Matrix (normally density matrix) is symmetric
+   !or it is split into symmetric and antisymmetric part
+   !the anti symmetric part is still treated as symmetric when
+   !construction the Fock matrix contribution but 
+   !it is followed by anti symmetrization in Post Processing 
+   INT_INPUT%DRHS_SYM=.TRUE.
    DO idmat = 1,setting%nDmatRHS
       idmat2 = idmat
       IF(matrix_type.EQ.mtype_unres_dense)then
@@ -1322,15 +1328,25 @@ IF(INT_INPUT%DO_LINK)THEN
       IF(setting%DsymRHS(idmat).EQ.1)THEN
          !Symmetric D => Symmetric K
          setting%output%postprocess(idmat2) = SymmetricPostprocess
-         INT_INPUT%DRHS_SYM=.TRUE.
       ELSEIF(setting%DsymRHS(idmat).EQ.2)THEN
          !AntiSymmetric D => AntiSymmetric K
          setting%output%postprocess(idmat2) = AntiSymmetricPostprocess
-         INT_INPUT%DRHS_SYM=.TRUE.
+      ELSEIF(setting%DsymRHS(idmat).EQ.4)THEN
+         !zero matrix 
+         setting%output%postprocess(idmat2) = 0
+      ELSE
+         print*,'the code can handle nonsym densities but'
+         print*,'from a perfomance perspective it is better'
+         print*,'to divide matrix up into a Sym and antiSym Part'
+         print*,'This should be done per default unless bypassed'
+         print*,'by specifying that D is symmetric. '
+         print*,'This Error statement can occur if Symmetry threshold'
+         print*,'too high and the Symmetric Dmat is judged to be nonsymmetric.'
+         call lsquit('Exchange Called with nonsym Dmat',-1)
+         !the code 
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
-         setting%output%postprocess(idmat2) = 0
-         INT_INPUT%DRHS_SYM=.FALSE.
+         setting%output%postprocess(idmat2) = 0         
       ENDIF
    ENDDO
    IF(AO1.NE.AO2)then
@@ -1338,7 +1354,6 @@ IF(INT_INPUT%DO_LINK)THEN
       INT_INPUT%DRHS_SYM=.FALSE.
       setting%output%postprocess=0
    ENDIF
-   INT_INPUT%DRHS_SYM=.TRUE.
    IF (setting%LHSdmat) THEN
       DO idmat = 1,setting%nDmatLHS
          idmat2 = idmat
@@ -4459,9 +4474,6 @@ TYPE(LSSETTING),intent(INOUT)   :: setting
 character*(*)                   :: side
 !
 integer                :: idmat
-real(realk)            :: thresh
-thresh = MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
 SELECT CASE(side)
 CASE('LHS')
   IF (setting%LHSdmat) CALL LSQUIT('Error in ls_attachDmatToSetting. LHS',lupri)
@@ -4474,7 +4486,7 @@ CASE('LHS')
   enddo
   call mem_alloc(setting%DsymLHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymLHS(idmat) = mat_get_isym(Dmat(idmat)%p,thresh)
+    setting%DsymLHS(idmat) = mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%LHSdmatAOindex1 = AOindex1
   setting%LHSdmatAOindex2 = AOindex2
@@ -4489,7 +4501,7 @@ CASE('RHS')
   enddo
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p,thresh)
+    setting%DsymRHS(idmat) = mat_get_isym(Dmat(idmat)%p)
   ENDDO
   setting%RHSdmatAOindex1 = AOindex1
   setting%RHSdmatAOindex2 = AOindex2
@@ -4517,9 +4529,6 @@ TYPE(LSSETTING),intent(INOUT)   :: setting
 character*(*)                   :: side
 !
 integer                :: idmat
-real(realk)            :: thresh
-thresh = MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
-!you can chose a screening threshold below 15 but not this thresh.
 
 SELECT CASE(side)
 CASE('LHS')
@@ -4545,7 +4554,7 @@ CASE('LHS')
   setting%LHSdmatAOindex2 = AOindex2
   call mem_alloc(setting%DsymLHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymLHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2,thresh)
+    setting%DsymLHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE('RHS')
   IF (setting%RHSdfull) CALL LSQUIT('Error in ls_attachDmatToSetting. RHS',lupri)
@@ -4570,7 +4579,7 @@ CASE('RHS')
   setting%RHSdmatAOindex2 = AOindex2
   call mem_alloc(setting%DsymRHS,ndmat)
   DO idmat = 1,ndmat
-    setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2,thresh)
+    setting%DsymRHS(idmat) = matfull_get_isym(Dmat(:,:,idmat),dim1,dim2)
   ENDDO
 CASE DEFAULT
   WRITE(LUPRI,'(1X,2A)') 'Error in ls_attachDmatToSetting. Side =',side
@@ -4680,7 +4689,7 @@ Logical                  :: ls_same_mats
 !
 logical :: same
 integer :: id
-real(realk),parameter :: thresh = 1E-14_realk
+real(realk),parameter :: thresh = 1E-12_realk
 
 IF (nd.EQ.np) THEN
   same = .TRUE.
@@ -4704,10 +4713,8 @@ FUNCTION ls_mat_sym(D)
 implicit none
 TYPE(matrix),intent(IN) :: D
 Integer                 :: ls_mat_sym
-!
-real(realk),parameter :: thresh = 1E-14_realk
 
-ls_mat_sym = mat_get_isym(D,thresh)
+ls_mat_sym = mat_get_isym(D)
 
 END FUNCTION ls_mat_sym
 
