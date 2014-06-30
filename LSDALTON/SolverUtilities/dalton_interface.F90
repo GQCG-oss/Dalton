@@ -2177,23 +2177,24 @@ CONTAINS
             call mat_zero(K(idmat))
             call mat_zero(dXC(idmat))
 
-         IF(PRINT_EK3)THEN
-            ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
-            call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
-            EK3 = mat_dotproduct(K(idmat),D(idmat))
-            call mat_zero(K(idmat))
-         ENDIF
+IF(PRINT_EK3)THEN
+   ! for debugging purpose, we calculate the expensive K3 and its corresponding energy contribution
+   call II_get_exchange_mat(LUPRI,LUERR,ls%SETTING,D(idmat),ndmat,Dsym,K(idmat))
+   EK3 = mat_dotproduct(K(idmat),D(idmat))
+   call mat_zero(K(idmat))
+ENDIF
 
             call II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
-         IF(PRINT_EK3)THEN
-            EK2 = mat_dotproduct(K(idmat),D(idmat))
-            write(*,*)     "E(K3)= ",EK3
-            write(lupri,*) "E(K3)= ",EK3
-            write(*,*)     "E(k2)= ",EK2
-            write(lupri,*) "E(k2)= ",EK2
-            write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
-            write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
-         ENDIF
+
+IF(PRINT_EK3)THEN
+   EK2 = mat_dotproduct(K(idmat),D(idmat))
+   write(*,*)     "E(K3)= ",EK3
+   write(lupri,*) "E(K3)= ",EK3
+   write(*,*)     "E(k2)= ",EK2
+   write(lupri,*) "E(k2)= ",EK2
+   write(*,*)     "E(K3)-E(k2)= ",EK3-EK2
+   write(lupri,*) "E(K3)-E(k2)= ",EK3-EK2
+ENDIF
 
             Etmp = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat) ! DEBUG ADMM           
             call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
@@ -2494,16 +2495,14 @@ CONTAINS
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
-            real(realk)            :: hfweight,constrain_factor
+            real(realk)            :: hfweight,constrain_factor,fac
             integer                :: i,iBmat,nbast,nbast2,AO3
-            integer                :: AOdfold,AORold
+            integer                :: AORold
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
             logical                :: GC3,testNelectrons,grid_done
-            !
-            constrain_factor =1E0_realk
-            !
-            nbast  = Bmat(1)%nrow
+
+            !Consistency checking
             IF(matrix_type .EQ. mtype_unres_dense) THEN
                 call lsquit('di_GET_GbDsArray_ADMM does not support &
                              &unrestricted matrices',lupri)
@@ -2513,6 +2512,8 @@ CONTAINS
                 call lsquit('II_get_Fock_mat incremental scheme not &
                            & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
             ENDIF
+
+            !Check for symmetry
             Dsym = .TRUE. !all matrices either symmetric or antisymmetric
             DO iBmat = 1,nBmat
                IF(mat_get_isym(Bmat(iBmat)).EQ.3)THEN
@@ -2520,6 +2521,8 @@ CONTAINS
                ENDIF
                IF(.NOT.Dsym)EXIT
             ENDDO
+
+            nbast  = Bmat(1)%nrow
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
             call mat_init(Dmat_AO,nbast,nbast)
@@ -2563,40 +2566,37 @@ CONTAINS
                 call mat_zero(K(i))
             ENDDO
 
-            ! REGULAR exchange mat
-            !!!!!call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
-            !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-            !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
-
             ! ADMM approx. to exchange mat
             ! ---------------------------------------------------------------           
         
+
+            ! Number of basis functions in the auxiliary ADMM basis set
             nbast2=getNbasis(AOadmm,Contractedinttype,setting%MOLECULE(1)%p,6)
 
             !ADMM/Level 2 basis is GC basis 
             GC3 = setting%IntegralTransformGC
             setting%IntegralTransformGC = .FALSE.
             
-            !Store original AO-indeces (AOdf will not change,
-            !                            but is still stored)
+            !Store original AO-index
             AORold  = AORdefault
-            AOdfold = AODFdefault
             
             !!****Calculation of Level 2 exchange gradient from
             !!     level 2 Density matrix starts here
             !ADMM (level 2) AO settings 
-                
+
+            constrain_factor = setting%scheme%ADMM_CONSTRAIN_FACTOR
+
             AO3 = AORdefault ! assuming optlevel.EQ.3
+
             call mat_init(D2_AO,nbast2,nbast2)
-            call mat_zero(D2_AO)
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
                 & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
+
             call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
                 call mat_init(B2_AO(ibmat),nbast2,nbast2)
-                call mat_zero(B2_AO(ibmat))
                 call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
                     & setting,lupri,luerr,nbast2,nbast,&
                     & AOadmm,AO3,setting%scheme%ADMM1,.FALSE.,GC3,constrain_factor)
@@ -2605,17 +2605,21 @@ CONTAINS
                 call mat_init(k2(ibmat),nbast2,nbast2)
                 call mat_zero(k2(ibmat))
 
-                call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
-                call set_default_AOs(AOadmm,AOdfold)
+                call set_default_AOs(AOadmm,AODFdefault)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
                 call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
                                         & lupri,luerr,&
                                         & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
-                call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+                call mat_daxpy(fac,TMPF3,K(ibmat))
                                 
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
@@ -2633,14 +2637,21 @@ CONTAINS
                 !Level 2 XC matrix
                 call mat_init(Gx2(ibmat),nbast2,nbast2)
                 call mat_zero(Gx2(ibmat))
-                call mat_zero(TMPF3)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
                 !Transform level 2 XC matrix to level 3
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
                                         & nbast2,nbast,AOadmm,AO3,.FALSE.,GC3,constrain_factor)
-                call mat_daxpy(-1E0_realk,TMPF3,K(ibmat))
+                IF (setting%scheme%ADMMP) THEN
+                  fac = constrain_factor**(4E0_realk)
+                ELSEIF (setting%scheme%ADMMS) THEN
+                  fac = constrain_factor**(2E0_realk/3E0_realk)
+                ELSE
+                  fac = 1E0_realk
+                ENDIF
+
+                call mat_daxpy(-fac,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2655,7 +2666,7 @@ CONTAINS
                 !Level 3 XC matrix
                 call mat_init(Gx3(ibmat),nbast,nbast)
                 call mat_zero(Gx3(ibmat))
-                call set_default_AOs(AO3,AOdfold)
+                call set_default_AOs(AO3,AODFdefault)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
                 call mat_daxpy(1E0_realk,Gx3(ibmat),K(ibmat))

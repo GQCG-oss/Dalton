@@ -19,6 +19,10 @@ f.add(string = 'Nuclear repulsion',
 #      rel_tolerance = 1.0e-8)
 # do not work due to timings and other stuff like number of OpenMP threads
 
+f.add(from_string = 'ONE-PHOTON ABSORPTION RESULTS',
+      num_lines   = 9,
+      rel_tolerance = 1.0e-8)
+
 f.add(from_string = 'contribution to gradient',
       num_lines   = 6,
       rel_tolerance = 1.0e-8)
