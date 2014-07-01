@@ -1147,6 +1147,22 @@ C added by Bin Gao, May 12, 2012
             call xc_integrate_worker()
 #endif
 
+         ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+            CALL vpotdamped_slave()
+
+#if defined(ENABLE_EFS)
+         else if (IPRTYP.eq.efs_add_atomtype_work) then
+            call efs_add_atomtype_slave()
+         else if (IPRTYP.eq.efs_init_work) then
+            call efs_init_slave()
+         else if (IPRTYP.eq.efs_generate_basis_work) then
+            call efs_generate_basis_product_slave()
+         else if (IPRTYP.eq.efs_init_2efock_work) then
+            call efs_init_2efock_slave()
+         else if (IPRTYP.eq.efs_fock_update_work) then
+            call efs_fock_update_slave()
+#endif
+
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(DALTON_NODEDRIVER) ERROR on slave',MYTID,

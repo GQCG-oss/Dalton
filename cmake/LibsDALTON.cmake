@@ -1,4 +1,24 @@
 set(DALTON_LIBS)
+if(ENABLE_VPOTDAMP)
+    add_subdirectory(DALTON/1e_cpp ${CMAKE_BINARY_DIR}/vpotdamp)
+    set(DALTON_LIBS
+        vpotdamp
+        ${LIBS}
+        )
+endif()
+
+if(ENABLE_EFS)
+    include(LibsEFS)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        DALTON/abacus/efs_interface.F90
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        )
+    add_subdirectory(DALTON/efs ${CMAKE_BINARY_DIR}/efs_interface)
+    set(DALTON_LIBS
+        efs_interface
+        ${DALTON_LIBS}
+        )
+endif()
 
 if(ENABLE_CHEMSHELL)
     set(DALTON_FIXED_FORTRAN_SOURCES
@@ -16,6 +36,10 @@ add_library(
     )
 
 add_dependencies(dalton generate_binary_info)
+
+if(ENABLE_EFS)
+    add_dependencies(dalton efs)
+endif()
 
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)

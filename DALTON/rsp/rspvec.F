@@ -968,6 +968,7 @@ C
 #include "inftap.h"
 #include "inflr.h"
 #include "infrank.h"
+#include "gnrinf.h"
 C
 C     Local variables:
 C

@@ -577,6 +577,10 @@ C
             WRITE(LUPRI,'(A)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          END IF
+         IF (QMNPMM) THEN
+            WRITE(LUPRI,'(/A)') ' Heterogeneous environment is '// 
+     &                          ' modeled using the QM/NP/MM scheme'
+         END IF
       END IF
 C
 C *** END OF HYPINP
