@@ -138,7 +138,7 @@ contains
     !> Unoccupied orbitals for full molecule
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
-    logical, dimension(MyMolecule%nocc),intent(in) :: OccAOS
+    logical, dimension(MyMolecule%nocc),intent(inout) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
     logical, dimension(MyMolecule%nunocc),intent(in) :: UnoccAOS
     !> Atomi Fragment to be determined (NOT pair fragment)
@@ -2268,7 +2268,6 @@ contains
      end if
 
 
-
      ! ======================================================================
      !                    Initialization of various things...
      ! ======================================================================
@@ -2278,7 +2277,8 @@ contains
      OccEnergyDiff=0.0_realk
      VirtEnergyDiff=0.0_realk
      expansion_converged=.false.
-     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
+     max_iter_red=100   ! Was set to 15 but changed to 100 for binary search 
+                        ! wich might take more steps
      FOT = DECinfo%FOT
      DistMyAtom= mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
      ! Sort atoms according to distance from central atom
@@ -2326,7 +2326,6 @@ contains
         MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
      end if
 
-
      ! ======================================================================
      !                            Initial fragment
      ! ======================================================================
@@ -2353,6 +2352,7 @@ contains
            init_Virtradius = 3.0_realk/bohr_to_angstrom
         ENDIF
      ENDIF
+
      IF(FockMatrixOrdering)THEN
         call mem_alloc(OccAOS,nocc)
         call mem_alloc(VirtAOS,nunocc)
@@ -2756,7 +2756,7 @@ contains
     logical,intent(inout) :: OccAOS(nocc), VirtAOS(nvirt),ExpandFragmentConverged
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
-    real(realk) :: nov    
+    real(realk) :: nov, maxvirtdist    
     integer :: AverageOrbitalPerAtoms
     AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
     StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
@@ -2770,11 +2770,13 @@ contains
        enddo
        !increase Occ with Radius determined by the biggest Virtual radius
        jj = MIN(nOrb2+StepsizeLoop6,nvirt)
+       maxvirtdist = SortedDistanceTableOrbAtomVirt(jj)
        nOrb1 = COUNT(OccAOS)
-       do i=nOrb1+1,MIN(nOrb1+StepsizeLoop6,nocc)
-          IF(SortedDistanceTableOrbAtomVirt(jj).LT.SortedDistanceTableOrbAtomOcc(i))EXIT
-          ii = OrbOccDistTrackMyAtom(i)
-          OccAOS(ii)=.true.
+       do i=1,nocc
+          if(SortedDistanceTableOrbAtomOcc(i) .le. maxvirtdist) then
+             ii = OrbOccDistTrackMyAtom(i)
+             OccAOS(ii)=.true.
+          end if
        enddo
     ELSEIF(DECinfo%onlyVirtPart)THEN
        !increase with StepsizeLoop6 Occupied orbitals
@@ -2907,21 +2909,14 @@ contains
      IF(OrbDistanceSpec)THEN
         OldOccAOS = OccAOS
         OldVirtAOS = VirtAOS
-        IF(COUNT(OccAOS).EQ.nocc.OR.COUNT(VirtAOS).EQ.nunocc)THEN
-           WRITE(DECinfo%output,*)'The initial guess include full molecule'
-           !The 0. iteration contain full molecule
-           !and is is used in reduction and cannot be used when 
-           OldOccAOS = .FALSE.; OldVirtAOS = .FALSE.
-           OldOccAOS(1) = .TRUE.;OldVirtAOS(1) = .TRUE.
-        ENDIF
      ENDIF
      if(DECinfo%frozencore)THEN
       IF(FockMatrixOrdering.OR.OrbDistanceSpec)THEN
-         !include core orbitals in OccAOS
+         !exclude core orbitals in OccAOS
          !they are removed in atomic_fragment_init_orbital_specific
          !anyway
          do iter=1,MyMolecule%ncore
-            OccAOS(iter) = .TRUE.
+            OccAOS(iter) = .FALSE.
          enddo
       ENDIF
      ENDIF
@@ -3508,26 +3503,28 @@ contains
           !which was included in the second last fragment 
           nLowerOcc = 0 
           IF(.NOT.BruteForce)THEN
-             DO I=1,nocc
-                II = TrackSortedOccContribs(I)
-                IF(ExpOldOccAOS(II))THEN
-                   nLowerOcc = nLowerOcc + 1
-                ELSE
-                   EXIT
-                ENDIF
-             ENDDO
+             nLowerOcc = noccEOS
+             !DO I=1,nocc
+             !   II = TrackSortedOccContribs(I)
+             !   IF(ExpOldOccAOS(II))THEN
+             !      nLowerOcc = nLowerOcc + 1
+             !   ELSE
+             !      EXIT
+             !   ENDIF
+             !ENDDO
           ELSE
              nLowerOcc = 1 
           ENDIF
-          nLowerVirt = 0
-          DO I=1,nunocc
-             II = TrackSortedVirtContribs(I)
-             IF(ExpOldVirtAOS(II))THEN
-                nLowerVirt = nLowerVirt + 1
-             ELSE
-                EXIT
-             ENDIF
-          ENDDO
+          !nLowerVirt = 0
+          !DO I=1,nunocc
+          !   II = TrackSortedVirtContribs(I)
+          !   IF(ExpOldVirtAOS(II))THEN
+          !      nLowerVirt = nLowerVirt + 1
+          !   ELSE
+          !      EXIT
+          !   ENDIF
+          !ENDDO
+          nLowerVirt = nunoccEOS
        ELSE
           !RejectThresh a little bigger than FOT to ensure that this step would be rejected 
           !and provide a good lower guess
@@ -3770,20 +3767,18 @@ contains
           endif
 
           IF(reduction_converged)THEN
-             IF(bin_reduction_converged)THEN
-                IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'reduction_converged'
-                IF(.NOT.bin_reduction_converged)THEN
-                   !the last binary search step did not succeed so  
-                   !we init everything to the last successful step
-                   call atomic_fragment_free(AtomicFragment)
-                   call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_old, &
-                        & OccAOS_old,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-                   AtomicFragment%LagFOP = LagEnergy
-                   AtomicFragment%EoccFOP = OccEnergy
-                   AtomicFragment%EvirtFOP = VirtEnergy
-                ENDIF
-                EXIT BINARY_REDUCTION_LOOP
+             IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'reduction_converged'
+             IF(.not.bin_reduction_converged)THEN
+                !the last binary search step did not succeed so  
+                !we init everything to the last successful step
+                call atomic_fragment_free(AtomicFragment)
+                call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_old, &
+                     & OccAOS_old,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+                AtomicFragment%LagFOP = LagEnergy
+                AtomicFragment%EoccFOP = OccEnergy
+                AtomicFragment%EvirtFOP = VirtEnergy
              ENDIF
+             EXIT BINARY_REDUCTION_LOOP
           ENDIF
 
           nocc_old = nocc_new
@@ -3898,6 +3893,13 @@ contains
        end do REDUCTION_LOOP
     ENDIF
 
+    ! CHECK THAT REDUCTION CONVERGED:
+    if (.not.reduction_converged) then
+      write(DECinfo%output,*) 'FOP'
+      write(DECinfo%output,*) "WARNING:: Reduction not converged for fragment",MyAtom
+      write(DECinfo%output,*) "          Exit loop after",iter,"iterations"
+      call lsquit('Fragment reduction not converged',DECinfo%output)
+    end if
 
     ! Update t1 amplitudes for full molecule
     ! **************************************
