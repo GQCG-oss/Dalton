@@ -83,15 +83,32 @@
         call qexit('pe_ifc_noneq_sol')
       end function pe_ifc_noneq_sol
 
-      subroutine pe_ifc_noneq(denmats, fckmats, nmats)
+      subroutine pe_ifc_noneq(cmo, dv, fckmo, wrk, nwrk)
         use polarizable_embedding, only: pe_master
+#include "infvar.h"
 #include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(nmats*nnbasx), intent(out) :: fckmats
+#include "inftap.h"
+        integer :: nwrk
+        real*8, dimension(nnorbt) :: fckmats
+        real*8, dimension(*) :: cmo, dv
+        real*8, dimension(nwrk) :: wrk
+        real*8, dimension(:), allocatable :: dcao, dvao, fdtao, fckao
         call qenter('pe_ifc_noneq')
-        call pe_master(runtype='noneq', denmats=denmats,
-     &                 fckmats=fckmats, nmats=nmats)
+        allocate(dcao(n2basx), dvao(n2basx))
+        call fckden((nisht>0), (nasht>0), dcao, dvao, cmo, dv,
+     &              wrk, nwrk)
+        if (nisht == 0) dcao = 0.0d0
+        if (nasht > 0) dcao = dcao + dvao
+        deallocate(dvao)
+        allocate(fdtao(nnbasx))
+        call dgefsp(nbast, dcao, fdtao)
+        deallocate(dcao)
+        allocate(fckao(nnbasx))
+        call pe_master(runtype='noneq', denmats=fdtao, fckmats=fckao,
+     &                 nmats=1)
+        deallocate(fdtao)
+        call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
+        deallocate(fckao)
         call qexit('pe_ifc_noneq')
       end subroutine pe_ifc_noneq
 
@@ -201,7 +218,7 @@
       call qenter('pe_grad')
 
       allocate(fckmo(nnorbx))
-      call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
+      call pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 
       allocate(fckac(nnashx))
       if (nasht > 0) call getac2(fckmo, fckac)
@@ -250,7 +267,7 @@
 
 !------------------------------------------------------------------------------
 
-      subroutine pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
+      subroutine pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
 !
@@ -281,14 +298,13 @@
       real*8, dimension(*) :: cmo, dv
       real*8, dimension(nwrk) :: wrk
 
-      integer :: i
       real*8, dimension(:), allocatable :: dcao, dvao, fdtao, fckao
 
       call qenter('pe_fckmo')
 
       allocate(dcao(n2basx), dvao(n2basx))
       call fckden((nisht>0), (nasht>0), dcao, dvao, cmo, dv, wrk, nwrk)
-      if (nisht==0) dcao = 0.0d0
+      if (nisht == 0) dcao = 0.0d0
       if (nasht > 0) dcao = dcao + dvao
       deallocate(dvao)
 
@@ -437,7 +453,7 @@
       ! Fg = Vmul -R<0|Fe|0>Fe in fyc
       !---------------------------------------
       allocate(fyc(nnorbx), fycac(nnashx))
-      call pe_fckmo(cmo, fyc, energy, dv, wrk, nwrk)
+      call pe_fckmo(cmo, dv, fyc, energy, wrk, nwrk)
       if (nasht > 0) call getac2(fyc, fycac)
       tfyc = solelm(dv, fycac, fyc, tfycac)
 
@@ -557,7 +573,7 @@
       !    Store in fyos
       !---------------------------------------------------
       allocate(fckmo(nnorbx))
-      call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
+      call pe_fckmo(cmo, dv, fckmo, energy, wrk, nwrk)
 
       allocate(fyo(n2orbx))
       call dsptsi(norbt, fckmo, fyo)
@@ -782,7 +798,7 @@
               lopen = .true.
           end if
           rewind(lusifc)
-          call mollab('PETMAT  ', lusifc, lupri)
+          call mollab('PEFMAT  ', lusifc, lupri)
           call readt(lusifc, nnorbx, fpe)
           if (lopen) call gpclose(lusifc, 'KEEP')
           allocate(fupe(n2orbx), fpeac(nnashx))
@@ -932,7 +948,7 @@ C
                 lopen = .true.
             end if
             rewind(lusifc)
-            call mollab('PETMAT  ', lusifc, lupri)
+            call mollab('PEFMAT  ', lusifc, lupri)
             call readt(lusifc, nnorbx, fpemo)
             if (lopen) call gpclose(lusifc, 'KEEP')
             allocate(fupemo(n2orbx))
@@ -1158,7 +1174,7 @@ C
                     lopen = .true.
             end if
             rewind(lusifc)
-            call mollab('PETMAT  ', lusifc, lupri)
+            call mollab('PEFMAT  ', lusifc, lupri)
             call readt(lusifc, nnorbx, fpe)
             if (lopen) call gpclose(lusifc, 'KEEP')
             allocate(fupe(norbt,norbt))

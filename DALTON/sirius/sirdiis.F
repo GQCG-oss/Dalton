@@ -366,7 +366,6 @@ C
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
       INTEGER :: PE_IFC_MEP
-      INTEGER :: PE_IFC_NONEQ_SOL
 C
       CALL QENTER('DIIS_CTL')
       KFREE  = KFRSAV
@@ -1585,23 +1584,6 @@ C
             CALL PE_IFC_ENERGY(DAOSAV(:,1), 1)
         ELSE
             CALL PE_IFC_ENERGY((DAOSAV(:,1)+DAOSAV(:,2)), 1)
-        END IF
-        IF (PE_IFC_NONEQ_SOL() == 1) THEN
-            CALL MEMGET('REAL', KFPEAO, NNBASX, WRK, KFREE, LFREE)
-            IF (NASHT == 0 .OR. HSROHF) THEN
-                CALL PE_IFC_NONEQ(DAOSAV(:,1), WRK(KFPEAO), 1)
-            ELSE
-                CALL PE_IFC_NONEQ((DAOSAV(:,1)+DAOSAV(:,2)),
-     &                            WRK(KFPEAO), 1)
-            END IF
-            CALL MEMGET('REAL', KFPEMO, NNORBX, WRK, KFREE, LFREE)
-            WRK(KFPEMO:KFPEMO+NNORBX-1) = 0.0D0
-            CALL UTHU(WRK(KFPEAO), WRK(KFPEMO), CMO, WRK(KFREE),
-     &                NBAS, NORB)
-            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
-     &                           + WRK(KFPEMO:KFPEMO+NNORBX-1)
-            CALL MEMREL('DIIS_CTL.PE_IFC_NONEQ', WRK, KFRSAV, KFPEAO,
-     &                  KFREE, LFREE)
         END IF
       END IF
       IF (PEMEP) THEN

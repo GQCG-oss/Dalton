@@ -477,7 +477,7 @@ C              (based on code in sirdiis.F) :
 C              set screening threshold for direct SCF gradient
 C              GNORM(3) = grdnrm from prev.iter. (THRGRD in iter 1)
 C Nov07 hjaaj: we expect quadratic convergence and GNORM(3) is from
-C              prev.iter., thus GNORM(3)**2 
+C              prev.iter., thus GNORM(3)**2
 C              NORBT factor: statistical error is ca. sqrt(# elements) ~ NORBT
 C
       IF (DIRFCK .AND. .NOT. USRSCR) THEN
@@ -523,8 +523,10 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
       ELSE IF (PEQM) THEN
+#if defined (BUILD_PELIB)
          CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX), WRK(KDV),
      &                WRK(KGTOT), ESOLT, WRK(KWRKG), LWRKG)
+#endif
       ELSE
          ESOLT = D0
       END IF
@@ -558,13 +560,13 @@ C----------------
 C----------------
 C
       IF (ITABS .GT. 0) THEN
-         WRITE (LUW4,1005)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
+         WRITE (LUW4,1005)  WF_TYPE(1:len_WF_TYPE),EMCSCF,ITABS
          IF (LUPRI.NE.LUW4)
-     &   WRITE (LUPRI,1005) WF_TYPE(1:len_WFTYPE),EMCSCF,ITABS
+     &   WRITE (LUPRI,1005) WF_TYPE(1:len_WF_TYPE),EMCSCF,ITABS
       ELSE
-         WRITE (LUW4,1010)  WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
+         WRITE (LUW4,1010)  WF_TYPE(1:len_WF_TYPE),EMCSCF,ITMAC
          IF (LUPRI.NE.LUW4)
-     &   WRITE (LUPRI,1010) WF_TYPE(1:len_WFTYPE),EMCSCF,ITMAC
+     &   WRITE (LUPRI,1010) WF_TYPE(1:len_WF_TYPE),EMCSCF,ITMAC
       END IF
       IF (DOHFSRDFT.OR.DOMCSRDFT) THEN
          EMYTMP = EMY - ESRDFTY
@@ -734,9 +736,11 @@ C                    need higher int. transf. level for NEO/NR
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
                   ELSE IF (PEQM) THEN
+#if defined (BUILD_PELIB)
                     CALL PE_GRAD(WRK(KCREF), WRK(KCMO), WRK(KCINDX),
      &                           WRK(KDV), WRK(KGTOT), ESOLT,
      &                           WRK(KWRKG), LWRKG)
+#endif
                   END IF
 #endif
                ELSE
@@ -1083,9 +1087,7 @@ C
      &               .TRUE.,DUMSOL, WRK(KWRKG),LWRKG,IPRSOL)
          CALL DSCAL(NNORBT,-1.0D0,WRK(KFCSOL),1)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
-C------------------
 C CBN+JK 03.01.06
-C------------------
       ELSE IF (QM3) THEN
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
@@ -1097,10 +1099,12 @@ C------------------
          KFCSOL = KWRKG
          KWRKG  = KFCSOL + NNORBT
          LWRKG  = LFREE  - (KWRKG-1)
+         ! NB: only works without symmetry
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
-     &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
+     &               WRK(KWRKG),LWRKG,IPRINT)
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
       ELSE IF (PEQM) THEN
+#if defined (BUILD_PELIB)
         KFCSOL = KWRKG
         KENR = KFCSOL + NNORBX
         KDCAO = KENR + 1
@@ -1108,7 +1112,7 @@ C------------------
         KFDTAO = KDVAO + N2BASX
         KWRKG = KFDTAO + NNBASX
         LWRKG = LFREE - (KWRKG - 1)
-        CALL PE_FCKMO(WRK(KCMO), WRK(KFCSOL), WRK(KENR), WRK(KDV),
+        CALL PE_FCKMO(WRK(KCMO), WRK(KDV), WRK(KFCSOL), WRK(KENR),
      &                WRK(KWRKG), LWRKG)
         CALL DAXPY(NNORBX, 1.0D0, WRK(KFC), 1, WRK(KFCSOL), 1)
         CALL FCKDEN((NISHT>0), (NASHT>0), WRK(KDCAO), WRK(KDVAO),
@@ -1118,6 +1122,7 @@ C------------------
         END IF
         CALL DGEFSP(NBAST, WRK(KDCAO), WRK(KFDTAO))
         CALL PE_IFC_ENERGY(WRK(KFDTAO), 1)
+#endif
       ELSE
          KFCSOL = KFC
       END IF
@@ -1138,7 +1143,7 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             IF (PEQM) THEN
-                WRITE(LUW4,'(A)') 
+                WRITE(LUW4,'(A)')
      &   '    (incl. contribution from polarizable embedding potential)'
             END IF
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
@@ -1300,7 +1305,7 @@ C hjaaj TODO:   EKT orbital energies may be defined later.
      &   ' Orbital occupations :',(NISH(I),I=1,NSYM)
 C
       KORBEN = 1
-      LNEED  = KORBEN + NORBT 
+      LNEED  = KORBEN + NORBT
       IF (LNEED .GT. LSCRA) CALL ERRWRK('RHFENR',LNEED,LSCRA)
       CALL DZERO(SCRA,NORBT)
 C
@@ -1342,7 +1347,7 @@ C
             IF (I .GT. NFRHFI) THEN
 C           ... not frozen
                IW = ISW(IORBI+I)
-               IF (IW.LE.NISHT) THEN 
+               IF (IW.LE.NISHT) THEN
 C              ... closed shell (inactive) orbital
                   EHOMOI = MAX(EHOMOI,SCRA(IORBI+I))
                   DO J = NFRHFI+1,I-1
@@ -1898,7 +1903,7 @@ C        "GEOSAVE" restart
          IF ( FNDLAB(TABLE(7),LUIT1) ) THEN
             READ  (LUIT1)      EMCOLD,DEPRED,REJWMI,REJWMA
             WRITE (LUPRI,6000)EMCOLD,DEPRED,EMCOLD+DEPRED,REJWMI,REJWMA
-         ELSE 
+         ELSE
 C
 C     We do not complain about lack of GEOWALK if .OPTIMI, K.Ruud, Nov.29-96
 C     OK! But we must anyway reset ICSTRT and ICI0 to 4 hjaaj/961213.
@@ -2579,16 +2584,16 @@ C
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(11), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(13), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT','PETMAT  '/
+     *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  ',
+     *            'PENONEQ '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
-      real*8, dimension(:), allocatable :: pefckmo
-      real*8 :: peenergy
+      INTEGER :: PE_IFC_NONEQ_SOL
 C
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
@@ -2883,9 +2888,9 @@ C ****** edh: 24/11/2011 ******
 
 C Write qm/mm solvent part of the Fock matrix to interface file
 
-       IF (QMMM) THEN  
+       IF (QMMM) THEN
 
-         IF (IPQMMM .GE. 15) THEN 
+         IF (IPQMMM .GE. 15) THEN
           WRITE(LUPRI,*) 'WRITING PE FOCK MAT. TO SIRIUS INTERFACE FILE'
          ENDIF
 
@@ -2893,7 +2898,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          KDVAO  = KDCAO  + N2BASX
          KDENSF = KDVAO  + N2BASX
          KMAT   = KDENSF + NNBASX
-         KUCMO  = KMAT   + NNBASX  
+         KUCMO  = KMAT   + NNBASX
          KMATMO = KUCMO  + NORBT*NBAST
          KWRK2  = KMATMO + NNORBT
          LWRK2  = LFREE  - KWRK2 + 1
@@ -2910,13 +2915,13 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL FCKDEN((NISHT.GT.0),(NASHT.GT.0),WRK(KDCAO),WRK(KDVAO),
      &              CMO,DV,WRK(KWRK2),LWRK2)
          IF (NASHT .GT. 0) THEN
-           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)  
+           CALL DAXPY(N2BASX,1.0D0,WRK(KDVAO),1,WRK(KDCAO),1)
          ENDIF
 
-         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDENSF))            
+         CALL DGEFSP(NBAST,WRK(KDCAO),WRK(KDENSF))
 
-         CALL QMMM_FCK_AO(WRK(KMAT),WRK(KDENSF),EQMMM,WRK(KWRK2),LWRK2, 
-     &                       IPQMMM)          
+         CALL QMMM_FCK_AO(WRK(KMAT),WRK(KDENSF),EQMMM,WRK(KWRK2),LWRK2,
+     &                       IPQMMM)
          CALL UPKCMO(CMO,WRK(KUCMO))
          CALL UTHU(WRK(KMAT),WRK(KMATMO),WRK(KUCMO),WRK(KWRK2),
      &               NBAST,NORBT)
@@ -2933,12 +2938,36 @@ C Write qm/mm solvent part of the Fock matrix to interface file
       END IF
 
       IF (PEQM) THEN
-         ALLOCATE(PEFCKMO(NNORBX))
-         CALL PE_FCKMO(CMO, PEFCKMO, PEENERGY, DV, WRK(KWRK1), 
-     &                 LFREE - KWRK1 + 1)
-         WRITE (LUSIFC) LAB123, TABLE(11)
-         CALL WRITT(LUSIFC, MMORBT, PEFCKMO)
-         DEALLOCATE(PEFCKMO)
+#if defined (BUILD_PELIB)
+         ! Calculate ground-state PE contribution which is subtracted from
+         ! the full Fock matrix in response for MCSCF wavefunction
+         IF (NCONF .GT. 1) THEN
+            KPEFCK = KWRK1
+            KEPE   = KPEFCK + NNORBX
+            KWRK2  = KEPE + 1
+            LWRK2  = LFREE - KWRK2 + 1
+            IF (LWRK2 .LT. 0) THEN
+               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+            END IF
+            CALL PE_FCKMO(CMO, DV, WRK(KPEFCK), WRK(KEPE),
+     &                    WRK(KWRK2), LWRK2)
+            WRITE (LUSIFC) LAB123, TABLE(12)
+            CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
+         END IF
+         ! Calculate ground-state dynamical FIXSOL contribution
+         ! needed for non-equilibrium solvation
+         IF (PE_IFC_NONEQ_SOL() == 1) THEN
+            KPENEQ = KWRK1
+            KWRK2  = KPENEQ + NNORBX
+            LWRK2  = LFREE - KWRK2 + 1
+            IF (LWRK2 .LT. 0) THEN
+               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
+            END IF
+            CALL PE_IFC_NONEQ(CMO, DV, WRK(KPENEQ), WRK(KWRK2), LWRK2)
+            WRITE (LUSIFC) LAB123, TABLE(13)
+            CALL WRITT(LUSIFC, NNORBX, WRK(KPENEQ))
+         END IF
+#endif
       END IF
 C
 C     Revision 2000/05/24 12:43:25  hjj
@@ -3053,7 +3082,7 @@ C        Interface for primary and secondary basis sets (WK/UniKA/04-11-2002).
             NORB1L = NORB1(1)
             NORB2L = NORB2(1)
             NORBFTL = NORB1L + NORB2L + NOCL
-            NMOFLTL = NORBFTL * NBASL 
+            NMOFLTL = NORBFTL * NBASL
             IEIGL = IOFFMO
             IOCCL = IEIGL + NORBFTL
             ICMOL = IOCCL + NBASL * NOCL

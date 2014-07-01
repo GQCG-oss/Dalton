@@ -4082,6 +4082,7 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      INTEGER :: PE_IFC_NONEQ_SOL
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4353,7 +4354,7 @@ C
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in QMMM calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
          write(lupri,*) '=> Subtracting QMMM Fock matrix (PCM-like)'
-         CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
+         CALL MOLLAB('QMMMTMAT',LUSIFC,LUPRI)
          CALL READT (LUSIFC,NNORBT,WRK)
          DO I = 1,NNORBT
              FC(I) = FC(I) - WRK(I)
@@ -4361,10 +4362,16 @@ C
       END IF
 C
       IF (PEQM .AND. .NOT. TDHF) THEN
-        CALL MOLLAB('PETMAT  ', LUSIFC, LUPRI)
-        CALL READT (LUSIFC, NNORBT, WRK)
-        FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
-       ENDIF
+         CALL MOLLAB('PEFMAT  ', LUSIFC, LUPRI)
+         CALL READT (LUSIFC, NNORBT, WRK)
+         FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
+      ENDIF
+      IF (PEQM .AND. (PE_IFC_NONEQ_SOL() == 1)) THEN
+         PRINT *, 'Removing dynamical fixsol'
+         CALL MOLLAB('PENONEQ ', LUSIFC, LUPRI)
+         CALL READT (LUSIFC, NNORBT, WRK)
+         FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
+      END IF
 C
       IF (SOPPA) THEN
 C
