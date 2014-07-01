@@ -1,0 +1,40 @@
+C
+      LOGICAL DONPSUB, DOMMSUB, NPMQGAU, MMMQGAU, 
+     &        MQITER, CMXPOL, DONPCAP, DOMMCAP, 
+     &        DONPPOL, DOMMPOL, NOVDAMP
+      INTEGER MAXBLK, MXNPATM, MXMMATM, TNPBLK, TMMBLK, 
+     &        IPRTLVL, TNPATM, TMMATM, NPATOM, NPFTYP, 
+     &        MMATOM, MMFTYP, MXNPFF, MXMMFF, TNPFF, TMMFF,
+     &        MMMOL, TPOLATM, MMSKIP	   
+C
+      DOUBLE PRECISION NPCORD, MMCORD, NPCHRG, MMCHRG, NPFPOL,
+     &        NPFCAP, NPFOMG1, NPFGAM1, NPFOMG2, NPFGAM2, NPFFAC,
+     &        MMFM0, MMFPOL, 
+     &        ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP, 
+     &        ENSOLQMM, EESOLQMM, ENSOLMMM, EESOLMMM
+C
+      PARAMETER (MAXBLK = 5)
+      PARAMETER (MXNPATM = 10000)
+      PARAMETER (MXMMATM = 90000)
+      PARAMETER (MXNPFF = 5) 
+      PARAMETER (MXMMFF = 20)
+C
+      COMMON /QMNPIN/ NPCORD(3,MXNPATM), MMCORD(3,MXMMATM),
+     &                NPCHRG(MAXBLK), MMCHRG(MAXBLK),
+     &                ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP,  
+     &                NPFTYP(MXNPATM), MMFTYP(MXMMATM),
+     &                NPATOM(MAXBLK), MMATOM(MAXBLK),
+     &                TNPATM, TMMATM, TPOLATM, 
+     &                NPFPOL(MXNPFF), NPFCAP(MXNPFF), 
+     &                NPFOMG1(MXNPFF), NPFGAM1(MXNPFF),
+     &                NPFOMG2(MXNPFF), NPFGAM2(MXNPFF),  
+     &                NPFFAC(MXNPFF), TNPFF, TMMFF,
+     &                TNPBLK, TMMBLK, IPRTLVL, DONPSUB, 
+     &                DOMMSUB, NPMQGAU, MMMQGAU, MQITER, 
+     &                CMXPOL, DONPCAP, DOMMCAP, DONPPOL, 
+     &                DOMMPOL, NOVDAMP,
+     &                MMFM0(MXMMFF), MMFPOL(MXMMFF), 
+     &                MMMOL(MXMMATM), MMSKIP(MXMMATM),  
+     &                ENSOLQMM, EESOLQMM, 
+     &                ENSOLMMM, EESOLMMM        
+C

@@ -53,6 +53,9 @@ C
 C
 
       use lucita_orbital_spaces
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
 
 #include "implicit.h"
 C
@@ -88,6 +91,10 @@ C
 #include "dftcom.h"
 #include "exeinf.h"
 #include "stex.h"
+! for THRQ2
+#include "cbisor.h"
+
+
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
@@ -289,6 +296,21 @@ C        High-spin Fock matrices for all open-shell calcs with dft or direct
 C
 C
          CALL GETTIM(TSTART,WSTART)
+
+#ifdef ENABLE_EFS
+         if (use_efs) then
+            call mpixbcast (const_generate_basis, 1, 'INTEGER', 0)
+            iprint = 0
+            call mpixbcast (iprint, 1, 'INTEGER', 0)
+            call efs_generate_basis_product(THRQ2) ! gaussian product threshold
+
+            call mpixbcast (const_init_2efock  , 1, 'INTEGER', 0)
+            iprint = 0
+            call mpixbcast (iprint, 1, 'INTEGER', 0)
+            call efs_init_2efock(HFXFAC)
+         end if
+#endif
+
 C
 C        Call FCMO to perform MAXFCK Roothaan Fock iterations
 C
