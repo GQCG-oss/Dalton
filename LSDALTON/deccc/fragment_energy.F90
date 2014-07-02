@@ -722,11 +722,12 @@ contains
                    ! Update total atomic fragment energy contribution 3
                    e3 = e3 + tmp
 
-                   ! Update contribution from orbital i
-                   occ_tmp(i) = occ_tmp(i) + tmp
-                   ! Update contribution from orbital j (only if different from i to avoid double counting)
-                   if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
-
+                   if(.not. DECinfo%onlyoccpart) then
+                      ! Update contribution from orbital i
+                      occ_tmp(i) = occ_tmp(i) + tmp
+                      ! Update contribution from orbital j (only if different from i to avoid double counting)
+                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                   end if
 
                    ! Contribution 4
                    ! --------------
@@ -3552,15 +3553,16 @@ contains
        nDimOcc  = nHigherOcc-nLowerOcc
        nDimVirt = nHigherVirt-nLowerVirt
        
-       IF(O2V2choice)THEN
-          nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-          nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-          nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
-          nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
-          ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
-       ELSE
-          ModVirt = nDimVirt.GE.nDimOcc 
-       ENDIF
+       !IF(O2V2choice)THEN
+       !   nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+       !   nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+       !   nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+       !   nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+       !   ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+       !ELSE
+       !   ModVirt = nDimVirt.GE.nDimOcc 
+       !ENDIF
+       ModVirt = .true.
 
        IF(ModVirt)THEN
           nvirt_old = nLowerVirt
@@ -3576,31 +3578,36 @@ contains
           nDimOcc  = nHigherOcc-nLowerOcc     !diff between converged space and nonconverged space
           nDimVirt = nHigherVirt-nLowerVirt
           !determine if we should do a step in Virtual or Occupied space
-          IF(O2V2choice)THEN
-             !take the step that have biggest potential to reduce the dim O**2*V**2
-             IF(bin_reduction_converged)THEN
-                nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
-                nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
-             ELSE
-                nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-                nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-             ENDIF
-             nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
-             nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
-             ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
-          ELSEIF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
-             !First converge Virtual space - then remove Occupied 
-             ModVirt = .TRUE.
-             IF(bin_virt_conv)ModVirt = .FALSE.
-          ELSEIF(DistanceRemoval.AND.DECinfo%onlyVirtPart)THEN
-             !First converge Occupied space - then remove Vitual 
-             ModVirt = .FALSE.
-             IF(bin_occ_conv)ModVirt = .TRUE.
-          ELSE
-             !take the step that have biggest potential to 
-             !reduce the number of orbitals Occ + Virt
-             ModVirt = nDimVirt.GE.nDimOcc 
-          ENDIF
+          !IF(O2V2choice)THEN
+          !   !take the step that have biggest potential to reduce the dim O**2*V**2
+          !   IF(bin_reduction_converged)THEN
+          !      nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
+          !      nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
+          !   ELSE
+          !      nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+          !      nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+          !   ENDIF
+          !   nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          !   nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          !   ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+          !ELSEIF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
+          !   !First converge Virtual space - then remove Occupied 
+          !   ModVirt = .TRUE.
+          !   IF(bin_virt_conv)ModVirt = .FALSE.
+          !ELSEIF(DistanceRemoval.AND.DECinfo%onlyVirtPart)THEN
+          !   !First converge Occupied space - then remove Vitual 
+          !   ModVirt = .FALSE.
+          !   IF(bin_occ_conv)ModVirt = .TRUE.
+          !ELSE
+          !   !take the step that have biggest potential to 
+          !   !reduce the number of orbitals Occ + Virt
+          !   ModVirt = nDimVirt.GE.nDimOcc 
+          !ENDIF
+
+          ! We now reduce the virtual space to a maximum and then reduce the occupied one:
+          ModVirt = .TRUE.
+          IF(ABS(nDimVirt).LE.1) ModVirt = .false.
+
           IF(TestOcc)THEN
              ModVirt = .FALSE.
              IF(bin_occ_conv)ModVirt = .TRUE.
@@ -3614,22 +3621,11 @@ contains
           ENDIF
           nocc_new = nHigherOcc
           nvirt_new = nHigherVirt
-          IF(bin_reduction_converged)THEN
-             !increase number of functions to be removed 
-             IF(ModVirt)THEN
-                nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
-             ELSE
-                nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
-             ENDIF
+          IF(ModVirt)THEN
+             nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
           ELSE
-             !reduce number of functions to be removed 
-             IF(ModVirt)THEN
-                nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-             ELSE
-                nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-             ENDIF
+             nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
           ENDIF
-       
           IF(DECinfo%PL.GT.1)THEN
              WRITE(DECinfo%output,*)'BIN SEARCH nHigherOcc,nHigherVirt',nHigherOcc,nHigherVirt
              WRITE(DECinfo%output,*)'BIN SEARCH nLowerOcc,nLowerVirt  ',nLowerOcc,nLowerVirt
@@ -3721,21 +3717,21 @@ contains
                    nLowerVirt= nHigherVirt   
                 ENDIF
                 IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'VIRTUAL REDUCTION CONVERGED'
-                IF(bin_occ_conv)reduction_converged = .TRUE.
+                !IF(bin_occ_conv)reduction_converged = .TRUE.
              ENDIF
-             IF((ABS(nocc_old-nocc_new).LE.1).AND.((nHigherOcc-nLowerOcc).LE.1))THEN
-                bin_occ_conv = .TRUE. !somehow the occupied also converged
-                IF(bin_reduction_converged)THEN
-                   nOcc_old  = nOcc_new
-                   nLowerOcc = nocc_new
-                   nHigherOcc= nocc_new
-                ELSE
-                   nocc_old = nHigherOcc
-                   nocc_new = nHigherOcc
-                   nLowerOcc= nHigherOcc
-                ENDIF
-                reduction_converged = .TRUE.
-             ENDIF                
+             !IF((ABS(nocc_old-nocc_new).LE.1).AND.((nHigherOcc-nLowerOcc).LE.1))THEN
+             !   bin_occ_conv = .TRUE. !somehow the occupied also converged
+             !   IF(bin_reduction_converged)THEN
+             !      nOcc_old  = nOcc_new
+             !      nLowerOcc = nocc_new
+             !      nHigherOcc= nocc_new
+             !   ELSE
+             !      nocc_old = nHigherOcc
+             !      nocc_new = nHigherOcc
+             !      nLowerOcc= nHigherOcc
+             !   ENDIF
+             !   reduction_converged = .TRUE.
+             !ENDIF                
           else
              IF(ABS(nocc_old-nocc_new).LE.1)THEN
                 bin_occ_conv = .TRUE.
@@ -3751,19 +3747,19 @@ contains
                 IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'OCCUPIED REDUCTION CONVERGED'
                 IF(bin_virt_conv)reduction_converged = .TRUE.
              ENDIF
-             IF((ABS(nvirt_old-nvirt_new).LE.1).AND.((nHigherVirt-nLowerVirt).LE.1))THEN
-                bin_virt_conv = .TRUE. !somehow the virtual also converged
-                IF(bin_reduction_converged)THEN
-                   nvirt_old  = nvirt_new
-                   nLowerVirt = nvirt_new
-                   nHigherVirt= nvirt_new
-                ELSE
-                   nvirt_old = nHigherVirt
-                   nvirt_new = nHigherVirt
-                   nLowerVirt= nHigherVirt   
-                ENDIF
-                reduction_converged = .TRUE.
-             ENDIF
+             !IF((ABS(nvirt_old-nvirt_new).LE.1).AND.((nHigherVirt-nLowerVirt).LE.1))THEN
+             !   bin_virt_conv = .TRUE. !somehow the virtual also converged
+             !   IF(bin_reduction_converged)THEN
+             !      nvirt_old  = nvirt_new
+             !      nLowerVirt = nvirt_new
+             !      nHigherVirt= nvirt_new
+             !   ELSE
+             !      nvirt_old = nHigherVirt
+             !      nvirt_new = nHigherVirt
+             !      nLowerVirt= nHigherVirt   
+             !   ENDIF
+             !   reduction_converged = .TRUE.
+             !ENDIF
           endif
 
           IF(reduction_converged)THEN
