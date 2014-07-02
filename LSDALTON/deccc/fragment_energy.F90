@@ -3604,9 +3604,9 @@ contains
           !   ModVirt = nDimVirt.GE.nDimOcc 
           !ENDIF
 
-          ! We now reduce the virtual space to a maximum and then reduce the occupied one:
-          ModVirt = .TRUE.
-          IF(ABS(nDimVirt).LE.1) ModVirt = .false.
+          ! Start reducing occ space only when virtual space is fully converged
+          ModVirt = .true.
+          if (bin_virt_conv) ModVirt = .false.
 
           IF(TestOcc)THEN
              ModVirt = .FALSE.
@@ -3745,7 +3745,7 @@ contains
                    nLowerOcc= nHigherOcc
                 ENDIF
                 IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'OCCUPIED REDUCTION CONVERGED'
-                IF(bin_virt_conv)reduction_converged = .TRUE.
+                reduction_converged = .TRUE.
              ENDIF
              !IF((ABS(nvirt_old-nvirt_new).LE.1).AND.((nHigherVirt-nLowerVirt).LE.1))THEN
              !   bin_virt_conv = .TRUE. !somehow the virtual also converged
