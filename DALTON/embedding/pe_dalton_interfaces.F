@@ -23,6 +23,7 @@
       subroutine pe_ifc_input_reader(word)
         use pe_variables, only: peqm
         use polarizable_embedding, only: pe_input_reader
+        implicit none
 #include "priunit.h"
         character(len=7), intent(inout) :: word
         call qenter('pe_ifc_input_reader')
@@ -33,6 +34,7 @@
 
       subroutine pe_ifc_init()
         use polarizable_embedding, only: pe_init
+        implicit none
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -43,6 +45,7 @@
 
       subroutine pe_ifc_finalize()
         use polarizable_embedding, only: pe_finalize
+        implicit none
         call qenter('pe_ifc_finalize')
         call pe_finalize()
         call qexit('pe_ifc_finalize')
@@ -50,6 +53,7 @@
 
       subroutine pe_ifc_fock(denmats, fckmats, nmats, energies)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
@@ -63,6 +67,7 @@
 
       subroutine pe_ifc_energy(denmats, nmats)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
@@ -73,6 +78,7 @@
 
       function pe_ifc_noneq_sol()
         use pe_variables, only: pe_sol, pe_noneq
+        implicit none
         integer :: pe_ifc_noneq_sol
         call qenter('pe_ifc_noneq_sol')
         if (pe_sol .and. pe_noneq) then
@@ -85,11 +91,12 @@
 
       subroutine pe_ifc_noneq(cmo, dv, fckmo, wrk, nwrk)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "infvar.h"
 #include "inforb.h"
 #include "inftap.h"
         integer :: nwrk
-        real*8, dimension(nnorbt) :: fckmats
+        real*8, dimension(nnorbt) :: fckmo
         real*8, dimension(*) :: cmo, dv
         real*8, dimension(nwrk) :: wrk
         real*8, dimension(:), allocatable :: dcao, dvao, fdtao, fckao
@@ -114,6 +121,7 @@
 
       function pe_ifc_mep()
         use pe_variables, only: pe_mep
+        implicit none
         integer :: pe_ifc_mep
         call qenter('pe_ifc_mep')
         if (pe_mep) then
@@ -126,6 +134,7 @@
 
       function pe_ifc_mep_noqm()
         use pe_variables, only: pe_mep, mep_qmcube
+        implicit none
         integer :: pe_ifc_mep_noqm
         call qenter('pe_ifc_mep_noqm')
         if (pe_mep .and. .not. mep_qmcube) then
@@ -139,6 +148,7 @@
       subroutine pe_ifc_mepcalc(denmats, nmats)
         use polarizable_embedding, only: pe_master
         use pe_variables, only: mep_qmcube
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(nmats*nnbasx), intent(in) :: denmats
@@ -151,6 +161,7 @@
 
       subroutine pe_ifc_mepcalc_noqm()
         use polarizable_embedding, only: pe_master
+        implicit none
         call qenter('pe_ifc_mepcalc_noqm')
         call pe_master(runtype='mep')
         call qexit('pe_ifc_mepcalc_noqm')
@@ -158,6 +169,7 @@
 
       subroutine pe_ifc_london(fckmats, nmats)
         use polarizable_embedding, only: pe_master
+        implicit none
 #include "inforb.h"
         integer, intent(in) :: nmats
         real*8, dimension(3*nmats*n2basx), intent(out) :: fckmats
@@ -169,6 +181,7 @@
 #if defined(VAR_MPI)
       subroutine pe_ifc_mpi(runtype)
         use polarizable_embedding, only: pe_mpi
+        implicit none
         integer, intent(in) :: runtype
         call qenter('pe_ifc_mpi')
         call pe_mpi(runtype)

@@ -4367,7 +4367,6 @@ C
          FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
       ENDIF
       IF (PEQM .AND. (PE_IFC_NONEQ_SOL() == 1)) THEN
-         PRINT *, 'Removing dynamical fixsol'
          CALL MOLLAB('PENONEQ ', LUSIFC, LUPRI)
          CALL READT (LUSIFC, NNORBT, WRK)
          FC(1:NNORBT) = FC(1:NNORBT) - WRK(1:NNORBT)
