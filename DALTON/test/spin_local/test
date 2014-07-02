@@ -33,6 +33,7 @@ f.add(string = 'FOSOCC: Foster Boys localization of all occupied orbitals',
 
 f.add(from_string = 'FOSTER-BOYS LOCALIZATION:',
       num_lines = 29,
+      ignore_sign = True,
       rel_tolerance = 1.0e-2)
 
 f.add(from_string = 'Singlet electronic excitation energies',
