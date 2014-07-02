@@ -16,3 +16,5 @@ add_library(
     efs_interface.cpp
     ${EFS_INTER_HEADERS}
     )
+
+add_dependencies(efs_interface efs)
