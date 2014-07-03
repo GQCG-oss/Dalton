@@ -4606,6 +4606,9 @@ contains
           ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
           jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
                &*count(fragbasis(1:nbasis,i))
+          jobs%nocc(k)    = count(occAOS(1:nocc,i))
+          jobs%nunocc(k)  = count(unoccAOS(1:nunocc,i))
+          jobs%nbasis(k)  = count(fragbasis(1:nbasis,i))
 
        end if
 
@@ -4635,6 +4638,9 @@ contains
 
              ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
              jobs%jobsize(k) = count(occpairAOS)*count(unoccpairAOS)*count(basispair)
+             jobs%nocc(k)    = count(occpairAOS)
+             jobs%nunocc(k)  = count(unoccpairAOS)
+             jobs%nbasis(k)  = count(basispair)
 
              if(jobs%jobsize(k)<1) then
                 print *, 'dist', dist

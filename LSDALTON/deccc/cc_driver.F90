@@ -317,10 +317,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call ccsdpt_energy_e5_full(nocc,nvirt,natoms,ncore,t1_final,ccsdpt_t1,&
          & occ_orbitals,unocc_orbitals,e5_mat_tot%elm1,ccsdpt_e5)
 
-      ! print out the fourth- and fifth-order fragment and pair interactin energies
-      call print_e4_full(natoms,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+      ! print out the fourth- and fifth-order fragment and pair interaction energies
+      !call print_atomic_fragment_energies(natoms,e4_mat_tot%elm1,dofrag, &
+      !   & '(T) occupied single energies','AF_ParT_BOTH')
 
-      call print_e5_full(natoms,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+      call print_atomic_fragment_energies(natoms,e4_mat_tot%elm1,orbitals_assigned, &
+         & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+
+      call print_atomic_fragment_energies(natoms,e5_mat_tot%elm1,orbitals_assigned, &
+         & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+
+      call print_pair_fragment_energies(natoms,e4_mat_tot%elm1,orbitals_assigned, &
+         & mymolecule%distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
+
+      call print_pair_fragment_energies(natoms,e5_mat_tot%elm1,orbitals_assigned, &
+         & mymolecule%distancetable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
+
+      !call print_e4_full(natoms,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+
+      !call print_e5_full(natoms,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
 
 
       if(DECinfo%PrintInteractionEnergy)then
