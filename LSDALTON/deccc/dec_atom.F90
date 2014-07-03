@@ -63,7 +63,8 @@ contains
     !> Logical vector telling which unoccupied AOS orbitals are included in fragment
     logical, dimension(nunocc), intent(in) :: Unocc_list
     !> Logical vector telling which occupied AOS orbitals are included in fragment
-    logical, dimension(nocc), intent(in) :: Occ_list
+    !> inout because we always set core orbitals to false for frozen core approx.
+    logical, dimension(nocc), intent(inout) :: Occ_list
     !> Information about DEC occupied orbitals
     type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
@@ -80,6 +81,10 @@ contains
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
+
+
+    ! We always set core orbitals to false for frozen core approx.
+    if (DECinfo%frozencore) Occ_list(1:Mymolecule%ncore) = .false.
 
     all_atoms  => null()
 

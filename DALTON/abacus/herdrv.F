@@ -1796,7 +1796,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
-     &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
+     &            '.FNMC  ', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR1INP')
@@ -1819,6 +1819,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .TRUE.
       CAVUSR = .FALSE.
+      FNMC   = .FALSE.
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1864,6 +1865,7 @@ C
                   CAVUSR = .TRUE.
                GO TO 100
     6          CONTINUE
+                  FNMC = .TRUE.
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -1905,6 +1907,8 @@ C
             IF (CAVUSR) WRITE(LUPRI,'(A,3F15.10)')
      &         ' User supplied cavity center',(CAVORG(I),I=1,3)
          END IF
+         IF (FNMC) WRITE (LUPRI,'(/,2A)') ' Finite nuclear mass',
+     &      ' correction by modifying the kinetic energy integrals.'
       END IF
  199  CALL QEXIT('HR1INP')
       RETURN

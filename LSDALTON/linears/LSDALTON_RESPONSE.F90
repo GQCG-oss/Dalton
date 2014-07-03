@@ -75,6 +75,17 @@ contains
     ENDIF
 
     if(config%response%tasks%doResponse)Then
+       ! Molecular gradient
+       ! 29/10/11 Vladimir Rybkin: need Grad as input argument to 
+       ! ii_get_molecular gradient elsewhere, therefore it's declared
+       ! and allocated/deallocated here as well
+       if(config%response%tasks%doGrad)then
+          call mem_alloc(Grad,3,config%Molecule%NAtoms)
+          call ii_get_molecular_gradient(Grad,lu_pri,F,D, &
+               & ls%setting,dodft,.true.)
+          call mem_dealloc(Grad)
+       endif
+    
        !ajt This call generates Cmo/orbe in rsp_util, which rsp_solver needs
        if(config%response%RSPSOLVERinput%rsp_mo_precond) then
           call util_save_MOinfo(F,S,config%decomp%nocc) 
@@ -137,17 +148,6 @@ contains
           call free_transition_density_matrices(molcfg)
        endif
 
-       ! Molecular gradient
-       ! 29/10/11 Vladimir Rybkin: need Grad as input argument to 
-       ! ii_get_molecular gradient elsewhere, therefore it's declared
-       ! and allocated/deallocated here as well
-       if(config%response%tasks%doGrad)then
-          call mem_alloc(Grad,3,config%Molecule%NAtoms)
-          call ii_get_molecular_gradient(Grad,lu_pri,F,D, &
-               & ls%setting,dodft,.true.)
-          call mem_dealloc(Grad)
-       endif
-    
        ! Polarizability
        if(config%response%tasks%doALPHA)then
           call ALPHAresponse_driver(molcfg,F,D,S,config%response%alphainput)
