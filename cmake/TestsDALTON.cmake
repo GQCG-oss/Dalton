@@ -107,10 +107,10 @@ add_dalton_test(energy_solv         "dalton;energy;medium")
 add_dalton_test(tddft_tda         "dalton;dft;short;parallel")
 
 if (ENABLE_SRDFT) 
-   add_dalton_test(energy_srpbe0_mp2    "dalton;srdft;energy;short;parallel")
+   add_dalton_test(energy_srpbe0_mp2    "dalton;srdft;energy;short;parallel;essential")
    add_dalton_test(energy_srpbe_mp2     "dalton;srdft;energy;short;parallel")
-   add_dalton_test(energy_srpbe_nevpt2  "dalton;srdft;energy;short;parallel")
-   add_dalton_test(energy_srpbe_nolr    "dalton;srdft;energy;short;parallel")
+   add_dalton_test(energy_srpbe_nevpt2  "dalton;srdft;energy;short;parallel;essential")
+   add_dalton_test(energy_srpbe_nolr    "dalton;srdft;energy;short;parallel;essential")
 endif()
 
 add_dalton_test(geoopt_cartsad     "dalton;geo;short;parallel")

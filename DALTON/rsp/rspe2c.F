@@ -3851,7 +3851,7 @@ C
      &                             WRK(KWRK2),LWRK2)
 
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
-     &                             KZVAR,WRK(KCMO2),LUPRI)
+     &                             KZVAR,WRK(KCMO2),IPRRSP,LUPRI)
             IF (IPRRSP .GT. 3) THEN
                WRITE (LUPRI,'(/A,I3)')
      &              ' Eigenvector for state no.',(ISIM-1+INUM)
@@ -3916,8 +3916,8 @@ C
 
             ELSE
 
-             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
-     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)') '@',
+     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
