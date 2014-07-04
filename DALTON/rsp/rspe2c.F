@@ -3882,8 +3882,8 @@ C
 
             ELSE
 
-             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
-     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)') '@',
+     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
@@ -6144,6 +6144,7 @@ C
 C  /* Deck RSPMO2 */
       SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
 C
+C     Author: Casper Steinmann            2014-04-16
 C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR
