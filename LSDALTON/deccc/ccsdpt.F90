@@ -5940,15 +5940,16 @@ contains
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
-    integer :: myload
+    integer :: myload,first_el_i_block
     logical :: master
-    integer(kind=long) :: o2v2,o3v
+    integer(kind=long) :: o2v2,o3v,v3
     real(realk), pointer :: dummy1(:),dummy2(:)
-    integer(kind=ls_mpik) :: mode
+    integer(kind=ls_mpik) :: mode,dest,nel2t
     call time_start_phase(PHASE_WORK)
 
     o2v2          = nocc*nocc*nvirt*nvirt
     o3v           = nocc*nocc*nocc*nvirt
+    v3            = nvirt**3
 
     ! Lots of timings
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -6225,9 +6226,34 @@ contains
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],0.0E0_realk,tmp2)
 
              call time_start_phase(PHASE_COMM)
+#ifdef VAR_HAVE_MPI3
              call arr_lock_win(CBAI,i,'s',assert=mode)
-             call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
+#endif
+             !call array_accumulate_tile(CBAI,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
+
+             dest = get_residence_of_tile(i,CBAI) 
+
+             do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
+#ifndef VAR_HAVE_MPI3
+                call arr_lock_win(CBAI,i,'s',assert=mode)
+#endif
+                nel2t=MAX_SIZE_ONE_SIDED
+                if(((v3-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
+                   &(mod(v3-first_el_i_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                   &nel2t=int(mod(v3,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+
+                call lsmpi_acc(tmp2(first_el_i_block:first_el_i_block+nel2t-1),nel2t,first_el_i_block,dest,CBAI%wi(i))
+
+#ifdef VAR_HAVE_MPI3
+                call lsmpi_win_flush(CBAI%wi(i),rank=dest,local=.true.)
+#else
+                call arr_unlock_win(CBAI,i)
+#endif
+             enddo
+
+#ifdef VAR_HAVE_MPI3
              call arr_unlock_win(CBAI,i)
+#endif
              call time_start_phase(PHASE_WORK)
 
           end do

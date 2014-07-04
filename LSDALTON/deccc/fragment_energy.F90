@@ -138,7 +138,7 @@ contains
     !> Unoccupied orbitals for full molecule
     type(decorbital), dimension(MyMolecule%nunocc), intent(in) :: UnoccOrbitals
     !> Which atoms are in the occupied fragment space
-    logical, dimension(MyMolecule%nocc),intent(in) :: OccAOS
+    logical, dimension(MyMolecule%nocc),intent(inout) :: OccAOS
     !> Which atoms are in the unoccupied fragment space
     logical, dimension(MyMolecule%nunocc),intent(in) :: UnoccAOS
     !> Atomi Fragment to be determined (NOT pair fragment)
@@ -722,11 +722,12 @@ contains
                    ! Update total atomic fragment energy contribution 3
                    e3 = e3 + tmp
 
-                   ! Update contribution from orbital i
-                   occ_tmp(i) = occ_tmp(i) + tmp
-                   ! Update contribution from orbital j (only if different from i to avoid double counting)
-                   if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
-
+                   if(.not. DECinfo%onlyoccpart) then
+                      ! Update contribution from orbital i
+                      occ_tmp(i) = occ_tmp(i) + tmp
+                      ! Update contribution from orbital j (only if different from i to avoid double counting)
+                      if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
+                   end if
 
                    ! Contribution 4
                    ! --------------
@@ -2268,7 +2269,6 @@ contains
      end if
 
 
-
      ! ======================================================================
      !                    Initialization of various things...
      ! ======================================================================
@@ -2278,7 +2278,8 @@ contains
      OccEnergyDiff=0.0_realk
      VirtEnergyDiff=0.0_realk
      expansion_converged=.false.
-     max_iter_red=15   ! allow 15 reduction steps (should be more than enough)
+     max_iter_red=15   ! set to 100 for binary search where more steps might be needed
+     if (BinarySearch) max_iter_red=100
      FOT = DECinfo%FOT
      DistMyAtom= mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
      ! Sort atoms according to distance from central atom
@@ -2326,7 +2327,6 @@ contains
         MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
      end if
 
-
      ! ======================================================================
      !                            Initial fragment
      ! ======================================================================
@@ -2353,6 +2353,7 @@ contains
            init_Virtradius = 3.0_realk/bohr_to_angstrom
         ENDIF
      ENDIF
+
      IF(FockMatrixOrdering)THEN
         call mem_alloc(OccAOS,nocc)
         call mem_alloc(VirtAOS,nunocc)
@@ -2756,7 +2757,7 @@ contains
     logical,intent(inout) :: OccAOS(nocc), VirtAOS(nvirt),ExpandFragmentConverged
     !
     integer :: i,ii,StepsizeLoop6,nOrb1,nOrb2,Xocc,Yvirt,jj
-    real(realk) :: nov    
+    real(realk) :: nov, maxvirtdist    
     integer :: AverageOrbitalPerAtoms
     AverageOrbitalPerAtoms = CEILING((nocc+nvirt*1.0E0_realk)/natoms)
     StepsizeLoop6 = StepsizeLoop*AverageOrbitalPerAtoms 
@@ -2770,11 +2771,13 @@ contains
        enddo
        !increase Occ with Radius determined by the biggest Virtual radius
        jj = MIN(nOrb2+StepsizeLoop6,nvirt)
+       maxvirtdist = SortedDistanceTableOrbAtomVirt(jj)
        nOrb1 = COUNT(OccAOS)
-       do i=nOrb1+1,MIN(nOrb1+StepsizeLoop6,nocc)
-          IF(SortedDistanceTableOrbAtomVirt(jj).LT.SortedDistanceTableOrbAtomOcc(i))EXIT
-          ii = OrbOccDistTrackMyAtom(i)
-          OccAOS(ii)=.true.
+       do i=1,nocc
+          if(SortedDistanceTableOrbAtomOcc(i) .le. maxvirtdist) then
+             ii = OrbOccDistTrackMyAtom(i)
+             OccAOS(ii)=.true.
+          end if
        enddo
     ELSEIF(DECinfo%onlyVirtPart)THEN
        !increase with StepsizeLoop6 Occupied orbitals
@@ -2907,21 +2910,14 @@ contains
      IF(OrbDistanceSpec)THEN
         OldOccAOS = OccAOS
         OldVirtAOS = VirtAOS
-        IF(COUNT(OccAOS).EQ.nocc.OR.COUNT(VirtAOS).EQ.nunocc)THEN
-           WRITE(DECinfo%output,*)'The initial guess include full molecule'
-           !The 0. iteration contain full molecule
-           !and is is used in reduction and cannot be used when 
-           OldOccAOS = .FALSE.; OldVirtAOS = .FALSE.
-           OldOccAOS(1) = .TRUE.;OldVirtAOS(1) = .TRUE.
-        ENDIF
      ENDIF
      if(DECinfo%frozencore)THEN
       IF(FockMatrixOrdering.OR.OrbDistanceSpec)THEN
-         !include core orbitals in OccAOS
+         !exclude core orbitals in OccAOS
          !they are removed in atomic_fragment_init_orbital_specific
          !anyway
          do iter=1,MyMolecule%ncore
-            OccAOS(iter) = .TRUE.
+            OccAOS(iter) = .FALSE.
          enddo
       ENDIF
      ENDIF
@@ -3508,26 +3504,28 @@ contains
           !which was included in the second last fragment 
           nLowerOcc = 0 
           IF(.NOT.BruteForce)THEN
-             DO I=1,nocc
-                II = TrackSortedOccContribs(I)
-                IF(ExpOldOccAOS(II))THEN
-                   nLowerOcc = nLowerOcc + 1
-                ELSE
-                   EXIT
-                ENDIF
-             ENDDO
+             nLowerOcc = noccEOS
+             !DO I=1,nocc
+             !   II = TrackSortedOccContribs(I)
+             !   IF(ExpOldOccAOS(II))THEN
+             !      nLowerOcc = nLowerOcc + 1
+             !   ELSE
+             !      EXIT
+             !   ENDIF
+             !ENDDO
           ELSE
              nLowerOcc = 1 
           ENDIF
-          nLowerVirt = 0
-          DO I=1,nunocc
-             II = TrackSortedVirtContribs(I)
-             IF(ExpOldVirtAOS(II))THEN
-                nLowerVirt = nLowerVirt + 1
-             ELSE
-                EXIT
-             ENDIF
-          ENDDO
+          !nLowerVirt = 0
+          !DO I=1,nunocc
+          !   II = TrackSortedVirtContribs(I)
+          !   IF(ExpOldVirtAOS(II))THEN
+          !      nLowerVirt = nLowerVirt + 1
+          !   ELSE
+          !      EXIT
+          !   ENDIF
+          !ENDDO
+          nLowerVirt = nunoccEOS
        ELSE
           !RejectThresh a little bigger than FOT to ensure that this step would be rejected 
           !and provide a good lower guess
@@ -3555,15 +3553,16 @@ contains
        nDimOcc  = nHigherOcc-nLowerOcc
        nDimVirt = nHigherVirt-nLowerVirt
        
-       IF(O2V2choice)THEN
-          nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-          nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-          nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
-          nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
-          ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
-       ELSE
-          ModVirt = nDimVirt.GE.nDimOcc 
-       ENDIF
+       !IF(O2V2choice)THEN
+       !   nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+       !   nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+       !   nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+       !   nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+       !   ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+       !ELSE
+       !   ModVirt = nDimVirt.GE.nDimOcc 
+       !ENDIF
+       ModVirt = .true.
 
        IF(ModVirt)THEN
           nvirt_old = nLowerVirt
@@ -3579,31 +3578,36 @@ contains
           nDimOcc  = nHigherOcc-nLowerOcc     !diff between converged space and nonconverged space
           nDimVirt = nHigherVirt-nLowerVirt
           !determine if we should do a step in Virtual or Occupied space
-          IF(O2V2choice)THEN
-             !take the step that have biggest potential to reduce the dim O**2*V**2
-             IF(bin_reduction_converged)THEN
-                nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
-                nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
-             ELSE
-                nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-                nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-             ENDIF
-             nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
-             nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
-             ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
-          ELSEIF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
-             !First converge Virtual space - then remove Occupied 
-             ModVirt = .TRUE.
-             IF(bin_virt_conv)ModVirt = .FALSE.
-          ELSEIF(DistanceRemoval.AND.DECinfo%onlyVirtPart)THEN
-             !First converge Occupied space - then remove Vitual 
-             ModVirt = .FALSE.
-             IF(bin_occ_conv)ModVirt = .TRUE.
-          ELSE
-             !take the step that have biggest potential to 
-             !reduce the number of orbitals Occ + Virt
-             ModVirt = nDimVirt.GE.nDimOcc 
-          ENDIF
+          !IF(O2V2choice)THEN
+          !   !take the step that have biggest potential to reduce the dim O**2*V**2
+          !   IF(bin_reduction_converged)THEN
+          !      nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
+          !      nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
+          !   ELSE
+          !      nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
+          !      nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
+          !   ENDIF
+          !   nO2V2_ModOcc = (nocc_new*nocc_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          !   nO2V2_ModVirt = (nvirt_new*nvirt_new*i8)*(nHigherVirt*nHigherVirt*i8)
+          !   ModVirt = nO2V2_ModOcc.GT.nO2V2_ModVirt
+          !ELSEIF(DistanceRemoval.AND.DECinfo%onlyOccPart)THEN
+          !   !First converge Virtual space - then remove Occupied 
+          !   ModVirt = .TRUE.
+          !   IF(bin_virt_conv)ModVirt = .FALSE.
+          !ELSEIF(DistanceRemoval.AND.DECinfo%onlyVirtPart)THEN
+          !   !First converge Occupied space - then remove Vitual 
+          !   ModVirt = .FALSE.
+          !   IF(bin_occ_conv)ModVirt = .TRUE.
+          !ELSE
+          !   !take the step that have biggest potential to 
+          !   !reduce the number of orbitals Occ + Virt
+          !   ModVirt = nDimVirt.GE.nDimOcc 
+          !ENDIF
+
+          ! Start reducing occ space only when virtual space is fully converged
+          ModVirt = .true.
+          if (bin_virt_conv) ModVirt = .false.
+
           IF(TestOcc)THEN
              ModVirt = .FALSE.
              IF(bin_occ_conv)ModVirt = .TRUE.
@@ -3617,22 +3621,11 @@ contains
           ENDIF
           nocc_new = nHigherOcc
           nvirt_new = nHigherVirt
-          IF(bin_reduction_converged)THEN
-             !increase number of functions to be removed 
-             IF(ModVirt)THEN
-                nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
-             ELSE
-                nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
-             ENDIF
+          IF(ModVirt)THEN
+             nvirt_new = nLowerVirt + (nHigherVirt-nLowerVirt)/2
           ELSE
-             !reduce number of functions to be removed 
-             IF(ModVirt)THEN
-                nvirt_new = nHigherVirt - (nHigherVirt-nLowerVirt)/2
-             ELSE
-                nocc_new  = nHigherOcc -  (nHigherOcc-nLowerOcc)/2
-             ENDIF
+             nocc_new  = nLowerOcc  + (nHigherOcc-nLowerOcc)/2
           ENDIF
-       
           IF(DECinfo%PL.GT.1)THEN
              WRITE(DECinfo%output,*)'BIN SEARCH nHigherOcc,nHigherVirt',nHigherOcc,nHigherVirt
              WRITE(DECinfo%output,*)'BIN SEARCH nLowerOcc,nLowerVirt  ',nLowerOcc,nLowerVirt
@@ -3724,21 +3717,21 @@ contains
                    nLowerVirt= nHigherVirt   
                 ENDIF
                 IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'VIRTUAL REDUCTION CONVERGED'
-                IF(bin_occ_conv)reduction_converged = .TRUE.
+                !IF(bin_occ_conv)reduction_converged = .TRUE.
              ENDIF
-             IF((ABS(nocc_old-nocc_new).LE.1).AND.((nHigherOcc-nLowerOcc).LE.1))THEN
-                bin_occ_conv = .TRUE. !somehow the occupied also converged
-                IF(bin_reduction_converged)THEN
-                   nOcc_old  = nOcc_new
-                   nLowerOcc = nocc_new
-                   nHigherOcc= nocc_new
-                ELSE
-                   nocc_old = nHigherOcc
-                   nocc_new = nHigherOcc
-                   nLowerOcc= nHigherOcc
-                ENDIF
-                reduction_converged = .TRUE.
-             ENDIF                
+             !IF((ABS(nocc_old-nocc_new).LE.1).AND.((nHigherOcc-nLowerOcc).LE.1))THEN
+             !   bin_occ_conv = .TRUE. !somehow the occupied also converged
+             !   IF(bin_reduction_converged)THEN
+             !      nOcc_old  = nOcc_new
+             !      nLowerOcc = nocc_new
+             !      nHigherOcc= nocc_new
+             !   ELSE
+             !      nocc_old = nHigherOcc
+             !      nocc_new = nHigherOcc
+             !      nLowerOcc= nHigherOcc
+             !   ENDIF
+             !   reduction_converged = .TRUE.
+             !ENDIF                
           else
              IF(ABS(nocc_old-nocc_new).LE.1)THEN
                 bin_occ_conv = .TRUE.
@@ -3752,38 +3745,36 @@ contains
                    nLowerOcc= nHigherOcc
                 ENDIF
                 IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'OCCUPIED REDUCTION CONVERGED'
-                IF(bin_virt_conv)reduction_converged = .TRUE.
-             ENDIF
-             IF((ABS(nvirt_old-nvirt_new).LE.1).AND.((nHigherVirt-nLowerVirt).LE.1))THEN
-                bin_virt_conv = .TRUE. !somehow the virtual also converged
-                IF(bin_reduction_converged)THEN
-                   nvirt_old  = nvirt_new
-                   nLowerVirt = nvirt_new
-                   nHigherVirt= nvirt_new
-                ELSE
-                   nvirt_old = nHigherVirt
-                   nvirt_new = nHigherVirt
-                   nLowerVirt= nHigherVirt   
-                ENDIF
                 reduction_converged = .TRUE.
              ENDIF
+             !IF((ABS(nvirt_old-nvirt_new).LE.1).AND.((nHigherVirt-nLowerVirt).LE.1))THEN
+             !   bin_virt_conv = .TRUE. !somehow the virtual also converged
+             !   IF(bin_reduction_converged)THEN
+             !      nvirt_old  = nvirt_new
+             !      nLowerVirt = nvirt_new
+             !      nHigherVirt= nvirt_new
+             !   ELSE
+             !      nvirt_old = nHigherVirt
+             !      nvirt_new = nHigherVirt
+             !      nLowerVirt= nHigherVirt   
+             !   ENDIF
+             !   reduction_converged = .TRUE.
+             !ENDIF
           endif
 
           IF(reduction_converged)THEN
-             IF(bin_reduction_converged)THEN
-                IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'reduction_converged'
-                IF(.NOT.bin_reduction_converged)THEN
-                   !the last binary search step did not succeed so  
-                   !we init everything to the last successful step
-                   call atomic_fragment_free(AtomicFragment)
-                   call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_old, &
-                        & OccAOS_old,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-                   AtomicFragment%LagFOP = LagEnergy
-                   AtomicFragment%EoccFOP = OccEnergy
-                   AtomicFragment%EvirtFOP = VirtEnergy
-                ENDIF
-                EXIT BINARY_REDUCTION_LOOP
+             IF(DECinfo%PL.GT.1)WRITE(DECinfo%output,*)'reduction_converged'
+             IF(.not.bin_reduction_converged)THEN
+                !the last binary search step did not succeed so  
+                !we init everything to the last successful step
+                call atomic_fragment_free(AtomicFragment)
+                call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_old, &
+                     & OccAOS_old,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
+                AtomicFragment%LagFOP = LagEnergy
+                AtomicFragment%EoccFOP = OccEnergy
+                AtomicFragment%EvirtFOP = VirtEnergy
              ENDIF
+             EXIT BINARY_REDUCTION_LOOP
           ENDIF
 
           nocc_old = nocc_new
@@ -3863,6 +3854,9 @@ contains
                   & AtomicFragment,.true.,.false.)
              
              call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+
+             ! we set the reduction to be converged to avoid quiting:
+             reduction_converged = .true.
              exit REDUCTION_LOOP
           end if
           
@@ -3898,6 +3892,13 @@ contains
        end do REDUCTION_LOOP
     ENDIF
 
+    ! CHECK THAT REDUCTION CONVERGED:
+    if (.not.reduction_converged) then
+      write(DECinfo%output,*) 'FOP'
+      write(DECinfo%output,*) "WARNING:: Reduction not converged for fragment",MyAtom
+      write(DECinfo%output,*) "          Exit loop after",iter,"iterations"
+      call lsquit('Fragment reduction not converged',DECinfo%output)
+    end if
 
     ! Update t1 amplitudes for full molecule
     ! **************************************
