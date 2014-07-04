@@ -2278,8 +2278,8 @@ contains
      OccEnergyDiff=0.0_realk
      VirtEnergyDiff=0.0_realk
      expansion_converged=.false.
-     max_iter_red=100   ! Was set to 15 but changed to 100 for binary search 
-                        ! wich might take more steps
+     max_iter_red=15   ! set to 100 for binary search where more steps might be needed
+     if (BinarySearch) max_iter_red=100
      FOT = DECinfo%FOT
      DistMyAtom= mymolecule%DistanceTable(:,MyAtom)   ! distance vector for central atom
      ! Sort atoms according to distance from central atom
@@ -3854,6 +3854,9 @@ contains
                   & AtomicFragment,.true.,.false.)
              
              call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+
+             ! we set the reduction to be converged to avoid quiting:
+             reduction_converged = .true.
              exit REDUCTION_LOOP
           end if
           
