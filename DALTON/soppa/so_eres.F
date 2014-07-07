@@ -67,11 +67,7 @@ C
 #include "iprtyp.h"
 #include "infpar.h"
 #include "parsoppa.h"
-
-
-#include "debugonce.h"
       integer, save :: numprocs
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       forceupdate = .true.
 #endif
 C
@@ -79,7 +75,6 @@ C------------------
 C     Add to trace.
 C------------------
 C
-      write(*,*) 'new call to so_eres'
       CALL QENTER('SO_ERES')
 C
 C
@@ -322,7 +317,8 @@ C     Note, there is a strong coherence between the order of
 C     these bcasts and the initialization of the slaves in 
 C     the beginning of par_so_eres. 
 C***********************************************************
-         thisinewtr = inewtr
+      thisinewtr = inewtr
+      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       parallelsoppa: if (numprocs.gt.1) then
          ! make every slave join the parallel calculation 
          call mpixbcast(87, 1, 'INTEGE', 0)
@@ -950,7 +946,8 @@ C     Variables for updating the slaves' /common/ blocks.
       logical :: resetvectors
 
 C     Variables for the spinning barrier
-      logical :: release, flag, exitspinningbarrier
+      logical       :: release, flag, exitspinningbarrier
+      logical, save :: printspininfo = .true.
 
 C     MPI related and load balancing variables
       integer :: numprocs, sharedwork, rest, firstindex, lastindex
@@ -959,14 +956,16 @@ C     MPI related and load balancing variables
 
 C     Pre-sorting load balancing variables
       logical :: presorting, assignnow, workreceived
+      logical, save :: printsortinginfo=.true.
       integer :: TargetID, getnumjobs, getindices
-      integer, allocatable, dimension(:,:) :: presortarray
-      integer, allocatable, dimension(:,:) :: finalsorted
-      integer, allocatable, dimension(:)   :: AssignedIndices
 
+      integer, allocatable, dimension(:,:) :: presortarray !only used by master
+      integer, allocatable, dimension(:,:) :: finalsorted !only used by master
+      integer, allocatable, dimension(:)   :: AssignedIndices
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
+
 C     The real*8 datatype is due to the defined implicit type in implicit.h
 C     If this datatype changes, every instance of real8 in this subroutine should
 C     be changed to the correct type.
@@ -975,17 +974,13 @@ C     be changed to the correct type.
       real*8, allocatable, dimension(:) :: temp
       real*8, allocatable, dimension(:) :: tempdens
 
-      logical, save :: printspininfo = .true., assemble_densai=.true.
-      logical       :: aijreduce !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
+      logical, save :: assemble_densai =.true.
+      logical       :: aijreduce        !This array is only calculated under special circumstances. This variable regulates when it needs to be transferred back to so_eres
 
-      integer :: isymtr, ldensai, nit
       integer, save :: inewtr
-      integer :: allocstatus, deallocstatus
+      integer :: allocstatus, deallocstatus, isymtr, ldensai, nit
+
       CHARACTER MODEL*5
-
-
-
-
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
 
 
@@ -993,12 +988,9 @@ C     be changed to the correct type.
 C**************************************************
 C     Initialization variables.
 C**************************************************
-      !write(*,*) myid, "entered par_so_eres"
-      presorting         = .true.
       densai_was_reduced = .false.
 
 
-      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
 
       ! This bcast determines how many variables and common blocks
       ! need to be updated before the parallel calculation can start.
@@ -1220,10 +1212,6 @@ C**************************************************
 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
 
-C todo
-C ! these have been inserted twice
-      !CALL DZERO(WORK(KAIJ),LAIJ)
-      !CALL DZERO(WORK(KAAB),LAAB)
 
       if (resetvectors) then
          call dzero( work(kfock),   lfock)
@@ -1238,7 +1226,7 @@ C ! these have been inserted twice
       endif
 
 
-      if ( .not.allocated(densai) ) then
+      if (assemble_densai) then
          allocate(densai(ldensai), stat=allocstatus)
          if (allocstatus.ne.0)  then
             call quit('Allocation error in par_so_eres densai')
@@ -1251,6 +1239,19 @@ C**************************************************
 C     Start load balancing
 C**************************************************    
 
+      presorting = .true.
+      if (printsortinginfo) then
+         if (presorting) then
+            write(lupri,*) 'PAR_SO_ERES uses the presorting',
+     &                  ' load balancing scheme'
+         else
+            write(lupri,*) 'PAR_SO_ERES uses the non-sorted',
+     &                  ' load balancing scheme'
+         endif
+      printsortinginfo = .false.
+      endif
+
+      call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       NormalStaticLoadBalance: if (.not.presorting) then
 C **********************************************************
 C     UNSORTED STATIC LOAD BALANCING
@@ -1315,7 +1316,7 @@ C **********************************************************
 210   continue 
 
       if (myid.lt.rest) then      
-         if ((iprint.gt.3).and.(printspininfo) ) then
+         if ((iprint.gt.1).and.(printspininfo) ) then
             printspininfo = .false.
             write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
      &                    "The number of employed processes might be ",
@@ -1747,24 +1748,6 @@ C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
             aijreduce = .false. 
       endif
 
-      !if (myid.eq.0) then
-      !write(*,*) 'FROM PARALLEL' 
-         !write(*,*) 'Paral: This is the Aab array'
-         !do iasdf=0, laab-1
-            !write(*,*) work(kaab+iasdf)       
-         !enddo
-
-
-         !write(*,*) 'Paral: This is the Aij array'
-         !do iasdf=0, laij-1
-            !write(*,*) work(kaij+iasdf)       
-         !enddo
-      !write(*,*) 'STOP PARALLEL' 
-      !endif
-
-
-
-
 C TODO replace this by saving the density matrix in the master's work
 C      array and then transfer the data back in so_eres with a vectorized
 C      operation.
@@ -1835,10 +1818,11 @@ C**************************************************
         call quit('t2mp was not deallocated in PAR_SO_ERES')
       endif
 
-C TODO this is only ever used once. Fix the allocation status of this...
-      deallocate(densai, stat=deallocstatus)
-      if(.not.(deallocstatus.eq.0) ) then
-        call quit('densai was not deallocated in PAR_SO_ERES')
+      if (allocated(densai) ) then
+         deallocate(densai, stat=deallocstatus)
+         if(.not.(deallocstatus.eq.0) ) then
+           call quit('densai was not deallocated in PAR_SO_ERES')
+         endif
       endif
 
 

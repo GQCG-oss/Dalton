@@ -60,10 +60,10 @@ C
 #ifdef VAR_MPI
 #include "iprtyp.h"
 #include "infpar.h"
-#include "parrpa.h"
+#include "parsoppa.h"
       integer :: numprocs
       call mpi_comm_size(mpi_comm_world, numprocs, ierr) 
-      ISYMPAR = ISYMTR
+      copyisymtr = isymtr
       forceupdate = .true. !Implicitly saved. Do NOT move the initialization to the main block of code.
 #endif
 
@@ -195,7 +195,6 @@ C        Calculate RPA-density matrices in AO basis.
 C---------------------------------------------------
 C
 C        SO_AODENS makes use of DGEMM. Insert a call to utilize the slaves for this calculation
-C TODO ... BEYER
          DTIME     = SECOND()
          CALL SO_AODENS(WORK(KDENS),LDENS,WORK(KCMO),LCMO,
      &                  WORK(KTR1E),LTR1E,WORK(KTR1D),LTR1D,ISYMTR,
@@ -256,8 +255,8 @@ C
             ENDIF
 C
 #ifdef VAR_MPI
-C qwer
-C asdfasdf
+      ! Start a parallel calculation of the fock matrix in case more than 1 process is available.
+      ! The result is kept in the master process' work array at work(kfock)
       if (numprocs.gt.1) then
           call mpixbcast(85, 1, 'INTEGE', 0)
           call mpixbcast(0, 1, 'INTEGE', 0)
@@ -265,7 +264,6 @@ C asdfasdf
           goto 888
       endif
 #endif
-C ... F.Beyer
             DO 220 ILLL = 1,NTOT
 C
 C------------------------------------------------
@@ -410,8 +408,8 @@ C
 C
   210    CONTINUE
 
-
   888    continue !Continuation point in case the Fock matrix was calculated in parallel.
+
 C
 C====================================================
 C        End of loop over distributions of integrals.
@@ -520,8 +518,6 @@ C
 
 
 
-
-
 #ifdef VAR_MPI
 C  /* Deck PAR_RP_ERES */
       SUBROUTINE PAR_RP_ERES(WORK, LWORK, MYID)
@@ -542,6 +538,13 @@ C are assigned.
 C
 C A large number of common blocks need to be transferred from the master to 
 C the slaves by using the subroutine getbytespan and mpi_bcast. 
+C
+C                       DATA DICTIONARY:
+C WORK intent(inout) temporary storage for several calculations. The master
+C                    returns from par_rp_eres with the correct result stored
+C                    in the work vector and processes the result in rp_eres.
+C LWORK intent(in)   Length of work vector.
+C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 
       use mpi 
       use dyn_iadrpk
@@ -576,7 +579,7 @@ C the slaves by using the subroutine getbytespan and mpi_bcast.
 #include "distcl.h"
 #include "cbieri.h" 
 #include "soppinf.h"
-#include "parrpa.h"
+#include "parsoppa.h"
 #include "aobtch.h"
 #include "odclss.h"
 #include "ccom.h" 
@@ -587,16 +590,14 @@ C the slaves by using the subroutine getbytespan and mpi_bcast.
 #include "odbtch.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "r12int.h"
+#include "r12int.h" 
 #include "hertop.h"
 
 C Common blocks from  PICKAO
 #include "cbirea.h"
-c#include "shells.h" ! this conflicts with ccorb.h
 #include "erisel.h"
 #include "symsq.h"
 #include "gnrinf.h"
-!#include "ccisao.h" !Already covered by infind.h !Also conflicts with infind.h due to initialization of ISAO(MXCOORB) twice...
 #include "ccpack.h"
 #include "ccinftap.h"
 
@@ -617,27 +618,20 @@ C     MPI related and load balancing variables
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
 C     Pre-sorting load balancing variables
-      logical :: presorting
-      integer :: TargetID
-      integer, allocatable, dimension(:,:) :: presortarray
-      integer, allocatable, dimension(:,:) :: copypresort
-      integer, allocatable, dimension(:,:) :: finalsorted
-      integer, allocatable, dimension(:)   :: AssignedIndices
+      logical                              :: presorting      ! If set to true, this will select the efficient load-balancing scheme
+      integer                              :: TargetID
+      integer, allocatable, dimension(:,:) :: presortarray    ! array for roughly sorted ILLL indices
+      integer, allocatable, dimension(:,:) :: finalsorted     ! array for final sorted ILLL indices for all processes
+      integer, allocatable, dimension(:)   :: AssignedIndices ! array with ILLL indices for one process only
+      real*8,  allocatable, dimension(:)   :: tempfock        ! array temporarely used for mpi_reduce call. It has no other use.
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
-      DIMENSION FOCKD(LFOCK) 
       logical :: debugging = .false., printspininfo = .true.
       real    :: starttime, stoptime
 
-
-
-
-C**********************************************************************
-
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       call mpi_bcast(forceupdate,1,mpi_logical,0,mpi_comm_world, ierr)
-
       presorting = .true.
 
 C**********************************************************
@@ -649,7 +643,6 @@ C     The <name> of the common block can be read from the <name>LAST
 C     variable in the getbytespan call.
 C**********************************************************
       commonblocktransfers: if (forceupdate) then
-      call cpu_time(starttime)
 
       call getbytespan(lbuf, eribufLAST, bytesize)
       call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
@@ -699,7 +692,7 @@ C**********************************************************
       call getbytespan(soorwc, rwinfLAST, bytesize)
       call mpi_bcast(soorwc, bytesize, mpi_byte, 0, mpi_comm_world,ierr)
 
-      call getbytespan(ntot, parrpaLAST, bytesize)
+      call getbytespan(ntot, parsoppaLAST, bytesize)
       call mpi_bcast(ntot, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
       call getbytespan(expbt, aobtchLAST, bytesize)
@@ -786,24 +779,17 @@ C**********************************************************
 
       call mpi_bcast(work, kendsv, mpi_real8, 0, mpi_comm_world, ierr)
 
-      call cpu_time(stoptime)
-
-      if (myid.eq.0) then
-         if (iprint.gt.4) then 
-            write(lupri,*) "Time to copy common blocks in par_rp_eres",
-     &      (stoptime-startime)
-         endif
-      endif
-
       forceupdate = .false. ! This avoids redundant updating of common blocks. RP_ERES sets this to true when necessary.
+
       endif commonblocktransfers
+
 
 C     This data needs to be updated every time PAR_RP_ERES is called 
       call mpi_bcast(work(kdens),ldens,mpi_real8,0,mpi_comm_world, ierr)
       call mpi_bcast(isympar, 1, mpi_integer, 0, mpi_comm_world, ierr)
+      isymtr = copyisymtr 
       call dzero(work(kfock), lfock)
-      isymtr = isympar 
-
+      
 
 C**************************************************    
 C     Start load balancing
@@ -906,23 +892,27 @@ C **********************************************************
              goto 800 ! Skip to the assembly of the Fock matrix 
          endif
       endif spinningbarrier
+C************************************************** 
+C     End of spinning barrier
+C************************************************** 
 
 
 666   continue  !redirection point for the non-presorted load balancing schemes
-
       endif NormalStaticLoadBalance
 
 C**************************************************
 C     PRE-SORTED LOAD BALANCING
 C 
-C
-C
+C     The Presorting scheme calculates the amount of 
+C     work associated with every ILLL index before 
+C     any actual computation takes place.
+C     The it distributes the indexes in such a way
+C     that every process calculates the same total 
+C     number of distributions, even if that means
+C     calculating  a different number of ILLL indexes.
 C**************************************************
       PresortedStaticBalance: if (presorting) then
       if (myid.ge.ntot) goto 210 !send excess processes to the spinning barrier to release CPU time for MKL
-
-
-
       mastersorting: if (myid.eq.0) then
 
 C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
@@ -930,8 +920,6 @@ C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          if(.not.(allocstatus.eq.0) ) then
             call quit('Allocation error in PAR_RP_ERES')
          endif
-
-
          call presortaodist(ntot, work(kindxb), presortarray)
          call getallocsize(ntot, presortarray, maxnumjobs) 
          call mpi_bcast(maxnumjobs, 1, mpi_integer, 0, 
@@ -942,41 +930,25 @@ C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
             call quit('Allocation error in PAR_RP_ERES')
          endif
 
-
          allocate(finalsorted(maxnumjobs, numprocs)
      &                  ,stat=allocstatus )
          if(.not.(allocstatus.eq.0) ) then
             call quit('Allocation error in PAR_RP_ERES')
          endif
 
-
 C        CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
          call partitionAOindices(ntot, maxnumjobs, numprocs, 
      &                           presortarray, finalsorted)
 
-
-
-C        TRANSFER TWO-ELECTRON INDICES TO SLAVES AND KEEP OWN WORK IN A VECTOR
+C        TRANSFER ILLL INDICES TO SLAVES AND KEEP OWN WORK IN A VECTOR
          numrecipients = min(numprocs, ntot)
          DO i=2, numrecipients
             TargetID = i-1 
-            !The indices are easier to transfer by sending whole columns since they're stored contiguously.
             call mpi_send(finalsorted(1, i), maxnumjobs, mpi_integer, 
      &                    TargetID, TargetID, mpi_comm_world, ierr) 
          ENDDO
          AssignedIndices = finalsorted(:,1) 
 
-
-C        DEALLOCATE BEFORE CALCULATING FOCK MATRIX 
-         deallocate(presortarray, stat=deallocstatus)
-         if(.not.(deallocstatus.eq.0) ) then
-            call quit('Presortarray was not deallocated in PAR_RP_ERES')
-         endif
-
-         deallocate(finalsorted, stat=deallocstatus)
-         if(.not.(deallocstatus.eq.0) ) then
-            call quit('Finalsorted was not deallocated in PAR_RP_ERES')
-         endif
      
       endif mastersorting
 
@@ -997,8 +969,11 @@ C**************************************************
      &                 myid, mpi_comm_world, mpistatus, ierr)
       ENDIF 
 
+C ************************************************** 
+C     Pre-sorted parallel calculation  is
+C     controlled from this loop
+C ************************************************** 
 
-C     ALL PROCESSES PERFORM THE INTEGRALS WITH THE PRE-ORDERED AO INDICES
       DO i=1, maxnumjobs 
          if ( .not.(AssignedIndices(i).eq.0) ) then
             firstindex = AssignedIndices(i)
@@ -1010,13 +985,13 @@ C     ALL PROCESSES PERFORM THE INTEGRALS WITH THE PRE-ORDERED AO INDICES
          endif
       ENDDO
 
-      deallocate( AssignedIndices, stat=deallocstatus)
-      if(.not.(allocstatus.eq.0) ) then
-         call quit('Deallocation error in PAR_RP_ERES')
-      endif
 
       goto 888 !exit the dynamic load leveler now that all integrals are done
       endif PresortedStaticBalance
+C************************************************** 
+C     End of pre-sorted balancing and calculation.
+C************************************************** 
+
 
 
 
@@ -1033,12 +1008,10 @@ C *******************************************
 
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
-
                   IF (HERDIR) THEN 
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
                   ELSE
-
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -1047,9 +1020,7 @@ C *******************************************
      &                           WORK(KRDPP1),WORK(KRDPP2),
      &                           WORK(KCCFB1),WORK(KINDXB), 
      &                           WORK(KEND2),LWORK2,IPRINT)
-
                   ENDIF
-
                   LRECNR = ((NBUFX(0) - 1)/IRAT) + 1 
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR
@@ -1058,7 +1029,6 @@ C *******************************************
                   CALL SO_MEMMAX ('RP_ERES.2B',LWORK2)
                   IF (LWORK2 .LT. 0) 
      &               CALL STOPIT('RP_ERES.2B',' ',KEND2,LWORK)
-
 
 C------------------------------------------------------------------------
 C              Loop over number of distributions in disk.
@@ -1107,16 +1077,24 @@ C----------------------------------------------
      &                               WORK(KFOCK),WORK(KEND4),
      &                               LWORK4,IDEL,ISYMD,ISYMTR)
                   ELSE
-
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
      &                              'Dummy',ISYMTR)
+
                   END IF
   310          enddo idel2loop
+
+
   300       enddo doilll
       if (presorting) goto 998
 888   continue ! target goto when all pre-sorted processes finishes their integrals
+
+C**************************************************
+C    End of parallel calculation
+C**************************************************
+
+
 
 C     The master sends a release signal to all 
 C     processes participating in the spinning barrier.
@@ -1129,18 +1107,49 @@ C     processes participating in the spinning barrier.
             enddo
          endif
       endif
+800   continue  ! redirection point for slaves from the spinning barrier 
 
-C     label 800 is the redirection point for slaves from the spinning barrier 
-800   continue 
 
 C     Assemble the Fock Matrix in the master's work array
+
+      allocate(tempfock(lfock))
+      tempfock = 0.00000
+
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kfock), lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       else
-         call mpi_reduce(work(kfock), fockd, lfock, MPI_REAL8,
+         call mpi_reduce(work(kfock), tempfock, lfock, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
       endif
+
+      deallocate(tempfock)
+
+
+      if (allocated(AssignedIndices)) then
+      deallocate( AssignedIndices, stat=deallocstatus)
+      if(.not.(allocstatus.eq.0) ) then
+         call quit('Deallocation error in PAR_RP_ERES')
+      endif
+      endif
+
+
+
+      if (allocated(presortarray)) then
+      deallocate(presortarray, stat=deallocstatus)
+      if(.not.(deallocstatus.eq.0) ) then
+         call quit('Presortarray was not deallocated in PAR_RP_ERES')
+      endif
+      endif
+
+
+      if (allocated(finalsorted)) then
+      deallocate(finalsorted, stat=deallocstatus)
+      if(.not.(deallocstatus.eq.0) ) then
+         call quit('Finalsorted was not deallocated in PAR_RP_ERES')
+      endif
+      endif
+         
 
       RETURN
       END SUBROUTINE
