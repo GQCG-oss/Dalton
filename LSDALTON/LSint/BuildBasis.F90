@@ -1466,13 +1466,13 @@ LOGICAL      :: Segmented,Prim(nPrim,nOrbital),PerfomMerge
 LOGICAL      :: merged(nOrbital),MergedPrim(nPrim,nOrbital)
 LOGICAL      :: SEGMENTCOLID(nOrbital,nOrbital)
 real(realk),pointer  :: CCN(:,:),CC(:,:) 
+real(realk)  :: newExponents,newCC,newCCN
 
 IF (IPRINT .GT. 200)THEN
-WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
-CALL LSMAT_DENSE_PRINT(ContractionmatrixNorm,1,ContractionmatrixNorm%nrow,1,&
-                                &ContractionmatrixNorm%ncol,lupri)
+   WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
+   CALL LSMAT_DENSE_PRINT(ContractionmatrixNorm,1,ContractionmatrixNorm%nrow,1,&
+        &ContractionmatrixNorm%ncol,lupri)
 ENDIF
-
 
 nrow = Contractionmatrix%nrow
 ncol = Contractionmatrix%ncol
@@ -1487,11 +1487,24 @@ IF (IPRINT .GT. 200)THEN
    WRITE(LUPRI,*)'CC'
    call output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
 ENDIF
-!reorder primitives at this level (copy back to Contractionmatrix)
-
-
-
-
+!reorder primitives at this level using basic bubblesort
+DO K=1,nrow
+   DO J=1,nrow-1
+      IF(Exponents%elms(J+1).LE. Exponents%elms(J))THEN
+         newExponents=Exponents%elms(J)
+         Exponents%elms(J)=Exponents%elms(J+1)
+         Exponents%elms(J+1)=newExponents
+         do I=1,nOrbital
+            newCC=CC(J,I)
+            CC(J,I)=CC(J+1,I)
+            CC(J+1,I)=newCC
+            newCCN=CCN(J,I)
+            CCN(J,I)=CCN(J+1,I)
+            CCN(J+1,I)=newCCN
+         enddo
+      ENDIF
+   ENDDO
+ENDDO
 
 !Determine the number of orbitals each primitive function contributes to
 do i=1,nPrim
@@ -1524,7 +1537,6 @@ IF(Segmented)THEN
        IF(ABS(CC(i,j)).GT.1.0E-12_realk) mPrim(j) = mPrim(j) + 1
     enddo
  enddo
- WRITE(LUPRI,*)'mPrim',mPrim
 
  DO J=1,Nsegments
    !For each segment copy info into structure
@@ -1613,8 +1625,7 @@ ELSE
       kk=0
       do i=1,nPrim
          IF(MergedPrim(i,J))THEN
-            kk=kk+1
-            write(lupri,*)'Exponents(',kk,')=Exponents%elms(I)',Exponents%elms(I)
+            kk=kk+1           
             BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Exponents%elms(I)
          ENDIF
       enddo
