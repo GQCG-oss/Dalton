@@ -1490,7 +1490,7 @@ ENDIF
 !reorder primitives at this level using basic bubblesort
 DO K=1,nrow
    DO J=1,nrow-1
-      IF(Exponents%elms(J+1).LE. Exponents%elms(J))THEN
+      IF(Exponents%elms(J+1).GT. Exponents%elms(J))THEN
          newExponents=Exponents%elms(J)
          Exponents%elms(J)=Exponents%elms(J+1)
          Exponents%elms(J+1)=newExponents
