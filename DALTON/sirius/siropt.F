@@ -2939,14 +2939,18 @@ C Write qm/mm solvent part of the Fock matrix to interface file
 
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
+         IF ((NCONF > 1) .AND. (PE_IFC_NONEQ_SOL() == 1)) THEN
+            CALL QUIT('ERROR: MCSCF and non-equilibrium response '//
+     &                'not implemented')
+         END IF
          ! Calculate ground-state PE contribution which is subtracted from
          ! the full Fock matrix in response for MCSCF wavefunction
-         IF (NCONF .GT. 1) THEN
+         IF (NCONF > 1) THEN
             KPEFCK = KWRK1
             KEPE   = KPEFCK + NNORBX
             KWRK2  = KEPE + 1
             LWRK2  = LFREE - KWRK2 + 1
-            IF (LWRK2 .LT. 0) THEN
+            IF (LWRK2 < 0) THEN
                CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
             END IF
             CALL PE_FCKMO(CMO, DV, WRK(KPEFCK), WRK(KEPE),
@@ -2960,7 +2964,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
             KPENEQ = KWRK1
             KWRK2  = KPENEQ + N2ORBX
             LWRK2  = LFREE - KWRK2 + 1
-            IF (LWRK2 .LT. 0) THEN
+            IF (LWRK2 < 0) THEN
                CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
             END IF
             CALL PE_IFC_NONEQ(CMO, DV, WRK(KPENEQ), WRK(KWRK2), LWRK2)
