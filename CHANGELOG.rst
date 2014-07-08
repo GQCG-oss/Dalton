@@ -15,7 +15,7 @@ DALTON
 LSDALTON
 --------
 
-- write me ...
+- Basis set bugfix for certain basis set like pcS-1. 
 
 
 ===========================
