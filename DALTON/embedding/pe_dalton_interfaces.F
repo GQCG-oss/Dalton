@@ -96,10 +96,11 @@
 #include "inforb.h"
 #include "inftap.h"
         integer :: nwrk
-        real*8, dimension(nnorbt) :: fckmo
+        real*8, dimension(n2orbx) :: fckmo
         real*8, dimension(*) :: cmo, dv
         real*8, dimension(nwrk) :: wrk
-        real*8, dimension(:), allocatable :: dcao, dvao, fdtao, fckao
+        real*8, dimension(:), allocatable :: dcao, dvao, daosp
+        real*8, dimension(:), allocatable :: fckaosp, fckmosp
         call qenter('pe_ifc_noneq')
         allocate(dcao(n2basx), dvao(n2basx))
         call fckden((nisht>0), (nasht>0), dcao, dvao, cmo, dv,
@@ -107,15 +108,18 @@
         if (nisht == 0) dcao = 0.0d0
         if (nasht > 0) dcao = dcao + dvao
         deallocate(dvao)
-        allocate(fdtao(nnbasx))
-        call dgefsp(nbast, dcao, fdtao)
+        allocate(daosp(nnbasx))
+        call dgefsp(nbast, dcao, daosp)
         deallocate(dcao)
-        allocate(fckao(nnbasx))
-        call pe_master(runtype='noneq', denmats=fdtao, fckmats=fckao,
+        allocate(fckaosp(nnbasx))
+        call pe_master(runtype='noneq', denmats=daosp, fckmats=fckaosp,
      &                 nmats=1)
-        deallocate(fdtao)
-        call uthu(fckao, fckmo, cmo, wrk, nbast, norbt)
-        deallocate(fckao)
+        deallocate(daosp)
+        allocate(fckmosp(nnorbx))
+        call uthu(fckaosp, fckmosp, cmo, wrk, nbast, norbt)
+        deallocate(fckaosp)
+        call dsptge(norbt, fckmosp, fckmo)
+        deallocate(fckmosp)
         call qexit('pe_ifc_noneq')
       end subroutine pe_ifc_noneq
 

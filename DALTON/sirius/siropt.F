@@ -2958,14 +2958,14 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          ! needed for non-equilibrium solvation
          IF (PE_IFC_NONEQ_SOL() == 1) THEN
             KPENEQ = KWRK1
-            KWRK2  = KPENEQ + NNORBX
+            KWRK2  = KPENEQ + N2ORBX
             LWRK2  = LFREE - KWRK2 + 1
             IF (LWRK2 .LT. 0) THEN
                CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
             END IF
             CALL PE_IFC_NONEQ(CMO, DV, WRK(KPENEQ), WRK(KWRK2), LWRK2)
             WRITE (LUSIFC) LAB123, TABLE(13)
-            CALL WRITT(LUSIFC, NNORBX, WRK(KPENEQ))
+            CALL WRITT(LUSIFC, N2ORBX, WRK(KPENEQ))
          END IF
 #endif
       END IF
