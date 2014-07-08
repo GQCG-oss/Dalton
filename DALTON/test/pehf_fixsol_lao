@@ -133,7 +133,7 @@ cat > pehf_fixsol_lao.dal <<'%EOF%'
 .PEQM
 *PEQM
 .SOLVAT
-.FIXPVA
+.FIXSOL
 .DIIS
 **WAVE FUNCTIONS
 .HF

@@ -54,7 +54,7 @@ cat > pehf_fixsol_direct_2.dal <<'%EOF%'
 .RUN WAVEFUNCTION
 .PEQM
 *PEQM
-.FIXPVA
+.FIXSOL
 .DIRECT
 .SOLVAT
 **WAVE FUNCTIONS

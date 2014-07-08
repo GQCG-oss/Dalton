@@ -134,7 +134,7 @@ cat > pehf_fixsol_iter_1.dal <<'%EOF%'
 *PEQM
 .VERBOSE
 .SOLVAT
-.FIXPVA
+.FIXSOL
 .DIIS
 **WAVE FUNCTIONS
 .HF

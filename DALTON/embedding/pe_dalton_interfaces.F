@@ -2233,7 +2233,7 @@ C     as to what works best for singly bonded C,N,O
         fro = 0.7d0
         ret = 0.2d0
         nrwcav = 2
-        areats = 0.4d0
+        areats = 0.3d0
         oldcen = .false.
         iprpcm = 0
         dr = 1.0d-4
