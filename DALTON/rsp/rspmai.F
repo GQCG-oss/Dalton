@@ -4082,7 +4082,6 @@ C
       DIMENSION CMO(*),UDV(*),PV(*),XINDX(LCINDX),
      *          FOCK(*),FC(*),FV(*),FCAC(*),H2AC(*),WRK(*)
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      INTEGER :: PE_IFC_NONEQ_SOL
 C
 C Used from common blocks:
 C SCBRHF : IOPRHF
@@ -4366,11 +4365,6 @@ C
          CALL READT (LUSIFC, NNORBX, WRK)
          FC(1:NNORBX) = FC(1:NNORBX) - WRK(1:NNORBX)
       ENDIF
-      IF (PEQM .AND. (PE_IFC_NONEQ_SOL() == 1)) THEN
-         CALL MOLLAB('PENONEQ ', LUSIFC, LUPRI)
-         CALL READT (LUSIFC, N2ORBX, WRK)
-         FOCK(1:N2ORBX) = FOCK(1:N2ORBX) - WRK(1:N2ORBX)
-      END IF
 C
       IF (SOPPA) THEN
 C

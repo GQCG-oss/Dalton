@@ -76,53 +76,6 @@
         call qexit('pe_ifc_energy')
       end subroutine pe_ifc_energy
 
-      function pe_ifc_noneq_sol()
-        use pe_variables, only: pe_sol, pe_noneq
-        implicit none
-        integer :: pe_ifc_noneq_sol
-        call qenter('pe_ifc_noneq_sol')
-        if (pe_sol .and. pe_noneq) then
-            pe_ifc_noneq_sol = 1
-        else
-            pe_ifc_noneq_sol = 0
-        end if
-        call qexit('pe_ifc_noneq_sol')
-      end function pe_ifc_noneq_sol
-
-      subroutine pe_ifc_noneq(cmo, dv, fckmo, wrk, nwrk)
-        use polarizable_embedding, only: pe_master
-        implicit none
-#include "infvar.h"
-#include "inforb.h"
-#include "inftap.h"
-        integer :: nwrk
-        real*8, dimension(n2orbx) :: fckmo
-        real*8, dimension(*) :: cmo, dv
-        real*8, dimension(nwrk) :: wrk
-        real*8, dimension(:), allocatable :: dcao, dvao, daosp
-        real*8, dimension(:), allocatable :: fckaosp, fckmosp
-        call qenter('pe_ifc_noneq')
-        allocate(dcao(n2basx), dvao(n2basx))
-        call fckden((nisht>0), (nasht>0), dcao, dvao, cmo, dv,
-     &              wrk, nwrk)
-        if (nisht == 0) dcao = 0.0d0
-        if (nasht > 0) dcao = dcao + dvao
-        deallocate(dvao)
-        allocate(daosp(nnbasx))
-        call dgefsp(nbast, dcao, daosp)
-        deallocate(dcao)
-        allocate(fckaosp(nnbasx))
-        call pe_master(runtype='noneq', denmats=daosp, fckmats=fckaosp,
-     &                 nmats=1)
-        deallocate(daosp)
-        allocate(fckmosp(nnorbx))
-        call uthu(fckaosp, fckmosp, cmo, wrk, nbast, norbt)
-        deallocate(fckaosp)
-        call dsptge(norbt, fckmosp, fckmo)
-        deallocate(fckmosp)
-        call qexit('pe_ifc_noneq')
-      end subroutine pe_ifc_noneq
-
       function pe_ifc_mep()
         use pe_variables, only: pe_mep
         implicit none

@@ -2584,16 +2584,14 @@ C
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
-      CHARACTER*8 LAB123(3), TABLE(13), LABEOD, LABCC, LABABA
+      CHARACTER*8 LAB123(3), TABLE(12), LABEOD, LABCC, LABABA
       CHARACTER*8 LABAUX, LABUNI
       DATA LAB123/'********','********','********'/
       DATA TABLE /'CIDIAG1 ','CIDIAG2 ','ORBDIAG ','SIRFLAGS',
      *            'EXTFIELD','SOLVINFO','SOLVTMAT','CREFDETS',
-     *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  ',
-     *            'PENONEQ '/
+     *            'PCMINFO ','PCMJXMAT','QMMMTMAT','PEFMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
-      INTEGER :: PE_IFC_NONEQ_SOL
 C
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
@@ -2939,10 +2937,6 @@ C Write qm/mm solvent part of the Fock matrix to interface file
 
       IF (PEQM) THEN
 #if defined (BUILD_PELIB)
-         IF ((NCONF > 1) .AND. (PE_IFC_NONEQ_SOL() == 1)) THEN
-            CALL QUIT('ERROR: MCSCF and non-equilibrium response '//
-     &                'not implemented')
-         END IF
          ! Calculate ground-state PE contribution which is subtracted from
          ! the full Fock matrix in response for MCSCF wavefunction
          IF (NCONF > 1) THEN
@@ -2957,19 +2951,6 @@ C Write qm/mm solvent part of the Fock matrix to interface file
      &                    WRK(KWRK2), LWRK2)
             WRITE (LUSIFC) LAB123, TABLE(12)
             CALL WRITT(LUSIFC, NNORBX, WRK(KPEFCK))
-         END IF
-         ! Calculate ground-state dynamical FIXSOL contribution
-         ! needed for non-equilibrium solvation
-         IF (PE_IFC_NONEQ_SOL() == 1) THEN
-            KPENEQ = KWRK1
-            KWRK2  = KPENEQ + N2ORBX
-            LWRK2  = LFREE - KWRK2 + 1
-            IF (LWRK2 < 0) THEN
-               CALL ERRWRK('WR_SIRIFC-PEQM', -KWRK2, LFREE)
-            END IF
-            CALL PE_IFC_NONEQ(CMO, DV, WRK(KPENEQ), WRK(KWRK2), LWRK2)
-            WRITE (LUSIFC) LAB123, TABLE(13)
-            CALL WRITT(LUSIFC, N2ORBX, WRK(KPENEQ))
          END IF
 #endif
       END IF
