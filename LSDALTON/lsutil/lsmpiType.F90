@@ -200,6 +200,7 @@ module lsmpi_type
 #else
   integer,parameter :: int_to_short=4 !no int64
 #endif
+  integer,parameter :: MaxIncreaseSize = 50000000 !0.4 GB
   !nonMPI stuff
   logical :: AddToBuffer
   integer(kind=long) :: iLog,iDP,iInt4,iInt8,iSho,iCha
@@ -3365,7 +3366,11 @@ contains
          tmpbuffer(i) = lsmpibufferInt4(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt4)
-      nInteger4 = nInteger4 + MAX(incremInteger,add,nInteger4)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nInteger4 = nInteger4 + add
+      ELSE
+         nInteger4 = nInteger4 + MIN(MAX(incremInteger,add,nInteger4),MaxIncreaseSize)
+      ENDIF
       call mem_alloc(lsmpibufferInt4,nInteger4)
       DO i=1,n
          lsmpibufferInt4(i) = tmpbuffer(i)
@@ -3386,7 +3391,11 @@ contains
          tmpbuffer(i) = lsmpibufferInt8(i)
       ENDDO
       call mem_dealloc(lsmpibufferInt8)
-      nInteger8 = nInteger8 + MAX(incremInteger,add,nInteger8)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nInteger8 = nInteger8 + add
+      ELSE
+         nInteger8 = nInteger8 + MIN(MAX(incremInteger,add,nInteger8),MaxIncreaseSize)
+      ENDIF
       call mem_alloc(lsmpibufferInt8,nInteger8)
       DO i=1,n
          lsmpibufferInt8(i) = tmpbuffer(i)
@@ -3408,7 +3417,11 @@ contains
          tmpbuffer(i) = lsmpibufferSho(i)
       ENDDO
       call mem_dealloc(lsmpibufferSho)
-      nShort = nShort + MAX(incremShort,add*int_to_short,nShort)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nShort = nShort + add 
+      ELSE
+         nShort = nShort + MIN(MAX(incremInteger,add,nShort),MaxIncreaseSize)
+      ENDIF
       call mem_alloc(lsmpibufferSho,nShort)
       DO i=1,n
          lsmpibufferSho(i) = tmpbuffer(i)
@@ -3430,7 +3443,11 @@ contains
          tmpbuffer(i) = lsmpibufferLog(i)
       ENDDO
       call mem_dealloc(lsmpibufferLog)
-      nLog = nLog + MAX(incremLog,add,nLog)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nLog = nLog + add 
+      ELSE
+         nLog = nLog + MIN(MAX(incremLog,add,nLog),MaxIncreaseSize)
+      ENDIF
       call mem_alloc(lsmpibufferLog,nLog)
       DO i=1,n
          lsmpibufferLog(i) = tmpbuffer(i)
@@ -3452,7 +3469,11 @@ contains
          tmpbuffer(i) = lsmpibufferCha(i)
       ENDDO
       call mem_dealloc(lsmpibufferCha)
-      nCha = nCha + MAX(incremCha,add,nCha)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nCha = nCha + add 
+      ELSE
+         nCha = nCha + MIN(MAX(incremCha,add,nCha),MaxIncreaseSize)
+      ENDIF
       call mem_alloc(lsmpibufferCha,nCha)
       DO i=1,n
          lsmpibufferCha(i) = tmpbuffer(i)
@@ -3474,7 +3495,11 @@ contains
          tmpbuffer(i) = lsmpibufferDP(i)
       ENDDO
       call mem_dealloc(lsmpibufferDP)
-      nDP = n + MAX(incremDP,add,n)
+      IF(add.GT.MaxIncreaseSize)THEN
+         nDP = n + add
+      ELSE
+         nDP = n + MIN(MAX(incremDP,add,n),MaxIncreaseSize)      
+      ENDIF
       call mem_alloc(lsmpibufferDP,nDP)
       DO i=1,n
          lsmpibufferDP(i) = tmpbuffer(i)

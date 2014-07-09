@@ -16,7 +16,7 @@ LSDALTON
 --------
 
 - Basis set bugfix for certain basis set like pcS-1. 
-
+- Reduced the memory requirements for MPI buffer handling.  
 
 ===========================
 DO NOT EDIT BELOW THIS LINE
