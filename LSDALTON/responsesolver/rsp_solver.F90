@@ -468,8 +468,6 @@ contains
     logical :: fileexists,OnMaster,UseExcitationVecs
     UseExcitationVecs = molcfg%solver%UseExcitationVecs
     ndim = S%nrow
-    call mat_init(grad_x,ndim,ndim)
-    call mat_init(Pgrad,ndim,ndim)
     IF(UseExcitationVecs)THEN
        INQUIRE(file='rsp_eigenvecs',EXIST=fileexists)
        if (fileexists) then
@@ -496,6 +494,7 @@ contains
     endif
     ibx2 = 0
     Nb_new = 0
+    call mat_init(grad_x,ndim,ndim)
     do ibx = 1, ngd
         call mat_assign(grad_x,gd(ibx))  !STINNE - we do now not divide in symm and antisymm parts
 
@@ -509,10 +508,12 @@ contains
           !Precondition if the matrix exists  by
           !solving A Pgrad = grad
           !print *, 'precond 1st trial'
+          call mat_init(Pgrad,ndim,ndim)
           call rsp_AB_precond(molcfg,grad_x,S,EIVAL(ibx),Pgrad) !FIXME: needs to be changed to work for more than one frequency at a time
           ibx2 = ibx2+1
           call mat_init(Bvec_tmp(ibx2),ndim,ndim)
           call mat_assign(Bvec_tmp(ibx2),Pgrad)
+          call mat_free(Pgrad)
           !Sonia_mag
           !WRITE(molcfg%LUPRI,*) '-----------------------------------------------'
           !WRITE(molcfg%LUPRI,*) 'The first trial of LINEQ after preconditioning'
@@ -529,6 +530,8 @@ contains
           Nb_new = Nb_new + 1
        endif
     enddo
+    call mat_free(grad_x)
+
 !    WRITE(molcfg%lupri,*)'Nb_new',Nb_new
     Nb_prev = 0
 
@@ -573,8 +576,6 @@ contains
     endif
 
 !FREE USED MATRICES!!
-    call mat_free(grad_x)
-    call mat_free(Pgrad)
     do i = 1,ibx2
        call mat_free(Bvec_tmp(i))
     enddo
@@ -1284,7 +1285,7 @@ contains
     type(Matrix), intent(inout) :: rho_i
     !> If true, construct rho part of linear transformation
     logical, intent(in) :: make_rhos
-    type(matrix) :: prod(1),prod1,prod2(1),GbDs(1)
+    type(matrix) :: prod(1),prod2(1),GbDs(1)
     integer :: ndim
     logical :: cov
 !Test: declarations used in testing
@@ -1295,7 +1296,6 @@ contains
     molcfg%solver%rsp_nlintra = molcfg%solver%rsp_nlintra + 1 !Count no of linear transformations
     ndim = S%nrow
     call mat_init(prod(1),ndim,ndim)
-    call mat_init(prod1,ndim,ndim)
     call mat_init(prod2(1),ndim,ndim)
     call mat_init(GbDs(1),ndim,ndim)
 
@@ -1332,7 +1332,6 @@ contains
 
     !FREE matrices!
     call mat_free(prod(1))
-    call mat_free(prod1)
     call mat_free(prod2(1))
     call mat_free(GbDs(1))
   end subroutine make_lintran_vecs
@@ -3359,20 +3358,20 @@ implicit none
 
 call mat_init(E2XR,ndim,ndim)
 call mat_init(S2XR,ndim,ndim)
-call mat_init(res_real,ndim,ndim)
     
 call make_lintran_vecs(molcfg,D,S,F,XR,E2XR,S2XR,.true.)
 call mat_daxpy(-omega,S2XR,E2XR)
+call mat_free(S2XR)
 
+call mat_init(res_real,ndim,ndim)
 call mat_add(1E0_realk,gd,-1E0_realk,E2XR,res_real)
 
 a=mat_sqnorm2(res_real)
 
 write(molcfg%lupri,*) 'sqnorm res_real:', a
 
-call mat_free(E2XR)
-call mat_free(S2XR)
 call mat_free(res_real)
+call mat_free(E2XR)
 
 end subroutine real_solver_check
 
@@ -3395,8 +3394,6 @@ subroutine rsp_AB_precond(molcfg,Gn,S,omega,Gnt)
     type(Matrix)                :: GnU, GntU
 
      ndim = Gn%nrow
-     call mat_init(GnU,ndim,ndim)
-     call mat_init(GntU,ndim,ndim)
 
      if (molcfg%solver%rsp_MO_precond) then 
         if(.not. molcfg%solver%rsp_quiet)write (molcfg%lupri,*) 'MO preconditioning'
@@ -3405,16 +3402,18 @@ subroutine rsp_AB_precond(molcfg,Gn,S,omega,Gnt)
         !do nothing
         call mat_assign(Gnt,Gn)
      else 
+        call mat_init(GnU,ndim,ndim)
+        call mat_init(GntU,ndim,ndim)
         !Preconditioning of Gn by solving A Gnt = Gn
         !Convert residual to orthonormal basis:
         call res_to_oao_basis(molcfg%decomp,Gn, GnU)
         call oao_rsp_solver(molcfg%decomp, GnU, omega, GntU)
         !Convert back to non-orthonormal basis:
         call x_from_oao_basis(molcfg%decomp,GntU, Gnt)
+        call mat_free(GnU)
+        call mat_free(GntU)
      endif
 
-     call mat_free(GnU)
-     call mat_free(GntU)
 end subroutine rsp_AB_precond
 
 !> \brief Wrapper for calling the chosen starting guess for eigenvalue problem.
