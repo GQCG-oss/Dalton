@@ -3184,6 +3184,7 @@ module matrix_operations_scalapack
       CALL lsmpi_reduction(address_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
       call mem_dealloc(address_on_grid)
 #endif
+      call mem_allocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
    CASE(Job_rand)
       CALL PDM_DSCINIT(DESC_A,A)
       do i=1,A%localnrow
@@ -3519,7 +3520,8 @@ module matrix_operations_scalapack
       call scalapack_scal_dia_vec_aux(diag3,A,DESC_A,A%nrow)
       call mem_dealloc(diag3)
    CASE(Job_free)
-      CALL FREE_IN_DARRAY(A)
+      CALL FREE_IN_DARRAY(A)      
+      call mem_deallocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
    CASE DEFAULT
    END SELECT
    
