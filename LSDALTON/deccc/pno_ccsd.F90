@@ -63,6 +63,7 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
      !INTERNAL VARIABLES
+#ifdef MOD_UNRELEASED
      type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
      integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
@@ -753,9 +754,411 @@ module pno_ccsd_module
 #endif
      call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
         & 'PNO: finalization                    :' )
-
+#endif
   end subroutine get_ccsd_residual_pno_style
 
+
+
+  !> \brief Get the overlap matrices specifying the transformation from one PNO
+  !space to another. Here the overlap screening with the singular value
+  !decomposition is used to screen away some contributions.
+  !> \author Patrick Ettenhuber
+  !> \date december 2013
+  subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
+     implicit none
+     integer :: no, nv, n
+     type(PNOSpaceInfo),intent(in) :: pno_cv(n)
+     type(PNOSpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
+     logical, intent(in) :: with_svd
+#ifdef MOD_UNRELEASED
+     integer :: i, j, c, t1,t2,dg, n1
+     integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
+     real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
+     real(realk) :: norm,thr
+     real(realk),parameter :: p10 = 1.0E0_realk
+     real(realk),parameter :: nul = 0.0E0_realk
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces,FracOfMem
+     logical :: keep_pair, just_check
+     integer :: allremoved, ofmindim, ofmaxdim, allocpcount
+
+     call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
+
+     call get_currently_available_memory(FracOfMem)
+     FracOfMem = 0.1E0_realk * FracOfMem
+
+     mem_overlap_spaces = 0.0E0_realk
+     just_check         = .false.
+
+     allocpcount= 0
+     allremoved = 0
+     ofmindim   = 0
+     ofmaxdim   = 0
+     call mem_TurnONThread_Memory()
+     !$OMP PARALLEL DEFAULT(NONE) &
+     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
+     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem,just_check)&
+     !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
+     !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
+     !$OMP keep_pair)
+     call init_threadmemvar()
+
+     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+     do i=1,n
+        do j=1,n
+
+           if(j>=i) cycle
+
+           ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
+           c = (j - i + 1) + i*(i-1)/2
+
+           !$OMP CRITICAL
+           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > FracOfMem)
+           !$OMP END CRITICAL
+
+           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd,just_check)
+
+           if(pno_S(c)%allocd)then
+              if( with_svd )then
+                 !$OMP CRITICAL
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &(size(pno_S(c)%s1) + size(pno_S(c)%d) + size(pno_S(c)%s2) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
+              else
+                 !$OMP CRITICAL
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &( size(pno_S(c)%d) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
+              endif
+           endif
+        enddo
+     enddo
+     !$OMP END DO NOWAIT
+     call collect_thread_memory()
+     !$OMP END PARALLEL
+     call mem_TurnOffThread_Memory()
+
+     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
+        & getting overlap spaces:")
+     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
+
+
+     if(DECinfo%pno_S_on_the_fly.or.just_check)then
+
+        DECinfo%pno_S_on_the_fly = .true.
+        print *,"Switching to calculating pno overlap information on the fly"
+        do i=1,n
+           do j=1,n
+              if(j>=i) cycle
+              c = (j - i + 1) + i*(i-1)/2
+              if( pno_S(c)%allocd )  call free_PNOSpaceInfo( pno_S(c) )
+           enddo
+        enddo
+
+     endif
+
+#endif
+  end subroutine get_pno_overlap_matrices
+
+
+
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,f)
+     implicit none
+     !ARGUMENTS
+     integer, intent(in) :: no, nv, nb, n
+     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
+     type(PNOSpaceInfo),pointer :: cv(:)
+     type(decfrag),intent(in),optional :: f
+     !INTERNAL
+#ifdef MOD_UNRELEASED
+     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
+     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
+     integer :: find_pos(no,no),maxocc,maxminocc
+     logical :: doit
+     logical :: fj
+     real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
+     integer :: tid
+     real(realk) :: time_pno_spaces, mem_pno_spaces
+#ifdef VAR_OMP
+     integer, external :: omp_get_num_threads, omp_get_thread_num
+     integer :: nt_s, nt_n
+#endif
+
+     call time_start_phase(PHASE_WORK, twall = time_pno_spaces )
+     mem_pno_spaces = 0.0E0_realk
+
+     find_pos = -1
+     fj = present(f)
+
+     counter = 0
+     if(fj) counter = 1
+     doi1 :do i = 1, no
+        doj1: do j = i, no
+
+           doit=.true.
+           !check if both indices occur in occ EOS, if yes -> skip
+           if(fj)then
+              oiloop2: do oi = 1, f%noccEOS
+                 if(f%idxo(oi) == i)then
+                    do oj = 1, f%noccEOS
+                       if(f%idxo(oj) == j)then
+                          doit = .false.
+                          exit oiloop2
+                       endif
+                    enddo
+                 endif
+              enddo oiloop2
+           endif
+
+           if(doit)then
+              counter = counter + 1
+              find_pos(i,j) = counter
+           endif
+        enddo doj1
+     enddo doi1
+
+     if(counter /= n )then
+        call lsquit("ERROR(get_pno_trafo_matrices):wrong counter",-1)
+     endif
+
+     calc_parameters = 0
+     det_parameters  = 0
+
+
+     if( fj )then
+        maxocc = f%noccEOS
+        if(DECinfo%PNOtriangular)then
+           maxminocc = 1
+        else
+           maxminocc = 2
+        endif
+     else
+        if(DECinfo%PNOtriangular)then
+           maxocc    = 1
+           maxminocc = 1
+        else
+           maxocc    = 2
+           maxminocc = 2
+        endif
+     endif
+
+
+
+     !call mem_TurnONThread_Memory()
+     !OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
+     !OMP mem_pno_spaces)&
+     !OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
+     !OMP maxocc,maxminocc)&
+     !OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
+     !call init_threadmemvar()
+
+     tid = 0
+#ifdef VAR_OMP
+     tid = omp_get_thread_num()
+#endif
+
+     !if( tid == 0 )then
+     !   call mem_alloc(w1,2*nv*maxocc*nv*maxocc)
+     !else
+     !   call mem_alloc(w1,2*nv*maxminocc*nv*maxminocc)
+     !endif
+
+
+     if(fj)then
+
+        if(.not.associated(f%VirtMat))then
+           call lsquit("Error(get_pno_trafo_matrices)Fragment Correlation density matrix not allocated",-1)
+        endif
+
+
+        !$OMP MASTER
+        call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
+        call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
+        call mem_alloc(cv(1)%iaos,f%noccEOS)
+        cv(1)%n            = f%noccEOS
+        cv(1)%rpd          = f%noccEOS
+        cv(1)%iaos         = f%idxo
+        cv(1)%is_FA_space  = .true.
+        cv(1)%PS           = .false.
+        counter            = 1
+
+        calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
+        det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
+
+        mem_pno_spaces  = mem_pno_spaces  + (cv(1)%ns2**2)*8.0E0_realk
+
+        if(.not.cv(1)%allocd)then
+           call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
+              & according to the current threshold, skipping this fragment should be&
+              & implemented",-1)
+        endif
+        !$OMP END MASTER
+
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        doi :do i = 1, no
+           doj: do j = 1, no
+
+              if(j<i.or.(i==1.and.j==1)) cycle doj
+
+              !check if both indices occur in occ EOS, if yes -> skip
+              doit = ( find_pos(i,j)/= -1 )
+
+              !calculate the pair density matrix, diagonalize it, truncate the
+              !respective transformation matrix and save it in c
+              if(doit)then
+
+                 counter = find_pos(i,j)
+                 call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
+                 call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
+                 call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+                 cv(counter)%is_FA_space  = .false.
+
+                 if(cv(counter)%allocd)then
+                    if(i==j)then
+
+                       cv(counter)%n    = 1
+                       cv(counter)%rpd  = 1
+                       call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                       cv(counter)%iaos = [i]
+                       cv(counter)%PS   = .false.
+
+                       det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
+
+                    else
+
+                       cv(counter)%n    = 2
+                       if(DECinfo%PNOtriangular)then
+                          cv(counter)%rpd  = 1
+                          cv(counter)%PS   = .true.
+                       else
+                          cv(counter)%rpd  = 2
+                          cv(counter)%PS   = .false.
+                       endif
+
+                       call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                       cv(counter)%iaos = [i,j]
+
+                       det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
+
+                    endif
+
+                    calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
+                    mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
+
+                 endif
+              endif
+           enddo doj
+        enddo doi
+        !OMP END DO NOWAIT
+     else
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        doiful :do i = 1, no
+           dojful: do j = 1, no
+
+              if(j<i) cycle dojful
+
+              counter = find_pos(i,j)
+
+              call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
+              call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
+              call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
+              cv(counter)%is_FA_space  = .false.
+
+              if(cv(counter)%allocd)then
+
+                 if(i==j)then
+
+                    cv(counter)%n    = 1
+                    cv(counter)%rpd  = 1
+                    call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                    cv(counter)%iaos = [i]
+                    cv(counter)%PS   = .false.
+
+                    det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2
+
+                 else
+
+                    cv(counter)%n = 2
+                    if(DECinfo%PNOtriangular)then
+                       cv(counter)%rpd  = 1
+                       cv(counter)%PS   = .true.
+                    else
+                       cv(counter)%rpd  = 2
+                       cv(counter)%PS   = .false.
+                    endif
+
+                    call mem_alloc(cv(counter)%iaos,cv(counter)%n)
+                    cv(counter)%iaos = [i,j]
+
+                    det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
+
+                 endif
+
+                 calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
+                 mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
+
+              endif
+
+           enddo dojful
+        enddo doiful
+        !OMP END DO NOWAIT
+     endif
+
+     !call mem_dealloc(w1)
+
+     !call collect_thread_memory()
+     !OMP END PARALLEL
+     !call mem_TurnOffThread_Memory()
+
+     print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
+
+     call time_start_phase(PHASE_WORK, ttot = time_pno_spaces, labelttot = " PNO:&
+     & getting pno spaces:")
+
+     write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
+#endif
+  end subroutine get_pno_trafo_matrices
+
+
+  subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
+     implicit none
+     integer, intent(in) :: ao,w,x,y,z
+     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(w*ao*ao*ao)
+     real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
+     !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
+     call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
+     ! WRKWXYZ(ao,ao ao w)^T XX(ao,x)   -> WXYZ (ao ao w, x)
+     call dgemm('t','n',ao*ao*w,x,ao,1.0E0_realk,WRKWXYZ,ao,XX,ao,0.0E0_realk,WXYZ,ao*ao*w)
+     ! WXYZ(ao, ao w x)^T YY(ao,y)   -> WRKYXYX (ao w x,y)
+     call dgemm('t','n',ao*w*x,y,ao,1.0E0_realk,WXYZ,ao,YY,ao,0.0E0_realk,WRKWXYZ,ao*w*x)
+     ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
+     call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
+  end subroutine successive_4ao_mo_trafo
+
+  subroutine free_PNOSpaceInfo(SPINFO)
+     implicit none
+     type(PNOSpaceInfo), intent(inout) :: SPINFO
+
+     if(.not.SPINFO%allocd)then
+        call lsquit("ERROR(free_PNOSpaceInfo): structure not allocated, cannot free",-1)
+     endif
+
+     if(associated(SPINFO%iaos)) call mem_dealloc(SPINFO%iaos)
+     if(associated(SPINFO%d   )) call mem_dealloc(SPINFO%d   )
+     if(associated(SPINFO%s1  )) call mem_dealloc(SPINFO%s1  )
+     if(associated(SPINFO%s2  )) call mem_dealloc(SPINFO%s2  )
+     SPINFO%n    = 0
+     SPINFO%ns1  = 0
+     SPINFO%ns2  = 0
+     SPINFO%rpd  = 0
+     SPINFO%red1 = 0
+     SPINFO%red2 = 0
+
+     SPINFO%allocd = .false.
+
+  end subroutine  free_PNOSpaceInfo
+
+
+#ifdef MOD_UNRELEASED
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx,ndidx1,ndidx2)
      implicit none
      integer,intent(in) :: n1,n2
@@ -1259,104 +1662,6 @@ module pno_ccsd_module
   end subroutine do_overlap_trafo
 
 
-  !> \brief Get the overlap matrices specifying the transformation from one PNO
-  !space to another. Here the overlap screening with the singular value
-  !decomposition is used to screen away some contributions.
-  !> \author Patrick Ettenhuber
-  !> \date december 2013
-  subroutine get_pno_overlap_matrices(no,nv,pno_cv,pno_S,n,with_svd)
-     implicit none
-     integer :: no, nv, n
-     type(PNOSpaceInfo),intent(in) :: pno_cv(n)
-     type(PNOSpaceInfo),intent(inout) :: pno_S(n*(n-1)/2)
-     logical, intent(in) :: with_svd
-     integer :: i, j, c, t1,t2,dg, n1
-     integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
-     real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
-     real(realk) :: norm,thr
-     real(realk),parameter :: p10 = 1.0E0_realk
-     real(realk),parameter :: nul = 0.0E0_realk
-     real(realk) :: time_overlap_spaces,mem_overlap_spaces,FracOfMem
-     logical :: keep_pair, just_check
-     integer :: allremoved, ofmindim, ofmaxdim, allocpcount
-
-     call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
-
-     call get_currently_available_memory(FracOfMem)
-     FracOfMem = 0.1E0_realk * FracOfMem
-
-     mem_overlap_spaces = 0.0E0_realk
-     just_check         = .false.
-
-     allocpcount= 0
-     allremoved = 0
-     ofmindim   = 0
-     ofmaxdim   = 0
-     call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) &
-     !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem,just_check)&
-     !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
-     !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
-     !$OMP keep_pair)
-     call init_threadmemvar()
-
-     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
-     do i=1,n
-        do j=1,n
-
-           if(j>=i) cycle
-
-           ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
-           c = (j - i + 1) + i*(i-1)/2
-
-           !$OMP CRITICAL
-           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > FracOfMem)
-           !$OMP END CRITICAL
-
-           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd,just_check)
-
-           if(pno_S(c)%allocd)then
-              if( with_svd )then
-                 !$OMP CRITICAL
-                 mem_overlap_spaces = mem_overlap_spaces + &
-                    &(size(pno_S(c)%s1) + size(pno_S(c)%d) + size(pno_S(c)%s2) ) * 8.0E0_realk
-                 !$OMP END CRITICAL
-              else
-                 !$OMP CRITICAL
-                 mem_overlap_spaces = mem_overlap_spaces + &
-                    &( size(pno_S(c)%d) ) * 8.0E0_realk
-                 !$OMP END CRITICAL
-              endif
-           endif
-        enddo
-     enddo
-     !$OMP END DO NOWAIT
-     call collect_thread_memory()
-     !$OMP END PARALLEL
-     call mem_TurnOffThread_Memory()
-
-     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
-        & getting overlap spaces:")
-     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
-
-
-     if(DECinfo%pno_S_on_the_fly.or.just_check)then
-
-        DECinfo%pno_S_on_the_fly = .true.
-        print *,"Switching to calculating pno overlap information on the fly"
-        do i=1,n
-           do j=1,n
-              if(j>=i) cycle
-              c = (j - i + 1) + i*(i-1)/2
-              if( pno_S(c)%allocd )  call free_PNOSpaceInfo( pno_S(c) )
-           enddo
-        enddo
-
-     endif
-
-
-  end subroutine get_pno_overlap_matrices
   
   subroutine get_overlap_matrix_from_pno_spaces(nv,pno1,pno2,S12,with_svd,just_check)
      implicit none
@@ -1612,261 +1917,6 @@ module pno_ccsd_module
 
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,f)
-     implicit none
-     !ARGUMENTS
-     integer, intent(in) :: no, nv, nb, n
-     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
-     type(PNOSpaceInfo),pointer :: cv(:)
-     type(decfrag),intent(in),optional :: f
-     !INTERNAL
-     real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
-     integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-     integer :: find_pos(no,no),maxocc,maxminocc
-     logical :: doit
-     logical :: fj
-     real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
-     integer :: tid
-     real(realk) :: time_pno_spaces, mem_pno_spaces
-#ifdef VAR_OMP
-     integer, external :: omp_get_num_threads, omp_get_thread_num
-     integer :: nt_s, nt_n
-#endif
-
-     call time_start_phase(PHASE_WORK, twall = time_pno_spaces )
-     mem_pno_spaces = 0.0E0_realk
-
-     find_pos = -1
-     fj = present(f)
-
-     counter = 0
-     if(fj) counter = 1
-     doi1 :do i = 1, no
-        doj1: do j = i, no
-
-           doit=.true.
-           !check if both indices occur in occ EOS, if yes -> skip
-           if(fj)then
-              oiloop2: do oi = 1, f%noccEOS
-                 if(f%idxo(oi) == i)then
-                    do oj = 1, f%noccEOS
-                       if(f%idxo(oj) == j)then
-                          doit = .false.
-                          exit oiloop2
-                       endif
-                    enddo
-                 endif
-              enddo oiloop2
-           endif
-
-           if(doit)then
-              counter = counter + 1
-              find_pos(i,j) = counter
-           endif
-        enddo doj1
-     enddo doi1
-
-     if(counter /= n )then
-        call lsquit("ERROR(get_pno_trafo_matrices):wrong counter",-1)
-     endif
-
-     calc_parameters = 0
-     det_parameters  = 0
-
-
-     if( fj )then
-        maxocc = f%noccEOS
-        if(DECinfo%PNOtriangular)then
-           maxminocc = 1
-        else
-           maxminocc = 2
-        endif
-     else
-        if(DECinfo%PNOtriangular)then
-           maxocc    = 1
-           maxminocc = 1
-        else
-           maxocc    = 2
-           maxminocc = 2
-        endif
-     endif
-
-
-
-     !call mem_TurnONThread_Memory()
-     !OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
-     !OMP mem_pno_spaces)&
-     !OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
-     !OMP maxocc,maxminocc)&
-     !OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
-     !call init_threadmemvar()
-
-     tid = 0
-#ifdef VAR_OMP
-     tid = omp_get_thread_num()
-#endif
-
-     !if( tid == 0 )then
-     !   call mem_alloc(w1,2*nv*maxocc*nv*maxocc)
-     !else
-     !   call mem_alloc(w1,2*nv*maxminocc*nv*maxminocc)
-     !endif
-
-
-     if(fj)then
-
-        if(.not.associated(f%VirtMat))then
-           call lsquit("Error(get_pno_trafo_matrices)Fragment Correlation density matrix not allocated",-1)
-        endif
-
-
-        !$OMP MASTER
-        call solve_eigenvalue_problem_unitoverlap(nv,f%VirtMat,virteival,U)
-        call truncate_trafo_mat_from_EV(U,virteival,nv,cv(1),ext_thr=DECinfo%EOSPNOthr)
-        call mem_alloc(cv(1)%iaos,f%noccEOS)
-        cv(1)%n            = f%noccEOS
-        cv(1)%rpd          = f%noccEOS
-        cv(1)%iaos         = f%idxo
-        cv(1)%is_FA_space  = .true.
-        cv(1)%PS           = .false.
-        counter            = 1
-
-        calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
-        det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
-
-        mem_pno_spaces  = mem_pno_spaces  + (cv(1)%ns2**2)*8.0E0_realk
-
-        if(.not.cv(1)%allocd)then
-           call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
-              & according to the current threshold, skipping this fragment should be&
-              & implemented",-1)
-        endif
-        !$OMP END MASTER
-
-        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
-        doi :do i = 1, no
-           doj: do j = 1, no
-
-              if(j<i.or.(i==1.and.j==1)) cycle doj
-
-              !check if both indices occur in occ EOS, if yes -> skip
-              doit = ( find_pos(i,j)/= -1 )
-
-              !calculate the pair density matrix, diagonalize it, truncate the
-              !respective transformation matrix and save it in c
-              if(doit)then
-
-                 counter = find_pos(i,j)
-                 call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
-                 call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
-                 call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
-                 cv(counter)%is_FA_space  = .false.
-
-                 if(cv(counter)%allocd)then
-                    if(i==j)then
-
-                       cv(counter)%n    = 1
-                       cv(counter)%rpd  = 1
-                       call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-                       cv(counter)%iaos = [i]
-                       cv(counter)%PS   = .false.
-
-                       det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%n**2
-
-                    else
-
-                       cv(counter)%n    = 2
-                       if(DECinfo%PNOtriangular)then
-                          cv(counter)%rpd  = 1
-                          cv(counter)%PS   = .true.
-                       else
-                          cv(counter)%rpd  = 2
-                          cv(counter)%PS   = .false.
-                       endif
-
-                       call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-                       cv(counter)%iaos = [i,j]
-
-                       det_parameters   = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
-
-                    endif
-
-                    calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                    mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
-
-                 endif
-              endif
-           enddo doj
-        enddo doi
-        !OMP END DO NOWAIT
-     else
-        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
-        doiful :do i = 1, no
-           dojful: do j = 1, no
-
-              if(j<i) cycle dojful
-
-              counter = find_pos(i,j)
-
-              call calculate_pair_density_matrix(PD,t_mp2(:,i,:,j),nv,(i==j))
-              call solve_eigenvalue_problem_unitoverlap(nv,PD,virteival,U)
-              call truncate_trafo_mat_from_EV(U,virteival,nv,cv(counter))
-              cv(counter)%is_FA_space  = .false.
-
-              if(cv(counter)%allocd)then
-
-                 if(i==j)then
-
-                    cv(counter)%n    = 1
-                    cv(counter)%rpd  = 1
-                    call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-                    cv(counter)%iaos = [i]
-                    cv(counter)%PS   = .false.
-
-                    det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2
-
-                 else
-
-                    cv(counter)%n = 2
-                    if(DECinfo%PNOtriangular)then
-                       cv(counter)%rpd  = 1
-                       cv(counter)%PS   = .true.
-                    else
-                       cv(counter)%rpd  = 2
-                       cv(counter)%PS   = .false.
-                    endif
-
-                    call mem_alloc(cv(counter)%iaos,cv(counter)%n)
-                    cv(counter)%iaos = [i,j]
-
-                    det_parameters = det_parameters + cv(counter)%ns2*cv(counter)%ns2*2
-
-                 endif
-
-                 calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                 mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
-
-              endif
-
-           enddo dojful
-        enddo doiful
-        !OMP END DO NOWAIT
-     endif
-
-     !call mem_dealloc(w1)
-
-     !call collect_thread_memory()
-     !OMP END PARALLEL
-     !call mem_TurnOffThread_Memory()
-
-     print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
-
-     call time_start_phase(PHASE_WORK, ttot = time_pno_spaces, labelttot = " PNO:&
-     & getting pno spaces:")
-
-     write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
-
-  end subroutine get_pno_trafo_matrices
 
   !\brief Calculation of the pair density matrix from a set of MP2 amplitudes
   !for a given pair. The input amplitudes are a virt-virt block for indices (ij)
@@ -5008,44 +5058,6 @@ module pno_ccsd_module
      endif
 
   end subroutine successive_4ao_mo_trafo_exch
-  subroutine successive_4ao_mo_trafo(ao,WXYZ,WW,w,XX,x,YY,y,ZZ,z,WRKWXYZ)
-     implicit none
-     integer, intent(in) :: ao,w,x,y,z
-     real(realk), intent(inout) :: WXYZ(ao*ao*ao*ao),WRKWXYZ(w*ao*ao*ao)
-     real(realk), intent(in) :: WW(ao,w),XX(ao,x),YY(ao,y),ZZ(ao,z)
-     !WXYZ(ao,ao ao ao)^T WW(ao,w)   -> WRKWXYZ (ao ao ao,w)
-     call dgemm('t','n',ao*ao*ao,w,ao,1.0E0_realk,WXYZ,ao,WW,ao,0.0E0_realk,WRKWXYZ,ao*ao*ao)
-     ! WRKWXYZ(ao,ao ao w)^T XX(ao,x)   -> WXYZ (ao ao w, x)
-     call dgemm('t','n',ao*ao*w,x,ao,1.0E0_realk,WRKWXYZ,ao,XX,ao,0.0E0_realk,WXYZ,ao*ao*w)
-     ! WXYZ(ao, ao w x)^T YY(ao,y)   -> WRKYXYX (ao w x,y)
-     call dgemm('t','n',ao*w*x,y,ao,1.0E0_realk,WXYZ,ao,YY,ao,0.0E0_realk,WRKWXYZ,ao*w*x)
-     ! WRKWXYZ(ao, w x y)^T ZZ(ao,z)^T   -> WXYZ (wxyz)
-     call dgemm('t','n',w*x*y,z,ao,1.0E0_realk,WRKWXYZ,ao,ZZ,ao,0.0E0_realk,WXYZ,w*x*y)
-  end subroutine successive_4ao_mo_trafo
-
-  subroutine free_PNOSpaceInfo(SPINFO)
-     implicit none
-     type(PNOSpaceInfo), intent(inout) :: SPINFO
-
-     if(.not.SPINFO%allocd)then
-        call lsquit("ERROR(free_PNOSpaceInfo): structure not allocated, cannot free",-1)
-     endif
-
-     if(associated(SPINFO%iaos)) call mem_dealloc(SPINFO%iaos)
-     if(associated(SPINFO%d   )) call mem_dealloc(SPINFO%d   )
-     if(associated(SPINFO%s1  )) call mem_dealloc(SPINFO%s1  )
-     if(associated(SPINFO%s2  )) call mem_dealloc(SPINFO%s2  )
-     SPINFO%n    = 0
-     SPINFO%ns1  = 0
-     SPINFO%ns2  = 0
-     SPINFO%rpd  = 0
-     SPINFO%red1 = 0
-     SPINFO%red2 = 0
-
-     SPINFO%allocd = .false.
-
-  end subroutine  free_PNOSpaceInfo
-
 
   subroutine init_query_info(query,n)
      implicit none
@@ -5062,6 +5074,8 @@ module pno_ccsd_module
      query%n_arrays = 0
      call mem_dealloc(query%size_array)
   end subroutine free_query_info
+
+#endif
 
  !subroutine not_implemented ccsd
      !!DEBUG: A2 term
