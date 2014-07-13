@@ -101,6 +101,9 @@ Cholesky
 #include "ccdeco.h"
 #include "choscf.h"
 C
+C QM/NP/MM code
+#include "qmnpmm.h" 
+C
       PARAMETER (NBLOC = 1)
       INTEGER LUBLOC(NBLOC)
       DATA LUBLOC / 21 /
@@ -122,12 +125,21 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 
-
       ! QM/NP/MM embedding
       IF (QMNPMM) THEN
-         call quit('QMNPMM not implemented in this version')
-      ELSE
-         KRELMAT = 1
+         CALL GETDIM_RELMAT(IDIM,.TRUE.) 
+         CALL MEMGET('REAL',KRELMAT,IDIM,WRK,KFREE,LFREE)
+         CALL COMP_RELMAT(WRK(KRELMAT),WRK(KFREE),LFREE)
+         CALL WRITE_RELMAT(WRK(KRELMAT)) 
+         IF (DOMMSUB.AND.DOMMPOL) THEN 
+            CALL GETDIM_MMMAT(IDIM, .TRUE.)
+            CALL MEMGET('REAL',KMMRELMAT,IDIM,WRK,KFREE,LFREE)
+            CALL COMP_MMRELMAT(WRK(KMMRELMAT),WRK(KFREE),LFREE)
+         ELSE 
+            KMMRELMAT = 1
+         END IF 
+      ELSE 
+         KRELMAT = 1 
       END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
@@ -267,7 +279,8 @@ C
       CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KGVEC),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
-     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK,KFREE,
+     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK(KMMRELMAT),
+     &            WRK,KFREE,
      &            LFREE,IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
@@ -279,12 +292,15 @@ C
 C  /* Deck DIIS_CTL */
       SUBROUTINE DIIS_CTL(CMO,CMO1,GVEC,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,
      *                    MXERRV,C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,
-     *                    CVEC,TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
+     *                    CVEC,TNLM,RCPMAT,RMMMAT,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
 
 !#define USE_XCINT
 #ifdef USE_XCINT
       use xcint_integrator
+#endif
+#ifdef ENABLE_EFS
+      use efs_interface
 #endif
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
@@ -299,9 +315,7 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
-
-      ! rcpmat is used on branch qmcmm, please do not remove
-      DIMENSION RCPMAT(*)
+      DIMENSION RCPMAT(*), RMMMAT(*)
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -508,6 +522,9 @@ C------------------
      &     .AND. .NOT.DODFT    .AND. .NOT.DOHFSRDFT
      &     .AND. .NOT.AOSAVE   .AND. .NOT.CHOINT
      &     .AND. .NOT.EMBEDDING
+#ifdef ENABLE_EFS
+     &     .AND. .NOT. use_efs
+#endif
 C
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
@@ -729,8 +746,21 @@ C              ... difden: "DVAO" = "DVAO" - DVOVLP*DVOSAV(,2)
 C
 C  ***** Calculate 2-electron part of Fock matrix with differential density
 C
+
          CALL GETTIM(t1_fck,w1_fck)
+
+#if defined ENABLE_EFS
+         if (use_efs) then
+            call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
+            iprint = 0
+            call mpixbcast (iprint, 1, 'INTEGER', 0)
+            call efs_add_2efock (FCAO, DCAO, IFTHRS)
+         else
+#endif
          CALL FCK2AO(ONLYFC,FCAO,DCAO,WRK,KFREE,LFREE)
+#if defined ENABLE_EFS
+         end if
+#endif
 
          IF (DIRFCK .AND. IFTHRS.LT.20) THEN
             IF (IPR_DIIS .GE. 0) THEN
@@ -882,6 +912,16 @@ c        density
                  DTIME = SECOND() - DTIME
                  TMMFCK = TMMFCK + DTIME
               END IF
+           END IF
+
+           IF (QMNPMM) THEN
+             CALL MEMGET('REAL',KFCSOL,NNBAST,WRK,KFREE,LFREE)
+             CALL DZERO(WRK(KFCSOL),NNBAST)
+             CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,  
+     &                        WRK(KFCSOL),ESOLT,WRK(KFREE),LFREE)
+             CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+             CALL MEMREL('DIIS_CTL.QMNPMM',WRK,KFRSAV,KFCSOL,KFREE,
+     &                   LFREE)
            END IF
 
            IF (FLAG(16)) THEN

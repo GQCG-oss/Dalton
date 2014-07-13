@@ -1449,344 +1449,237 @@ END SUBROUTINE LINES_OF_CONTRACTION
 !> SEGMENTED BLOCKS SO NOT TO STORE ZERO ELEMENTS AND PREPARE TO CONSTRUCT
 !> AOBATCHES
 !>
-SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,atomtype,&
-          &nAngmom,nprim,nOrbital,Contractionmatrix,ContractionmatrixNORM,Exponents)
+SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,at,&
+          & nAngmom,nprim,nOrbital,Contractionmatrix,&
+          & ContractionmatrixNORM,Exponents)
 implicit none
-TYPE(BASISSETINFO)  :: BASINFO
-TYPE(lsmatrix) :: Contractionmatrix,ContractionmatrixNORM
-TYPE(lsmatrix) :: Exponents
-INTEGER      :: atomtype,nAngmom,nprim,nOrbital,ELEMENTS
-INTEGER      :: ncol,nrow,K,L,LUPRI,J,istart,iend,IPRINT,EXTRAROWS
-INTEGER      :: start(maxBASISsegment),end(maxBASISsegment),I,segments,Nsegments
-INTEGER      :: Nend(maxBASISsegment),Nstart(maxBASISsegment)
-LOGICAL      :: NEWBLOCK,INSIDEBLOCK
-INTEGER,pointer :: SEGMENTrow(:),SEGMENTcol(:)
-REAL(REALK),pointer :: TEMPEXP1(:),TEMPEXP2(:)
-IF (IPRINT .GT. 200)THEN
-WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
-CALL LSMAT_DENSE_PRINT(Contractionmatrix,1,Contractionmatrix%nrow,1,&
-                                &Contractionmatrix%ncol,lupri)
-ENDIF
-!**********************************************************
-!*
-!* STEP 1. DETERMINE SECTIONS OF NONZERO ELEMENTS
-!*
-!**********************************************************
-start=0
-end=0
-start(1)=1
-segments=0
-NEWBLOCK=.FALSE.
-DO I=1,nprim*nOrbital
-  IF(NEWBLOCK)THEN
-    IF(ABS(Contractionmatrix%elms(I)) .LT. 1.0E-30_realk) THEN 
-      segments=segments+1      
-      end(segments)=I-1        
-      NEWBLOCK=.FALSE.
-      start(segments+1)=I+1    
-    ENDIF
-  ELSE
-    IF(ABS(Contractionmatrix%elms(I)) .LT. 1.0E-30_realk) THEN 
-      start(segments+1)=start(segments+1)+1 
-    ELSE
-      NEWBLOCK=.TRUE.
-    ENDIF
-  ENDIF
-  IF(I==nprim*nOrbital) then
-    segments=segments+1
-    end(segments)=nprim*nOrbital 
-  ENDIF
-ENDDO
-
-DO I=1,segments
-   IF(start(I).GT.end(I))THEN
-      write(lupri,*)'Error in basis set, the last primitive most contribute to the last contracted function'
-      print*,'Error in basis set, the last primitive most contribute to the last contracted function'
-      call lsquit('Error in basis set, the last primitive most contribute to the last contracted function',-1)
-   ENDIF
-ENDDO
+TYPE(BASISSETINFO),intent(inout)  :: BASINFO
+TYPE(lsmatrix),intent(in) :: Contractionmatrix,ContractionmatrixNORM
+TYPE(lsmatrix),intent(in) :: Exponents
+INTEGER,intent(in)      :: at,nAngmom,nprim,nOrbital
+!local variables
+INTEGER      :: ncol,nrow,K,L,LUPRI,J,IPRINT
+INTEGER      :: I,Nsegments,kk,icol
+INTEGER      :: SEGMENTrow(nOrbital),SEGMENTcol(nOrbital)
+INTEGER      :: nOrb(nprim),mPrim(nOrbital)
+LOGICAL      :: Segmented,Prim(nPrim,nOrbital),PerfomMerge
+LOGICAL      :: merged(nOrbital),MergedPrim(nPrim,nOrbital)
+LOGICAL      :: SEGMENTCOLID(nOrbital,nOrbital)
+real(realk),pointer  :: CCN(:,:),CC(:,:) 
+real(realk)  :: newExponents,newCC,newCCN
 
 IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 1'
-   WRITE(lupri,*)'SEGMENT    START     END'
-   DO I=1,segments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,start(I),end(I)
-   ENDDO
+   WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
+   CALL LSMAT_DENSE_PRINT(ContractionmatrixNorm,1,ContractionmatrixNorm%nrow,1,&
+        &ContractionmatrixNorm%ncol,lupri)
 ENDIF
-IF (segments.GT.maxBASISsegment) THEN
-  WRITE(LUPRI,'(1X,A,I2,A,I2)') 'Error in ANALYSE_CONTRACTIONMATRIX. segments =', &
-     & segments,' > maxBASISsegment = ',maxBASISsegment
-  CALL LSQUIT('Error in ANALYSE_CONTRACTIONMATRIX. segments > maxBASISsegment',lupri)
+
+nrow = Contractionmatrix%nrow
+ncol = Contractionmatrix%ncol
+call mem_alloc(CCN,nrow,ncol)
+call dcopy (nrow*ncol,ContractionmatrixNorm%elms,1,CCN,1)
+call mem_alloc(CC,nrow,ncol)
+call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
+IF (IPRINT .GT. 200)THEN
+   WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
+   WRITE(LUPRI,*)'CCN'
+   call output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   WRITE(LUPRI,*)'CC'
+   call output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
 ENDIF
-!**********************************************************
-!*
-!* STEP 2. IF NUMBER OF NONZERO ELEMENTS IN A SECTION IS
-!* LARGER THAN # EXPONENT THE NUMBER OF COLLUMS IS 
-!* DETERMINED AND THE NUMBER OF BLOCKS IS DETERMINED
-!*
-!**********************************************************
-
-istart=1
-iend=1
-
-DO I=1,segments
-   IF (segments==1)THEN
-     Nstart(1)=1
-     Nend(1)=nprim*nOrbital
-   ELSE
-      IF(I==1)THEN
-         Nstart(1)=1
-         istart=istart+1
-         IF(START(I+1)-END(I) > nprim)THEN  
-            !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-            !END FIRST BLOCK
-            Nend(1)=end(I)
-            iend=2
-            INSIDEBLOCK=.FALSE.
-         ELSE !5-9=4
-            !THEY BELONG TO SAME BLOCK
-            INSIDEBLOCK=.TRUE.
-            Nend(1)=end(1)+nprim  !10
-            end(2)=end(1)+nprim    !10
-         ENDIF
-      ELSEIF(I==segments) THEN
-         IF(.NOT.INSIDEBLOCK) THEN
-            Nstart(istart)=START(I)  
-         ENDIF
-         Nend(iend)=nprim*nOrbital
-      ELSE
-         IF(INSIDEBLOCK)THEN
-            IF(START(I+1)-END(I) > nprim)THEN  !15-10=5
-               !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-               !END ONE BLOCK
-               Nend(iend)=end(I)  
-               iend=iend+1 
-               INSIDEBLOCK=.FALSE.
-            ELSE
-               end(I+1)=end(I)+nprim  
-               !THEY BELONG TO SAME BLOCK
-            ENDIF
-         ELSE
-            !I START A NEW BLOCK
-            IF(START(I+1)-END(I) > nprim)THEN
-               !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-               !END FIRST BLOCK
-               Nstart(istart)=start(I)
-               Nend(iend)=end(I)
-               iend=iend+1 
-               istart=istart+1
-               INSIDEBLOCK=.FALSE.
-            ELSE
-               !THEY BELONG TO SAME BLOCK
-               Nstart(istart)=start(I)
-               istart=istart+1
-               INSIDEBLOCK=.TRUE.
-            ENDIF
-         ENDIF
+!reorder primitives at this level using basic bubblesort
+DO K=1,nrow
+   DO J=1,nrow-1
+      IF(Exponents%elms(J+1).GT. Exponents%elms(J))THEN
+         newExponents=Exponents%elms(J)
+         Exponents%elms(J)=Exponents%elms(J+1)
+         Exponents%elms(J+1)=newExponents
+         do I=1,nOrbital
+            newCC=CC(J,I)
+            CC(J,I)=CC(J+1,I)
+            CC(J+1,I)=newCC
+            newCCN=CCN(J,I)
+            CCN(J,I)=CCN(J+1,I)
+            CCN(J+1,I)=newCCN
+         enddo
       ENDIF
+   ENDDO
+ENDDO
+
+!Determine the number of orbitals each primitive function contributes to
+do i=1,nPrim
+   nOrb(i) = 0 
+   do j=1,nOrbital
+      IF(ABS(CC(i,j)).GT.1.0E-12_realk) nOrb(i) = nOrb(i) + 1
+   enddo
+enddo
+
+Segmented = .TRUE.
+do i=1,nPrim
+   IF(nOrb(i).NE.1)THEN
+      !at least one primitive contribute to more than 1 contracted function
+      !hence the basis set is general contracted
+      Segmented = .FALSE.
    ENDIF
-ENDDO
+enddo
 
-Nsegments=iend
+IF(Segmented)THEN
+ IF (IPRINT .GT. 2)WRITE(LUPRI,*)'This BasisBlock is a Segmented Basis  '
+ !all primitive orbitals only contribute to one contracted function
+ nSegments = ncol
+ IF (IPRINT .GT. 5)WRITE(LUPRI,*)'nSegments',nSegments
+ CALL INIT_BASISSETINFO_ContractionM(BasInfo,at,nAngmom,Nsegments)
 
-IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 2'
-   WRITE(lupri,*)'SEGMENT    START     END'
-   DO I=1,Nsegments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,Nstart(I),Nend(I)
-   ENDDO
-ENDIF
+ !DETERMINE number of Primitives FOR EACH SEGMENT
+ do j=1,nOrbital
+    mPrim(j) = 0 
+    do i=1,nPrim
+       IF(ABS(CC(i,j)).GT.1.0E-12_realk) mPrim(j) = mPrim(j) + 1
+    enddo
+ enddo
 
-CALL INIT_BASISSETINFO_ContractionM(BasInfo,atomtype,&
-     &nAngmom,Nsegments)
+ DO J=1,Nsegments
+   !For each segment copy info into structure
+   nrow=mPrim(J)
+   ncol=1
+   CALL INIT_BASISSETINFO_elms(BasInfo,at,nAngmom,J,nrow,ncol)
+   K=0
+   do i=1,nPrim
+      IF(ABS(CC(i,j)).GT.1.0E-12_realk)THEN
+         K = K + 1
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(K)=CCN(I,J)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(K)=CC(I,J)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Exponents%elms(I)
+      ENDIF
+   enddo
 
-!**********************************************************
-!*
-!* STEP 3. DETERMINE nROW AND nCOL FOR EACH SEGMENT
-!*
-!**********************************************************
-call mem_alloc(SEGMENTROW,Nsegments)
-call mem_alloc(SEGMENTCOL,Nsegments)
-
-DO I=1,Nsegments
-  ELEMENTS=Nend(I)-Nstart(I)+1
-  IF(ELEMENTS < nprim)THEN
-    SEGMENTROW(I)=ELEMENTS
-    SEGMENTcol(I)=1
-  ELSE
-    SEGMENTcol(I)=ELEMENTS/nprim
-    IF(MOD(ELEMENTS,nprim).NE. 0)THEN
-       SEGMENTcol(I)=SEGMENTcol(I)+1
-       SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
-       DO K=1,SEGMENTrow(I)
-          IF(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1.LE.nprim*norbital)THEN
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)THEN
-                WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',&
-                     &Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
-                CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
-             ENDIF
-          ENDIF
-       ENDDO
-       EXTRAROWS=0
-       DO L=1,SEGMENTcol(I)
-          IF(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim.LE.nprim*norbital)THEN
-!          WRITE(LUPRI,*)'CC(',Nstart(I)+SEGMENTrow(I)+(L-1)*nprim,')=',Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
-          ENDIF
-       ENDDO
-       IF(EXTRAROWS .GT. 0) SEGMENTrow(I)=SEGMENTrow(I)+1
-    ELSE
-       SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
-    ENDIF
-  ENDIF
-ENDDO
-
-IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 3'
-   WRITE(lupri,*)'SEGMENT    ROW     COL'
-   DO I=1,Nsegments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,SEGMENTrow(I),SEGMENTcol(I)
-   ENDDO
-ENDIF
-
-!**********************************************************
-!*
-!* STEP 4. REORDER PRIMITIVES
-!*
-!**********************************************************
-!DO I=1,Nsegments
-!   nrow=SEGMENTrow(I)
-!   ncol=SEGMENTcol(I)
-!   WRITE(lupri,*)'SECTION =',I,'nrow',nrow,'ncol',ncol
-!ENDDO
-
-K=1
-I=1
-DO 
-   IF(I.EQ.Nsegments)EXIT
-   ELEMENTS=Nend(I)-Nstart(I)+1
-   nrow=SEGMENTrow(I)
-   ncol=SEGMENTcol(I)
+   !Print Stuff
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+   ENDIF
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   ENDIF
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   ENDIF
+ ENDDO
+ELSE
+   IF(IPRINT .GT. 2)WRITE(LUPRI,*)'This BasisBlock is a General Contracted Basis'
+   !primitive orbitals can contribute to more than one contracted function
    
-   IF(Exponents%elms(K) .LE. Exponents%elms(nrow+K))THEN
-!      WRITE(lupri,*)'EXP',Exponents%elms(K),'is less than',Exponents%elms(nrow+K)
-!      WRITE(lupri,*)'SO WE SWAP'
-!      WRITE(lupri,*)'THE ORIGINAL VERSION'
-!      DO J=K,K+SEGMENTrow(I)+SEGMENTrow(I+1)-1
-!         WRITE(lupri,*)'EXP(',J,')=',Exponents%elms(J)
-!      ENDDO
-      !SWAP EXPONENTS AND SWAP THE SEGMENTS
-      call mem_alloc(TEMPEXP1,SEGMENTrow(I))
-      DO J=1,SEGMENTrow(I)
-         TEMPEXP1(J)=Exponents%elms(K+J-1)
-      ENDDO
-!      DO J=1,SEGMENTrow(I)
-!         WRITE(lupri,*)'TEMPEXP1(',J,')=',TEMPEXP1(J)
-!      ENDDO
-      call mem_alloc(TEMPEXP2,(SEGMENTrow(I+1)))
-      DO J=1,SEGMENTrow(I+1)
-         TEMPEXP2(J)=Exponents%elms(K+SEGMENTrow(I)+J-1)
-      ENDDO
-!      DO J=1,SEGMENTrow(I+1)
-!         WRITE(lupri,*)'TEMPEXP2(',J,')=',TEMPEXP2(J)
-!      ENDDO
-
-      DO J=1,SEGMENTrow(I+1)
-         Exponents%elms(K+J-1)=TEMPEXP2(J)
-      ENDDO
-      DO J=1,SEGMENTrow(I)
-         Exponents%elms(K+SEGMENTrow(I+1)+J-1)=TEMPEXP1(J)
-      ENDDO
-
-      !SWAP SEGMENTS
-      nrow=SEGMENTrow(I+1)
-      SEGMENTrow(I+1)=SEGMENTrow(I)
-      SEGMENTrow(I)=nrow
-      ncol=SEGMENTcol(I+1)
-      SEGMENTcol(I+1)=SEGMENTcol(I)
-      SEGMENTcol(I)=ncol     
-      nrow=Nend(I+1)
-      Nend(I+1)=Nend(I)
-      Nend(I)=nrow
-      nrow=Nstart(I+1)
-      Nstart(I+1)=Nstart(I)
-      Nstart(I)=nrow
-      call mem_dealloc(TEMPEXP1)
-      call mem_dealloc(TEMPEXP2)
-!      WRITE(lupri,*)'THE SWAPED VERSION'
-!      DO J=K,K+SEGMENTrow(I+1)+SEGMENTrow(I)-1
-!         WRITE(lupri,*)'EXP(',J,')=',Exponents%elms(J)
-!      ENDDO
-      K=K+SEGMENTrow(I+1)
-      I=I+1
-   ELSE     
-      K=K+nrow
-      I=I+1
+   !for each contracted function determine which Primitives contribute. 
+   do j=1,nOrbital
+      do i=1,nPrim
+         Prim(i,j) = ABS(CC(i,j)).GT.1.0E-12_realk
+      enddo
+   enddo
+   !loop over contracted functions if j can be merged with j+1 do so
+   !Determine the number of segments and sizes of the segments
+   merged = .FALSE.
+   Nsegments = 0
+   SEGMENTCOLID = .FALSE.
+   do j=1,nOrbital
+      IF(.NOT.merged(j))THEN
+         Nsegments = Nsegments + 1  
+         do i=1,nPrim
+            MergedPrim(i,Nsegments) = Prim(i,j) 
+         enddo
+         SEGMENTROW(Nsegments) = COUNT(MergedPrim(:,Nsegments))
+         SEGMENTCOL(Nsegments) = 1
+         SEGMENTCOLID(j,Nsegments) = .TRUE.
+         do k=j+1,nOrbital
+            IF(.NOT.merged(k))THEN
+               PerfomMerge = TrueSubset(Prim(:,j),Prim(:,k),nrow)
+               IF(PerfomMerge)THEN
+                  !merge k into j 
+                  merged(k) = .TRUE.
+                  do i=1,nPrim
+                     MergedPrim(i,Nsegments) = Prim(i,k) .OR. MergedPrim(i,Nsegments)
+                  enddo
+                  SEGMENTROW(Nsegments) = COUNT(MergedPrim(:,Nsegments))
+                  SEGMENTCOL(Nsegments) = SEGMENTCOL(Nsegments) + 1  
+                  SEGMENTCOLID(k,Nsegments) = .TRUE.
+               ENDIF
+            ENDIF
+         enddo
+      ENDIF
+   enddo
+   IF(IPRINT.GT.10)THEN
+      WRITE(lupri,*)'Nsegments',Nsegments
+      WRITE(lupri,*)'SEGMENTROW:',SEGMENTROW(1:Nsegments)
+      WRITE(lupri,*)'SEGMENTCOL:',SEGMENTCOL(1:Nsegments)
+      do k=1,nOrbital
+         WRITE(lupri,*)'SEGMENTCOLID(',k,'):',SEGMENTCOLID(k,1:Nsegments)
+      enddo
    ENDIF
-ENDDO
+   CALL INIT_BASISSETINFO_ContractionM(BasInfo,at,nAngmom,Nsegments)
+   DO J=1,Nsegments
+      nrow=SEGMENTROW(J)
+      ncol=SEGMENTCOL(J)
+      !For each segment copy info into structure
+      CALL INIT_BASISSETINFO_elms(BasInfo,at,nAngmom,J,nrow,ncol)
+      kk=0
+      do i=1,nPrim
+         IF(MergedPrim(i,J))THEN
+            kk=kk+1           
+            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Exponents%elms(I)
+         ENDIF
+      enddo
+      icol = 0
+      do k=1,nOrbital
+         IF(SEGMENTCOLID(k,J))THEN
+            icol = icol + 1
+            kk=0
+            do i=1,nPrim
+               IF(MergedPrim(i,J))THEN
+                  kk=kk+1
+                  BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(kk+(icol-1)*nrow)=CCN(I,k)
+                  BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(kk+(icol-1)*nrow)=CC(I,k)
+               ENDIF
+            enddo
+         ENDIF
+      enddo
+      !Print Stuff
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+      ENDIF
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow,'ncol',ncol
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+      ENDIF
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow,'ncol',ncol
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+      ENDIF
+   enddo
+ENDIF
 
-!**********************************************************
-!*
-!* STEP 5. BUILD CONTRACTIONMATRIX
-!*
-!**********************************************************
-
-DO I=1,Nsegments
-   nrow=SEGMENTrow(I)
-   ncol=SEGMENTcol(I)
-   CALL INIT_BASISSETINFO_elms(BasInfo,atomtype,nAngmom,I,nrow,ncol)
-   DO K=1,nrow
-      DO L=1,ncol
-         BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-              &segment(I)%elms(K+(L-1)*nrow)=&
-              &ContractionmatrixNORM%elms(Nstart(I)+K+(L-1)*nprim-1)
-      ENDDO
-   ENDDO
-   DO K=1,nrow
-      DO L=1,ncol
-         BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-              &segment(I)%UCCelms(K+(L-1)*nrow)=&
-              &Contractionmatrix%elms(Nstart(I)+K+(L-1)*nprim-1)
-      ENDDO
-   ENDDO
-   IF(IPRINT .GT. 200)THEN
-      WRITE(LUPRI,*)'Exponents nr.',I,'nrow',nrow
-      call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-           &segment(I)%elms, 1, nrow, 1, ncol, nrow, ncol, 1, LUPRI)
-   ENDIF
-   IF(IPRINT .GT. 200)THEN
-      WRITE(LUPRI,*)'UCC Exponents nr.',I,'nrow',nrow
-      call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-           &segment(I)%UCCelms, 1, nrow, 1, ncol, nrow, ncol, 1, LUPRI)
-   ENDIF
-ENDDO
-
-!**********************************************************
-!*
-!* STEP 6. BUILD EXPONENTS
-!*
-!**********************************************************
-
-k=1
-DO I=1,Nsegments
-  nrow=BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-        &segment(I)%nrow
-  DO J=1,nrow
-     BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-     &segment(I)%Exponents(J)=Exponents%elms(k)
-     k=k+1
-  ENDDO 
-  IF(IPRINT .GT. 200)THEN
-     WRITE(LUPRI,*)'Exponents nr.',I,'nrow',nrow
-     call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-          &segment(I)%Exponents, 1, nrow, 1, 1, nrow, 1, 1, LUPRI)
-  ENDIF
-ENDDO
-
-call mem_dealloc(SEGMENTROW)
-call mem_dealloc(SEGMENTCOL)
+call mem_dealloc(CCN)
+call mem_dealloc(CC)
 
 END SUBROUTINE ANALYSE_CONTRACTIONMATRIX
+
+logical function TrueSubset(PrimJ,PrimK,ndim)
+implicit none
+integer :: ndim
+logical :: PrimJ(ndim),PrimK(ndim)
+!
+integer :: I 
+
+TrueSubset = .FALSE.
+do I = 1,ndim
+   IF(PrimJ(I).AND.PrimK(I))THEN
+      !share primitive orbital
+      TrueSubset = .TRUE.
+      EXIT
+   ENDIF
+enddo
+end function TrueSubset
 
 !> \brief Normalize the orbitals
 !> \author T. Kjaergaard

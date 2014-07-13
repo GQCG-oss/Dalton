@@ -1915,6 +1915,10 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1934,7 +1938,7 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.XXXXXX', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.EFS   ', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2072,6 +2076,11 @@ C&&& KSPT2M
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
    14          CONTINUE
 C&&&
+#ifdef ENABLE_EFS
+               use_efs = .true.
+#else
+               call quit('.EFS not available in this version')
+#endif
                GO TO 100
    15          CONTINUE
 C&&&
