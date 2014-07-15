@@ -9,7 +9,11 @@ set_source_files_properties(${EFS_HEADERS_DIR}/libechidna/libechidna.hpp PROPERT
 set_source_files_properties(${EFS_HEADERS_DIR}/low/MPIwrap.hpp           PROPERTIES GENERATED TRUE)
 set_source_files_properties(${EFS_HEADERS_DIR}/math/tensors.hpp          PROPERTIES GENERATED TRUE)
 
-set(CMAKE_CXX_FLAGS "-march=native -fopenmp")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    set(CMAKE_CXX_FLAGS "-fopenmp")
+else()
+    set(CMAKE_CXX_FLAGS "-march=native -fopenmp")
+endif()
 
 add_library(
     efs_interface
