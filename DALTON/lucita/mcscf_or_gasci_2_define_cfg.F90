@@ -93,6 +93,7 @@ contains
           lucita_cfg_max_batch_size                =  64000000  ! default
           lucipar_cfg_ttss_dist_strategy           =  2         ! default
           lucipar_cfg_mem_reduction_multp          =  3         ! default
+          lucita_cfg_spindensity_calc_lvl          = spindens_lvl
 
 
           select case(mctype)

@@ -333,8 +333,8 @@ C
      &            ISCR1(1+2*NFINDM),SCR1(1+2*NFINDM),ISCR1,SCR1,IPRT)
           END IF
           CALL REWINE(LU1,-1)
-          IBASE = 1
-          TEST = 1.0D-10
+          IBASE   = 1
+          TEST    = 1.0D-10
 !test     inideg  = -1
           irootsi =  1
 
@@ -352,12 +352,14 @@ C
               END IF
             END IF
 
+!#define TEST_THIS_VERSION_DEGENERACIES
+
 #ifdef TEST_THIS_VERSION_DEGENERACIES
 
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
               WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
               WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
-!old          NDEG = 1
+              NDEG = 1
             END IF
 
 !  Initial guess in compressed form in SCR1
@@ -492,6 +494,9 @@ C
 
          i12_save = i12
          i12      = 1 ! only 1-body terms...
+         if(ispnden > 0)then
+           i12      = ispnden
+         end if
 !        ispnden  = 1
 
          luci_cvec = 99
@@ -527,12 +532,23 @@ C
 
            call rewine(lu5,-1)
            call rewine(lu6,-1)
+
+           xxs2dum = 0.0d0
 !                                                            1: sigma vector
 !                                                            2: density matrix
            call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 0,
      &                    xxs2dum)                          !   1: rhotype == 1 (regular density matrix)
 !                                                           !   3: rhotype == 3 (transition density matrix)
 !                                                           !   0: rhotype == 0 (regular density matrix run in CI)
+
+        if(i12 > 1)then
+          write(luwrt,'(/a      )')
+     &'   ------------------------------------------------'
+          write(luwrt,'(a,1f10.3)')
+     &'   expectation value of operator <S**2> =', xxs2dum
+          write(luwrt,'(a/      )')
+     &'   ------------------------------------------------'
+        end if
 
 !********************
 !!! Odile+Manu debug
@@ -559,6 +575,9 @@ C
 !        CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
 !    &               -11,luwrt)
 
+!        reset i12 to allow for 1 and most likely 2-electron contributions
+         i12 = i12_save
+
          call lucita_putdens_generic(work(krho1_ens),work(krho2),
      &                              fsr,xxdummy,xxdummy,i12,2,1,nrootsl)
 !                                                            2: density matrix
@@ -569,9 +588,6 @@ C
          CALL OUTPAK(work(krho1_ens),ntoob,-1,LUPRI)
 #endif
 
-
-!        reset i12 to allow for 1 and most likely 2-electron contributions
-         i12 = i12_save
 !        ispnden  = 0
 
 !        deallocate(fsr)

@@ -750,7 +750,7 @@ contains
 
           call lucita_putdens_generic(work(krho1),work(krho2),work(k_scratch1),work(k_scratch2),     &
                                       work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
-          if(ispnden == 1)then
+          if(ispnden >= 1)then
             call lucita_spinputdens_1p(work(ksrho1a),work(krho2),work(k_scratch1),work(k_scratch2),  &
                                        work(k_dens2_scratch),  1,isigden,rhotype_spin1,eigen_state_id,1)
             call lucita_spinputdens_1p(work(ksrho1b),work(krho2),work(k_scratch1),work(k_scratch2),  &
@@ -775,7 +775,7 @@ contains
           iprden = 1
 #endif
 !         if (ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 1) then
-          if (ispnden == 1)then
+          if (ispnden >= 1)then
             write(luwrt,'(/a)') ' Natural spin-orbital occupation numbers for alpha spin-orbitals'
             call lnatorb(work(ksrho1a),nsmob,ntoobs,nacobs,ninobs,                                 &
                          ireost,work(k_scratch1),work(k_scratch2),work(k_scratch3),nacob,          &

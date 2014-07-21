@@ -557,6 +557,9 @@ C Use average (approximate) orbital Hessian diagonal
 !
 !     default CI program used as MCSCF backbone 
       ci_program = 'SIRIUS-CI'
+
+      !> set default level (no spin-densities requested) for spin-density calculation (works only for LUCITA)
+      spindens_lvl = 0
 C
 C********** Default values section CICINP *****
 C
@@ -3260,7 +3263,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 34)
+      PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
      *          REWORD*12
       LOGICAL ALLOPT
@@ -3291,7 +3294,7 @@ C
      *            '.NEO AL','.PHPRES','.NO ABS','.NR ALW','.OPTIMA',
      *            '.ORB_TR','.MCAVER','.SIMULT','.THRESH','.OLSEN ',
      *            '.TRACI ','.FOCKDI','.NOTRAC','.CI PHP','.NO ACT',
-     *            '.DETERM','.NATONL','.FOCKON','.CI PRO'/
+     *            '.DETERM','.NATONL','.FOCKON','.CI PRO','.xxxxxx'/
 C
 C Internal flags
       IFNSIM = 0
@@ -3311,7 +3314,7 @@ C
                   GO TO (101,102,103,104,105,106,107,108,109,110,
      *                   111,112,113,114,115,116,117,118,119,120,
      *                   121,122,123,124,125,126,127,128,129,130,
-     *                   131,132,133,134), II
+     *                   131,132,133,134,135), II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3604,6 +3607,9 @@ C *** Option 34 >CI PRO< set CI program to be used as MCSCF backbone
         ci_program = '         '
         READ (LUCMD,*) ci_program(1:9)
       GO TO 100
+      !> xxxxxx
+ 135  CONTINUE
+      GO TO 100
 C
  9000 CONTINUE
 
@@ -3662,7 +3668,7 @@ C
 C 1-Oct 1987 Hans Agren
 C
 #include "implicit.h"
-      PARAMETER (NTABLE = 12)
+      PARAMETER (NTABLE = 13)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7
       LOGICAL ALLOPT
 C
@@ -3678,7 +3684,7 @@ C
 C
       DATA TABLE /'.CINO  ','.CIDENS','.CIROOT','.DISKH2','.THRESH',
      *            '.THRPWF','.WEIGHT','.ZEROEL','.STATE ','.FULLCI',
-     *            '.CISD  ','.MAX IT'/
+     *            '.CISD  ','.MAX IT','.SPDENS'/
 C
 C     ***** PROCESS INPUT FOR CICINP *****
 C
@@ -3692,7 +3698,7 @@ C
             DO 1102 II = 1, NTABLE
                IF (TABLE(II) .EQ. WORD) THEN
                   GO TO (101,102,103,104,105,106,107,108,109,110,
-     *                   111,112) II
+     *                   111,112,113) II
                END IF
  1102       CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3776,6 +3782,10 @@ C *** Option 12 >MAX IT< Maximum number of iterations in
 C                        CI diagonalization.
   112 CONTINUE
       READ (LUCMD,*) MXCIMA
+      GO TO 100
+C     !> >SPDENS< set level (1-/2-particle) spin density calculation
+  113 CONTINUE
+        READ (LUCMD,*) spindens_lvl
       GO TO 100
 C
  8000 CONTINUE

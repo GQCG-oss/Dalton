@@ -16,7 +16,7 @@
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO,SPINDENS_lvl
       COMMON /INTINP/ NFIELD, ISPIN,ISTATE,LSYM,NACTEL, MCTYPE,         &
      &                LSOLMX,NLMSOL,NELMN1,NELMX1,NELMN3,NELMX3,        &
      &                LROOTS,NROOTS,IROOT(MAXRTS),                      &
@@ -24,7 +24,8 @@
      &                IORTO,ICI0,KDEL,ICHECK,NTIT,                      &
      &                MAXMAC,MAXMIC,MAXJT,MAXCIT,MAXUIT,MAXAPM,MAXABS,  &
      &                ITRLVL,ITRFIN,JCHSYM,JCHORB,                      &
-     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, NMCAVER
+     &                NROOCI,ISTACI, MXCIMA, ICICNO,IMCCNO, NMCAVER,    &
+     &                SPINDENS_lvl
 !
       LOGICAL         FLAG,        DOSCF,DOMP2,DOCINO,DOCI,DOMC,DORSP,  &
      &                FCVORB,LNOROT,LMOORD,DIRFCK,CORHOL,CORRLX,RESPHP, &
