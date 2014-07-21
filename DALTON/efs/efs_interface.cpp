@@ -852,7 +852,10 @@ void efs_init_2efock_slave_ () {
 
 void efs_init_2efock_(double * Xscaling) {
 
+#ifndef SYS_DARWIN
+    // radovan: not available on OS X
     feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
 
     if (ThisNode.IsMaster()) {
 

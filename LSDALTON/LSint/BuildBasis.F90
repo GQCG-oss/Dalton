@@ -1455,7 +1455,7 @@ SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,at,&
 implicit none
 TYPE(BASISSETINFO),intent(inout)  :: BASINFO
 TYPE(lsmatrix),intent(in) :: Contractionmatrix,ContractionmatrixNORM
-TYPE(lsmatrix),intent(in) :: Exponents
+TYPE(lsmatrix),intent(inout) :: Exponents
 INTEGER,intent(in)      :: at,nAngmom,nprim,nOrbital
 !local variables
 INTEGER      :: ncol,nrow,K,L,LUPRI,J,IPRINT
@@ -1465,7 +1465,7 @@ INTEGER      :: nOrb(nprim),mPrim(nOrbital)
 LOGICAL      :: Segmented,Prim(nPrim,nOrbital),PerfomMerge
 LOGICAL      :: merged(nOrbital),MergedPrim(nPrim,nOrbital)
 LOGICAL      :: SEGMENTCOLID(nOrbital,nOrbital)
-real(realk),pointer  :: CCN(:,:),CC(:,:) ,EXPon(:)
+real(realk),pointer  :: CCN(:,:),CC(:,:) 
 real(realk)  :: newExponents,newCC,newCCN
 
 IF (IPRINT .GT. 200)THEN
@@ -1480,9 +1480,6 @@ call mem_alloc(CCN,nrow,ncol)
 call dcopy (nrow*ncol,ContractionmatrixNorm%elms,1,CCN,1)
 call mem_alloc(CC,nrow,ncol)
 call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
-call mem_alloc(EXPon,nrow)
-call dcopy (nrow,Exponents%elms,1,EXPon,1)
-
 IF (IPRINT .GT. 200)THEN
    WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
    WRITE(LUPRI,*)'CCN'
@@ -1493,10 +1490,10 @@ ENDIF
 !reorder primitives at this level using basic bubblesort
 DO K=1,nrow
    DO J=1,nrow-1
-      IF(Expon(J+1).GT. Expon(J))THEN
-         newExponents=Expon(J)
-         Expon(J)=Expon(J+1)
-         Expon(J+1)=newExponents
+      IF(Exponents%elms(J+1).GT. Exponents%elms(J))THEN
+         newExponents=Exponents%elms(J)
+         Exponents%elms(J)=Exponents%elms(J+1)
+         Exponents%elms(J+1)=newExponents
          do I=1,nOrbital
             newCC=CC(J,I)
             CC(J,I)=CC(J+1,I)
@@ -1552,7 +1549,7 @@ IF(Segmented)THEN
          K = K + 1
          BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(K)=CCN(I,J)
          BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(K)=CC(I,J)
-         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Expon(I)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Exponents%elms(I)
       ENDIF
    enddo
 
@@ -1629,7 +1626,7 @@ ELSE
       do i=1,nPrim
          IF(MergedPrim(i,J))THEN
             kk=kk+1           
-            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Expon(I)
+            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Exponents%elms(I)
          ENDIF
       enddo
       icol = 0
@@ -1664,7 +1661,6 @@ ENDIF
 
 call mem_dealloc(CCN)
 call mem_dealloc(CC)
-call mem_dealloc(EXPON)
 
 END SUBROUTINE ANALYSE_CONTRACTIONMATRIX
 
