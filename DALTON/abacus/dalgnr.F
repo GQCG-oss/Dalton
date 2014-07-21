@@ -419,8 +419,7 @@ C     subsystems needed by QM/NP/MM embedding scheme
 C     ***************************************************************
 C
       IF (QMNPMM .AND. .NOT.ONLYOV) THEN
-         call quit('not available in this version')
-!        CALL READ_POT_QMNPMM()
+         CALL READ_POT_QMNPMM()
       END IF
 C
 C     ***************************************************************
@@ -1921,8 +1920,7 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
 C
 C     "*QMNPMM" input
    12 CONTINUE
-        call quit('not available in this version')
-!       CALL QMNPINP(WORD)
+        CALL QMNPINP(WORD)
       GO TO 200
    13 CONTINUE
 #if defined (BUILD_QFITLIB)

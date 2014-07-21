@@ -32,7 +32,7 @@ cat > LSresponse_HF_alpha_admm.info <<'%EOF%'
 #######################################################################
 cat > LSresponse_HF_alpha_admm.mol <<'%EOF%'
 BASIS
-6-31G* Aux=3-21G CABS=3-21G JK=3-21G
+6-31G* Aux=3-21G ADMM=3-21G
 H2O
 
 Atomtypes=2 Angstrom Nosymmetry

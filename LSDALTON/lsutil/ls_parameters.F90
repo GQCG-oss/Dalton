@@ -104,7 +104,7 @@ MODULE Integralparameters
   integer,parameter :: SLAVES_SHUT_DOWN_CHILD       = 39
   integer,parameter :: LSPDM_SLAVES_SHUT_DOWN_CHILD = 40
   integer,parameter :: CHILD_SHUT_DOWN              = 41
-  integer,parameter :: CCSD_COMM_PROC_MASTER        = 42
+  integer,parameter :: CCSD_COMM_PROC_MASTER        = 42 !This one is deprecated and may be replaced PE
   integer,parameter :: CCGETGMO                     = 43
   integer,parameter :: RPAGETRESIDUAL               = 44
   integer,parameter :: MOCCSDDATA                   = 45

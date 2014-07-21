@@ -293,8 +293,10 @@ module lspdm_basic_module
           else
             call mem_alloc(arr%ti(counter)%t,arr%tsize)
             call mem_alloc(arr%ti(counter)%d,arr%mode)
+            if( array_debug_mode )then
+               arr%ti(counter)%t=0.0E0_realk
+            endif
           endif
-          arr%ti(counter)%t=0.0d0
           arr%ti(counter)%e=arr%tsize
           vector_size = dble(arr%ti(counter)%e)*realk
 !$OMP CRITICAL
@@ -354,9 +356,13 @@ module lspdm_basic_module
             &infpar%pc_comm,arr%ti(loc_idx)%e)
           else
             call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
-          endif
-          if( parent )&
-           &call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
+         endif
+         if( parent )&
+            &call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
+
+         if( array_debug_mode )then
+            arr%ti(loc_idx)%t=0.0E0_realk
+         endif
 #endif
 
           vector_size = dble(arr%ti(loc_idx)%e)*realk
@@ -420,6 +426,10 @@ module lspdm_basic_module
         call mem_alloc(arr%dummy,arr%dummyc,ne,arr%dummyw,infpar%pc_comm,nelms)
       else
         call mem_alloc(arr%dummy,arr%dummyc,nelms)
+      endif
+
+      if( array_debug_mode )then
+         arr%dummy = 0.0E0_realk
       endif
 #endif
 

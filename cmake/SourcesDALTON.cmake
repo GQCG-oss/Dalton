@@ -166,6 +166,9 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/abacus/average.F
     DALTON/abacus/angpso.F
     DALTON/abacus/angkin.F
+    DALTON/abacus/herqmnp.F
+    DALTON/rsp/rspqmnp.F
+    DALTON/sirius/sirqmnp.F
     DALTON/amfi/amfi.F
     DALTON/amfi/symtra.F
     DALTON/cc/asqr.F

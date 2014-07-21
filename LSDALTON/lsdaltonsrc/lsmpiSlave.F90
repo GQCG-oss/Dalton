@@ -142,14 +142,14 @@ subroutine lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
+#ifdef MOD_UNRELEASED
       case(MP2INAMPRI);
          call MP2_RI_EnergyContribution_slave
+#endif
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
          call ccsd_data_preparation
-      case(CCSD_COMM_PROC_MASTER);
-         call get_master_comm_proc_to_wrapper
       case(MO_INTEGRAL_SIMPLE);
          call get_mo_integral_par_slave
       case(CCSDSLV4E2);

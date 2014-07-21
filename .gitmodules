@@ -13,6 +13,9 @@
 [submodule "external/qfitlib"]
 	path = external/qfitlib
 	url = https://github.com/cstein/qfitlib.git
+[submodule "external/efs"]
+	path = external/efs
+	url = git@repo.ctcc.no:efs.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
 	url = git@repo.ctcc.no:pcmsolver.git

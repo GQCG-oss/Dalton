@@ -633,11 +633,11 @@ C
                CTMP = QRFFRQ(IQRF,2)
             END IF
             IF (ABS_BETA) THEN
-               WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+               WRITE(LUPRI,'(I4,3A10,3F10.6,2F16.6)') IQRF,
      &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &              (RES_BETA(IQRF,I), I=1,2)
             ELSE IF (ABS_MCD) THEN
-               WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+               WRITE(LUPRI,'(I4,3A10,3F10.6,2F16.6)') IQRF,
      &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
 C
@@ -1907,7 +1907,7 @@ C
      &        '--------------------------------------',
      &        '-------------------------------------'
          DO IQRF=1,NQRF
-            WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
+            WRITE(LUPRI,'(I4,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
          WRITE(LUPRI,'(2A)')
@@ -2040,7 +2040,7 @@ C
      &               ALAB,BLAB,CLAB,HYPVAL)
          IF (DOCAL) THEN
 C
-         WRITE(LUPRI,'(/,2(A,I4),A,3(/A,A10,I4,F10.6))')
+         WRITE(LUPRI,'(/,2(A,I5),A,3(/A,A10,I5,F10.6))')
      &        ' Quadratic response function no',IQRF,' of',NQRF,'.',
      &        ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      &        ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
@@ -2258,7 +2258,7 @@ C
 C
 C     For restart purposes, we write the response function to file
 C
-         WRITE(LURSPRES,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+         WRITE(LURSPRES,'(I4,3A10,3F10.6,2F16.6)') IQRF,
      &        (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &         RES_BETA(IQRF,1),RES_BETA(IQRF,2)
 C
@@ -2672,7 +2672,7 @@ C
 C
       DOCAL = .TRUE.
       REWIND (LURSPRES)
- 346  READ (LURSPRES,'(I3,3A10,3F10.6,2F16.6)',END=347)
+ 346  READ (LURSPRES,'(I4,3A10,3F10.6,2F16.6)',END=347)
      &     IQRF, (LABEL(I),I=1,3), (FREQ(I),I=1,3),VALUE(1),
      &     VALUE(2)
       IF ((LABEL(1) .EQ. ALAB) .AND. (LABEL(2) .EQ. BLAB) .AND.

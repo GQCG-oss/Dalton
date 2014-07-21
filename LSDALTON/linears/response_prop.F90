@@ -36,7 +36,7 @@ module response_wrapper_module
        & free_transition_density_matrices, TPAresponse_driver, &
        & ESGresponse_driver, Get_dipole_moment, ESDresponse_driver, &
        & DTPAresponse_driver, NMRshieldresponse_driver, &
-       & get_excitation_energies
+       & get_excitation_energies, dipolemomentmatrix_driver
   private
 
 Contains
@@ -85,36 +85,47 @@ Contains
     normDipole = sqrt(normDipole)
 
     if(doPrint) then
-       au_to_debye=2.54175
-       au_to_SI=8.47835
-       write(lupri,*)
-       write(lupri,*)
-       write(lupri,*)
-       write(lupri,'(6X,A)') '                 Permanent dipole moment'
-       write(lupri,'(6X,A)') '                 -----------------------'
-       write(lupri,'(12X,A)') '   au              Debye           10**-30 C m'
-       write(lupri,'(5X,3g18.6)') normDipole, au_to_debye*normDipole, au_to_SI*normDipole
-       write(lupri,*)
-       write(lupri,*)
-       write(lupri,'(6X,A)') '                 Dipole moment components'
-       write(lupri,'(6X,A)') '                 ------------------------'
-       write(lupri,'(12X,A)') '   au              Debye           10**-30 C m'
-       write(lupri,'(1X,A,3X,3g18.6)') 'x', DipoleMoment(1), &
-            & au_to_debye*DipoleMoment(1), au_to_SI*DipoleMoment(1)
-       write(lupri,'(1X,A,3X,3g18.6)') 'y', DipoleMoment(2), &
-            & au_to_debye*DipoleMoment(2), au_to_SI*DipoleMoment(2)
-       write(lupri,'(1X,A,3X,3g18.6)') 'z', DipoleMoment(3), &
-            & au_to_debye*DipoleMoment(3), au_to_SI*DipoleMoment(3)
-
-       write(lupri,*)
-       write(lupri,*)
-       write(lupri,*)
-
+       call PrintDipoleMoment(DipoleMoment,lupri)
     end if
 
   end subroutine Get_dipole_moment
 
-
+  subroutine PrintDipoleMoment(DipoleMoment,lupri)
+    implicit none
+    real(realk), intent(in) :: DipoleMoment(3)
+    integer,intent(in) :: lupri
+    integer :: i
+    real(realk) :: au_to_debye, au_to_SI, normDipole
+    normDipole=0E0_realk
+    do i=1,3
+       normDipole = normDipole + DipoleMoment(i)**2
+    end do
+    normDipole = sqrt(normDipole)         
+    au_to_debye=2.54175
+    au_to_SI=8.47835
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,'(6X,A)') '                 Permanent dipole moment'
+    write(lupri,'(6X,A)') '                 -----------------------'
+    write(lupri,'(12X,A)') '   au              Debye           10**-30 C m'
+    write(lupri,'(5X,3g18.6)') normDipole, au_to_debye*normDipole, au_to_SI*normDipole
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,'(6X,A)') '                 Dipole moment components'
+    write(lupri,'(6X,A)') '                 ------------------------'
+    write(lupri,'(12X,A)') '   au              Debye           10**-30 C m'
+    write(lupri,'(1X,A,3X,3g18.6)') 'x', DipoleMoment(1), &
+         & au_to_debye*DipoleMoment(1), au_to_SI*DipoleMoment(1)
+    write(lupri,'(1X,A,3X,3g18.6)') 'y', DipoleMoment(2), &
+         & au_to_debye*DipoleMoment(2), au_to_SI*DipoleMoment(2)
+    write(lupri,'(1X,A,3X,3g18.6)') 'z', DipoleMoment(3), &
+         & au_to_debye*DipoleMoment(3), au_to_SI*DipoleMoment(3)
+    
+    write(lupri,*)
+    write(lupri,*)
+    write(lupri,*)
+  end subroutine PrintDipoleMoment
 
   !> \brief Driver for calculating polarizabilites for frequencies defined in input.
   !> If no frequencies are specified the frequency is set to zero.
@@ -1411,25 +1422,25 @@ Contains
     write(lupri,*) 
     write(lupri,*) 
     write(lupri,*) 
-    write(lupri,'(2X,A)') '*************************************************************&
+    write(lupri,'(2X,A)') '********************************************************&
          &**********************'
-    write(lupri,'(2X,A)') '*                     ONE-PHOTON ABSORPTION RESULTS (in a.u.)&
-         &                     *'
-    write(lupri,'(2X,A)') '*************************************************************&
+    write(lupri,'(2X,A)') '*                   ONE-PHOTON ABSORPTION RESULTS (in a.u.)&
+         &                  *'
+    write(lupri,'(2X,A)') '********************************************************&
          &**********************'
     write(lupri,*)
     write(lupri,*) 
     write(lupri,*) 
-    write(lupri,*) '  Excitation                 Transition Dipole Moments         &
+    write(lupri,*) '     Excitation              Transition Dipole Moments      &
          &         Oscillator'
-    write(lupri,*) '   Energies              x                y                z   &
+    write(lupri,*) '      Energies            x               y               z  &
          &         Strengths'
-    write(lupri,*) '========================================================================&
+    write(lupri,*) '===================================================================&
          &============'
 
     PrintExcitationLoop: do i=1,nexci
 
-       write(lupri,'(5g17.8)') ExEnergies(i), trans_moments(i,1:3), OscillatorStrength(i)
+       write(lupri,'(5f16.8)') ExEnergies(i), trans_moments(i,1:3), OscillatorStrength(i)
 
     end do PrintExcitationLoop
 
@@ -3397,6 +3408,45 @@ Contains
    MyRspFunc%trans_moment_order = 1
  end subroutine set_verdet_RspFunc
 
+ subroutine set_doubleResidue_RspFunc(MyRspFunc,i,j,eC,freqI,freqJ,OperatorString)
+   implicit none
+   !> response function structure to be built
+   type(RspFunc) :: MyRspFunc
+   !> exited state i
+   integer,intent(in) :: i
+   !> exited state j
+   integer,intent(in) :: j
+   !> operator component (for instance electric component)
+   integer,intent(in) :: eC
+   !> the excitation freq for excitated state nr i
+   complex(realk),intent(in) :: freqI
+   !> the excitation freq for excitated state nr j
+   complex(realk),intent(in) :: freqJ
+   !> operator string like ( MAG or MAGO or EL )
+   character(len=4),intent(in) :: OPERATORSTRING
+!   !> logical which determine if the double residue should be app. 
+!   logical,intent(in) :: TrueDoubleResidue
+   call initialize_RspFunc(MyRspFunc)
+   MyRspFunc%order = 3     
+   MyRspFunc%code(1) = OPERATORSTRING
+   MyRspFunc%code(2) = 'EXCI'
+   MyRspFunc%code(3) = 'EXCI'
+   MyRspFunc%first_comp(1) = eC
+   MyRspFunc%first_comp(2) = 1  
+   MyRspFunc%first_comp(3) = 1  
+   MyRspFunc%dims(1) =  1
+   MyRspFunc%dims(2) =  1    
+   MyRspFunc%dims(3) =  1    
+   MyRspFunc%freq(1) =  0E0_realk    
+   MyRspFunc%freq(2) = -freqI  
+   MyRspFunc%freq(3) =  freqJ       
+   MyRspFunc%trans_moment = .TRUE.   !double residue
+   MyRspFunc%trans_moment_order = 2  !double residue
+   MyRspFunc%ExNumber1 = i
+   MyRspFunc%ExNumber2 = j
+!   MyRspFunc%TrueDoubleResidue = TrueDoubleResidue
+ end subroutine set_doubleResidue_RspFunc
+
  !> \brief main MCD driver
  !> \author Thomas Kjaergaard
  !> \date 2010-03
@@ -4920,6 +4970,310 @@ subroutine write_transition_density_matrix(nexci_max,lupri)
      CALL LSCLOSE(luExciTransDensMat,'KEEP')
   enddo
 end subroutine write_transition_density_matrix
+
+ !> \brief main DipoleMomentMatrix driver
+ !> \author Thomas Kjaergaard
+ !> \date 2010-03
+ !>
+ !> Main driver to determine the full dipole moment matrix $\mu_{xy}$ where $\mu_{00}$ is the 
+ !> dipole moment of the ground state while $\mu_{11}$ are the state dipole moments of the first 
+ !> excited state, and $\mu_{ij}$ it the transition dipole moment between state i and j. 
+ !> <br><br>
+ !> The input structure for response functions is as follows:
+ !> <br><br>
+ !> **RESPONS
+ !> <br>
+ !> *DIPOLEMOMENTMATRIX
+ !> <br> <br>
+ !> Questions regarding this driver, the input structure etc. 
+ !> may be addressed to tkjaergaard@chem.au.dk.
+ subroutine DipoleMomentMatrix_driver(lupri,setting,decomp,solver,F,D,S)
+  implicit none
+  !> logical unit number of output 
+  integer,intent(in)                :: lupri
+  !> Info on molecule needed by solver and integral programs
+  type(LSSETTING),intent(in),target :: setting
+  !> Contains matrices from OAO decomposition of overlap matrix
+  type(decompItem),intent(inout),target :: decomp
+  !> RSPsolver settings
+  type(RSPSOLVERinputitem),intent(inout),target  :: solver
+  !> Unperturbed Fock matrix
+  type(matrix), intent(in)          :: F
+  !> Unperturbed density matrix
+  type(matrix), intent(in)          :: D
+  !> Unperturbed overlap matrix
+  type(matrix), intent(in)          :: S
+  !> local parameters
+  !> Total number of response functions and transition moments requested
+  integer                           :: n_rspfunc
+  !> The position of the highest lying excited state requested
+  integer                           :: nexci_max
+  !> Stack of all response function and transition moments to be determined
+  type(RspFunc), allocatable        :: RspFunc_stack(:)
+  !> temporary response function structure
+  type(RspFunc)                     :: tmpRspFunc
+  complex(realk), allocatable       :: rsp_results(:,:)
+  type(rsp_molcfg) :: molcfg
+  real(realk),parameter :: hartree=27.21138386E0_realk
+  logical     :: doprint
+  real(realk) :: GSDipoleMoment(3)
+  complex(realk) :: freqI,freqK
+  real(realk),pointer :: DipoleMomentMatrix(:,:,:),excitationFreq(:)
+  character(len=12) :: Dir(3)
+  integer :: I,J,K,nrsp,KK,maxdim,l
+  Dir(1) = 'X coordinate'
+  Dir(2) = 'Y coordinate'
+  Dir(3) = 'Z coordinate'
+  write(lupri,*)'******************************************************'
+  write(lupri,*)'**                                                  **'  
+  write(lupri,*)'**  DipoleMomentMatrix Calculation                  **'
+  write(lupri,*)'**                                                  **'  
+  write(lupri,*)'******************************************************'
+  
+  !create config struct to be passed to rsp_contribs / rsp_equations
+!/*point to natoms within structure*/
+  molcfg = rsp_molcfg(S,setting%MOLECULE(1)%p%Natoms, &
+  & decomp%lupri,decomp%luerr,setting,decomp,solver)
+  molcfg%zeromat = 0*S
+  !defined by .NEXCIT in input
+  nexci_max = molcfg%decomp%cfg_rsp_nexcit
+  call mem_alloc(DipoleMomentMatrix,nexci_max+1,nexci_max+1,3)
+  doPrint = .TRUE.
+! Step 1: Ground state Dipole MOment GSDipoleMoment(1:3)
+  call Get_dipole_moment(molcfg,F,D,S,doPrint,GSDipoleMoment)
+  do I = 1,3
+     DipoleMomentMatrix(1,1,I) = GSDipoleMoment(I)
+  enddo
+
+  ! Step 2: Transition moments between the groundstate and the excited states
+  
+  !calc excitation energies and transition densities
+  call transition_moment_density_matrix(molcfg,F,D,S,nexci_max)
+  call write_transition_density_matrix(nexci_max,decomp%lupri)
+
+!  write(lupri,*)'DipoleMomentMatrix: done transition_moment_density_matrix'
+  maxdim = 3
+  n_rspfunc = nexci_max 
+  allocate(rsp_results(maxdim,n_rspfunc))
+  rsp_results(:,:) = (0.0E0_realk, 0.0E0_realk)
+!  WRITE(lupri,'(A)')'DipoleMomentMatrix: Transition moments between the groundstate and the excited states'
+!  WRITE(lupri,'(2X,A5,2X,A8,2X,A8,9X,A1,11X,A1,11X,A1,7X)')&
+!       &'STATE','Freq(au)','Freq(eV)','X','Y','Z'
+  !calc transition moments to determine dipole allowed transitions
+  call mem_alloc(excitationFreq,nexci_max)
+  do i = 1,nexci_max
+     excitationFreq(i) = REAL(rsp_eq_sol(i)%fld(1)%freq)
+     call initialize_RspFunc(tmpRspFunc)
+     tmpRspFunc%order = 2     
+     tmpRspFunc%code(1) = 'EL  '
+     tmpRspFunc%code(2) = 'EXCI'     
+     tmpRspFunc%first_comp(1) = 1    
+     tmpRspFunc%dims(1) = 3    
+     tmpRspFunc%freq(2) = -rsp_eq_sol(i)%fld(1)%freq
+     tmpRspFunc%freq(3) =  rsp_eq_sol(i)%fld(1)%freq
+     tmpRspFunc%trans_moment = .TRUE. !single residue
+     tmpRspFunc%trans_moment_order = 1 
+     tmpRspFunc%ExNumber1 = i
+     !calc transition moments 
+     call linear_response(molcfg,F,D,S,tmpRspFunc, &
+          &rsp_results(1:maxdim,i), maxdim)
+!     WRITE(lupri,'(I5,2X,F10.6,2X,F10.6,2X,F10.7,2X,F10.7,2X,F10.7,6X,A4)') &
+!          &i,REAL(rsp_eq_sol(i)%fld(1)%freq),REAL(rsp_eq_sol(i)%fld(1)%freq*hartree),&
+!          &REAL(rsp_results(1,i)),REAL(rsp_results(2,i)),REAL(rsp_results(3,i))
+
+     do J = 1,3
+        DipoleMomentMatrix(1,1+I,J) = REAL(rsp_results(J,i))
+        DipoleMomentMatrix(1+I,1,J) = REAL(rsp_results(J,i))
+     enddo
+  enddo
+  deallocate(rsp_results)
+
+  WRITE(lupri,'(A)')'DipoleMomentMatrix: Transition moments between the groundstate and the excited states'
+  WRITE(lupri,'(A)')' '
+  WRITE(lupri,'(2X,A5,2X,A8,2X,A8,9X,A1,11X,A1,11X,A1,7X)')&
+       &'STATE','Freq(au)','Freq(eV)','X','Y','Z'
+  do i = 1,nexci_max
+     WRITE(lupri,'(I5,2X,F10.6,2X,F10.6,2X,F10.7,2X,F10.7,2X,F10.7,6X,A4)') &
+          &i,excitationFreq(i),excitationFreq(i)*hartree,(DipoleMomentMatrix(1,1+I,J),J=1,3)
+  enddo
+  WRITE(lupri,'(A)')' '
+
+  ! Step 3: Transition moments between the groundstate and the excited states
+
+!  TrueDoubleResidue = .TRUE.
+  nrsp = 0
+  do i = 1,nexci_max
+     do k = i,nexci_max
+        nrsp = nrsp + 3
+     enddo
+  enddo
+  n_rspfunc = nrsp
+  allocate(RspFunc_stack(n_rspfunc))
+  nrsp = 0
+  do i = 1,nexci_max
+     freqI = excitationFreq(i)
+     do k = i,nexci_max
+        freqK = excitationFreq(k)
+        call set_doubleResidue_RspFunc(RspFunc_stack(nrsp+1),k,i,1,freqK,freqI,'EL  ')
+        call set_doubleResidue_RspFunc(RspFunc_stack(nrsp+2),k,i,2,freqK,freqI,'EL  ')
+        call set_doubleResidue_RspFunc(RspFunc_stack(nrsp+3),k,i,3,freqK,freqI,'EL  ')
+        nrsp = nrsp + 3
+        DipoleMomentMatrix(1+I,1+K,1) = 0.0E0_realk
+        DipoleMomentMatrix(1+I,1+K,2) = 0.0E0_realk
+        DipoleMomentMatrix(1+I,1+K,3) = 0.0E0_realk
+        DipoleMomentMatrix(1+K,1+I,1) = 0.0E0_realk
+        DipoleMomentMatrix(1+K,1+I,2) = 0.0E0_realk
+        DipoleMomentMatrix(1+K,1+I,3) = 0.0E0_realk
+     enddo
+  enddo
+  n_rspfunc = nrsp
+  call rspfunc_or_transmoment(molcfg,F,D,S,RspFunc_stack,n_rspfunc)
+  nrsp = 0
+  do i = 1,nexci_max
+     freqI = excitationFreq(i)
+     do k = i,nexci_max
+        freqK = excitationFreq(k)
+        DipoleMomentMatrix(1+I,1+K,1) = REAL(RspFunc_stack(nrsp+1)%result(1))
+        DipoleMomentMatrix(1+I,1+K,2) = REAL(RspFunc_stack(nrsp+2)%result(1))
+        DipoleMomentMatrix(1+I,1+K,3) = REAL(RspFunc_stack(nrsp+3)%result(1))
+        DipoleMomentMatrix(1+K,1+I,1) = REAL(RspFunc_stack(nrsp+1)%result(1))
+        DipoleMomentMatrix(1+K,1+I,2) = REAL(RspFunc_stack(nrsp+2)%result(1))
+        DipoleMomentMatrix(1+K,1+I,3) = REAL(RspFunc_stack(nrsp+3)%result(1))
+        nrsp = nrsp + 3
+     enddo
+  enddo
+  deallocate(RspFunc_stack)
+
+  WRITE(lupri,'(A)')'DipoleMomentMatrix Summary'
+  call PrintDipoleMoment(GSDipoleMoment,lupri)
+
+  WRITE(lupri,'(A)')'DipoleMomentMatrix: Transition moments between the groundstate and the excited states'
+  WRITE(lupri,'(A)')' '
+  WRITE(lupri,'(2X,A5,2X,A8,2X,A8,9X,A1,11X,A1,11X,A1,7X)')&
+       &'STATE','Freq(au)','Freq(eV)','X','Y','Z'
+  do i = 1,nexci_max
+     WRITE(lupri,'(I5,2X,F10.6,2X,F10.6,2X,F10.7,2X,F10.7,2X,F10.7,6X,A4)') &
+          &i,excitationFreq(i),excitationFreq(i)*hartree,(DipoleMomentMatrix(1,1+I,J),J=1,3)
+  enddo
+  WRITE(lupri,'(A)')' '
+  WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator XDIPLEN: <X | A - <A> | Y>'
+  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,1),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  WRITE(lupri,'(A)')' '
+
+  WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator YDIPLEN: <X | A - <A> | Y>'
+  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,2),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  WRITE(lupri,'(A)')' '
+
+  WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator ZDIPLEN: <X | A - <A> | Y>'
+  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,3),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  WRITE(lupri,'(A)')' '
+  WRITE(lupri,'(A)')'The Full Dipole Moment Matrix'
+  WRITE(lupri,'(A)')' '
+  WRITE(lupri,'(A)')'Column 0 indicate the Ground State. Element (0,0) is therefore the ground state dipole moment'
+  WRITE(lupri,'(A)')'Elements (0,X) is therefore the transition state dipole moment of the X. excited state'
+  WRITE(lupri,'(A)')'Elements (X,Y) is the transition dipole moment between state X and Y'
+  do J=1,3
+     WRITE(lupri,'(A,A12)')'Dipole Moment Matrix for ',Dir(J)
+     WRITE(lupri,'(A)')' '
+
+!     call output(DipoleMomentMatrix(:,:,J),1,1+nexci_max,1,1+nexci_max,1+nexci_max,1+nexci_max,1,lupri)
+
+     DO K = 1,nexci_max+1,4
+        IF(K.LE.nexci_max+1-3)THEN
+           IF(K.EQ.1)THEN
+              WRITE(lupri,'(A,I4,A,I4,A,I4,A,I4)')&
+                   &'               Column',K-1,' |   Column',K,'     Column',K+1,'     Column',K+2
+              WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8,2F15.8)')&
+                      &'    ',0,'  ',DipoleMomentMatrix(1,K,J),' |',(DipoleMomentMatrix(1,K+KK,J),KK=1,3)
+              WRITE(lupri,'(A)')'       ---------------------------------------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8,2F15.8)')&
+                      &'    ',L-1,'  ',DipoleMomentMatrix(L,K,J),' |',(DipoleMomentMatrix(L,K+KK,J),KK=1,3)
+              ENDDO
+           ELSE
+              WRITE(lupri,'(A,I4,A,I4,A,I4,A,I4)')&
+                   &'               Column',K-1,'     Column',K,'     Column',K+1,'     Column',K+2
+              WRITE(lupri,'(A,4F15.8)')'       0  ',(DipoleMomentMatrix(1,K+KK,J),KK=0,3)
+              WRITE(lupri,'(A)')'       ---------------------------------------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,4F15.8)')&
+                      &'    ',L-1,'  ',(DipoleMomentMatrix(L,K+KK,J),KK=0,3)
+              ENDDO
+           ENDIF
+        ELSEIF(K.LE.nexci_max+1-2)THEN
+           IF(K.EQ.1)THEN
+              WRITE(lupri,'(A,I4,A,I4,A,I4)')&
+                   &'               Column',K-1,' |   Column',K,'     Column',K+1
+!              WRITE(lupri,'(A,3F15.8)')'       0  ',(DipoleMomentMatrix(1,K+KK,J),KK=0,2)
+              WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8,F15.8)')&
+                   &'    ',0,'  ',DipoleMomentMatrix(1,K,J),' |',(DipoleMomentMatrix(1,K+KK,J),KK=1,2)
+              WRITE(lupri,'(A)')'       ------------------------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8,F15.8)')&
+                      &'    ',L-1,'  ',DipoleMomentMatrix(L,K,J),' |',(DipoleMomentMatrix(L,K+KK,J),KK=1,2)
+              ENDDO
+           ELSE
+              WRITE(lupri,'(A,I4,A,I4,A,I4)')&
+                   &'               Column',K-1,'     Column',K,'     Column',K+1
+              WRITE(lupri,'(A,3F15.8)')'       0  ',(DipoleMomentMatrix(1,K+KK,J),KK=0,2)
+              WRITE(lupri,'(A)')'       ------------------------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,3F15.8)')&
+                      &'    ',L-1,'  ',(DipoleMomentMatrix(L,K+KK,J),KK=0,2)
+              ENDDO
+           ENDIF
+        ELSEIF(K.LE.nexci_max+1-1)THEN
+           IF(K.EQ.1)THEN
+              WRITE(lupri,'(A,I4,A,I4)')&
+                   &'               Column',K-1,' |   Column',K
+!              WRITE(lupri,'(A,2F15.8)')'       0  ',(DipoleMomentMatrix(1,K+KK,J),KK=0,1)
+              WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8)')&
+                   &'    ',0,'  ',DipoleMomentMatrix(1,K,J),' |',DipoleMomentMatrix(1,K+1,J)
+              WRITE(lupri,'(A)')'       ---------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,F15.8,A,F13.8)')&
+                      &'    ',L-1,'  ',DipoleMomentMatrix(L,K,J),' |',DipoleMomentMatrix(L,K+1,J)
+              ENDDO
+           ELSE
+              WRITE(lupri,'(A,I4,A,I4)')&
+                   &'               Column',K-1,'     Column',K
+              WRITE(lupri,'(A,2F15.8)')'       0  ',(DipoleMomentMatrix(1,K+KK,J),KK=0,1)
+              WRITE(lupri,'(A)')'       ---------------------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,2F15.8)')&
+                      &'    ',L-1,'  ',(DipoleMomentMatrix(L,K+KK,J),KK=0,1)
+              ENDDO
+           ENDIF
+        ELSEIF(K.LE.nexci_max+1)THEN
+           IF(K.EQ.1)THEN
+              WRITE(lupri,'(A,I4)')&
+                   &'               Column',K-1
+              WRITE(lupri,'(A,1F15.8)')'       0  ',DipoleMomentMatrix(1,K,J)
+              WRITE(lupri,'(A)')'       ------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,1F15.8)')&
+                      &'    ',L-1,'  ',DipoleMomentMatrix(L,K,J)
+              ENDDO
+           ELSE
+              WRITE(lupri,'(A,I4)')&
+                   &'               Column',K-1
+              WRITE(lupri,'(A,1F15.8)')'       0  ',DipoleMomentMatrix(1,K,J)
+              WRITE(lupri,'(A)')'       ------------------'
+              DO L = 2,nexci_max+1
+                 WRITE(lupri,'(A,I4,A2,1F15.8)')&
+                      &'    ',L-1,'  ',DipoleMomentMatrix(L,K,J)
+              ENDDO
+           ENDIF
+        ENDIF
+        WRITE(lupri,'(A)')' '
+     ENDDO
+  enddo
+  WRITE(lupri,'(A)')'DipoleMomentMatrix Summary done'
+  call mem_dealloc(DipoleMomentMatrix)
+  call mem_dealloc(excitationFreq)
+
+end subroutine DipoleMomentMatrix_driver
+
 #else
 CONTAINS
 subroutine response_wrapper_dummy_routine()

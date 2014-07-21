@@ -371,7 +371,6 @@ extern Functional mPBExFunctional;
 extern Functional PW91xFunctional;
 extern Functional G96xFunctional;
 extern Functional LG93xFunctional;
-extern Functional OPTXFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;

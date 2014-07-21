@@ -1675,16 +1675,18 @@ contains
        endidx = MyMolecule%nocc
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co(1:nbasis,startidx:endidx),&
             & MyMolecule%Cv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
-            & print_level,fragment_job,&
-            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj, VOVO,.false.,local)
+            & print_level,&
+            & ppfock,MyMolecule%qqfock,energy, Tai, Taibj,&
+            & VOVO,.false.,local,DECinfo%use_pnos)
        call mem_dealloc(ppfock)
 
     else
 
        call ccsolver_par(DECinfo%ccmodel,MyMolecule%Co,MyMolecule%Cv,&
-            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, fragment_job,&
+            & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, print_level, &
             & MyMolecule%ppfock,MyMolecule%qqfock,&
-            & energy, Tai, Taibj, VOVO,.false.,local)
+            & energy, Tai, Taibj, VOVO,.false.,local,DECinfo%use_pnos)
+
     end if
 
     call array4_free(VOVO)

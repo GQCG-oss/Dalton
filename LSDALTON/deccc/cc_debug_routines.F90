@@ -180,7 +180,6 @@ module cc_debug_routines_module
      type(array) :: govov
      integer :: nspaces
      type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
-     type(array), pointer :: pno_govov(:)
 
 
      call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -450,19 +449,17 @@ module cc_debug_routines_module
 
          fraginfo%nspaces = nspaces
 
-         call mem_alloc( pno_govov, nspaces )
          call mem_alloc( fraginfo%CLocPNO, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &fraginfo%CLocPNO,fraginfo%nspaces,VOVO%val,pno_govov,fragment_job,f=fraginfo)
+         &fraginfo%CLocPNO,fraginfo%nspaces,f=fraginfo)
          pno_cv => fraginfo%CLocPNO
 
        else
                    !ALL PAIRS
          nspaces = nocc * ( nocc + 1 ) / 2
-         call mem_alloc( pno_govov, nspaces )
          call mem_alloc( pno_cv, nspaces )
          call get_pno_trafo_matrices(nocc,nvirt,nbasis,m2%val,&
-         &pno_cv,nspaces,VOVO%val,pno_govov,fragment_job,f=fraginfo)
+         &pno_cv,nspaces,f=fraginfo)
 
        endif
 
@@ -660,12 +657,12 @@ module cc_debug_routines_module
               !if(iter == 1) t2(iter)%val = m2%val
               if(.not.fragment_job)then
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,pno_cv,pno_S,pno_govov,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter)
               else
                 call get_ccsd_residual_pno_style(t1(iter)%val,t2(iter)%val,omega1(iter)%val,&
-                &omega2(iter)%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
-                &fragment_job,pno_cv,pno_S,pno_govov,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
+                &omega2(iter)%val,iajb%val,nocc,nvirt,nbasis,xocc%val,xvirt%val,yocc%val,yvirt%val,mylsitem,&
+                &fragment_job,pno_cv,pno_S,nspaces,ppfock%val,qqfock%val,delta_fock%val,iter,f=fraginfo)
               endif
 
               !stop 0
@@ -1024,8 +1021,8 @@ module cc_debug_routines_module
 
      ! Write finalization message
      !---------------------------
-     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,&
-     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
+     call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,DECinfo%use_singles, &
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final,m1 = m1, m2 = m2)
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)
@@ -1089,7 +1086,6 @@ module cc_debug_routines_module
 
            if( pno_cv(i)%allocd )then
               call free_PNOSpaceInfo(pno_cv(i))
-              !call array_free(pno_govov(i))
            endif
 
            do j = 1, i - 1
@@ -1105,7 +1101,6 @@ module cc_debug_routines_module
 
            if( fraginfo%CLocPNO(i)%allocd )then
               call free_PNOSpaceInfo( fraginfo%CLocPNO(i) )
-              !call array_free(pno_govov(i))
            endif
 
            do j = 1, i - 1
@@ -1119,7 +1114,6 @@ module cc_debug_routines_module
        endif
 
        call mem_dealloc( pno_S )
-       call mem_dealloc( pno_govov )
 
      endif
 

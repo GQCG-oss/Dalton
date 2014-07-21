@@ -102,6 +102,8 @@ module dec_typedef_module
      integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
      !> Use singles
      logical :: use_singles
+     !> is the density and other matrices in the grand-canonical basis?
+     logical :: gcbasis
 
 
      !> Restart options
@@ -174,7 +176,7 @@ module dec_typedef_module
      logical :: use_pnos
      !> override the transformation to the PNOs by putting unit matrices as
      !transformation matrices
-     logical :: noPNOtrafo, noPNOtrunc
+     logical :: noPNOtrafo, noPNOtrunc, pno_S_on_the_fly
      logical :: noFAtrafo, noFAtrunc
      !> defines a simple cutoff threshold for constructing the PNOs from the
      !correlation density
@@ -485,10 +487,15 @@ module dec_typedef_module
 
      !> Number of the orbital in full molecular basis
      integer :: orbitalnumber
-     !> Cental atom in the population
+     !> Central atom to which orbital is assigned
      integer :: centralatom
      !> Number of significant atoms
      integer :: numberofatoms
+     !> Secondary central atom for orbital. For example, if virtual orbital "a" is assigned to
+     !> a hydrogen atom "H_A" for which there are no occupied orbitals assigned, the secondary
+     !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+     !> of occupied AND virtual orbitals in the original assignment.
+     integer :: secondaryatom
 
      !> List of significant atoms
      integer, pointer :: atoms(:) => null()
@@ -1212,13 +1219,13 @@ module dec_typedef_module
      real(realk), pointer :: s1(:,:) => null()      ! the left unit matrix reduced to the kernel dimensions (ns1,red1)
      real(realk), pointer :: s2(:,:) => null()      ! the right unit matrix reduced to the kernel dimensions (red2,ns2)
 
-     logical              :: allocd                 ! logical to show the allocation status
+     logical              :: allocd,contributes     ! logical to show the allocation and contribution status
      logical              :: is_FA_space            ! save whether this refers to FA space, only important for trafo mats, not for overlap
      logical              :: PS                     ! save wheter it is a triangular pair space
   end type PNOSpaceInfo
 
   type pno_query_info
-     integer :: n_arrays
-     integer, pointer :: size_array(:)
+     integer(kind=8)          :: n_arrays
+     integer(kind=8), pointer :: size_array(:)
   end type pno_query_info
 end module dec_typedef_module

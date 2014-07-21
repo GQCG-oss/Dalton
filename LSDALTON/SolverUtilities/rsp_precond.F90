@@ -43,7 +43,7 @@ contains
       type(Matrix)             :: scrmat(1), b_current, sigma, rho, res
       integer                  :: i, j, k, matdim, max_it, iter, red_space_dim, IERR
       real(realk)              :: err, thresh, norm, test, fac
-      real                     :: t1, t2, t_lintra, t_ortho, t_setup, t_solve, t_write, & 
+      real(realk)              :: t1, t2, t_lintra, t_ortho, t_setup, t_solve, t_write, & 
                                 & t_precond, t_testforsym, t_init, t_end
       real(realk), allocatable :: testmat(:,:), fv1(:), fv2(:), eigenval(:), eigenvec(:,:)
       logical :: OnMaster

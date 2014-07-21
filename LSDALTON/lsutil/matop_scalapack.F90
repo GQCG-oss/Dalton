@@ -5,14 +5,17 @@
 !> and adapted to the scalapack matrix format. The module requires scalapack.
 
 module matrix_operations_scalapack
+
   use memory_handling
   use matrix_module
   use LSmatrix_type
+  use lsmatrix_operations_dense
   use precision
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
+
 !  use module_scalapack_aux, if mpi is on 32bits, then blacs is most probably
 !  too
   Type Grid
@@ -545,7 +548,6 @@ module matrix_operations_scalapack
 
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_scalapack_init(A,nrow,ncol)
-     use lsmpi_type
      implicit none
      TYPE(Matrix) :: A
      integer, intent(in) :: nrow, ncol
@@ -609,8 +611,6 @@ module matrix_operations_scalapack
 
 !> \brief See mat_set_from_full in mat-operations.f90
   subroutine mat_scalapack_set_from_full(afull,alpha,a)
-    use LSmatrix_type
-    use lsmatrix_operations_dense
      implicit none
     real(realk), INTENT(IN)    :: afull(*)
     real(realk), intent(in) :: alpha
@@ -1912,8 +1912,8 @@ module matrix_operations_scalapack
      INTEGER      :: DESC_A(DLEN_)
 #ifdef VAR_SCALAPACK
      CALL PDM_DSCINIT(DESC_A,A)
-     write(*,'("I am number ",I3," at postion (",I3,",",I3,")")'),infpar%mynum,SLGrid%myrow,SLGrid%mycol
-     write(*,'("and this is my block:A%localnrow,A%localncol:",I3,",",I3)'),A%localnrow,A%localncol
+     write(*,'("I am number ",I3," at postion (",I3,",",I3,")")')infpar%mynum,SLGrid%myrow,SLGrid%mycol
+     write(*,'("and this is my block:A%localnrow,A%localncol:",I3,",",I3)')A%localnrow,A%localncol
      IF(A%localnrow*A%localncol.GT.0)THEN
         call output(A%p,1,A%localnrow,1,A%localncol,A%localnrow,A%localncol,1,6)
      ELSE
@@ -3184,6 +3184,7 @@ module matrix_operations_scalapack
       CALL lsmpi_reduction(address_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
       call mem_dealloc(address_on_grid)
 #endif
+      call mem_allocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
    CASE(Job_rand)
       CALL PDM_DSCINIT(DESC_A,A)
       do i=1,A%localnrow
@@ -3519,7 +3520,8 @@ module matrix_operations_scalapack
       call scalapack_scal_dia_vec_aux(diag3,A,DESC_A,A%nrow)
       call mem_dealloc(diag3)
    CASE(Job_free)
-      CALL FREE_IN_DARRAY(A)
+      CALL FREE_IN_DARRAY(A)      
+      call mem_deallocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
    CASE DEFAULT
    END SELECT
    

@@ -21,6 +21,7 @@ module init_lsdalton_mod
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
   use memory_handling, only: Print_Memory_info
+  use tensor_interface_module, only: array_enable_debug_mode
   private
   public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
        & get_lsitem_from_input
@@ -108,6 +109,10 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   
   if (config%sparsetest) then
     call sparsetest(ls%setting, lupri)
+  endif
+
+  if( config%type_array_debug )then
+     call array_enable_debug_mode()
   endif
 
 end SUBROUTINE init_lsdalton_and_get_lsitem

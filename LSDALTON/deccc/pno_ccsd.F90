@@ -23,28 +23,45 @@ module pno_ccsd_module
   
   private
   
+  !SET OMP INFORMATION LOOP
+  integer, parameter :: beg_array   = 1
+  integer, parameter :: end_array   = 2
+  integer, parameter :: nloops      = 3
+  integer, parameter :: first_loop  = 1
+  integer, parameter :: second_loop = 2
+  integer, parameter :: third_loop  = 3
+  integer, parameter :: w1_tag      = 1
+  integer, parameter :: w2_tag      = 2
+  integer, parameter :: w3_tag      = 3
+  integer, parameter :: w4_tag      = 4
+  integer, parameter :: w5_tag      = 5
+  integer :: nthreads_level1_int_dir(nloops), max_nthr_int_loop
+  integer,pointer :: info_omp1(:,:,:,:)
+
+
   contains
+
+
   
   !> \author Patrick Ettenhuber
   !> \date November 2013
   !> \brief this subroutine calculates the ccsd residual by transforming each
   !>        doubles amplitudes to their respective set of PNO's and then
   !>        transforming the result vector back to the reference basis. 
-  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,no,nv,nb,xo,xv,yo,yv,&
-        &mylsitem,fj,pno_cv,pno_S,pno_govov,nspaces,oof,vvf,ifo,iter,f)
+  subroutine get_ccsd_residual_pno_style(t1,t2,o1,o2,govov,no,nv,nb,xo,xv,yo,yv,&
+        &mylsitem,fj,pno_cv,pno_S,nspaces,oof,vvf,ifo,iter,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb,iter,nspaces
      logical, intent(in) :: fj
      real(realk), intent(inout) :: t1(nv,no), t2(nv,no,nv,no)
-     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no)
+     real(realk), intent(inout) :: o1(nv,no), o2(nv,no,nv,no), govov(no*nv*no*nv)
      real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv),ifo(nb,nb)
      type(lsitem), intent(inout) :: mylsitem
      real(realk), intent(inout) :: oof(no,no),vvf(nv,nv)
      type(decfrag),intent(in),optional :: f
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_govov(nspaces)
      !INTERNAL VARIABLES
      type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
@@ -53,7 +70,7 @@ module pno_ccsd_module
      real(realk),pointer :: p1(:,:,:,:), p2(:,:,:,:), p3(:,:,:,:), p4(:,:,:,:)
      real(realk),pointer :: h1(:), h2(:), h3(:), h4(:)
      real(realk),pointer :: r1(:,:),r2(:,:)
-     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), govov(:), gooov(:)
+     real(realk),pointer :: gvvvv(:), gvovo(:), goovv(:), goovv_vvoo(:), gooov(:)
      real(realk),pointer :: Gai(:,:), Gkj(:,:)
      integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
@@ -77,7 +94,8 @@ module pno_ccsd_module
      integer :: dim1,dim2,dim3,MinAObatch
      integer :: iorb,nthreads
      type(int_batch) :: a_batch, g_batch
-     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,trest,tfin
+     real(realk) :: MemFree,tw,tc,tinit,tamps,tome,tbatchc,tint_dir,tfock,treord,trest,tfin
+     real(realk) :: mo_time(6)
      !real(realk) :: ref(no*nv*nv*no), ref1(no*nv), u(nv,no,nv,no)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -94,7 +112,8 @@ module pno_ccsd_module
 #endif
   
      call time_start_phase(PHASE_WORK, twall = tw)
-     tinit = tw
+     tinit   = tw
+     mo_time = 0.0E0_realk
   
      o2v2 = (i8*no**2)*nv**2
      use_triangular = .true.
@@ -119,7 +138,6 @@ module pno_ccsd_module
      call mem_alloc( pno_t2, nspaces  )
      call mem_alloc( pno_o2, nspaces  )
      call mem_alloc( sio4,   nspaces  )
-     call mem_alloc( govov,  o2v2     )
      call mem_alloc( goovv,  o2v2     )
      call mem_alloc( Lvoov,  o2v2     )
      call mem_alloc( gooov,  no**3*nv )
@@ -136,7 +154,6 @@ module pno_ccsd_module
      !zero the relevant quatnities
      !$OMP WORKSHARE
      Gai   = 0.0E0_realk
-     govov = 0.0E0_realk !remove this integral since it may be provided by MP2
      goovv = 0.0E0_realk
      Lvoov = 0.0E0_realk
      gooov = 0.0E0_realk
@@ -246,12 +263,17 @@ module pno_ccsd_module
      call mem_dealloc( iFock )
      call mem_dealloc( w1    )
 
-     call time_start_phase(PHASE_WORK, twall = trest, ttot = tfock, labelttot = &
+     call time_start_phase(PHASE_WORK, twall = treord, ttot = tfock, labelttot = &
         & 'PNO: fock matrix construction        :' )
 
      Lvoov = p20 * Lvoov
      call array_reorder_4d( m10, goovv, no, no ,nv, nv, [3,2,1,4], p10, Lvoov)
+     call mem_alloc( goovv_vvoo,  o2v2 )
+     call array_reorder_4d( p10, goovv, no, no ,nv, nv, [3,4,1,2], nul, goovv_vvoo)
+     call mem_dealloc( goovv )
 
+     call time_start_phase(PHASE_WORK, twall = trest, ttot = treord, labelttot = &
+        & 'PNO: sorting integrals for MO part   :' )
 
      call mem_alloc(Gkj, no, no)
      Gkj = oof
@@ -276,10 +298,10 @@ module pno_ccsd_module
      !$OMP PARALLEL DEFAULT(NONE) PRIVATE(d,t,idx,pnv,pno,a,i,b,j,ns,pnv1,pnv2,pno1,pno2,&
      !$OMP d1,d2,t21,t22,w1,w2,w3,w4,w5,o,idx1,idx2,p1,p2,p3,p4,h1,h2,&
      !$OMP oidx1,nidx1,oidx2,nidx2,i_idx,r1,r2,cyc,& 
-     !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv,gvvvv,&
+     !$OMP nc,nc2,rpd,PS,ic,jc,add_contrib,k,pair,l,bpc,epc) SHARED(pno_cv,pno_s,pno_t2,gvovo,goovv_vvoo,gvvvv,&
      !$OMP vvf,Lvoov,pno_o2,govov,paircontrib,paircontribs,&
      !$OMP Gkj, maxsize, nspaces, ovf,  s_idx,o1,sio4,&
-     !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) 
+     !$OMP s_nidx,gooov, no, nv, p_idx, p_nidx,spacemax) REDUCTION(+:mo_time)
      call init_threadmemvar()
 
      call mem_alloc( w1, maxsize )
@@ -323,6 +345,9 @@ module pno_ccsd_module
         !A2.2
         !call add_A22_contribution_simple(gvvvv,w1,w2,w3,d,t,o,pno,no,pnv,nv,pno_cv(ns)%n,PS)
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(1) )
+
+
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part1, B2 !! 
         !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -330,6 +355,9 @@ module pno_ccsd_module
         call get_free_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,o,&
            &w1,w2,w3,w4,w5,govov,vvf,sio4,nspaces)
 
+
+        call time_start_phase(PHASE_WORK, twall = mo_time(2), ttot = mo_time(1) )
+        mo_time(3) = mo_time(3) + mo_time(1)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  E2 Term part2, C2, D2 !! 
@@ -339,9 +367,11 @@ module pno_ccsd_module
         !pair index, this could in principle also be solved with if statements
         !in the previous full loop and only doing the following work in a subset
         call get_common_idx_summation_for_current_aibj(no,ns,pno_cv,pno_S,pno_t2,&
-           &o,w1,w2,w3,w4,w5,goovv,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
+           &o,w1,w2,w3,w4,w5,goovv_vvoo,govov,Lvoov,Gkj,p_idx,p_nidx,oidx1,oidx2,nspaces)
 
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(1), ttot = mo_time(2) )
+        mo_time(4) = mo_time(4) + mo_time(2)
 
         !!!!!!!!!!!!!!!!!!!!!!!!!
         !!!  B1 Term !!!!!!!!!!!!
@@ -410,6 +440,9 @@ module pno_ccsd_module
 
         endif
 
+        call time_start_phase(PHASE_WORK, twall = mo_time(2), ttot = mo_time(1) )
+        mo_time(5) = mo_time(5) + mo_time(1)
+
         d   => null()
         t   => null()
         idx => null()
@@ -419,6 +452,7 @@ module pno_ccsd_module
      enddo LoopContribs
      !$OMP END DO NOWAIT
 
+     call time_start_phase(PHASE_WORK, twall = mo_time(1) )
 
      ! Add the missing singles contributions
      !$OMP DO SCHEDULE(DYNAMIC)
@@ -654,6 +688,9 @@ module pno_ccsd_module
      enddo LoopSingles
      !$OMP END DO NOWAIT
 
+     call time_start_phase(PHASE_WORK, ttot = mo_time(1) )
+     mo_time(6) = mo_time(6) + mo_time(1)
+
      call mem_dealloc( w1 )
      call mem_dealloc( w2 )
      call mem_dealloc( w3 )
@@ -666,6 +703,12 @@ module pno_ccsd_module
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
+
+     write (*,'(" PNO: TIME MO part:")')
+     write (*,'(" PNO: common contribs      :",g10.3,"s")')mo_time(3)
+     write (*,'(" PNO: overlapping contribs :",g10.3,"s")')mo_time(4)
+     write (*,'(" PNO: B1                   :",g10.3,"s")')mo_time(5)
+     write (*,'(" PNO: C1                   :",g10.3,"s")')mo_time(6)
 
      call time_start_phase(PHASE_WORK, twall = tfin, ttot = trest, labelttot = &
         & 'PNO: MO part                         :' )
@@ -694,8 +737,7 @@ module pno_ccsd_module
      call mem_dealloc( pno_t2 )
      call mem_dealloc( pno_o2 )
      call mem_dealloc( sio4  )
-     call mem_dealloc( govov )
-     call mem_dealloc( goovv )
+     call mem_dealloc( goovv_vvoo )
      call mem_dealloc( Lvoov )
      call mem_dealloc( gooov )
      call mem_dealloc( p_idx )
@@ -711,6 +753,7 @@ module pno_ccsd_module
 #endif
      call time_start_phase(PHASE_WORK, ttot = tfin, labelttot = &
         & 'PNO: finalization                    :' )
+
   end subroutine get_ccsd_residual_pno_style
 
   subroutine get_overlap_idx(n1,n2,cv,idx,nidx,ndidx1,ndidx2)
@@ -719,7 +762,8 @@ module pno_ccsd_module
      type(PNOSpaceInfo), intent(in) :: cv(:)
      integer, intent(out) :: idx(:,:),nidx 
      integer, intent(out), optional :: ndidx1,ndidx2
-     integer :: n,nc1,nc2,pos
+     integer :: n,nc1,nc2,pos,ncidx1,ncidx2
+     logical :: yeah_this_is_one
 
      if(present(ndidx1)) ndidx1 = 0
      if(present(ndidx2)) ndidx2 = 0
@@ -744,39 +788,71 @@ module pno_ccsd_module
 
 
         if(present(ndidx1))then
-           ndidx1 = 0
+
+           ndidx1 = cv(n1)%n - nidx
+           ncidx1 = 0
+
            do nc1 = 1,cv(n1)%n
+
+              yeah_this_is_one = .true.
+
               do n=1, nidx
-                 if(cv(n1)%iaos(nc1) /= idx(n,3))then
-                    pos    = pos    + 1
-                    ndidx1 = ndidx1 + 1
-                    ! pos in first that equals second 
-                    idx(pos,1) = nc1
-                    ! pos in second that equals first - set invalid since there is none
-                    idx(pos,2) = -1
-                    ! the aos idx they refer to
-                    idx(pos,3) = cv(n1)%iaos(nc1)
+                 if( nc1 == idx(n,1))then
+                    yeah_this_is_one = .false.
                  endif
               enddo
+
+              if( yeah_this_is_one )then
+                 pos    = pos    + 1
+                 ncidx1 = ncidx1 + 1
+                 ! pos in first that equals second 
+                 idx(pos,1) = nc1
+                 ! pos in second that equals first - set invalid since there is none
+                 idx(pos,2) = -1
+                 ! the aos idx they refer to
+                 idx(pos,3) = cv(n1)%iaos(nc1)
+              endif
            enddo
+
+           if( ncidx1 /= ndidx1 )then
+              print *,ncidx1,ndidx1
+              call lsquit("ERROR: stuff dont work",-1)
+           endif
+
         endif
 
         if(present(ndidx2))then
-           ndidx2 = 0
+
+           ndidx2 = cv(n2)%n - nidx
+           ncidx2 = 0
+
            do nc2 = 1,cv(n2)%n
+
+              yeah_this_is_one = .true.
+
               do n=1, nidx
-                 if(cv(n2)%iaos(nc2) /= idx(n,3))then
-                    pos    = pos    + 1
-                    ndidx2 = ndidx2 + 1
-                    ! pos in first that equals second - set invalid since there is none
-                    idx(pos,1) = -1
-                    ! pos in second that equals first
-                    idx(pos,2) = nc2
-                    ! the aos idx they refer to
-                    idx(pos,3) = cv(n2)%iaos(nc2)
+                 if( nc2 == idx(n,2))then
+                    yeah_this_is_one = .false.
                  endif
               enddo
+
+              if( yeah_this_is_one )then
+                 pos    = pos    + 1
+                 ncidx2 = ncidx2 + 1
+                 ! pos in first that equals second - set invalid since there is none
+                 idx(pos,1) = -1
+                 ! pos in second that equals first
+                 idx(pos,2) = nc2
+                 ! the aos idx they refer to
+                 idx(pos,3) = cv(n2)%iaos(nc2)
+              endif
            enddo
+ 
+           if( ncidx2 /= ndidx2 )then
+              print *,ncidx2,ndidx2
+              call lsquit("ERROR: stuff dont work",-1)
+           endif
+
         endif
 
      else
@@ -807,9 +883,9 @@ module pno_ccsd_module
   !>\brief extract the information from the SpaceInfo structure in a nice and useful shape outside of this routine
   !>\author Patrick Ettenhuber
   !>\date december 2013
-  subroutine get_overlap_ptr(n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
+  subroutine get_overlap_ptr(Sidx,n1,n2,pS,tr1,tr2,st,S,ldS,U,ldU,VT,ldVT,red1,red2,ns1,ns2)
      implicit none
-     integer,intent(in) :: n1,n2
+     integer,intent(in) :: Sidx,n1,n2
      type(PNOSpaceInfo), intent(in) :: pS(:)
      character, intent(out) :: tr1,tr2
      logical, intent(out) :: st
@@ -818,14 +894,12 @@ module pno_ccsd_module
      real(realk), pointer, intent(out) :: U(:,:),VT(:,:)
      integer, intent(out) :: ldU, ldVT
      integer, intent(out),optional :: red1, red2, ns1,ns2
-     integer :: Sidx
 
      !Get the overlap identificaton and transformation props
 
      if(n1>n2)then
 
         !trafo from n1 to n2 
-        Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
         tr1       =  't'
         tr2       =  'n'
         st        =  .false.
@@ -840,15 +914,12 @@ module pno_ccsd_module
         if(present(red2))red2 = pS(Sidx)%red2
         if(present(ns1)) ns1 = pS(Sidx)%ns1
         if(present(ns2)) ns2 = pS(Sidx)%ns2
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n1.or.pS(Sidx)%iaos(2)/=n2)then
-           print *,"S mat wrong",pS(Sidx)%iaos(1),n1,pS(Sidx)%iaos(2),n2
-        endif
+
+        if(.not.pS(Sidx)%allocd)call lsquit("ERROR(get_overlap_ptr):overlap not allocd",-1)
 
      else if(n2>n1)then
 
         !trafo from n2 to n1
-        Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
         tr1       =  'n'
         tr2       =  't'
         st        =  .false.
@@ -863,11 +934,8 @@ module pno_ccsd_module
         if(present(red2))red2 = pS(Sidx)%red2
         if(present(ns1)) ns1 = pS(Sidx)%ns1
         if(present(ns2)) ns2 = pS(Sidx)%ns2
-        !check if correct matrix was chosen
-        if(pS(Sidx)%iaos(1)/=n2.or.pS(Sidx)%iaos(2)/=n1)then
-           print *,"S mat wrong",pS(Sidx)%iaos(1),n2,pS(Sidx)%iaos(2),n1
-        endif
 
+        if(.not.pS(Sidx)%allocd)call lsquit("ERROR(get_overlap_ptr):overlap not allocd",-1)
      else
 
         !skip the transformation if the amplitudes reference the same space
@@ -876,6 +944,7 @@ module pno_ccsd_module
         ldS       =  0
 
      endif
+
   end subroutine get_overlap_ptr
 
 
@@ -1051,13 +1120,13 @@ module pno_ccsd_module
 
         !trafo from n1 to n2 
         Sidx      =  (n2 - n1 + 1) + n1 * (n1 - 1 )/2
-        cyc       =  .not. S(Sidx)%allocd
+        cyc       =  .not. S(Sidx)%contributes
 
      else if(n2>n1)then
 
         !trafo from n2 to n1
         Sidx      =  (n1 - n2 + 1) + n2 * (n2 - 1 )/2
-        cyc       =  .not. S(Sidx)%allocd
+        cyc       =  .not. S(Sidx)%contributes
 
      else
 
@@ -1086,28 +1155,44 @@ module pno_ccsd_module
   !> \date december 2013
   ! 
   ! TODO: make this routine independent of the internal mem_allocations
-  subroutine do_overlap_trafo(ns1,ns2,pos_of_overlap,S,m,n,k,A,C,ptr,ptr2,pC)
+  subroutine do_overlap_trafo(nv,ns1,ns2,pos_of_overlap,CV,S,m,n,k,A,C,ptr,ptr2,pC)
      implicit none
-     integer, intent(in) :: pos_of_overlap,m,n,k,ns1,ns2
-     type(PNOSpaceInfo),intent(inout) :: S(:)
+     integer, intent(in) :: nv,pos_of_overlap,m,n,k,ns1,ns2
+     type(PNOSpaceInfo),intent(inout) :: S(:),CV(:)
      real(realk),intent(in),target :: A(:)
      real(realk),intent(inout),target :: C(:)
      real(realk),pointer,optional :: ptr(:),ptr2(:)
      real(realk),optional :: pC
      real(realk),pointer :: S1(:,:)
      real(realk),pointer :: tmp1(:),tmp2(:), U(:,:), VT(:,:)
-     integer :: ldS1,ldU,ldVT
+     integer :: ldS1,ldU,ldVT,Sidx,maxns,minns,cc
      logical :: skiptrafo
      character :: tr1,tr2
      real(realk), parameter :: nul = 0.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
      real(realk) :: preC
+     integer :: tid
+#ifdef VAR_OMP
+     integer, external :: omp_get_thread_num
+#endif
 
 
      preC = 0.0E0_realk
      if(present(pC))preC = pC
 
-     call get_overlap_ptr(ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
+     maxns = max(ns1,ns2)
+     minns = min(ns1,ns2)
+     Sidx = (minns - maxns + 1) + maxns*(maxns-1)/2
+
+     if(DECinfo%pno_S_on_the_fly.and.ns1/=ns2)then
+#ifdef VAR_OMP
+        tid  = omp_get_thread_num()
+        Sidx = tid + 1
+#endif
+        call get_overlap_matrix_from_pno_spaces(nv,CV(maxns),CV(minns),S(Sidx),.true.,.false.)
+     endif
+
+     call get_overlap_ptr(Sidx,ns1,ns2,S,tr1,tr2,skiptrafo,S1,ldS1,U=U,ldU=ldU,VT=VT,ldVT=ldVT)
 
 
      if(.not. skiptrafo)then
@@ -1168,6 +1253,9 @@ module pno_ccsd_module
 
      endif
 
+     if(DECinfo%pno_S_on_the_fly.and.ns1/=ns2)then
+        if( S(Sidx)%allocd )  call free_PNOSpaceInfo( S(Sidx) )
+     endif
   end subroutine do_overlap_trafo
 
 
@@ -1188,35 +1276,32 @@ module pno_ccsd_module
      real(realk) :: norm,thr
      real(realk),parameter :: p10 = 1.0E0_realk
      real(realk),parameter :: nul = 0.0E0_realk
-     logical :: keep_pair
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces,FracOfMem
+     logical :: keep_pair, just_check
      integer :: allremoved, ofmindim, ofmaxdim, allocpcount
 
-     if( DECinfo%noPNOoverlaptrunc ) then
-        thr = -1.0E0_realk * huge(thr)
-     else
-        thr = DECinfo%PNOoverlapthr
-     endif
+     call time_start_phase(PHASE_WORK, twall = time_overlap_spaces )
+
+     call get_currently_available_memory(FracOfMem)
+     FracOfMem = 0.1E0_realk * FracOfMem
+
+     mem_overlap_spaces = 0.0E0_realk
+     just_check         = .false.
 
      allocpcount= 0
      allremoved = 0
      ofmindim   = 0
      ofmaxdim   = 0
-
      call mem_TurnONThread_Memory()
      !$OMP PARALLEL DEFAULT(NONE) &
      !$OMP REDUCTION(+:allremoved,ofmindim,ofmaxdim,allocpcount)&
-     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr)&
+     !$OMP SHARED(pno_cv,pno_S,n,no,nv,with_svd,thr,mem_overlap_spaces,FracOfMem,just_check)&
      !$OMP PRIVATE(ns1,ns2,i,j,c,s1,s2,norm,sv,U,VT,work,remove,&
      !$OMP lwork,info,diag,kerdim,red1,red2,maxdim,mindim,dg,&
      !$OMP keep_pair)
      call init_threadmemvar()
 
-     !CURRENT HACK FOR PGI COMPILER, SOMETHING WITH THE ALLOCATIONS IN THE LOOP
-     !(AND MAYBE STACK MEMORY), FIXME: MOVE ALLOCATION OUTSIDE OF PARALLEL REGION
-
-     !$OMP SINGLE
-
-     !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+     !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
      do i=1,n
         do j=1,n
 
@@ -1225,132 +1310,207 @@ module pno_ccsd_module
            ! COUNT UPPER TRIANGULAR ELEMENTS WITHOUT DIAGONAL ELEMENTS
            c = (j - i + 1) + i*(i-1)/2
 
-           ns1 = pno_cv(i)%ns2
-           ns2 = pno_cv(j)%ns2
+           !$OMP CRITICAL
+           just_check = (mem_overlap_spaces/(1024.0E0_realk**3) > FracOfMem)
+           !$OMP END CRITICAL
 
-           pno_S(c)%ns1 = ns1
-           pno_S(c)%ns2 = ns2
+           call get_overlap_matrix_from_pno_spaces(nv,pno_cv(i),pno_cv(j),pno_S(c),with_svd,just_check)
 
-           keep_pair = ( pno_cv(i)%allocd .and. pno_cv(j)%allocd )
-
-           if( keep_pair )then
-
-
-              pno_S(c)%s_associated = .false.
-              call mem_alloc(pno_S(c)%d,ns1,ns2)
-
-              s1 => pno_cv(i)%d
-              s2 => pno_cv(j)%d
-
-              call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,pno_S(c)%d,ns1)
-
-              if(with_svd)then
-                 allocpcount = allocpcount + 1
-                 !get the minimum dimension, the maximum dimension and the dimension
-                 !of the kernel of the transformation
-                 mindim = min(ns1,ns2)
-                 maxdim = max(ns1,ns2)
-                 kerdim = maxdim - mindim
-
-                 !Characterize the type of overlap just produced, does it need to be
-                 !considered at all -> calculate the singular values for checking
-                 lwork = max(1,3*mindim+maxdim,5*mindim)
-                 call mem_alloc(sv,min(ns1,ns2))
-                 call mem_alloc(work,lwork)
-                 call mem_alloc(U,ns1,ns1)
-                 call mem_alloc(VT,ns2,ns2)
-                 sv = 0.0E0_realk; INFO=0
-                 call dgesvd('A','A',ns1,ns2,pno_S(c)%d,ns1,sv,U,ns1,VT,ns2,work,lwork,INFO)
-                 if(INFO/=0)call &
-                    &lsquit("ERROR(get_pno_overlap_matrices): dgesvd failed",-1)
-
-                 !screen singular values according to a predefined threshold
-                 do diag=1,mindim
-                    if(sv(diag)<thr)then
-                       exit
-                    endif
-                 enddo
-                 ! go one step back to where the singular value is still above thr
-                 ! and calculate the number of elements to remove additionally to the
-                 ! kernel dimension
-                 if(diag/=mindim)diag = diag - 1
-                 remove = mindim - diag
-
-                 ! Find the number of elements in the trafo, note that kerdim == 0 if
-                 ! ns1 == ns2, therefore an if else is enough
-                 if(ns1>ns2)then
-                    red1 = ns1 - remove - kerdim
-                    red2 = ns2 - remove
-                 else
-                    red1 = ns1 - remove
-                    red2 = ns2 - remove - kerdim
-                 endif
-
-                 ofmindim   = ofmindim   + mindim
-                 ofmaxdim   = ofmaxdim   + maxdim
-                 allremoved = allremoved + remove
-
-                 keep_pair = ( red1 > 0 .and. red2 > 0 )
-
-                 if(red1/=diag.or.red2/=diag)call &
-                    &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
-
-
-                 call mem_dealloc( pno_S(c)%d )
-
-                 if( keep_pair )then
-                    pno_S(c)%s_associated = .true.
-                    call mem_alloc( pno_S(c)%s1, ns1,  red1 )
-                    call mem_alloc( pno_S(c)%s2, red2, ns2  )
-                    call mem_alloc( pno_S(c)%d,  red1, red2 )
-                    pno_S(c)%red1 = red1
-                    pno_S(c)%red2 = red2
-
-                    pno_S(c)%s1 = U(:,1:red1)
-                    pno_S(c)%s2 = VT(1:red2,:)
-                    pno_S(c)%d  = nul
-                    do dg = 1, diag
-                       pno_S(c)%d(dg,dg) = sv(dg)
-                    enddo
-
-                 endif
-
-
-                 call mem_dealloc( U )
-                 call mem_dealloc( VT )
-                 call mem_dealloc( work )
-                 call mem_dealloc( sv )
+           if(pno_S(c)%allocd)then
+              if( with_svd )then
+                 !$OMP CRITICAL
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &(size(pno_S(c)%s1) + size(pno_S(c)%d) + size(pno_S(c)%s2) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
+              else
+                 !$OMP CRITICAL
+                 mem_overlap_spaces = mem_overlap_spaces + &
+                    &( size(pno_S(c)%d) ) * 8.0E0_realk
+                 !$OMP END CRITICAL
               endif
-
-
-              if( keep_pair ) then
-
-                 pno_S(c)%n = 2
-                 call mem_alloc(pno_S(c)%iaos,pno_S(c)%n)
-                 pno_S(c)%iaos = [i,j]
-
-              endif
-
-              pno_S(c)%allocd = keep_pair
-
-           else
-
-              pno_S(c)%allocd = .false.
-
            endif
-
-
         enddo
      enddo
-     !$OMP END SINGLE
-     !OMP END DO NOWAIT
+     !$OMP END DO NOWAIT
      call collect_thread_memory()
      !$OMP END PARALLEL
      call mem_TurnOffThread_Memory()
 
-     print *,"overlapscreening removed ",allremoved," of ",ofmindim,ofmaxdim,"in",allocpcount,"of",n*(n-1)/2,"pairs"
+     call time_start_phase(PHASE_WORK, ttot = time_overlap_spaces, labelttot = " PNO:&
+        & getting overlap spaces:")
+     write (*,'("memory requirements for pair overlap info:",g10.3," GB")')mem_overlap_spaces/(1024.0E0_realk**3)
+
+
+     if(DECinfo%pno_S_on_the_fly.or.just_check)then
+
+        DECinfo%pno_S_on_the_fly = .true.
+        print *,"Switching to calculating pno overlap information on the fly"
+        do i=1,n
+           do j=1,n
+              if(j>=i) cycle
+              c = (j - i + 1) + i*(i-1)/2
+              if( pno_S(c)%allocd )  call free_PNOSpaceInfo( pno_S(c) )
+           enddo
+        enddo
+
+     endif
+
 
   end subroutine get_pno_overlap_matrices
+  
+  subroutine get_overlap_matrix_from_pno_spaces(nv,pno1,pno2,S12,with_svd,just_check)
+     implicit none
+     integer, intent(in) :: nv
+     type(PNOSpaceInfo),intent(in) :: pno1,pno2
+     type(PNOSpaceInfo),intent(inout) :: S12
+     logical, intent(in) :: with_svd, just_check
+     integer :: t1,t2,dg, n1, maxindex, minindex
+     integer :: ns1,ns2,INFO,lwork,mindim,maxdim,red1,red2,kerdim,diag,remove
+     real(realk),pointer:: s1(:,:), s2(:,:), sv(:),U(:,:), VT(:,:),work(:)
+     real(realk) :: norm,thr
+     real(realk),parameter :: p10 = 1.0E0_realk
+     real(realk),parameter :: nul = 0.0E0_realk
+     real(realk) :: time_overlap_spaces,mem_overlap_spaces
+     logical :: keep_pair
+
+     !FIXME: REMOVE ALLOCATION INSIDE THIS SUBROUTINE
+
+     if( DECinfo%noPNOoverlaptrunc ) then
+        thr = -1.0E0_realk * huge(thr)
+     else
+        thr = DECinfo%PNOoverlapthr
+     endif
+
+     ns1 = pno1%ns2
+     ns2 = pno2%ns2
+
+     S12%ns1 = ns1
+     S12%ns2 = ns2
+
+     keep_pair = ( pno1%allocd .and. pno2%allocd )
+
+     if( keep_pair )then
+
+
+        S12%s_associated = .false.
+        call mem_alloc(S12%d,ns1,ns2)
+
+        s1 => pno1%d
+        s2 => pno2%d
+
+        call dgemm('t','n',ns1,ns2,nv,p10,s1,nv,s2,nv,nul,S12%d,ns1)
+
+        if(with_svd)then
+
+           !get the minimum dimension, the maximum dimension and the dimension
+           !of the kernel of the transformation
+           mindim = min(ns1,ns2)
+           maxdim = max(ns1,ns2)
+           kerdim = maxdim - mindim
+
+           !Characterize the type of overlap just produced, does it need to be
+           !considered at all -> calculate the singular values for checking
+           lwork = max(1,3*mindim+maxdim,5*mindim)
+           call mem_alloc(sv,min(ns1,ns2))
+           call mem_alloc(work,lwork)
+           call mem_alloc(U,ns1,ns1)
+           call mem_alloc(VT,ns2,ns2)
+           sv = 0.0E0_realk; INFO=0
+           call dgesvd('A','A',ns1,ns2,S12%d,ns1,sv,U,ns1,VT,ns2,work,lwork,INFO)
+           if(INFO/=0)call &
+              &lsquit("ERROR(get_pno_overlap_matrices): dgesvd failed",-1)
+
+           !screen singular values according to a predefined threshold
+           do diag=1,mindim
+              if(sv(diag)<thr)then
+                 exit
+              endif
+           enddo
+           ! go one step back to where the singular value is still above thr
+           ! and calculate the number of elements to remove additionally to the
+           ! kernel dimension
+           if(diag/=mindim)diag = diag - 1
+           remove = mindim - diag
+
+           ! Find the number of elements in the trafo, note that kerdim == 0 if
+           ! ns1 == ns2, therefore an if else is enough
+           if(ns1>ns2)then
+              red1 = ns1 - remove - kerdim
+              red2 = ns2 - remove
+           else
+              red1 = ns1 - remove
+              red2 = ns2 - remove - kerdim
+           endif
+
+           keep_pair = ( red1 > 0 .and. red2 > 0 )
+
+           if(red1/=diag.or.red2/=diag)call &
+              &lsquit("ERROR(get_pno_overlap_matrices)calculated wrong dimensions",-1)
+
+
+           call mem_dealloc( S12%d )
+
+           if( keep_pair )then
+
+              S12%s_associated = .true.
+
+              call mem_alloc( S12%s1, ns1,  red1 )
+              call mem_alloc( S12%s2, red2, ns2  )
+              call mem_alloc( S12%d,  red1, red2 )
+
+              S12%red1 = red1
+              S12%red2 = red2
+
+              S12%s1 = U(:,1:red1)
+              S12%s2 = VT(1:red2,:)
+              S12%d  = nul
+
+              do dg = 1, diag
+                 S12%d(dg,dg) = sv(dg)
+              enddo
+
+
+           endif
+
+
+           call mem_dealloc( U )
+           call mem_dealloc( VT )
+           call mem_dealloc( work )
+           call mem_dealloc( sv )
+        endif
+
+
+        if( keep_pair ) then
+
+           S12%n = 2
+           call mem_alloc(S12%iaos,S12%n)
+           maxindex = max(pno1%iaos(1),pno2%iaos(1))
+           minindex = min(pno1%iaos(1),pno2%iaos(1))
+           S12%iaos = [maxindex,minindex]
+
+        endif
+
+        S12%allocd      = keep_pair
+        S12%contributes = keep_pair
+
+        if(just_check)then
+
+           call mem_dealloc( S12%iaos )
+           call mem_dealloc( S12%s1   )
+           call mem_dealloc( S12%s2   )
+           call mem_dealloc( S12%d    )
+
+           S12%allocd = .false.
+
+        endif
+
+     else
+
+        S12%allocd      = .false.
+        S12%contributes = .false.
+
+     endif
+  end subroutine get_overlap_matrix_from_pno_spaces
 
   subroutine init_pno_residual_and_sio4(cv,o2,sio4,n,no)
      implicit none
@@ -1452,28 +1612,32 @@ module pno_ccsd_module
 
   end subroutine get_pno_amplitudes
 
-  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,g,pno_g,fj,f)
+  subroutine get_pno_trafo_matrices(no,nv,nb,t_mp2,cv,n,f)
      implicit none
      !ARGUMENTS
      integer, intent(in) :: no, nv, nb, n
-     real(realk), intent(in) :: t_mp2(nv,no,nv,no),g(nv,no,nv,no)
-     type(array), intent(inout) :: pno_g(n)
+     real(realk), intent(in) :: t_mp2(nv,no,nv,no)
      type(PNOSpaceInfo),pointer :: cv(:)
-     logical,intent(in) :: fj
      type(decfrag),intent(in),optional :: f
      !INTERNAL
      real(realk) :: virteival(nv),U(nv,nv),PD(nv,nv)
      integer :: i,j,oi,oj,counter, calc_parameters,det_parameters
-     integer :: pno_gvvvv_size,find_pos(no,no),maxocc,maxminocc
+     integer :: find_pos(no,no),maxocc,maxminocc
      logical :: doit
+     logical :: fj
      real(realk), pointer :: w1(:),p1(:,:,:,:),r1(:,:)
      integer :: tid
+     real(realk) :: time_pno_spaces, mem_pno_spaces
 #ifdef VAR_OMP
      integer, external :: omp_get_num_threads, omp_get_thread_num
      integer :: nt_s, nt_n
 #endif
 
+     call time_start_phase(PHASE_WORK, twall = time_pno_spaces )
+     mem_pno_spaces = 0.0E0_realk
+
      find_pos = -1
+     fj = present(f)
 
      counter = 0
      if(fj) counter = 1
@@ -1508,7 +1672,6 @@ module pno_ccsd_module
 
      calc_parameters = 0
      det_parameters  = 0
-     pno_gvvvv_size  = 0
 
 
      if( fj )then
@@ -1530,13 +1693,13 @@ module pno_ccsd_module
 
 
 
-     call mem_TurnONThread_Memory()
-     !$OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters&
-     !$OMP ,pno_gvvvv_size)&
-     !$OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,pno_g,g,&
-     !$OMP maxocc,maxminocc)&
-     !$OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
-     call init_threadmemvar()
+     !call mem_TurnONThread_Memory()
+     !OMP PARALLEL DEFAULT(NONE) REDUCTION(+:calc_parameters,det_parameters,&
+     !OMP mem_pno_spaces)&
+     !OMP SHARED(no,nv,nb,n,fj,f,DECinfo,cv,find_pos,t_mp2,&
+     !OMP maxocc,maxminocc)&
+     !OMP PRIVATE(counter,virteival,U,PD,doit,tid,w1)
+     !call init_threadmemvar()
 
      tid = 0
 #ifdef VAR_OMP
@@ -1568,15 +1731,10 @@ module pno_ccsd_module
         cv(1)%PS           = .false.
         counter            = 1
 
-        !get pno_g for FA space
-        !call ass_D1to4(w1,p1,[cv(1)%rpd,nv,cv(1)%rpd,nv])
-        !beg2 = cv(1)%rpd*nv*cv(1)%rpd*nv + 1
-        !end2 = beg2 + 
-        !call ass_D1to4(w1(beg2:end2),p1,[cv(1)%rpd,cv(1)%ns2,cv(1)%rpd,cv(1)%ns2])
-
         calc_parameters = calc_parameters + cv(1)%ns2**2*cv(1)%n**2
         det_parameters  = det_parameters  + cv(1)%ns2**2*cv(1)%n**2
-        pno_gvvvv_size  = pno_gvvvv_size  + cv(1)%ns2**4
+
+        mem_pno_spaces  = mem_pno_spaces  + (cv(1)%ns2**2)*8.0E0_realk
 
         if(.not.cv(1)%allocd)then
            call lsquit("ERROR(get_pno_trafo_matrices):EOS does not contribute&
@@ -1585,7 +1743,7 @@ module pno_ccsd_module
         endif
         !$OMP END MASTER
 
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doi :do i = 1, no
            doj: do j = 1, no
 
@@ -1634,15 +1792,15 @@ module pno_ccsd_module
                     endif
 
                     calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                    pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                    mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
                  endif
               endif
            enddo doj
         enddo doi
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      else
-        !$OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
+        !OMP DO COLLAPSE(2) SCHEDULE(DYNAMIC)
         doiful :do i = 1, no
            dojful: do j = 1, no
 
@@ -1686,24 +1844,27 @@ module pno_ccsd_module
                  endif
 
                  calc_parameters = calc_parameters + cv(counter)%ns2*cv(counter)%ns2*cv(counter)%rpd**2
-                 pno_gvvvv_size  = pno_gvvvv_size  + cv(counter)%ns2**4
+                 mem_pno_spaces  = mem_pno_spaces  + (cv(counter)%ns2**2)*8.0E0_realk
 
               endif
 
            enddo dojful
         enddo doiful
-        !$OMP END DO NOWAIT
+        !OMP END DO NOWAIT
      endif
 
      !call mem_dealloc(w1)
 
-     call collect_thread_memory()
-     !$OMP END PARALLEL
-     call mem_TurnOffThread_Memory()
+     !call collect_thread_memory()
+     !OMP END PARALLEL
+     !call mem_TurnOffThread_Memory()
 
-     print *,"I have to determine",det_parameters," of ",no**2*nv**2," using ",calc_parameters
-     !print *,"full gvvvv",nv**4," vs ",pno_gvvvv_size
+     print *,no**2*nv**2,"amplitudes to determine using ",calc_parameters
 
+     call time_start_phase(PHASE_WORK, ttot = time_pno_spaces, labelttot = " PNO:&
+     & getting pno spaces:")
+
+     write (*,'("memory requirements for pno space info:",g10.3," GB")')mem_pno_spaces/(1024.0E0_realk**3)
 
   end subroutine get_pno_trafo_matrices
 
@@ -1823,15 +1984,23 @@ module pno_ccsd_module
      real(realk) :: MemFree,used_mem, Frac_of_mem
      real(realk), pointer :: dummy1(:), dummy2(:,:)
      integer(kind=8) :: nelms
+     integer :: edit,max_nthreads,max_w_per_thr(5,nloops),loop,thread
+     !$ integer, external :: omp_get_num_threads, omp_get_max_threads
 
      !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
      basic = 11
-     call init_query_info(query,basic+(nspaces*5))
+     call init_query_info(query,basic+(nspaces*5*nloops))
 
      call get_currently_available_memory(MemFree)
 
 #ifdef VAR_MPI
-     call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+     !call lsmpi_reduce_realk_min(MemFree,infpar%master,infpar%lg_comm)
+#endif
+
+     nthreads_level1_int_dir = 1
+     max_nthr_int_loop       = 1
+#ifdef VAR_OMP
+     max_nthr_int_loop       = omp_get_max_threads()
 #endif
 
      frac_of_mem = 0.8_realk*MemFree
@@ -1840,7 +2009,6 @@ module pno_ccsd_module
         
      converged  = .false.
      gamma_size = nb
-
 
      do while(.not. converged)
 
@@ -1862,7 +2030,7 @@ module pno_ccsd_module
               nelms = nelms + query%size_array(narray)
            enddo
 
-           used_mem = (nelms*8.0E0_realk)/(1.0E9_realk)
+           used_mem = (nelms*8.0E0_realk)/(1.024E3_realk**3)
 
            converged = ( used_mem < frac_of_mem )
 
@@ -1890,7 +2058,74 @@ module pno_ccsd_module
 
      enddo
 
-     if(DECinfo%PL>2)write(*,'("INFO: allocating ",g8.3," GB in PNO integral direct loop")')used_mem
+     !do narray = 1, query%n_arrays
+     !   print*,"Array",narray," of size:",query%size_array(narray)
+     !enddo
+
+     max_w_per_thr = 0
+     do loop = 1, nloops
+        do narray = 1,5
+           do ns = 1, nspaces
+              edit = basic - 1 + (ns-1) * nloops * 5 + (loop - 1)  * 5
+              max_w_per_thr(narray,loop) = max(max_w_per_thr(narray,loop),query%size_array(edit+narray))
+           enddo
+        end do
+        !print *,max_w_per_thr(:,loop)
+     enddo
+
+
+#ifdef VAR_OMP
+     nthreads_level1_int_dir(first_loop)  = omp_get_max_threads()
+     nthreads_level1_int_dir(second_loop) = omp_get_max_threads()
+     nthreads_level1_int_dir(third_loop)  = omp_get_max_threads()
+
+
+     do narray = 1, 5
+
+        if(max_w_per_thr(narray,first_loop)/=0.and.(narray/=1))then
+           nthreads_level1_int_dir(first_loop)  =&
+              & min(nthreads_level1_int_dir(first_loop), query%size_array(narray)/max_w_per_thr(narray,first_loop))
+        endif
+        if(max_w_per_thr(narray,second_loop)/=0.and.(narray/=3))then
+           nthreads_level1_int_dir(second_loop) =&                                                      
+              & min(nthreads_level1_int_dir(second_loop),query%size_array(narray)/max_w_per_thr(narray,second_loop))
+        endif
+        if(max_w_per_thr(narray,third_loop)/=0.and.(narray/=4.and.narray/=5))then
+           nthreads_level1_int_dir(third_loop)  =&                                                      
+              & min(nthreads_level1_int_dir(third_loop), query%size_array(narray)/max_w_per_thr(narray,third_loop))
+        endif
+
+     enddo
+#endif
+
+     max_nthr_int_loop = max(nthreads_level1_int_dir(first_loop),&
+        & nthreads_level1_int_dir(second_loop),&
+        & nthreads_level1_int_dir(third_loop))
+
+     if(DECinfo%PL>3)then
+        print *,max_nthr_int_loop,"<-max,nthreads->",nthreads_level1_int_dir
+     endif
+
+     call mem_alloc(info_omp1,2,max_nthr_int_loop,5,nloops)
+
+     !initialize with invalid numbers
+     info_omp1 = -1
+
+     do loop = 1, nloops
+        do narray = 1, 5
+           do thread=1, max_nthr_int_loop
+              if(thread<=nthreads_level1_int_dir(loop))then
+                 info_omp1(1,thread,narray,loop) = 1 + (thread-1)*max_w_per_thr(narray,loop)
+                 info_omp1(2,thread,narray,loop) = ( thread )*max_w_per_thr(narray,loop)
+                 !print *,"INFO FOR thread",thread," and array ",narray," in loop ",loop
+                 !print *,info_omp1(1,thread,narray,loop), info_omp1(2,thread,narray,loop)
+              endif
+           enddo
+        enddo
+     enddo
+
+     if(DECinfo%PL>2)write(*,'("INFO: allocating ",g10.3," GB in PNO integral &
+        &direct loop with #a:",I6," and #g:",I6)')used_mem,a_batch%nbatches,g_batch%nbatches
 
   end subroutine get_batch_sizes_pno_residual
 
@@ -1903,32 +2138,32 @@ module pno_ccsd_module
      !Arguments
      type(lsitem), intent(inout) :: mylsitem
      integer(kind=8),intent(in)  :: s1,   s2,   s3,    s4,   s5
-     real(realk), target, intent(inout)  :: w1(s1),w2(s2),w3(:), w4(:),w5(:)
+     real(realk), target, intent(inout)  :: w1(:),w2(:),w3(:), w4(:),w5(:)
      integer, intent(in) :: no, nv, nb, maxocc,maxvirt,nspaces
      type(int_batch),intent(in) :: a_batch, g_batch
      type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
-     real(realk), intent(in) :: xo(nb,no), xv(nb,nv), yo(nb,no), yv(nb,nv)
+     real(realk), intent(in) :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
      real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
      type(pno_query_info),optional, intent(inout) :: query
      !internal variables
      integer(kind=8) :: myload,var_inp(4)
      integer :: ns
      integer, pointer :: idx(:)
-     real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h3(:),r1(:,:)
-     real(realk), pointer :: xo_pair(:,:),xv_pair(:,:),yo_pair(:,:),yv_pair(:,:)
-     real(realk), pointer :: tpl(:), tmi(:)
+     real(realk), pointer :: d(:,:),t(:),o(:),h1(:),h2(:),h3(:),r1(:,:)
+     real(realk), pointer :: xo_pair(:,:,:),xv_pair(:,:,:),yo_pair(:,:,:),yv_pair(:,:,:)
+     real(realk), pointer :: tpl(:,:), tmi(:,:)
      integer :: max_pnor, max_pnvr
      integer :: pno_comb
      integer :: pair,paircontribs,paircontrib(2,2),rpd,pno,pnv
      integer :: goffs,aoffs,tlen,tred,nor,nvr,pos1,pos2,beg1,beg2,ic,i
-     integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg
-     integer :: offset_for_omp
+     integer :: alphaB,gammaB,dimAlpha,dimGamma,fa,fg,la,lg,xa,xg,a
+     integer :: offset_for_omp,contract
      logical :: FoundInMem,fullRHS, doscreen, PS, EOS, add_contrib
      type(DECscreenITEM)    :: DecScreen
      character :: INTSPEC(5)
      logical :: master, I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE, this_is_query, this_is_not_query
-     real(realk) :: tw,tc
+     real(realk) :: tw,tc,tbeg,times(9),times_in_loops(8,3)
      real(realk), pointer :: my_w1(:),my_w2(:),my_w3(:),my_w4(:),my_w5(:)
      real(realk), parameter :: p20 = 2.0E0_realk
      real(realk), parameter :: p10 = 1.0E0_realk
@@ -1936,10 +2171,20 @@ module pno_ccsd_module
      real(realk), parameter :: m05 = -0.5E0_realk
      real(realk), parameter :: p05 = 0.5E0_realk
      real(realk), parameter :: nul = 0.0E0_realk
+     integer :: tid, edit,orig_nthr
+#ifdef VAR_OMP
+     logical :: nested
+     logical, external :: omp_get_nested
+     integer, external :: omp_get_thread_num, omp_get_num_threads
+     nested    = omp_get_nested()
+     call omp_set_nested(.true.)
+#endif
 
      master        = .true.
      tw            = 0.0E0_realk
      tc            = 0.0E0_realk
+     times         = 0.0E0_realk
+     times_in_loops= 0.0E0_realk
      this_is_query = present(query)
 
      this_is_not_query = .not. this_is_query
@@ -1954,30 +2199,30 @@ module pno_ccsd_module
      if(this_is_query)then
 
         !make sure this offset is the last accessed element in this if statement
-        offset_for_omp = 11
+        offset_for_omp = 10 
 
-        if(query%n_arrays /= offset_for_omp + (nspaces*5) )then
+        if(query%n_arrays /= offset_for_omp + 1 + (nspaces*5*nloops) )then
            call lsquit("ERROR(pno_residual_integral_direct_loop):query not&
               & possible, n_arrays needs to be set correctly, please check&
               & offset_for_omp",-1)
         endif
 
-        query%size_array(6)  = i8*nb*maxocc
-        query%size_array(7)  = i8*nb*maxocc
-        query%size_array(8)  = i8*nb*maxvirt
-        query%size_array(9)  = i8*nb*maxvirt
-        query%size_array(10) = i8*max_pnvr*max_pnor
-        query%size_array(11) = i8*max_pnvr*max_pnor
+        query%size_array(6)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(7)  = i8*nb*maxocc*max_nthr_int_loop
+        query%size_array(8)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(9)  = i8*nb*maxvirt*max_nthr_int_loop
+        query%size_array(10) = i8*max_pnvr*max_pnor*max_nthr_int_loop
+        query%size_array(11) = i8*max_pnvr*max_pnor*max_nthr_int_loop
 
         var_inp = 0
      else
-        call mem_alloc( xo_pair, nb, maxocc )
-        call mem_alloc( yo_pair, nb, maxocc )
-        call mem_alloc( xv_pair, nb, maxvirt  )
-        call mem_alloc( yv_pair, nb, maxvirt  )
+        call mem_alloc( xo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( yo_pair, nb, maxocc, max_nthr_int_loop    )
+        call mem_alloc( xv_pair, nb, maxvirt, max_nthr_int_loop   )
+        call mem_alloc( yv_pair, nb, maxvirt, max_nthr_int_loop   )
 
-        call mem_alloc( tpl, max_pnor*max_pnvr)
-        call mem_alloc( tmi, max_pnor*max_pnvr)
+        call mem_alloc( tpl, max_pnor*max_pnvr, max_nthr_int_loop )
+        call mem_alloc( tmi, max_pnor*max_pnvr, max_nthr_int_loop )
      endif
 
 
@@ -1989,7 +2234,6 @@ module pno_ccsd_module
      INTSPEC(4)               = 'R' !R = Regular Basis set on the 4th center 
      INTSPEC(5)               = 'C' !C = Coulomb operator
      doscreen                 = MyLsItem%setting%scheme%cs_screen.OR.MyLsItem%setting%scheme%ps_screen
-
 
      ! ***********************************************
      ! *  precalculate the full screening matrix     *
@@ -2009,6 +2253,9 @@ module pno_ccsd_module
               & a_batch%batchindex,g_batch%batchindex,&
               & a_batch%batchdim,g_batch%batchdim,INTSPEC,DECinfo%output,DECinfo%output)
         endif
+
+        call time_start_phase(PHASE_WORK, twall = tbeg )
+
      endif
 
      myload = 0
@@ -2033,6 +2280,15 @@ module pno_ccsd_module
            !and dynamic load balancing are enabled
            !if(alphaB>a_batch%nbatches) exit
            !print *,"JOB ",alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+           if(DECinfo%PL>2.and.this_is_not_query)then
+#ifdef VAR_MPI
+              write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
+                 &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+#else
+              write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')&
+                 &alphaB,a_batch%nbatches,gammaB,g_batch%nbatches
+#endif
+           endif
 
            la = a_batch%batchdim(alphaB)                              ! Dimension of alpha batch
            fa = a_batch%batch2orb(alphaB)%orbindex(1)                 ! First index in alpha batch
@@ -2053,6 +2309,8 @@ module pno_ccsd_module
 
            else
 
+              call time_start_phase(PHASE_WORK, twall = times(1) )
+
               IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
               IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
 
@@ -2060,46 +2318,67 @@ module pno_ccsd_module
                  & Mylsitem%setting,w1,a_batch%batchindex(alphaB),g_batch%batchindex(gammaB),&
                  & a_batch%batchsize(alphaB),g_batch%batchsize(gammaB),la,nb,lg,nb,INTSPEC,fullRHS)
 
+              call time_start_phase(PHASE_WORK, ttot = times(1) )
+              times(3) = times(3) + times(1)
+
            endif
 
 
-           !gooov
-           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xo,no,yv,nv,w2,w3,fa,la,fg,lg,gooov, &
-              &query=var_inp(1:3),is_this_query = this_is_query )
-           !govov
-           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yv,nv,xo,no,yv,nv,w2,w3,fa,la,fg,lg,govov,&
-              &query=var_inp(1:3),is_this_query = this_is_query )
-           !goovv
-           call successive_4ao_mo_trafo_exch(nb,w1,xo,no,yo,no,xv,nv,yv,nv,w2,w3,fa,la,fg,lg,goovv,&
-              &query=var_inp(1:3),is_this_query = this_is_query )
-           !Lvoov = 2gvoov - gvvoo, minus part is added outside
-           call successive_4ao_mo_trafo_exch(nb,w1,xv,nv,yo,no,xo,no,yv,nv,w2,w3,fa,la,fg,lg,Lvoov,&
-              &query=var_inp(1:3),is_this_query = this_is_query )
-
-
+           !TODO: IMPLEMENT LOOP OVER occ occ on the outside for simple one
+           !sided updates if integrals are stored in batches in occ-occ and
+           !reorder such that the first trafo is to occ
            if(this_is_query)then
-              query%size_array(1) = max(query%size_array(1),var_inp(1))
-              query%size_array(2) = max(query%size_array(2),var_inp(2))
-              query%size_array(3) = max(query%size_array(3),var_inp(3))
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*la*nb)*lg*nv)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*lg*nv)*la*nb)
+              query%size_array(w4_tag) = max(query%size_array(w4_tag),(i8*lg*nv)*la*no)
+              !goovv              tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*nv*nv)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nv)
+              !gooov and Lvoov    tag
+              query%size_array(w2_tag) = max(query%size_array(w2_tag),(i8*no*no)*la*no)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*nv*nv)*la*no)
+           else
+              call dgemm('n','n',la*nb*lg,nv,nb,p10,w1,la*nb*lg,yv,nb,nul,w2,la*nb*lg)
+              call array_reorder_4d(p10,w2,la,nb,lg,nv,[3,4,1,2],nul,w3)
+              call dgemm('n','n',lg*nv*la,no,nb,p10,w3,lg*nv*la,yo,nb,nul,w4,lg*nv*la)
+              !goovv
+              call dgemm('t','n',nv,nv*la*no,lg,p10,xv(fg,1),nb,w4,lg,nul,w2,nv)
+              call array_reorder_4d(p10,w2,nv,nv,la,no,[3,4,1,2],nul,w3)
+              call dgemm('t','n',no,no*nv*nv,la,p10,xo(fa,1),nb,w3,la,p10,goovv,no)
+              !gooov and Lvoov
+              call dgemm('t','n',no,nv*la*no,lg,p10,xo(fg,1),nb,w4,lg,nul,w2,no)
+              call array_reorder_4d(p10,w2,no,nv,la,no,[3,4,1,2],nul,w3)
+              call dgemm('t','n',no,no*no*nv,la,p10,xo(fa,1),nb,w3,la,p10,gooov,no)
+              call dgemm('t','n',nv,no*no*nv,la,p10,xv(fa,1),nb,w3,la,p10,Lvoov,nv)
            endif
 
+           call time_start_phase(PHASE_WORK, twall = times(1), at = times(4) )
 
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,nthreads_level1_int_dir,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,&
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(first_loop))
 
-           !OMP PARALLEL DEFAULT(NONE) IF(this_is_not_query)&
-           !OMP SHARED(I_PLUS_MINUS_DONE,SORT_INT_TO_W2_DONE,nspaces,xv_pair_t,&
-           !OMP pno_cv,pno_t2,pno_o2,&
-           !OMP fa,la,fg,lg,p20,p10,nul,w1,w2,w3,w4,w5,query,this_is_query) &
-           !OMP PRIVATE(d,t,idx,pnv,pno,rpd,PS,o,ns,i,xv_pair,xo_pair,yv_pair,yo_pair,&
-           !OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_3&
-           !OMP my_w4,my_w5)
+           tid = 0
+#ifdef VAR_OMP
+           tid = omp_get_thread_num()
+#endif
 
-           my_w1 => w1
-           my_w2 => w2
-           my_w3 => w3
-           my_w4 => w4
-           my_w5 => w5
+           if(this_is_not_query)then
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,first_loop):info_omp1(end_array,tid+1,w2_tag,first_loop))
+              my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,first_loop):info_omp1(end_array,tid+1,w3_tag,first_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,first_loop):info_omp1(end_array,tid+1,w4_tag,first_loop))
 
-           !OMP DO SCHEDULE(DYNAMIC)
+              my_w1 => null()
+              my_w5 => null()
+           endif
+
+           !$OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
 
               if(.not.pno_cv(ns)%allocd)then
@@ -2121,34 +2400,45 @@ module pno_ccsd_module
 
               nor=rpd*(rpd+1)/2
 
+
               if(this_is_query)then
 
-                 !gvovo transformation, make sure the last argument in max
-                 !coincides with m*n from the corresponding gemm and the
-                 !constant added with the label of the workspace 
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*rpd*la)*nb*lg)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*pnv*rpd)*la*nb)
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*rpd*pnv)*rpd*la)
+                 edit = offset_for_omp+(ns-1)*nloops*5+(first_loop-1)*5
 
-                 !same for goooo transformation, ATTENTION:  also take sorting into account
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*rpd*la)*nb*lg)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*rpd*la)*nb*lg)
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*lg*la)*rpd*rpd)
-                 query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*rpd*rpd)*la*no)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*la*nb)*lg*rpd)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*lg*rpd)*la*rpd)
+
+                 !VOVO
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*pnv*rpd)*la*rpd)
+
+                 !SIO4
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*no*rpd)*la*rpd)
+                 query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*rpd*rpd)*no*no)
+
               else
+
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i) = xo(:,idx(i))
+                    do a = 1, nb
+                       xo_pair(a,i,tid+1) = xo(a,idx(i))
+                    enddo
                  enddo
                  !  xv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+                 call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                  !  yo_pair
                  do i = 1, pno
-                    yo_pair(:,i) = yo(:,idx(i))
+                    do a = 1, nb
+                       yo_pair(a,i,tid+1) = yo(a,idx(i))
+                    enddo
                  enddo
                  !  yv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(1,1) )
+#endif
 
                  !gvovo contribution
                  if( PS )then
@@ -2158,34 +2448,37 @@ module pno_ccsd_module
                     beg1 = 1
                     beg2 = 1
                  endif
-                 call dgemm('t','t',rpd,la*nb*lg,nb,p10,yo_pair(1,beg1),nb,w1,la*nb*lg,nul,my_w2,rpd)
-                 call dgemm('t','t',pnv,rpd*la*nb,lg,p10,xv_pair(fg,1),nb,my_w2,rpd*la*nb,nul,my_w3,pnv)
-                 call dgemm('t','t',rpd,pnv*rpd*la,nb,p10,yo_pair(1,beg2),nb,my_w3,pnv*rpd*la,nul,my_w2,rpd)
-                 call dgemm('t','t',pnv,pnv*rpd*rpd,la,p10,xv_pair(fa,1),nb,my_w2,pnv*rpd*rpd,p10,o,pnv)
+                 !VOVO and sio4
+                 call dgemm('n','n',la*nb*lg,rpd,nb,p10,w1,la*nb*lg,yo_pair(1,beg1,tid+1),nb,nul,my_w2,la*nb*lg)
+                 call array_reorder_4d(p10,my_w2,la,nb,lg,rpd,[3,4,1,2],nul,my_w3)
+                 call dgemm('n','n',lg*rpd*la,rpd,nb,p10,my_w3,lg*rpd*la,yo_pair(1,beg2,tid+1),nb,nul,my_w4,lg*rpd*la)
+                 !VOVO contribution
+                 call dgemm('t','n',pnv,rpd*la*rpd,lg,p10,xv_pair(fg,1,tid+1),nb,my_w4,lg,nul,my_w2,pnv)
+                 call array_reorder_4d(p10,my_w2,pnv,rpd,la,rpd,[3,4,1,2],nul,my_w3)
+                 call dgemm('t','n',pnv,rpd*pnv*rpd,la,p10,xv_pair(fa,1,tid+1),nb,my_w3,la,p10,o,pnv)
+                 !sio4
+                 call dgemm('t','n',no,rpd*la*rpd,lg,p10,xo(fg,1),nb,my_w4,lg,nul,my_w2,no)
+                 call array_reorder_4d(p10,my_w2,no,rpd,la,rpd,[2,4,1,3],nul,my_w3)
+                 call dgemm('n','n',rpd*rpd*no,no,la,p10,my_w3,rpd*rpd*no,xo(fa,1),nb,p10,sio4(ns)%elm1,rpd*rpd*no)
 
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(3,1) )
+#endif
 
-                 !goooo contribution -> add to sio4 and construct the full contrib, in the mo loop afterwards
-                 call dgemm('n','n',la*nb*lg,rpd,nb,p10,w1,la*nb*lg,yo_pair(1,beg1),nb,nul,my_w2,la*nb*lg)
-                 !call array_reorder_4d(p10,w2,la,nb,lg,rpd,[2,3,1,4],nul,w3), use
-                 !symmetry in integrals gkilj = gljki, order is now w3: \gamma \alpha j \beta
-                 call array_reorder_4d(p10,my_w2,la,nb,lg,rpd,[3,1,4,2],nul,my_w3)
-                 call dgemm('n','n',lg*la*rpd,rpd,nb,p10,my_w3,lg*la*rpd,yo_pair(1,beg2),nb,nul,my_w2,lg*la*rpd)
-                 call dgemm('t','n',rpd*rpd*la,no,lg,p10,my_w2,lg,xo(fg,1),nb,nul,my_w3,rpd*rpd*la)
-                 call dgemm('t','n',rpd*rpd*no,no,la,p10,my_w3,la,xo(fa,1),nb,p10,sio4(ns)%elm1,rpd*rpd*no)
-                 !it is now saved as j i l k = i j k l in sio4 with restricions on
-                 !PS, else no restriction. 
               endif
 
            enddo
-           !OMP END DO
+           !$OMP END DO NOWAIT
+           !$OMP END PARALLEL
 
 
+           call time_start_phase(PHASE_WORK, ttot = times(1))
+           times(5) = times(5) + times(1)
 
            !shift intrgrals to w2 in the order \delta \gamma \alpha \beta
-           !OMP CRITICAL
            if(this_is_query)then
 
-              query%size_array(3) = max(query%size_array(3),(i8*la*nb)*lg*nb)
+              query%size_array(w3_tag) = max(query%size_array(w3_tag),(i8*la*nb)*lg*nb)
 
            else if(.not.SORT_INT_TO_W2_DONE)then
 
@@ -2194,9 +2487,31 @@ module pno_ccsd_module
               SORT_INT_TO_W2_DONE = .true.
 
            endif
-           !OMP END CRITICAL
 
-           !OMP DO SCHEDULE(DYNAMIC)
+           call time_start_phase(PHASE_WORK, at = times(6), twall = times(2)  )
+
+           !$OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+           !$OMP SHARED(nspaces,paircontrib,xa,xg,Gai,nthreads_level1_int_dir,&
+           !$OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,&
+           !$OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+           !$OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair) &
+           !$OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,&
+           !$OMP pno_comb,beg1,beg2,goffs,aoffs,nor,nvr,tlen,tred,my_w1,my_w2,my_w3,&
+           !$OMP my_w4,my_w5,tid,EOS,edit,r1) REDUCTION(+:times,times_in_loops)&
+           !$OMP NUM_THREADS(nthreads_level1_int_dir(second_loop))
+           tid = 0
+#ifdef VAR_OMP
+           tid = omp_get_thread_num()
+#endif
+           if(this_is_not_query)then
+              my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,second_loop):info_omp1(end_array,tid+1,w1_tag,second_loop))
+              my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,second_loop):info_omp1(end_array,tid+1,w2_tag,second_loop))
+              my_w4 => w4(info_omp1(beg_array,tid+1,w4_tag,second_loop):info_omp1(end_array,tid+1,w4_tag,second_loop))
+              my_w5 => w5(info_omp1(beg_array,tid+1,w5_tag,second_loop):info_omp1(end_array,tid+1,w5_tag,second_loop))
+
+              my_w3 => null()
+           endif
+           !$OMP DO SCHEDULE(DYNAMIC)
            do ns = 1, nspaces
 
               if(.not.pno_cv(ns)%allocd)then
@@ -2217,57 +2532,99 @@ module pno_ccsd_module
 
               if(this_is_query)then
 
+                 edit = offset_for_omp+(ns-1)*nloops*5+(second_loop-1)*5
+
                  !CAREFUL: THIS ACCOUNTS FOR BOTH CASES PS AND NOT PS, WHEN
                  !CHANGING THE ROUTINE BELOW, THE QUERY HAS TO BE ADAPTED
                  !ACCORDINGLY
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*nb*lg)*la*pnv)
-                 query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),(i8*lg*la)*pnv*pnv)
-                 query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*la*pnv)*pnv*rpd)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*nb)
+                 query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*lg)*la*pnv)
+                 query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*rpd*lg)*la*pnv)
+                 query%size_array(edit+w4_tag) = max(query%size_array(edit+w4_tag),(i8*pnv*pnv)*rpd*rpd)
 
-                 query%size_array(offset_for_omp+ns+4) = max(query%size_array(offset_for_omp+ns+4),(i8*pnv*pnv)*rpd*rpd)
+                 if( pnv < lg )then
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*la*pnv)*rpd*pnv)
+                 else
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*rpd*pnv)*rpd*lg)
+                 endif
 
-                 query%size_array(offset_for_omp+ns+5) = max(query%size_array(offset_for_omp+ns+5),(i8*la*rpd))
+                 query%size_array(edit+w5_tag) = max(query%size_array(edit+w5_tag),(i8*la*rpd))
 
               else
                  !Get the transformation matrices
                  !  xo_pair 
                  do i = 1, pno
-                    xo_pair(:,i) = xo(:,idx(i))
+                    do a = 1,nb
+                       xo_pair(a,i,tid+1) = xo(a,idx(i))
+                    enddo
                  enddo
+
                  !  yv_pair
-                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+                 call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(1,2)  )
+#endif
 
                  !Get G_{\alpha i}
 
-                 ! make I(\delta \gamma \alpha d) and I(\gamma \alpha d c)
-                 call dgemm('n','n',nb*lg*la,pnv,nb,p10,w3,nb*lg*la,yv_pair,nb,nul,my_w2,nb*la*lg)
-                 call dgemm('t','n',lg*la*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,lg*la*pnv)
                  if( PS )then
+                    call ass_D1to2(my_w5,r1,[la,rpd])
                     do pair = 1,2
-                       call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,my_w1,lg,xo_pair(fg,pair),nb,nul,my_w2,la*pnv*pnv)
+                       call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,pair,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                       call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                       call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
 
+                       !u{cldj}(j,dlc)
                        call array_reorder_2d(p20,t,pnv,pnv,paircontrib(:,3-pair),nul,my_w4)
-                       call array_reorder_2d(m10,t,pnv,pnv,paircontrib(:,pair),p10,my_w4)
+                       call array_reorder_2d(m10,t,pnv,pnv,paircontrib(:,pair),  p10,my_w4)
 
-                       call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,my_w2,la,my_w4,pnv*pnv*rpd,nul,my_w5,la)
+                       !this hopefully optimizes the construction of this term
+                       if( pnv < lg )then
+                          call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                          h1 => my_w1
+                          h2 => my_w4
+                          contract = pnv*rpd*pnv
+                       else
+                          call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,&
+                             &yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                          h1 => my_w2
+                          h2 => my_w1
+                          contract = pnv*rpd*lg
+                       endif
 
-                       call ass_D1to2(my_w5,r1,[la,rpd])
+                       call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
+
 
                        !$OMP CRITICAL
                        Gai(fa:xa,idx(3-pair)) = Gai(fa:xa,idx(3-pair)) + r1(:,1)
                        !$OMP END CRITICAL
                     enddo
                  else
-                    call dgemm('t','n',la*pnv*pnv,rpd,lg,p10,my_w1,lg,xo_pair(fg,1),nb,nul,my_w2,la*pnv*pnv)
+                    call dgemm('t','n',rpd,lg*la*nb,nb,p10,xo_pair(1,1,tid+1),nb,w3,nb,nul,my_w2,rpd)
+                    call dgemm('n','n',rpd*lg*la,pnv,nb,p10,my_w2,rpd*lg*la,yv_pair(1,1,tid+1),nb,nul,my_w1,rpd*lg*la)
+                    call array_reorder_4d(p10,my_w1,rpd,lg,la,pnv,[3,4,1,2],nul,my_w2)
 
-                    !u{cldj}(dclj)
-                    call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[3,1,2,4],nul,my_w4)
-                    call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[1,3,2,4],p10,my_w4)
+                    !u{cldj}(j,dlc)
+                    call array_reorder_4d(p20,t,pnv,rpd,pnv,rpd,[4,3,2,1],nul,my_w4)
+                    call array_reorder_4d(m10,t,pnv,rpd,pnv,rpd,[2,3,4,1],p10,my_w4)
 
-                    call dgemm('n','n',la,rpd,pnv*pnv*rpd,p10,my_w2,la,my_w4,pnv*pnv*rpd,nul,my_w5,la)
+                    !this hopefully optimizes the construction of this term
+                    if( pnv < lg )then
+                       call dgemm('n','n',la*pnv*rpd,pnv,lg,p10,my_w2,la*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,la*pnv*rpd)
+                       h1 => my_w1
+                       h2 => my_w4
+                       contract = pnv*rpd*pnv
+                    else
+                       call dgemm('n','t',rpd*pnv*rpd,lg,pnv,p10,my_w4,rpd*pnv*rpd,yv_pair(fg,1,tid+1),nb,nul,my_w1,rpd*pnv*rpd)
+                       h1 => my_w2
+                       h2 => my_w1
+                       contract = pnv*rpd*lg
+                    endif
+
+                    call dgemm('n','t',la,rpd,contract,p10,h1,la,h2,rpd,nul,my_w5,la)
 
                     call ass_D1to2(my_w5,r1,[la,rpd])
-
                     !$OMP CRITICAL
                     do ic = 1, rpd
                        Gai(fa:xa,idx(ic)) = Gai(fa:xa,idx(ic)) + r1(:,ic)
@@ -2275,10 +2632,17 @@ module pno_ccsd_module
                     !$OMP END CRITICAL
 
                  endif
+#ifndef VAR_OMP
+                 call time_start_phase(PHASE_WORK, at = times_in_loops(2,2) )
+#endif
               endif
 
            enddo
-           !OMP END DO NOWAIT
+           !$OMP END DO NOWAIT
+           !$OMP END PARALLEL
+
+           call time_start_phase(PHASE_WORK, ttot = times(2), twall = times(1) )
+           times(7) = times(7) + times(2)
 
            !ADD THE gvvvv contribution, note that we destroy the original
            !integrals in w1 and replace them by those with restricted indices in
@@ -2306,7 +2670,6 @@ module pno_ccsd_module
 
 
 
-              !$OMP CRITICAL
               if(.not.I_PLUS_MINUS_DONE)then
 
                  if(this_is_query)then
@@ -2324,17 +2687,39 @@ module pno_ccsd_module
 
                  if(this_is_query)then
                     !note that the mem requirements for w4 and w5 are the same
-                    query%size_array(1) = max(query%size_array(1),var_inp(2))
-                    query%size_array(3) = max(query%size_array(3),var_inp(3))
-                    query%size_array(4) = max(query%size_array(4),var_inp(1))
-                    query%size_array(5) = max(query%size_array(5),var_inp(1))
+                    query%size_array(w1_tag) = max(query%size_array(w1_tag),var_inp(2))
+                    query%size_array(w3_tag) = max(query%size_array(w3_tag),var_inp(3))
+                    query%size_array(w4_tag) = max(query%size_array(w4_tag),var_inp(1))
+                    query%size_array(w5_tag) = max(query%size_array(w5_tag),var_inp(1))
                  endif
 
                  I_PLUS_MINUS_DONE = .true.
 
               endif
-              !$OMP END CRITICAL
 
+              call time_start_phase(PHASE_WORK, at = times(8), twall = times(1) )
+
+              !OMP PARALLEL  DEFAULT(NONE) IF(this_is_not_query)&
+              !OMP SHARED(nspaces,paircontrib,xa,xg,Gai,goffs,aoffs,tlen,tred,&
+              !OMP pno_cv,pno_t2,pno_o2,offset_for_omp,no,nv,nb,xo,xv,yo,yv,tmi,tpl,&
+              !OMP fa,la,fg,lg,w1,w2,w3,w4,w5,query,this_is_query,this_is_not_query,&
+              !OMP sio4,info_omp1,xv_pair,xo_pair,yv_pair,yo_pair,nthreads_level1_int_dir) &
+              !OMP PRIVATE(a,d,t,idx,pnv,pno,rpd,PS,o,ns,i,h1,h2,contract,var_inp,&
+              !OMP pno_comb,beg1,beg2,nor,nvr,my_w1,my_w2,my_w3,&
+              !OMP my_w4,my_w5,tid,EOS,edit,h3) REDUCTION(+:times,times_in_loops,tc,tw)&
+              !OMP NUM_THREADS(nthreads_level1_int_dir(third_loop))
+              tid = 0
+#ifdef VAR_OMP
+              tid = omp_get_thread_num()
+#endif
+              if(this_is_not_query)then
+                 my_w1 => w1(info_omp1(beg_array,tid+1,w1_tag,third_loop):info_omp1(end_array,tid+1,w1_tag,third_loop))
+                 my_w2 => w2(info_omp1(beg_array,tid+1,w2_tag,third_loop):info_omp1(end_array,tid+1,w2_tag,third_loop))
+                 my_w3 => w3(info_omp1(beg_array,tid+1,w3_tag,third_loop):info_omp1(end_array,tid+1,w3_tag,third_loop))
+
+                 my_w4 => null()
+                 my_w5 => null()
+              endif
 
               !OMP DO SCHEDULE(DYNAMIC)
               do ns = 1, nspaces
@@ -2344,6 +2729,7 @@ module pno_ccsd_module
                     cycle 
 
                  endif
+
 
                  d   => pno_cv(ns)%d
                  t   => pno_t2(ns)%elm1
@@ -2360,15 +2746,17 @@ module pno_ccsd_module
 
                  if(this_is_query)then
 
+                    edit = offset_for_omp+(ns-1)*nloops*5+(third_loop-1)*5
+
                     if(.not.PS)then
-                       query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*pnv*rpd)*pnv*rpd)
+                       query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*pnv*rpd)*pnv*rpd)
                     endif
 
                     !The sizes are the same for both blocks + an -
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*nb*tred)*pnv)
-                    query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),(i8*tred*pnv)*pnv)
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),(i8*tred)*nvr)
-                    query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),(i8*nor)*tred*2)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*nb*tred)*pnv)
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),(i8*tred*pnv)*pnv)
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),(i8*tred)*nvr)
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),(i8*nor)*tred*2)
 
                     var_inp = 0
 
@@ -2377,16 +2765,22 @@ module pno_ccsd_module
                     !Get the transformation matrices
                     !  xo_pair 
                     do i = 1, pno
-                       xo_pair(:,i) = xo(:,idx(i))
+                       do a = 1, nb 
+                          xo_pair(a,i,tid+1) = xo(a,idx(i))
+                       enddo
                     enddo
                     !  xv_pair
-                    call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair,nb)
+                    call dgemm('n','n',nb,pnv,nv,p10,xv,nb,d,nv,nul,xv_pair(1,1,tid+1),nb)
                     !  yo_pair
                     do i = 1, pno
-                       yo_pair(:,i) = yo(:,idx(i))
+                       do a = 1, nb
+                          yo_pair(a,i,tid+1) = yo(a,idx(i))
+                       enddo
                     enddo
                     !  yv_pair
-                    call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair,nb)
+                    call dgemm('n','n',nb,pnv,nv,p10,yv,nb,d,nv,nul,yv_pair(1,1,tid+1),nb)
+
+                    call time_start_phase(PHASE_WORK, at = times_in_loops(1,3) )
 
                     ! get tpl and tmi
                     if( PS )then
@@ -2395,32 +2789,35 @@ module pno_ccsd_module
                        call array_reorder_4d(p10,t,pnv,rpd,pnv,rpd,[1,3,2,4],nul,my_w2)
                        h1 => w2(1:pnv**2*rpd**2)
                     endif
-                    call get_tpl_and_tmi(h1,pnv,rpd,tpl,tmi)
+                    call get_tpl_and_tmi(h1,pnv,rpd,tpl(:,tid+1),tmi(:,tid+1))
 
+                    call time_start_phase(PHASE_WORK, at = times_in_loops(2,3) )
 
                     !Plus block
-                    call dgemm('n','n',nb*tred,pnv,nb,p10,w4,nb*tred,yv_pair,nb,nul,my_w2,nb*tred)
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w4,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
                     !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,pnv*tred)
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
                     !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
                     call get_I_cged(my_w2,my_w1,tred,pnv)
                     !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
-                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tpl,nvr,nul,my_w3,tred)
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tpl(1,tid+1),nvr,nul,my_w3,tred)
 
 
                     !Minus block
-                    call dgemm('n','n',nb*tred,pnv,nb,p10,w5,nb*tred,yv_pair,nb,nul,my_w2,nb*tred)
+                    call dgemm('n','n',nb*tred,pnv,nb,p10,w5,nb*tred,yv_pair(1,1,tid+1),nb,nul,my_w2,nb*tred)
                     !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
-                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair,nb,nul,my_w1,pnv*tred)
+                    call dgemm('t','n',tred*pnv,pnv,nb,p10,my_w2,nb,yv_pair(1,1,tid+1),nb,nul,my_w1,pnv*tred)
                     !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
                     call get_I_cged(my_w2,my_w1,tred,pnv)
                     !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
-                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tmi,nvr,nul,my_w3(tred*nor+1),tred)
+                    call dgemm('n','n',tred,nor,nvr,p05,my_w2,tred,tmi(1,tid+1),nvr,nul,my_w3(tred*nor+1),tred)
+
+                    call time_start_phase(PHASE_WORK, twall = times(2), at = times_in_loops(3,3) )
+
+
+                    call ass_D2to1(xo,h1,[nb,no])
+                    call ass_D2to1(xv_pair(:,:,tid+1),h3,[nb,pnv])
                  endif
-
-
-                 call ass_D2to1(xo,h1,[nb,no])
-                 call ass_D2to1(xv_pair,h3,[nb,pnv])
 
                  if( PS )then
                     call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
@@ -2434,17 +2831,25 @@ module pno_ccsd_module
 
                  if( this_is_query )then
 
-                    query%size_array(offset_for_omp+ns+1) = max(query%size_array(offset_for_omp+ns+1),var_inp(1))
-                    query%size_array(offset_for_omp+ns+2) = max(query%size_array(offset_for_omp+ns+2),var_inp(2))
-                    query%size_array(offset_for_omp+ns+3) = max(query%size_array(offset_for_omp+ns+3),var_inp(3))
+                    query%size_array(edit+w1_tag) = max(query%size_array(edit+w1_tag),var_inp(1))
+                    query%size_array(edit+w2_tag) = max(query%size_array(edit+w2_tag),var_inp(2))
+                    query%size_array(edit+w3_tag) = max(query%size_array(edit+w3_tag),var_inp(3))
 
+                 else
+
+                    call time_start_phase(PHASE_WORK, ttot =  times(2))
+                    times_in_loops(4,3) =  times_in_loops(4,3) + times(2)
                  endif
 
 
               enddo
-              !OMP END DO
+              !OMP END DO NOWAIT
+              !OMP END PARALLEL
+
+              call time_start_phase( PHASE_WORK, ttot = times(1) )
+              times(9) = times(9) + times(1)
+
            endif
-           !OMP END PARALLEL
 
         enddo BatchAlpha
      enddo BatchGamma
@@ -2464,6 +2869,28 @@ module pno_ccsd_module
 
         call mem_dealloc( tpl )
         call mem_dealloc( tmi )
+
+        call mem_dealloc(info_omp1)
+
+        call time_start_phase(PHASE_WORK, ttot = tbeg)
+        if(DECinfo%PL>2)then
+           write (*,'(" PNO: total time batched loop     :",1g10.3)')tbeg
+           write (*,'(" PNO: times split up in            ")')
+           write (*,'(" PNO: Integral calculation        :",1g10.3)')times(3)
+           write (*,'(" PNO: Conventional transformation :",1g10.3)')times(4)
+           write (*,'(" PNO: loop 1                      :",4g10.3)')times(5),&
+              &times_in_loops(1,1),times_in_loops(2,1),times_in_loops(3,1)
+           write (*,'(" PNO: sorting for Gai             :",1g10.3)')times(6)
+           write (*,'(" PNO: loop 2                      :",3g10.3)')times(7),&
+              &times_in_loops(1,2),times_in_loops(2,2)
+           write (*,'(" PNO: sorting for B2 term         :",1g10.3)')times(8)
+           write (*,'(" PNO: loop 3                      :",5g10.3)')times(9),&
+              &times_in_loops(1,3),times_in_loops(2,3),times_in_loops(3,3),times_in_loops(4,3)
+        endif
+
+#ifdef VAR_OMP
+        call omp_set_nested(nested)
+#endif
      endif
 
   end subroutine pno_residual_integral_direct_loop
@@ -2658,7 +3085,7 @@ module pno_ccsd_module
               ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
               call array_reorder_2d( p20, t21, pnv1, pnv1, paircontrib(:,3-pair), nul, w3)
               call array_reorder_2d( m10, t21, pnv1, pnv1, paircontrib(:,pair), p10, w3)
-              call do_overlap_trafo(ns,ns2,1,pno_S,pnv,pnv1,pnv1,w3,w2,ptr=h1)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,pnv1,pnv1,w3,w2,ptr=h1)
 
               !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
               call dgemm('n','n',pnv,pnv,pnv1,m10, h1,pnv,w1,pnv1,p10,w5,pnv)
@@ -2683,7 +3110,7 @@ module pno_ccsd_module
            ! Quadratic part of the E2 term use u^{bd}_{kl} (bkdl) as b,dkl
            call array_reorder_4d( p20, t21, pnv1, rpd1, pnv1, rpd1, [1,3,2,4], nul, w3)
            call array_reorder_4d( m10, t21, pnv1, rpd1, pnv1, rpd1, [1,3,4,2], p10, w3)
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd1*pnv1*rpd1,pnv1,w3,w2,ptr=h1)
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,rpd1*pnv1*rpd1,pnv1,w3,w2,ptr=h1)
 
 
            !contract amplitudes in h1 with integrals in w1 and add to w4 : -1 * h1(bdkl) w1(dlkc) += w4(bc)
@@ -2874,11 +3301,9 @@ module pno_ccsd_module
         if(ns==ns2)then
            call array_reorder_4d( p10, w4, pnv, pnv,rpd,rpd, [2,4,1,3], p10, o )
         else
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv, rpd*pnv1*rpd, pnv1,w4,w1)
            call array_reorder_4d( p10, w1, pnv, pnv1, rpd, rpd, [2,4,1,3], nul, w3 )
-           call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
-           !call do_overlap_trafo(ns,ns2,1,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,w1)
-           !call array_reorder_4d( p10, w1, pnv, rpd, pnv, rpd, [3,4,1,2], p10, o )
+           call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S,pnv,rpd*pnv*rpd, pnv1,w3,o,pC=p10)
         endif
         !call print_tensor_unfolding_with_labels(o,&
         !   &[pnv,rpd],'ai',2,[pnv,rpd],'bj',2,'OMEGA AFTER')
@@ -3012,8 +3437,9 @@ module pno_ccsd_module
         !get the order kjac -> ckja, please note, that this loop is only
         !inside OneIdxSpaceLoop2 because I only use 3 working matrices, p10
         !might easily move the following part outside the loop and add stuff
-        !up during the loops
-        call ass_D1to4( goovv, p2o, [no, no,nv,  nv] )
+        !up during the loops -> please note that we use the reordered goovv, to
+        !avoid cache misses here
+        call ass_D1to4( goovv, p2o, [nv,  nv, no, no] )
         if( PS )then
 
            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3101,7 +3527,7 @@ module pno_ccsd_module
                     k = oidx1(nidx1+diff11+1,3)
                  endif
 
-                 p4(:,1,:,1) = p2o(k,j,:,:)
+                 p4(:,1,:,1) = p2o(:,:,k,j)
 
                  ! transform c to \bar(c} of (ki)  and a to \bar{a} of (ij)
                  call dgemm('t','n', pnv, nv, nv,  p10, d, nv, p4, nv, nul, w2, pnv)
@@ -3111,7 +3537,7 @@ module pno_ccsd_module
 
                  do kc=1,pno1
 
-                    p4(:,1,:,kc) = p2o(idx1(kc),j,:,:)
+                    p4(:,1,:,kc) = p2o(:,:,idx1(kc),j)
                     call dgemm('t','n', pnv, nv, nv, p10, d, nv, p4(1,1,1,kc), nv, nul, w2, pnv)
                     call dgemm('n','n', pnv, pnv1,nv, p10, w2, pnv, d1, nv, nul, w4(1+(kc-1)*pnv*pnv1), pnv)
 
@@ -3256,7 +3682,7 @@ module pno_ccsd_module
                     nidx_h2 = nidx2
                  endif
 
-                 call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1i,ptr2=h2i)
+                 call do_overlap_trafo(nv,ns,ns2,2,pno_cv,pno_S,rpd2*pnv2*nidx_h2,pnv,pnv2,w3,w2,ptr=h1i,ptr2=h2i)
 
                  call dgemm('n','n', pnv1*rpd1, nidx_h2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1i, rpd2*pnv2, nul, h2i, pnv1*rpd1)
 
@@ -3318,7 +3744,7 @@ module pno_ccsd_module
                  !call print_tensor_unfolding_with_labels(w1(1+(kc-1)*pnv1**2:),&
                  !   &[pnv,1],'bi',2,[pnv1,1],'ck',2,'t before- pair')
 
-                 call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+                 call do_overlap_trafo(nv,ns,ns1,1,pno_cv, pno_S, pnv,pnv1, pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
 
                  !call print_tensor_unfolding_with_labels(h1,&
                  !   &[pnv,1],'bi',2,[pnv1,1],'ck',2,'t - pair')
@@ -3358,12 +3784,12 @@ module pno_ccsd_module
               endif
 #endif
               do j=1,pno
-                 p1(1,j,:,:) = p2o(oidx1(nidx1+diff11+1,3),idx(j),:,:)
+                 p1(1,j,:,:) = p2o(:,:,oidx1(nidx1+diff11+1,3),idx(j))
               enddo
            else
               do j=1,pno
                  do k=1,pno1
-                    p1(k,j,:,:) = p2o(idx1(k),idx(j),:,:)
+                    p1(k,j,:,:) = p2o(:,:,idx1(k),idx(j))
                  enddo
               enddo
            endif
@@ -3460,7 +3886,7 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns2,2,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,2,pno_cv,pno_S,rpd2*pnv2*nidx2,pnv,pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call dgemm('n','n', pnv1*rpd1, nidx2*pnv, rpd2*pnv2, m05, w1, pnv1*rpd1, h1, rpd2*pnv2, nul, h2, pnv1*rpd1)
 
@@ -3534,7 +3960,7 @@ module pno_ccsd_module
 
            !call print_tensor_unfolding_with_labels(w1,&
            !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'t before- rect')
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,nidx1*pnv1*rpd1, pnv1,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1],'bi',2,[pnv1,rpd1],'ck',2,'t - rect')
@@ -3783,7 +4209,7 @@ module pno_ccsd_module
                  nidx_h2 = nidx2
               endif
 
-              call do_overlap_trafo(ns,ns2,1,pno_S, pnv, nidx_h2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S, pnv, nidx_h2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call array_reorder_4d( p10, h1, pnv, nidx_h2, pnv2, rpd2, [4,3,1,2], nul, h2 )
 
@@ -3825,7 +4251,7 @@ module pno_ccsd_module
 
            kcounter2: do kc = 1, rpd1
 
-              call do_overlap_trafo(ns,ns1,1,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1(1+(kc-1)*pnv1**2:),w2,ptr=h1,ptr2=h2)
 
               !call print_tensor_unfolding_with_labels(h1,&
               !   &[pnv,1],'bj',2,[pnv1,1],'ck',2,'u2 pair')
@@ -3983,7 +4409,7 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns2,1,pno_S, pnv, nidx2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns2,1,pno_cv,pno_S, pnv, nidx2*rpd2*pnv2, pnv2,w3,w2,ptr=h1,ptr2=h2)
 
               call array_reorder_4d( p10, h1, pnv, nidx2, pnv2, rpd2, [4,3,1,2], nul, h2 )
 
@@ -4071,7 +4497,7 @@ module pno_ccsd_module
 
            endif
 
-           call do_overlap_trafo(ns,ns1,1,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S,pnv,nidx1*pnv1*rpd1,pnv1,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1],'bj',2,[pnv1,rpd1],'ck',2,'u2 rect')
@@ -4324,13 +4750,13 @@ module pno_ccsd_module
                  enddo
               endif
 
-              call do_overlap_trafo(ns,ns1,1,pno_S, pnv,pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
 
               call dgemm('n','n',pnv*pnv1,rpd,rpd1,m10,h1,pnv*pnv1,w4,rpd1,nul,h2,pnv*pnv1)
               call array_reorder_4d(p10,h2,pnv,1,pnv1,rpd,[3,4,1,2], nul, h1)
 
               !transform b index to the correct space
-              call do_overlap_trafo(ns,ns1,1,pno_S, pnv,rpd*pnv,pnv1,h1,h2,ptr=h1)
+              call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv,pnv1,h1,h2,ptr=h1)
 
               call array_reorder_2d(p10,h1,pnv,pnv,paircontrib(:,3-pair1),p10,o)
 
@@ -4472,7 +4898,7 @@ module pno_ccsd_module
               enddo
            endif
 
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,nidx1*pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,nidx1*pnv1*rpd1, pnv1 ,w1,w2,ptr=h1,ptr2=h2)
 
            !call print_tensor_unfolding_with_labels(h1,&
            !   &[pnv,nidx1,pnv],'aib',3,[rpd1],'k',1,'t2 rect')
@@ -4488,7 +4914,7 @@ module pno_ccsd_module
            call array_reorder_4d(p10,h2,pnv,nidx1,pnv1,rpd,[3,4,1,2], nul, h1)
 
            !transform b index to the correct space
-           call do_overlap_trafo(ns,ns1,1,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
+           call do_overlap_trafo(nv,ns,ns1,1,pno_cv,pno_S, pnv,rpd*pnv*nidx1,pnv1,h1,h2,ptr=h1)
 
            call ass_D1to4( h1, p2o, [pnv,rpd,pnv,nidx1] )
            call ass_D1to4( o,  p1, [pnv,rpd, pnv, rpd] )

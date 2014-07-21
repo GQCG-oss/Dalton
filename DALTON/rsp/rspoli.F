@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
@@ -36,6 +35,41 @@ C
 920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 ========================================================================
 #endif
+#include "single.h"
+
+#ifdef ENABLE_EFS
+C Use this hack to correctly pass the arrays to c++
+      SUBROUTINE SIREFS(FMAT, DMAT, NMAT, ITYP)
+      use efs_interface
+#include "implicit.h"
+#include "cbihr2.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*),ITYP(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT, ITYP
+
+!      write (*,*) "nmat in sirk4m ", nmat
+
+      call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
+      iprint = 0
+      call mpixbcast (iprint, 1, 'INTEGER', 0)
+      call efs_fock_update(FMAT, DMAT, IFTHRS, NMAT, ITYP)
+      END
+
+      SUBROUTINE SIRPRNT(FMAT, DMAT, NMAT)
+#include "implicit.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT
+
+      write (*,*) "nmat in sirprnt ", nmat
+
+      call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
+      END
+
+#endif
+
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
@@ -45,7 +79,9 @@ C  /* Deck rspoli */
 #ifdef USE_XCINT_RESPONSE
       use xcint_integrator
 #endif
-
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
 C
@@ -85,6 +121,8 @@ C
 C
 #include "thrzer.h"
 #include "dummy.h"
+
+#include "cbihr2.h"
 C
 C  INFDIM : NASHDI
 C  INFINP : DIRFCK
@@ -872,10 +910,19 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
 
+! Manu test !!!!!!!!!!!
       DFTADX = DFTADD
       DFTADD = .FALSE.
+#if defined (ENABLE_EFS)
+      if (use_efs) then
+          call sirefs(WRK(KFXCAO),WRK(KDXCAO),NFMAT,       IFCTYP)
+      else
+#endif
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+#if defined (ENABLE_EFS)
+      end if
+#endif
       DFTADD = DFTADX
 
 #ifdef DEBUG_RSPOLI

@@ -67,6 +67,12 @@ module tensor_interface_module
 
 
 contains
+
+  subroutine array_enable_debug_mode()
+     implicit none
+     array_debug_mode = .true.
+  end subroutine array_enable_debug_mode
+
   subroutine copy_array(arr_in,arr_out)
     implicit none
     type(array), intent(in) :: arr_in

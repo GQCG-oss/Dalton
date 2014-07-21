@@ -1984,7 +1984,8 @@ IF(PerformCALC)THEN
  tid=OMP_GET_THREAD_NUM()
 !$OMP MASTER
  if(tid==0)then
-   IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.' 
+   IF(node.EQ.0.AND.IPRINT.GT.1)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',&
+     & omp_get_num_threads(),' threads.' 
  endif
 !$OMP END MASTER
 

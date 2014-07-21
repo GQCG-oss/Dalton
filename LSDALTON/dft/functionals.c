@@ -110,7 +110,6 @@ Functional* available_functionals[] = {
     &PW91xFunctional,
     &G96xFunctional,
     &LG93xFunctional,
-    &OPTXFunctional,
     &B88X_Functional,
     &LDAX_Functional,
     &PBEX_Functional,

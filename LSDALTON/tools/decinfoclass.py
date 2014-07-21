@@ -126,7 +126,10 @@ class decinfo_class:
         else:
           #READ NUMBER OF JOBS
           if ("ORBITAL DISTRIBUTION INFORMATION" in line):
-            j=4
+            j=1
+            while("1" not in filelines[i+j]):
+              j+=1
+
             while("Total:" not in filelines[i+j]):
               if(int(filelines[i+j].split()[-2]) != 0 and int(filelines[i+j].split()[-2]) != 0):
                 self.sfragjobs += 1

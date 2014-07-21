@@ -188,9 +188,7 @@ LOGICAL       :: ADMMS
 LOGICAL       :: ADMMQ
 LOGICAL       :: ADMMP
 CHARACTER(80) :: ADMM_FUNC
-LOGICAL       :: ADMM_ADDXC
-LOGICAL       :: ADMM_GCBASIS
-LOGICAL       :: ADMM_JKBASIS
+LOGICAL       :: ADMM_separateX
 LOGICAL       :: ADMM_2ERI
 LOGICAL       :: PRINT_EK3
 
@@ -344,11 +342,14 @@ LOGICAL     :: ADMM1
 LOGICAL     :: ADMMQ
 LOGICAL     :: ADMMS
 LOGICAL     :: ADMMP
-LOGICAL     :: ADMM_ADDXC
-LOGICAL     :: ADMM_GCBASIS
-LOGICAL     :: ADMM_JKBASIS
+LOGICAL     :: ADMM_separateX
 LOGICAL     :: ADMM_2ERI
 LOGICAL     :: PRINT_EK3
+! Used for internal storage - to pass this information from energy to gradient 
+! to avoid redundant recalculation in the gradient
+real(realk) :: ADMM_CONSTRAIN_FACTOR
+real(realk) :: ADMM_LARGE_LAMBDA
+!
 !Coulomb attenuated method CAM parameters
 LOGICAL     :: CAM
 REAL(REALK) :: CAMalpha
