@@ -2509,9 +2509,8 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 * RHO2BB(iklj) = <L!a+iba+kb ajb alb!R> (i.ge.k, j.ge.l)
 * RHO2AB(iklj) = <L!a+iaa+kb alb aja!R> ( no restrictions)
 *
-      NTEST = 1000
-      WRITE(luwrt,*) ' Welcome to test of 2e-spindensities '
-      WRITE(luwrt,*) ' =================================== '
+!     WRITE(luwrt,*) ' Welcome to test of 2e-spindensities '
+!     WRITE(luwrt,*) ' =================================== '
 *
       NERROR = 0
       THRES = 1.0D-10
@@ -2567,13 +2566,10 @@ C             LJ = L*(L-1)/2 + J
         END DO
       END DO
 *
-      IF(NERROR.EQ.0) THEN
-        WRITE(luwrt,*) ' RHO2 and RHO2S are in agreement '
-      ELSE
+      if(nerror > 0)then
         WRITE(luwrt,*) ' Number of differences between RHO2 and RHO2S',
      &               NERROR 
       END IF
-*
-      RETURN
+
       END
 

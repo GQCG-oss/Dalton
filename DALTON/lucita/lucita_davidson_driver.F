@@ -130,7 +130,7 @@
      &            MXP1,MXP2,MXQ,WORK(KH0SCR),ECORE,ICISTR,LBLK,IDIAG,
      &            THRES_E,THRES_E_aux,INIDEG,LBLOCK,IROOTHOMING,NCISPC,
      &            ICSPC,block_list,par_dist_block_list,RCCTOS,
-     &            PROCLIST,GROUPLIST,docisrdft
+     &            PROCLIST,GROUPLIST,docisrdft,ispnden,idensi
 #ifdef VAR_MPI
      &           ,file_info%iluxlist(1,2), file_info%iluxlist(1,3),
      &            file_info%iluxlist(1,5), file_info%iluxlist(1,6),
@@ -226,7 +226,8 @@
      &                  NP1,NP2,NQ,H0SCR,EIGSHF,ICISTR,LBLK,IDIAG,
      &                  THRES_E,THRES_E_aux,INIDEG,
      &                  MXLNG,IROOTHOMING,NSPC,ISPC,IBLOCKAR,
-     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST,docisrdft
+     &                  IBLKDSTND,RCCTOS,IPROCLIST,IGROUPLIST,docisrdft,
+     &                  ispnden,idensi
 #ifdef VAR_MPI
      &                  ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LU6LIST,LU7LIST,LUCLIST
@@ -278,6 +279,7 @@
 #include "oper.inc"
       LOGICAL CA
       LOGICAL docisrdft
+      integer, intent(in) :: ispnden, idensi
 C
 C
       DIMENSION VEC1(*),VEC2(*),C2(*)
@@ -290,6 +292,7 @@ C
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
       INTEGER   RCCTOS(*)
+      real*8 :: s2value
 
 !     use dynamic instead of static allocation (+ common block)
       allocate(iscr1(llwrk))
@@ -497,7 +500,7 @@ C
          if(ispnden > 0)then
            i12      = ispnden
          end if
-!        ispnden  = 1
+         print *, 'ispnden is here... ',ispnden,i12,idensi
 
          luci_cvec = 99
          open(file='srdft-lucita.cvec',unit=luci_cvec,status='replace',
@@ -514,7 +517,7 @@ C
          if(nrootsl ==1)then 
          weights(1) = 1.0d0
          end if
-         write(luwrt,*) 'weights(1:nroots)',weights(1:nrootsl)
+         !write(luwrt,*) 'weights(1:nroots)',weights(1:nrootsl)
 
 
 !        calculate ensemble density matrix
@@ -537,7 +540,7 @@ C
 !                                                            1: sigma vector
 !                                                            2: density matrix
            call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 0,
-     &                    xxs2dum)                          !   1: rhotype == 1 (regular density matrix)
+     &                    s2value)                          !   1: rhotype == 1 (regular density matrix)
 !                                                           !   3: rhotype == 3 (transition density matrix)
 !                                                           !   0: rhotype == 0 (regular density matrix run in CI)
 
@@ -545,7 +548,7 @@ C
           write(luwrt,'(/a      )')
      &'   ------------------------------------------------'
           write(luwrt,'(a,1f10.3)')
-     &'   expectation value of operator <S**2> =', xxs2dum
+     &'   expectation value of operator <S**2> =', s2value
           write(luwrt,'(a/      )')
      &'   ------------------------------------------------'
         end if
@@ -575,8 +578,8 @@ C
 !        CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
 !    &               -11,luwrt)
 
-!        reset i12 to allow for 1 and most likely 2-electron contributions
-         i12 = i12_save
+         !> i12 set to 1 since we only need the 1p-density matrix to save on file
+         i12 = 1
 
          call lucita_putdens_generic(work(krho1_ens),work(krho2),
      &                              fsr,xxdummy,xxdummy,i12,2,1,nrootsl)
@@ -588,7 +591,8 @@ C
          CALL OUTPAK(work(krho1_ens),ntoob,-1,LUPRI)
 #endif
 
-!        ispnden  = 0
+!        reset i12 to allow for 1 and most likely 2-electron contributions
+         i12 = i12_save
 
 !        deallocate(fsr)
          close(luci_cvec,status='keep')

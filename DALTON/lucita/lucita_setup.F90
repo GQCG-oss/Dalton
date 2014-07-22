@@ -434,8 +434,12 @@ contains
       idensi  = lucita_cfg_density_calc_lvl
 !     calculate spin densities
       ispnden =  lucita_cfg_spindensity_calc_lvl
+      print *, 'ispnden and idensi... ',lucita_cfg_spindensity_calc_lvl,idensi
       !> set level of density calculation equal to spin-density level to avoid any inconsistencies...
-      if(ispnden > idensi) idensi = ispnden
+      if(ispnden > idensi)then 
+        idensi                      = ispnden
+        lucita_cfg_density_calc_lvl = ispnden
+      end if
 !     no particle-hole simplification in use for compatibility with densities
 !     jeppe + stefan: april 2011
       iuse_ph = 0

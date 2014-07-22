@@ -217,7 +217,7 @@ C
 C
 C     Local variables
 C
-      logical           :: diskh2, natorb, moisno
+      logical           :: diskh2, natorb, moisno, calc_2p_dens
       character (len=6) :: keywrd
       integer           :: xctype1, xctype2
 C
@@ -391,9 +391,16 @@ C
         xctype1 = -1
         xctype2 = -1
 
+        calc_2p_dens = .false.
+
 !       restart CI if in iteration > 1
         if(icictl == 5) srdft_restart_ci     = 1
-        if(docisrdft)   srdft_ci_with_lucita = .true. 
+
+        if(docisrdft)then
+          srdft_ci_with_lucita = .true.  
+          calc_2p_dens         = spindens_lvl > 1
+        end if
+
 
         call define_lucita_cfg_dynamic(lsym,
      &                                 lsym,
@@ -414,7 +421,7 @@ C
 !    &                                 .true.,                  ! wave function analysis
      &                                 .false., ! no 2-el operators active
      &                                 .true.,  ! integrals provided by the MCSCF environment
-     &                                 .false., ! calculate 2-particle density matrix
+     &                            calc_2p_dens, ! calculate 2-particle density matrix
      &                                 .false., ! calculate transition density matrix
      &                                 xctype1, ! vector exchange type1
      &                                 xctype2, ! vector exchange type2
