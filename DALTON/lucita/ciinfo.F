@@ -1707,7 +1707,11 @@ C       END DO
       DIMENSION IOCA(MXPNGAS),IOC(MXPNGAS)
 *
 * Mick: write(6,*) changed to write(lupri,*). 
+#ifdef LUCI_DEBUG
       NTEST = 100
+#else
+      NTEST = 000
+#endif
       IF(NTEST.GE.10) THEN
          WRITE(LUPRI,*)  ' OCCLS in action '
          WRITE(LUPRI,*) ' =================='
@@ -1821,7 +1825,11 @@ C     INTEGER IACOC(MXPNGAS)
 *. Output
       INTEGER INCCLS(*)
 *
+#ifdef LUCI_DEBUG
       NTEST = 100
+#else
+      NTEST = 000
+#endif
       IF(NTEST.GE.10) THEN
         WRITE(LUPRI,*) ' OCCLS_IN_CI :  Input classes '
         CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)

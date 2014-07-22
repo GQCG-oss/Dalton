@@ -410,7 +410,7 @@ C
      &                                 ncroot,  ! # of CI roots
      &                                 ispin,
      &                                 maxitc,  ! max davidson CI iterations
-     &                                 0,       ! no 1/2-particle density calcs
+     &                           spindens_lvl,  ! 1/2-particle density calcs according to spindens_lvl 
      &                                 iprcix,  ! print level
      &                                 1.0d-10, ! screening threshold
      &                                 thrcit,  ! default davidson threshold
@@ -507,6 +507,7 @@ C
            KDVREF = KW2
            KW2A   = KDVREF + NNASHX
            LW2A   = LWRK   - KW2A
+           print *, 'call getdvref for root # ',ist
            CALL GETDVREF(ci_program,WRK(KDVREF),IST,
      &                   INDXCI,WRK(KW2A),LW2A)
 C          ... DVREF is equal to DV for state abs(ISTI),

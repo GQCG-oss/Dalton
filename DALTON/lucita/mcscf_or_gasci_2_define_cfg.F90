@@ -272,8 +272,7 @@ contains
       lucita_cfg_density_calc_lvl                  = max(lucita_cfg_density_calc_lvl,2)
 
       if(lucita_cfg_spindensity_calc_lvl > lucita_cfg_density_calc_lvl)then
-!       lucita_cfg_spindensity_calc_lvl  = lucita_cfg_density_calc_lvl
-        lucita_cfg_density_calc_lvl      = lucita_cfg_spindensity_calc_lvl
+        lucita_cfg_spindensity_calc_lvl  = lucita_cfg_density_calc_lvl
       end if
 
 !     set for mcscf (if not set otherwise)

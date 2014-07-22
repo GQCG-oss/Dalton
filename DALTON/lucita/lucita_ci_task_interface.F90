@@ -395,6 +395,7 @@ contains
   use file_type_module
   use lucita_cfg
   use lucita_mcscf_ci_cfg
+  use lucita_mcscf_srdftci_cfg
 #ifdef VAR_MPI
   use par_mcci_io
 #endif
@@ -464,6 +465,7 @@ contains
 #endif
 !-------------------------------------------------------------------------------
 
+      print *, 'i was here ...'
 !     set level of particle-density matrix calculation
       i12 = idensi
 
@@ -794,7 +796,7 @@ contains
           call memman(kdum ,idum,'FLUSM ',2,'Xpden2')
         end if
 
-        if(i12 > 1) call en_from_dens(test_energy,i12)
+        if(i12 > 1 .and. .not. srdft_ci_with_lucita) call en_from_dens(test_energy,i12)
 
       end do ! loop over eigen states
 
