@@ -341,6 +341,14 @@ C
 !test     inideg  = -1
           irootsi =  1
 
+         write(luwrt,1410)
+     &   ninvec,(i,iscr1(I),scr1(i)-eigshf,scr1(i),i=1,ninvec)
+ 1410 FORMAT(/' (CIEIG5)',I3,' lowest diagonal elements:',
+     &      //' Element no. Config.no.    Active energy',
+     &        '      Total energy',
+     &      //,(I10,' : ',I10,2F18.10))
+
+
           DO
 
             if(irootsi > ninvec) exit
@@ -360,8 +368,8 @@ C
 #ifdef TEST_THIS_VERSION_DEGENERACIES
 
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
-              WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
+!             WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
+!             WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
               NDEG = 1
             END IF
 
@@ -401,10 +409,10 @@ C
 
 #else
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(luwrt,'(a,i3,a,i4,a)') 
-     &        ' degenerate initial vector for CI:'//
-     &        ' vector ',irootsi,' out of ',ninvec,' start vectors'
-              WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
+!             WRITE(luwrt,'(a,i3,a,i4,a)') 
+!    &        ' degenerate initial vector for CI:'//
+!    &        ' vector ',irootsi,' out of ',ninvec,' start vectors'
+!             WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
               if(.not.plus_combi) NDEG = 1
             END IF
 
