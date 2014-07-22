@@ -434,7 +434,6 @@ contains
       idensi  = lucita_cfg_density_calc_lvl
 !     calculate spin densities
       ispnden =  lucita_cfg_spindensity_calc_lvl
-      print *, 'ispnden and idensi... ',lucita_cfg_spindensity_calc_lvl,idensi
       !> set level of density calculation equal to spin-density level to avoid any inconsistencies...
       if(ispnden > idensi)then 
         idensi                      = ispnden

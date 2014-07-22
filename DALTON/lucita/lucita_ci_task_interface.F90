@@ -465,7 +465,6 @@ contains
 #endif
 !-------------------------------------------------------------------------------
 
-      print *, 'i was here ...'
 !     set level of particle-density matrix calculation
       i12 = idensi
 
@@ -735,14 +734,16 @@ contains
 
 !       activate for MCSCF/improved CI
         if(integrals_from_mcscf_env)then
-          call lucita_putdens_generic(work(krho1),work(krho2),int1_or_rho1,int2_or_rho2,             &
-                                      work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
+
+          !> reoder first spin-densities in order to not overwrite the outgoing 1p density matrix in int1_or_rho1
           if(ispnden == 1)then
             call lucita_spinputdens_1p(work(kSRHO1a),work(krho2),int1_or_rho1,int2_or_rho2,          &
                                        work(k_dens2_scratch),i12,isigden,rhotype_spin1,eigen_state_id,1)
             call lucita_spinputdens_1p(work(kSRHO1b),work(krho2),int1_or_rho1,int2_or_rho2,          &
                                        work(k_dens2_scratch),i12,isigden,rhotype_spin1,eigen_state_id,2)
           end if
+          call lucita_putdens_generic(work(krho1),work(krho2),int1_or_rho1,int2_or_rho2,             &
+                                      work(k_dens2_scratch),i12,isigden,rhotype,eigen_state_id)
 
         else
           twopart_densdim = 0

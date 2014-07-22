@@ -833,6 +833,7 @@ C
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
+      integer :: spindens_lvl_save
 C
       CALL QENTER('GETNO ')
       KFREE  = KFRSAV
@@ -851,6 +852,10 @@ C
 C
 C     Calculate natural orbital transformation and
 C     natural orbital occupation numbers
+
+      !> turn off spin-density calculation (if requested by user input)
+      spindens_lvl_save = spindens_lvl
+      spindens_lvl      = 0
 C
       CALL MEMGET('REAL',KDV  ,NNASHX,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1,LWRK1 ,WRK,KFREE,LFREE)
@@ -868,6 +873,8 @@ C
          CALL MAKDV(CVEC,WRK(KDV),INDXCI,WRK(KWRK1),LWRK1)
          LSYM   = LSYMSV
       END IF
+      !> restore spin-density level
+      spindens_lvl = spindens_lvl_save
 C
       IF (NASHT .GT. 0) THEN
          IF (IPRINT .GE. 10) THEN

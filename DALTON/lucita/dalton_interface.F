@@ -2769,6 +2769,7 @@ C
      &                           nr_actorb_tot,nr_actorb_tot)
       real(8) :: h1_out(*)
       real(8) :: h2_out(*)
+      integer :: mytest
 !     ------------------------------------------------------------------
 
 !#define LUCI_DEBUG
@@ -2805,7 +2806,6 @@ C
         end if
       end if
 
-!#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
       if(iintden .eq. 1)then
         write(lupri,*) '  symmetry reduced 1-el'
@@ -2814,10 +2814,16 @@ C
           write(lupri,*) '  symmetry reduced 2-el'
           call wrtmatmn(h2_out,1,nr_2int,1,nr_2int,lupri)
         end if
-      else
+      end if
+#undef LUCI_DEBUG
+#endif
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      mytest = 0
+      if(iintden > 1)then
         write(lupri,*) '  1-el density matrix'
         call outpak(h1_in,nr_actorb_tot,-1,lupri)
-        if(is2e_active .gt. 1)then
+        if(is2e_active .gt. 1 .and. mytest == 1)then
           write(lupri,*) '  2-el density matrix'
           call output(h2_in,1,nnashx,1,nnashx,nnashx,
      &                nnashx,-1,lupri)

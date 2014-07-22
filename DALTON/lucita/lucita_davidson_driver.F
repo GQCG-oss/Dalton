@@ -401,7 +401,9 @@ C
 
 #else
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
+              WRITE(luwrt,'(a,i3,a,i4,a)') 
+     &        ' degenerate initial vector for CI:'//
+     &        ' vector ',irootsi,' out of ',ninvec,' start vectors'
               WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
               if(.not.plus_combi) NDEG = 1
             END IF
@@ -488,8 +490,6 @@ C
          end do 
          nnashx = (ntoob*(ntoob+1))/2
 
-         write(luwrt,*) 'ntoob**2, norbt_internal',
-     &                   ntoob**2, norbt_internal
          allocate(fsr(max(ntoob**2,nnorbt_internal)))
          fsr              = 0.0d0
 
@@ -500,7 +500,6 @@ C
          if(ispnden > 0)then
            i12      = ispnden
          end if
-         print *, 'ispnden is here... ',ispnden,i12,idensi
 
          luci_cvec = 99
          open(file='srdft-lucita.cvec',unit=luci_cvec,status='replace',
@@ -670,7 +669,70 @@ C        eliminate local memory
          CALL MEMMAN(KDUM ,IDUM,'FLUSM ',2,'srdft1')
          deallocate(fsr)
 #endif
-      ENDIF
+
+!#define TEST_START_VEC_S2
+#ifdef TEST_START_VEC_S2
+      else ! TEST stefan
+
+         print *, 'bla TEST ',i12,ispnden
+         luci_cvec = 99
+         open(file='srdft-lucita.cvec',unit=luci_cvec,status='replace',
+     &        form='unformatted',action='write',position='rewind')
+
+!        debug print
+!        call wrtvcd(vec1,lu1,-1,-1)
+         call rewine(lu1,-1)
+
+         do i = 1, nrootsl
+
+           call rewine(lu5,-1)
+           call rewine(lu6,-1)
+           call copvcd(lu1,lu5,vec1, 0,-1)
+           call copvcd(lu5,lu6,vec1,-1,-1)
+
+!          save initial CI vectors on scratch file
+           call rewine(lu5,-1)
+           call copvcd(lu5,luci_cvec,vec1,0,-1)
+
+           call rewine(lu5,-1)
+           call rewine(lu6,-1)
+
+           xxs2dum = 0.0d0
+!                                                            1: sigma vector
+!                                                            2: density matrix
+           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 0,
+     &                    s2value)                          !   1: rhotype == 1 (regular density matrix)
+!                                                           !   3: rhotype == 3 (transition density matrix)
+!                                                           !   0: rhotype == 0 (regular density matrix run in CI)
+
+        if(i12 > 1)then
+          write(luwrt,'(/a      )')
+     &'   ------------------------------------------------'
+          write(luwrt,'(a,1f10.3)')
+     &'   expectation value of operator <S**2> =', s2value
+          write(luwrt,'(a/      )')
+     &'   ------------------------------------------------'
+        end if
+
+!********************
+!!! Odile+Manu debug
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+           CALL HEADER(
+     &     'lucita: individual one-el. density matrix, active part',-1)
+           CALL OUTPUT(work(krho1),1,ntoob,1,ntoob,ntoob,ntoob,
+     &                 -11,luwrt)
+#undef LUCI_DEBUG
+#endif
+!!!!
+!********************
+
+         end do ! loop over # roots
+         close(luci_cvec,status='keep')
+
+#endif /* TEST_START_VEC_S2 */
+
+      ENDIF ! DOCISRDFT
 
 !
 !     initialize arrays
