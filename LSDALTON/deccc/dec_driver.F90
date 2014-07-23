@@ -657,7 +657,7 @@ subroutine print_dec_info()
    write(LU,'(a,g15.3)') 'Simple orbital thr.                                 = ',&
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
-        & DECinfo%FragmentExpansionSize
+        & DECinfo%Frag_Exp_Size
    write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
         & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL

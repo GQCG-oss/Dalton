@@ -334,16 +334,20 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
-     !> Which Fragment Expansion Scheme should be used
-     integer :: FragmentExpansionScheme
+     !> Which Fragment Optimization Scheme should be used
+     integer :: Frag_Opt_Scheme
      !> Number of atoms to include in fragment expansion
-     integer :: FragmentExpansionSize
+     integer :: Frag_Exp_Size
+     !> Number of atoms to include in initial fragment
+     integer :: Frag_Init_Size
      !> Use RI for Fragment Expansion 
      logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
+     !> Temporary keyword to use clean version of the frag opt
+     logical :: orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning

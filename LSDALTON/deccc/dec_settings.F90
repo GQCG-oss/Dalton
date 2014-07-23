@@ -121,8 +121,9 @@ contains
     DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
-    DECinfo%FragmentExpansionScheme= 1
-    DECinfo%FragmentExpansionSize  = 5
+    DECinfo%Frag_Opt_Scheme        = 1
+    DECinfo%Frag_Exp_Size          = 5
+    DECinfo%Frag_Init_Size         = 4
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
@@ -130,8 +131,9 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
+    DECinfo%orb_based_fragopt      = .false.
     DECinfo%OnlyOccPart            = .false.
-    DECinfo%OnlyVirtPart            = .false.
+    DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
@@ -461,7 +463,8 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
+       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
+       case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
 
 
 #ifdef MOD_UNRELEASED
@@ -567,9 +570,10 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
+       case('.FRAG_OPT_SCHEME'); read(input,*) DECinfo%Frag_Opt_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.ORB_BASED_FRAGOPT'); DECinfo%orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
@@ -901,11 +905,13 @@ contains
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'FragmentExpansionScheme ', DECitem%FragmentExpansionScheme
-    write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
+    write(lupri,*) 'Frag_Opt_Scheme ', DECitem%Frag_Opt_Scheme
+    write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
+    write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
+    write(lupri,*) 'Orb_Based_FragOpt ', DECitem%orb_based_fragopt
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist

@@ -82,6 +82,13 @@ contains
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
 
+    ! Check that no core orbital are included in AOS space whith frozencore:
+    if (DECinfo%orb_based_fragopt.and.DECinfo%frozencore) then
+      do i=1,Mymolecule%ncore
+         if(Occ_list(i)) call lsquit('core orbital should never be included in AOS space &
+            & whith frozen core approximation',DECinfo%output)
+      end do
+    end if
 
     ! We always set core orbitals to false for frozen core approx.
     if (DECinfo%frozencore) Occ_list(1:Mymolecule%ncore) = .false.

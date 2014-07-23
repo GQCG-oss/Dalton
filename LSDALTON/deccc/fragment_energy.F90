@@ -14,7 +14,6 @@ module fragment_energy_module
   use dec_typedef_module
   use rpa_module
 
-
   ! DEC DEPENDENCIES (within deccc directory)                                                         
   ! ****************************************
 #ifdef MOD_UNRELEASED
@@ -2154,6 +2153,14 @@ contains
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
      logical :: BruteForce,FockMatrixOrdering
 
+     if (DECinfo%orb_based_fragopt) then
+       call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
+            & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
+            & MyMolecule,mylsitem,freebasisinfo)
+
+       call lsquit('Clean frag opt in construction', DECinfo%output)
+     end if
+
      !Number of core occupied orbitals in molecule
      ncore = MyMolecule%ncore
      times_fragopt => null()
@@ -2173,22 +2180,22 @@ contains
      BruteForce = .FALSE.        !BruteForce 
      FockMatrixOrdering = .FALSE.!Fock BruteForce 
      write(DECinfo%output,'(a)') ' FOP  Fragment optimization scheme '
-     IF(DECinfo%FragmentExpansionScheme.EQ.1)THEN
+     IF(DECinfo%Frag_Opt_Scheme.EQ.1)THEN
         write(DECinfo%output,'(a)') ' FOP  Standard Fragment optimization scheme is used'
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.2)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.2)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
         BinarySearch = .TRUE.
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.3)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.3)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
         write(DECinfo%output,'(a)') ' FOP Expansion for Occ and Virt is done seperately'        
         BinarySearch = .TRUE.
         SeperateExpansion = .TRUE.        
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.4)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.4)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '        
         write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.5)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.5)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
         write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
         IF(DECInfo%OnlyOccPart)THEN
@@ -2205,7 +2212,7 @@ contains
         ENDIF
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.6)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.6)THEN
         write(DECinfo%output,'(a)') ' FOP Binary search is used in Fragment reduction scheme '
         write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '        
         IF(DECInfo%OnlyOccPart)THEN
@@ -2224,7 +2231,7 @@ contains
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
         TestOcc = .TRUE.
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.7)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.7)THEN
         write(DECinfo%output,'(a)') ' FOP Orbital distance specific expansion is used in Fragment expansion scheme '
         IF(DECInfo%OnlyOccPart)THEN
            write(DECinfo%output,'(a)') ' FOP Brute Force Energy Contribution is used to Remove Occupied Orbitals'
@@ -2238,7 +2245,7 @@ contains
         BinarySearch = .TRUE.
         OrbDistanceSpec = .TRUE. 
         BruteForce = .TRUE.
-     ELSEIF(DECinfo%FragmentExpansionScheme.EQ.8)THEN
+     ELSEIF(DECinfo%Frag_Opt_Scheme.EQ.8)THEN
         write(DECinfo%output,'(a)') ' FOP Orbital Fock Matrix Ordering specific expansion is used in Fragment expansion scheme '
         IF(DECInfo%OnlyOccPart)THEN
            write(DECinfo%output,'(a)') ' FOP Fock Matrix Ordering is used to Remove Occupied Orbitals'
@@ -2257,7 +2264,7 @@ contains
         call GetSortedFockMaxElements(FmaxOcc,FmaxVirt,nocc,nunocc,MyMolecule,ncore,OccOrbitals,&
              & UnOccOrbitals,MyAtom,OrbOccFockTrackMyAtom,OrbVirtFockTrackMyAtom)
      ELSE
-        call lsquit('FragmentExpansionScheme unknown',-1)
+        call lsquit('Frag_Opt_Scheme unknown',-1)
      ENDIF
 
      ! Sanity check for singles polarization
@@ -2392,7 +2399,7 @@ contains
      call GetnAtomsWithOrb(natoms,nocc_per_atom,&
           & nunocc_per_atom,nAtomsWithOccOrb,nAtomsWithVirtOrb)
 
-     StepsizeLoop2 = DECinfo%FragmentExpansionSize
+     StepsizeLoop2 = DECinfo%Frag_Exp_Size
      ExpandVirt = .TRUE.    !Expand both Occupied and Virtual Space untill convergence
      ExpandOcc  = .TRUE. 
      call FragmentExpansionProcedure(MyAtom,AtomicFragment,nAtoms, &
@@ -4289,7 +4296,7 @@ contains
     IF(PRESENT(InputStep))THEN
        step = InputStep
     ELSE
-       step = DECinfo%FragmentExpansionSize
+       step = DECinfo%Frag_Exp_Size
     ENDIF
 
     IF(ExpandOcc)THEN
@@ -4765,6 +4772,323 @@ contains
 
   end subroutine put_fragment_energy_contribs
 
+   ! ===================================================================!
+   !                      FRAGMENT OPTIMIZATION                         !
+   ! ===================================================================!
+   
+   !> Purpose: Routine that optimizes an atomic fragment by (1) expanding to include 
+   !           a given number of orbital based on a priority list. Checking that energy 
+   !           change is smaller than FOT. (2) For converged expanded fragment we 
+   !           reduce fragment again by removing individual orbitals based on (more accurate)
+   !           priority list. 
+   !           In (2) it is ensured that the energy error introduced by reducing the 
+   !           fragment (compared to the fragment obtained in (1)) is below the FOT.
+   !
+   !> Author:  Pablo Baudin, (based on previous work by Ida-Marie Hoeyvik,
+   !           Kasper Kristensen & Thomas Kjaergaard
+   !> Date:    July 2014
+   subroutine optimize_atomic_fragment_CLEAN(MyAtom,AtomicFragment,natoms, &
+            & OccOrbitals,no,VirOrbitals,nv,MyMolecule,mylsitem,freebasisinfo)
+
+      implicit none
+
+      !> Number of occupied orbitals in molecule
+      integer, intent(in) :: no
+      !> Number of virtual orbitals in molecule
+      integer, intent(in) :: nv
+      !> Number of atoms in molecule
+      integer, intent(in) :: natoms
+      !> Central atom in molecule
+      integer, intent(in) :: MyAtom
+      !> Atomic fragment to be optimized
+      type(decfrag), intent(inout) :: AtomicFragment
+      !> All occupied orbitals
+      type(decorbital), dimension(no), intent(in) :: OccOrbitals
+      !> All virtual orbitals
+      type(decorbital), dimension(nv), intent(in) :: VirOrbitals
+      !> Full molecule information
+      type(fullmolecule), intent(inout) :: MyMolecule
+      !> Integral information
+      type(lsitem), intent(inout) :: mylsitem
+      !> Delete fragment basis information ("expensive box in decfrag type") at exit?
+      logical, intent(in) :: freebasisinfo
+
+      !> number of occ/vir orbitals in each atom:
+      integer, dimension(natoms) :: nocc_per_atom, nvir_per_atom
+      !> DEC fragment energy differences from all partitioning schemes:
+      real(realk) :: LagEnergyDiff, OccEnergyDiff, VirEnergyDiff
+      !> Logical vector telling which orbital is include in the fragment
+      logical, pointer :: Occ_AOS(:), Vir_AOS(:)
+      !> Expansion priority lists:
+      integer, pointer :: exp_list_occ(:), exp_list_vir(:)
+      !> # occ/vir orbitals added in each step of the expansion:
+      integer :: nexp_occ, nexp_vir
+      !> # occ/vir orbitals added to EOS space to define the initial fragment:
+      integer :: ninit_occ, ninit_vir
+      !> Timings for frag opt
+      real(realk), pointer :: times_fragopt(:)  
+
+
+      !==================================================================================!
+      !                       Initialization of various things...                        !
+      !==================================================================================!
+      !
+      ! Start timings:
+      times_fragopt => null()
+      call dec_fragment_time_init(times_fragopt)
+
+      write(DECinfo%output,'(a)')    ' FOP'
+      write(DECinfo%output,'(a)')    ' FOP ==============================================='
+      write(DECinfo%output,'(a,i4)') ' FOP  Site fragment generator for fragment,',MyAtom
+      write(DECinfo%output,'(a)')    ' FOP ==============================================='
+      write(DECinfo%output,'(a)')    ' FOP'
+
+      ! DEC fragment energy differences set to zero 
+      LagEnergyDiff=0.0_realk
+      OccEnergyDiff=0.0_realk
+      VirEnergyDiff=0.0_realk
+
+      ! Get number of orbital in EOS spaces:
+      nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,no,natoms,.true.)
+      nvir_per_atom=get_number_of_orbitals_per_atom(VirOrbitals,nv,natoms,.true.)
+
+      ! Only do fragment optimization if there are orbitals assigned to central atom.
+      if( (nocc_per_atom(MyAtom) == 0) .and. (nvir_per_atom(MyAtom) == 0) ) then
+         write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
+         AtomicFragment%LagFOP   = 0E0_realk
+         AtomicFragment%EoccFOP  = 0E0_realk
+         AtomicFragment%EvirtFOP = 0E0_realk
+         AtomicFragment%energies = 0E0_realk
+         AtomicFragment%ccmodel  = DECinfo%ccmodel
+
+         ! Get final timings before quiting
+         call dec_fragment_time_get(times_fragopt)
+         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+            & AtomicFragment%ccmodel,'Fragment optmization')
+         return
+      end if
+
+      ! Debug case: Full molecule included in fragment
+      ! --> we then skip energy calculation here and just init fragment
+      if(DECinfo%InclFullMolecule .or. DECinfo%simulate_full) then
+         call fragopt_include_fullmolecule(MyAtom,AtomicFragment, &
+            & OccOrbitals,no,VirOrbitals,nv,MyMolecule,mylsitem,freebasisinfo)
+
+         ! Get final timings before quiting
+         call dec_fragment_time_get(times_fragopt)
+         call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt,&
+            & AtomicFragment%ccmodel,'Fragment optmization')
+         return
+      end if
+
+      ! Overwrite ccmodel for myatom with the expansion required ccmodel
+      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_exp_model
+
+      ! Get expansion priority lists for occ/vir orbitals:
+      call mem_alloc(exp_list_occ,no)
+      call mem_alloc(exp_list_vir,nv)
+
+      call define_frag_expansion(Mymolecule,MyAtom,natoms,no,nv, &
+         & ninit_occ,ninit_vir,exp_list_occ,exp_list_vir,nexp_occ,nexp_vir)
+
+
+
+
+      !==================================================================================!
+      !                               Initialize Fragment                                !
+      !==================================================================================!
+      !
+      ! Get Initial fragment for Myatom, we include the EOS space plus Frag_Init_Size 
+      ! occ/vir orbitals from the priority lists:
+      call mem_alloc(Occ_AOS,no)
+      call mem_alloc(Vir_AOS,nv)
+
+      ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
+      call get_init_frag_orb_AOS(no,nv,exp_list_occ,exp_list_vir,ninit_occ,ninit_vir,MyAtom, &
+         & MyMolecule,OccOrbitals,VirOrbitals,Occ_AOS,Vir_AOS)
+      ! Initialize fragment base on the two orbital lists Occ_AOS/Vir_AOS:
+      call atomic_fragment_init_orbital_specific(MyAtom,nv,no,Vir_AOS,Occ_AOS,OccOrbitals, &
+         & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.) 
+      ! Get Energy for the initialized fragment
+      call get_atomic_fragment_Energy_and_prop(AtomicFragment) 
+
+
+
+
+      !==================================================================================!
+      !                             Enter Fragment Expansion                             !
+      !==================================================================================!
+      !
+
+
+
+
+
+
+
+
+
+
+      ! Define Atomic fragment model to be the model used in the reduction part:
+      AtomicFragment%ccmodel = DECinfo%fragopt_red_model
+
+      ! Deallocation:
+      call mem_dealloc(exp_list_occ)
+      call mem_dealloc(exp_list_vir)
+
+      call mem_dealloc(Occ_AOS)
+      call mem_dealloc(Vir_AOS)
+
+      ! Get final Timings:
+      call dec_fragment_time_get(times_fragopt)
+      call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt, &
+         & AtomicFragment%ccmodel,'Fragment optmization')
+ 
+   end subroutine optimize_atomic_fragment_CLEAN
+
+
+   ! Purpose: Define how the fragment expansion should be done in function of the 
+   !          chosen scheme:
+   !
+   !          Scheme 1: (Default) The expansion include the next nexp_occ / nexp_vir closest
+   !          orbitals from MyAtom where, nexp_*** is defined by Frag_Exp_Size times the 
+   !          average number of occ/vir orbitals per atoms.
+   !
+   ! Author:  Pablo Baudin
+   ! Date:    July 2014
+   subroutine define_frag_expansion(Mymolecule,MyAtom,natoms,no_full,nv_full, &
+            & ninit_occ,ninit_vir,track_priority_list_occ,track_priority_list_vir, &
+            & nexp_occ,nexp_vir)
+
+      implicit none
+   
+      !> Number of occupied orbitals in molecule
+      integer, intent(in) :: no_full
+      !> Number of virtual orbitals in molecule
+      integer, intent(in) :: nv_full
+      !> Number of atoms in molecule
+      integer, intent(in) :: natoms
+      !> Central atom in molecule
+      integer, intent(in) :: MyAtom
+      !> Full molecule information
+      type(fullmolecule), intent(in) :: MyMolecule
+      !> Return priority list of occ/vir orbitals
+      integer, intent(out) :: track_priority_list_occ(no_full)
+      integer, intent(out) :: track_priority_list_vir(nv_full)
+      !> Return number of occ/vir/ orbitals to be include in each expansion step:
+      integer, intent(out) :: nexp_occ, nexp_vir
+      !> Return # occ/vir orbitals added to EOS space to define the initial fragment:
+      integer, intent(out) :: ninit_occ, ninit_vir
+
+      real(realk), pointer :: priority_list_occ(:), priority_list_vir(:)      
+
+
+      if (DECinfo%Frag_Opt_Scheme == 1) then
+         ! The priority list for scheme one is based on distance:
+         ! Get occupied priority list:
+         call mem_alloc(priority_list_occ,no_full)
+         call GetSortedList(priority_list_occ,track_priority_list_occ,&
+              & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+         call mem_dealloc(priority_list_occ)
+   
+         ! Get virtual priority list:
+         call mem_alloc(priority_list_vir,nv_full)
+         call GetSortedList(priority_list_vir,track_priority_list_vir,&
+              & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+         call mem_dealloc(priority_list_vir)
+
+         ! Get ninit_occ and ninit_vir:
+         ninit_occ = DECinfo%Frag_Init_Size*(no_full/natoms)
+         ninit_vir = DECinfo%Frag_Init_Size*(nv_full/natoms)
+
+         ! Get nexp_occ and nexp_vir:
+         nexp_occ = DECinfo%Frag_Exp_Size*(no_full/natoms)
+         nexp_vir = DECinfo%Frag_Exp_Size*(nv_full/natoms)
+
+      else 
+         call lsquit('ERROR FOP: Scheme not defined',DECinfo%output)
+      end if
+
+   end subroutine define_frag_expansion
+
+   subroutine get_init_frag_orb_AOS(no_full,nv_full,priority_list_occ,priority_list_vir, &
+            & ninit_occ,ninit_vir,MyAtom,MyMolecule,OccOrbitals,VirOrbitals,Occ_AOS,Vir_AOS)
+
+      implicit none
+
+      !> Number of occupied orbitals in molecule
+      integer, intent(in) :: no_full
+      !> Number of virtual orbitals in molecule
+      integer, intent(in) :: nv_full
+      !> Priority list of orbitals:
+      integer, intent(in) :: priority_list_occ(no_full)
+      integer, intent(in) :: priority_list_vir(nv_full)
+      !> Number of orbital to include in initial fragment size
+      integer, intent(in) :: ninit_occ, ninit_vir
+      !> Central Atom of the current fragment
+      integer, intent(in) :: MyAtom
+      !> Full molecule information
+      type(fullmolecule), intent(inout) :: MyMolecule
+      !> All occupied orbitals
+      type(decorbital), dimension(no_full), intent(in) :: OccOrbitals
+      !> All unoccupied orbitals
+      type(decorbital), dimension(nv_full), intent(in) :: VirOrbitals
+      !> Logical vector telling which orbital is include in the fragment
+      logical, intent(out) :: Occ_AOS(no_full), Vir_AOS(nv_full)
+
+      integer :: ncore, ncount, i, ii
+
+      ! Set # core orbitals to zero if the frozen core approximation is not used:
+      if (DECinfo%frozencore) then
+         ncore = MyMolecule%ncore
+      else
+         ncore = 0
+      end if
+
+      ! Initialization:
+      Occ_AOS = .false.
+      Vir_AOS = .false.
+
+      ! By definition we include the EOS orbitals (except core)
+      ! 1) For Occupied orbitals:
+      do i=1,no_full
+         if ((OccOrbitals(i)%centralatom == Myatom).and.(i > ncore)) then      
+            Occ_AOS(i) = .true.
+         end if
+      end do
+      ! 2) For Virtual orbitals:
+      do i=1,nv_full
+         if (VirOrbitals(i)%centralatom == Myatom) then      
+            Vir_AOS(i) = .true.
+         end if
+      end do
+
+      ! Set Initial AOS space for fragment MyAtom by including ninit more orbitals:
+      ! 1) For Occupied orbitals:
+      ncount = 0
+      do i=1,no_full
+         ii = priority_list_occ(i)
+         ! If the orbital to be include is a core then skip it
+         if (ii <= ncore) cycle
+         Occ_AOS(ii) = .true.
+
+         ! Exit loop when we have included the correct number of orbital
+         ncount = ncount + 1
+         if (ncount >= ninit_occ) exit
+      end do
+
+      ! 2) For Virtual orbitals:
+      ncount = 0
+      do i=1,nv_full
+         ii = priority_list_vir(i)
+         Vir_AOS(ii) = .true.
+
+         ! Exit loop when we have included the correct number of orbital
+         ncount = ncount + 1
+         if (ncount >= ninit_vir) exit
+      end do
+
+   end subroutine get_init_frag_orb_AOS
 
   
 end module fragment_energy_module
