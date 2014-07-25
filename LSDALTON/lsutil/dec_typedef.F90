@@ -336,10 +336,17 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Which Fragment Optimization Scheme should be used
      integer :: Frag_Opt_Scheme
-     !> Number of atoms to include in fragment expansion
-     integer :: Frag_Exp_Size
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
+     !> Number of atoms to include in fragment expansion
+     integer :: Frag_Exp_Size
+     !===========================================
+     ! NEED TO BE REMOVED AFTER TESTING:
+     integer :: Frag_red_gap_occ
+     integer :: Frag_red_gap_virt
+     real(realk) :: Frag_red_dE_occ
+     real(realk) :: Frag_red_dE_virt
+     !===========================================
      !> Use RI for Fragment Expansion 
      logical :: FragmentExpansionRI
      !> Model to use for fragment expansion

@@ -122,8 +122,15 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Opt_Scheme        = 1
-    DECinfo%Frag_Exp_Size          = 5
     DECinfo%Frag_Init_Size         = 4
+    DECinfo%Frag_Exp_Size          = 5
+!=======================================
+! NEEDS TO BE REMOVE AFTER TESTING:
+    DECinfo%frag_red_gap_occ       = 2
+    DECinfo%frag_red_gap_virt      = 4
+    DECinfo%frag_red_dE_occ        = 0.8E-4_realk
+    DECinfo%frag_red_dE_virt       = 1.0E-4_realk
+!=======================================
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
@@ -463,8 +470,12 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
        case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
+       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
+       case('.FRAG_RED_GAP_OCC'); read(input,*) DECinfo%frag_red_gap_occ
+       case('.FRAG_RED_GAP_VIRT'); read(input,*) DECinfo%frag_red_gap_virt
+       case('.FRAG_RED_DE_OCC'); read(input,*) DECinfo%frag_red_dE_occ
+       case('.FRAG_RED_DE_VIRT'); read(input,*) DECinfo%frag_red_dE_virt
 
 
 #ifdef MOD_UNRELEASED
@@ -906,8 +917,12 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Opt_Scheme ', DECitem%Frag_Opt_Scheme
-    write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
+    write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
+    write(lupri,*) 'Frag_Red_gap_occ ', DECinfo%frag_red_gap_occ
+    write(lupri,*) 'Frag_Red_gap_virt ', DECinfo%frag_red_gap_virt
+    write(lupri,*) 'Frag_Red_dE_occ ', DECinfo%frag_red_dE_occ
+    write(lupri,*) 'Frag_Red_dE_virt ', DECinfo%frag_red_dE_virt
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
