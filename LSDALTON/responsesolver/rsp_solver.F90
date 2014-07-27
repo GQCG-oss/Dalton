@@ -2523,7 +2523,7 @@ end subroutine verify_conv_prop
     real(realk),intent(inout) :: red_eivec(:,:) !org dim:(2*molcfg%solver%rsp_maxred,2*molcfg%solver%rsp_maxred)
     integer :: ndim_red_mat,i,igd,ij,j,isndx(3),ineg,nsim,kk1
     real(realk) :: ddot, freq
-    integer :: ije,jie,kzyrdq, ipos, ierr
+    integer :: ije,jie,kzyrdq, ipos, ierr,matz
     real(realk), allocatable :: alfi(:),beta(:),alfr(:)
     real(realk), allocatable :: E2FULL(:,:),S2FULL(:,:)
     real(realk), allocatable :: red_eivec_scr(:)
@@ -2544,10 +2544,11 @@ end subroutine verify_conv_prop
 !
 !        CALL RGG(NM,N,A,B,ALFR,ALFI,BETA,MATZ,Z,IERR)
 !***********************************************************
-    call RGG(2*ndim_red,2*ndim_red,E2FULL,S2FULL,ALFR,ALFI,BETA,1,red_eivec_scr,IERR)
+    matz=1
+    call RGG(2*ndim_red,2*ndim_red,E2FULL,S2FULL,ALFR,ALFI,BETA,matz,red_eivec_scr,IERR)
 
     IF ( IERR /= 0 ) THEN
-       WRITE(molcfg%LUPRI,'(/A)') 'solve_red_eigen: Problem in RGG, IERR = ', IERR
+       WRITE(molcfg%LUPRI,'(/A,I5)') 'solve_red_eigen: Problem in RGG, IERR = ', IERR
        CALL LSQUIT('Problem in RGG',molcfg%lupri)
     END IF
 !
