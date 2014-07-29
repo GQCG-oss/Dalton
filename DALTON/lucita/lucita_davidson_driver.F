@@ -844,6 +844,12 @@ C     Hamiltonian is totally symmetric)
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt,
      &             c_state_of_interest)
+!
+!!! Manu july 2014: for ensemble CI-srDFT, wavefunctions will be
+!converged for a given trial ensemble density. The latter should then be
+!updated in the srDFT potential (call SRFMAT ...), and MICDV6 called again until
+!convergence is reached.   
+!
 #else
 #ifndef blubb2
        CALL blubb_MICDV4(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),
