@@ -123,14 +123,9 @@ contains
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Opt_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
-    DECinfo%Frag_Exp_Size          = 5
-!=======================================
-! NEEDS TO BE REMOVE AFTER TESTING:
-    DECinfo%frag_red_gap_occ       = 2
-    DECinfo%frag_red_gap_virt      = 4
-    DECinfo%frag_red_dE_occ        = 0.8
-    DECinfo%frag_red_dE_virt       = 1.0
-!=======================================
+    DECinfo%Frag_Exp_Size          = 10
+    DECinfo%frag_red_dE_occ        = 1.0  ! times FOT
+    DECinfo%frag_red_dE_virt       = 0.9  ! times FOT
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0

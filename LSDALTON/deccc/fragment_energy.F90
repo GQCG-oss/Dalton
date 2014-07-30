@@ -5184,14 +5184,20 @@ contains
          call mem_dealloc(vir_priority_list)
          
 
-         ! Get nred_occ and nred_vir:
-         nred_occ = DECinfo%frag_red_gap_occ
-         nred_vir = DECinfo%frag_red_gap_virt
+         ! Get nred_occ and nred_vir (5% of the expanded spaces)
+         nred_occ = max( ceiling(5.0E0_realk*AtomicFragment%noccAOS/100), 1)
+         nred_vir = max( ceiling(5.0E0_realk*AtomicFragment%noccAOS/100), 1)
 
-         ! By default dE_red_vir is set to 0.8*FOT and dE_red_occ is set to the FOT
+         ! By default dE_red_vir is set to 0.9*FOT and dE_red_occ is set to the FOT
          ! if OnlyVirtPart then it is the contrary (WRT occ/vir)
-         dE_red_occ = DECinfo%frag_red_dE_occ*DECinfo%FOT
-         dE_red_vir = DECinfo%frag_red_dE_virt*DECinfo%FOT
+         if(.not.DECinfo%OnlyVirtPart) then
+            dE_red_occ = DECinfo%frag_red_dE_occ*DECinfo%FOT
+            dE_red_vir = DECinfo%frag_red_dE_virt*DECinfo%FOT
+         else
+            dE_red_occ = DECinfo%frag_red_dE_virt*DECinfo%FOT
+            dE_red_vir = DECinfo%frag_red_dE_occ*DECinfo%FOT
+         end if
+
 
          ! Sanity check: check that dE_red is never > FOT:
          if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
@@ -5547,10 +5553,8 @@ contains
          call fragopt_print_info(AtomicFragment,LagEnergy_dif,OccEnergy_dif,VirEnergy_dif,iter)
 
 
-
          ! CHECK CONVERGENCES:
          ! *******************
-
          ! Check if reduction step is accepted (Energy criterion):
          if (reduce_occ) then
             call fragopt_check_convergence(LagEnergy_dif,OccEnergy_dif,VirEnergy_dif, &
@@ -5569,54 +5573,14 @@ contains
             VirAOS_old = Vir_AOS
          end if
 
-
          ! Check convergence of spaces:
          SpaceConvergence: if (reduce_occ) then
-
-            ! if we have reach a small enough gap (# of orbs) between the 
-            ! last two step it means we have converged:
-            if (abs(no_old-no_new) <= no_gap) then
-               occ_red_conv = .true.
-
-               ! If the last step was accepted, we keep it:
-               if (step_accepted) then
-                  no_old = no_new
-                  no_min = no_new
-                  no_max = no_new
-               ! Else, we keep the last converged step:
-               else 
-                  no_new = no_max
-                  no_old = no_max
-                  no_min = no_max
-               end if
-               if (DECinfo%PL > 1) write(DECinfo%output,*) &
-                  & 'BIN SEARCH: OCCUPIED REDUCTION CONVERGED'
-               if (vir_red_conv) reduction_converged = .true.
-            end if
+            call check_red_space_convergence(no_old,no_new,no_min,no_max,no_gap,occ_red_conv,vir_red_conv, &
+               & reduction_converged,reduce_occ,step_accepted)
          else
-
-            ! if we have reach a small enough gap (# of orbs) between the 
-            ! last two step it means we have converged:
-            if (abs(nv_old-nv_new) <= nv_gap) then
-               vir_red_conv = .true.
-
-               ! If the last step was accepted, we keep it:
-               if (step_accepted) then
-                  nv_old = nv_new
-                  nv_min = nv_new
-                  nv_max = nv_new
-               ! Else, we keep the last converged step:
-               else 
-                  nv_new = nv_max
-                  nv_old = nv_max
-                  nv_min = nv_max
-               end if
-               if (DECinfo%PL > 1) write(DECinfo%output,*) &
-                  & 'BIN SEARCH: VIRTUAL REDUCTION CONVERGED'
-               if (occ_red_conv) reduction_converged = .true.
-            end if
+            call check_red_space_convergence(nv_old,nv_new,nv_min,nv_max,nv_gap,vir_red_conv,occ_red_conv, &
+               & reduction_converged,reduce_occ,step_accepted)
          end if SpaceConvergence
-
 
          ! If everything has converged then we keep the last valid
          ! information and quit the loop:
@@ -5802,6 +5766,54 @@ contains
       end do
 
    end subroutine reduce_fragment
+
+
+   ! Purpose: Check if the last two steps of the binary search are close enough
+   !          for the reduction to be stoped.
+   !
+   ! Author:  Pablo Baudin
+   ! Date:    July 2014
+   subroutine check_red_space_convergence(Nold,Nnew,Nmin,Nmax,gap,Space1conv,Space2conv, &
+            & converged,reduce_occ,step_accepted)
+
+      implicit none
+
+      integer, intent(inout) :: Nold, Nnew, Nmin, Nmax
+      integer, intent(in)    :: gap
+      logical, intent(inout) :: Space1conv, Space2conv, converged
+      logical, intent(in)    :: reduce_occ, step_accepted
+
+      ! if we have reach a small enough gap (# of orbs) between the 
+      ! last two step it means we have converged:
+      if (abs(Nold-Nnew) <= gap) then
+         Space1_conv = .true.
+
+         ! If the last step was accepted, we keep it:
+         if (step_accepted) then
+            Nold = Nnew
+            Nmin = Nnew
+            Nmax = Nnew
+         ! Else, we keep the last converged step:
+         else
+            Nnew = Nmax
+            Nold = Nmax
+            Nmin = Nmax
+         end if
+
+         if (DECinfo%PL > 1) then
+            if (reduce_occ) then
+               write(DECinfo%output,*) &
+               & 'BIN SEARCH: OCCUPIED REDUCTION CONVERGED'
+            else
+               write(DECinfo%output,*) &
+               & 'BIN SEARCH: VIRTUAL REDUCTION CONVERGED'
+            end if
+         end if
+
+         if (Space2_conv) converged = .true.
+      end if
+
+   subroutine check_red_space_convergence
 
 
 end module fragment_energy_module
