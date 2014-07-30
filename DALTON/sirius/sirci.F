@@ -28,6 +28,9 @@ C  /* Deck cimain */
 C
 C 28-Jun-1985 hjaaj
 C
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -86,66 +89,114 @@ C
      *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
       CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
 C
-C     =================
-      IF (.NOT.DOCISRDFT .OR. ISTACI .LE. 0) THEN
-C     =================
-         CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
-     *              WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
-C     =================
-      ELSE
-C     =================
-C
-C     CIDFT Macro-iteration control
-C
+      if(do_ensemble_dft)then
 #ifndef MOD_SRDFT
-         call quit('srdft not implemented in this version')
+        call quit('srdft not implemented in this version')
 #else
-         CALL MEMGET('REAL',KECID,NCROOT*MXCIDFT,WORK,KFREE,LFREE)
-         IMCITR = 0
-         DO I = 1,MXCIDFT
-            IMCITR = IMCITR + 1
-            CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
-     *                 WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
-     *                 WORK(KFREE),LFREE)
-            ICIST  = 5
-C           ... restart CI in next macro CIDFT iteration ...
-            ECIDFT = WORK(KECI + (ISTACI-1) )
-            WORK(KECID + I - 1) = ECIDFT
-            IF(IMCITR.NE.1) EDIFF = ECIDFT - WORK(KECID + I - 2) 
-            IF (IMCITR .GE. MXCIDFT) THEN
-               WRITE(LUPRI,'(///A//A)') 
-     &  '  >>>>> CI-srDFT optimization -- Summary <<<<<',
-     &  '  ** Maximum number of Macro CI-srDFT iterations reached **'
-               GO TO 5
-            ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
-               WRITE(LUPRI,'(///A//A,I3,A)') 
-     &         '  >>>>> CI-DFT optimization -- Summary <<<<<',
-     &         '  ** Convergence reached in',IMCITR,
-     &         ' CI-DFT macro iterations.'
-               GO TO 5
-            ENDIF
-         ENDDO
-5        CONTINUE
-            WRITE(LUPRI,'(3(/2X,A))') 
+           CALL MEMGET('REAL',KECID,MXCIDFT,WORK,KFREE,LFREE)
+           IMCITR = 0
+           DO I = 1,MXCIDFT
+              IMCITR = IMCITR + 1
+              CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
+     *                   WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
+     *                   WORK(KFREE),LFREE)
+              ICIST  = 5
+C             ... restart CI in next macro ensemble-DFT iteration ...
+              ensemble_energy       = WORK(KECI)
+              WORK(KECID + I - 1)   = ensemble_energy
+              IF(IMCITR.NE.1) EDIFF = ensemble_energy-WORK(KECID+I-2) 
+              IF (IMCITR .GE. MXCIDFT) THEN
+                 WRITE(LUPRI,'(///A//A)') 
+     & '  >>>>> ensemble-DFT optimization -- Summary <<<<<',
+     & '  ** Maximum number of Macro ensemble-DFT iterations reached **'
+                 GO TO 3
+              ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
+                 WRITE(LUPRI,'(///A//A,I3,A)') 
+     &           '  >>>>> ensemble-DFT optimization -- Summary <<<<<',
+     &           '  ** Convergence reached in',IMCITR,
+     &           ' ensemble-DFT macro iterations.'
+                 GO TO 3
+              ENDIF
+           ENDDO
+3          CONTINUE
+              WRITE(LUPRI,'(3(/2X,A))') 
      &      '---------------------------------------------------------',
      &      '       Itr.           Energy                Delta(E)',
      &      '---------------------------------------------------------'
-            WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
-     &      1,WORK(KECID),'             ------'
-            DO I = 2,IMCITR
-               DE = WORK(KECID+I-2) - WORK(KECID+I-1)
-               WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
-     &         I,WORK(KECID + I - 1),DE
-            ENDDO
-            WRITE(LUPRI,'(2X,A/)') 
+              WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
+     &        1,WORK(KECID),'             ------'
+              DO I = 2,IMCITR
+                 DE = WORK(KECID+I-2) - WORK(KECID+I-1)
+                 WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
+     &           I,WORK(KECID + I - 1),DE
+              ENDDO
+              WRITE(LUPRI,'(2X,A/)') 
      &      '---------------------------------------------------------'
-            WRITE(LUPRI,'(/2X,A,F20.12/)')
-     &      '@ Final CI-srDFT energy: ',WORK(KECID + IMCITR -1)
+              WRITE(LUPRI,'(/2X,A,F20.12/)')
+     &        '@ Final ensemble-DFT energy: ',WORK(KECID + IMCITR -1)
+#endif
+      else
+C       =================
+        IF (.NOT.DOCISRDFT .OR. ISTACI .LE. 0) THEN
+C       =================
+          CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
+     *               WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
+C       =================
+        ELSE
+C       =================
+C
+C       regular CIDFT Macro-iteration control
+C
+#ifndef MOD_SRDFT
+           call quit('srdft not implemented in this version')
+#else
+           CALL MEMGET('REAL',KECID,NCROOT*MXCIDFT,WORK,KFREE,LFREE)
+           IMCITR = 0
+           DO I = 1,MXCIDFT
+              IMCITR = IMCITR + 1
+              CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
+     *                   WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
+     *                   WORK(KFREE),LFREE)
+              ICIST  = 5
+C             ... restart CI in next macro CIDFT iteration ...
+              ECIDFT = WORK(KECI + (ISTACI-1) )
+              WORK(KECID + I - 1) = ECIDFT
+              IF(IMCITR.NE.1) EDIFF = ECIDFT - WORK(KECID + I - 2) 
+              IF (IMCITR .GE. MXCIDFT) THEN
+                 WRITE(LUPRI,'(///A//A)') 
+     &    '  >>>>> CI-srDFT optimization -- Summary <<<<<',
+     &    '  ** Maximum number of Macro CI-srDFT iterations reached **'
+                 GO TO 5
+              ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
+                 WRITE(LUPRI,'(///A//A,I3,A)') 
+     &           '  >>>>> CI-DFT optimization -- Summary <<<<<',
+     &           '  ** Convergence reached in',IMCITR,
+     &           ' CI-DFT macro iterations.'
+                 GO TO 5
+              ENDIF
+           ENDDO
+5          CONTINUE
+              WRITE(LUPRI,'(3(/2X,A))') 
+     &      '---------------------------------------------------------',
+     &      '       Itr.           Energy                Delta(E)',
+     &      '---------------------------------------------------------'
+              WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
+     &        1,WORK(KECID),'             ------'
+              DO I = 2,IMCITR
+                 DE = WORK(KECID+I-2) - WORK(KECID+I-1)
+                 WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
+     &           I,WORK(KECID + I - 1),DE
+              ENDDO
+              WRITE(LUPRI,'(2X,A/)') 
+     &      '---------------------------------------------------------'
+              WRITE(LUPRI,'(/2X,A,F20.12/)')
+     &        '@ Final CI-srDFT energy: ',WORK(KECID + IMCITR -1)
 #endif
 C
-C     =================
-      ENDIF
-C     =================
+C       =================
+        ENDIF
+C       =================
+      end if ! ensemble-DFT
       CALL MEMREL('CIMAIN',WORK,1,1,KFREE,LFREE)
       ADDSRI = ADDSRI_SAVE
 C
@@ -719,6 +770,11 @@ C
       END IF
 C
  9999 CONTINUE
+
+      !> save the ensemble-DFT energy for self-consistent convergence
+      if(do_ensemble_dft)then
+        eci(1) = EENSEMB
+      end if
 C
       if(ci_program .eq. 'LUCITA   ')then
         if(allocated(srdft_srac_lucita))

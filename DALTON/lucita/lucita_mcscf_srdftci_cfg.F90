@@ -27,6 +27,7 @@ module lucita_mcscf_srdftci_cfg
 ! logical block
   logical,              public :: srdft_ci_1pdens_cref_restore = .false. 
   logical,              public :: srdft_ci_with_lucita         = .false. 
+  logical,              public :: do_ensemble_dft              = .false. 
 
 ! double precision block
 
