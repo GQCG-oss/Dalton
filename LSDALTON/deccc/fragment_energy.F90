@@ -5773,14 +5773,14 @@ contains
    !
    ! Author:  Pablo Baudin
    ! Date:    July 2014
-   subroutine check_red_space_convergence(Nold,Nnew,Nmin,Nmax,gap,Space1conv,Space2conv, &
+   subroutine check_red_space_convergence(Nold,Nnew,Nmin,Nmax,gap,Space1_conv,Space2_conv, &
             & converged,reduce_occ,step_accepted)
 
       implicit none
 
       integer, intent(inout) :: Nold, Nnew, Nmin, Nmax
       integer, intent(in)    :: gap
-      logical, intent(inout) :: Space1conv, Space2conv, converged
+      logical, intent(inout) :: Space1_conv, Space2_conv, converged
       logical, intent(in)    :: reduce_occ, step_accepted
 
       ! if we have reach a small enough gap (# of orbs) between the 
@@ -5813,7 +5813,7 @@ contains
          if (Space2_conv) converged = .true.
       end if
 
-   subroutine check_red_space_convergence
+   end subroutine check_red_space_convergence
 
 
 end module fragment_energy_module
