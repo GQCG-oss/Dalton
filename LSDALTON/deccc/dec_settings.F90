@@ -128,8 +128,8 @@ contains
 ! NEEDS TO BE REMOVE AFTER TESTING:
     DECinfo%frag_red_gap_occ       = 2
     DECinfo%frag_red_gap_virt      = 4
-    DECinfo%frag_red_dE_occ        = 0.8E-4_realk
-    DECinfo%frag_red_dE_virt       = 1.0E-4_realk
+    DECinfo%frag_red_dE_occ        = 0.8
+    DECinfo%frag_red_dE_virt       = 1.0
 !=======================================
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.

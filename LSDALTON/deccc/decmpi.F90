@@ -2205,6 +2205,7 @@ contains
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%Frag_Opt_Scheme,Master)
+    call ls_mpi_buffer(DECitem%Frag_Init_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_Exp_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_red_gap_occ,Master)
     call ls_mpi_buffer(DECitem%Frag_red_gap_virt,Master)

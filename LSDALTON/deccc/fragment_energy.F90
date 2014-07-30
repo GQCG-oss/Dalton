@@ -5019,12 +5019,18 @@ contains
          call atomic_fragment_free_basis_info(AtomicFragment)
       end if
 
+      ! Ensure that energies in fragment are set consistently
+      call set_energies_decfrag_structure_fragopt(AtomicFragment)
 
       ! Get final Timings:
       call dec_fragment_time_get(times_fragopt)
       call dec_time_evaluate_efficiency_frag(AtomicFragment,times_fragopt, &
          & AtomicFragment%ccmodel,'Fragment optmization')
  
+      ! Restore the original CC model 
+      ! (only relevant if expansion and/or reduction was done using the MP2 model, but it doesn't hurt)
+      MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%ccmodel
+
    end subroutine optimize_atomic_fragment_CLEAN
 
 
@@ -5062,7 +5068,14 @@ contains
       integer, intent(out) :: ninit_occ, ninit_vir
 
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
+      integer :: ncore
 
+      ! Set # core orbitals to zero if the frozen core approximation is not used:
+      if (DECinfo%frozencore) then
+         ncore = MyMolecule%ncore
+      else
+         ncore = 0
+      end if
 
       if (DECinfo%Frag_Opt_Scheme == 1) then
          ! The priority list for scheme one is based on distance:
@@ -5079,11 +5092,11 @@ contains
          call mem_dealloc(vir_priority_list)
 
          ! Get ninit_occ and ninit_vir:
-         ninit_occ = DECinfo%Frag_Init_Size*ceiling(no_full*1.0E0_realk/natoms)
+         ninit_occ = DECinfo%Frag_Init_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
          ninit_vir = DECinfo%Frag_Init_Size*ceiling(nv_full*1.0E0_realk/natoms)
 
          ! Get nexp_occ and nexp_vir:
-         nexp_occ = DECinfo%Frag_Exp_Size*ceiling(no_full*1.0E0_realk/natoms)
+         nexp_occ = DECinfo%Frag_Exp_Size*ceiling((no_full-ncore)*1.0E0_realk/natoms)
          nexp_vir = DECinfo%Frag_Exp_Size*ceiling(nv_full*1.0E0_realk/natoms)
 
       else 
@@ -5177,8 +5190,8 @@ contains
 
          ! By default dE_red_vir is set to 0.8*FOT and dE_red_occ is set to the FOT
          ! if OnlyVirtPart then it is the contrary (WRT occ/vir)
-         dE_red_occ = DECinfo%frag_red_dE_occ
-         dE_red_vir = DECinfo%frag_red_dE_virt
+         dE_red_occ = DECinfo%frag_red_dE_occ*DECinfo%FOT
+         dE_red_vir = DECinfo%frag_red_dE_virt*DECinfo%FOT
 
          ! Sanity check: check that dE_red is never > FOT:
          if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
@@ -5599,7 +5612,7 @@ contains
                   nv_min = nv_max
                end if
                if (DECinfo%PL > 1) write(DECinfo%output,*) &
-                  & 'BIN SEARCH: OCCUPIED REDUCTION CONVERGED'
+                  & 'BIN SEARCH: VIRTUAL REDUCTION CONVERGED'
                if (occ_red_conv) reduction_converged = .true.
             end if
          end if SpaceConvergence
@@ -5742,7 +5755,7 @@ contains
       !> Are we changin the number of occ or vir orbitals:
       logical, intent(in) :: reduce_occ
 
-      integer :: i, ii, nincl, ncount, ncore
+      integer :: i, ii, ncount, ncore
 
       ! The new condition is set by removing half of the occ/vir orbital between max and min:
       Nnew = Nmax - (Nmax - Nmin)/2
@@ -5776,9 +5789,8 @@ contains
       end if
 
       ! Put Nnew Orbitals in the AOS base on priority list:
-      nincl = count(Orb_AOS)
-      ncount = nincl
-      do i=nincl,Nfull
+      ncount = count(Orb_AOS)
+      do i=1,Nfull
          ii = priority_list(i)
          ! Skip orbital if it is a core or if it is allready included:
          if ( (reduce_occ .and. (ii <= ncore)) .or. Orb_AOS(ii)) cycle
