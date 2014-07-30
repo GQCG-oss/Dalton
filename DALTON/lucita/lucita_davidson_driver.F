@@ -656,7 +656,7 @@ C
            CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
 
            ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
-!          write(luwrt,*) 'esrdv... ',esrdv
+           write(luwrt,*) 'ESRDV_ref = ',esrdv
          end if
 
 #ifdef VAR_MPI
