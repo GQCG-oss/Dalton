@@ -2492,14 +2492,15 @@ contains
     type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Number of of core orbitals. If present only the assigning of valence orbitals will be printed
+    !> Number of of core orbitals. If present and frozen core approx is used,
+    !> the first ncore orbitals will not be printed.
     integer,intent(in),optional :: ncore
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
     integer :: SECnocc_per_atom(natoms), SECnunocc_per_atom(natoms)
     integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j,offset
     real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
 
-    if(present(ncore)) then
+    if(present(ncore) .and. DECinfo%frozencore) then
        offset=ncore
     else
        offset=0
