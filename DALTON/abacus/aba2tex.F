@@ -377,7 +377,7 @@ C
          IF (IPRPTR .GE. 2) CALL TIMER('PTRAN ',TIMSTR,TIMEND)
       END IF
 C
-C     Final sorting of integrals
+C     Final sorting of 2-el. AO density matrix into integral evaluatin order
 C
       IF (RUNSOR) THEN
          IF (IPRPTR .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
@@ -389,7 +389,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
          LWUSE = LWRK
 #else
-         CALL MEMSRT(MEMMIN,WORK(KNCONT))
+         CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C
 C        1000000 is just an estimate of what the rest of the sorting 
 C        program needs

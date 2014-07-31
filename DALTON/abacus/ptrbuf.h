@@ -1,3 +1,13 @@
-      COMMON /PTRBUF/ MX1BUF, L1BUF, MEMS, MEMT, MAXCHN, MXABUF, LABUF,
-     *                LDAMAX, LASTAD(200), MX2BUF, L2BUF,  MAXSCM,
-     *                MAXLCM, IADR(200),   NCHAIN, MAXADR, NBLOCK
+! FILE: ptrbuf.h -- only used in DALTON/abacus/abaptr.F
+!                -- depends on: maxorb.h
+      INTEGER         MAXADR, MAXCHN
+      PARAMETER       (MAXADR = 200, MAXCHN = 200)
+
+      INTEGER         LASTAD, IADR
+      INTEGER         MX1BUF, L1BUF,  MEMS,   MEMT,  MXABUF,
+     &                LABUF,  LDAMAX, MX2BUF, L2BUF, NCHAIN, NBLOCK
+      COMMON /PTRBUF/
+     &                LASTAD(MAXADR), IADR(MAXADR),
+     &                MX1BUF, L1BUF,  MEMS,   MEMT,  MXABUF,
+     &                LABUF,  LDAMAX, MX2BUF, L2BUF, NCHAIN, NBLOCK
+! end of ptrbuf.h

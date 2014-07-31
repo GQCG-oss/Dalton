@@ -1123,7 +1123,25 @@ C  /* Deck readi */
 C
 C (30-Jan-1984) hjaaj
 C
-      DIMENSION INTX(N)
+      INTEGER IT, N, INTX(N)
+      IF (N .GT. 0) THEN
+         READ (IT,END = 10) INTX
+      ELSE
+         READ (IT,END = 10)
+      END IF
+      RETURN
+   10 CONTINUE
+      INTX(N)=-1
+      RETURN
+      END
+C  /* Deck readi8 */
+      SUBROUTINE READI8(IT,N,INTX)
+C
+C (Jul-2014) hjaaj, based on READI
+C Purpose: when INTX is always INTEGER*8
+C
+      INTEGER   IT, N
+      INTEGER*8 INTX(N)
       IF (N .GT. 0) THEN
          READ (IT,END = 10) INTX
       ELSE
