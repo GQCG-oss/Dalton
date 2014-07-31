@@ -5,7 +5,9 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 if("${CMAKE_MAJOR_VERSION}" GREATER 2)
    cmake_policy(VERSION 3.0)
-   MESSAGE(STATUS "Changed cmake policy to version 3.0")
+#  allow add_executable in "tools/" subdirectory in cmake 3.?
+   cmake_policy(SET CMP0037 OLD)
+   MESSAGE(STATUS "Changed cmake policy to version 3.0, except for policy CMP037")
 endif("${CMAKE_MAJOR_VERSION}" GREATER 2)
 
 # set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
