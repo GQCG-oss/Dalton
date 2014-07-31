@@ -750,7 +750,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
                         LWUSE = LWRK
 #else 
-                        CALL MEMSRT(MEMMIN,WORK(KNCONT))
+                        CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C     
 C     1000000 is just an estimate of what the rest of the sorting 
 C     program needs

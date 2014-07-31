@@ -133,7 +133,7 @@ C
       ENDIF
       LWORK = KWORK
       IF((IPRTRD.GT.2) .AND. (JTER.EQ.1)) WRITE(LUPRI,903) LWORK
-  903 FORMAT(/' (DERTRA) Working area in transformation section',I8)
+  903 FORMAT(/' (DERTRA) Work array in transformation section',I12)
 C
 C     ***** TYPE OF TRANSFORMATION:                           *****
 C     *****         FIRST INDEX,ALL ORBITALS                  *****
