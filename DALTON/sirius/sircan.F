@@ -269,6 +269,7 @@ C   INFORB : NASHT,?
 C   INFIND : IROW(*),ISSMO(*),...
 C   INFDIM : NBASMA,?
 C   INFTAP : 
+C   PGROUP : REP(),GROUP
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -281,6 +282,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "dftcom.h"
+#include "pgroup.h"
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
@@ -643,7 +645,8 @@ CHJ-E
             END IF
             DO 440 ISYM = 1,NSYM
                IF (NASH(ISYM) .GT. 0) THEN
-                  WRITE (LUPRI,'(/A,I3/)') ' Symmetry',ISYM
+                  WRITE (LUPRI,'(/A,I3,5A/)') ' Symmetry',ISYM,
+     &               ' ( irrep ',REP(ISYM-1),' in ',GROUP,' )'
                   IST  = IASH(ISYM) + 1
                   IEND = IASH(ISYM) + NASH(ISYM)
                   WRITE (LUPRI,'(5F14.9)') (AOCC(I), I = IST,IEND)
