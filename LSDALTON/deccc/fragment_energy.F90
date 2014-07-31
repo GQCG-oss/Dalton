@@ -5246,7 +5246,7 @@ contains
          ! Sanity check: check that dE_red is never > FOT:
          if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
             call lsquit('ERROR FOP Reduction: dE_red_*** need to be set smaller &
-               & than the FOT',DECinfo%output)
+               & than 1',DECinfo%output)
          end if
 
       else 
@@ -5583,9 +5583,9 @@ contains
          end if
 
          call reduce_fragment(AtomicFragment,MyMolecule,no,no_new,Occ_AOS, &
-            & occ_priority_list,reduce_occ)
+            & occ_priority_list,.true.)
          call reduce_fragment(AtomicFragment,MyMolecule,nv,nv_new,Vir_AOS, &
-            & vir_priority_list,reduce_occ)
+            & vir_priority_list,.false.)
 
          ! Free old fragment and initialize the reduced fragment:
          call atomic_fragment_free(AtomicFragment)
@@ -5750,7 +5750,7 @@ contains
    ! Author:  Pablo Baudin
    ! Date:    July 2014
    subroutine reduce_fragment(MyFragment,MyMolecule,Nfull,Nnew,Orb_AOS, &
-            & priority_list,reduce_occ)
+            & priority_list,treat_occ)
 
       implicit none
 
@@ -5760,14 +5760,14 @@ contains
       type(fullmolecule), intent(in) :: MyMolecule
       !> total number of occ/vir orbs in the molecule:
       integer, intent(in) :: Nfull
-      !> new, min and max number of orbital to include in fragment:
-      integer, intent(inout) :: Nnew
+      !> New number of orbital to include in fragment:
+      integer, intent(in) :: Nnew
       !> Which orbital to include in fragment EOS:
       logical, intent(inout) :: Orb_AOS(Nfull)
       !> list of all orbitals based on some priorities:
       integer, intent(in) :: priority_list(Nfull)
       !> Are we changin the number of occ or vir orbitals:
-      logical, intent(in) :: reduce_occ
+      logical, intent(in) :: treat_occ
 
       integer :: i, ii, ncount, ncore
 
@@ -5782,7 +5782,7 @@ contains
       Orb_AOS = .false.
 
       ! Include EOS space:
-      if (reduce_occ) then
+      if (treat_occ) then
          call SanityCheckOrbAOS(Myfragment,Nfull,'O',Orb_AOS)
       else
          call SanityCheckOrbAOS(Myfragment,Nfull,'V',Orb_AOS)
@@ -5793,7 +5793,7 @@ contains
       do i=1,Nfull
          ii = priority_list(i)
          ! Skip orbital if it is a core or if it is allready included:
-         if ( (reduce_occ .and. (ii <= ncore)) .or. Orb_AOS(ii)) cycle
+         if ((treat_occ .and. (ii <= ncore)) .or. Orb_AOS(ii)) cycle
          Orb_AOS(ii) = .true.
 
          ! Exit loop when we have included the correct number of orbital
