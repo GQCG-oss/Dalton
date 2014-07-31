@@ -5392,8 +5392,6 @@ contains
       !> Is this a fragment initialization or a simple expansion:
       logical, optional, intent(in) :: frag_init
 
-      !> number of occ/vir orbital already included in AOS:
-      integer :: nocc_incl, nvir_incl
       integer :: ncore, ncount, i, ii
       logical :: fragment_initialization
 
@@ -5429,9 +5427,8 @@ contains
 
       ! Set Initial AOS space for fragment MyAtom by including nexp more orbitals:
       ! 1) For Occupied orbitals:
-      nocc_incl = count(Occ_AOS) ! > number of orbital allready included in AOS
       ncount = 0
-      do i=nocc_incl,no_full
+      do i=1,no_full
          ii = occ_priority_list(i)
          ! If the orbital to be include is a core or is allready in, then skip it
          if ((ii <= ncore).or.Occ_AOS(ii)) cycle
@@ -5443,9 +5440,8 @@ contains
       end do
 
       ! 2) For Virtual orbitals:
-      nvir_incl = count(Vir_AOS) ! > number of orbital allready included in AOS
       ncount = 0
-      do i=nvir_incl,nv_full
+      do i=1,nv_full
          ii = vir_priority_list(i)
          ! If the orbital to be include is allready in, then skip it
          if (Vir_AOS(ii)) cycle

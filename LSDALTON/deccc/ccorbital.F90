@@ -2635,16 +2635,22 @@ contains
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMolecule
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i,nfrags
+    integer :: i,nfrags,offset
     logical :: something_wrong
 
+
+    if(DECinfo%frozencore) then
+       offset=MyMolecule%ncore
+    else
+       offset=0
+    end if
 
     ! Number of orbitals per atom
     ! ***************************
 
     ! Occupied
     nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,&
-         & offset=MyMolecule%ncore)
+         & offset=offset)
 
     ! Unoccupied
     nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
@@ -2679,7 +2685,7 @@ contains
     ! Secondary assignment check
     ! **************************
     nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,&
-         & offset=MyMolecule%ncore)
+         & offset=offset)
     nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
     something_wrong=.false.
     do i=1,natoms
