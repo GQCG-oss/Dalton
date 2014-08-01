@@ -1230,11 +1230,7 @@ C
               IF (IPRINT .GE. 70) WRITE(LUPRI,2300)
      *           LAMBDA, SIGMA, ALPHA, MU, ALPHAP, NU, PVAL
               IF (NOBUF .GE. MX2BUF) THEN
-#if defined (VAR_SPLITFILES)
-                 CALL WRITST(LUPSO,L2BUF,IBUF,JBUF)
-#else
                  CALL WRITT(LUPSO,L2BUF,IBUF)
-#endif
                  IBUF(L2BUF) = 0
                  NPTOT = NPTOT + NOBUF
               END IF
@@ -1256,12 +1252,7 @@ C
 C....    EMPTY BUFFER IF REQUIRED
 C
       NOBUF = IBUF(L2BUF)
-#if defined (VAR_SPLITFILES)
-      IF (NOBUF .NE. 0 .OR. NPTOT.EQ.0)
-     &     CALL WRITSI(LUPSO,L2BUF,IBUF,JBUF)
-#else
       IF (NOBUF .NE. 0 .OR. NPTOT.EQ.0) CALL WRITT(LUPSO,L2BUF,IBUF)
-#endif      
       NPTOT = NPTOT + NOBUF
       REWIND LUPSO
       IF (IPRINT .GT. 2) WRITE(LUPRI,2000) NPTOT
@@ -1515,10 +1506,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "priunit.h"
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#endif
 #include "blocks.h"
 #include "symmet.h"
 #include "ptrbuf.h"
@@ -1667,11 +1654,7 @@ C
       JREC = 0
 100   CONTINUE
       JREC = JREC + 1
-#if defined (VAR_SPLITFILES)
-      CALL READST(LUPSO,LBUF,IBUF,JBUF)
-#else
       CALL READI8(LUPSO,LBUF,IBUF)
-#endif
       NUT = IBUF(LBUF)
       IF (NUT .EQ. 0) GOTO 100
       IF (NUT .LT. 0) GOTO 200
@@ -1915,42 +1898,6 @@ C
             IST   = IFIN  + 1
             IEND  = IFIN  + MAX(4,NBL)
             IFIN  = IFIN  + NBL
-#if defined (VAR_SPLITFILES)
-            IELMNT = (IEND - IST + 1)
-            IF (JJBUF + IELMNT .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-               INQUIRE(UNIT=LUPMAT,NAME=FNNAME)
-               LN = 1
- 14            CONTINUE
-               IF (FNNAME(LN:LN) .NE. ' ') THEN
-                  LN = LN + 1
-                  GOTO 14
-               END IF
-               LN = LN - 1
-               CALL GPCLOSE(LUPMAT,'KEEP')
-               IK = LN - 1
-               IF (FNNAME(IK:IK) .NE. '-') THEN
-                  FNNM2 = FNNAME(1:LN)//'-0'
-                  LN = LN + 2
-               ELSE
-                  READ(FNNAME(LN:),'(I1)') INUM
-                  INUM = INUM + 1
-                  IF (INUM .GT. 9) THEN
-                     WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                    ' file more than 11 times.',
-     &                    ' This is currently not supported'
-                     CALL QUIT('Too many splittings of a file')
-                  END IF
-                  FNNM2 = FNNAME(1:IK)//CHRNOS(INUM)
-               END IF
-               CALL GPOPEN(LUPMAT,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &                     IDUMMY,.FALSE.)
-               JJBUF = 0
-            END IF
-            JJBUF = JJBUF + IELMNT
-#endif
             WRITE(LUPMAT) NBL
             WRITE(LUPMAT) (SORT(J), J = IST,IEND)
             IF (IPRINT .GT. 30) THEN
@@ -1964,13 +1911,6 @@ C
    80 CONTINUE
       IPQRST = IPQRSF + 1
       IF (IPQRSF .LT. ITOP) GOTO 1000
-#if defined (VAR_SPLITFILES)
-      IF (ANTI.OR.PANTI) THEN
-         LUPAS = LUPMAT
-      ELSE
-         LUPAO = LUPMAT
-      END IF
-#endif
       CALL QEXIT('PSORT')
       RETURN
       END

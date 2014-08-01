@@ -147,11 +147,6 @@ C  /* Deck r12wrt */
 #include "symmet.h"
       INTEGER JBUF(5), MBUF
       SAVE JBUF, MBUF
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
 #include "ibtfun.h"
 C
        IF (ITYPE .EQ. -1) THEN
@@ -191,37 +186,6 @@ C
          ICOUNT = 0
          JBUF(KR12) = MBUF + 8
        ELSE IF (ITYPE .EQ. 0) THEN
-#if defined (VAR_SPLITFILES)
-         IF (JBUF(KR12) + MBUF .GT. I2GB) THEN
-            INQUIRE(UNIT=LUR12(KR12),NAME=FNNAME)
-            LN = 1
- 10         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 10
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUR12(KR12),'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUR12(KR12),FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &           IDUMMY,.FALSE.)
-            JBUF(KR12) = MBUF
-         END IF
-#endif
          IF (INDA .NE. 0) WRITE (LUR12(KR12)) INDA
          WRITE (LUR12(KR12)) (BUF(L,KR12),L=1,LBUF),ICOUNT
          JBUF(KR12) = JBUF(KR12) + MBUF

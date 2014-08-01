@@ -262,12 +262,7 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "symmet.h"
-      SAVE NBUF, JBUF
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
+      SAVE NBUF
 #include "ibtfun.h"
 C
       IF (ITYPE .EQ. -1) THEN
@@ -278,52 +273,9 @@ C
          JLEN = 608
          ICOUNT = 0
          NBUF = 0
-         JBUF = 608
       ELSE IF (ITYPE .EQ. 0) THEN
-#if defined (VAR_SPLITFILES)
-C
-         IF ((JBUF + LBUF*(IRAT + NIBUF) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-            INQUIRE(UNIT=LUINTA,NAME=FNNAME)
-            LN = 1
- 10         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 10
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUINTA,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUINTA,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &           .FALSE.)
-            JBUF = 0
-         END IF
-         IF (INDA .NE. 0) THEN
-            WRITE (LUINTA) INDA
-            JBUF = JBUF + 1
-         END IF
-         WRITE (LUINTA) BUF,IBUF,ICOUNT
-         JBUF = JBUF + LBUF*(IRAT + NIBUF) + 1
-#else
          IF (INDA .NE. 0) WRITE (LUINTA) INDA
          WRITE (LUINTA) BUF,IBUF,ICOUNT
-#endif
          NBUF = NBUF + 1
 C
          IF (IPRINT .GE. 6) THEN
@@ -823,12 +775,7 @@ C
 #include "nodint.h"
 #include "symmet.h"
 #include "chrxyz.h"
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
-      SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD, JBUF
+      SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 #include "ibtfun.h"
 C
@@ -853,7 +800,6 @@ C
             CALL REWSPL(LU2DER)
          END IF
 C
-         JBUF   = 256
          ICOUNT =  0
          ICTOLD =  0
          NBUF   =  0
@@ -872,44 +818,7 @@ C     ================
 C
       ELSE IF (ITYPE .EQ. 0) THEN
 C
-#if defined (VAR_SPLITFILES)
-         IF ((JBUF + LBUF*(IRAT + 1) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-            INQUIRE(UNIT=LU2DER,NAME=FNNAME)
-            LN = 1
- 12         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 12
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LU2DER,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LU2DER,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &           .FALSE.)
-            JBUF = 0
-         END IF
-         WRITE (LU2DER) BUF,IBUF,ICOUNT
-         JBUF = JBUF + LBUF*(IRAT + 1) + 1
-#else
          WRITE (LU2DER) BUF, IBUF, ICOUNT
-#endif
          IF (IPRINT .GE. 6) CALL DR2PRI(BUF,IBUF,ICOUNT,NBUF)
          NBUF   = NBUF + 1
          ICOUNT = 0
@@ -935,45 +844,7 @@ C
             ICROLD = ICOOR
             NFLAGS = NFLAGS + 1
             IF (ICOUNT .EQ. 600) THEN
-#if defined (VAR_SPLITFILES)
-C
-               IF ((JBUF + LBUF*(IRAT + 1) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-                  INQUIRE(UNIT=LU2DER,NAME=FNNAME)
-                  LN = 1
- 11               CONTINUE
-                  IF (FNNAME(LN:LN) .NE. ' ') THEN
-                     LN = LN + 1
-                     GOTO 11
-                  END IF
-                  LN = LN - 1
-                  CALL GPCLOSE(LU2DER,'KEEP')
-                  I = LN - 1
-                  IF (FNNAME(I:I) .NE. '-') THEN
-                     FNNM2 = FNNAME(1:LN)//'-0'
-                     LN = LN + 2
-                  ELSE
-                     READ(FNNAME(LN:),'(I1)') INUM
-                     INUM = INUM + 1
-                     IF (INUM .GT. 9) THEN
-                        WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &                 ' a file more than 11 times.',
-     &                 ' This is currently not supported'
-                        CALL QUIT('Too many splittings of a file')
-                     END IF
-                     FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-                  END IF
-                  CALL GPOPEN(LU2DER,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &                        IDUMMY,.FALSE.)
-                  JBUF = 0
-               END IF
                WRITE (LU2DER) BUF,IBUF,ICOUNT
-               JBUF = JBUF + LBUF*(IRAT + 1) + 1
-#else 
-               WRITE (LU2DER) BUF,IBUF,ICOUNT
-#endif
                IF (IPRINT.GE.6) CALL DR2PRI(BUF,IBUF,ICOUNT,NBUF)
                NBUF   = NBUF + 1
                ICOUNT = 0
@@ -987,53 +858,11 @@ C
          INTS = (NBUF - NBFOLD)*600 + ICOUNT - ICTOLD
          IF (INTS .GT. 0) NDSINT(ICROLD,IRPOLD) =
      &                    NDSINT(ICROLD,IRPOLD) + INTS
-#if defined (VAR_SPLITFILES)
-C
-         IF ((JBUF + 2*LBUF*(IRAT + 1) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-            INQUIRE(UNIT=LU2DER,NAME=FNNAME)
-            LN = 1
- 10         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 10
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LU2DER,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &                 ' a file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LU2DER,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &           .FALSE.)
-            JBUF = 0
-         END IF
          IF (ICOUNT .GT. 0) THEN
             WRITE (LU2DER) BUF, IBUF, ICOUNT
             IF (IPRINT .GE. 6) CALL DR2PRI(BUF,IBUF,ICOUNT,NBUF)
          END IF
          WRITE (LU2DER) BUF, IBUF, -1
-         JBUF = JBUF + 2*LBUF*(IRAT + 1) + 1
-#else
-         IF (ICOUNT .GT. 0) THEN
-            WRITE (LU2DER) BUF, IBUF, ICOUNT
-            IF (IPRINT .GE. 6) CALL DR2PRI(BUF,IBUF,ICOUNT,NBUF)
-         END IF
-         WRITE (LU2DER) BUF, IBUF, -1
-#endif
          END FILE LU2DER
          IF (SPNORB) CALL GPCLOSE(LU2DER,'KEEP')
          NTOTAL = 600*NBUF + ICOUNT - NFLAGS
@@ -2026,12 +1855,7 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "symmet.h"
-      SAVE NBUF, JBUF
-#if defined (VAR_SPLITFILES)
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
+      SAVE NBUF
 #include "ibtfun.h"
 C
       IF (ITYPE .EQ. -1) THEN
@@ -2043,53 +1867,10 @@ C        ... First call
          JLEN = 608
          ICOUNT = 0
          NBUF = 0
-         JBUF = 608
       ELSE IF (ITYPE .EQ. 0) THEN
 C        ... between first and last call
-#if defined (VAR_SPLITFILES)
-C
-         IF ((JBUF + LBUF*(IRAT + NIBUF) + 1) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-            INQUIRE(UNIT=LUSRINT,NAME=FNNAME)
-            LN = 1
- 10         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 10
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUSRINT,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUSRINT,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &           .FALSE.)
-            JBUF = 0
-         END IF
-         IF (INDA .NE. 0) THEN
-            WRITE (LUSRINT) INDA
-            JBUF = JBUF + 1
-         END IF
-         WRITE (LUSRINT) BUF,IBUF,ICOUNT
-         JBUF = JBUF + LBUF*(IRAT + NIBUF) + 1
-#else
          IF (INDA .NE. 0) WRITE (LUSRINT) INDA
          WRITE (LUSRINT) BUF,IBUF,ICOUNT
-#endif
          NBUF = NBUF + 1
 C
          IF (IPRINT .GE. 6) THEN

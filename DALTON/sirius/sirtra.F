@@ -455,12 +455,8 @@ C
          CALL REWSPL(LUINTA)
          CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
          JBUF = 608
-1        CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUINTA,LENINT,IINT,JBUF)
-#else
+    1    CONTINUE
          CALL READI(LUINTA,LENINT,IINT)
-#endif
          NINT = IINT(LENINT)
          IF(NINT.EQ.0)GOTO 1
          IF(NINT.EQ.-1)GOTO 2
@@ -793,11 +789,7 @@ C
 C....    BEGIN READING THE INTEGRAL FILE
          CALL REWSPL(LUHALF)
     1    CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUHALF,LENINT,IINT,JBUF)
-#else
          CALL READI(LUHALF,LENINT,IINT)
-#endif
          NINT = IINT(LENINT-1)
          IF(NINT.EQ.0)GOTO 1
          IF(NINT.EQ.-1)GOTO 2
@@ -1214,11 +1206,7 @@ C                ( only (ii/ inac-inac distributions needed )
 C                 ***** WRITE THIS BUFFER *****
                   IOUT = 1
                   IOUTB(LOUT21) = LOUT
-#if defined (VAR_SPLITFILES)
-                  CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
                   CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
                   IF (IPRTRA .GE. 100) THEN
                      WRITE(LUPRI,*)
      &               'Writing buffer for NP =',NP,' NQ = ', NQ
@@ -1241,11 +1229,7 @@ C
 C     ***** WRITE LAST BUFFER *****
 C
       IOUTB(LOUT21)=IOUT
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
       CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
       IF (IPRTRA .GE. 100) THEN
          WRITE(LUPRI,*) 'Writing last buffer in TRACD'
          WRITE(LUPRI,*) 'First 10 integrals, length =',IOUT
@@ -1256,11 +1240,7 @@ C
 C     ***** WRITE END BUFFER *****
 C
       IOUTB(LOUT21)=-1
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUHALF,LOUT22,IOUTB,JBUF)
-#else
       CALL WRITI(LUHALF,LOUT22,IOUTB)
-#endif
       CALL REWSPL(LUHALF)
       IF (JTER.EQ.1) THEN
          WRITE(LUPRI,1000) LUHALF,LPQCD
@@ -1674,12 +1654,7 @@ C            because e.g. (ph/ph) integrals do not follow NB .le. NA
                IOUT=1
                IOUTB(LOUT21)=LOUT
 C              ***** WRITE THIS BUFFER *****
-#if defined (VAR_SPLITFILES)
-               CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-               CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
                CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
                NRINTM = NRINTM + 1
                IF (IPRTRA .GE. 100 .AND. IPRTRA .LT. 200) THEN
                   WRITE(LUPRI,*)
@@ -1696,12 +1671,7 @@ C              ***** WRITE THIS BUFFER *****
   170 CONTINUE
 CHJ 3 *** Going to next (CD), empty this buffer ***
       IOUTB(LOUT21) = IOUT
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-      CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
       CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
       NRINTM = NRINTM + 1
       IF (IPRTRA .GE. 100 .AND. IPRTRA .LT. 200) THEN
          WRITE(LUPRI,*)
@@ -1716,12 +1686,7 @@ CHJ 3 *** Going to next (CD), empty this buffer ***
 C     ***** WRITE LAST BUFFER *****
  8000 CONTINUE
       IOUTB(LOUT21)=-1
-#if defined (VAR_SPLITFILES)
-      CALL WRITSI(LUINTM,LOUTI,IOUTB,JBUF)
-      CALL WRITSI(LUINTM,LOUT+2,IOUTB(LOUTI + 1),JBUF)
-#else
       CALL WRITI(LUINTM,LOUT22,IOUTB)
-#endif
       WRITE(LUINTM)LAB123,TABLE(2)
       CALL REWSPL(LUINTM)
       DFIN=SECOND()
@@ -2713,13 +2678,7 @@ C
          CALL REWSPL(LUINTM)
          CALL MOLLAB('MOLTWOEL',LUINTM,LUPRI)
  100     CONTINUE
-#if defined (VAR_SPLITFILES)
-         CALL READSI(LUINTM,LBINTM*IRAT,BUF,JBUF)
-         CALL READSI(LUINTM,LBINTM + 2,IBUF,JBUF)
-         LENGTH = IBUF(LBINTM + 1)
-#else
          READ (LUINTM) BUF, IBUF, LENGTH
-#endif
          IF (LENGTH.EQ.0) GOTO 100
          IF (LENGTH.EQ.-1) THEN
             WRITE (LUPRI,'(/A)')
@@ -2765,13 +2724,7 @@ C        ... first buffer is already in BUF,IBUF
 C
  300  CONTINUE
 C
-#if defined (VAR_SPLITFILES)
-      CALL READSI(LUINTM,LBINTM*IRAT,BUF,JBUF)
-      CALL READSI(LUINTM,LBINTM+2,IBUF,JBUF)
-      LENGTH = IBUF(LBINTM + 1)
-#else 
       READ (LUINTM) BUF, IBUF, LENGTH
-#endif
       IF (LENGTH.EQ.0) GO TO 300
       IF (LENGTH.EQ.-1) THEN
          INDCDN = -1

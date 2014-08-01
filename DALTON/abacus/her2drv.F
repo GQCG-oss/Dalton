@@ -1528,10 +1528,6 @@ C  /* Deck twoods */
 #include "twosta.h"
 #include "drw2el.h"
 #include "expopt.h"
-#if defined (VAR_SPLITFILES)
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-#endif
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from TWOODS','*',103)
       IF (FINDPT.OR.DPTINT) THEN
@@ -1577,68 +1573,7 @@ C     Number of two-electron densities elements
 C
       IF ((EXPECT .OR. SUSCEP .OR. DIA2SO .OR. ZFS2EL)
      &     .AND. .NOT.NOPV) THEN
-#if defined (VAR_SPLITFILES)
-         READ (LUPAO,END=414) NPMAT
-         GOTO 415
- 414     INQUIRE(UNIT=LUPAO,NAME=FNNAME)
-         LN = 1
- 410     CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 410
-         END IF
-         LN = LN - 1
-         CALL GPCLOSE(LUPAO,'KEEP')
-         I = LN - 1
-         IF (FNNAME(I:I) .NE. '-') THEN
-            FNNM2 = FNNAME(1:LN)//'-0'
-            LN = LN + 2
-         ELSE
-            READ(FNNAME(LN:),'(I1)') INUM
-            INUM = INUM + 1
-            IF (INUM .GT. 9) THEN
-               WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &              ' file more than 11 times.',
-     &              ' This is currently not supported'
-               CALL QUIT('Too many splittings of a file')
-            END IF
-            FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-         END IF
-         CALL GPOPEN(LUPAO,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &               .FALSE.)
-         IF (SUSCEP) THEN
-            INQUIRE(UNIT=LUPAS,NAME=FNNAME)
-            LN = 1
- 411        CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 411
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUPAS,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split a '//
-     &                 ' file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUPAS,FNNM2(1:LN),'UNKNOWN',' ',' ',IDUMMY,
-     &                  .FALSE.)
-         END IF
          READ (LUPAO) NPMAT
- 415     CONTINUE
-#else
-         READ (LUPAO) NPMAT
-#endif
          IF (SUSCEP) THEN
             READ (LUPAS) NPMATA
             IF (NPMAT .NE. NPMATA) THEN
