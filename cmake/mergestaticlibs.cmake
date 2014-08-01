@@ -11,6 +11,9 @@
 #    You should have received a copy of the FMILIB_License.txt file
 #    along with this program. If not, contact Modelon AB <http://www.modelon.com>.
 
+
+# heavily modified by bast at kth dot se
+
 # Merge_static_libs(outlib lib1 lib2 ... libn) merges a number of static
 # libs into a single static library
 function(merge_static_libs outlib )
@@ -40,15 +43,10 @@ function(merge_static_libs outlib )
                                 list(APPEND libfiles_${CONFIG_TYPE} ${libfile_${CONFIG_TYPE}})
                         endforeach()
                 else()
-                   if("${CMAKE_MAJOR_VERSION}" GREATER 2)
-                        set(libfile $<TARGET_FILE:${lib}>)
-                   else()
-                        get_target_property(libfile ${lib} LOCATION)
-                   endif()
+                   set(libfile ${PROJECT_BINARY_DIR}/lib/lib${lib}.a)
                         list(APPEND libfiles "${libfile}")
                 endif(multiconfig)
         endforeach()
-#message(STATUS "will be merging ${libfiles}")
 # Just to be sure: cleanup from duplicates
         if(multiconfig)
                 foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
@@ -61,12 +59,7 @@ function(merge_static_libs outlib )
         if(multiconfig)
                 message(FATAL_ERROR "Multiple configurations are not supported")
         endif()
-        if("${CMAKE_MAJOR_VERSION}" GREATER 2)
-           set(outfile $<TARGET_FILE:${outlib}>)
-        else()
-           get_target_property(outfile ${outlib} LOCATION)
-        endif()
-#message(STATUS "outfile location is ${outfile}")
+        set(outfile ${PROJECT_BINARY_DIR}/lib/lib${outlib}.a)
         foreach(lib ${libfiles})
 # objlistfile will contain the list of object files for the library
                 set(objlistfile ${lib}.objlist)
