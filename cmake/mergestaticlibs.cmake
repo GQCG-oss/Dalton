@@ -58,35 +58,6 @@ function(merge_static_libs outlib )
         endif()
         list(REMOVE_DUPLICATES libfiles)
 
-# Now the easy part for MSVC and for MAC
-  if(MSVC)
-    # lib.exe does the merging of libraries just need to conver the list into string
-        foreach(CONFIG_TYPE ${CMAKE_CONFIGURATION_TYPES})
-                set(flags "")
-                foreach(lib ${libfiles_${CONFIG_TYPE}})
-                        set(flags "${flags} ${lib}")
-                endforeach()
-                string(TOUPPER "STATIC_LIBRARY_FLAGS_${CONFIG_TYPE}" PROPNAME)
-                set_target_properties(${outlib} PROPERTIES ${PROPNAME} "${flags}")
-        endforeach()
-
-  elseif(APPLE)
-    # Use OSX's libtool to merge archives
-        if(multiconfig)
-                message(FATAL_ERROR "Multiple configurations are not supported")
-        endif()
-        if("${CMAKE_MAJOR_VERSION}" GREATER 2)
-           set(outfile $<TARGET_FILE:${outlib}>)
-        else()
-           get_target_property(outfile ${outlib} LOCATION)
-        endif()
-        add_custom_command(TARGET ${outlib} POST_BUILD
-                COMMAND rm ${outfile}
-                COMMAND /usr/bin/libtool -static -o ${outfile}
-                ${libfiles}
-        )
-  else()
-  # general UNIX - need to "ar -x" and then "ar -ru"
         if(multiconfig)
                 message(FATAL_ERROR "Multiple configurations are not supported")
         endif()
@@ -123,11 +94,6 @@ EXECUTE_PROCESS(COMMAND ls .
                 list(APPEND extrafiles "${objlistfile}")
                 # relative path is needed by ar under MSYS
                 file(RELATIVE_PATH objlistfilerpath ${objdir} ${objlistfile})
-        #add_custom_command(TARGET ${outlib} POST_BUILD
-        #       COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
-        #       COMMAND ${CMAKE_AR} ru "${outfile}" @"${objlistfilerpath}"
-        #       WORKING_DIRECTORY ${objdir})
-                # radovan: the above is not portable to AIX, workaround:
                 add_custom_command(TARGET ${outlib} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_AR} ru ${outfile} @${objlistfilerpath}"
                         COMMAND ${CMAKE_AR} ru "${outfile}" `cat "${objlistfilerpath}" | tr '\\n' ' '`
@@ -136,7 +102,6 @@ EXECUTE_PROCESS(COMMAND ls .
         add_custom_command(TARGET ${outlib} POST_BUILD
                         COMMAND ${CMAKE_COMMAND} -E echo "Running: ${CMAKE_RANLIB} ${outfile}"
                         COMMAND ${CMAKE_RANLIB} ${outfile})
-  endif()
   file(WRITE ${dummyfile}.base "const char* ${outlib}_sublibs=\"${libs}\";")
   add_custom_command(
                 OUTPUT  ${dummyfile}
