@@ -657,6 +657,7 @@ C
 
            ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
            write(luwrt,*) 'ESRDV_ref = ',esrdv
+           write(luwrt,*) 'EJVSR_ref = ',EJVSR_mc2lu
          end if
 
 #ifdef VAR_MPI
