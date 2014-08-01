@@ -1566,13 +1566,6 @@ C
 #include "thrzer.h"
       PARAMETER (D0 = 0.0D0)
 C
-#if defined (VAR_SPLITFILES)
-#include "dummy.h"
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-      DIMENSION ITMP(7)
-#include "chrnos.h"
-#endif
       DIMENSION FMAT(N2BASX,NSIM), DMAT(N2BASX,NSIM)
       DIMENSION WORK(LFREE), IWORK(IRAT*LFREE)
 C
@@ -1634,56 +1627,10 @@ C
       IREC  = 0
       IREC1 = 0
       IREC2 = 0
-      JBUF = 256 + 144*IRAT
       MBUF = 0
   100 CONTINUE
          IREC = IREC + 1
-#if defined (VAR_SPLITFILES)
-C
-         IF ((JBUF + 8*IRAT) .GT. I2GB) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-            INQUIRE(UNIT=LUSUPM,NAME=FNNAME)
-            LN = 1
- 14         CONTINUE
-            IF (FNNAME(LN:LN) .NE. ' ') THEN
-               LN = LN + 1
-               GOTO 14
-            END IF
-            LN = LN - 1
-            CALL GPCLOSE(LUSUPM,'KEEP')
-            I = LN - 1
-            IF (FNNAME(I:I) .NE. '-') THEN
-               FNNM2 = FNNAME(1:LN)//'-0'
-               LN = LN + 2
-            ELSE
-               READ(FNNAME(LN:),'(I1)') INUM
-               INUM = INUM + 1
-               IF (INUM .GT. 9) THEN
-                  WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &                 ' a file more than 11 times.',
-     &                 ' This is currently not supported'
-                  CALL QUIT('Too many splittings of a file')
-               END IF
-               FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-            END IF
-            CALL GPOPEN(LUSUPM,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &           IDUMMY,.FALSE.)
-            JBUF = 0
-         END IF
-         CALL READSI(LUSUPM,7,ITMP,MBUF)
-         ITYP = ITMP(1)
-         NP1  = ITMP(2)
-         NQ1  = ITMP(3)
-         NPL  = ITMP(4)
-         NQL  = ITMP(5)
-         IBEF = ITMP(6)
-         NPQRS= ITMP(7)
-         JBUF = JBUF + 8*IRAT
-#else
          READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
-#endif
          IF (IPRSTAT .GT. 20) THEN
             WRITE (LUERR,*) 'ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS'
             WRITE (LUERR,'(7I10)') ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS
@@ -1701,13 +1648,6 @@ C
             ISPQ = MULD2H(ISP1,ISQ1)
             IF (ISPQ .NE. JWOPSY) THEN
                READ (LUSUPM)
-#if defined (VAR_SPLITFILES)
-               IF (ITYP .EQ. 1) THEN
-                  JBUF = JBUF + NPQRS
-               ELSE
-                  JBUF = JBUF + NPQRS*(1 + IRAT)
-               END IF
-#endif
                GO TO 100
             END IF
          END IF
@@ -1716,11 +1656,7 @@ C
             IREC1 = IREC1 + 1
             LENP  = IRAT*NPQRS
             IF (LENP .GT. LFREE) GO TO 810
-#if defined (VAR_SPLITFILES)
-            CALL READSI(LUSUPM,LENP,WORK,JBUF)
-#else
             CALL READI(LUSUPM,LENP,WORK)
-#endif
             DO 280 ISIM = 1,NSIM
                IOFF = 0
                DO 260 IP = NP1,NPL
@@ -1768,11 +1704,7 @@ C                    note NRS = IPQ
             IREC2 = IREC2 + 1
             LENP  = (IRAT+1)*NPQRS
             IF (LENP .GT. LFREE) GO TO 820
-#if defined (VAR_SPLITFILES)
-            CALL READSI(LUSUPM,LENP,WORK,JBUF)
-#else
             CALL READI(LUSUPM,LENP,WORK)
-#endif
             INDP  = IRAT*NPQRS
             IPQ   = IROW(NP1) + NQ1
             DO 380 ISIM = 1,NSIM

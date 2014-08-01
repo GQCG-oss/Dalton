@@ -977,36 +977,17 @@ C
       JRSP3 = 0
       JRSP5 = 0
       IF (KOFFTY.GT.0) THEN
-#if !defined (VAR_SPLITFILES)
          READ (LURSP3)
          READ (LURSP5)
-#else
-         CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-         CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#endif
       END IF
       DO 200 ISIM = 1,KZRED
          IF (IBTYP(KOFFTY+ISIM).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP3)
             READ (LURSP5)
-#endif
          ELSE
             KOZRED = KOZRED + 1
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,OBVEC(1,KOZRED),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in ORPSVE')
-            CALL READST(LURSP5,LRSP5,WRK,JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in ORPSVE')
-#else
             CALL READT(LURSP3,KZYWOP,OBVEC(1,KOZRED))
             CALL READT(LURSP5,KZYVAR,WRK)
-#endif
             CALL DCOPY(KZWOPT,WRK(KZCONF+1),1,OEVEC(1,KOZRED),1)
             CALL DCOPY(KZWOPT,WRK(KZVAR+KZCONF+1),1,
      *                                 OEVEC(1+KZWOPT,KOZRED),1)
