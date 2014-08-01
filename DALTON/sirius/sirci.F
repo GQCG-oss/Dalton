@@ -572,6 +572,12 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
            WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
            ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
+!
+           if (IST .EQ. 1) then 
+           ECIAUX_gs = ECIAUX ! saving the GS auxiliary energy 
+           end if
+!          write(lupri,*) 'eciaux_gs =', ECIAUX_gs
+!
            write(lupri,*) '' 
            write(lupri,*) 
      &    'decomposition of the auxiliary CI-srDFT energy'
@@ -579,16 +585,22 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'EMYDFTAUX    :',EMYDFTAUX
            WRITE(LUPRI,805) 'ESRDV        :',ESRDV
            WRITE(LUPRI,805) 'POTNUC       :',POTNUC
+           write(lupri,*) ''
+           write(lupri,*) 'Root nr.           ', IST 
            WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
+           if (IST .GT. 1) then
+           WRITE(LUPRI,806) 'Auxiliary excitation energy   :',
+     &                       ECIAUX-ECIAUX_gs
+           endif
 !          compute the ensemble CI-srDFT energy 
            EENSEMB = EENSEMB + weights(IST) * ECI(IST)
 !          compute the ensemble ESRDV energy contribution 
-           ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
+!          ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
         END DO
 
         write(lupri,806) '*******************************'
         WRITE(LUPRI,806) 'Final ensemble CI-srDFT energy:',EENSEMB
-        WRITE(LUPRI,806) 'ESRDV_ens=', ESRDV_ens
+!       WRITE(LUPRI,806) 'ESRDV_ens=', ESRDV_ens
         write(lupri,806) '*******************************'
 !           
   805   FORMAT( 1X,A,F25.12)
