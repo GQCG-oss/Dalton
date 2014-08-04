@@ -586,11 +586,13 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'ESRDV        :',ESRDV
            WRITE(LUPRI,805) 'POTNUC       :',POTNUC
            write(lupri,*) ''
-           write(lupri,*) 'Root nr.           ', IST 
-           WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
+           WRITE(LUPRI,807) 'Auxiliary CI-srDFT energy for root',
+     &                       IST, ':   ', ECIAUX
            if (IST .GT. 1) then
-           WRITE(LUPRI,806) 'Auxiliary excitation energy   :',
-     &                       ECIAUX-ECIAUX_gs
+!          WRITE(LUPRI,806) 'Auxiliary excitation energy   :',
+!    &                       ECIAUX-ECIAUX_gs
+           WRITE(LUPRI,807) 'Auxiliary excitation energy for root',
+     &                       IST, ': ', ECIAUX-ECIAUX_gs
            endif
 !          compute the ensemble CI-srDFT energy 
            EENSEMB = EENSEMB + weights(IST) * ECI(IST)
@@ -605,6 +607,7 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
 !           
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
+  807   FORMAT(/1X,A,I2,A,F20.12)
       ENDIF
 !       write(lupri,*) 'done with srdft ....'
 !       call flshfo(lupri)
