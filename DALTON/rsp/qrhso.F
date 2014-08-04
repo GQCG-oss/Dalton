@@ -107,7 +107,7 @@ C
       ACALL = .FALSE.
       DATA HSOLBL/'X SPNORB','Y SPNORB','Z SPNORB'/
 
-      IPRHSO=IPRRSP
+      IPRHSO = MAX(IPRRSP,IPRHSO)
 C
 C If expicit one-electron part go normal way
 C
