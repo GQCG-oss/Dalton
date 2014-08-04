@@ -265,14 +265,26 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! Orbital assignment
    call mem_alloc(orbitals_assigned,natoms)
    orbitals_assigned=.false.
-   do p=1,nocc_tot
-      pdx = occ_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
-   do p=1,nvirt
-      pdx = unocc_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
+   if (DECinfo%onlyoccpart) then
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else if (DECinfo%onlyvirtpart) then
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   end if
 
    ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
    call array_reorder(VOVO,[1,3,2,4])
