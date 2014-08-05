@@ -2124,6 +2124,7 @@ C
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
+#include "nuclei.h"
 
         integer :: ncents, nwrk
         real*8, dimension(ncents) :: all_charges
