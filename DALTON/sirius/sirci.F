@@ -270,9 +270,10 @@ C     Local variables
 C
       logical           :: diskh2, natorb, moisno, calc_2p_dens
       character (len=6) :: keywrd
-      integer           :: xctype1, xctype2
+      integer           :: xctype1, xctype2, spindens_lvl_save
 C
       double precision  :: EMYDFTAUX, EENSEMB, ESRDV_ens
+      character(len=12) :: myciruntype
       EMYDFTAUX = 0.0D0 ! initialization
       EENSEMB = 0.0D0 
       ESRDV_ens = 0.0D0 
@@ -448,7 +449,9 @@ C
 
         if(docisrdft)then
           srdft_ci_with_lucita = .true.  
-          calc_2p_dens         = spindens_lvl > 1
+!         calc_2p_dens         = spindens_lvl > 1
+          spindens_lvl_save    = spindens_lvl
+          spindens_lvl         = -1
         end if
 
 
@@ -493,16 +496,15 @@ C
 
           call dcopy(ncmot,cmo,1,srdft_cmo_lucita,1)
 
-          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
-     &                                wrk(kfcac),
-     &                                wrk(kh2ac),'srdft   ci  ',
-     &                                wrk(kw3),lw3,iprcix)
+          myciruntype = 'srdft   ci  '
+
         else
-          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
-     &                                wrk(kfcac),
-     &                                wrk(kh2ac),'initial ci  ',
-     &                                wrk(kw3),lw3,iprcix)
+          myciruntype = 'initial ci  '
         end if
+        call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
+     &                              wrk(kfcac),
+     &                              wrk(kh2ac),myciruntype,
+     &                              wrk(kw3),lw3,iprcix)
 
         jconv        = jconv_c  ! jconv_c is set in the interface procedure
         kvec_generic = kcvecs   ! for a unique interface to CISAVE (--> final CI vectors are stored in wrk(kcvecs) NOT ACTIVE AT PRESENT)
@@ -532,12 +534,24 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
 
         if(ci_program .eq. 'LUCITA   ')then
           call dcopy(nnashx,srdft_srac_lucita,1,wrk(ksrac),1)
-          EMYDFT    = emydft_mc2lu
-          EJCSR     = ejcsr_mc2lu
-          EJVSR     = ejvsr_mc2lu
-          EDSR      = edsr_mc2lu
-          EDFT      = edft_mc2lu
-          EMYDFTAUX = emydftaux_mc2lu
+          EMYDFT       = emydft_mc2lu
+          EJCSR        = ejcsr_mc2lu
+          EJVSR        = ejvsr_mc2lu
+          EDSR         = edsr_mc2lu
+          EDFT         = edft_mc2lu
+          EMYDFTAUX    = emydftaux_mc2lu
+          spindens_lvl = spindens_lvl_save
+          if(spindens_lvl > 0)then
+            !> compute the spin-density and S**2
+            DO IST = 1,NCROOT
+               KDVREF = KW2
+               KPVREF = KDVREF + NNASHX
+               KW2A   = KPVREF + NNASHX**2
+               LW2A   = LWRK   - KW2A
+               CALL GETS2REF(WRK(KPVREF),WRK(KDVREF),IST,
+     &                       dummy,WRK(KW2A),LW2A)
+            end do
+          end if
         end if
 
         WRITE(LUPRI,'(/A,I5)') 'SR 0-el. energy for input .STATE',
@@ -2794,6 +2808,62 @@ C
 
       CALL MAKDV(WRK(KCREF),DVREF,INDXCI,WRK(KW1),LW1)
       RETURN
+      END
+!******************************************************************************
+
+      SUBROUTINE GETS2REF(PVREF,DVREF,IST,INDXCI,WRK,LWRK)
+C
+C     Get DV_ref for CI-DFT and MC-DFT models.
+C
+C     (c) jkp + hjaaj July 2003
+C
+C     =====================================================
+C     Construct active one- and two-electron density matrix
+C     for CREF vector no. IST
+C     =====================================================
+C
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_srdftci_cfg
+#include "implicit.h"
+C
+      DIMENSION DVREF(*), PVREF(*), INDXCI(*), WRK(LWRK)
+C
+C Used from common blocks:
+C  infvar: NCONF
+C  inftap: LUIT1
+C
+#include "infvar.h"
+#include "inftap.h"
+#include "priunit.h"
+      integer, parameter :: luci_cvec = 99
+C
+C
+      IF (IST .LE. 0) THEN
+         CALL QUIT('GETS2REF called with IST .le. 0')
+      END IF
+      KCREF = 1
+      KW1   = KCREF + NCONF
+      LW1   = LWRK  - KW1
+      IF (LW1 .LE. 0) CALL ERRWRK('GETS2REF',-KW1,LWRK)
+C
+      open(file='srdft-lucita-final.cvec',unit=luci_cvec,status='old',
+     &     form='unformatted',action='read',position='rewind')
+      call skpvcd(luci_cvec,ist-1,wrk(kcref),-1,-1)
+      call dzero(wrk(kcref),nconf)
+      call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
+!     call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
+      close(luci_cvec,status='keep')
+!     set logical flag for new reference CI vector in WRK(KCREF) - 
+!     in the interface to lucita we use this info to save/broadcast the new
+!     reference vector on lucita internal sequential/parallel MPI-I/O files
+      vector_exchange_type1                      = 1
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                          vector_exchange_type1) = .true.
+
+      srdft_ci_1pdens_cref_restore = .true.
+
+      CALL MAKDM(WRK(KCREF),DVREF,PVREF,INDXCI,WRK(KW1),LW1)
+
       END
 !******************************************************************************
 

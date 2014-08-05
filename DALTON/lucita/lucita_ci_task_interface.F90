@@ -107,6 +107,7 @@ contains
 
         select case(ci_task_list(ci_task_ticket))
           
+
           case ('report CIspc')
             exit ! return because there is nothing else to do
           case ('return CIdia')
@@ -616,9 +617,18 @@ contains
             else
               call rewino(lusc1)
               call copvcd(luc_internal,lusc1,cref,0,-1)
+
               call copvcd(lusc1,lusc2,cref,1,-1)
               call rewino(lusc1)
               call rewino(lusc2)
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+              CALL REWINE(lusc1,-1)
+              WRITE(LUWRT,*) '  final solution vector for root ==> ',eigen_state_id
+              CALL WRTVCD(cref,LUsC1,0,-1)
+              CALL REWINE(LUsC1,-1)
+#undef LUCI_DEBUG
+#endif
               lusc_vector_file = lusc1
               luhc_vector_file = lusc2
             end if
@@ -773,10 +783,6 @@ contains
           call memman(k_scratch2,nacob**2         ,'ADDL  ',2,'scrat2')
           call memman(k_scratch3,nacob            ,'ADDL  ',2,'scrat3')
           call memman(k_scratch4,nacob*(nacob+1)/2,'ADDL  ',2,'scrat4')
-#ifdef LUCI_DEBUG
-          write(luwrt,'(/a)') ' IPRDEN lowered explicitly in return_Xp_density_matrix '
-          iprden = 1
-#endif
 !         if (ispnden == 1 .and. lucita_cfg_is_spin_multiplett /= 1) then
           if (ispnden >= 1)then
             write(luwrt,'(/a)') ' Natural spin-orbital occupation numbers for alpha spin-orbitals'
@@ -800,6 +806,10 @@ contains
         if(i12 > 1 .and. .not. srdft_ci_with_lucita) call en_from_dens(test_energy,i12)
 
       end do ! loop over eigen states
+#ifdef LUCI_DEBUG
+          write(luwrt,'(/a)') ' IPRDEN lowered explicitly in return_Xp_density_matrix '
+          iprden = 1
+#endif
 
 #ifdef VAR_MPI
       if(luci_nmproc > 1)then

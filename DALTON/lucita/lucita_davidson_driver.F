@@ -177,19 +177,35 @@
      &                                          block_list,
      &                                          MPI_COMM_WORLD,
      &                                          NUM_BLOCKS2,NROOT,1,2)
-#ifdef LUCI_DEBUG
-        CALL REWINE(LUC,LBLK)
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          DO IVEC = 1, NROOT
-            WRITE(LUWRT,*) '  final solution vector ==> ',IVEC
-            CALL WRTVCD(VEC1,LUC,0,LBLK)
-          END DO
-        END IF
-        CALL REWINE(LUC,LBLK)
-#endif
-
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      CALL REWINE(LUC,LBLK)
+      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
+        DO IVEC = 1, NROOT
+          WRITE(LUWRT,*) '  final solution vector for root ==> ',IVEC
+          CALL WRTVCD(VEC1,LUC,0,LBLK)
+        END DO
+      END IF
+      CALL REWINE(LUC,LBLK)
+#undef LUCI_DEBUG
+#endif
+      !> save final vectors on different scratch file
+      if(docisrdft)then
+        CALL REWINE(LUC,LBLK)
+        luci_cvec = 99
+        open(file='srdft-lucita-final.cvec',unit=luci_cvec,
+     &       status='replace',
+     &       form='unformatted',action='write',position='rewind')
+        do ivec = 1, nroot
+          call copvcd(luc,luci_cvec,vec1,0,-1)
+        end do
+        close(luci_cvec, status='keep')
+        CALL REWINE(LUC,LBLK)
+      end if
+
 
 !     eliminate scratch units
 !     -----------------------
