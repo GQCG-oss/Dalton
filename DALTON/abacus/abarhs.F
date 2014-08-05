@@ -750,7 +750,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
                         LWUSE = LWRK
 #else 
-                        CALL MEMSRT(MEMMIN,WORK(KNCONT))
+                        CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C     
 C     1000000 is just an estimate of what the rest of the sorting 
 C     program needs
@@ -2930,11 +2930,7 @@ C
       CALL DZERO(UMOG,N2BASX*N2BASX)
       JBUF = 608
   200 CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LUINTA,LENINT,WRK(KINT),JBUF)
-#else
          CALL READI(LUINTA,LENINT,WRK(KINT))
-#endif
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
          IF (NINT .EQ. 0) GO TO 200
          IF (NINT .LT. 0) GO TO 400
@@ -3003,11 +2999,7 @@ C
       CALL REWSPL(LU2DER)
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else
          CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH

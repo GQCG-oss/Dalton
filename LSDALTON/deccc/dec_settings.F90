@@ -121,16 +121,12 @@ contains
     DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
-    DECinfo%Frag_Opt_Scheme        = 1
+    DECinfo%Frag_Exp_Scheme        = 1
+    DECinfo%Frag_Red_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
-    DECinfo%Frag_Exp_Size          = 5
-!=======================================
-! NEEDS TO BE REMOVE AFTER TESTING:
-    DECinfo%frag_red_gap_occ       = 2
-    DECinfo%frag_red_gap_virt      = 4
-    DECinfo%frag_red_dE_occ        = 0.8E-4_realk
-    DECinfo%frag_red_dE_virt       = 1.0E-4_realk
-!=======================================
+    DECinfo%Frag_Exp_Size          = 10
+    DECinfo%frag_red_dE_occ        = 1.0  ! times FOT
+    DECinfo%frag_red_dE_virt       = 0.9  ! times FOT
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
@@ -581,7 +577,8 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_OPT_SCHEME'); read(input,*) DECinfo%Frag_Opt_Scheme
+       case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.ORB_BASED_FRAGOPT'); DECinfo%orb_based_fragopt = .true.
@@ -916,7 +913,8 @@ contains
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'Frag_Opt_Scheme ', DECitem%Frag_Opt_Scheme
+    write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
+    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_gap_occ ', DECinfo%frag_red_gap_occ

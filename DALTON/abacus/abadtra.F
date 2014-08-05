@@ -133,7 +133,7 @@ C
       ENDIF
       LWORK = KWORK
       IF((IPRTRD.GT.2) .AND. (JTER.EQ.1)) WRITE(LUPRI,903) LWORK
-  903 FORMAT(/' (DERTRA) Working area in transformation section',I8)
+  903 FORMAT(/' (DERTRA) Work array in transformation section',I12)
 C
 C     ***** TYPE OF TRANSFORMATION:                           *****
 C     *****         FIRST INDEX,ALL ORBITALS                  *****
@@ -911,11 +911,7 @@ C
 C
       DOCOOR = .FALSE.
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LUDERA,LENINT,WRK(KINT),JBUF)
-#else
          CALL READI(LUDERA,LENINT,WRK(KINT))
-#endif
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH

@@ -287,11 +287,7 @@ C
                KINT  = 1
                KIINT = KINT + LBUF
  150           CONTINUE
-#if defined (VAR_SPLITFILES)         
-               CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else 
                CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
                CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
                IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      &               ' Two-electron integral buffer read, LENGTH =',
@@ -985,11 +981,7 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
 C
  300  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else
          CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      *      ' Two-electron integral buffer read, LENGTH =', LENGTH

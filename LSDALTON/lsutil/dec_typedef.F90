@@ -334,8 +334,10 @@ module dec_typedef_module
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
-     !> Which Fragment Optimization Scheme should be used
-     integer :: Frag_Opt_Scheme
+     !> Which Fragment Expansion Scheme should be used
+     integer :: Frag_Exp_Scheme
+     !> Which Fragment Reduction Scheme should be used
+     integer :: Frag_Red_Scheme
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion

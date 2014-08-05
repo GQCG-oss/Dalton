@@ -3921,9 +3921,6 @@ C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-#endif
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -3953,11 +3950,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
                   WRK(KECDIA-1+I) = WRK(KECDIA-1+I) - EACTIV
  50            CONTINUE
             ENDIF
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZCONF,WRK(KECDIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZCONF,WRK(KECDIA))
-#endif
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
@@ -3991,11 +3984,7 @@ C           CALL ORBDIA(FOCK,FC,FV,UDV,EDIA,SDIA)
 C
 C WRITE diagonals of orbital part of E[2]-matrix needed for RSPLIN
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KEODIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZWOPT,WRK(KEODIA))
-#endif
 C
             IF (IPRRSP.GT.100) THEN
                IF (KZWOPT.GT.0) THEN
@@ -4015,11 +4004,7 @@ C
 C *** now WRITE orbital diagonal of S[2]-matrix
 C
          IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KSODIA),JRSP4)
-#else
             CALL  WRITT(LURSP4,KZWOPT,WRK(KSODIA))
-#endif
          END IF
 C
          IF (IPRRSP.GT.100) THEN

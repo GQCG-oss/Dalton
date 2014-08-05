@@ -561,11 +561,7 @@ C
       JBUF = 608
 C
   20  CONTINUE
-#if defined (VAR_SPLITFILES)
-      CALL READSI(LUINTA,LAOINT,INT,JBUF)
-#else
       CALL READI(LUINTA,LAOINT,INT)
-#endif
       NINT = INT(LAOINT)
       IF(NINT.EQ. 0) GO TO 20
       IF(NINT.EQ.-1) GO TO 35
@@ -2013,60 +2009,8 @@ C  /* Deck wrsup1 */
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION P(NPQRS)
-#if defined (VAR_SPLITFILES)
-#include "dummy.h"
-#include "iratdef.h"
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-C
-      IPASS = 1
- 5    CONTINUE
-      IF ((((JBUF + NPQRS*IRAT) .GT. I2GB) .AND. (IPASS .EQ. 2)) .OR.
-     &     (((JBUF + 8*IRAT) .GT. I2GB) .AND. (IPASS .EQ. 1))) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-         INQUIRE(UNIT=LUSUPM,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         CALL GPCLOSE(LUSUPM,'KEEP')
-         I = LN - 1
-         IF (FNNAME(I:I) .NE. '-') THEN
-            FNNM2 = FNNAME(1:LN)//'-0'
-            LN = LN + 2
-         ELSE
-            READ(FNNAME(LN:),'(I1)') INUM
-            INUM = INUM + 1
-            IF (INUM .GT. 9) THEN
-               WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &              ' a file more than 11 times.',
-     &              ' This is currently not supported'
-               CALL QUIT('Too many splittings of a file')
-            END IF
-            FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-         END IF
-         CALL GPOPEN(LUSUPM,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &        IDUMMY,.FALSE.)
-         JBUF = 0
-      END IF
-      IF (IPASS .EQ. 1) THEN
-         WRITE (LUSUPM) ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
-         JBUF = JBUF + 8*IRAT
-         IPASS = 2
-         GO TO 5
-      END IF
-      WRITE (LUSUPM) P
-      JBUF = JBUF + NPQRS*IRAT
-#else
       WRITE (LUSUPM) ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQRS,NPQL
       WRITE (LUSUPM) P
-#endif
       RETURN
       END
 C  /* Deck wrsup2 */
@@ -2078,59 +2022,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION P(NRSOUT), INDP(NRSOUT)
-#if defined (VAR_SPLITFILES)
-#include "dummy.h"
-#include "iratdef.h"
-#include "2gbdef.h"
-      CHARACTER*80 FNNAME, FNNM2
-#include "chrnos.h"
-C
-      IPASS = 1
- 5    CONTINUE
-      IF ((((JBUF + NRSOUT*(1 + IRAT) .GT. I2GB) .AND. (IPASS .EQ. 2)))
-     &     .OR. (((JBUF + 8*IRAT) .GT. I2GB) .AND. (IPASS .EQ. 1))) THEN
-C
-C     Ooops, file will be overfull, need to open a new one......
-C
-         INQUIRE(UNIT=LUSUPM,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         CALL GPCLOSE(LUSUPM,'KEEP')
-         I = LN - 1
-         IF (FNNAME(I:I) .NE. '-') THEN
-            FNNM2 = FNNAME(1:LN)//'-0'
-            LN = LN + 2
-         ELSE
-            READ(FNNAME(LN:),'(I1)') INUM
-            INUM = INUM + 1
-            IF (INUM .GT. 9) THEN
-               WRITE (LUPRI,'(/A)') ' DALTON needs to split '//
-     &              ' a file more than 11 times.',
-     &              ' This is currently not supported'
-               CALL QUIT('Too many splittings of a file')
-            END IF
-            FNNM2 = FNNAME(1:I)//CHRNOS(INUM)
-         END IF
-         CALL GPOPEN(LUSUPM,FNNM2(1:LN),'UNKNOWN',' ',' ',
-     &        IDUMMY,.FALSE.)
-         JBUF = 0
-      END IF
-      IF (IPASS .EQ. 1) THEN
-         WRITE (LUSUPM) ITYP2,NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
-         JBUF = JBUF + 8*IRAT
-         IPASS = 2
-         GO TO 5
-      END IF
-      WRITE (LUSUPM) P,INDP
-      JBUF = JBUF + NRSOUT*(1 + IRAT)
-#else 
       WRITE (LUSUPM) ITYP2,NP,NQ,NP,NQ,IOFPQ,NRSOUT,NPQ
       WRITE (LUSUPM) P,INDP
-#endif
       RETURN
       END
+!  -- end of abacus/her2sup.F --
