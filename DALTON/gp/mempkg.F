@@ -372,7 +372,7 @@ C
      *      ' expected           :',MEMID
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    IDENT       KBASE         Length'
+     &      ' IALLOC #   IDENT           KBASE         Length'
          KALLOC = KFIRST
          IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
          DO I = 1, IALLOC
