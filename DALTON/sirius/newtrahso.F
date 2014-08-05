@@ -230,22 +230,15 @@ C
       IBASS = IBAS(ISS)
 C
       LBUF = 600
-      JBUF = 256
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-         CALL QUIT('NBASIS .gt. 255 not implemented yet here')
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! buffer length in integer*4
       KINT = 1
       KIINT = KINT + LBUF
 C
@@ -256,14 +249,17 @@ C
       CALL MOLLAB(KEY,LUHSO2,LUPRI)
       DOCOOR = .FALSE.
  150  CONTINUE
-         CALL READI(LUHSO2,LENINT,BUF(KINT))
+         CALL READI4(LUHSO2,LENINT4,BUF(KINT))
          CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
+         !write (lupri,*) 'Read next record, length',length
+         !write (lupri,*) 'isp,isq,isr,iss',isp,isq,isr,iss
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH
                JS = IBUF(4,I)
                IF (JS .EQ. 0) THEN
                   ICOOR = IBUF(3,I)
                   DOCOOR = ICOOR.EQ.ILXYZ
+               !write (lupri,*) 'new coordinate',icoor,docoor
                ELSE IF (DOCOOR) THEN
                   JP  = IBUF(1,I)
                   JSP = ISAO(JP)
@@ -284,6 +280,8 @@ C
                   ELSE
                      MPQ = (MP-1)*NBQ + MQ - MPQOFF
                   END IF
+                  !write(lupri,*) 'jp,jq,jr,js',jp,jq,jr,js,buf(i)
+                  !write(lupri,*) 'mp,mq,mpq,npq',mp,mq,mpq,npq,mpqoff
                   IF (MPQ .GT. 0 .AND. MPQ .LE. NPQ) THEN
                      MR = JR - IBASR
                      MS = JS - IBASS
@@ -303,6 +301,8 @@ C
 C
  300  CONTINUE
       MPQOFF = MPQOFF + NPQ
+      !write (lupri,*) 'final HSOPQ:'
+      !call output(hsopq,1,nbrs,1,npq,nbrs,npq,-1,lupri)
       RETURN
       END
 C /*deck  nxthso*/

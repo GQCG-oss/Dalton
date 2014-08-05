@@ -125,10 +125,6 @@ C
          WRITE (LUPRI, '(A,L5)') ' NODV  ', NODV
          WRITE (LUPRI, '(A,L5)') ' AOMAT ', AOMAT
       END IF
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -136,11 +132,9 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
       LBUF = 600
-      JBUF = 256
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
 C
 C
 C     ***************************************************
@@ -287,7 +281,7 @@ C
                KINT  = 1
                KIINT = KINT + LBUF
  150           CONTINUE
-               CALL READI(LU2DER,LENINT,WORK(KINT))
+               CALL READI4(LU2DER,LENINT4,WORK(KINT))
                CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
                IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      &               ' Two-electron integral buffer read, LENGTH =',
@@ -941,23 +935,15 @@ C
 #include "ibtfun.h"
 C
       LBUF = 600
-      JBUF = 256
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
-         call quit('FCKMG2: NBASIS .ge. 256 not implemented yet'//
-     &     ' for 32-bit integers. Use 64-bit integers.')
-         NIBUF = 2 ! NIBUF .eq. 2 not implemented in her2out.F
+         NIBUF = 2
          NBITS = 16
       END IF
-#endif
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
       KINT   = 1
       KIINT  = KINT + LBUF
 C
@@ -981,7 +967,7 @@ C
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
 C
  300  CONTINUE
-         CALL READI(LU2DER,LENINT,WORK(KINT))
+         CALL READI4(LU2DER,LENINT4,WORK(KINT))
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (IPRINT .GE. 05) WRITE (LUPRI, '(/,A,I5)')
      *      ' Two-electron integral buffer read, LENGTH =', LENGTH

@@ -2607,12 +2607,9 @@ C
                IF (DCCR12) THEN
                   CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
      &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
-               ELSE IF (SRINTS) THEN
-                  CALL SR2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
                ELSE
-                  CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
+                  CALL UN2OUT(SOINT,SRINTS,IPNTNO,IPNTRP,IPNTLG,
+     &                        FIRST,LAST,THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
                IF (U21INT) THEN
@@ -2637,13 +2634,6 @@ C
          ELSE IF (PERTUR .OR. SPNORB) THEN
             IF (IPRINT.GE.5) WRITE(LUPRI,*)
      &      'SYMLOP: processing differentiated integrals'
-#ifndef VAR_INT64
-           IF (NBASIS .GT. 255) THEN
-              CALL QENTER('DR2OUT')
-              CALL QUIT('NBASIS .gt. 255 not implemented for 32-bit'//
-     &        ' integers - recompile with 64-bit integers.')
-           END IF
-#endif
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,

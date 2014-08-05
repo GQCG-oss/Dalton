@@ -24,13 +24,11 @@
 #include "single.h"
 C
 #ifdef UNDEF
-===========================================================================
-901023-hjaaj: new parameter list to CIDIAG in ABADIA
+========================================================================
 900216-hjaaj: abalr: exit if ingd true (not reimplemented yet)
  -- abalr: set nload = 1 after resst if no trial vectors found
  (will make anrctl check if already converged without calling abalin)
-      END
-===========================================================================
+========================================================================
 #endif
 C  /* Deck abalr */
       SUBROUTINE ABALR(LMAXVE,INGD,REDH,REDGD,SOLEQ,IBNDX,CMO,UDV,PV,

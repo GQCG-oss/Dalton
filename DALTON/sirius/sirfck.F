@@ -1075,15 +1075,13 @@ C
 C
       CALL REWSPL(LU2INT)
       CALL MOLLAB('BASINFO ',LU2INT,LUPRI)
-      READ (LU2INT) MSYM, MBAS, LBUF, NIBUF, NBITS
+      READ (LU2INT) MSYM, MBAS, LBUF, NIBUF, NBITS, LENINT4
       IF (MSYM .NE. NSYM) THEN
          CALL QUIT('SIRFCK2: NSYM from AOxxxINT .ne. NSYM in common')
       END IF
-#if !defined (VAR_INT64)
       IF (NBITS .NE. NIBUF*8) THEN
          CALL QUIT('SIRFCK2: NBITS from AOxxxINT .ne. NIBUF*8')
       END IF
-#endif
       DO I = 1,MSYM
          IF (NBAS(I) .NE. MBAS(I)) GO TO 110
       END DO
@@ -1096,19 +1094,21 @@ C
          CALL QUIT('SIRFCK2: NBAS(:) from AOxxxINT not consistent')
   120 CONTINUE
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      IF (LENINT4 .ne. 2*LBUF + NIBUF*LBUF + 1) THEN  ! LENINT4 = length in integer*4 units
+         CALL QUIT('Error in LENINT4 from AO 2-el integral file')
+      END IF
+
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('INTE',KINT ,LENINT,WRK,KFREE,LFREE)
+      CALL MEMGET2('INT4','INT',KINT ,LENINT4,WRK,KFREE,LFREE)
       KIINT = KINT + LBUF
-      CALL MEMGET('INTE',KIIN4,4*LBUF,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IIN4',KIIN4,4*LBUF,WRK,KFREE,LFREE)
 C
       CALL MOLLAB('BASTWOEL',LU2INT,LUPRI)
-      JBUF = 608
 C
     1 CONTINUE
 C
-         CALL READI(LU2INT,LENINT,WRK(KINT))
+         CALL READI4(LU2INT,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,WRK(KIIN4),NINT)
          IF (NINT .EQ. 0)  GOTO 1
          IF (NINT .EQ. -1) GOTO 2
@@ -1140,10 +1140,10 @@ C           ... e.g. triplet, non-symmetric (general) density matrix
             ELSE IF (IFCTYP(I) .EQ. 1) THEN
 C           ... Non-symmetric, Only Coulomb
               CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
-           ELSE IF (MOD(IFCTYP(I),10).EQ. 0 .OR. IFCTYP(I) .EQ. 21) THEN
+            ELSE IF (MOD(IFCTYP(I),10).EQ. 0 .OR. IFCTYP(I).EQ.21) THEN
 C              *0:  nothing
 C              21:  antisymmetric, only Coulomb gives a zero matrix
-               GOTO 200
+              GOTO 200
             ELSE
               GO TO 8000
             END IF

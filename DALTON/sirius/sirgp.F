@@ -1627,7 +1627,6 @@ C
       IREC  = 0
       IREC1 = 0
       IREC2 = 0
-      MBUF = 0
   100 CONTINUE
          IREC = IREC + 1
          READ (LUSUPM) ITYP,NP1,NQ1,NPL,NQL,IBEF,NPQRS

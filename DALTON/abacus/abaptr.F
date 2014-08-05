@@ -966,7 +966,6 @@ C
 C
       L2BUF = 2*MX2BUF + 1
       IBUF(L2BUF) = 0
-      JBUF = 0
       NPTOT = 0
 C
 C....    DRIVER LOOP BASED ON THE NUMBER OF BIN SORT CHAINS
@@ -1580,7 +1579,6 @@ C     **   BEGIN PASSES OVER INTEGRAL FILE   **
 C     *****************************************
 C
       NPTOT  = 0
-      JJBUF  = 0
       IPQRST = 1
 1000  CONTINUE
       IRAYO  = 0
@@ -1643,7 +1641,6 @@ C     ***********************************************************
 C
       IPQRSF = IPQRS
       NCHAIN = IBINO
-      JBUF = 0
       IDISK  = 1
       DO, ICHAIN = 1,NCHAIN
          IBIN(LBIN(ICHAIN))   = 0

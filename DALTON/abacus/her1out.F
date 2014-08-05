@@ -21,14 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-930209-hjaaj: add GSOLTT in SHDCHK
-===========================================================================
-#endif
+C FILE: abacus/her1out.F
+C
 C  /* Deck wrtund */
       SUBROUTINE WRTUND(STHMAT,NNBAST,NNBASX,IPRINT)
 C
@@ -614,3 +609,4 @@ C
       END IF
       RETURN
       END
+C end of: abacus/her1out.F

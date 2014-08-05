@@ -1089,7 +1089,7 @@ C
          LWRK2 = LWORK - KEND2
 C
         IF (LWRK2 .LT. 0) THEN
-            STOP 'Insufficient memory in CCSD_ENERGY'
+            CALL QUIT('Insufficient memory in CCSD_ENERGY')
          ENDIF
 C
          CALL CC_T2SQ(WORK(KT2AM),WORK(KSCR1),1)

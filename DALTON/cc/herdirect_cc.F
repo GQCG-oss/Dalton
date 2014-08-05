@@ -84,10 +84,8 @@ C
          TKTIME = .FALSE.
       END IF
 C
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
+C     define NIBUF and NBITS in eribuf.h
+C
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -95,7 +93,6 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
 C
       IF (LUINTR .LE. 0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
@@ -152,16 +149,13 @@ C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-         LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-         LRECL = LBFINP + LBFINP/IRAT + 1
-#else
-         IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
-         ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
+         IF (NIBUF .ne. 1 .and. NIBUF .ne. 2) THEN
+            CALL QUIT('HERDI2 error: NIBUF .ne 1 .and. NIBUF .ne. 2')
          END IF
+#if defined (SYS_NEC)
+         LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+         LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)
@@ -279,16 +273,15 @@ C
       IF (LUAORC(0) .LE. 0) THEN
          LBFINP = LBUF
 C
-#if defined (VAR_INT64)
-         LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-         LRECL = LBFINP + LBFINP/IRAT + 1
-#else
          IF (NBASIS .LE. 255) THEN
-            LRECL = 2*LBFINP + LBFINP + 1
+            NIBUF = 1
          ELSE
-            LRECL = 2*LBFINP + 2*LBFINP + 1
+            NIBUF = 2
          END IF
+#if defined (SYS_NEC)
+         LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+         LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
          CALL GPOPEN(LUAORC(0),'AO2DIS00','UNKNOWN','DIRECT',
      &        'UNFORMATTED',LRECL,OLDDX)

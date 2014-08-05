@@ -24,7 +24,7 @@
 #include "single.h"
 C
 #ifdef REV_LOG
-===========================================================================
+========================================================================
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -37,7 +37,7 @@ Revision 1.3  2000/05/04 12:26:07  hjj
 Revision 1.2  2000/05/04 10:19:53  hjj
 (1) LUPROP .eq. 0 tests changed to LUPROP .le. 0
 (2) open LUPROP as unknown in GABGEN
-===========================================================================
+========================================================================
 #endif
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,

@@ -23,6 +23,9 @@
 !
 #include "single.h"
 C
+C  Note: These test routines only work for default integer*4 and max 255 basis functions
+C        This is not tested for!
+C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
 #include "implicit.h"

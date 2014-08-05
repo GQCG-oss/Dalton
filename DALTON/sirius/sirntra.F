@@ -306,7 +306,7 @@ C
             CALL REWSPL(LUINTA)
             CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
 !           consistency checks before reading of AOTWOINT in RDAO2
-            READ (LUINTA) NSYM_x, (NBAS_x(I),I=1,8), LBUF, NIBUF, NBITS
+            READ (LUINTA) NSYM_x, NBAS_x, LBUF, NIBUF, NBITS, LENINT4
             ierr = 0
             IF (NSYM_x .ne. NSYM) THEN
                ierr = ierr + 1
@@ -3153,7 +3153,7 @@ C
 C     LBUF, NIBUF, and NBITS have been read from LUINTA in
 C     SIR_INTOPEN_NEWTRA
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! counted in INTEGER*4
       KINT = 1
       KIINT = KINT + LBUF
 C
@@ -3161,7 +3161,7 @@ C
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
  150  CONTINUE
-         CALL READI(LUINTA,LENINT,BUF(KINT))
+         CALL READI4(LUINTA,LENINT4,BUF(KINT))
          CALL AOLAB4(BUF(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 200 I = 1, LENGTH

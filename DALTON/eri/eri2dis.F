@@ -171,20 +171,19 @@ C
 C
       IF (LBFINP .EQ. 600) LBFINP = 20 000
 C
-C     Open files
+C     Open files and define NIBUF in eribuf.h
 C
       IF (LUINTR.LT.0) CALL GPOPEN(LUINTR,'AOTWODIS','UNKNOWN',' ',
      &     'UNFORMATTED',IDUMMY,.FALSE.)
-#ifdef VAR_INT64
-      LRECL = LBFINP + LBFINP + 1
-#elif defined (SYS_NEC)
-      LRECL = LBFINP + LBFINP/IRAT + 1
-#else
       IF (NBASIS .LE. 255) THEN
-         LRECL = 2*LBFINP + LBFINP + 1
+         NIBUF = 1
       ELSE
-         LRECL = 2*LBFINP + 2*LBFINP + 1
+         NIBUF = 2
       END IF
+#if defined (SYS_NEC)
+      LRECL =   LBFINP + NIBUF*LBFINP/2 + 1   ! integer*8 units
+#else
+      LRECL = 2*LBFINP + NIBUF*LBFINP   + 1   ! integer*4 units
 #endif
       NSCOOR = 0
       IF (GDER) NSCOOR = 3*NUCDEP
@@ -212,14 +211,10 @@ C     Transfer information
 C     ====================
 C
       NUMDIS = NDISTR
-!fox
-!fox  25-04-2003
-!fox  CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
       IF (NUMDIS .GT. 0) CALL ICOPY(NUMDIS,INDDST,1,INDEXA,1)
-!fox
       IF ( IPRINT .GT. 2 ) THEN
          CALL HEADER('Output from ERIDI2',2)
-         WRITE (LUPRI,'(2X,I3,A,8I5/,(40X,8I5))')
+         WRITE (LUPRI,'(I5,A,8I5/,(40X,8I5))')
      &         NDISTR,' distributions in this ERI call:',
      &         (INDEXA(I),I=1,NDISTR)
       ENDIF

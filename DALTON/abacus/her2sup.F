@@ -227,11 +227,10 @@ C
       LSUP   = LWORK-LRDA22-IJ
       ICHAIN = 1
       DST    = SECOND()
-      JBUF = 256 + 144*IRAT
       IF (NPM.LE.LWORK) THEN
          LW3 = LW2+NPMAX
          CALL SUP1(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
+     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
          DFIN = SECOND()
          DTOT = DFIN-DST
          IF (IPRINT .GT. 1) WRITE(LUPRI,350) DTOT
@@ -239,7 +238,7 @@ C
       ELSE
          LW3 = LW2+LSUP
          CALL SUP1D(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
+     &             WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
          DFIN = SECOND()
          DTOT = DFIN-DST
          IF (IPRINT .GT. 1) WRITE(LUPRI,351) DTOT
@@ -267,12 +266,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMM
             CALL SUP1(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
+     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
          ELSE
             DTOTD = DTOTD - SECOND()
             LW3 = LW2+LSUP
             CALL SUP1D(ICHAIN,NPMM,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1),JBUF)
+     &                WORK(LW3),IBEF,IWORK(1),IWORK(NBW1))
             DTOTD = DTOTD + SECOND()
          END IF
          IBEF=IBEF+NPMM
@@ -317,13 +316,12 @@ C
          IF (NPM.LE.LWORK) THEN
             LW3 = LW2+NPMAX
             CALL SUP(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &               WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,IPRINT,
-     &               JBUF)
+     &               WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,IPRINT)
          ELSE
             DTOTD = DTOTD - SECOND()
             LW3 = LW2+LSUP
             CALL SUPD(ICHAIN,NPMAX,WORK(LW1),WORK(LW1),WORK(LW2),
-     &                WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP,JBUF)
+     &                WORK(LW3),IWORK(1),IWORK(NBW1),IBEF,NP)
             DTOTD = DTOTD + SECOND()
          END IF
          IBEF = IBEF+NPMAX
@@ -399,7 +397,8 @@ C  /* Deck supsrt */
      B      LINT,LDA2,IDABUF,LDA21,LDA22,LASTAD(255),
      C      NREC(255),IBATCH(255),IS(255),NBW,NWW,LSUP
       COMMON/CSPREA/THRQ,BUF(600),DUM4(4)
-      DIMENSION RINT(*),INT(*),SCR(*),ISCR(*),IT(*)
+      DIMENSION RINT(*),SCR(*),ISCR(*),IT(*)
+      INTEGER*4 INT(*)
       LOGICAL NOSYM, OLDDX 
       DIMENSION NSOINT(255), NAOS(8)
 C
@@ -414,7 +413,7 @@ C
 C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM,(NAOS(I),I=1,8),LBUF,NIBUF,NBITS
+      READ (LUINTA) MSYM,NAOS,LBUF,NIBUF,NBITS,LENINT4
 C
 C     Consistency check
 C
@@ -554,14 +553,14 @@ C
   15  CONTINUE
 Cha
       IAOINT = IRAT*600
-      LAOINT = IAOINT+600+1
+      LAOINT = IAOINT+NIBUF*600+1
+      IF (LAOINT .NE. LENINT4) CALL QUIT('LAOINT .ne. LENINT4')
 C
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-      JBUF = 608
 C
   20  CONTINUE
-      CALL READI(LUINTA,LAOINT,INT)
+      CALL READI4(LUINTA,LAOINT,INT)
       NINT = INT(LAOINT)
       IF(NINT.EQ. 0) GO TO 20
       IF(NINT.EQ.-1) GO TO 35
@@ -574,10 +573,10 @@ C     IBITSHR_4 =       0 ! shift for index 4 in (12|34) -- not needed!
       IBITSHR_2 = 2*NBITS ! shift for index 2 in (12|34)
       IBITSHR_1 = 3*NBITS ! shift for index 1 in (12|34)
       DO 30 I = 1,NINT
-         LABEL  = INT(IAOINT+I)
          VALUE  = RINT(I)
          NINTAO = NINTAO+1
       IF(ABS(VALUE).LE.THRQ) GO TO 30
+         LABEL  = INT(IAOINT+I)
 C
          NP = IBTAND(IBTSHR(LABEL,IBITSHR_1),IBITMASK)
 C        HERMIT: We know NP is largest index, thus we don't need NQ,NR,NS
@@ -684,8 +683,8 @@ C
       CALL QUIT('SUP_SORT ERROR: insufficient memory')
       END
 C  /* Deck sup1 */
-      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT,
-     &                JBUF)
+      SUBROUTINE SUP1(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,IT,IBIT)
+     &                
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -919,7 +918,7 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
+      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX)
 C
  900  CONTINUE
       RETURN
@@ -932,7 +931,7 @@ C
       END
 C  /* Deck sup */
       SUBROUTINE SUP(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
-     &               IBEF,NP,IPRINT,JBUF)
+     &               IBEF,NP,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1227,7 +1226,7 @@ C
 C
 C***  Transfer P to disk
 C
-      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
+      CALL SUPNWR(P,INDP,IT,IBEF,NPMAX)
 C
  900  CONTINUE
       RETURN
@@ -1240,7 +1239,7 @@ C
       END
 C  /* Deck sup1d */
       SUBROUTINE SUP1D(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IBEF,
-     &                 IT,IBIT,JBUF)
+     &                 IT,IBIT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1519,7 +1518,7 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
+      CALL SUPNWR(P,INDP,IT,IOFF,NBB)
 C
 C
  800  IRED = IRED+NBB
@@ -1534,7 +1533,7 @@ C
       END
 C  /* Deck supd */
       SUBROUTINE SUPD(ICHAIN,NPMAX,BBUF,IBUF,P,INDP,IT,IBIT,
-     &               IBEF,NP,JBUF)
+     &               IBEF,NP)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1875,7 +1874,7 @@ C***  Transfer P to disk
 C
       IOFF = IBEF + IRED
 C     Note: A PQ distribution may be divided into two records
-      CALL SUPNWR(P,INDP,IT,IOFF,NBB,JBUF)
+      CALL SUPNWR(P,INDP,IT,IOFF,NBB)
 C
 C
  800  IRED = IRED+NBB
@@ -1889,7 +1888,7 @@ C
 #endif
       END
 C  /* Deck supnwr */
-      SUBROUTINE SUPNWR(P,INDP,IT,IBEF,NPMAX,JBUF)
+      SUBROUTINE SUPNWR(P,INDP,IT,IBEF,NPMAX)
 C
 C     Jan 90 Hans Joergen Aa. Jensen
 C     Write to LUSUPM
@@ -1944,7 +1943,7 @@ C               switch to type 2
             GO TO 200
          END IF
          CALL WRSUP1(LUSUPM,P(IOFF+1),NPQRS,ITYP1,NPF,NQF,NPL,
-     &               NQL,IOFF,NPQL,JBUF)
+     &               NQL,IOFF,NPQL)
          IOFF  = IOFF + NPQRS
          IF (NPLAST + 1 .LE. NST-1) THEN
             NPLAST = NPLAST + 1
@@ -1993,7 +1992,7 @@ C        ... to avoid compiler messages
             NPQ  = IT(NP) + NQ
             IOFPQ= IT(NPQ)
             CALL WRSUP2(LUSUPM,P,INDP,ITYP2,NP,NQ,
-     &                  IOFPQ,NRSOUT,NPQ,JBUF)
+     &                  IOFPQ,NRSOUT,NPQ)
          END IF
          IF (NPQRS .GT. (IBEF+NPMAX)) GO TO 900
   730 CONTINUE
@@ -2004,8 +2003,7 @@ C
       RETURN
       END
 C  /* Deck wrsup1 */
-      SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,
-     &                  NPQL,JBUF)
+      SUBROUTINE WRSUP1(LUSUPM,P,NPQRS,ITYP1,NPF,NQF,NPL,NQL,IOFF,NPQL)
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION P(NPQRS)
@@ -2014,8 +2012,7 @@ C  /* Deck wrsup1 */
       RETURN
       END
 C  /* Deck wrsup2 */
-      SUBROUTINE WRSUP2(LUSUPM,P,INDP,ITYP2,NP,NQ,IOFPQ,NRSOUT,
-     &                  NPQ,JBUF)
+      SUBROUTINE WRSUP2(LUSUPM,P,INDP,ITYP2,NP,NQ,IOFPQ,NRSOUT,NPQ)
 C
 C 900319-hjaaj
 C

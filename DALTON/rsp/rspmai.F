@@ -785,12 +785,16 @@ C
       GO TO 200
 C
  1    CONTINUE
-      IPRRSP = MAX(IPRPP,IPRLR,IPRC6)
-      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)
+      IPRRSP_default = IPRRSP
+      IPRRSP = MAX(IPRPP ,IPRLR ,IPRC6)         ! LR
+      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)        ! QR
+      IPRRSP = MAX(IPRRSP,IPRCR,IPRTMO,IPRTPA)  ! CR
       IPRRSP = MAX(IPRRSP,IPRESR)
-      IPRRSP = MAX(IPRRSP,IPRCR)
-      IPRRSP = MAX(IPRRSP,IPRTMO)
-      IPRRSP = MAX(IPRRSP,IPRTPA,IPRABS)
+      IPRRSP = MAX(IPRRSP,IPRABS)
+      IF (IPRRSP .ne. IPRRSP_default) THEN
+         WRITE(LUPRI,'(/A,I10)')
+     &   ' General print level in RESPONS is IPRRSP =',IPRRSP
+      END IF
 C
 C     We arrive at 2100 if no input file found. We return.
 C

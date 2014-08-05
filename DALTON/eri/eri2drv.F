@@ -280,7 +280,7 @@ C
             END DO
             IF (LBFINP .NE. 600) THEN
                WRITE (LUPRI,'(A,I5)')
-     &            ' Non-default buffer length:',LBFINP
+     &            ' Non-default 2-el. integral buffer length:',LBFINP
             END IF
             IF (MAXDST .NE. MAXDSD) THEN
                WRITE (LUPRI,'(A,I5)')
@@ -562,10 +562,6 @@ C
          NPERTS = 1
          NCORS = 1
       END IF
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASE .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
@@ -573,7 +569,6 @@ C
          NIBUF = 2
          NBITS = 16
       END IF
-#endif
       IF (DGABAB) THEN
          NIBUF = 1
          NBITS = 16

@@ -24,7 +24,7 @@
 #include "single.h"
 C
 C  /* Deck eriout */
-      SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF,INDXBT,
+      SUBROUTINE ERIOUT(SO,ITYPE,IPNTCR,IODDCC,IPNTUV,BUF,IBUF4,INDXBT,
      &                  NCOUNT,IREPE,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -36,8 +36,9 @@ C  /* Deck eriout */
 #include "eribuf.h"
       DIMENSION SO(NAOINT,*), 
      &          IPNTCR(MAXBCH,4), IPNTUV(KC2MAX,0:NRDER,2),
-     &          WORK(LWORK), IODDCC(NRTOP), BUF(*), IBUF(*),
+     &          WORK(LWORK), IODDCC(NRTOP), BUF(*),
      &          NINTS(MXDIST), NCOUNT(*), INDXBT(*)
+      INTEGER*4 IBUF4(*)
 #include "cbieri.h"
 #include "ericom.h"
 #include "symmet.h"
@@ -49,7 +50,7 @@ C
       IF (LAST) THEN
          LBIN   = 0
          KBIN   = 1
-         KIBIN  = 1
+         KIBIN4 = 1
          KSOPRT = 1
          KNDORB = 1
          KLABEL = 1
@@ -66,8 +67,8 @@ C
          CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
-         KIBIN  = KBIN   +  LBIN
-         KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
+         KIBIN4 = KBIN   +  LBIN
+         KSOPRT = KIBIN4 + (NIBUF*LBIN - 1)/2 + 1 ! always integer*4
          KNDORB = KSOPRT + NAOINT 
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
          KPNBCH = KLABEL + (4*NAOINT - 1)/IRAT + 1
@@ -83,11 +84,11 @@ C
          CALL ERISDM(IPNTCR,INDXBT)
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
-         KIBIN  = KBIN   +  LBIN
-         KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
+         KIBIN4 = KBIN   +  LBIN
+         KSOPRT = KIBIN4 + (NIBUF*LBIN - 1)/2 + 1 ! always integer*4
          KNDORB = KSOPRT 
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
-         KPNBCH = KLABEL 
+         KPNBCH = KLABEL
          KNDALL = KPNBCH + (LPNBCH*NDISTR - 1)/IRAT + 1
          KNDXTR = KNDALL + (2*NCCS - 1)/IRAT + 1
          KJCMPA = KNDXTR + (4*NCCS*(MAXREP + 1) - 1)/IRAT + 1
@@ -99,8 +100,8 @@ C
       ELSE
          LBIN   = NCCT*KHKTA*KHKTB*KHKTC*KHKTD
          KBIN   = 1
-         KIBIN  = KBIN   +  LBIN
-         KSOPRT = KIBIN  + (NIBUF*LBIN - 1)/IRAT + 1
+         KIBIN4 = KBIN   +  LBIN
+         KSOPRT = KIBIN4 + (NIBUF*LBIN - 1)/2 + 1 ! always integer*4
          KNDORB = KSOPRT
          KLABEL = KNDORB + (NIBUF*LBIN - 1)/IRAT + 1
          KPNBCH = KLABEL
@@ -119,15 +120,15 @@ C
          IF (BDER) N0 =  7 
          CALL ERIOU1(SO,SO(1,N0),ITYPE,WORK(KNDORB),WORK(KLABEL),
      &               WORK(KPNBCH),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
-     &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
-     &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
+     &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN4),
+     &               LBIN,BUF,IBUF4,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
      &               IREPE,IPRINT)
       ELSE
          CALL ERIOU1(SO,WORK(KSOPRT),ITYPE,WORK(KNDORB),WORK(KLABEL),
      &               WORK(KPNBCH),WORK(KNDALL),WORK(KNDXTR),IPNTCR,
-     &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN),
-     &               LBIN,BUF,IBUF,WORK(KJCMPA),WORK(KJCMPC),
+     &               IODDCC,IPNTUV,NINTS,NCOUNT,WORK(KBIN),WORK(KIBIN4),
+     &               LBIN,BUF,IBUF4,WORK(KJCMPA),WORK(KJCMPC),
      &               WORK(KJADDA),WORK(KJADDC),WORK(KIOFCM),INDXBT,
      &               IREPE,IPRINT)
       END IF
@@ -137,7 +138,7 @@ C
 C  /* Deck eriou1 */
       SUBROUTINE ERIOU1(SO,SOPRT,ITYPE,INDORB,LABEL,IPNBCH,INDALL,
      &                  INDXTR,IPNTCR,IODDCC,IPNTUV,NINTS,NCOUNT,
-     &                  BIN,IBIN,LBIN,BUF,IBUF,JCMPAB,JCMPCD,JADDAB,
+     &                  BIN,IBIN4,LBIN,BUF,IBUF4,JCMPAB,JCMPCD,JADDAB,
      &                  JADDCD,IOFCMP,INDXBT,IREPE,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -153,11 +154,11 @@ C  /* Deck eriou1 */
      &          INDORB(LBIN,NIBUF), IPNBCH(*), INDALL(NCCS,2), 
      &          INDXTR(*), LABEL(*), IPNTCR(MAXBCH,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
-     &          BUF(LBUF,NBUFS,0:NCORS), IBUF(LBUF,NIBUF,NBUFS,0:NCORS),
-     &          BIN(LBIN), IBIN(LBIN,NIBUF),
+     &          BUF(LBUF,NBUFS,0:NCORS), BIN(LBIN),
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS), 
      &          JCMPAB(*), JCMPCD(*),
      &          JADDAB(*), JADDCD(*), IOFCMP(*), INDXBT(*)
+      INTEGER*4 IBUF4(NIBUF*LBUF,NBUFS,0:NCORS), IBIN4(LBIN*NIBUF)
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
@@ -176,12 +177,12 @@ C
             ISTART = 1
             IF (UNDIFF) ISTART = 0
             DO ISCOOR = ISTART, NPERTS 
-               CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
-     &                     BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),IPRINT)
+               CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN4,LBIN,
+     &                     BUF(1,1,ISCOOR),IBUF4(1,1,ISCOOR),IPRINT)
             END DO
          ELSE
-             CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
-     &                   IBUF(1,1,1,0),IPRINT)
+             CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN4,LBIN,BUF(1,1,0),
+     &                   IBUF4(1,1,0),IPRINT)
          END IF
 C
 C     Geometrical derivatives in distributions
@@ -192,11 +193,11 @@ C
          IF (UNDIFF .AND. IREPE.EQ.0) THEN
             CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
      &                  INDXTR,0,0,IPRINT)
-            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,IODDCC,
+            CALL ERISRT(BIN,IBIN4,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,IODDCC,
      &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,
      &                  0,IPRINT)
-            CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,
-     &                  BUF(1,1,0),IBUF(1,1,1,0),IPRINT)
+            CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN4,LBIN,
+     &                  BUF(1,1,0),IBUF4(1,1,0),IPRINT)
          END IF
          IF (GDER) THEN
             DO IATOM = 1, NUCIND 
@@ -206,11 +207,11 @@ C
                   CALL ERILBD(LABEL,INDORB,IPNTCR,IODDCC,IPNTUV,INDXBT,
      &                        INDXTR,IREPE,0,IPRINT)
                   CALL ERIGDR(SO,IATOM,ICART,SOPRT,LABEL,IPRINT)
-                  CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,
+                  CALL ERISRT(BIN,IBIN4,LBIN,NIBUF,INDORB,SOPRT,
      &                        IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,
      &                        NINTS,IOFCMP,INDXBT,ICART,IPRINT)
-                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
-     &                        BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),
+                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN4,LBIN,
+     &                        BUF(1,1,ISCOOR),IBUF4(1,1,ISCOOR),
      &                        IPRINT)
                END IF
             END DO
@@ -221,11 +222,11 @@ C
      &                     INDXTR,ISYMAX(ICART,2),1,IPRINT)
                DO ISCOOR = ICART, 6, 3
                   CALL ERIBDR(SO,ISCOOR,SOPRT)
-                  CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
+                  CALL ERISRT(BIN,IBIN4,LBIN,NIBUF,INDORB,SOPRT,IPNTCR,
      &                        IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,
      &                        INDXBT,ICART,IPRINT)
-                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,
-     &                        BUF(1,1,ISCOOR),IBUF(1,1,1,ISCOOR),IPRINT)
+                  CALL ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN4,LBIN,
+     &                        BUF(1,1,ISCOOR),IBUF4(1,1,ISCOOR),IPRINT)
                END DO
             END DO
          END IF
@@ -244,18 +245,18 @@ C
 C        sort distributions
 C
          IF (.TRUE.) THEN
-            CALL ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+            CALL ERISOR(BIN,IBIN4,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
      &                  IODDCC,IPNTUV,0,IPRINT)
          ELSE
-            CALL ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,
+            CALL ERISRT(BIN,IBIN4,LBIN,NIBUF,INDORB,SO,
      &                  IPNTCR,IODDCC,IPNTUV,IPNBCH,NBITS,NINTS,
      &                  IOFCMP,INDXBT,0,IPRINT)
          END IF
 C
 C        write integrals
 C
-         CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
-     &               IBUF(1,1,1,0),IPRINT)
+         CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN4,LBIN,BUF(1,1,0),
+     &               IBUF4(1,1,0),IPRINT)
 C
 C     Cauchy-Schwarz integrals 
 C     =========================
@@ -264,15 +265,15 @@ C
 C
 C        collect integrals and labels
 C
-         CALL ERICSO(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,BIN,IBIN,
+         CALL ERICSO(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,BIN,IBIN4,
      &               NINTS,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
 C
 C        write integrals
 C
 C        ERIWRT must be modified to write out these integrals 
 C
-C        CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
-C    &               IBUF(1,1,1,0),IPRINT)
+C        CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN4,LBIN,BUF(1,1,0),
+C    &               IBUF4(1,1,0),IPRINT)
 C
 C
 C     Undifferentiated integrals (all)
@@ -282,19 +283,19 @@ C
 C
 C        collect integrals and labels
 C
-         CALL ERICLT(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,BIN,IBIN,
+         CALL ERICLT(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,BIN,IBIN4,
      &               NINTS,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
 C
 C        write integrals
 C
-         CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF(1,1,0),
-     &               IBUF(1,1,1,0),IPRINT)
+         CALL ERIWRT(0,NINTS,NCOUNT,BIN,IBIN4,LBIN,BUF(1,1,0),
+     &               IBUF4(1,1,0),IPRINT)
       END IF
 C
       RETURN
       END
 C  /* Deck eriwrt */
-      SUBROUTINE ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN,LBIN,BUF,IBUF,
+      SUBROUTINE ERIWRT(ISCOOR,NINTS,NCOUNT,BIN,IBIN4,LBIN,BUF,IBUF4,
      &                  IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -308,9 +309,10 @@ C
 #include "eridst.h"
 #include "eribuf.h"
       CHARACTER*8 FAODER
-      DIMENSION BUF(LBUF,NBUFS), IBUF(LBUF,NIBUF,NBUFS),
-     &          BIN(LBIN), IBIN(LBIN,NIBUF),
+      DIMENSION BUF(LBUF,NBUFS), BIN(LBIN),
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
+      INTEGER*4 IBUF4(LBUF*NIBUF,NBUFS), IBIN4(NIBUF*LBIN)
+      INTEGER*4 LBUF4, ICOUNT4
 #include "cbieri.h"
 #include "chrnos.h"
 #include "symmet.h"
@@ -326,7 +328,9 @@ C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERIWRT',-1)
 C
       IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
+      IBIT2 = 0
+      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
+      LBUF4 = LBUF ! LBUF4 is always integer*4
 C
 C     Initialization of LUINTX
 C     ========================
@@ -352,7 +356,8 @@ C
             LUINTX = LUINTA
             CALL REWSPL(LUINTX)
             CALL NEWLAB('BASINFO ',LUINTA,LUPRI)
-            WRITE (LUINTA) MAXREP+1,(NAOS(I),I=1,8),LBUF,NIBUF,NBITS
+            LENINT4 = 2*LBUF + NIBUF*LBUF + 1 ! in integer*4 units
+            WRITE (LUINTA) MAXREP+1,NAOS,LBUF,NIBUF,NBITS,LENINT4
             CALL NEWLAB('BASTWOEL',LUINTX,LUPRI)
          END IF
          CALL IZERO(NCOUNT(1,0),NDISTR*NCORS)
@@ -375,7 +380,7 @@ C
             ICOUNT = NCOUNT(IDIST,ISCOOR)
             NTOT   = NINTS(IDIST)
 C
-C           Empty whole buffers directly from BIN and IBIN
+C           Empty whole buffers directly from BIN and IBIN4
 C           ==============================================
 C
             KBUFS = NTOT/LBUF
@@ -384,22 +389,24 @@ C
                NBUF = NBUFX(ISCOOR)
                KSTR = IOFF + (I - 1)*LBUF + 1
                KEND = IOFF + I*LBUF
+               KSTR4 = NIBUF*(KSTR-1) + 1
+               KEND4 = NIBUF*(KEND-1) + 1
                IF (.NOT.NOWRIT) THEN
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR 
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
-     &                     (  BIN(K  ),K=KSTR,KEND),
-     &                     ((IBIN(K,L),K=KSTR,KEND),L=1,NIBUF),
-     &                     LBUF
+     &                     ( BIN (K),K=KSTR,KEND),
+     &                     (IBIN4(K),K=KSTR4,KEND4),
+     &                     LBUF4
                   ELSE
                      WRITE (LUINTX)
-     &                     (  BIN(K  ),K=KSTR,KEND),
-     &                     ((IBIN(K,L),K=KSTR,KEND),L=1,NIBUF),
-     &                     LBUF
+     &                     ( BIN (K),K=KSTR,KEND),
+     &                     (IBIN4(K),K=KSTR4,KEND4),
+     &                     LBUF4
                   END IF
                END IF
                IF (INTPRI) THEN
-                  CALL ERIPRI(BIN(KSTR),IBIN(KSTR,1),LBIN,NIBUF,
+                  CALL ERIPRI(BIN(KSTR),IBIN4(KSTR4),LBIN,NIBUF,
      &                        LBUF,NBITS,NDISTR,IDIST,ISCOOR)
                END IF
             END DO
@@ -412,15 +419,15 @@ C
                IF (NIBUF .EQ. 1) THEN
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
+                     BUF  (ICOUNT,IDIST) =  BIN(I)
+                     IBUF4(ICOUNT,IDIST) = IBIN4(I)
                   END DO
                ELSE
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
                      BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
-                     IBUF(ICOUNT,2,IDIST) = IBIN(I,2)
+                     IBUF4(2*ICOUNT-1,IDIST) = IBIN4(2*I-1)
+                     IBUF4(2*ICOUNT  ,IDIST) = IBIN4(2*I  )
                   END DO
                END IF
 C
@@ -433,15 +440,15 @@ C
                IF (NIBUF .EQ. 1) THEN
                   DO I = IOFF + ISTR, IOFF + ILAST
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
+                     BUF  (ICOUNT,IDIST) =  BIN(I)
+                     IBUF4(ICOUNT,IDIST) = IBIN4(I)
                   END DO
                ELSE
                   DO I = IOFF + ISTR, IOFF + ILAST
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
-                     IBUF(ICOUNT,2,IDIST) = IBIN(I,2)
+                     BUF  (ICOUNT,    IDIST) =  BIN(I)
+                     IBUF4(2*ICOUNT-1,IDIST) = IBIN4(2*I-1)
+                     IBUF4(2*ICOUNT  ,IDIST) = IBIN4(2*I  )
                   END DO
                END IF
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
@@ -450,18 +457,18 @@ C
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR), REC=NBUF)
-     &                     (  BUF(K,  IDIST),K=1,LBUF),
-     &                     ((IBUF(K,L,IDIST),K=1,LBUF),L=1,NIBUF),
-     &                     LBUF
+     &                     ( BUF (K,IDIST),K=1,LBUF),
+     &                     (IBUF4(K,IDIST),K=1,NIBUF*LBUF),
+     &                     LBUF4
                   ELSE
                      WRITE (LUINTX)
-     &                     (  BUF(K,  IDIST),K=1,LBUF),
-     &                     ((IBUF(K,L,IDIST),K=1,LBUF),L=1,NIBUF),
-     &                     LBUF
+     &                     ( BUF (K,IDIST),K=1,LBUF),
+     &                     (IBUF4(K,IDIST),K=1,NIBUF*LBUF),
+     &                     LBUF4
                   END IF
                END IF
                IF (INTPRI) THEN
-                  CALL ERIPRI(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
+                  CALL ERIPRI(BUF(1,IDIST),IBUF4(1,IDIST),LBUF,NIBUF,
      &                        LBUF,NBITS,NDISTR,IDIST,ISCOOR)
                END IF
                ISTR = ILAST + 1
@@ -469,15 +476,15 @@ C
                IF (NIBUF .EQ. 1) THEN
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
+                     BUF  (ICOUNT,IDIST) =  BIN(I)
+                     IBUF4(ICOUNT,IDIST) = IBIN4(I)
                   END DO
                ELSE
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
-                     IBUF(ICOUNT,1,IDIST) = IBIN(I,1)
-                     IBUF(ICOUNT,2,IDIST) = IBIN(I,2)
+                     BUF  (  ICOUNT,  IDIST) =  BIN(I)
+                     IBUF4(2*ICOUNT-1,IDIST) = IBIN4(2*I-1)
+                     IBUF4(2*ICOUNT  ,IDIST) = IBIN4(2*I  )
                   END DO
                END IF
             END IF
@@ -494,36 +501,38 @@ C
          DO IDIST = 1, NDISTR
             ICOUNT = NCOUNT(IDIST,ISCOOR)
             IF (ICOUNT .GT. 0) THEN
+               ICOUNT4 = ICOUNT
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
                NBUF = NBUFX(ISCOOR)
                IF (.NOT.NOWRIT) THEN
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
-     &                     (  BUF(K,  IDIST),K=1,LBUF),
-     &                     ((IBUF(K,L,IDIST),K=1,LBUF),L=1,NIBUF),
-     &                     ICOUNT
+     &                     ( BUF (K,IDIST),K=1,LBUF),
+     &                     (IBUF4(K,IDIST),K=1,NIBUF*LBUF),
+     &                     ICOUNT4
                   ELSE
                      WRITE (LUINTX)
-     &                     (  BUF(K,  IDIST),K=1,LBUF),
-     &                     ((IBUF(K,L,IDIST),K=1,LBUF),L=1,NIBUF),
-     &                     ICOUNT
+     &                     ( BUF (K,IDIST),K=1,LBUF),
+     &                     (IBUF4(K,IDIST),K=1,NIBUF*LBUF),
+     &                     ICOUNT4
                   END IF
                END IF
                IF (INTPRI) THEN
-                  CALL ERIPRI(BUF(1,IDIST),IBUF(1,1,IDIST),LBUF,NIBUF,
+                  CALL ERIPRI(BUF(1,IDIST),IBUF4(1,IDIST),LBUF,NIBUF,
      &                        ICOUNT,NBITS,NDISTR,IDIST,ISCOOR)
                END IF
             END IF
          END DO
          IF (.NOT.DODIST) THEN
-            WRITE (LUINTX) (  BUF(K,1),  K=1,LBUF),
-     &                     ((IBUF(K,L,1),K=1,LBUF),L=1,NIBUF),-1
+            ICOUNT4 = -1
+            WRITE (LUINTX) ( BUF (K,1),K=1,LBUF),
+     &                     (IBUF4(K,1),K=1,LBUF*NIBUF),ICOUNT4
             REWIND LUINTX
             IF (GDER) THEN
                CALL GPCLOSE (LUINTX,'KEEP')
             ELSE IF (.NOT.BDER) THEN
-               CALL GPCLOSE (LUINTA,'KEEP')
+               CALL GPCLOSE (LUINTA,'KEEP') ! do not use LUINTX, else LUINTA is not reset to negative value
             END IF
          END IF
 C
@@ -533,7 +542,7 @@ C
       END
 C  /* Deck ericlt */
       SUBROUTINE ERICLT(SO,ITYPE,INDORB,IPNTCR,IODDCC,IPNTUV,
-     &                  BIN,IBIN,INT,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
+     &                  BIN,IBIN4,INT,LBIN,NIBUF,INDXBT,NBITS,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -549,9 +558,10 @@ C  /* Deck ericlt */
      &          INDORB(NCCS,NIBUF),
      &          IPNTCR(MAXBCH,4),
      &          IODDCC(NRTOP), IPNTUV(KC2MAX,0:NRDER,2),
-     &          BIN(LBIN), IBIN(LBIN,NIBUF),
+     &          BIN(LBIN),
      &          IPNRST(0:7,3), INDXBT(MXSHEL*MXCONT,0:7),
      &          IADCMP(MXAQN,MXAQN,2)
+      INTEGER*4 IBIN4(NIBUF,LBIN)
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
@@ -721,9 +731,9 @@ C
                                     KABCD = INDORB(I,1) + IABCD
                                     IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
-                                       BIN (INT  ) = SOABCD
-                                       IBIN(INT,1) = INDORB(I,1) + IABCD
-C                                      CALL ERIPRI(BIN(INT),IBIN(INT,1),
+                                       BIN  (  INT) = SOABCD
+                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
+C                                      CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     END IF
                                     END IF
@@ -734,8 +744,8 @@ C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
                                        BIN (INT  ) = SOABCD
-                                       IBIN(INT,1) = INDORB(I,1) + IAB
-                                       IBIN(INT,2) = INDORB(I,2) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1) + IAB
+                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
                                     END IF
                                  END DO
                               END IF
@@ -746,8 +756,8 @@ C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                  IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
-                                    IBIN(INT,1) = INDORB(I,1) + IABCD
-C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+                                    IBIN4(1,INT) = INDORB(I,1) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                      LBIN,NIBUF,1,NBITS,0,0,0)
                                  END IF
                                  END DO
@@ -755,8 +765,8 @@ C    &                                      LBIN,NIBUF,1,NBITS,0,0,0)
                                  DO I = 1, NCCS1
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
-                                    IBIN(INT,1) = INDORB(I,1) + IAB
-                                    IBIN(INT,2) = INDORB(I,2) + IABCD
+                                    IBIN4(1,INT) = INDORB(I,1) + IAB
+                                    IBIN4(2,INT) = INDORB(I,2) + IABCD
                                  END DO
                               END IF
                            END IF
@@ -903,8 +913,8 @@ C
                                        KABCD = INDORB(I,1) + IABCD
                                     IF (NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
-                                       BIN (INT  ) = SOABCD
-                                       IBIN(INT,1) = INDORB(I,1) + IABCD
+                                       BIN  (  INT) = SOABCD
+                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
                                     END IF
                                     END IF
                                  END DO
@@ -913,9 +923,9 @@ C
                                     SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
-                                       BIN (INT  ) = SOABCD
-                                       IBIN(INT,1) = INDORB(I,1) + IAB
-                                       IBIN(INT,2) = INDORB(I,2) + IABCD
+                                       BIN  (  INT) = SOABCD
+                                       IBIN4(1,INT) = INDORB(I,1) + IAB
+                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
                                     END IF
                                  END DO
                               END IF
@@ -926,8 +936,8 @@ C
                                    IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
-                                    IBIN(INT,1) = INDORB(I,1) + IABCD
-C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+                                    IBIN4(1,INT) = INDORB(I,1) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                    END IF 
                                  END DO
@@ -935,9 +945,9 @@ C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                  DO I = NCCS1 + 1, NCCS
                                     INT = INT + 1
                                     BIN(INT)=SO(I,R,S,T,ICMPAB,ICMPCD,1)
-                                    IBIN(INT,1) = INDORB(I,1) + IAB
-                                    IBIN(INT,2) = INDORB(I,2) + IABCD
-C                                   CALL ERIPRI(BIN(INT),IBIN(INT,1),
+                                    IBIN4(1,INT) = INDORB(I,1) + IAB
+                                    IBIN4(2,INT) = INDORB(I,2) + IABCD
+C                                   CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                       LBIN,NIBUF,1,NBITS,0,0,0)
                                  END DO
                               END IF
@@ -965,7 +975,7 @@ C
 C     Canonical ordering of indices if requested
 C     ==========================================
 C
-      IF (CANIND) CALL ERICAN(IBIN,INT,LBIN,NIBUF,NBITS)
+      IF (CANIND) CALL ERICAN(IBIN4,INT,LBIN,NIBUF,NBITS)
 C
       RETURN
       END
@@ -1165,7 +1175,7 @@ C
       RETURN
       END
 C  /* Deck erisrt */
-      SUBROUTINE ERISRT(BIN,IBIN,LBIN,NIBUF,INDORB,SO,IPNTCR,IODDCC,
+      SUBROUTINE ERISRT(BIN,IBIN4,LBIN,NIBUF,INDORB,SO,IPNTCR,IODDCC,
      &                  IPNTUV,IPNBCH,NBITS,NINTS,IOFCMP,INDXBT,ICART,
      &                  IPRINT)
 #include "implicit.h"
@@ -1177,11 +1187,12 @@ C  /* Deck erisrt */
 #include "aovec.h"
 #include "eridst.h"
 C
-      DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
+      DIMENSION BIN(LBIN),
      &          INDORB(NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD,NIBUF),
      &          SO    (NCCS,MLTPR,MLTPS,MLTPT,KHKTAB,KHKTCD),
      &          IPNTCR(MAXBCH,4), IODDCC(NRTOP), 
      &          IPNTUV(KC2MAX,0:NRDER,2), IOFCMP(*)
+      INTEGER*4 IBIN4(NIBUF,LBIN)
       DIMENSION NBTCHX(MXDIST), LBTCHX(MXDIST),
      &          IPNBCH(LPNBCH,*), NINTS(NDISTR)
       DIMENSION INDXBT(MXSHEL*MXCONT,0:7)
@@ -1201,7 +1212,7 @@ C
       DO I = 1, NDISTR
          NBTCH = NBTCHX(I)
          LBTCH = LBTCHX(I)
-         CALL ERITRF(BIN(ISTR),IBIN(ISTR,1),NTOT,SO,INDORB,NBTCH,LBTCH,
+         CALL ERITRF(BIN(ISTR),IBIN4(1,ISTR),NTOT,SO,INDORB,NBTCH,LBTCH,
      &               IPNBCH(1,I),NDISTR,LBIN,NIBUF)
          NINTS(I) = NTOT 
          ISTR = ISTR + NTOT 
@@ -1350,12 +1361,13 @@ C
       RETURN
       END
 C  /* Deck eritrf */
-      SUBROUTINE ERITRF(BIN,IBIN,NTOT,SO,INDORB,NBTCH,LBTCH,IPNBCH,
+      SUBROUTINE ERITRF(BIN,IBIN4,NTOT,SO,INDORB,NBTCH,LBTCH,IPNBCH,
      &                  NDISTR,LBIN,NIBUF)
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF), IPNBCH(*),
+      DIMENSION BIN(LBIN), IPNBCH(*),
      &          SO(*), INDORB(LBIN,NIBUF)
+      INTEGER*4 IBIN4(NIBUF,LBIN)
 #include "cbieri.h"
 #include "erithr.h"
 C
@@ -1368,8 +1380,8 @@ C
                   SOINT = SO(IADR + J)
                   IF (ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN (INT)   = SOINT 
-                     IBIN(INT,1) = INDORB(IADR + J,1)
+                     BIN  (INT)   = SOINT
+                     IBIN4(1,INT) = INDORB(IADR + J,1)
                   END IF
                END DO  
             END DO   
@@ -1381,9 +1393,9 @@ C
                   SOINT = SO(IADR + J)
                   IF (ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN (INT)   = SOINT 
-                     IBIN(INT,1) = INDORB(IADR + J,1)
-                     IBIN(INT,2) = INDORB(IADR + J,2)
+                     BIN  (INT)   = SOINT
+                     IBIN4(1,INT) = INDORB(IADR + J,1)
+                     IBIN4(2,INT) = INDORB(IADR + J,2)
                   END IF
                END DO  
             END DO  
@@ -1395,8 +1407,8 @@ C
             DO I = 1, NBTCH
                IADR = IPNBCH(I)
                DO J = 1, LBTCH
-                  BIN (INT + J  ) = SO    (IADR + J)
-                  IBIN(INT + J,1) = INDORB(IADR + J,1)
+                  BIN  (  INT + J) = SO    (IADR + J)
+                  IBIN4(1,INT + J) = INDORB(IADR + J,1)
                END DO  
                INT = INT + LBTCH
             END DO   
@@ -1405,9 +1417,9 @@ C
             DO I = 1, NBTCH
                IADR = IPNBCH(I)
                DO J = 1, LBTCH
-                  BIN (INT + J  ) = SO    (IADR + J)
-                  IBIN(INT + J,1) = INDORB(IADR + J,1)
-                  IBIN(INT + J,2) = INDORB(IADR + J,2)
+                  BIN  (  INT + J) = SO    (IADR + J)
+                  IBIN4(1,INT + J) = INDORB(IADR + J,1)
+                  IBIN4(2,INT + J) = INDORB(IADR + J,2)
                END DO  
                INT = INT + LBTCH
             END DO  
@@ -1491,7 +1503,8 @@ C
       KCCS2 = NCCS1 + 1
 C
       IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
+      IBIT2 = 0
+      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
 C
       DO A = 0, MAXREP
       IF (DOREP(A,1)) THEN
@@ -2059,61 +2072,63 @@ C  /* Deck nrdint */
       RETURN
       END
 C  /* Deck erican */
-      SUBROUTINE ERICAN(IBIN,INTS,LBIN,NIBUF,NBITS)
+      SUBROUTINE ERICAN(IBIN4,INTS,LBIN,NIBUF,NBITS)
 #include "implicit.h"
 #include "priunit.h"
 #include "ibtpar.h"
-      DIMENSION IBIN(LBIN,NIBUF)
+      INTEGER*4 IBIN4(NIBUF,LBIN)
 #include "ibtfun.h"
 C
       IBIT1 = 2**   NBITS  - 1
-      IBIT2 = 2**(2*NBITS) - 1
+      IBIT2 = 0
+      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
 C
       IF (NIBUF .EQ. 1) THEN
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN(INT,1),3*NBITS),IBIT1)
-            J = IBTAND(IBTSHR(IBIN(INT,1),2*NBITS),IBIT1)
-            K = IBTAND(IBTSHR(IBIN(INT,1),  NBITS),IBIT1)
-            L = IBTAND(       IBIN(INT,1),         IBIT1)
+            I = IBTAND(IBTSHR(IBIN4(1,INT),3*NBITS),IBIT1)
+            J = IBTAND(IBTSHR(IBIN4(1,INT),2*NBITS),IBIT1)
+            K = IBTAND(IBTSHR(IBIN4(1,INT),  NBITS),IBIT1)
+            L = IBTAND(       IBIN4(1,INT),         IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
-            IBIN(INT,1) = MAX(IJ,KL)*IBIT2 + IJ + KL
+            IBIN4(INT,1) = MAX(IJ,KL)*IBIT2 + IJ + KL
          END DO
       ELSE
          DO INT = 1, INTS
-            I = IBTAND(IBTSHR(IBIN(INT,1),NBITS),IBIT1)
-            J = IBTAND(       IBIN(INT,1),       IBIT1)
-            K = IBTAND(IBTSHR(IBIN(INT,2),NBITS),IBIT1)
-            L = IBTAND(       IBIN(INT,2),       IBIT1)
+            I = IBTAND(IBTSHR(IBIN4(1,INT),NBITS),IBIT1)
+            J = IBTAND(       IBIN4(1,INT),       IBIT1)
+            K = IBTAND(IBTSHR(IBIN4(2,INT),NBITS),IBIT1)
+            L = IBTAND(       IBIN4(2,INT),       IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
-            IBIN(INT,1) = MAX(IJ,KL)
-            IBIN(INT,2) = MIN(IJ,KL)
+            IBIN4(1,INT) = MAX(IJ,KL)
+            IBIN4(2,INT) = MIN(IJ,KL)
          END DO
       END IF
       RETURN
       END
 C  /* Deck eripri */
-      SUBROUTINE ERIPRI(BUF,IBUF,NDIM,NIBUF,ICOUNT,NBITS,NDISTR,IDIST,
+      SUBROUTINE ERIPRI(BUF,IBUF4,NDIM,NIBUF,ICOUNT,NBITS,NDISTR,IDIST,
      &                  ISCOOR)
 #include "implicit.h"
 #include "priunit.h"
 #include "ibtpar.h"
-      DIMENSION BUF(NDIM), IBUF(NDIM,NIBUF)
+      DIMENSION BUF(NDIM)
+      INTEGER*4 IBUF4(NIBUF,NDIM)
 #include "ibtfun.h"
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
       IBIT1 = 2**NBITS - 1
       DO INT = 1, ICOUNT
          IF (NIBUF .EQ. 1) THEN
-            I0 = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-            J0 = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-            L0 = IBTAND(       IBUF(INT,1),         IBIT1)
+            I0 = IBTAND(IBTSHR(IBUF4(1,INT),3*NBITS),IBIT1)
+            J0 = IBTAND(IBTSHR(IBUF4(1,INT),2*NBITS),IBIT1)
+            K0 = IBTAND(IBTSHR(IBUF4(1,INT),  NBITS),IBIT1)
+            L0 = IBTAND(       IBUF4(1,INT),         IBIT1)
          ELSE
-            I0 = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-            J0 = IBTAND(       IBUF(INT,1),       IBIT1)
-            K0 = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-            L0 = IBTAND(       IBUF(INT,2),       IBIT1)
+            I0 = IBTAND(IBTSHR(IBUF4(1,INT),NBITS),IBIT1)
+            J0 = IBTAND(       IBUF4(1,INT),       IBIT1)
+            K0 = IBTAND(IBTSHR(IBUF4(2,INT),NBITS),IBIT1)
+            L0 = IBTAND(       IBUF4(2,INT),       IBIT1)
          END IF
          IF (ITRI(I0,J0).GE.ITRI(K0,L0)) THEN
             I = MAX(I0,J0)
@@ -2132,7 +2147,7 @@ C  /* Deck eripri */
       RETURN
       END
 C  /* Deck erisor */
-      SUBROUTINE ERISOR(BIN,IBIN,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
+      SUBROUTINE ERISOR(BIN,IBIN4,LBIN,NIBUF,NBITS,INDORB,SO,NINTS,
      &                  IODDCC,IPNTUV,ICART,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
@@ -2142,10 +2157,11 @@ C  /* Deck erisor */
 #include "maxorb.h"
 #include "aovec.h"
 C
-      DIMENSION BIN(LBIN), IBIN(LBIN,NIBUF),
+      DIMENSION BIN(LBIN),
      &          INDORB(NCCT,KHKTAB,KHKTCD,NIBUF), 
      &          SO    (NCCT,KHKTAB,KHKTCD),
      &          IODDCC(*), IPNTUV(KC2MAX,0:NRDER,2)
+      INTEGER*4 IBIN4(NIBUF,LBIN)
       DIMENSION NINTS(NDISTR)
 #include "cbieri.h"
 #include "ericom.h"
@@ -2174,8 +2190,8 @@ C
                   IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN (INT)   = SOINT 
-                     IBIN(INT,1) = LABEL 
+                     BIN  (INT)   = SOINT
+                     IBIN4(1,INT) = LABEL
                   END IF  
                END DO   
             ELSE
@@ -2186,9 +2202,9 @@ C
                   IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN (INT)   = SOINT 
-                     IBIN(INT,1) = LABEL1 
-                     IBIN(INT,2) = LABEL2 
+                     BIN  (INT)   = SOINT
+                     IBIN4(1,INT) = LABEL1
+                     IBIN4(2,INT) = LABEL2
                   END IF
                END DO  
             END IF

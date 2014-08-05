@@ -990,9 +990,10 @@ C
       END
 #ifdef UNDEF
 /* Comdeck log */
-960417- kr
- TLMD is also needed for dipole gradient, thus TLMD for MAXDIF .ge. 2 or DIFDIP
-921209- get cavity center from CBISOL; only calc. TLMD for MAXDIF .ge. 2;
+960417- kr TLMD is also needed for dipole gradient,
+           thus TLMD for MAXDIF .ge. 2 or DIFDIP
+921209- get cavity center from CBISOL;
+        only calc. TLMD for MAXDIF .ge. 2;
         only calc. GSOLT for MAXDIF .ge. 1
 921013-kvm+hjaaj
  removed FAC, center C always different from center A

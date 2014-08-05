@@ -276,7 +276,8 @@ C....       MEMS --  LENGTH OF SCRATCH SORT AREA
 C....       MEMT --    **   *    **    TRANSFORMATION AREA
 C
 #include "implicit.h"
-      DIMENSION IINT(*),ISCR(*),SCR(*),RINT(*)
+      DIMENSION ISCR(*),SCR(*),RINT(*)
+      INTEGER*4 IINT(*)
       INTEGER   IT(*)
 #include "iratdef.h"
 #include "dummy.h"
@@ -386,10 +387,11 @@ C
       CALL GPOPEN(LUINTA,AO2INTFILE_LABEL,'OLD',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) NSYMAO, (NAOS(I),I=1,8),LBUFAO,NIBUFAO,NBITSAO
+      READ (LUINTA) NSYMAO, NAOS,LBUFAO,NIBUFAO,NBITSAO, LENINT4
 C
-      IF (NIBUFAO .NE. 1) THEN
-         CALL QUIT('Only NIBUF.eq.1 on AOTWOINT has been implemented')
+      IF (NBITSAO .NE. 8) THEN
+         CALL QUIT(
+     &   'Only 8 bit index packing on AOTWOINT has been implemented')
       END IF
 C
       IBITMASK  = 2**NBITSAO - 1
@@ -417,8 +419,10 @@ C
 C
 C....   AO INTEGRAL FILE SPEC; MOLECULE FORMAT
 C
-      LRINT  = IRAT*LBUFAO
-      LENINT = LRINT + LBUFAO + 1
+      LRINT  = 2*LBUFAO ! factor 2 because IINT is always integer*4
+      LENINT = (2+NIBUFAO)*LBUFAO + 1
+      IF (LENINT .NE. LENINT4)
+     &   CALL QUIT('LENINT .ne. LENINT4 from AOTWOINT')
 C
 C....    BEGIN THE LOOP OVER PASSES THROUGH AO INTEGRAL FILE
 C
@@ -454,9 +458,8 @@ C....    REWIND IT FIRST
 C
          CALL REWSPL(LUINTA)
          CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
-         JBUF = 608
-    1    CONTINUE
-         CALL READI(LUINTA,LENINT,IINT)
+1        CONTINUE
+         CALL READI4(LUINTA,LENINT,IINT)
          NINT = IINT(LENINT)
          IF(NINT.EQ.0)GOTO 1
          IF(NINT.EQ.-1)GOTO 2
@@ -648,7 +651,6 @@ C....    SCRATCH CORE AVAILABILITY
 C
       MEMS = MEMSX
       MEMT = MEMTX
-      JBUF = 0
 C
 C....    NUMBER OF MO PAIRS
 C        MAXD = number of orbitals for full integral transformation
@@ -958,7 +960,6 @@ C     ***** LPQCD : NUMBER OF INTEGRALS (PQ/CD)
       LDA21  = LDA2   + 1
       LDA22  = LDA21  + 1
       LPQCD  = 0
-      JBUF   = 0
 C
 C     ***** REWIND FILE FOR HALF TRANSFORMED INTEGRALS LUHALF *****
 C
@@ -1349,7 +1350,6 @@ C ************* LENGTH OF DIRECT ACCESS BUFFER on LUDA2
 C ***** initialize counter for NUMBER OF INTEGRALS (AB/CD)
       LABCD =0
       IOUT  =0
-      JBUF = 2521*IRAT + 256 + NCMOT
 C
 C     LUINTM has been positioned before call of TRAAB (900801-hjaaj)
 C
@@ -2664,7 +2664,7 @@ C
 C
 #include "orbtypdef.h"
 C
-      SAVE INDCDN, LENGTH, JBUF
+      SAVE INDCDN, LENGTH
 C
 #include "ibtdef.h"
 C
@@ -2674,7 +2674,6 @@ C     If first read (IDIST .EQ. 0)
 C     then setup for reading MO integrals ...
 C
       IF (IDIST .EQ. 0) THEN
-         JBUF = 2521*IRAT + 256 + NCMOT
          CALL REWSPL(LUINTM)
          CALL MOLLAB('MOLTWOEL',LUINTM,LUPRI)
  100     CONTINUE

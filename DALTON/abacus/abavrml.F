@@ -23,12 +23,10 @@
 !
 #include "single.h"
 C
-#ifdef UNDEF
-===========================================================================
-/* Comdeck log */
-960319-vebjornb: New module for visualization with VRML models.
-===========================================================================
-#endif
+C FILE: abacus/abavrml.F
+C
+C 960319-vebjornb: New module for visualization with VRML models.
+C
 C  /* Deck mkvrml */
       SUBROUTINE MKVRML(LAST, ATMARR, IEDIM, EVEC, EVC1, EVC2)
 C     

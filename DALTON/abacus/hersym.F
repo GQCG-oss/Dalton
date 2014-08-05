@@ -25,14 +25,15 @@ C FILE    : hersym.F
 #include "single.h"
 C
 #ifdef OLD_LOG
-===========================================================================
+========================================================================
 950522-kenneth
-Added solvent in FIND_SYMMETRY, as well as using NUCIND instead ATMARR in loops
+Added solvent in FIND_SYMMETRY,
+as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
         symmetry elements, remove symmetry-dependant atoms and finally
         return a string containing the full point group.
-===========================================================================
+========================================================================
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,
