@@ -277,6 +277,12 @@
       do_ensemble_dft = .true.
     end if
 
+    !> set logical to enable test path of self-consistent ensemble-DFT calculation
+    if (kw_matches(word, '.SC-ETE')) then
+      do_ensemble_dft = .true.
+      do_test_sc_ens  = .true.
+    end if
+
     if (kw_matches(word, '.WEIGHT')) then
 
       call kw_read(word, nr_of_weights)
