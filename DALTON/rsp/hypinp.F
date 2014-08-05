@@ -539,17 +539,17 @@ C
          END IF
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
-     *      ' Second harmonic generation                     : SHG='
+     *      ' Second harmonic generation                     : SHG    ='
      *      ,QRSHG
          END IF
          IF (QRPOCK) THEN
             WRITE (LUPRI,'(/A,L2)')
-     *      ' Electro-optical Pockels effect                 : POCKEL='
+     *      ' Electro-optical Pockels effect                 : POCKEL ='
      &      ,QRPOCK
          END IF
          IF (QROPRF) THEN
             WRITE (LUPRI,'(A,L2)')
-     *      ' Optical refractivity calculation               : OPTREF='
+     *      ' Optical refractivity calculation               : OPTREF ='
      *      ,QROPRF
          END IF
          WRITE(LUPRI,'(/A,I4)')
@@ -565,7 +565,7 @@ C
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
      *      ,MAXITO
          IF (DIROIT) WRITE (LUPRI,'(A,L2)')
-     *      ' Direct one-index transformation                : DIROIT='
+     *      ' Direct one-index transformation                : DIROIT ='
      *      ,DIROIT
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'
