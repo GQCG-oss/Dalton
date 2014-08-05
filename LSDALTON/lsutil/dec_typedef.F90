@@ -43,7 +43,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 17
+  integer, parameter :: ndecenergies = 18
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -62,7 +62,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
-
+  integer,parameter :: FRAGMODEL_ccsdf12   = 18  ! CCSD-F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
