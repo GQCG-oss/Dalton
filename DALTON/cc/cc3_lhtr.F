@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_lhtr_t3 */
       SUBROUTINE CC3_T3_LHTR(ECURR,OMEGA1,T1AM,ISYMT1,T2TP,ISYMT2,C2TP,

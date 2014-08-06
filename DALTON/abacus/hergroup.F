@@ -26,7 +26,6 @@ C FILE : hergroup.F
 C
 C Purpose: set up point group symmetry information
 C
-#include "single.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck syminp */

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirorb */
       SUBROUTINE SIRORB(MAXITO,NITORB,CMO,GORB,DV,PV,FC,FV,FQ,

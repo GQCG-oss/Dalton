@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=======================================================================
       SUBROUTINE CC_R12NO(T1AM,T2AM,WORK,LWORK)

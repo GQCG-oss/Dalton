@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eriexp */
       SUBROUTINE ERIEXP(EXPAB,EXPCD,ALPHA,FACPQ,HEXPP,HEXPQ,

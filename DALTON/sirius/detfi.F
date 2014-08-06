@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck strpa2 */
       SUBROUTINE STRPA2(NSASOA,NSASOB,NASTR,NBSTR,

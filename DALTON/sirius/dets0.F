@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck setdis */
       SUBROUTINE SETDIS(SYMPRO,DISSYM,ORBSYM,NORB,MAXSYM,

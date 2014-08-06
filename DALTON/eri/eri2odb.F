@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck odbchs */
       SUBROUTINE ODBCHS(KODCL1,KODCL2,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck c2driv */
       SUBROUTINE C2DRIV(AOINT,HCINT,COEF34,INDHER,CONT3,CONT4,WORK,

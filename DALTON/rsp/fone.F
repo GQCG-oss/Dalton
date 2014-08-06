@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck fonedn */
       SUBROUTINE FONEDN(NSIM,FCOCO,FVOCO,FCOEX,FVOEX)

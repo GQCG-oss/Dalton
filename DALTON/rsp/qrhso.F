@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 #if defined (VAR_DEBUG)
 #define HSODEBUG .TRUE.
 #else

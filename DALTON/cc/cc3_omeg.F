@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_omeg */
       SUBROUTINE CC3_OMEG(ECURR,OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,ISYMT2,

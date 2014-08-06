@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CC_MOFCON2(XINT,OMEGA2,
      *                      XLAMPA,XLAMHA,XLAMPB,XLAMHB,XLAMPC,XLAMHD,

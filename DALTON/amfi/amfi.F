@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
      *                WRK,LFREE)            

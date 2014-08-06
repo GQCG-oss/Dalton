@@ -20,7 +20,6 @@
 !
 C File: sirius/sirpop.F
 C
-#include "single.h"
 C
 C  /* Deck sirpop */
       SUBROUTINE SIRPOP(INP_POPKEY,DV,WRK,LFREE_INPUT)

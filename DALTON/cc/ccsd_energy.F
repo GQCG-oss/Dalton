@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_energy */
       SUBROUTINE CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FIND_SO_OP(LABELA,LABELB,LABSOP,ISYSOP,ISIGN,INUM,

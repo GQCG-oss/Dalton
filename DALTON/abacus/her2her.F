@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck hr2drv */
       SUBROUTINE HR2DRV(HERINT,INDHER,COOR12,COOR34,EXP12,EXP34,FAC12,

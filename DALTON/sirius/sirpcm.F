@@ -23,7 +23,6 @@
 !
 C FILE: sirius/sirpcm.F
 C
-#include "single.h"
 C
 C/* Deck pcminp */
       SUBROUTINE PCMINP(WORD,INPERR,ALLOPT)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck istvc2 */
       SUBROUTINE ISTVC2(IVEC,IBASE,IFACT,NDIM)

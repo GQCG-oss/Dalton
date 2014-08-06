@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: abacus/abaltra.F
 C  PRINCIPAL AUTHOR: Hans Joergen Aa. Jensen 1992, 1995

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !#define SIRFCK_DEBUG
 C  /* Deck sirfck */

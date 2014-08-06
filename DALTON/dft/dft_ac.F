@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C /* Deck dftac */ 
       SUBROUTINE DFTAC(VA,VFA,DST,CRX,CRY,CRZ,GRD,RHO43,RHO13)

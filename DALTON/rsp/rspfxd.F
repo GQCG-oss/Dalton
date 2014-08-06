@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rspfxd */
       SUBROUTINE RSPFXD (FI,FA,QA,QB,H2AX,

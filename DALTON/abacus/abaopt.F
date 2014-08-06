@@ -23,7 +23,6 @@
 !
 C
 C FILE: abaopt.F
-#include "single.h"
 C
 C 950915-vebjornb: New module taking care of geometry optimizations.
 C                  It uses both the old cbiwlk.h and the new optinf.h

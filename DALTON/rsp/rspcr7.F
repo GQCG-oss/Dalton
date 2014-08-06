@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE S4INIT(KZYVA,KZYVB,KZYVC,KZYVD,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,

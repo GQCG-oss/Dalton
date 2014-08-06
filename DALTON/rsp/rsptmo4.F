@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CRTMO(VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,
      *                 RESVEC,CMO,UDV,PV,FOCK,FC,FV,

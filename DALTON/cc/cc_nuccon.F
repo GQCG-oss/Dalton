@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       REAL*8  FUNCTION CC_NUCCON(LABEL,ISYM)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_triple */
       SUBROUTINE CCSD_TRIPLE(OMEGA1,OMEGA2,T1AM,T2AM,FOCK,

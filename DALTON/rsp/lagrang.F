@@ -49,7 +49,6 @@ Cbugfix: too little was allocated for KGP2
 C===========================================================================
 #endif
 C
-#include "single.h"
 C
 C  /* Deck lagran */
       SUBROUTINE LAGRAN(WORD,FC,FV,CMO,UDV,PV,XINDX,WRK,LWRK)

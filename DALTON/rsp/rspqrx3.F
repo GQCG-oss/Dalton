@@ -23,7 +23,6 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================

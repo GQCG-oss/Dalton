@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck maginp */
       SUBROUTINE MAGINP(WORD)

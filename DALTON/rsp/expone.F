@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck aveprp */
       SUBROUTINE AVEPRP(CMO,UDV,PVX,WRK,LWRK)

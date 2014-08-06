@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCRLXXIM(XIM,ISYXIM,LABEL,LORX,LPDBS,FREQ,

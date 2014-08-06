@@ -5173,10 +5173,6 @@ C     check if there is leftovers
       END
 
 #endif
-#include "single.h"
-C
-C ****** Comment edh: <single.h> Technical. For equalence of ******
-C ****** compiling bewteen CRAY machine and other machines   ******
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PEGRD(CREF,CMO,INDXCI,DV,G,EQMMM,WRK,LFREE)
@@ -5472,10 +5468,6 @@ C
 C     end of pegrd.
       END
 
-#include "single.h"
-C
-C edh: single.h is technical. For equalence of
-C compiling bewteen CRAY and other machines
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PEFCMO(CMO,FSOL,DV,WRK,LFREE,IPRINT)

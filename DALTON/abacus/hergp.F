@@ -23,7 +23,6 @@
 !
 C
 C FILE    : hergp.F
-#include "single.h"
 C
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck kapbet */
       SUBROUTINE KAPBET (NHORED,RTRUST,BETA,HORED,EVAL,EVEC,WRK,LFREE)

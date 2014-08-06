@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC3_FMATSD(LISTL,IDLSTL,LISTY,IDLSTY,

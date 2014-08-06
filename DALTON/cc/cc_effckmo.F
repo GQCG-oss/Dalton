@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_EFFCKMO(FOCK,ISYFCK,CMO,OVERLP,WORK,LWORK)

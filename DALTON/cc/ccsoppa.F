@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck t2am_reorder */
       SUBROUTINE T2AM_REORDER(T2AMOLD,T2AMNEW,IPRINT)

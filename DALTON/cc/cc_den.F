@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_den */
       SUBROUTINE CC_DEN(POTNUC,AODEN,ZKDIA,WORK,LWORK,IOPT)

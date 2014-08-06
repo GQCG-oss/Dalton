@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck fckcon */
       SUBROUTINE FCKCON(FMAT,DMAT,I,AOINT,IND,

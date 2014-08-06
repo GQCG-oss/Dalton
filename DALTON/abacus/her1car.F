@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck oneprm */
       SUBROUTINE ONEPRM(STDER0,STDER1,STDER2,ADER,SINT0,SINT1,DINT1,

@@ -22,7 +22,6 @@ c -*-mode:fortran; fortran-continuation-string: "&" -*-
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck getfd */
       SUBROUTINE GETFD(IATOM,NOORBI,TWOH1,NOH1,NOH2,NODC,NODV,IPRINT,

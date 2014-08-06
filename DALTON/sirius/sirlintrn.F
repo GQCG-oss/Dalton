@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck orblin */
       SUBROUTINE ORBLIN(NOSIM,BOVECS,CMO,GORB,DV,PV,FC,FV,

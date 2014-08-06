@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C    /* Deck cc3_xi */ 
       SUBROUTINE CCSDT_FBMAT(IBTRAN,IDOTS,DOTPROD,NBTRAN,MXVEC,

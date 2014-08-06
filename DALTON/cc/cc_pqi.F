@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *======================================================================
       SUBROUTINE CC_PQI(CTR2,ISYCTR,T2AM,ISYTAMP,

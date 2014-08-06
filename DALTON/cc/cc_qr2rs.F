@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c*DECK CC_QR2RSD
        SUBROUTINE CC_QR2RSD(WORK,LWORK)

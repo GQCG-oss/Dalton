@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       Subroutine symtrafo(LUPROP,PROPRI,IPRINT,WRK,LFREE)
 cbs   

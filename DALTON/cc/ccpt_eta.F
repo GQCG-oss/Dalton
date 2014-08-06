@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccpt_etars_1e */
       SUBROUTINE CCPT_ETARS_1E(ETAIJ,ETAAB,

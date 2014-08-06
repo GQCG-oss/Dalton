@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsdpt_eta */
       SUBROUTINE CCSDPT_ETA(OMEGA1,OMEGA2,T1AM,ISYMT1,T2TP,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pr4inm */
       SUBROUTINE PR4INM(RHO,NDIM,IPACK,LUPRI)

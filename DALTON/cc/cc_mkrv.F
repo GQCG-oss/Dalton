@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck makerv*/ 
       SUBROUTINE MAKERV(V2AM,R2AM,U2AM,S2AM,T2AM,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sym2 */
       SUBROUTINE SYM2(SO,AO,IPNTAO,IPNTOP,ISYMR,ISYMT,ISYMTS,FACTOR,

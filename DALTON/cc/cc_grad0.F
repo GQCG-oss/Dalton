@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_grad0 */
       SUBROUTINE CC_GRAD0(GRADH1,GRADFS,GRADH2,WORK,LWORK)

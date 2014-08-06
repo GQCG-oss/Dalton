@@ -23,7 +23,6 @@
 !
 C FILE: eri2car1.F
 C
-#include "single.h"
 C
 C  /* Deck cr1drv */
       SUBROUTINE CR1DRV(HERINT,HERR12,HCINT,INDHER,IODDHH,IODDHC,INDHSQ,

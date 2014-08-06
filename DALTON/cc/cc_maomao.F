@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_MAOMAO(TRANSA,TRANSB,ALPHA,AMAT,ISYMA,BMAT,ISYMB,

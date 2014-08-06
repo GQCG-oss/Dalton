@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_gam */
       SUBROUTINE CC_GAM(DSRHF,GAMMA,XLAMDP,XLAMDH,

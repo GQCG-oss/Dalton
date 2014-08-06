@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_triple */
       SUBROUTINE CC_FOPTRIPLES(OMEGA1,DENAB,DENIJ,T1AM,T2AM,

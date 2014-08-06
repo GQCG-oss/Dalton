@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck abarsp */
       SUBROUTINE ABARSP(CICLC,HFCLC,TRPCLC,OOTV,IOPSYM,EXCLC,

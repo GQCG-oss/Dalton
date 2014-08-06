@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck un2out */
       SUBROUTINE UN2OUT(SO,SRINTS,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,

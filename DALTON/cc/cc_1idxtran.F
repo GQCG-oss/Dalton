@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_1IDXTRAN(AMAT,ISYMA,BMAT,ISYMB,CMAT,ISYMC)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck intexp */
       SUBROUTINE INTEXP(HESSEE,AOINT,DMAT,NDMAT,PSO,PSA,FT,FV,

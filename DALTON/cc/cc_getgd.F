@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c*DECK CC_GETGD
       SUBROUTINE CC_GETGD(GD,ILSTNR,ISIDE,LIST,WORK,LWORK)

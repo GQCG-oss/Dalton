@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck get_lambdax */
       SUBROUTINE GET_LAMBDAX(LAMPX,LAMHX,LISTX,IDLSTX,ISYMX,LAMP0,LAMH0,

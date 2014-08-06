@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE C3FOCK(IBEQC,FDTI,VECB,VECC,
      *                 ZYMB,ZYMC,KZYVB,KZYVC,

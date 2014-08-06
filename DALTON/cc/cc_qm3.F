@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C   /* Deck cc_qm3 */
        SUBROUTINE CC_QM3(AODEN,CONVERGED,WORK,LWORK)

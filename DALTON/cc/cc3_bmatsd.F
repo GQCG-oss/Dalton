@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C    /* Deck cc3_bmatsd */ 
       SUBROUTINE CC3_BMATSD(OMEGA1,OMEGA2,OMEGA1EFF,OMEGA2EFF,ISYRES,

@@ -23,7 +23,6 @@
 !
 C FILE : erisph.F
 C
-#include "single.h"
 C
 C  /* Deck sphmat */
       SUBROUTINE SPHMAT(CSQ,NROWS,NCOLS,NDER,GDER,WORK,LWORK,IPRINT)

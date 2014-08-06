@@ -26,7 +26,6 @@ C            (zero block of matrix; find next element .gt. a)
 C 5) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
 C
 C
-#include "single.h"
 C
 C Block 1:
 C DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)

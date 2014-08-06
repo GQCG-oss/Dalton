@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C    /* Deck cc3_aabmat_doub */ 
       SUBROUTINE CC3_AABMAT_DOUB(OMEGA2,LISTB,IDLSTB,LISTC,

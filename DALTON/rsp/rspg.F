@@ -26,7 +26,6 @@
 ! calculation of ESR g-tensors.
 ! 
 !
-#include "single.h"
 C /* Deck gdrv */
       SUBROUTINE GDRV(WORK,LWORK)
 #include "implicit.h"

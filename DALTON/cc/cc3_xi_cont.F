@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_xi_cont */
       SUBROUTINE CC3_XI_CONT(LISTL,DOTPROD,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CRLRV2(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,XINDX,MJWOP,
      &                  WRK,LWRK)

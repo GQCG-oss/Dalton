@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ciham */
       SUBROUTINE CIHAM(IWAY,MXPRDT,ICSYM,IDET,CIDIA,NCONF,

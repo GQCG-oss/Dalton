@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_sortao */
       SUBROUTINE CCSD_SORTAO(WORK,LWORK)

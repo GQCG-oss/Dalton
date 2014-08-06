@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cclr_dia */
       SUBROUTINE CCLR_DIA(DIAA,ISYMTR,TRIPLET,WORK,LWORK)

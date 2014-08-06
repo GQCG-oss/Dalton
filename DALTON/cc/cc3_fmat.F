@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_lhtr_l3 */
       SUBROUTINE CC3_FMAT(LISTL,IDLSTL,LISTB,IDLSTB,IOPTRES,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_F1INACT(FOCK1,ISYFCK,IREAL,LABEL,CMO,WORK,LWORK)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C     Original: abamolden  alex a auer 5.2.99
 C

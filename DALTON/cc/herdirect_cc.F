@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck herdi1 */
       SUBROUTINE HERDI1(WORK,LWORK,IPRFCK)

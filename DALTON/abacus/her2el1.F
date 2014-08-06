@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck c1driv */
       SUBROUTINE C1DRIV(HERINT,INDHER,HCINT,COEF12,CONT1,CONT2,

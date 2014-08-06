@@ -35,7 +35,6 @@ C
 920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 ========================================================================
 #endif
-#include "single.h"
 
 #ifdef ENABLE_EFS
 C Use this hack to correctly pass the arrays to c++

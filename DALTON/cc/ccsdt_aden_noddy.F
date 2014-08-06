@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_ADEN_NODDY(LISTL,IDLSTL,LISTR,IDLSTR,

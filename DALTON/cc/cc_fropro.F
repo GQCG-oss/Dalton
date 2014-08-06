@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_inifro */
       SUBROUTINE CC_INIFRO(WORK,LWORK)

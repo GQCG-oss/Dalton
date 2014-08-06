@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccrhsn */
       SUBROUTINE CCRHSN(OMEGA1,OMEGA2,T1AM,T2AM,WORK,LWORK,APROXR12)

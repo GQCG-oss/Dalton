@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_FHF   */
       SUBROUTINE CC_FHF(C1AM,RHO1,ISYMV,WORK,LWORK)

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_hpqta */
       SUBROUTINE CC_HPQTA(XHPQ,ISYHPQ,XHCA,XHIK,ISYRES,LISTR,IDLSTR,

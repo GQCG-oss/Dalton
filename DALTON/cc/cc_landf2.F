@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_yi */
       SUBROUTINE CC_YI(YMAT,CLTR2,ISYMLV,T2AM,ISYMRV,WORK,LWORK)

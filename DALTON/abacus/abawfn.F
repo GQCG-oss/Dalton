@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 * ==================================================================== *
       SUBROUTINE WFNAO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,

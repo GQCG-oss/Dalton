@@ -64,7 +64,6 @@
 !===========================================================================
 #endif
 C
-#include "single.h"
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C

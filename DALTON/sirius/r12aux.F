@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck r12aux */  
       SUBROUTINE R12AUX(WORK,LWORK)

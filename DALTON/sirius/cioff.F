@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cioff */
       SUBROUTINE CIOFF(IREFSM,ICORHC,XNDXCI,NTEST)

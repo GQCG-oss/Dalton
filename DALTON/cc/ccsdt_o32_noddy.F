@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_O32_NODDY(LISTX,IDLSTX,LISTY,IDLSTY,

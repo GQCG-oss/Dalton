@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCKAPPASQ(KAPPASQ,KAPPA,ISYKAP,TRANS)

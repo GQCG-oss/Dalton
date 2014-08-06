@@ -24,7 +24,6 @@
 C File: sirius/sirsolpcm.F
 C       (sirsol.F modified for pcm)
 C
-#include "single.h"
 C
 C  /* Deck pcmgrd */
       SUBROUTINE PCMGRD(CREF,CMO,INDXCI,DV,G,ESOLT,WRK,LFREE)

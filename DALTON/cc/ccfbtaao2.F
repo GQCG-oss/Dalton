@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCFBTAAO2(X0INT, ISY0DIS, X1INT, ISY1DIS,  

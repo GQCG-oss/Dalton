@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck broydn */
       SUBROUTINE BROYDN(LUIT7,KIT,NTVAR,VECK,VECG,VECT,VECQ,

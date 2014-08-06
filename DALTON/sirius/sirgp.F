@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C File:    sirgp.F
 C Purpose: general purpose routines for the Sirius module

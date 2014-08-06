@@ -25,7 +25,6 @@ C
 C FILE    : herrdn.F
 C
 C
-#include "single.h"
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================

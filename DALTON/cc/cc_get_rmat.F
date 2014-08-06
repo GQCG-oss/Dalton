@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_GET_RMAT(RMAT, IOPER, ORDER, ISYHOP, WORK, LWORK )

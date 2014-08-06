@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_fop */
        SUBROUTINE CC_FOP(IPDD,WORK,LWORK,APROXR12)

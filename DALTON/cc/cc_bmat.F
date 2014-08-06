@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *---------------------------------------------------------------------*
 c/* Deck CC_BMATRIX */

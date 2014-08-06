@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_1IDX_D2EFF(BAODEN,ICON,G,ISYMG,D,ISYMD,ISYMQ,

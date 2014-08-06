@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCEFFFOCK1(I1DXORD,AODENCC,AODENHF,WORK,LWORK)

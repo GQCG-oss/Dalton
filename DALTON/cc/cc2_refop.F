@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc2_den */
       SUBROUTINE CC2_DEN(ETAAI,ZKDIA,WORK,LWORK,IOPT)

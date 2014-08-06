@@ -32,7 +32,6 @@ C
 #define VAR_INT64
 #endif
 !
-#include "single.h"
 C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)

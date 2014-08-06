@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck opgctl */
       SUBROUTINE OPGCTL(ORTOPG,RHSOPG,CMO,DV,SOINT,PRPACT,PRPICT,WORK,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccrhs_cio */
       SUBROUTINE CCRHS_CIO2(OMEGA2,T2AM,XLAMDH,WORK,LWORK,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eriave */
       SUBROUTINE ERIAVE(SO,PMAT,DMAT,D2MAT,ID2MAT,IPNTCR,IODDCC,IPNTUV,

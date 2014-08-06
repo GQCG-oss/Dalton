@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck odcvec */
       SUBROUTINE ODCVEC(COOR12,EXP12,FAC12,CONT1,CONT2,JMAX1,JMAX2,

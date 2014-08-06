@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_FMAT_NODDY(LISTL,IDLSTL,LISTB,IDLSTB,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_aofock2 */
       SUBROUTINE CC_AOFOCK2(XINT,DENSIT,DENSPK,FOCK,WORK,LWORK,IDEL,

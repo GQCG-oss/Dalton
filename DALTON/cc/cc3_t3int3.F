@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !  /* Deck cc3_t3int3 */
       SUBROUTINE CC3_T3INT3(XINT,XLAMDP,XLAMDH,C1AM,ISYMTR,

@@ -1,5 +1,4 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
@@ -21,7 +20,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccpt_fckd1 */
       SUBROUTINE CCPT_FCKD1(FOCK,ISYFCK,DEN1E,ISYDEN,

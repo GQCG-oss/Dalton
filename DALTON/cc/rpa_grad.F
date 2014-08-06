@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rpa_grad */
       SUBROUTINE rpa_GRAD(GRADH1,GRADFS,GRADH2,WORK,LWORK)

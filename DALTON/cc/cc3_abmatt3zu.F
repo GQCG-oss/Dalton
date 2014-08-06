@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C Deck /* cc3_abmatt3zu */
       SUBROUTINE CC3_ABMATT3ZU(LISTX,IDLSTX,LISTZU,IDLSTZU,
      &                                OMEGA2,

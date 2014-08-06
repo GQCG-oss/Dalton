@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c/* Deck cc_rdrsp */
       SUBROUTINE CC_RDRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,VEC1,VEC2)

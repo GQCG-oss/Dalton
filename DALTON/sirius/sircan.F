@@ -23,7 +23,6 @@
 !
 C     FILE: DALTON/sirius/sircan.F
 C
-#include "single.h"
 C
 C  /* Deck sircan */
       SUBROUTINE SIRCAN (IPRCAN,CREF,CMO,OCC,WRK,KFRSAV,LFRSAV)

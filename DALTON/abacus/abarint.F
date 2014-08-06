@@ -22,7 +22,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C File:  abacus/abarint.F
 C

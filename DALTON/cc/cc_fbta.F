@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
        SUBROUTINE CC_FBTA( IFBTRAN, NFBTRAN, IOPTRES, LISTL, LISTR, 

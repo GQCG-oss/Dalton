@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c*DECK CC_EXGR
        SUBROUTINE CC_EXGR(WORK,LWORK)

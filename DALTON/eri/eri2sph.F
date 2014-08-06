@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cr1sph */
       SUBROUTINE CR1SPH(HCCONT,HCINT,FCINT,HCSINT,FCSINT,CSQ1,CSQ2,

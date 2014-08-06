@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eridi1 */
       SUBROUTINE ERIDI1(KODCL1,KODCL2,

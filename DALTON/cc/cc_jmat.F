@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_JMATRIX(IJTRAN, NJTRAN, LISTL, IOPTRES,

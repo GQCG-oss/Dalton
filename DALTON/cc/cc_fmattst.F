@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FMATTST(LLIST,ILLNR,RLIST,IRLNR,WORK,LWORK)

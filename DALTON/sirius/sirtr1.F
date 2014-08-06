@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c900115: TODO goer noget ved PRINRM
 c        CALL PRINRM(DTV(1,ICSIM),NNASHX,LUPRI)

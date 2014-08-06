@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck erisym */
       SUBROUTINE ERISYM(AO,SO,IATOM,ICRB,IREPE,IODDCC,IPNTUV,IPRINT)

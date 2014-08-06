@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck xerox */
       SUBROUTINE XEROX(N,DX,DY)

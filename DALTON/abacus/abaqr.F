@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 cs--------------------------------------------------------------cs
 cs    abaqr.F=insieme di subroutines per la risposta quadratica cs

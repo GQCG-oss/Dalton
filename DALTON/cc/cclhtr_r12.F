@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 
 *=====================================================================*
       subroutine CCLHTR_FP(RHO1,XLAMDH,WORK,LWORK,ISYMC,FC12AM,LUFC12,

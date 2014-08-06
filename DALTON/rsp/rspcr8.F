@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE CDENS1(ISYMB,CMO,ZYMB,DXCAO,WRK,LWRK)
 C

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rxr */
       SUBROUTINE RXR(R2AM,V2AM,SF,TF,Q11,NOCDIM,NSPAIR)

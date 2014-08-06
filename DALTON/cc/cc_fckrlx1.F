@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *======================================================================
       SUBROUTINE CC_FCKRLX1(FOCK1,FOCK0,ISYFCK1,ISYFCK0,

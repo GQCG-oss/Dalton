@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_triplet */
       SUBROUTINE CC3_TRIPLET(ECURR,ISYMTR,OMEGA1,OMEGA2P,T2AM,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_lhtr */
       SUBROUTINE CC_LHTR(ECURR,

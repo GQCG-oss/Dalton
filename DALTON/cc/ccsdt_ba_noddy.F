@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CCSDT_BAMAT_NODDY(IOPTRES,FREQRES,LABELB,ISYMB,

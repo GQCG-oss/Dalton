@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_FDC(NC1VEC,NC2VEC,LISTA,ITAMPA,LISTB,ITAMPB,

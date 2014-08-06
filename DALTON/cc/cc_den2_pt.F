@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_den2_pt */
       SUBROUTINE CC_DEN2_PT(D2IJG,D2AIG,D2IAG,D2ABG,

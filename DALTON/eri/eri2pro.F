@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck eripro */
       SUBROUTINE ERIPRO(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,DOGDER,DOBDER,

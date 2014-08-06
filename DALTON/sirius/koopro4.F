@@ -44,7 +44,6 @@ C        Spin free version of NEVPT
 C
 C
 C-----------------------------------------------------------------------
-#include "single.h"
 #include "implicit.h"
 #include "maxorb.h"
 #include "mxpdim.h"
@@ -5346,7 +5345,6 @@ c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
       end
 c-----------------------------------------------------
       subroutine nwadd(nwall,nadd)
-#include "single.h"
 #include "implicit.h"
 #include "priunit.h"
       nwall=nwall+nadd
@@ -5357,7 +5355,6 @@ c      call flshfo(lupri)
       end
 c-----------------------------------------------------
       subroutine nwdel(nwall,ndel)
-#include "single.h"
 #include "implicit.h"
 #include "priunit.h"
       nwall=nwall-ndel

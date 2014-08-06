@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccdiis_sol */
       SUBROUTINE CCDIIS_SOL(FRHO1,LUFR1,FRHO2,LUFR2,

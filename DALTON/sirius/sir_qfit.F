@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
       SUBROUTINE QFITINP(WORD)
 #if defined (BUILD_QFITLIB)

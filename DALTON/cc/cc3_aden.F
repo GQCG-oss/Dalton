@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_aden */
       SUBROUTINE CC3_ADEN(LISTL,IDLSTL,LISTR,IDLSTR,

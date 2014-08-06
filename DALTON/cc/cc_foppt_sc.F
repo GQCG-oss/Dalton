@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsdpt_dens2_sc */
       SUBROUTINE CCSDPT_DENS2_SC(T1AM,ISYMT1,T2TP,ISYMT2,MODEL,

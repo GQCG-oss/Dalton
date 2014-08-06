@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #if defined (SYS_CRAY)
       SUBROUTINE CCSD_DIIS(S,T,NDIM,NITER)

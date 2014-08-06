@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C  /* Deck zfsdrv */
       SUBROUTINE ZFSDRV(WORK,LWORK)
 C

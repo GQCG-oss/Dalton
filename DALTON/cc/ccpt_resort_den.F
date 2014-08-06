@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck resort_daibc */
       SUBROUTINE RESORT_DAIBC(IOPT,ISYDEN,FACT,LU1,FN1,

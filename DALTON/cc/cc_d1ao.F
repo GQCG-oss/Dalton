@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_d1ao */
       SUBROUTINE CC_D1AO(IPDD,R12PRP,AODEN,ZKAM,WORK,LWORK,MODEL,LLIST,

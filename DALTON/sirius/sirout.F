@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirout */
       SUBROUTINE SIROUT(ICONV,WRK,LWRK)

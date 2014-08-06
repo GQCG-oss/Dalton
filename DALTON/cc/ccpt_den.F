@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C   /* Deck cc_den_ptfc */
       SUBROUTINE CC_DEN_PTFC(POTNUC,ETAAI,ZKDIA,WORK,LWORK,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C /* Deck ecktrn */
       SUBROUTINE ECKTRN(GRDCAR,HESCAR,DIP0,SUSTOT,GTRAN,QUADT,TMAT,

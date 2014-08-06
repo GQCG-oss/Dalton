@@ -20,7 +20,6 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include "single.h"
 C
 C=========================================================================
 C old log:

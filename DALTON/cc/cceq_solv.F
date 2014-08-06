@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cceq_sol */
       SUBROUTINE CCEQ_SOL(LIST,LPROJECT,ISTATPRJ,ECURR,

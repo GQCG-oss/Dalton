@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck erifck */
       SUBROUTINE ERIFCK(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,IPRFCK,

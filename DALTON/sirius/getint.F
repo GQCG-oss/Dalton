@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck getin2 */
       SUBROUTINE GETIN2( RIJKL, K1, L1, FIJKL, ILTSOB, WIJKL )

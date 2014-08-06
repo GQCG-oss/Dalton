@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 *=====================================================================*
       SUBROUTINE CC_HFR1DEN(R1DEN,IOPER,IORDER,ISYMOPR,WORK,LWORK)

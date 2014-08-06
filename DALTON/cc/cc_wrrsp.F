@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c/* Deck cc_wrrsp */
       SUBROUTINE CC_WRRSP(LIST,IDXLST,ISYM,IOPT,MODFIL,

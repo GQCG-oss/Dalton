@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C     Parallel-routines, by Alf Christian Hennum 
 C 

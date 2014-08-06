@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c*DECK CC_RHTR3 
       SUBROUTINE CC_RHTR3(ECURR,FRHO1,LUFR1,FRHO2,LUFR2,

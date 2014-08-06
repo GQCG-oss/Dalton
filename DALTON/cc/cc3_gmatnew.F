@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc3_gmatnew */
       SUBROUTINE CC3_GMATNEW(LISTL,IDLSTL,LISTB,IDLSTB,

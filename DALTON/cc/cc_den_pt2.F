@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck cc_den_pt2 */
       SUBROUTINE CC_DEN_PT2(ETAAI,ETAIJ,ETAAB,WORK,LWORK,

@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck getrho */
       SUBROUTINE GETRHO(DMAT,GSO,RHO,DMAGAO,DFTHRI)

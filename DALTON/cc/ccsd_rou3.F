@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !  /* Deck cc_bf3 */
       SUBROUTINE CC_BF3(XINT,OMEGA2,XLAMD1,ISYML1,XLAMD2,

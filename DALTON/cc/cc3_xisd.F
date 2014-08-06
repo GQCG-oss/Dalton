@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck CC3_XISD */ 
       SUBROUTINE CC3_XISD(XI1,XI2,XI1EFF,XI2EFF,ISYRES,
