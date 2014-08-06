@@ -564,9 +564,6 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
         WRITE(LUPRI,806) '= Total eff. SR 0-el. energy  :',EMYDFT
 C
 
-        if(do_test_sc_ens)then
-!         call get_sc_ensemble_energy()
-        end if
 
         DO IST = 1,NCROOT
            KDVREF = KW2
@@ -626,6 +623,11 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
   807   FORMAT(/1X,A,I2,A,F20.12)
+
+        if(do_test_sc_ens)then
+!         call get_sc_ensemble_energy()
+        end if
+
       ENDIF
 !       write(lupri,*) 'done with srdft ....'
 !       call flshfo(lupri)
