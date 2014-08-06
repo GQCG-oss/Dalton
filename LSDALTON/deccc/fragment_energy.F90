@@ -4865,7 +4865,7 @@ contains
    !           fragment (compared to the fragment obtained in (1)) is below the FOT.
    !
    !> Author:  Pablo Baudin, (based on previous work by Ida-Marie Hoeyvik,
-   !           Kasper Kristensen & Thomas Kjaergaard
+   !           Kasper Kristensen & Thomas Kjaergaard)
    !> Date:    July 2014
    subroutine optimize_atomic_fragment_CLEAN(MyAtom,AtomicFragment,natoms, &
             & OccOrbitals,no,VirOrbitals,nv,MyMolecule,mylsitem,freebasisinfo)
@@ -4972,8 +4972,8 @@ contains
       call mem_alloc(exp_list_occ,no)
       call mem_alloc(exp_list_vir,nv)
 
-      call define_frag_expansion(Mymolecule,AtomicFragment,MyAtom,natoms,no,nv, &
-         & ninit_occ,ninit_vir,exp_list_occ,exp_list_vir,nexp_occ,nexp_vir)
+      call define_frag_expansion(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
+         & exp_list_occ,exp_list_vir,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
 
 
@@ -5030,9 +5030,8 @@ contains
       call mem_alloc(red_list_vir,nv)
 
       ! Get information on how the reduction should be performed:
-      call define_frag_reduction(AtomicFragment,no,nv,dE_red_occ,dE_red_vir, &
-         & red_list_occ,red_list_vir,nred_occ,nred_vir)
-
+      call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
+         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
 
       ! Overwrite ccmodel for myatom with the reduction required ccmodel
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
@@ -5092,13 +5091,12 @@ contains
    !          average number of occ/vir orbitals per atoms.
    !
    !          Scheme 2: Same as scheme 1 but instead of taking the closest orbitals, we
-   !          choose them based on there contribution to the Fock matrix.
+   !          choose them based on their contribution to the Fock matrix.
    !
    ! Author:  Pablo Baudin
    ! Date:    July 2014
-   subroutine define_frag_expansion(Mymolecule,MyFragment,MyAtom,natoms,no_full,nv_full, &
-            & ninit_occ,ninit_vir,track_occ_priority_list,track_vir_priority_list, &
-            & nexp_occ,nexp_vir)
+   subroutine define_frag_expansion(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
+            & track_occ_priority_list,track_vir_priority_list,nexp_occ,nexp_vir,ninit_occ,ninit_vir)
 
       implicit none
    
@@ -5123,7 +5121,7 @@ contains
       integer, intent(out) :: ninit_occ, ninit_vir
 
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
-      integer :: ncore, i, j, idx
+      integer :: ncore
 
       ! Set # core orbitals to zero if the frozen core approximation is not used:
       if (DECinfo%frozencore) then
@@ -5157,44 +5155,21 @@ contains
 
       ! SCHEME 2:
       else if (DECinfo%Frag_Exp_Scheme == 2) then
-         ! The priority list for scheme one is based on energy contribution:
+         ! The priority list for scheme 2 is based on contribution to the fock matrix:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
-         occ_priority_list = 0.0E0_realk
-
-         do i=ncore,no_full
-            do j=1,MyFragment%noccEOS
-               idx = MyFragment%occEOSidx(j)
-               occ_priority_list(i) = max(occ_priority_list(i), abs(MyMolecule%ppFock(idx,i)))
-            end do
-         end do
-
-         ! Sort contribution list and keep only the track list
-         do i=1,no_full
-           track_occ_priority_list(i) = i
-         end do
-         call real_inv_sort_with_tracking(occ_priority_list,track_occ_priority_list,no_full)
+         call get_fock_priority_list(MyFragment,MyMolecule,no_full,.true., &
+            & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
          ! Get contribution from local virtual orbitals:
          call mem_alloc(vir_priority_list,nv_full)
-         vir_priority_list = 0.0E0_realk
-
-         do i=1,nv_full
-            do j=1,MyFragment%nunoccEOS
-               idx = MyFragment%unoccEOSidx(j)
-               vir_priority_list(i) = max(vir_priority_list(i), abs(MyMolecule%qqFock(idx,i)))
-            end do
-         end do
-
-         ! Sort contribution list and keep only the track list
-         do i=1,nv_full
-           track_vir_priority_list(i) = i
-         end do
-         call real_inv_sort_with_tracking(vir_priority_list,track_vir_priority_list,nv_full)
+         call get_fock_priority_list(MyFragment,MyMolecule,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
          call mem_dealloc(vir_priority_list)
+
       else
-         call lsquit('ERROR FOP: Scheme not defined',DECinfo%output)
+         call lsquit('ERROR FOP: Expansion Scheme not defined',DECinfo%output)
       end if
 
    end subroutine define_frag_expansion
@@ -5210,22 +5185,35 @@ contains
    !          A step is accepted if the energy difference between the expanded and 
    !          the reduced fragment is smaller than dE_red_occ/dE_red_vir.
    !
+   !          Scheme 2: Same as scheme 1 but instead of taking orbitals based on their 
+   !          contribution to the fragment energy, we choose them based on their 
+   !          contribution to the Fock matrix.
+   !
+   !          Scheme 3: Same as scheme 1 and 2 but the orbitals are prioriterized based
+   !          on their distance to the central atom of the fragment.
+   !
    !          Be sure to exclude core orbitals from the priority list if frozen core is used.
    !
    ! Author:  Pablo Baudin
    ! Date:    July 2014
-   subroutine define_frag_reduction(AtomicFragment,no_full,nv_full, &
-            & dE_red_occ,dE_red_vir,track_occ_priority_list,track_vir_priority_list, &
+   subroutine define_frag_reduction(no_full,nv_full,natoms,MyAtom,MyMolecule,MyFragment, &
+            & track_occ_priority_list,track_vir_priority_list,dE_red_occ,dE_red_vir, &
             & nred_occ,nred_vir)
 
       implicit none
    
-      !> Atomic fragment to be optimized
-      type(decfrag),intent(inout)        :: AtomicFragment
       !> Number of occupied orbitals in molecule
       integer, intent(in) :: no_full
       !> Number of virtual orbitals in molecule
       integer, intent(in) :: nv_full
+      !> Number of atoms in molecule
+      integer, intent(in) :: natoms
+      !> Central atom in molecule
+      integer, intent(in) :: MyAtom
+      !> Full molecule information
+      type(fullmolecule), intent(in) :: MyMolecule
+      !> Atomic fragment to be optimized
+      type(decfrag),intent(in)       :: MyFragment
       !> Return priority list of occ/vir orbitals
       integer, intent(out) :: track_occ_priority_list(no_full)
       integer, intent(out) :: track_vir_priority_list(nv_full)
@@ -5236,71 +5224,74 @@ contains
       integer, intent(out) :: nred_occ, nred_vir
 
       real(realk), pointer :: occ_priority_list(:), vir_priority_list(:)      
-      integer :: i, idx
 
+      ! Get nred_occ and nred_vir (5% of the expanded spaces)
+      nred_occ = max( ceiling(5.0E0_realk*MyFragment%noccAOS/100), 1)
+      nred_vir = max( ceiling(5.0E0_realk*MyFragment%nunoccAOS/100), 1)
+
+      ! By default dE_red_xxx is set to X*FOT where X is <= FOT 
+      if(.not.DECinfo%OnlyVirtPart) then
+         dE_red_occ = DECinfo%frag_red_dE_occ*DECinfo%FOT
+         dE_red_vir = DECinfo%frag_red_dE_virt*DECinfo%FOT
+      else
+         dE_red_occ = DECinfo%frag_red_dE_virt*DECinfo%FOT
+         dE_red_vir = DECinfo%frag_red_dE_occ*DECinfo%FOT
+      end if
+
+      ! SCHEME 1:
       if (DECinfo%Frag_Red_Scheme == 1) then
          ! The priority list for scheme one is based on energy contribution:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
-         occ_priority_list = 0.0E0_realk
-
-         ! note: if the frozen core approximation is used then core orbital are
-         ! not included in the expanded AOS and will therefore have 0 contribution
-         ! in the priority list
-         do i=1,AtomicFragment%noccAOS
-            ! index of occupied AOS orbital "i" in list of ALL occupied orbitals in the molecule  
-            idx=AtomicFragment%occAOSidx(i)
-            occ_priority_list(idx) = abs(AtomicFragment%OccContribs(i))
-         end do
-
-         ! Sort contribution list and keep only the track list
-         do i=1,no_full
-           track_occ_priority_list(i) = i
-         end do
-         call real_inv_sort_with_tracking(occ_priority_list,track_occ_priority_list,no_full)
+         call get_energy_priority_list(MyFragment,no_full,.true., &
+            & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
          ! Get contribution from local virtual orbitals:
          call mem_alloc(vir_priority_list,nv_full)
-         vir_priority_list = 0.0E0_realk
-
-         do i=1,AtomicFragment%nunoccAOS
-            ! index of virtual  AOS orbital "i" in list of ALL virtual  orbitals in the molecule  
-            idx=AtomicFragment%unoccAOSidx(i)
-            vir_priority_list(idx) = abs(AtomicFragment%VirtContribs(i))
-         end do
-
-         ! Sort contribution list and keep only the track list
-         do i=1,nv_full
-           track_vir_priority_list(i) = i
-         end do
-         call real_inv_sort_with_tracking(vir_priority_list,track_vir_priority_list,nv_full)
+         call get_energy_priority_list(MyFragment,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
          call mem_dealloc(vir_priority_list)
-         
 
-         ! Get nred_occ and nred_vir (5% of the expanded spaces)
-         nred_occ = max( ceiling(5.0E0_realk*AtomicFragment%noccAOS/100), 1)
-         nred_vir = max( ceiling(5.0E0_realk*AtomicFragment%noccAOS/100), 1)
+      ! SCHEME 2:
+      else if (DECinfo%Frag_Red_Scheme == 2) then
+         ! The priority list for scheme 2 is based on contribution to the fock matrix:
+         ! Get contribution from local occupied orbitals:
+         call mem_alloc(occ_priority_list,no_full)
+         call get_fock_priority_list(MyFragment,MyMolecule,no_full,.true., &
+            & track_occ_priority_list,occ_priority_list)
+         call mem_dealloc(occ_priority_list)
 
-         ! By default dE_red_vir is set to 0.9*FOT and dE_red_occ is set to the FOT
-         ! if OnlyVirtPart then it is the contrary (WRT occ/vir)
-         if(.not.DECinfo%OnlyVirtPart) then
-            dE_red_occ = DECinfo%frag_red_dE_occ*DECinfo%FOT
-            dE_red_vir = DECinfo%frag_red_dE_virt*DECinfo%FOT
-         else
-            dE_red_occ = DECinfo%frag_red_dE_virt*DECinfo%FOT
-            dE_red_vir = DECinfo%frag_red_dE_occ*DECinfo%FOT
-         end if
+         ! Get contribution from local virtual orbitals:
+         call mem_alloc(vir_priority_list,nv_full)
+         call get_fock_priority_list(MyFragment,MyMolecule,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
+         call mem_dealloc(vir_priority_list)
 
-
-         ! Sanity check: check that dE_red is never > FOT:
-         if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
-            call lsquit('ERROR FOP Reduction: dE_red_*** need to be set smaller &
-               & than 1',DECinfo%output)
-         end if
+      ! SCHEME 3:
+      else if (DECinfo%Frag_Red_Scheme == 3) then
+         ! The priority list for scheme 3 is based on distance:
+         ! Get occupied priority list:
+         call mem_alloc(occ_priority_list,no_full)
+         call GetSortedList(occ_priority_list,track_occ_priority_list,&
+              & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
+         call mem_dealloc(occ_priority_list)
+   
+         ! Get virtual priority list:
+         call mem_alloc(vir_priority_list,nv_full)
+         call GetSortedList(vir_priority_list,track_vir_priority_list,&
+              & mymolecule%DistanceTableOrbAtomVirt,nv_full,natoms,MyAtom)
+         call mem_dealloc(vir_priority_list)
 
       else 
-         call lsquit('ERROR FOP: Scheme not defined',DECinfo%output)
+         call lsquit('ERROR FOP: Reduction scheme not defined',DECinfo%output)
+      end if
+
+
+      ! Sanity check: check that dE_red is never > FOT:
+      if ((dE_red_occ>DECinfo%FOT).or.(dE_red_vir>DECinfo%FOT)) then
+         call lsquit('ERROR FOP Reduction: dE_red_*** need to be set smaller &
+            & than 1',DECinfo%output)
       end if
 
    end subroutine define_frag_reduction
@@ -5312,7 +5303,7 @@ contains
    !          The expansion is converged when the difference in energie(s) between two
    !          is smaller than the FOT.
    !
-   ! Author:  Pablo Baudin
+   ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014
    subroutine fragment_expansion_procedure(Occ_AOS,Vir_AOS,AtomicFragment,no,nv, &
             & occ_priority_list,vir_priority_list,nexp_occ,nexp_vir,MyAtom,MyMolecule, &
@@ -5514,7 +5505,7 @@ contains
    !          the difference in number of orbitals between two steps is lower than
    !          no_gap/nv_gap. By default the occupied spaced is reduced 1st.
    !
-   ! Author:  Pablo Baudin
+   ! Author:  Pablo Baudin (based on previous work by Kasper Kristensen & Thomas Kjaergaard)
    ! Date:    July 2014
    subroutine fragment_reduction_procedure(AtomicFragment,no,nv,occ_priority_list, &
             & vir_priority_list,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
@@ -5895,5 +5886,116 @@ contains
 
    end subroutine check_red_space_convergence
 
+
+   !> Purpose: Get sorted list of orbital contributions to the fragment energy
+   !           and the corresponding tracking list
+   !
+   !> Author:  Pablo Baudin
+   !> Date:    August 2014
+   subroutine get_energy_priority_list(MyFragment,Nfull,occ_list, &
+            & track_priority_list,priority_list)
+
+      implicit none
+
+      !> Fragment info
+      type(decfrag), intent(in) :: MyFragment
+      !> Full molecule info
+      integer, intent(in) :: Nfull
+      !> Are we dealing with occupied or virtual space
+      logical, intent(in) :: occ_list
+      !> Tracking list  
+      integer, intent(out)     :: track_priority_list(Nfull)
+      !> Orbital contribution to fock matrix
+      real(realk), intent(out) :: priority_list(Nfull)
+
+      integer :: i, idx
+      
+      priority_list = 0.0E0_realk
+
+      if (occ_list) then
+         ! note: if the frozen core approximation is used then core orbital are
+         ! not included in the expanded AOS and will therefore have 0 contribution
+         ! in the priority list
+         do i=1,MyFragment%noccAOS
+            ! index of occupied AOS orbital "i" in list of ALL occupied orbitals in the molecule  
+            idx=MyFragment%occAOSidx(i)
+            priority_list(idx) = abs(MyFragment%OccContribs(i))
+         end do
+      else
+         do i=1,MyFragment%nunoccAOS
+            ! index of virtual AOS orbital "i" in list of ALL occupied orbitals in the molecule  
+            idx=MyFragment%unoccAOSidx(i)
+            priority_list(idx) = abs(MyFragment%VirtContribs(i))
+         end do
+      end if
+
+      ! Sort contribution list and keep only the track list
+      do i=1,Nfull
+        track_priority_list(i) = i
+      end do
+      call real_inv_sort_with_tracking(priority_list,track_priority_list,Nfull)
+
+   end subroutine get_energy_priority_list
+ 
+ 
+   !> Purpose: Get sorted list of orbital contributions to the Fock matrix
+   !           and the corresponding tracking list
+   !
+   !> Author:  Pablo Baudin
+   !> Date:    August 2014
+   subroutine get_fock_priority_list(MyFragment,MyMolecule,Nfull,occ_list, &
+            & track_priority_list,priority_list)
+
+      implicit none
+
+      !> Fragment info
+      type(decfrag), intent(in) :: MyFragment
+      !> Full molecule info
+      type(fullmolecule), intent(in) :: MyMolecule
+      !> Number of orbitals occ or vir in full Molecule
+      integer, intent(in) :: Nfull
+      !> Are we dealing with occupied or virtual space
+      logical, intent(in) :: occ_list
+      !> Tracking list  
+      integer, intent(out)     :: track_priority_list(Nfull)
+      !> Orbital contribution to fock matrix
+      real(realk), intent(out) :: priority_list(Nfull)
+
+      integer :: ncore, i, j, idx
+      
+      priority_list = 0.0E0_realk
+
+      ! Set # core orbitals to zero if the frozen core approximation is not used:
+      if (DECinfo%frozencore) then
+         ncore = MyMolecule%ncore
+      else
+         ncore = 0
+      end if
+
+      ! Get contribution to fock matrix for a given orbital as the maximum fock
+      ! element between the given orbital and all the EOS orbitals.
+      if (occ_list) then
+         do i=ncore+1,Nfull
+            do j=1,MyFragment%noccEOS
+               idx = MyFragment%occEOSidx(j)
+               priority_list(i) = max(priority_list(i), abs(MyMolecule%ppFock(idx,i)))
+            end do
+         end do
+      else
+         do i=1,Nfull
+            do j=1,MyFragment%nunoccEOS
+               idx = MyFragment%unoccEOSidx(j)
+               priority_list(i) = max(priority_list(i), abs(MyMolecule%qqFock(idx,i)))
+            end do
+         end do
+      end if
+
+      ! Sort contribution list and keep only the track list
+      do i=1,Nfull
+        track_priority_list(i) = i
+      end do
+      call real_inv_sort_with_tracking(priority_list,track_priority_list,Nfull)
+
+   end subroutine get_fock_priority_list
 
 end module fragment_energy_module
