@@ -637,7 +637,7 @@ C
          
          CALL SRFMAT(FSR,srdft_cmo_lucita,work(KRHO1_ens),
      &               EJCSR_mc2lu,EJVSR_mc2lu,EDSR_mc2lu,EDFT_mc2lu,
-     &               emydftaux_mc2lu,
+     &               emydftaux_mc2lu,UEJCVSR,
      &               work(ksrdftdal_interface),lscr_local,0)
          
          if(luci_myproc == luci_master)then

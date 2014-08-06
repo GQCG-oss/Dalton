@@ -25,85 +25,67 @@
       real*8 , intent(in)    :: cmo(*)
       real*8 , intent(inout) :: wrk(lwrk)
 !-----------------------------------------------------------------------------------------------------------------------
-      integer                :: kw2, KDVREF, KW2A, KSRAC
+      integer                :: kw2, KW2A, KUDVREF
       integer                :: LW2A, ist
-      real*8                 :: EJTOT, ESRDV, EDSR, EJVSR, EJCSR, ETDFT
-      real*8                 :: EMYDFT, ELRCI, ECIAUX, EMYDFTAUX
-      real*8                 :: ECIAUX_gs, EENSEMB
+      real*8                 :: uESRDV, uEDSR, uEJVSR, uEJCSR
+      real*8                 :: uEMYDFTAUX, uedft
+      real*8                 :: UEJCVSR
+      real*8                 :: VEENSEMB
 
-      real*8 , allocatable   :: eci(:)
+      real*8 , allocatable   :: u_rho_ensemble(:)
+      real*8 , allocatable   :: ufsr(:)
       real*8 , external      :: ddot
-
-      allocate(eci(ncroot))
-      eci = 0
-
-      write(lupri,'(/A,I5)') 'SR 0-el. energy for input .STATE',        &
-     &                          ISTACI
-      write(lupri,'(A/)') '-------------------------------------'
-      write(lupri,805) '  SR core    Hartree energy   :',EJCSR_orig
-      write(lupri,805) '- SR valence Hartree energy   :',EJVSR_orig
-      write(lupri,805) '+ SR Exchange-correlation     :',EDFT_orig
-      write(lupri,805) '- SR Exchange-correlation pot.:',EDSR_orig
-      write(lupri,806) '= Total eff. SR 0-el. energy  :',EMYDFT_orig
 
       kw2 = 1
 
-      DO IST = 1,NCROOT
-        KDVREF = KW2
-        KW2A   = KDVREF + NNASHX
-        LW2A   = LWRK   - KW2A
-        CALL GETDVREF('LUCITA   ',WRK(KDVREF),IST,wrk,WRK(KW2A),LW2A)
-        !> DVREF is equal to DV for state abs(ISTI), i.e. 1-el. energy can be calculated
-        ESRDV = DDOT(NNASHX,WRK(KDVREF),1,srac_orig,1)
-!       ESRDV = DDOT(NNASHX,WRK(KDVREF),1,WRK(KSRAC),1)
+      !> build new ensemble density matrix
+      allocate(u_rho_ensemble(nnashx))
+      u_rho_ensemble = 0
 
-        WRITE(LUPRI,'(/A,I5)') 'CI-DFT energy for state no.',IST
-        WRITE(LUPRI,'(A/)') '-------------------------------------'
-        WRITE(LUPRI,805) 'SR eff. 1-el. energy          :',ESRDV
-        EJTOT = ESRDV + EDSR + EJVSR + EJCSR
-        WRITE(LUPRI,805) 'SR total Hartree energy       :',EJTOT
-        ETDFT = EMYDFT + ESRDV
-        WRITE(LUPRI,805) 'SR eff. total DFT energy      :',ETDFT
-        ELRCI = ECI(IST) - ETDFT
-        WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
-        WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
-        ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
-!
-        if (IST .EQ. 1) then 
-        ECIAUX_gs = ECIAUX ! saving the GS auxiliary energy 
-        end if
-!       write(lupri,*) 'eciaux_gs =', ECIAUX_gs
-!
-        write(lupri,'(/a)')                                             &
-     &  ' decomposition of the auxiliary CI-srDFT energy'
-        WRITE(LUPRI,805) 'ELRCI        :',ELRCI
-        WRITE(LUPRI,805) 'EMYDFTAUX    :',EMYDFTAUX
-        WRITE(LUPRI,805) 'ESRDV        :',ESRDV
-        WRITE(LUPRI,805) 'POTNUC       :',POTNUC
-        write(lupri,*) ''
-        WRITE(LUPRI,807) 'Auxiliary CI-srDFT energy for root',          &
-     &                    IST, ':   ', ECIAUX
-        if (IST .GT. 1) then
-!       WRITE(LUPRI,806) 'Auxiliary excitation energy   :',
-!    &                    ECIAUX-ECIAUX_gs
-        WRITE(LUPRI,807) 'Auxiliary excitation energy for root',        &
-     &                    IST, ': ', ECIAUX-ECIAUX_gs
-        endif
-!       compute the ensemble CI-srDFT energy 
-        EENSEMB = EENSEMB + weights(IST) * ECI(IST)
-!       compute the ensemble ESRDV energy contribution 
-!       ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
-      END DO
+      do IST = 1,NCROOT
+        KUDVREF = KW2
+        KW2A    = KUDVREF + NNASHX
+        LW2A    = LWRK   - KW2A
+        CALL GETUDVREF('LUCITA   ',WRK(KUDVREF),IST,wrk,WRK(KW2A),LW2A)
+        call daxpy(nnashx,weights(ist),WRK(KUDVREF),1,u_rho_ensemble,1)
+      end do
+      kw2 = 1
+
+      allocate(ufsr(nnorbt))
+      ufsr  = 0
+
+      CALL SRFMAT(ufsr,cmo,u_rho_ensemble,                              &
+     &            uEJCSR,uEJVSR,uEDSR,uEDFT,                            &
+     &            uEMYDFTAUX,uEJCVSR,                                   &
+     &            wrk(kw2),lwrk,0)
+
+      uESRDV   = DDOT(NNASHX,u_rho_ensemble,1,srac_orig,1)
+
+      VEENSEMB = eensemb_orig + uEDFT  - EDFT_orig + EDSR_orig + uEJCVSR&
+     &         - uESRDV       - uEJVSR - EJVSR_orig
+
+      write(lupri,*) 'contributions to the variational ensemble energy'
+      write(lupri,*) '------------------------------------------------'
+      write(lupri,*) 'eensemb_orig --> ',eensemb_orig
+      write(lupri,*) 'uEDFT        --> ',uEDFT
+      write(lupri,*) ' EDFT_orig   --> ',EDFT_orig
+      write(lupri,*) ' EDSR_orig   --> ',EDSR_orig
+      write(lupri,*) 'uEJCVSR      --> ',uEJCVSR
+      write(lupri,*) 'uESRDV       --> ',uESRDV
+      write(lupri,*) 'uEJVSR       --> ',uEJVSR
+      write(lupri,*) ' EJVSR_orig  --> ',EJVSR_orig
+      write(lupri,*) '------------------------------------------------'
 
       write(lupri,806) '*******************************'
-      write(lupri,806) 'Final ensemble CI-srDFT energy:',EENSEMB
+      write(lupri,806) 'Final variational ensemble CI-srDFT energy:',   &
+     &                  VEENSEMB
       write(lupri,806) '*******************************'
 !         
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
   807   FORMAT(/1X,A,I2,A,F20.12)
 
-      deallocate(eci)
+      deallocate(u_rho_ensemble,ufsr)
 
       end subroutine get_sc_ensemble_energy
 !-----------------------------------------------------------------------------------------------------------------------

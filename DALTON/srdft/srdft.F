@@ -1896,7 +1896,7 @@ C     SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
 C    >                  WRK,LWRK,IPRINT)
 C     
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
-     >                  EMYDFTAUX,WRK,LWRK,IPRINT)
+     >                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
 C
 C     20-Mar-2003 Jesper K. Pedersen
 C
@@ -1916,6 +1916,7 @@ C
 C       EMYDFTAUX = 1.0 * Tr (D^c . J^sr . D^c)
 C                  +1.0 * Tr (D^{v,ref} . J^sr . D^c)
 C                  +1.0 * Tr (V^{sr,ref}_{xc} . D^c) 
+!       UEJCVSR   = 1.0 * Tr (D^{v,updated} . J^sr . D^c)
 
 C     * Note that for ensemble CI-srDFT, D^{v,ref} should be, here, equal to the
 C       ensemble density matrix
@@ -1986,14 +1987,17 @@ C        only Coulomb (Hartree) term
       CALL DZERO(WRK(KFCAO),NF*N2BASX)
       CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
      >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
-      EJCSR =  DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFCAO),1)
-      EJVSR = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+      EJCSR   =  DP5*DDOT(N2BASX,WRK(KDCAO),1,WRK(KFCAO),1)
+      EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+      UEJCVSR =      DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
 C     
 C Manu: compute first and second terms in EMYDFTAUX
 C
       EMYDFTAUX = 2.0D0*EJCSR 
+      WRITE(LUPRI,*) 'EMYDFTAUX now  ...',EMYDFTAUX
       EMYDFTAUX = EMYDFTAUX 
      >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
+      WRITE(LUPRI,*) 'EMYDFTAUX then ...',EMYDFTAUX
 C
 C
       IF (IPRINT.GT.5) THEN

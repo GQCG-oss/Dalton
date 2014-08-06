@@ -547,7 +547,7 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
                KDVREF = KW2
                KPVREF = KDVREF + NNASHX
                KW2A   = KPVREF + NNASHX**2
-               LW2A   = LWRK   - KW2A
+               LW2A   = LW2   - KW2A
                CALL GETS2REF(WRK(KPVREF),WRK(KDVREF),IST,
      &                       dummy,WRK(KW2A),LW2A)
             end do
@@ -568,7 +568,7 @@ C
         DO IST = 1,NCROOT
            KDVREF = KW2
            KW2A   = KDVREF + NNASHX
-           LW2A   = LWRK   - KW2A
+           LW2A   = LW2    - KW2A
            CALL GETDVREF(ci_program,WRK(KDVREF),IST,
      &                   INDXCI,WRK(KW2A),LW2A)
 C          ... DVREF is equal to DV for state abs(ISTI),
@@ -625,7 +625,15 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
   807   FORMAT(/1X,A,I2,A,F20.12)
 
         if(do_test_sc_ens)then
-!         call get_sc_ensemble_energy()
+          call  get_sc_ensemble_energy(emydft,EJCSR,
+     &                                 EJVSR,EDSR,
+     &                                 EDFT,EMYDFTAUX,
+     &                                 eci,emy_ci,
+     &                                 energy_root,eensemb,
+     &                                 cmo,wrk(krsac),nnashx,nnorbt,
+     &                                 ncroot,istaci,weights,lupri,
+     &                                 potnuc,
+     &                                 wrk(kw2),lw2)
         end if
 
       ENDIF
@@ -2817,6 +2825,73 @@ C
       END
 !******************************************************************************
 
+      SUBROUTINE GETUDVREF(ci_program,UDVREF,IST,INDXCI,WRK,LWRK)
+C
+C     Get DV_ref for CI-DFT and MC-DFT models.
+C
+C     (c) jkp + hjaaj July 2003
+C
+C     =====================================================
+C     Construct active one-electron density matrix
+C     DVREF for CREF vector no. IST
+C     =====================================================
+C
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_srdftci_cfg
+#include "implicit.h"
+C
+      DIMENSION UDVREF(*), INDXCI(*), WRK(LWRK)
+C
+C Used from common blocks:
+C  infvar: NCONF
+C  inftap: LUIT1
+C
+#include "infvar.h"
+#include "inftap.h"
+#include "priunit.h"
+      character (len=9)  :: ci_program
+      integer, parameter :: luci_cvec = 99
+C
+C
+      IF (IST .LE. 0) THEN
+         CALL QUIT('GETUDVREF called with IST .le. 0')
+      END IF
+      KCREF = 1
+      KW1   = KCREF + NCONF
+      LW1   = LWRK  - KW1
+      IF (LW1 .LE. 0) CALL ERRWRK('GETUDVREF',-KW1,LWRK)
+C
+      if(ci_program .eq. 'LUCITA   ')then
+        open(file='srdft-lucita-final.cvec',unit=luci_cvec,status='old',
+     &       form='unformatted',action='read',position='rewind')
+        call skpvcd(luci_cvec,ist-1,wrk(kcref),-1,-1)
+        call dzero(wrk(kcref),nconf)
+        call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
+!       call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
+        close(luci_cvec,status='keep')
+!       set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+        vector_exchange_type1                      = 1
+        vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                            vector_exchange_type1) = .true.
+
+        srdft_ci_1pdens_cref_restore = .true. 
+
+      else
+        REWIND LUIT1
+        CALL MOLLAB('STARTVEC ',LUIT1,LUPRI)
+        DO I = 1, (IST-1)
+           READ (LUIT1)
+        END DO
+        CALL READT(LUIT1,NCONF,WRK(KCREF))
+      end if
+
+      CALL MAKDV(WRK(KCREF),UDVREF,INDXCI,WRK(KW1),LW1)
+      RETURN
+      END
+!******************************************************************************
+
       SUBROUTINE GETS2REF(PVREF,DVREF,IST,INDXCI,WRK,LWRK)
 C
 C     Get DV_ref for CI-DFT and MC-DFT models.
@@ -2996,7 +3071,7 @@ C
          END IF
 C
          CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
-     &               EMYDFTAUX,WRK(KW2A),LW2A,IPRI4)
+     &               EMYDFTAUX,UEJCVSR,WRK(KW2A),LW2A,IPRI4)
 C        ... Correct EMY and CI diagonal
          EMYDFT = EJCSR + EJVSR + EDSR + EDFT
 C       write(lupri,*) 'just after srfmat'  
