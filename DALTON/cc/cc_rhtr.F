@@ -1408,7 +1408,7 @@ C
       ENDIF
 C
 C----------------------------------------------------------
-C     Add ´F`ai = SUM-k-(Lai,kk-bar) To 1C1 transformation.
+C     Add Â´F`ai = SUM-k-(Lai,kk-bar) To 1C1 transformation.
 C----------------------------------------------------------
 C
       IF (CCS) CALL DZERO(RHO1(1,IV),NT1AM(ISYMTR))
@@ -3266,4 +3266,3 @@ c
 c
       return
       end
-
