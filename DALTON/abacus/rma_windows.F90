@@ -6,7 +6,7 @@
 ! RMA windows object (used for MPI-one-sided communication) and driver routines to 
 ! open and close memory windows.
 !
-! written by sknecht - linkoeping jan 2013
+! written by sknecht - linkoeping jan 2014
 !
 !
 module rma_windows
