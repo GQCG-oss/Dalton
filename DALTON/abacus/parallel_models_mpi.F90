@@ -12,7 +12,7 @@
 ! - mcscf with lucita (after merge with hjaaj-srdft)
 ! - hermit
 !
-! written by sknecht - linkoeping jan 2013
+! written by sknecht - linkoeping jan 2014
 !
 ! note for merge with hjaaj-srdft in Dalton: routines are modified copies of the existing routines for lucita in this branch. 
 ! (whoever is doing that one day)            merging could be a pain in the a** but i guess i will do that anyway. (for now i

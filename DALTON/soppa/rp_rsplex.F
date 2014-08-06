@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck rp_rsplex */
       SUBROUTINE RP_RSPLEX(ISYMTR,NEXCI,EXVAL,LEXVAL,FOCKD,LFOCKD,

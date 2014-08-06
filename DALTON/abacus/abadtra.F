@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,10 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
-===========================================================================
+========================================================================
 /* Comdeck log */
 NOTE: H2DAO and H2DAC submatrices are transposed compared to abaltra
   because of possible triangular NNASHX packing.
@@ -35,7 +34,7 @@ from abaltra.u:
 921117:to do: skip pack/unpack if NSYM .eq. 1
               option for only FQD if open-shell Hartree-Fock ?
               probably not worth the effort
-===========================================================================
+========================================================================
 #endif
 C  /* Deck dertra */
       SUBROUTINE DERTRA(IATOM,CMO,PV,H2DAC,FQD,WORK,KWORK,MWORK)
@@ -876,7 +875,7 @@ C
 #include "infind.h"
 #include "inftrl.h"
 C
-      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(600*(IRAT + 1) + 1)
+      DIMENSION H2DAO(MXNDAO,*), IBUF(4,600), WRK(*)
       DIMENSION INDAO(NBAST,NBAST), INDDIS(NBAST,NBAST)
 C
 C     Local variables:
@@ -889,29 +888,22 @@ C
       CALL REWSPL(LUDERA)
 C     KEY = 'AO2DRINT'
 C     CALL MOLLAB(KEY,LUDERA,LUPRI)
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NBASIS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
       ELSE
          NIBUF = 2
          NBITS = 16
-         call quit('TRDRAO only implement for .le. 255 basis functions')
       END IF
-#endif
       LBUF = 600
-      JBUF = 256
 C
-      LENINT = IRAT*LBUF + LBUF + 1
+      LENINT4 = 2*LBUF + LBUF + 1 ! length in integer*4 units
       KINT  = 1
       KIINT = KINT + LBUF
 C
       DOCOOR = .FALSE.
  150  CONTINUE
-         CALL READI(LUDERA,LENINT,WRK(KINT))
+         CALL READI4(LUDERA,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH

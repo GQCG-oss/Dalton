@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 
 C  /* Deck twoint */
       SUBROUTINE TWOINT(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
@@ -2607,12 +2606,9 @@ C
                IF (DCCR12) THEN
                   CALL RN2OUT(SOINT,NSOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,
      &                        LAST,THRESH,NINDAB,NINDCD,IPRINT)
-               ELSE IF (SRINTS) THEN
-                  CALL SR2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
                ELSE
-                  CALL UN2OUT(SOINT,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
-     &                        THRESH,NINDAB,NINDCD,IPRINT)
+                  CALL UN2OUT(SOINT,SRINTS,IPNTNO,IPNTRP,IPNTLG,
+     &                        FIRST,LAST,THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
                IF (U21INT) THEN
@@ -2637,13 +2633,6 @@ C
          ELSE IF (PERTUR .OR. SPNORB) THEN
             IF (IPRINT.GE.5) WRITE(LUPRI,*)
      &      'SYMLOP: processing differentiated integrals'
-#ifndef VAR_INT64
-           IF (NBASIS .GT. 255) THEN
-              CALL QENTER('DR2OUT')
-              CALL QUIT('NBASIS .gt. 255 not implemented for 32-bit'//
-     &        ' integers - recompile with 64-bit integers.')
-           END IF
-#endif
             IF (TKTIME) CALL GETTIM(TIMSTR,DUMTIM)
             CALL DR2OUT(SOINT,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,
      &                  THRESH,IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,

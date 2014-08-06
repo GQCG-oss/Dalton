@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck rp_init */
       SUBROUTINE RP_INIT(WORK,LWORK)

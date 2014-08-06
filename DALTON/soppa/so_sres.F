@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_sres */
       SUBROUTINE SO_SRES(NOLDTR, NNEWTR,  DENSIJ, LDENSIJ, 

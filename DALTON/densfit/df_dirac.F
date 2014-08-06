@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -904,10 +904,9 @@ C
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, (MBAS(I),I=1,8), KBUF, NIBUF, NBITS
+      READ (LUINTA) MSYM, MBAS,  KBUF, NIBUF, NBITS, LENINT4
       IF (KBUF .NE. LBUF) CALL QUIT('READ_FIT2INT_2: KBUF .ne. LBUF')
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KFREE = 1
       LFREE = LWORK
       CALL MEMGET('INTE',KINT,LENINT,WRK,KFREE,LFREE)
@@ -917,7 +916,7 @@ C
       CALL DZERO(WMAT,NBASISAUX*NBASISAUX)
       JBUF = 608
   200 CONTINUE
-         CALL READI(LUINTA,LENINT,WRK(KINT))
+         CALL READI4(LUINTA,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
          IF (NINT .EQ. 0) GO TO 200
          IF (NINT .LT. 0) GO TO 400
