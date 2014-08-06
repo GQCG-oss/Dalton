@@ -61,7 +61,7 @@
 
       uESRDV   = DDOT(NNASHX,u_rho_ensemble,1,srac_orig,1)
 
-      VEENSEMB = eensemb_orig + uEDFT  - EDFT_orig + EDSR_orig + uEJCVSR&
+      VEENSEMB = eensemb_orig + uEDFT  - EDFT_orig - EDSR_orig + uEJCVSR&
      &         - uESRDV       - uEJVSR - EJVSR_orig
 
       write(lupri,*) 'contributions to the variational ensemble energy'
