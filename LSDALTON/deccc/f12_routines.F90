@@ -1027,17 +1027,6 @@ contains
 
   end subroutine free_batch
 
-#else
-
-   subroutine dummy_f12_routines()
-     implicit none
- 
-   end subroutine dummy_f12_routines
-
-#endif 
-
-
-#ifdef MOD_UNRELEASED
   subroutine get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
        & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
        & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
@@ -1235,9 +1224,6 @@ contains
     call mem_dealloc(Gciaj)
     call mem_dealloc(Giajc)
   end subroutine free_4Center_F12_integrals
-
-#endif
-
 
   subroutine get_4Center_MO_integrals(mylsitem,lupri,nbasis,nocc,noccfull,nvirt,&
        & Cocc,Cvirt,inputstring,gAO,gMO)
@@ -1443,5 +1429,14 @@ contains
     end subroutine sub4
 
   end subroutine get_4Center_MO_integrals
+
+#else
+
+   subroutine dummy_f12_routines()
+     implicit none
+ 
+   end subroutine dummy_f12_routines
+
+#endif 
 
 end module f12_routines_module
