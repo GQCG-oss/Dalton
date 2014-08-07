@@ -89,7 +89,7 @@ C
      *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
       CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
 C
-      if(do_ensemble_dft)then
+      if(do_sc_ensemble_dft)then
 #ifndef MOD_SRDFT
         call quit('srdft not implemented in this version')
 #else
@@ -133,7 +133,8 @@ C             ... restart CI in next macro ensemble-DFT iteration ...
               WRITE(LUPRI,'(2X,A/)') 
      &      '---------------------------------------------------------'
               WRITE(LUPRI,'(/2X,A,F20.12/)')
-     &        '@ Final ensemble-DFT energy: ',WORK(KECID + IMCITR -1)
+     &        '@ Final variational ensemble-DFT energy: ',
+     &         WORK(KECID + IMCITR -1)
 #endif
       else
 C       =================
@@ -615,31 +616,24 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
 !          ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
         END DO
 
-        write(lupri,806) '*******************************'
-        WRITE(LUPRI,806) 'Final ensemble CI-srDFT energy:',EENSEMB
+        write(lupri,806) '*****************************************'
+        WRITE(LUPRI,806) 'Non-variational ensemble CI-srDFT energy:',
+     &                    EENSEMB
 !       WRITE(LUPRI,806) 'ESRDV_ens=', ESRDV_ens
-        write(lupri,806) '*******************************'
+        write(lupri,806) '*****************************************'
 !           
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
   807   FORMAT(/1X,A,I2,A,F20.12)
 
-        if(do_test_sc_ens)then
-          call  get_sc_ensemble_energy(emydft,EJCSR,
-     &                                 EJVSR,EDSR,
-     &                                 EDFT,EMYDFTAUX,
-     &                                 eci,emy_ci,
-     &                                 energy_root,eensemb,
-     &                                 cmo,wrk(krsac),nnashx,nnorbt,
-     &                                 ncroot,istaci,weights,lupri,
-     &                                 potnuc,
+        veensemb = eensemb
+        if(do_sc_ensemble_dft)then
+          call  get_sc_ensemble_energy(veensemb,EDFT,
+     &                                 cmo,nnashx,nnorbt,
+     &                                 ncroot,weights,lupri,
      &                                 wrk(kw2),lw2)
         end if
-
       ENDIF
-!       write(lupri,*) 'done with srdft ....'
-!       call flshfo(lupri)
-
 
       J = LUW4
   815 CONTINUE
@@ -815,8 +809,8 @@ C
  9999 CONTINUE
 
       !> save the ensemble-DFT energy for self-consistent convergence
-      if(do_ensemble_dft)then
-        eci(1) = EENSEMB
+      if(do_sc_ensemble_dft)then
+        eci(1) = VEENSEMB
       end if
 C
       if(ci_program .eq. 'LUCITA   ')then
