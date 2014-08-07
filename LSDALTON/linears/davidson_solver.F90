@@ -117,7 +117,7 @@ subroutine davidson_solver(CFG,grad,x)
         if (iter > 3) then
             call test_convergence(CFG,grad,resnorm_2d)
         else
-            resnorm_2d =sqrt(mat_sqnorm2(grad))
+            resnorm_2d = sqrt(mat_sqnorm2(grad))
         endif
         if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
@@ -744,7 +744,6 @@ call mem_dealloc(VL)
  
  CFG%mu = minval(EigValues)
  indx= minloc(EigValues)
-
  !Store corresponding eigenvector (eig.vecs is given i A in output)
  mu_Vec(:) = VR(:,indx(1))
 call mem_dealloc(VR)
@@ -773,7 +772,6 @@ call mem_dealloc(VR)
  do i=1,iter-1
     call mat_daxpy(xred(i),CFG%Allb(i),X)
  end do
-
  call mem_dealloc(A)
 
 end subroutine Solve_EigVal_RedSpace
