@@ -1016,7 +1016,7 @@ C       We write the classical response matrix to file
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'The classical response matrix saved in QMMMIM.'
          WRITE(LUPRI,*)
-         STOP
+         CALL QUIT('The classical response matrix saved in QMMMIM.')
         ENDIF
 
         CONMAT = .FALSE.

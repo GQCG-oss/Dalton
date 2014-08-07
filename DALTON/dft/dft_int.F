@@ -187,7 +187,7 @@ CAMT Require higher derivatives for explicit potential construction
          if (.not. export_file_exists) then
             if ((nr_points_export + nlen) > max_export_grid_length) then
                print *, 'ERROR in grid export, array too small'
-               stop 1
+               call quit('ERROR in grid export, array too small')
             end if
             do i = 1, nlen
                rx(nr_points_export + i) = coor(1, i)

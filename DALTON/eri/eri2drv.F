@@ -3245,7 +3245,7 @@ c
               if(nccmio.eq.1) then
                 write(u,505) i, j, aoint(1,i,j,k)
               else
-                stop 'may not work...'
+                call quit('may not work...')
                 do icc=1,nccmio
                   write(u,505) i, j, aoint(1+icc-1,i,j,k)
                 end do
@@ -3259,7 +3259,7 @@ c
             if(nccmio.eq.1) then
               write(u,505) i, j, aoint(1,i,j,1)
             else
-              stop 'may not work...'
+              call quit('may not work...')
               do icc=1,nccmio
                 write(u,505) i, j, aoint(1+icc-1,i,j,1)
               end do
@@ -3323,7 +3323,7 @@ c     C. Villani, Uni Karlsruhe, Feb 2005
                 end if
               else
 c               not sure, here
-                stop 'Integral deriv. ncc>1, may not work...'
+                call quit('Integral deriv. ncc>1, may not work...')
               end if
             end do
           end do
@@ -3343,7 +3343,7 @@ c               not sure, here
               end if
             else
 c               not sure, here
-              stop 'Integral deriv. ncc>1, may not work...'
+              call quit('Integral deriv. ncc>1, may not work...')
             end if
           end do
         end do

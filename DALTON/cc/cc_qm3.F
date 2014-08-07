@@ -3974,26 +3974,7 @@ C
       CALL WCLOSE2(LUMMXI, FILMMX, 'KEEP')
 C
       END
-************************************************************
-C  /* Deck quitmm */
-      SUBROUTINE QUITMM(TEXT)
-#include "implicit.h"
-#include "priunit.h"
-      CHARACTER TEXT*(*)
-C
-C     Stamp date and time and hostname to output
-C
-      CALL TSTAMP('  --- PROGRAM STOPS ---',
-     &   LUPRI)
-      WRITE (LUPRI,'(/2A/)') ' Reason: ',TEXT
-      CALL GETTIM(CTOT,WTOT)
-      CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
-      CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
-C
-      STOP 100
-      END
 ****************************************************************
-C
 C  /* deck ccsl_gtr */
       SUBROUTINE CCMM_REP1(WORK,LWORK)
 C

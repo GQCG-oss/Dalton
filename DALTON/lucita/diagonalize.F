@@ -4967,7 +4967,7 @@ C     END IF
 *
       IF(NOCSF.EQ.0) THEN
         WRITE(6,*) ' Please turn off csf''s '
-        STOP'NO CSF''s in PERTCTL !! '
+        CALL QUIT('NO CSF''s in PERTCTL !! ')
       END IF
 *
       NTEST = 10
