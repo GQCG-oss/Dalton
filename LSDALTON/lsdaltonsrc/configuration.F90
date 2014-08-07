@@ -1126,6 +1126,8 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DEBUGICHOR')
            INTEGRAL%DEBUGICHOR = .TRUE.
            READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
+        CASE ('.DEBUGICHORLINK')
+           INTEGRAL%DEBUGICHORLINK = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
