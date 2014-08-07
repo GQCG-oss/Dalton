@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_ropt */
       SUBROUTINE SO_ROPT(NOLDTR,NNEWTR,NEXCI,MXDIM,EIVEC,LEIVEC,EXVAL,

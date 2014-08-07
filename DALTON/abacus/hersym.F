@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -22,17 +22,17 @@
 !
 !
 C FILE    : hersym.F
-#include "single.h"
 C
 #ifdef OLD_LOG
-===========================================================================
+========================================================================
 950522-kenneth
-Added solvent in FIND_SYMMETRY, as well as using NUCIND instead ATMARR in loops
+Added solvent in FIND_SYMMETRY,
+as well as using NUCIND instead ATMARR in loops
 950208-vebjorn
 SYMADD: Completely new module to determine molecular symmetry, find the
         symmetry elements, remove symmetry-dependant atoms and finally
         return a string containing the full point group.
-===========================================================================
+========================================================================
 #endif
 C  /* Deck symadd */
       SUBROUTINE SYMADD(WORK,LWORK,NONTYP,NSYMOP,NONT,KATOM,KASYM,

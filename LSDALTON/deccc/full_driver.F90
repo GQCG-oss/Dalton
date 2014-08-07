@@ -1125,210 +1125,6 @@ contains
 
 #endif
 
-  subroutine get_4Center_MO_integrals(mylsitem,lupri,nbasis,nocc,noccfull,nvirt,&
-       & Cocc,Cvirt,inputstring,gAO,gMO)
-    implicit none
-    integer :: nocc,noccfull,nvirt,nCabsAO,nCabs,nbasis
-    !> Lsitem structure
-    type(lsitem), intent(inout) :: mylsitem
-    character(len=4) :: inputstring
-    integer :: ndim2(4),ndim1(4)
-    real(realk),pointer :: gAO(:,:,:,:)
-    real(realk),pointer :: gMO(:,:,:,:) ,elms(:)
-    type(matrix) :: CMO(4)
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
-    !> Virtual MO coefficients
-    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
-    type(matrix) :: CMO_cabs,CMO_ri
-    real(realk),pointer :: tmp(:,:,:,:)
-    real(realk),pointer :: tmp2(:,:,:,:)
-    character :: string(4)
-    logical :: doCABS,doRI
-    integer :: i,lupri
-    string(1) = inputstring(1:1)
-    string(2) = inputstring(2:2)
-    string(3) = inputstring(3:3)
-    string(4) = inputstring(4:4)
-    doCABS = .FALSE.
-    do i=1,4
-       if(string(i).EQ.'c')then !occupied active
-          doCABS = .TRUE.
-       endif
-    enddo
-    doRI = .FALSE.
-    do i=1,4
-       if(string(i).EQ.'r')then !occupied active
-          doRI = .TRUE.
-       endif
-    enddo
-    call determine_CABS_nbast(nCabsAO,nCabs,mylsitem%SETTING,lupri)
-    IF(doCABS)THEN
-       call mat_init(CMO_cabs,nCabsAO,nCabs)
-       call build_CABS_MO(CMO_cabs,nCabsAO,mylsitem%SETTING,lupri)
-    ENDIF
-    IF(doRI)THEN
-       call mat_init(CMO_ri,nCabsAO,nCabsAO)
-       call build_RI_MO(CMO_ri,nCabsAO,mylsitem%SETTING,lupri)
-    ENDIF
-    do i=1,4
-       if(string(i).EQ.'i')then !occupied active
-          ndim1(i) = nbasis
-          ndim2(i) = nocc
-       elseif(string(i).EQ.'m')then !all occupied
-          ndim1(i) = nbasis
-          ndim2(i) = noccfull
-       elseif(string(i).EQ.'p')then !all occupied + virtual
-          ndim1(i) = nbasis
-          ndim2(i) = nbasis
-       elseif(string(i).EQ.'a')then !virtual
-          ndim1(i) = nbasis
-          ndim2(i) = nvirt
-       elseif(string(i).EQ.'c')then !cabs
-          ndim1(i) = ncabsAO
-          ndim2(i) = ncabs
-       elseif(string(i).EQ.'r')then !ri - MOs
-          ndim1(i) = ncabsAO
-          ndim2(i) = ncabsAO
-       endif
-       call mat_init(CMO(i),ndim1(i),ndim2(i))
-       if(string(i).EQ.'i')then !occupied active
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'m')then !all occupied
-          call dcopy(ndim2(i)*ndim1(i),Cocc,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'p')then !all occupied + virtual
-          call dcopy(noccfull*nbasis,Cocc,1,CMO(i)%elms,1)
-          call dcopy(nvirt*nbasis,Cvirt,1,CMO(i)%elms(noccfull*nbasis+1),1)
-       elseif(string(i).EQ.'a')then !virtual
-          call dcopy(ndim2(i)*ndim1(i),Cvirt,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'c')then !cabs
-          call dcopy(ndim2(i)*ndim1(i),CMO_cabs%elms,1,CMO(i)%elms,1)
-       elseif(string(i).EQ.'r')then !ri - MOs
-          call dcopy(ndim2(i)*ndim1(i),CMO_RI%elms,1,CMO(i)%elms,1)
-       endif
-    enddo
-    IF(doCABS)THEN
-       call mat_free(CMO_cabs)
-    ENDIF
-    IF(doRI)THEN
-       call mat_free(CMO_ri)
-    ENDIF
-    call mem_alloc(tmp,ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-    call ls_dzero(tmp,ndim2(1)*ndim1(2)*ndim1(3)*ndim1(4))
-    call sub1(gao,tmp,CMO(1)%elms,ndim2,ndim1)
-
-    call mem_alloc(tmp2,ndim2(1),ndim2(2),ndim1(3),ndim1(4))
-    call ls_dzero(tmp2,ndim2(1)*ndim2(2)*ndim1(3)*ndim1(4))
-    call sub2(tmp,tmp2,CMO(2)%elms,ndim2,ndim1)
-    call mem_dealloc(tmp)
-
-    call mem_alloc(tmp,ndim2(1),ndim2(2),ndim2(3),ndim1(4))
-    call ls_dzero(tmp,ndim2(1)*ndim2(2)*ndim2(3)*ndim1(4))
-    call sub3(tmp2,tmp,CMO(3)%elms,ndim2,ndim1)
-    call mem_dealloc(tmp2)
-
-    call mem_alloc(gMO,ndim2(1),ndim2(2),ndim2(3),ndim2(4))
-    call ls_dzero(gMO,ndim2(1)*ndim2(2)*ndim2(3)*ndim2(4))
-    call sub4(tmp,gMO,CMO(4)%elms,ndim2,ndim1)
-    call mem_dealloc(tmp)
-    do i=1,4
-       call mat_free(CMO(i))
-    enddo
-
-  contains
-
-    subroutine sub1(gao,tmp,elms,ndim2,ndim1)
-      implicit none
-      integer :: ndim1(4),ndim2(4)
-      real(realk),intent(in) :: elms(ndim1(1),ndim2(1))
-      real(realk),intent(in) :: gao(ndim1(1),ndim1(2),ndim1(3),ndim1(4))
-      real(realk) :: tmp(ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-      integer :: a,b,c,d,p
-
-      do d=1,ndim1(4)
-         do c=1,ndim1(3)
-            do b=1,ndim1(2)
-               do a=1,ndim2(1)
-
-                  do p=1,ndim1(1)
-                     tmp(a,b,c,d) = tmp(a,b,c,d) + gao(p,b,c,d)*elms(p,a)
-                  end do
-
-               end do
-            end do
-         end do
-      end do
-    end subroutine sub1
-
-    subroutine sub2(tmp,tmp2,elms,ndim2,ndim1)
-      implicit none
-      integer :: ndim1(4),ndim2(4)
-      real(realk),intent(in) :: elms(ndim1(2),ndim2(2))
-      real(realk),intent(in) :: tmp(ndim2(1),ndim1(2),ndim1(3),ndim1(4))
-      real(realk) :: tmp2(ndim2(1),ndim2(2),ndim1(3),ndim1(4))
-      integer :: a,b,c,d,p
-
-      do d=1,ndim1(4)
-         do c=1,ndim1(3)
-            do b=1,ndim2(2)
-               do a=1,ndim2(1)
-
-                  do p=1,ndim1(2)
-                     tmp2(a,b,c,d) = tmp2(a,b,c,d) + tmp(a,p,c,d)*elms(p,b)
-                  end do
-
-               end do
-            end do
-         end do
-      end do
-    end subroutine sub2
-
-    subroutine sub3(tmp2,tmp,elms,ndim2,ndim1)
-      implicit none
-      integer :: ndim1(4),ndim2(4)
-      real(realk),intent(in) :: elms(ndim1(3),ndim2(3))
-      real(realk),intent(in) :: tmp2(ndim2(1),ndim2(2),ndim1(3),ndim1(4))
-      real(realk) :: tmp(ndim2(1),ndim2(2),ndim2(3),ndim1(4))
-      integer :: a,b,c,d,p
-
-      do d=1,ndim1(4)
-         do c=1,ndim2(3)
-            do b=1,ndim2(2)
-               do a=1,ndim2(1)
-
-                  do p=1,ndim1(3)
-                     tmp(a,b,c,d) = tmp(a,b,c,d) + tmp2(a,b,p,d)*elms(p,c)
-                  end do
-
-               end do
-            end do
-         end do
-      end do
-    end subroutine sub3
-
-    subroutine sub4(tmp,gMO,elms,ndim2,ndim1)
-      implicit none
-      integer :: ndim1(4),ndim2(4)
-      real(realk),intent(in) :: elms(ndim1(4),ndim2(4))
-      real(realk),intent(in) :: tmp(ndim2(1),ndim2(2),ndim2(3),ndim1(4))
-      real(realk) :: gMO(ndim2(1),ndim2(2),ndim2(3),ndim2(4))
-      integer :: a,b,c,d,p
-
-      do d=1,ndim2(4)
-         do c=1,ndim2(3)
-            do b=1,ndim2(2)
-               do a=1,ndim2(1)
-
-                  do p=1,ndim1(4)
-                     gMO(a,b,c,d) = gMO(a,b,c,d) + tmp(a,b,c,p)*elms(p,d)
-                  end do
-
-               end do
-            end do
-         end do
-      end do
-    end subroutine sub4
-
-  end subroutine get_4Center_MO_integrals
 
 #ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
@@ -1399,7 +1195,13 @@ contains
     real(realk),pointer :: Rapbq(:,:,:,:)
     real(realk),pointer :: Rambc(:,:,:,:)
     real(realk),pointer :: Fiajb(:,:,:,:)
+
     real(realk),pointer :: Viajb(:,:,:,:)
+    real(realk),pointer :: Viajb_t1(:,:,:,:)
+    real(realk),pointer :: Viajb_t2(:,:,:,:)    
+    real(realk),pointer :: Viajb_t3(:,:,:,:)
+    real(realk),pointer :: Viajb_t4(:,:,:,:)
+
     real(realk),pointer :: Ripaq(:,:,:,:)
     real(realk),pointer :: Rimac(:,:,:,:)
     real(realk),pointer :: Ramic(:,:,:,:)
@@ -1494,9 +1296,11 @@ contains
        end do
     end do
 
-    print *, 'TOYCODE: CCSD CORRELATION ENERGY = ', ECCSD
+    write(*,'(1X,a)') '----------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD CORRELATION ENERGY = ', ECCSD
+    
+    !> DEC Input
     write(DECinfo%output,*) 'TOYCODE: CCSD CORRELATION ENERGY = ', ECCSD
-
 
     ! INTEGRAL GUYS: DO YOUR MAGIC FOR THE F12 CONTRIBUTION HERE...
     call mem_alloc(Vijij,nocc,nocc)
@@ -1508,22 +1312,51 @@ contains
     call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
     call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
 
-
-    call mem_alloc(Viajb,nocc,nvirt,nocc,nvirt)
+    !> --------------------------------------
+    !>               Viajb ccsd
+    !>---------------------------------------
+    !V_ij^ab
+    call mem_alloc(Viajb,nocc,nvirt,nocc,nvirt) 
     call ccsdf12_Viajb(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+   
+    if(DECinfo%F12DEBUG) then
+       call mem_alloc(Viajb_t1,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_t2,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_t3,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_t4,nocc,nvirt,nocc,nvirt) 
 
+       call ccsdf12_Viajb_t1(Viajb_t1,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_t2(Viajb_t2,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_t3(Viajb_t3,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_t4(Viajb_t4,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)       
+       print *, '----------------------------------------'
+       print *, '           Vij_ab - matrix terms        '
+       print *, '----------------------------------------'
+       print *,'norm4D(Viajb_t1): ', norm4D(Viajb_t1)
+       print *,'norm4D(Viajb_t2): ', norm4D(Viajb_t2)
+       print *,'norm4D(Viajb_t3): ', norm4D(Viajb_t3)
+       print *,'norm4D(Viajb_t4): ', norm4D(Viajb_t4)       
+       
+    endif
+
+
+    !V_ij^ia
     call mem_alloc(Viija,nocc,nocc,nvirt)
     call ccsdf12_Viija(Viija,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
+    !V_ij^ja
     call mem_alloc(Vijja,nocc,nocc,nvirt)
     call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
+    !V_ij^ai
     call mem_alloc(Viaji,nocc,nvirt,nocc)
     call ccsdf12_Viaji(Viaji,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
+    !V_ij^aj
     call mem_alloc(Viajj,nocc,nvirt,nocc)
     call ccsdf12_Viajj(Viajj,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
+    ! CCSD coupling V_ij^ij & V_ji^ij 
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
 
@@ -1532,11 +1365,18 @@ contains
     call mem_dealloc(Vijja)
     call mem_dealloc(Viajj)
     call mem_dealloc(Viaji)
+
     call mem_dealloc(Viajb)
 
-    E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    print*,'E21',E21
+    if(DECinfo%F12DEBUG) then
+       call mem_dealloc(Viajb_t1)
+       call mem_dealloc(Viajb_t2)
+       call mem_dealloc(Viajb_t3)
+       call mem_dealloc(Viajb_t4)
+    endif
 
+    E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
+    
     ! F12 Specific
     call mem_dealloc(Vijij)
     call mem_dealloc(Vjiij)
@@ -1603,8 +1443,12 @@ contains
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
-    print *, 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
-    print *, 'TOYCODE: CCSD-F12 CORRELATION ENERGY = ', ECCSD_F12
+
+    write(*,'(1X,a)') '----------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
+    
+    !> Input to DEC
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY = ', ECCSD_F12
 
@@ -1692,208 +1536,6 @@ contains
     call array4_free(VOVO)
 
   end subroutine full_get_ccsd_singles_and_doubles
-
-
-#ifdef MOD_UNRELEASED
-  subroutine get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
-       & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
-       & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-
-    implicit none
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> Lsitem structure
-    type(lsitem), intent(inout) :: mylsitem
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO
-    real(realk),pointer :: Ripjq(:,:,:,:)
-    real(realk),pointer :: Fijkl(:,:,:,:)
-    real(realk),pointer :: Tijkl(:,:,:,:)
-    real(realk),pointer :: Rimjc(:,:,:,:)
-    real(realk),pointer :: Dijkl(:,:,:,:)
-    real(realk),pointer :: Tirjk(:,:,:,:)
-    real(realk),pointer :: Tijkr(:,:,:,:)
-    real(realk),pointer :: Gipjq(:,:,:,:)
-    real(realk),pointer :: Gimjc(:,:,:,:)
-    real(realk),pointer :: Girjs(:,:,:,:)
-    real(realk),pointer :: Girjm(:,:,:,:)
-    real(realk),pointer :: Grimj(:,:,:,:)
-    real(realk),pointer :: Gipja(:,:,:,:)
-    real(realk),pointer :: Gpiaj(:,:,:,:)
-    real(realk),pointer :: Gicjm(:,:,:,:)
-    real(realk),pointer :: Gcimj(:,:,:,:)
-    real(realk),pointer :: Gcirj(:,:,:,:)
-    real(realk),pointer :: Gciaj(:,:,:,:)
-    real(realk),pointer :: Giajc(:,:,:,:)
-    !
-    real(realk),pointer :: gao(:,:,:,:)
-
-    call mem_alloc(gao,nbasis,nbasis,nbasis,nbasis)
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRC')
-
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Ripjq)
-
-    !Calculate the various Gaussian geminal integrals with four regular AO indeces
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'ipip',gAO,Gipjq)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRF')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Fijkl)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRD')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                        MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Dijkl)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRR2')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiii',gAO,Tijkl)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ipia',gAO,Gipja)
-
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'piai',gAO,Gpiaj)
-
-
-    call mem_dealloc(gao)
-
-    !Calculate the various Gaussian geminal integrals with RRRC
-    call mem_alloc(gao,nbasis,nbasis,nbasis,ncabsAO)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iiir',gAO,Tijkr)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCC')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Rimjc)
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRCG')
-
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'imic',gAO,Gimjc)
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'iaic',gAO,Giajc)
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RRRC2')
-
-    call mem_dealloc(gao)
-    !Calculate the various Gaussian geminal integrals with RCRR
-    call mem_alloc(gao,nbasis,ncabsAO,nbasis,nbasis)
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRR2')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irii',gAO,Tirjk)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'irim',gAO,Girjm)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'icim',gAO,Gicjm)
-
-    call mem_dealloc(gao)
-    !Calculate the various Gaussian geminal integrals with RCRC
-    call mem_alloc(gao,nbasis,ncabsAO,nbasis,ncabsAO)
-
-    !Calculate the various Gaussian geminal integrals with four regular AO indeces
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'RCRCG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &                          MyMolecule%Co, MyMolecule%Cv,'irir',gAO,Girjs)
-
-    call mem_dealloc(gao)
-    !Calculate the various Gaussian geminal integrals with CRRR
-    call mem_alloc(gao,ncabsAO,nbasis,nbasis,nbasis)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'rimi',gAO,Grimj)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'cimi',gAO,Gcimj)
-
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRRRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciai',gAO,Gciaj)
-
-    call mem_dealloc(gao)
-    !Calculate the various Gaussian geminal integrals with CRCR
-    call mem_alloc(gao,ncabsAO,nbasis,ncabsAO,nbasis)
-    gao = 0.0E0_realk
-    call get_full_AO_integrals(nbasis,ncabsAO,gao,MyLsitem,'CRCRG')
-    call get_4Center_MO_integrals(mylsitem,DECinfo%output,nbasis,nocc,noccfull,nvirt,&
-         &  MyMolecule%Co, MyMolecule%Cv,'ciri',gAO,Gcirj)
-    call mem_dealloc(gao)
-
-  end subroutine get_4Center_F12_integrals
-
-  subroutine free_4Center_F12_integrals(&
-       & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
-       & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
-    implicit none
-    real(realk),pointer :: Ripjq(:,:,:,:)
-    real(realk),pointer :: Fijkl(:,:,:,:)
-    real(realk),pointer :: Tijkl(:,:,:,:)
-    real(realk),pointer :: Rimjc(:,:,:,:)
-    real(realk),pointer :: Dijkl(:,:,:,:)
-    real(realk),pointer :: Tirjk(:,:,:,:)
-    real(realk),pointer :: Tijkr(:,:,:,:)
-    real(realk),pointer :: Gipjq(:,:,:,:)
-    real(realk),pointer :: Gimjc(:,:,:,:)
-    real(realk),pointer :: Girjs(:,:,:,:)
-    real(realk),pointer :: Girjm(:,:,:,:)
-    real(realk),pointer :: Grimj(:,:,:,:)
-    real(realk),pointer :: Gipja(:,:,:,:)
-    real(realk),pointer :: Gpiaj(:,:,:,:)
-    real(realk),pointer :: Gicjm(:,:,:,:)
-    real(realk),pointer :: Gcimj(:,:,:,:)
-    real(realk),pointer :: Gcirj(:,:,:,:)
-    real(realk),pointer :: Gciaj(:,:,:,:)
-    real(realk),pointer :: Giajc(:,:,:,:)
-    call mem_dealloc(Ripjq)
-    call mem_dealloc(Fijkl)
-    call mem_dealloc(Tijkl)
-    call mem_dealloc(Rimjc)
-    call mem_dealloc(Dijkl)
-    call mem_dealloc(Tirjk)
-    call mem_dealloc(Tijkr)
-    call mem_dealloc(Gipjq)
-    call mem_dealloc(Gimjc)
-    call mem_dealloc(Girjs)
-    call mem_dealloc(Girjm)
-    call mem_dealloc(Grimj)
-    call mem_dealloc(Gipja)
-    call mem_dealloc(Gpiaj)
-    call mem_dealloc(Gicjm)
-    call mem_dealloc(Gcimj)
-    call mem_dealloc(Gcirj)
-    call mem_dealloc(Gciaj)
-    call mem_dealloc(Giajc)
-  end subroutine free_4Center_F12_integrals
-
-#endif
 
   !> \brief Full canonical MP2 calculation, not particularly efficient, mainly to be used for
   !> testing.

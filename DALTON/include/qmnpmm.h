@@ -1,40 +1,43 @@
+C FILE: DALTON/include/qmnpmm.h
 C
-      LOGICAL DONPSUB, DOMMSUB, NPMQGAU, MMMQGAU, 
-     &        MQITER, CMXPOL, DONPCAP, DOMMCAP, 
-     &        DONPPOL, DOMMPOL, NOVDAMP
-      INTEGER MAXBLK, MXNPATM, MXMMATM, TNPBLK, TMMBLK, 
-     &        IPRTLVL, TNPATM, TMMATM, NPATOM, NPFTYP, 
-     &        MMATOM, MMFTYP, MXNPFF, MXMMFF, TNPFF, TMMFF,
-     &        MMMOL, TPOLATM, MMSKIP	   
-C
-      DOUBLE PRECISION NPCORD, MMCORD, NPCHRG, MMCHRG, NPFPOL,
-     &        NPFCAP, NPFOMG1, NPFGAM1, NPFOMG2, NPFGAM2, NPFFAC,
-     &        MMFM0, MMFPOL, 
-     &        ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP, 
+      REAL*8  NPCORD,  MMCORD,  NPCHRG,  MMCHRG,
+     &        NPFPOL,  NPFCAP,  NPFOMG1, NPFGAM1,
+     &        NPFOMG2, NPFGAM2, NPFFAC,
+     &        MMFM0,   MMFPOL,
+     &        ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP,
      &        ENSOLQMM, EESOLQMM, ENSOLMMM, EESOLMMM
 C
+      INTEGER TNPBLK,  TMMBLK,  IPRTLVL,
+     &        TNPATM,  TMMATM,  NPATOM, NPFTYP,
+     &        MMATOM,  MMFTYP,  TNPFF,  TMMFF,
+     &        MMMOL,   TPOLATM, MMSKIP
+C
+      LOGICAL DONPSUB, DOMMSUB, NPMQGAU, MMMQGAU,
+     &        MQITER,  CMXPOL,  DONPCAP, DOMMCAP,
+     &        DONPPOL, DOMMPOL, NOVDAMP
+C
+      INTEGER MAXBLK,  MXNPATM, MXMMATM, MXNPFF, MXMMFF
       PARAMETER (MAXBLK = 5)
       PARAMETER (MXNPATM = 10000)
       PARAMETER (MXMMATM = 90000)
-      PARAMETER (MXNPFF = 5) 
+      PARAMETER (MXNPFF = 5)
       PARAMETER (MXMMFF = 20)
 C
-      COMMON /QMNPIN/ NPCORD(3,MXNPATM), MMCORD(3,MXMMATM),
-     &                NPCHRG(MAXBLK), MMCHRG(MAXBLK),
-     &                ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP,  
-     &                NPFTYP(MXNPATM), MMFTYP(MXMMATM),
-     &                NPATOM(MAXBLK), MMATOM(MAXBLK),
-     &                TNPATM, TMMATM, TPOLATM, 
-     &                NPFPOL(MXNPFF), NPFCAP(MXNPFF), 
-     &                NPFOMG1(MXNPFF), NPFGAM1(MXNPFF),
-     &                NPFOMG2(MXNPFF), NPFGAM2(MXNPFF),  
-     &                NPFFAC(MXNPFF), TNPFF, TMMFF,
-     &                TNPBLK, TMMBLK, IPRTLVL, DONPSUB, 
-     &                DOMMSUB, NPMQGAU, MMMQGAU, MQITER, 
-     &                CMXPOL, DONPCAP, DOMMCAP, DONPPOL, 
-     &                DOMMPOL, NOVDAMP,
-     &                MMFM0(MXMMFF), MMFPOL(MXMMFF), 
-     &                MMMOL(MXMMATM), MMSKIP(MXMMATM),  
-     &                ENSOLQMM, EESOLQMM, 
-     &                ENSOLMMM, EESOLMMM        
-C
+      COMMON /QMNPIN/ NPCORD(3,MXNPATM), MMCORD(3,MXMMATM),     ! real*8
+     &                NPCHRG(MAXBLK),    MMCHRG(MAXBLK),
+     &                NPFPOL(MXNPFF),    NPFCAP(MXNPFF),
+     &                NPFOMG1(MXNPFF),   NPFGAM1(MXNPFF),
+     &                NPFOMG2(MXNPFF),   NPFGAM2(MXNPFF),
+     &                NPFFAC(MXNPFF),
+     &                MMFM0(MXMMFF),     MMFPOL(MXMMFF),
+     &                ENSOLQNP, EESOLQNP, ENSOLMNP, EESOLMNP,
+     &                ENSOLQMM, EESOLQMM, ENSOLMMM, EESOLMMM,
+     &                TNPBLK,  TMMBLK,   IPRTLVL,               ! integer
+     &                TNPATM,  TMMATM,   TNPFF,   TMMFF,
+     &                NPFTYP(MXNPATM),   TPOLATM, MMFTYP(MXMMATM),
+     &                NPATOM(MAXBLK),    MMATOM(MAXBLK),
+     &                MMMOL(MXMMATM),    MMSKIP(MXMMATM),
+     &                DONPSUB, DOMMSUB,  NPMQGAU, MMMQGAU,      ! logical
+     &                MQITER,  CMXPOL,   DONPCAP, DOMMCAP,
+     &                DONPPOL, DOMMPOL,  NOVDAMP
+C -- end of DALTON/include/qmnpmm.h

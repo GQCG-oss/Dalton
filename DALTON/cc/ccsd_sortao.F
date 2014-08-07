@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_sortao */
       SUBROUTINE CCSD_SORTAO(WORK,LWORK)
@@ -119,28 +118,25 @@ C
         NALLBAS = NBAST 
       ENDIF
 C
-#if defined (VAR_INT64)
-      NIBUF = 1
-      NBITS = 16
-#else
       IF (NALLBAS .LE. 255) THEN
          NIBUF = 1
          NBITS = 8
+         IBIT1 = 2**8  - 1
+         IBIT2 = 2**16 - 1
       ELSE
          NIBUF = 2
          NBITS = 16
+         IBIT1 = 2**16 - 1
+         IBIT2 = 0   ! not used when NIBUF .eq. 2
       END IF
-#endif
-      IBIT1 = 2**NBITS     - 1
-      IBIT2 = 2**(2*NBITS) - 1
 C
 C-----------------------
 C     Buffer allocation.
 C-----------------------
 C
-      KIBUF = 1
-      KRBUF = KIBUF + (NIBUF*LBUF + 1)/IRAT + 1
-      KAOAB = KRBUF + LBUF
+      KRBUF = 1
+      KIBUF = KRBUF + LBUF
+      KAOAB = KIBUF + (NIBUF*LBUF + 1)/2 + 1 ! IBUF always integer*4
       KAOG  = KAOAB + (N2BASX     + 1)/IRAT + 1
       KEND1 = KAOG  + (NBAST*NSYM + 1)/IRAT + 1
       LWRK1 = LWORK - KEND1
@@ -273,7 +269,7 @@ C
       RETURN
       END
 C  /* Deck ccrda1 */
-      SUBROUTINE CCSD_SORT1(LUINTA,XINT,IBUF,RBUF,KAOAB,KAOG,ISYDIS,
+      SUBROUTINE CCSD_SORT1(LUINTA,XINT,IBUF4,RBUF,KAOAB,KAOG,ISYDIS,
      *                      LENGTH,IOFF,ID1,ID2,NIBUF,LBUF,NBITS,IBIT1)
 C
 C     Written by Henrik Koch 25-Sep-1993
@@ -282,8 +278,9 @@ C
 #include "priunit.h"
 #include "ibtpar.h"
 #include "ccorb.h"
-      DIMENSION XINT(LENGTH,*),IBUF(LBUF,NIBUF),RBUF(LBUF)
-      DIMENSION KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
+      REAL*8    XINT(LENGTH,*),RBUF(LBUF)
+      INTEGER*4 IBUF4(NIBUF*LBUF), LENGTH4
+      INTEGER   KAOAB(NBAST,NBAST),KAOG(NBAST,NSYM)
 #include "ccsdsym.h"
 #include "r12int.h"
 #include "ibtfun.h"
@@ -295,13 +292,13 @@ C
 C
       IF (NIBUF .EQ. 1) THEN
 C
-   10    READ(LUINTA,ERR=2000) RBUF,IBUF,NINT
+   10    READ(LUINTA,ERR=2000) RBUF,IBUF4,LENGTH4
 C
-         IF (NINT .EQ. -1) GOTO 100
+         IF (LENGTH4 .EQ. -1) GOTO 100
 C
-         DO I = 1,NINT
+         DO I = 1,LENGTH4
 C
-            LABLE = IBUF(I,1)
+            LABLE = IBUF4(I)
             VALUE = RBUF(I)
 C
             IP = IBTAND(       LABLE         ,IBIT1)
@@ -334,14 +331,14 @@ C
 C
       ELSE
 C
-   30    READ(LUINTA,ERR=2000) RBUF,IBUF,NINT
+   30    READ(LUINTA,ERR=2000) RBUF,IBUF4,LENGTH4
 C
-         IF (NINT .EQ. -1) GOTO 200
+         IF (LENGTH4 .EQ. -1) GOTO 200
 C
-         DO 40 I = 1,NINT
+         DO 40 I = 1,LENGTH4
 C
-            LABLE1 = IBUF(I,1)
-            LABLE2 = IBUF(I,2)
+            LABLE1 = IBUF4(2*I-1)
+            LABLE2 = IBUF4(2*I  )
             VALUE = RBUF(I)
 C
             IP = IBTAND(       LABLE1       ,IBIT1)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck ccsd_energy */
       SUBROUTINE CCSD_ENERGY(WORK,LWORK,APROXR12,CCR12RSP,CCR12LIM)
@@ -1089,7 +1088,7 @@ C
          LWRK2 = LWORK - KEND2
 C
         IF (LWRK2 .LT. 0) THEN
-            STOP 'Insufficient memory in CCSD_ENERGY'
+            CALL QUIT('Insufficient memory in CCSD_ENERGY')
          ENDIF
 C
          CALL CC_T2SQ(WORK(KT2AM),WORK(KSCR1),1)
@@ -4580,7 +4579,7 @@ C
                    WRITE(LUPRI,'(A,A)') 
      &                  'Calculation too large for 32-bit integers',
      &                  'Try rebuilding Dalton using 64-bit integers'
-                   STOP 'Negative index in CCSD_INIT1'
+                   CALL QUIT('Negative index in CCSD_INIT1')
                END IF
             END IF
 C
@@ -6024,7 +6023,7 @@ C
       KEND1  = KIAJB + NT2AMX
       LWRK1  = LWORK - KEND1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient spaces in CCSD_CBS2'
+         CALL QUIT('Insufficient spaces in CCSD_CBS2')
       ENDIF
       REWIND(LUIAJB)
       CALL READI(LUIAJB,IRAT*NT2AMX,WORK)

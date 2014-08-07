@@ -82,6 +82,8 @@ contains
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
 
+    
+
     ! Check that no core orbital are included in AOS space whith frozencore:
     if (DECinfo%orb_based_fragopt.and.DECinfo%frozencore) then
       do i=1,Mymolecule%ncore

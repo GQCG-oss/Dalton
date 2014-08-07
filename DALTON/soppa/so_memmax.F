@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_memmax */
       SUBROUTINE SO_MEMMAX(SUBNM,MEMOFREE)
