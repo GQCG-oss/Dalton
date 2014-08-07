@@ -2572,7 +2572,7 @@ C     ... .CISRDFT hybrid
          FLAG(4) = .TRUE.
          DOCISRDFT = .TRUE.
          ADDSRI    = .TRUE.
-         THRCIDFT  = 1.D-5
+         THRCIDFT  = 1.D-6
          LUSUPM = -1
 C        ... Disable use of super-matrix integrals,
 C        ... we want to use SIRFCK for generating U_sr integrals.
