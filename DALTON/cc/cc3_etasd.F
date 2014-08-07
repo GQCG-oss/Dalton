@@ -1667,7 +1667,7 @@ C
       IF (LENSQ.NE.LENGTH) THEN
          WRITE(LUPRI,*)'CC3_W3_OMEGA1, SYMMETRY MISMATCH : LENGTH
      *   NE LENSQ'
-         STOP ' CC3_W3_OMEGA1, LENGTH NE LENSQ'
+         CALL QUIT(' CC3_W3_OMEGA1, LENGTH NE LENSQ')
       END IF
 C
 C================================================

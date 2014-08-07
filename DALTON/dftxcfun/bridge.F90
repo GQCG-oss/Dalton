@@ -47,7 +47,7 @@ SUBROUTINE xcfun_ksmlda(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO, &
   ires = xc_eval_setup(funobj,XC_N,XC_PARTIAL_DERIVATIVES,iorder)
   if (ires.ne.0) then
      print *,'a xc_eval_setup failed, this should not happen',ires
-     stop
+     call quit('a xc_eval_setup failed, this should not happen')
   endif
   call xc_eval(funobj,nblen,dens,out)
   DO IPNT = 1, NBLEN
@@ -90,7 +90,7 @@ SUBROUTINE xcfun_KSMGGA(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO, &
   ires = xc_eval_setup(funobj,XC_N_GNN,XC_PARTIAL_DERIVATIVES,iorder)
   if (ires.ne.0) then
      print *,'b xc_eval_setup failed, this should not happen',ires
-     stop
+     call quit('b xc_eval_setup failed, this should not happen')
   endif
 #if 0
   DO IPNT = 1, NBLEN
@@ -139,7 +139,7 @@ SUBROUTINE xcfun_HESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT, &
      ires = xc_eval_setup(funobj,XC_N_GNN,XC_PARTIAL_DERIVATIVES,iorder)
      if (ires.ne.0) then
         print *,'b xc_eval_setup failed, this should not happen',ires
-        stop
+        call quit('b xc_eval_setup failed, this should not happen')
      endif
      DO I = 1, NBLEN
         XCIN(1,I) = RHOA(I)
@@ -184,7 +184,7 @@ SUBROUTINE xcfun_HESVX(VXCR,VXCRR,VXCZ,VXCRZ,VXCZZ,GRADAT,RHOA,WGHT, &
      ires = xc_eval_setup(funobj,XC_N,XC_PARTIAL_DERIVATIVES,iorder)
      if (ires.ne.0) then
         print *,'b xc_eval_setup failed, this should not happen',ires
-        stop
+        call quit('b xc_eval_setup failed, this should not happen'
      endif
      DO I = 1, NBLEN
         XCIN(1,I) = RHOA(I)        

@@ -2446,7 +2446,7 @@ C
             CALL FLSHFO(LUPRI)
 C
             IF (ONLYOV) THEN
-              CALL QUITMM('Overlap integrals calculated')
+              CALL QUIT('Overlap integrals calculated')
             END IF
 C
 C           ***** Modified overlap integrals *****

@@ -333,7 +333,7 @@ C
 c        LSAVE = LBUF
 c        LBUF  = 50 000
       ELSE
-          STOP 'Wrong I2TYP in NERDI2'
+          CALL QUIT('Wrong I2TYP in NERDI2')
       ENDIF
 C
       REWIND(LUINTR)
