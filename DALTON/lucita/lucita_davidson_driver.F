@@ -842,6 +842,7 @@ C     Hamiltonian is totally symmetric)
      &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                 luwrt,c_state_of_interest,
+     &                 DOCISRDFT.and.NROOTSL>1,weights,
      &                 IBLOCKAR,IBLKDSTND,
      &                 RCCTOS,
      &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
@@ -860,7 +861,8 @@ C     Hamiltonian is totally symmetric)
      &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt,
-     &             c_state_of_interest)
+     &             c_state_of_interest,
+     &             DOCISRDFT.and.NROOTSL>1,weights)
 !
 !!! Manu july 2014: for ensemble CI-srDFT, wavefunctions will be
 !converged for a given trial ensemble density. The latter should then be

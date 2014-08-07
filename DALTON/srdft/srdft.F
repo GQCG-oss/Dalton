@@ -1890,11 +1890,6 @@ c
       END
 C  /* Deck srfmat */
 C
-C     initially ...
-C
-C     SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
-C    >                  WRK,LWRK,IPRINT)
-C     
       SUBROUTINE SRFMAT(FMAT,CMO,DVREF,EJCSR,EJVSR,EDSR,EDFT,
      >                  EMYDFTAUX,UEJCVSR,WRK,LWRK,IPRINT)
 C
@@ -1994,10 +1989,8 @@ C
 C Manu: compute first and second terms in EMYDFTAUX
 C
       EMYDFTAUX = 2.0D0*EJCSR 
-      WRITE(LUPRI,*) 'EMYDFTAUX now  ...',EMYDFTAUX
       EMYDFTAUX = EMYDFTAUX 
      >         +DDOT(N2BASX,WRK(KDCAO),1,WRK(KFVAO),1)
-      WRITE(LUPRI,*) 'EMYDFTAUX then ...',EMYDFTAUX
 C
 C
       IF (IPRINT.GT.5) THEN
@@ -2079,6 +2072,225 @@ C
       CALL MEMREL('SRFMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
       DFT_SPINDNS = DFT_SPINDNS_SAVE
       CALL QEXIT('SRFMAT')
+      RETURN
+      END
+
+      SUBROUTINE SRFMAT_vensemble(FMAT,CMO,UDVREF,DVREF,DIFFDVREF,
+     &                            diff_ejvsr,diff_edsr,uEDFT,
+     >                            WRK,LWRK,IPRINT)
+!
+!     !> brief: calculate various terms needed to make a variational ensemble energy
+!     !> author: S. Knecht and E. Fromager based on the routine by J. K. Pedersen
+      
+!     EJCSR =  0.5 * Tr (D^c . J^sr . D^c)
+!     EJVSR = -0.5 * Tr (D^{v,ref} . J^sr . D^{v,ref})
+!     EDSR  = -1.0 * Tr (V^{sr,ref}_{xc} . D^{v,ref})
+!     EDFT  = E^{sr}_{xc} [D^c+D^{v,ref}] 
+!
+!     !> input: ensemble density matrices D^{v,ref}, D^{v,upd} and D^{v,diff} = D^{v,upd}-D^{v,ref}
+ 
+#include "implicit.h"
+      DIMENSION FMAT(*),CMO(*),UDVREF(*),DVREF(*),DIFFDVREF(*),WRK(*)
+      DIMENSION ISYMDM(2), IFCTYP(2)
+      LOGICAL   LSRHYBR, DFT_SPINDNS_SAVE
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
+      SAVE ISYMDM, IFCTYP
+      DATA ISYMDM/1,1/, IFCTYP/999,999/
+C
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "gnrinf.h"
+#include "infvar.h"
+#include "inftap.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infpri.h"
+#include "dftcom.h"
+C
+      CALL QENTER('SRFMAT_vensemble')
+C
+      DFT_SPINDNS_SAVE = DFT_SPINDNS
+      DFT_SPINDNS = .FALSE.
+      LSRHYBR = SRHYBR .AND. .NOT.DOHFSRDFT
+      KFRSAV = 1
+      KFREE  = KFRSAV
+      LFREE  = LWRK
+      CALL MEMGET('REAL',KDCAO,2*N2BASX,WRK,KFREE,LFREE)
+      KDVAO = KDCAO + N2BASX
+      CALL MEMGET('REAL',KDCAO_backup,2*N2BASX,WRK,KFREE,LFREE)
+      KDVAO_backup = KDCAO_backup + N2BASX
+      IF (LSRHYBR) THEN
+         NF = 3
+      ELSE
+         NF = 2
+      END IF
+      CALL MEMGET('REAL',KFCAO,NF*N2BASX,WRK,KFREE,LFREE)
+      KFVAO = KFCAO + N2BASX
+      KFHAO = KFVAO + N2BASX
+
+      !> start with computing uedft - requuires u_rho_ensemble
+C
+      CALL FCKDEN(.TRUE.,.TRUE.,
+     >            WRK(KDCAO),WRK(KDVAO),CMO,UDVREF,WRK(KFREE),LFREE)
+C
+      IF (IPRINT.GT.5) THEN
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Valence AO density matrix >>>>'
+         CALL OUTPUT(WRK(KDVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+C ... Get J^c,sr adn J^v,sr
+C
+      IF(HFXFAC .NE. D0) THEN
+C        Coulomb + Exchange
+C     ... Warning : assuming DIM(IFCTYP) = 2
+         IFCTYP(1) = 13
+         IFCTYP(2) = 13
+      ELSE
+C        only Coulomb (Hartree) term
+         IFCTYP(1) = 11
+         IFCTYP(2) = 11
+      ENDIF
+      CALL DZERO(WRK(KFCAO),NF*N2BASX)
+      CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
+     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+      EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+C
+      IF (IPRINT.GT.5) THEN
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range core Hartree matrix >>>>'
+         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range valence Hartree matrix >>>>'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+c ... Add up in KFCAO
+C
+      CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
+c
+c ... Get V^sr in WRK(KFVAO) and E_xc^sr
+c     using total density matrix (stored in KDCAO)
+      CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
+c
+      CALL DZERO(WRK(KFVAO),N2BASX)
+C
+C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+     >           WRK(KFREE),LFREE,IPRFCK)
+      IF (IPRINT.GT.5) THEN
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+      EDSR = -DDOT(N2BASX,WRK(KDVAO),1,WRK(KFVAO),1)
+C
+      IF (LSRHYBR) THEN
+         write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
+C TODO
+      END IF
+
+      uedft = edft
+
+      !> part 2: compute diff_edsr / requires DVREF and DIFFDVREF
+
+      call dzero(WRK(KDCAO),N2BASX)
+      call dzero(WRK(KDVAO),N2BASX)
+
+      CALL FCKDEN(.TRUE.,.TRUE.,
+     >            WRK(KDCAO),WRK(KDVAO),CMO,DVREF,WRK(KFREE),LFREE)
+
+      call dzero(WRK(KDCAO_backup),N2BASX)
+      call dzero(WRK(KDVAO_backup),N2BASX)
+
+      CALL FCKDEN(.TRUE.,.TRUE.,
+     >            WRK(KDCAO_backup),WRK(KDVAO_backup),CMO,DIFFDVREF,
+     &            WRK(KFREE),LFREE)
+C
+C ... Get J^c,sr adn J^v,sr
+C
+      IF(HFXFAC .NE. D0) THEN
+C        Coulomb + Exchange
+C     ... Warning : assuming DIM(IFCTYP) = 2
+         IFCTYP(1) = 13
+         IFCTYP(2) = 13
+      ELSE
+C        only Coulomb (Hartree) term
+         IFCTYP(1) = 11
+         IFCTYP(2) = 11
+      ENDIF
+      CALL DZERO(WRK(KFCAO),NF*N2BASX)
+      CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO),2,
+     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+C
+      IF (IPRINT.GT.5) THEN
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range core Hartree matrix >>>>'
+         CALL OUTPUT(WRK(KFCAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range valence Hartree matrix >>>>'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+C
+c ... Add up in KFCAO
+C
+      CALL DAXPY(N2BASX,D1,WRK(KFVAO),1,WRK(KFCAO),1)
+c
+c ... Get V^sr in WRK(KFVAO) and E_xc^sr
+c     using total density matrix (stored in KDCAO)
+      CALL DAXPY(N2BASX,D1,WRK(KDVAO),1,WRK(KDCAO),1)
+c
+      CALL DZERO(WRK(KFVAO),N2BASX)
+C
+C     SRDFT(ND_SIM,EXCMAT,DMAT,EDFTY,DOERG,DOGRD,DOATR,WORK,LWORK,IPRINT)
+      CALL SRDFT(1,WRK(KFVAO),WRK(KDCAO),EDFT,.TRUE.,.FALSE.,.FALSE.,
+     >           WRK(KFREE),LFREE,IPRFCK)
+      IF (IPRINT.GT.5) THEN
+         WRITE(LUPRI,'(//5X,A//)')
+     >   '<<<<  Short-range Exchange-Correlation Fock-matrix >>>>'
+         CALL OUTPUT(WRK(KFVAO),1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+      ENDIF
+      EDSR = -DDOT(N2BASX,WRK(KDVAO_backup),1,WRK(KFVAO),1)
+C
+      IF (LSRHYBR) THEN
+         write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
+C TODO
+      END IF
+
+      diff_edsr = EDSR
+
+      !> step 3: compute diff_ejvsr / requires DIFFDVREF (sitting in _backup)
+
+C
+C ... Get J^c,sr adn J^v,sr
+C
+      IF(HFXFAC .NE. D0) THEN
+C        Coulomb + Exchange
+C     ... Warning : assuming DIM(IFCTYP) = 2
+         IFCTYP(1) = 13
+         IFCTYP(2) = 13
+      ELSE
+C        only Coulomb (Hartree) term
+         IFCTYP(1) = 11
+         IFCTYP(2) = 11
+      ENDIF
+      CALL DZERO(WRK(KFCAO),NF*N2BASX)
+      CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFCAO),WRK(KDCAO_backup),2,
+     >             ISYMDM,IFCTYP,WRK(KFREE),LFREE)
+      EJVSR   = -DP5*DDOT(N2BASX,WRK(KDVAO_backup),1,WRK(KFVAO),1)
+C
+      IF (LSRHYBR) THEN
+         write (lupri,*) 'WARNING, srdft-hybr exc matrix not used'
+C TODO
+      END IF
+
+      diff_ejvsr = EJVSR
+c
+      CALL MEMREL('SRFMAT',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
+      DFT_SPINDNS = DFT_SPINDNS_SAVE
+      CALL QEXIT('SRFMAT_vensemble')
       RETURN
       END
 C  /* Deck srdftso */
