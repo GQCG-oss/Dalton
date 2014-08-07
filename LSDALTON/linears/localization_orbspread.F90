@@ -95,7 +95,7 @@ real(realk),pointer :: max_orbspreads(:)
            exit
         endif
     endif
-    if( nrmG.le. CFG%macro_thresh*10.0) then
+    if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
         write(ls%lupri,'(a)') '  %LOC% '
         write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
         write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
@@ -267,7 +267,7 @@ real(realk),pointer :: max_orbspreads(:)
             exit
      endif
   endif
-  if( nrmG.le. CFG%macro_thresh) then
+  if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
         write(ls%lupri,'(a)') '  %LOC% '
         write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
         write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
@@ -280,7 +280,6 @@ real(realk),pointer :: max_orbspreads(:)
         exit
     end if
 
-   
    call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings

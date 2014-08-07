@@ -49,9 +49,9 @@ subroutine davidson_solver(CFG,grad,x)
   call mat_init(sigma_temp,rowdim,coldim)
   
   initial_stepsize=CFG%stepsize 
-  CFG%start_it = 3 
   ! Find lowest hessian diagonal, use extra start vector if negative 
-  if (.not. CFG%arh_davidson) then
+  CFG%start_it = 3 !default init
+  if ((.not. CFG%arh_davidson)) then
       call mat_min_elm(CFG%P,minel,minel_pos)
       if (minel < 0_realk) CFG%start_it = 4
   else
@@ -59,6 +59,8 @@ subroutine davidson_solver(CFG,grad,x)
       if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
       if (CFG%arh_gradnorm < 1E-3_realk) arh_thresh=0.00001_realk
   end if
+
+  if (grad%ncol .lt. 6) CFG%start_it = 2 ! reduced for few orbs 
 
    call mem_alloc(CFG%Allb,CFG%max_it)
    call mem_alloc(CFG%AllSigma,CFG%max_it)
@@ -68,19 +70,21 @@ subroutine davidson_solver(CFG,grad,x)
    end do
   call FirstTrialVec(grad,CFG,b_current,sigma_temp)
   call InitializeCFG(grad,CFG,b_current,sigma_temp)
-  call SecondTrialVec(grad,CFG,b_current,sigma_temp) 
-  !Construct rest of Ared in 3D starting space
-  call IncreaseDimRedSpace(grad,CFG,b_current,2)
-  if (CFG%start_it ==4) then
-      call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,CFG%start_it)
-      ! Check if coupling to b1 and b2 is strong enough
-      if (CFG%singularity) then
-          CFG%start_it = 3
-          call mat_free(CFG%Allb(3))
-          call mat_free(CFG%AllSigma(3))
-          CFG%singularity = .false.
-      endif
-  end if
+  if (CFG%start_it .gt. 2) then 
+     call SecondTrialVec(grad,CFG,b_current,sigma_temp) 
+     !Construct rest of Ared in 3D starting space
+     call IncreaseDimRedSpace(grad,CFG,b_current,2)
+     if (CFG%start_it ==4) then
+         call ThirdTrialVec(grad,CFG,b_current,sigma_temp,minel_pos,CFG%start_it)
+         ! Check if coupling to b1 and b2 is strong enough
+         if (CFG%singularity) then
+             CFG%start_it = 3
+             call mat_free(CFG%Allb(3))
+             call mat_free(CFG%AllSigma(3))
+             CFG%singularity = .false.
+         endif
+     end if
+   endif
   !************************************************************
   !*             Start Reduced Space Loop                     *
   !************************************************************
@@ -110,7 +114,11 @@ subroutine davidson_solver(CFG,grad,x)
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &" Gradient norm",CFG%arh_gradnorm
      elseif (.not. CFG%arh_davidson) then
-        call test_convergence(CFG,grad,resnorm_2d)
+        if (iter > 3) then
+            call test_convergence(CFG,grad,resnorm_2d)
+        else
+            resnorm_2d =sqrt(mat_sqnorm2(grad))
+        endif
         if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
