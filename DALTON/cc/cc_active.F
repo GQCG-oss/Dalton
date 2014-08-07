@@ -419,7 +419,7 @@ C
 C
          IF (IOVER .NE. 0) THEN
             WRITE(LUPRI,*) 'Program stops because of previous errors'
-            STOP 'Hartree-Fock MOs non orthonormal'
+            CALL QUIT('Hartree-Fock MOs non orthonormal')
          END IF
 C
       END DO
@@ -513,7 +513,7 @@ C
  9130    CONTINUE
          NTEST = NRHF(ISYM) - NACTOC(ISYM) - NINAOC(ISYM)
          IF (NTEST .NE. 0) THEN
-            STOP 'Something is rotten in the state of Norway.3a'
+            CALL QUIT('Something is rotten in the state of Norway.3a')
 c        ELSE
 c           WRITE(LUPRI,'(//,2A,3I5,//)') 'Occupied symmetry.',
 c    &            ' Active, inactive :',
@@ -577,7 +577,7 @@ C
  9150    CONTINUE
          NTEST = NVIR(ISYM) - NACTVI(ISYM) - NINAVI(ISYM)
          IF (NTEST .NE. 0) THEN
-            STOP 'Something is rotten in the state of Norway.4a'
+            CALL QUIT('Something is rotten in the state of Norway.4a')
 c        ELSE
 c           WRITE(LUPRI,'(//,2A,3I5,//)') 'Virtual symmetry.',
 c    &            ' Active, inactive :',
@@ -708,7 +708,7 @@ C
          WRITE(LUPRI,*) 'Error checking lenght of occupied orbitals'
          WRITE(LUPRI,*) 'Length allocated :',LOCCHO
          WRITE(LUPRI,*) 'Length computed  :',LEN
-         STOP 'Error in length'
+         CALL QUIT('Error in length')
        ELSE
          CALL DCOPY(LOCCHO,WORK(KEND1),1,WORK(KOCCHO),1)
        END IF
@@ -813,7 +813,7 @@ C
          WRITE(LUPRI,*) 'Error checking lenght of virtual orbitals'
          WRITE(LUPRI,*) 'Length allocated :',LVICHO
          WRITE(LUPRI,*) 'Length computed  :',LEN
-         STOP 'Error in length'
+         CALL QUIT('Error in length')
        ELSE
          CALL DCOPY(LVICHO,WORK(KEND1),1,WORK(KVICHO),1)
        END IF
@@ -982,7 +982,7 @@ C
 C
          IF (IOVER .NE. 0) THEN
             WRITE(LUPRI,*) 'Program stops because of previous errors'
-            STOP 'Cholesky MOs non orthonormal'
+            CALL QUIT('Cholesky MOs non orthonormal')
          ELSE
            WRITE(LUPRI,'(A,I2)') 'Symmetry block',ISYM
            WRITE(LUPRI,'(2A,D12.6)') 'Maximum deviation from one ',
@@ -1612,7 +1612,7 @@ C
          ELSE IF (IOPT .EQ. 1) THEN
              KOFF1 = IOFCMO(ISYM) + NJUMP(ISYM)*NBAS(ISYM) + 1
          ELSE
-             STOP 'Unknown IOPT in CHO_DENSI'
+             CALL QUIT('Unknown IOPT in CHO_DENSI')
          END IF
 C
          CALL DGEMM('N','T',NBAS(ISYM),NBAS(ISYM),NVEC(ISYM),
@@ -1696,7 +1696,7 @@ C
       IF (NABSTO .GT. MXACBS) THEN
          WRITE(LUPRI,*) 'ERROR: From center.h, maximum ',
      &                  'number of active basis is',MXACBS
-         STOP 'Too many active basis'
+         CALL QUIT('Too many active basis')
       END IF
 C
       ICOUN1 = 0

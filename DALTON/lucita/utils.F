@@ -760,7 +760,7 @@ C
       Open(66,File='returncode',Form='Formatted',Status='unknown')
       Write(66,*) rc
       Close(66)
-      Stop
+      call quit('from xquit in lucita')
       End
 ***********************************************************************
 *                                                                     *

@@ -2924,7 +2924,7 @@ C     CALCUL DE L ELEMENT DE MATRICE
          WRITE (lupri,1008) (ITB(K+NE2),K=1,NE2)
  1007    FORMAT (' TROU',8I4)
  1008    FORMAT (' PART',8I4)
-         STOP
+         CALL QUIT('PROBLEM IN NEVPT2, SEE OUTPUT')
          END
 c------------------------------------------------------------------
       integer function index(i,j,k,l)

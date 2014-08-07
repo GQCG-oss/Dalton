@@ -119,13 +119,13 @@ contains
       select case(models_check)
         case('all')
 !         call check_all_models
-          stop 'parallel model check for all modules not implemented yet'
+          call quit('parallel model check for all modules not implemented yet')
 #ifdef NEW_LUCITA
         case('lucita')
           call check_lucita_models()
 #endif
         case default 
-          stop 'parallel model check for all modules not implemented yet'
+          call quit('parallel model check for all modules not implemented yet')
       end select
 
   end subroutine check_parallel_models_mpi

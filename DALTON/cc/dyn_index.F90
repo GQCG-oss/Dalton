@@ -93,8 +93,8 @@ subroutine deall_iadrpk(luout)
 !
    deallocate(iadrpk,stat=iadrpk_ok)
    if (iadrpk_ok .ne. 0) then
-      write(luout,*) 'Error deallocating existing IADRPK in GET_IADRPK'
-      stop
+      write(luout,*)'Error deallocating existing IADRPK in GET_IADRPK' 
+      call quit('Error deallocating existing IADRPK in GET_IADRPK')
 !  else
 !     write(luout,*) 'Existing IADRPK deallocated by GET_IADRPK'
    end if
@@ -115,7 +115,7 @@ subroutine alloc_iadrpk(luout)
    allocate(iadrpk(iadrpk_dim),stat=iadrpk_ok)
    if (iadrpk_ok .ne. 0) then
       write(luout,*) 'Error allocating IADRPK in GET_IADRPK'
-      stop
+      call quit('Error allocating IADRPK in GET_IADRPK')
 !  else
 !     write(luout,*) 'IADRPK allocated by GET_IADRPK'
    end if
