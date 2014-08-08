@@ -333,7 +333,7 @@ logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
 integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
-logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
 !FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
@@ -372,9 +372,11 @@ call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 IF(FullBatch)THEN
-   SameLHSaos = intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
-   SameRHSaos = intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
-   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4)).AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4))
+   SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.Setting%sameBas(1,2)
+   SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.Setting%sameBas(3,4)
+   SameODs = ((intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))&
+        & .AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4)))&
+        &.AND.(Setting%sameBAS(1,3).AND.Setting%sameBAS(3,4))
 !   SameLHSaos = intSpec(1).EQ.intSpec(2)
 !   SameRHSaos = intSpec(3).EQ.intSpec(4)
 !   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
@@ -385,13 +387,16 @@ ELSE
 !   FULLDBATCH = nbatchDstart2.EQ.1.AND.nbatchDend2.EQ.nBatchesD
    SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.&
         & ((nbatchAstart2.EQ.nbatchBstart2).AND.(nbatchAend2.EQ.nbatchBend2))
+   SameLHSaos = SameLHSaos.AND.Setting%sameBas(1,2)
    SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.&
         & ((nbatchCstart2.EQ.nbatchDstart2).AND.(nbatchCend2.EQ.nbatchDend2))
+   SameRHSaos = SameRHSaos.AND.Setting%sameBas(3,4)
    CRIT1 = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
    CRIT2 = Setting%sameMol(1,3).AND.Setting%sameMol(2,4)
    CRIT3 = (nbatchAstart2.EQ.nbatchCstart2).AND.(nbatchAend2.EQ.nbatchCend2)
    CRIT4 = (nbatchBstart2.EQ.nbatchDstart2).AND.(nbatchBend2.EQ.nbatchDend2)
-   SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
+   CRIT5 = Setting%sameBas(1,3).AND.Setting%sameBas(2,4)
+   SameODs = ((CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)).AND.CRIT5
 ENDIF
 
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)

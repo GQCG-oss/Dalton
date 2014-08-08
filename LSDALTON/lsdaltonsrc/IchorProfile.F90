@@ -48,7 +48,7 @@ CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
-logical      :: spherical,savedospherical,SameMOL,COMPARE,ForcePrint
+logical      :: spherical,savedospherical,SameMOL,COMPARE,ForcePrint,sameBAS(4,4)
 Character    :: intSpec(5)
 intSpec(1) = 'R'
 intSpec(2) = 'R'
@@ -70,6 +70,7 @@ spherical = .TRUE.!.FALSE.
 IPRINT = 0
    
 IF(config%prof%IchorProfInputBasis)THEN
+   sameBAS = SETTING%sameBAS
    do A = 1,4       
       BASISSETNAME(1:20) = config%prof%IchorProfInputBasisString(A)
       WRITE(lupri,*)'Using Input Basis:',BASISSETNAME(1:20)
@@ -78,6 +79,12 @@ IF(config%prof%IchorProfInputBasis)THEN
            &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
       SETTING%BASIS(A)%p => UNITTESTBASIS(A)
       call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
+   enddo
+   do A = 1,4       
+    do B = 1,4       
+     SETTING%sameBAS(A,B)=(config%prof%IchorProfInputBasisString(A).EQ.config%prof%IchorProfInputBasisString(B))&
+          &.AND.(nbast(A).EQ.nbast(B))
+    enddo
    enddo
    dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
 ELSE
@@ -90,6 +97,8 @@ COMPARE=.FALSE.
 IF(config%prof%IchorProfdoLink)THEN
    !generate random non symmetric DensityMatrix
 !   QQQQQQQQQQQQQQQQQQQQQQQQQ
+ELSE
+   COMPARE = config%prof%IchorProfDoThermite.AND.config%prof%IchorProfDoIchor
 ENDIF
 
 WRITE(lupri,*)'Dims:',nbast(1:4)
@@ -97,13 +106,13 @@ IF(config%prof%IchorProfDoThermite)THEN
    IF(config%prof%IchorProfdoLink)THEN
 !QQQQQQQQQQQQQQQQQQQQ
    ELSE
-      !   COMPARE = .TRUE.
+      COMPARE = .TRUE.
       WRITE(lupri,*)'Performing Thermite Profiling'
       call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
       savedospherical = setting%scheme%dospherical
       setting%scheme%dospherical = spherical
-      !   Setting%sameMol = .FALSE.
-      !   Setting%sameFrag = .FALSE.
+         Setting%sameMol = .FALSE.
+         Setting%sameFrag = .FALSE.
       !   setting%scheme%OD_SCREEN = .FALSE.
       !   setting%scheme%CS_SCREEN = .FALSE.
       !   setting%scheme%PS_SCREEN = .FALSE.
@@ -116,8 +125,8 @@ IF(config%prof%IchorProfDoThermite)THEN
       !   setting%scheme%OD_SCREEN = .TRUE.
       !   setting%scheme%CS_SCREEN = .TRUE.
       !   setting%scheme%PS_SCREEN = .TRUE.
-      !   Setting%sameMol = .TRUE.
-      !   Setting%sameFrag = .TRUE.
+         Setting%sameMol = .TRUE.
+         Setting%sameFrag = .TRUE.
       IF(.NOT.COMPARE)THEN
          call mem_dealloc(integralsII)
       ENDIF
@@ -192,6 +201,9 @@ SETTING%BASIS(1)%p => originalBasis
 SETTING%BASIS(2)%p => originalBasis
 SETTING%BASIS(3)%p => originalBasis
 SETTING%BASIS(4)%p => originalBasis
+IF(config%prof%IchorProfInputBasis)THEN
+   SETTING%sameBAS = sameBAS
+ENDIF
 WRITE(lupri,*)'Done IchorUnitTest'
 !call debug_mem_stats(LUPRI)
 #else
