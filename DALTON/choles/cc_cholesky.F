@@ -248,13 +248,13 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_CHOLESKY'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_CHOLESKY'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 
 
@@ -1272,25 +1272,25 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GAB'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GAB'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 !!
       allocate(jndexa(nbast),stat=jndexa_ok)
       if (jndexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GAB'
-         stop 'JNDEXA not allocated'
+         CALL QUIT('JNDEXA not allocated')
       end if
 !
       allocate(jndexb(nbast),stat=jndexb_ok)
       if (jndexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GAB'
-         stop 'JNDEXB not allocated'
+         CALL QUIT('JNDEXB not allocated')
       end if
 
 
@@ -4492,13 +4492,13 @@ C
       allocate(indexa(nbast),stat=indexa_ok)
       if (indexa_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXA in CC_GABOLD'
-         stop 'INDEXA not allocated'
+         CALL QUIT('INDEXA not allocated')
       end if
 !
       allocate(indexb(nbast),stat=indexb_ok)
       if (indexb_ok .ne. 0) then
          write(lupri,*) 'Error allocating INDEXB in CC_GABOLD'
-         stop 'INDEXB not allocated'
+         CALL QUIT('INDEXB not allocated')
       end if
 
 

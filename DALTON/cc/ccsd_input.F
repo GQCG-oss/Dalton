@@ -9807,7 +9807,7 @@ C                    Select active atoms (no boxes)
                         WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
      &                                 'maximum number of active ',
      &                                 'atoms is',MXACAT
-                        STOP 'Too many active atoms'
+                        CALL QUIT('Too many active atoms')
                      END IF
 C
                      IF (NACINP .GT. 0) THEN
@@ -9825,11 +9825,11 @@ C
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active atoms : NACINP/ILAST',
      &                            NACINP,ILAST
-                           STOP 'Error defining active atoms'
+                           CALL QUIT('Error defining active atoms')
                         END IF
                      ELSE
                         WRITE(LUPRI,*) 'Number of active atoms is zero'
-                        STOP 'NACINP = 0'
+                        CALL QUIT('NACINP = 0')
                      END IF
 C
                      DO I = 1,NACINP
@@ -9838,7 +9838,7 @@ C
                               WRITE(LUPRI,*) 'ERROR : ',
      &                                       'One atom declared ',
      &                                       'twice as active'
-                              STOP 'One atom is hyperactive'
+                              CALL QUIT('One atom is hyperactive')
                            ELSE IF (LACINP(J) .GT. LACINP(I)) THEN
                               ITMP = LACINP(J)          ! Not needed,
                               LACINP(J) = LACINP(I)     ! but output
@@ -9899,7 +9899,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of occupied diagonals',
      &                                 NABSOC
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many occupied diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      READ(LUCMD,*) (LACBAS(I),I=1,NABSOC)
                      READ(LUCMD,*) NABSVI
@@ -9907,7 +9908,8 @@ C                    Give list of diagonals to decompose
                         WRITE(LUPRI,*) 'Number of virtual diagonals',
      &                                 NABSVI
                         WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
-                        STOP 'Too many virtual diagonals under SELDIA'
+                        CALL QUIT(
+     &                  'Too many occupied diagonals under SELDIA')
                      END IF
                      IF (NABSVI .LT. 0) THEN
                         NABSVI = -NABSVI
@@ -9922,7 +9924,7 @@ C                    Give list of diagonals to decompose
                            WRITE(LUPRI,*) 'Error in number of ',
      &                            'active basis : NABSVI/ILAST',
      &                            NABSVI,ILAST
-                           STOP 'Error defining active basis'
+                           CALL QUIT('Error defining active basis')
                         END IF
                      ELSE
                         READ(LUCMD,*) (LACBSV(I),I=1,NABSVI)
@@ -9944,7 +9946,7 @@ C                    Calculate orbital spread
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'DOSPRE with NSYM .GT. 1'
+                        CALL QUIT('DOSPRE with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C
@@ -9956,7 +9958,7 @@ C                    Select diagonals to minimize orbital spreads
                      IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
-                        STOP 'MINSPR with NSYM .GT. 1'
+                        CALL QUIT('MINSPR with NSYM .GT. 1')
                      END IF
                   GOTO 100
 C

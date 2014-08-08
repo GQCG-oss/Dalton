@@ -2358,7 +2358,7 @@ cvc     END IF
    99 format(5f12.5)
       read(5,*) iflagorb
       WRITE(LUPRI,*) ' iflagorb',iflagorb
-      stop
+      call quit('ERROR in AUGCTL')
  8888 continue
 cvc
       ELSE

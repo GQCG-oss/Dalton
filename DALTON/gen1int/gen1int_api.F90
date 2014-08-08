@@ -171,7 +171,7 @@ module gen1int_api
     integer iang_sub
 
     if (num_comp>NUM_COMPONENTS) then
-      stop "Gen1IntAPICreate>> too many components!"
+      call quit("Gen1IntAPICreate>> too many components!")
     end if
     ! terminates previous created interface
     if (api_inited) call Gen1IntAPIDestroy()
@@ -199,7 +199,7 @@ module gen1int_api
     ! initializes the AO sub-shells
     allocate(sub_shells(maxval(num_sub_shells),NUM_COMPONENTS), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntAPICreate>> failed to allocate sub_shells!"
+      call quit("Gen1IntAPICreate>> failed to allocate sub_shells!")
     end if
     ! loops over components of basis sets
     do icomp = 1, num_comp
@@ -225,7 +225,7 @@ module gen1int_api
                ! gets the contraction coefficients
                allocate(contr_coef(num_contr(KBCH,icomp),num_prim(KBCH,icomp)), stat=ierr)
                if (ierr/=0) then
-                 stop "Gen1IntAPICreate>> failed to allocate contr_coef!"
+                 call quit("Gen1IntAPICreate>> failed to allocate contr_coef!")
                end if
                do iprim = 1, num_prim(KBCH,icomp)
                  do icontr = 1, num_contr(KBCH,icomp)
@@ -310,13 +310,13 @@ module gen1int_api
     ! coordinates of atoms
     allocate(api_coord_atoms(3,api_num_atoms), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntAPICreate>> failed to allocate api_coord_atoms!"
+      call quit("Gen1IntAPICreate>> failed to allocate api_coord_atoms!")
     end if
     api_coord_atoms = CORD(:,1:NUCDEP)
     ! charges of atoms
     allocate(api_charge_atoms(api_num_atoms), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntAPICreate>> failed to allocate api_charge_atoms!"
+      call quit("Gen1IntAPICreate>> failed to allocate api_charge_atoms!")
     end if
     api_charge_atoms = -CHARGE(1:NUCDEP)
     ! coordinates of origins
@@ -354,7 +354,7 @@ module gen1int_api
       ! allocates memory for sub-shells
       allocate(sub_shells(maxval(num_sub_shells),NUM_COMPONENTS), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntAPIBcast>> failed to allocate sub_shells!"
+        call quit("Gen1IntAPIBcast>> failed to allocate sub_shells!")
       end if
     end if
     ! broadcasts sub-shells
@@ -374,12 +374,12 @@ module gen1int_api
     else
       allocate(api_coord_atoms(3,api_num_atoms), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntAPIBcast>> failed to allocate api_coord_atoms!"
+        call quit("Gen1IntAPIBcast>> failed to allocate api_coord_atoms!")
       end if
       call MPI_Bcast(api_coord_atoms, 3*api_num_atoms, MPI_REALK, root, api_comm, ierr)
       allocate(api_charge_atoms(api_num_atoms), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntAPIBcast>> failed to allocate api_charge_atoms!"
+        call quit("Gen1IntAPIBcast>> failed to allocate api_charge_atoms!")
       end if
       call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
     end if
@@ -443,7 +443,7 @@ module gen1int_api
           if (idx_atoms(iatom)>=1 .and. idx_atoms(iatom)<=api_num_atoms) then
             api_charge_atoms(idx_atoms(iatom)) = charge_atoms(iatom)
           else
-            stop "Gen1IntAPIUpdateMolecule>> wrong index when updating charges!"
+            call quit("Gen1IntAPIUpdateMolecule>> wrong index when updating charges!")
           end if
         end do
       end if
@@ -452,14 +452,14 @@ module gen1int_api
           if (idx_atoms(iatom)>=1 .and. idx_atoms(iatom)<=api_num_atoms) then
             api_coord_atoms(:,idx_atoms(iatom)) = coord_atoms(:,iatom)
           else
-            stop "Gen1IntAPIUpdateMolecule>> wrong index when updating coordinates!"
+            call quit("Gen1IntAPIUpdateMolecule>> wrong index when updating coordinates!")
           end if
         end do
       end if
     ! the first \var(num_atoms) atoms will update
     else
       if (num_atoms>api_num_atoms) then
-        stop "Gen1IntAPIUpdateMolecule>> too many atoms to update!"
+        call quit("Gen1IntAPIUpdateMolecule>> too many atoms to update!")
       end if
       if (present(charge_atoms)) then
         do iatom = 1, num_atoms
@@ -496,7 +496,7 @@ module gen1int_api
         end if
       end do
     else
-      stop "Gen1IntAPIGetNumAO>> sub-shells are not created!"
+      call quit("Gen1IntAPIGetNumAO>> sub-shells are not created!")
     end if
   end subroutine Gen1IntAPIGetNumAO
 
@@ -555,7 +555,7 @@ module gen1int_api
                                  order_geo=order_geo)
         end if
       else
-        stop "Gen1IntAPIGetMO>> invalid component!"
+        call quit("Gen1IntAPIGetMO>> invalid component!")
       end if
     end do
   end subroutine Gen1IntAPIGetMO
@@ -643,7 +643,7 @@ module gen1int_api
     !                                        (/2, 1/)
     allocate(prop_comp%nnz_comp(2, nr_active_blocks), stat=ierr)
     if (ierr /= 0) then
-       stop "Gen1IntAPIPropCreate>> failed to allocate nnz_comp!"
+       call quit("Gen1IntAPIPropCreate>> failed to allocate nnz_comp!")
     end if
     prop_comp%nnz_comp = reshape(active_component_pairs(1:nr_active_blocks*2), (/2, nr_active_blocks/))
 
@@ -688,11 +688,11 @@ module gen1int_api
                          dipole_origin=api_dipole_origin)
     case default
       write(STDOUT,999) "unknown property "//trim(prop_name)//"!"
-      stop
+      call quit('unknown property')
     end select
     if (ierr/=0) then
       write(STDOUT,999) "failed to create operator of "//trim(prop_name)//"!"
-      stop
+      call quit('failed to create propert operator')
     end if
     ! sets magnetic derivatives
     call OnePropSetMag(one_prop=prop_comp%one_prop, &
@@ -713,7 +713,7 @@ module gen1int_api
                          origin_London_PF=api_origin_LPF)
     end if
     if (ierr/=0) then
-      stop "Gen1IntAPIPropCreate>> invalid type of GTOs!"
+      call quit("Gen1IntAPIPropCreate>> invalid type of GTOs!")
     end if
 999 format("Gen1IntAPIPropCreate>> ",A)
   end subroutine Gen1IntAPIPropCreate
@@ -800,7 +800,7 @@ module gen1int_api
     integer, intent(in) :: level_print
     ! checks if the AO sub-shells are created
     if (.not.api_inited) then
-      stop "Gen1IntAPIPropGetIntExpt>> sub-shells are not created!"
+      call quit("Gen1IntAPIPropGetIntExpt>> sub-shells are not created!")
     end if
     call Gen1IntOnePropGetIntExpt(nnz_comp=prop_comp%nnz_comp,     &
                                   one_prop=prop_comp%one_prop,     &
@@ -878,7 +878,7 @@ module gen1int_api
     logical same_braket          !if the AO sub-shells are the same on bra and ket centers
     ! checks if the AO sub-shells are created
     if (.not.api_inited) then
-      stop "Gen1IntAPIPropGetFunExpt>> sub-shells are not created!"
+      call quit("Gen1IntAPIPropGetFunExpt>> sub-shells are not created!")
     end if
     ! gets the number of non-zero components
     num_nnz_comp = size(prop_comp%nnz_comp,2)
@@ -933,7 +933,7 @@ module gen1int_api
     if (num_prop*num_geo_bra*num_geo_ket*num_geo_total>num_ints) then
       write(io_viewer,100) "input size", num_ints
       write(io_viewer,100) "required size", num_prop*num_geo_bra*num_geo_ket*num_geo_total
-      stop "Gen1IntOnePropGetIntExpt>> input array not enough!"
+      call quit("Gen1IntOnePropGetIntExpt>> input array not enough!")
     end if
     ! gets the index of current path and total number of different paths
     call NaryTreePathGetIndex(nary_tree=nary_tree_bra, idx_path=idx_path_bra)
@@ -1040,14 +1040,14 @@ module gen1int_api
                             nary_tree=nary_tree,       &
                             info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!"
+          call quit("Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!")
         end if
         call NaryTreeSetAtoms(num_atoms=num_geo_atoms, &
                               idx_atoms=idx_geo_atoms, &
                               nary_tree=nary_tree,     &
                               info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeSetAtoms!"
+          call quit("Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeSetAtoms!")
         end if
       else
         call NaryTreeCreate(num_atoms=api_num_atoms,   &
@@ -1056,11 +1056,11 @@ module gen1int_api
                             nary_tree=nary_tree,       &
                             info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!"
+          call quit("Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!")
         end if
       end if
     else
-      stop "Gen1IntAPINaryTreeCreate>> negative order of geometric derivatives!"
+      call quit("Gen1IntAPINaryTreeCreate>> negative order of geometric derivatives!")
     end if
   end subroutine Gen1IntAPINaryTreeCreate
 
@@ -1127,15 +1127,15 @@ module gen1int_api
     logical same_braket          !if the AO sub-shells are the same on bra and ket centers
     ! checks if the AO sub-shells are created
     if (.not.api_inited) then
-      stop "Gen1IntOnePropGetIntExpt>> sub-shells are not created!"
+      call quit("Gen1IntOnePropGetIntExpt>> sub-shells are not created!")
     end if
     ! gets the number of non-zero components
     if (size(nnz_comp,1)/=2) then
-      stop "Gen1IntOnePropGetIntExpt>> needs non-zero components on bra and ket centers!"
+      call quit("Gen1IntOnePropGetIntExpt>> needs non-zero components on bra and ket centers!")
     end if
     num_nnz_comp = size(nnz_comp,2)
     if (num_nnz_comp>NUM_COMPONENTS) then
-      stop "Gen1IntOnePropGetIntExpt>> too many components!"
+      call quit("Gen1IntOnePropGetIntExpt>> too many components!")
     end if
     ! dumps AO sub-shells
     if (level_print>=15) then
@@ -1200,7 +1200,7 @@ module gen1int_api
       if (num_prop*num_geo_bra*num_geo_ket*num_geo_total>num_ints) then
         write(io_viewer,100) "input size", num_ints
         write(io_viewer,100) "required size", num_prop*num_geo_bra*num_geo_ket*num_geo_total
-        stop "Gen1IntOnePropGetIntExpt>> input array not enough!"
+        call quit("Gen1IntOnePropGetIntExpt>> input array not enough!")
       end if
     end if
     ! gets the index of current path and total number of different paths

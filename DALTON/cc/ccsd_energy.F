@@ -4579,7 +4579,7 @@ C
                    WRITE(LUPRI,'(A,A)') 
      &                  'Calculation too large for 32-bit integers',
      &                  'Try rebuilding Dalton using 64-bit integers'
-                   STOP 'Negative index in CCSD_INIT1'
+                   CALL QUIT('Negative index in CCSD_INIT1')
                END IF
             END IF
 C
@@ -6023,7 +6023,7 @@ C
       KEND1  = KIAJB + NT2AMX
       LWRK1  = LWORK - KEND1
       IF (LWRK1 .LT. 0) THEN
-         STOP 'Insufficient spaces in CCSD_CBS2'
+         CALL QUIT('Insufficient spaces in CCSD_CBS2')
       ENDIF
       REWIND(LUIAJB)
       CALL READI(LUIAJB,IRAT*NT2AMX,WORK)

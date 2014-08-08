@@ -377,25 +377,28 @@ DO ISHELA=1,MAXNSHELL
    END IF
 END DO 
 
-DO I = 1,NBLCNT
-   ORBBLOCKS(1,I) = NSTART(IBLCKS(1,I))+1
-ENDDO
+IF(NBLCNT.GT.0)THEN
+   DO I = 1,NBLCNT
+      ORBBLOCKS(1,I) = NSTART(IBLCKS(1,I))+1
+   ENDDO
+   
+   DO I = 1,NBLCNT-1
+      ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+   ENDDO
+   I=NBLCNT
+   IF(IBLCKS(2,I) .LT. MAXNSHELL)THEN
+      ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+   ELSE
+      ORBBLOCKS(2,I) = NBAST
+   ENDIF
 
-DO I = 1,NBLCNT-1
-   ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
-ENDDO
-I=NBLCNT
-IF(IBLCKS(2,I) .LT. MAXNSHELL)THEN
-   ORBBLOCKS(2,I) = NSTART(IBLCKS(2,I)+1)
+   NactBAST = 0
+   DO IBL = 1, NBLCNT
+      NactBAST = NactBAST + ORBBLOCKS(2,IBL) - ORBBLOCKS(1,IBL) + 1
+   ENDDO
 ELSE
-   ORBBLOCKS(2,I) = NBAST
+   NactBAST = 0
 ENDIF
-
-NactBAST = 0
-DO IBL = 1, NBLCNT
-   NactBAST = NactBAST + ORBBLOCKS(2,IBL) - ORBBLOCKS(1,IBL) + 1
-ENDDO
-
 END SUBROUTINE BOX_NACTORBGETBLOCKS
 
 recursive subroutine split_box(gridBox,COOR2,GlobalmaxGridpoints,totalpoints,&
@@ -419,6 +422,8 @@ type(gridboxtype),pointer :: TMPBOX
 integer,pointer :: tmp(:)
 INTEGER :: SHELLBLOCKS(2,MAXNSHELL),NSHELLBLOCKS
 
+!FIXME we prefer boxes with GridBox%npoints and NactBast a multiple of 4 or better 8 - as much as possible. 
+
 IF(GridBox%npoints.LT.maxnbuflen)THEN
    !determine number of active orbitals in this box 
    !if it is too big - which means that the memory 
@@ -426,7 +431,13 @@ IF(GridBox%npoints.LT.maxnbuflen)THEN
    call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
         & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,&
         & GridBox%minR,GridBox%maxR,LUPRI)
-   IF(MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast.LT.MAX(BoxMemRequirement,10000000))THEN
+   IF(NactBAST.EQ.0)THEN
+      RETURN
+   ENDIF
+   IF(MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast.LT.BoxMemRequirement)THEN
+!      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST
+!      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
+!      print*,'MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast',MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast
       RETURN
 !   ELSE
 !      continue to divide

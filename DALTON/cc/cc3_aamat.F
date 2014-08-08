@@ -426,7 +426,7 @@ C
          WRITE(LUPRI,*) 'INCONSISTENT SYMMETRY SPECIFICATION'
          WRITE(LUPRI,*) 
      *      'ISYRES =',ISYRES,'ISYMWXY =',ISYMWXY
-         STOP' CC3_AAMATSDVIR inconsistent symmetry specification' 
+         CALL QUIT('CC3_AAMATSDVIR inconsistent symmetry specification')
       END IF
 C
       ISYFCKX = ISYMRX
@@ -1754,7 +1754,7 @@ C
          WRITE(LUPRI,*) 'INCONSISTENT SYMMETRY SPECIFICATION'
          WRITE(LUPRI,*) 
      *      'ISYRES =',ISYRES,'ISYMWXY =',ISYMWXY
-         STOP' CC3_AAMATSDVIR inconsistent symmetry specification' 
+         CALL QUIT('CC3_AAMATSDVIR inconsistent symmetry specification')
       END IF
 C
       ISYFCKX = ISYMRX

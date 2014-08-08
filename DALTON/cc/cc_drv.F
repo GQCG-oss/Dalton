@@ -200,7 +200,7 @@ C       Unit no. for info file set to zero
 C
         LUMMMO = -1
 C
-        CALL QUITMM('SCF orbitals and energies calculated')
+        CALL QUIT('SCF orbitals and energies calculated')
 C
       END IF
 C----------------------------------------------------

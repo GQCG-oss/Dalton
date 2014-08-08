@@ -21,21 +21,12 @@ PROGRAM TUV
   !buildtuvindex
   sphericalGTO = .TRUE.
   LUMOD3=3
-  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS2_new.F90",status="unknown")
-  WRITE(LUMOD3,'(A)')'MODULE AGC_OBS_Sphcontract2Mod'
-  WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory'
-  WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
-
-  WRITE(LUMOD3,'(A)')'  '
-  WRITE(LUMOD3,'(A)')' CONTAINS'
-  WRITE(LUMOD3,'(A)')'  '
   ! 0 1 2 3 4
   ! S P D F 
   !
 DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
-    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC  '
     DoOpenMP = .FALSE.
     DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
@@ -45,6 +36,16 @@ DO GPUrun = 1,2
     ELSE
        ARCSTRING = 'GPU'
     ENDIF
+
+  open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS2_"//ARCSTRING//"_new.F90",status="unknown")
+  WRITE(LUMOD3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_Sphcontract2Mod'
+  WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory'
+  WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
+
+  WRITE(LUMOD3,'(A)')'  '
+  WRITE(LUMOD3,'(A)')' CONTAINS'
+  WRITE(LUMOD3,'(A)')'  '
+!  IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#ifdef VAR_OPENACC  '
 
   JMAX1=2
   JMAX2=2
@@ -302,12 +303,11 @@ DO GPUrun = 1,2
         ENDIF !SphericalTrans
      enddo
   enddo
-    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
+!    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
+    WRITE(LUMOD3,'(A)')'END MODULE'
+    close(unit = LUMOD3)
   enddo
 
-  WRITE(LUMOD3,'(A)')'END MODULE AGC_OBS_Sphcontract2Mod'
-
-close(unit = LUMOD3)
 
 END PROGRAM
 

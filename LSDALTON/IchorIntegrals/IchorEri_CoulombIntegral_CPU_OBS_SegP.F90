@@ -22,12 +22,12 @@ use AGC_CPU_OBS_TRMODCtoASegP
 use AGC_CPU_OBS_TRMODDtoASegP
 use AGC_CPU_OBS_TRMODCtoBSegP
 use AGC_CPU_OBS_TRMODDtoBSegP
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_CPU_OBS_Sphcontract1Mod
+use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorCoulombIntegral_CPU_OBS_SegP,IchorCoulombIntegral_CPU_OBS_general_sizeSegP  

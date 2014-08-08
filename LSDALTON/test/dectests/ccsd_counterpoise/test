@@ -17,7 +17,7 @@ f.add(string = 'Correlation energy',
 
 f.add(from_string = 'Summary For Counter Poise Correction',
       to_string   = 'Interaction Energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-7)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

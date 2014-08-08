@@ -4,6 +4,9 @@
     Jaime Axel Rosal Sandberg, somewhere mid-2013
 */
 
+#if defined(VAR_MPI)
+  #include "mpi.h"
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -447,11 +450,6 @@ void Error2Dalton(int ecode) {
 /*
     Overloaded MPI short-hand
 */
-
-#include <cstdio>
-#if defined(VAR_MPI)
-  #include "mpi.h"
-#endif
 
 inline void mpi_bcast(int & val) {
   #if defined(VAR_MPI)
