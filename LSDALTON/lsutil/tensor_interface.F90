@@ -629,7 +629,7 @@ contains
     ! Extract virtual EOS indices and leave occupied indices untouched
     ! ****************************************************************
 
-    if(.not.DECinfo%OnlyOccPart.and.present(Arr_virtEOS))then
+    if(present(Arr_virtEOS))then
        call array_extract_eos_indices_virt(Arr_virtEOS,Arr_orig,&
           & nvirt,MyFragment%idxu(1:nvirt))
     endif
@@ -637,7 +637,7 @@ contains
     ! Extract occupied EOS indices and leave virtual indices untouched
     ! ****************************************************************
 
-    if(.not.DECinfo%OnlyVIRTPart.and.present(Arr_occEOS))then
+    if(present(Arr_occEOS))then
        call array_extract_eos_indices_occ(Arr_occEOS,Arr_orig,&
           & nocc, MyFragment%idxo(1:nocc))
     endif
