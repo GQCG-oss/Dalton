@@ -968,6 +968,7 @@ C
 #include "inftap.h"
 #include "inflr.h"
 #include "infrank.h"
+#include "gnrinf.h"
 C
 C     Local variables:
 C
@@ -1715,6 +1716,9 @@ C Sonia: MCD variables
 C
       PARAMETER (AU_TO_GM=1.0D50*8*PI**2*ALPHAC*
      &     (XTANGM10*1.0D2)**5 /(CCM*1.0D2*0.0036749326))
+      PARAMETER(EH_TO_NM=1.0D9*2*PI*XTANGM10**2*EMASS*CCM/HBAR)         !MK
+      PARAMETER(AUDIPCGS=1.0D46*(ECHARGE*CCM*XTANGM10)**2)              !MK
+      PARAMETER(AUROTCGS=1.0D46*CCM*XTANGM10*ECHARGE**2*HBAR/EMASS/(-2))!MK
 
       DIMENSION JWOPSV(2,MAXWOP)
       CHARACTER A1*1, B1*1, CLABEL*8
@@ -1742,9 +1746,15 @@ C
       END IF
       DO 300 MSYMC = 1,NSYM
          MSYMCX = MULD2H(IREFSY,MSYMC)
-         IF (PHOSPH) CALL DZERO(PHOSMAT,9*NSMCNV(MSYMC))
-         IF (MNFPHO) CALL DZERO(PHOSMN,9*NSMCNV(MSYMC))
-         IF (ECPHOS) CALL DZERO(PHOSEC,9*NSMCNV(MSYMC))
+         IF (PHOSPH .OR. CPPHOL) CALL DZERO(PHOSMAT,9*NSMCNV(MSYMC))    !MK - DIPLEN/SPINORB
+         IF (PHOSPV .OR. CPPHOV) CALL DZERO(PHOTHRD,9*NSMCNV(MSYMC))    !MK - DIPVEL/SPINORB
+         IF (CPPHOL .OR. CPPHOV) CALL DZERO(PHOFOUR,9*NSMCNV(MSYMC))    !MK - ANGMOM/SPINORB
+         IF (MNFPHO) CALL DZERO(PHOSMN,9*NSMCNV(MSYMC))                 !MK - DIPLEN/1MNF-SO
+         IF (ECPHOS) CALL DZERO(PHOSEC,9*NSMCNV(MSYMC))                 !MK - DIPLEN/1SPNSCA
+         IF (CPPHMF) CALL DZERO(PHOSMV,9*NSMCNV(MSYMC))                 !MK - DIPVEL/1MNF-SO
+         IF (CPPHEC) CALL DZERO(PHOSEV,9*NSMCNV(MSYMC))                 !MK - DIPVEL/1SPNSCA
+         IF (CPPHMF) CALL DZERO(PHOFIFT,9*NSMCNV(MSYMC))                !MK - ANGMOM/1MNF-SO
+         IF (CPPHEC) CALL DZERO(PHOSIXT,9*NSMCNV(MSYMC))                !MK - ANGMOM/1SPNSCA
          DO 400 MSYMB = 1,NSYM
             MSYMA = MULD2H(MSYMC,MSYMB)
             IF ( (NSMCNV(MSYMC) .GT. 0) .AND. (NBSMOP(MSYMB) .GT. 0)
@@ -1915,7 +1925,7 @@ C
                            FREQA = QRFREQ(IAFRNU-NEXLB2)
                            IF (INDEX(ASMLB(MSYMA,IAOP),'DIPVEL') .NE. 0)
      *                     THEN
-                              FACMOM = FACB / CEXMBF
+                              FACMOM = FACB / CEXMBF                    !MK why here?
                            ELSE
                               FACMOM = FACB
                            END IF
@@ -2083,6 +2093,8 @@ C
      *   ' B operator label,  symmetry, spin: ',
      *      BSMLB(MSYMB,IBOP),MSYMB,ISPINB,
      *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
+C needed other format to test sth - JC / now the old format MK
+C                        WRITE(LUPRI,'(/A,3ES18.7)')
                         WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
@@ -2094,27 +2106,80 @@ C
                         CALL PRINT_QR_SINGLE_RESIDUE(LUPRI,
      &                      ALAB, BLAB, OMEGA_B, IC, OMEGA_C, SMOM
      &                      )
-                              IF (PHOSPH .AND.
-     &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
-     &                        BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN
-                                IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
-                                IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
-                                PHOSMAT(IDIP,IHSO,IC)=SMOM
-                              END IF
-                              IF (MNFPHO .AND.
-     &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
-     &                        BSMLB(MSYMB,IBOP)(2:8).EQ.'1MNF-SO' ) THEN
-                                IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
-                                IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
-                                PHOSMN(IDIP,IHSO,IC)=SMOM
-                               END IF
-                              IF (ECPHOS .AND.
-     &                        ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.
-     &                        BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN
-                                IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
-                                IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
-                                PHOSEC(IDIP,IHSO,IC)=SMOM
-                               END IF
+
+                           IF (PHOSPH .OR. CPPHOL) THEN                 !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
+                             PHOSMAT(IDIP,IHSO,IC)=SMOM
+                           END IF
+                           END IF                                       !MK
+                           IF (PHOSPV .OR. CPPHOV) THEN                 !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPVEL ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))   !MK
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))   !MK
+                             PHOTHRD(IDIP,IHSO,IC)=SMOM                 !MK
+                           END IF
+                           END IF                                       !MK
+                           IF (CPPHOL .OR. CPPHOV) THEN                 !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'ANGMOM ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.' SPNORB' ) THEN   !MK
+                              IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))  !MK
+                              IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))  !MK
+                              PHOFOUR(IDIP,IHSO,IC)=SMOM                !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (CPPHMF) THEN                             !MK - CPPHMF:
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'ANGMOM ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1MNF-SO' ) THEN   !MK
+                              IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))  !MK
+                              IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))  !MK
+                              PHOFIFT(IDIP,IHSO,IC)=SMOM                !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (CPPHEC) THEN                             !MK - CPPHEC:
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'ANGMOM ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN   !MK
+                              IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))  !MK
+                              IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))  !MK
+                              PHOSIXT(IDIP,IHSO,IC)=SMOM                !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (MNFPHO) THEN                             !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1MNF-SO' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))   !MK
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))   !MK
+                             PHOSMN(IDIP,IHSO,IC)=SMOM                  !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (ECPHOS) THEN                             !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPLEN ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))   !MK
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))   !MK
+                             PHOSEC(IDIP,IHSO,IC)=SMOM                  !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (CPPHMF) THEN                             !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPVEL ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1MNF-SO' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))   !MK
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))   !MK
+                             PHOSMV(IDIP,IHSO,IC)=SMOM                  !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+                           IF (CPPHEC) THEN                             !MK
+                           IF (ASMLB(MSYMA,IAOP)(2:8).EQ.'DIPVEL ' .AND.!MK
+     &                     BSMLB(MSYMB,IBOP)(2:8).EQ.'1SPNSCA' ) THEN   !MK
+                             IDIP=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))   !MK
+                             IHSO=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))   !MK
+                             PHOSEV(IDIP,IHSO,IC)=SMOM                  !MK
+                           END IF                                       !MK
+                           END IF                                       !MK
+
                            IF (TWOPHO) THEN
                               IA=INDEX('XYZ',ASMLB(MSYMA,IAOP)(1:1))
                               IB=INDEX('XYZ',BSMLB(MSYMB,IBOP)(1:1))
@@ -2223,7 +2288,9 @@ C ---------------------------------------------------------------endofmcd-------
  500           CONTINUE
             END IF
  400     CONTINUE
-         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS) THEN
+         IF (PHOSPH .OR. MNFPHO .OR. ECPHOS .OR. PHOSPV .OR.            !MK
+     & CPPHOL .OR. CPPHOV .OR. CPPHMF .OR. CPPHEC) THEN                 !MK
+            WRITE (LUPRI,'(/A/A,I3/A,I3/A/)')
             IEXCSY = MULD2H(MSYMC,IREFSY)
             WRITE (LUPRI,'(/A/A,I3,3A/A,I3/A/)')
      &         ' Phosphorescence electric dipole transition rates',
@@ -2231,11 +2298,12 @@ C ---------------------------------------------------------------endofmcd-------
      &            '  ( ',REP(IEXCSY-1),')',
      &         ' to the ground state of symmetry',IREFSY,
      &         ' ----------------------------------'
-            IF (PHOSPH) WRITE(LUPRI,'(A)')
-     &        ' (H_SO: Full spin-orbit integrals used.)'
-            IF (MNFPHO) WRITE(LUPRI,'(A)')
+            IF (PHOSPH .OR. PHOSPV .OR. CPPHOL .OR. CPPHOV) THEN        !MK
+            WRITE(LUPRI,'(A)')' (H_SO: Full spin-orbit integrals used.)'!MK
+            END IF                                                      !MK
+            IF (MNFPHO .OR. CPPHMF) WRITE(LUPRI,'(A)')                  !MK
      &        ' (AMFI: Atomic Mean field spin-orbit integrals used.)'
-            IF (ECPHOS) WRITE(LUPRI,'(A)')
+            IF (ECPHOS .OR. CPPHEC) WRITE(LUPRI,'(A)')                  !MK
      &        ' (Effective charge spin-orbit integrals used.)'
             IF (NSMCNV(MSYMC) .LE. 0) WRITE(LUPRI,'(/A)')
      &        ' No excited states calculated of this symmetry.'
@@ -2244,34 +2312,94 @@ C ---------------------------------------------------------------endofmcd-------
      &  ' Phosphorescence transition rate from excited state no.',IC,
      &  ' (Triplet->singlet transition, high-temperature limit)'
                W=EXCITA(MSYMC,IC,ISPINC+1)
-               WRITE(LUPRI,'(/A,F7.3,A/)') 
+               WRITE(LUPRI,'(/A,F7.3,A)') 
      &  ' Transition energy:',W*XTEV,' eV'
-               RATE =D0
+               WRITE(LUPRI,'(A,F9.3,A/)')'    or ',EH_TO_NM/W,' nm'     !MK
+               RATE=D0
+               RATEV=D0                                                 !MK
                RATEA=D0
                RATEE=D0
-               DIP=D0
-               DIPA=D0
-               DIPE=D0
+               RATEAV=D0
+               RATEEV=D0
+               IF (PHOSPH .OR. CPPHOL) DIP=D0                           !MK
+               IF (PHOSPV .OR. CPPHOV) DIPF=D0                          !MK
+               IF (CPPHOL) DIPG=D0                                      !MK
+               IF (CPPHOV) DIPH=D0                                      !MK
+               IF (MNFPHO) DIPA=D0                                      !MK
+               IF (ECPHOS) DIPE=D0                                      !MK
+               IF (CPPHMF) DIPAV=D0                                     !MK
+               IF (CPPHEC) DIPEV=D0                                     !MK
+               IF (CPPHMF) DIPI=D0                                      !MK
+               IF (CPPHEC) DIPJ=D0                                      !MK
                DO I=1,3
-                  XDIP=D0
-                  XDIPA=D0
-                  XDIPE=D0
+                  IF (PHOSPH .OR. CPPHOL) XDIP=D0                       !MK
+                  IF (PHOSPV .OR. CPPHOV) XDIPF=D0                      !MK
+                  IF (CPPHOL) XDIPG=D0                                  !MK
+                  IF (CPPHOV) XDIPH=D0                                  !MK
+                  IF (MNFPHO) XDIPA=D0                                  !MK
+                  IF (ECPHOS) XDIPE=D0                                  !MK
+                  IF (CPPHMF) XDIPAV=D0                                 !MK
+                  IF (CPPHEC) XDIPEV=D0                                 !MK
+                  IF (CPPHMF) XDIPI=D0                                  !MK
+                  IF (CPPHEC) XDIPJ=D0                                  !MK
                   DO J=1,3
-                     IF (PHOSPH) XDIP =XDIP +PHOSMAT(I,J,IC)**2
-                     IF (MNFPHO) XDIPA=XDIPA+ PHOSMN(I,J,IC)**2
-                     IF (ECPHOS) XDIPE=XDIPE+ PHOSEC(I,J,IC)**2
+                     IF (PHOSPH .OR. CPPHOL) THEN                       !MK
+                        XDIP=XDIP+PHOSMAT(I,J,IC)**2                    !MK
+                     END IF                                             !MK
+                     IF (PHOSPV .OR. CPPHOV) THEN                       !MK
+                        XDIPF=XDIPF+PHOTHRD(I,J,IC)**2                  !MK
+                     END IF                                             !MK
+                     IF (CPPHOL) THEN                                   !MK
+                        XDIPG=XDIPG+PHOSMAT(I,J,IC)*PHOFOUR(I,J,IC)     !MK
+                     END IF                                             !MK
+                     IF (CPPHOV) THEN                                   !MK
+                        XDIPH=XDIPH+PHOTHRD(I,J,IC)*PHOFOUR(I,J,IC)     !MK
+                     END IF                                             !MK
+                     IF (MNFPHO) THEN                                   !MK
+                        XDIPA=XDIPA+ PHOSMN(I,J,IC)**2                  !MK
+                     END IF                                             !MK
+                     IF (ECPHOS) THEN                                   !MK
+                        XDIPE=XDIPE+ PHOSEC(I,J,IC)**2                  !MK
+                     END IF                                             !MK
+                     IF (CPPHMF) THEN                                   !MK
+                        XDIPAV=XDIPAV+ PHOSMV(I,J,IC)**2                !MK
+                     END IF                                             !MK
+                     IF (CPPHEC) THEN                                   !MK
+                        XDIPEV=XDIPEV+ PHOSEV(I,J,IC)**2                !MK
+                     END IF                                             !MK
+                     IF (CPPHMF) THEN                                   !MK
+                        XDIPI=XDIPI+PHOSMV(I,J,IC)*PHOFIFT(I,J,IC)      !MK
+                     END IF                                             !MK
+                     IF (CPPHEC) THEN                                   !MK
+                        XDIPJ=XDIPJ+PHOSEV(I,J,IC)*PHOSIXT(I,J,IC)      !MK
+                     END IF                                             !MK
                   END DO
-                  IF (PHOSPH) THEN
+                  IF (PHOSPH .OR. CPPHOL) THEN                          !MK
                      XRATE=D4D3*(ALPHAC*W)**3*XDIP/XFSEC
+                     WRITE(LUPRI,'(A)')'  Length gauge: '               !MK
                      WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (H_SO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATE,
      &               ' Transition moment : ',SQRT(XDIP)
                      RATE=RATE+XRATE
                      DIP = DIP + XDIP
-                   END IF
-                   IF (MNFPHO) THEN
+                  END IF
+                  IF (PHOSPV .OR. CPPHOV) THEN                          !MK
+                     XRATEV=D4D3*(ALPHAC*W)**3*XDIPF/XFSEC              !MK
+                     WRITE(LUPRI,'(A)')'  Velocity gauge: '             !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+     &               ' Partial rates (H_SO): ',                         !MK
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEV,     !MK
+     &               ' Transition moment : ',SQRT(XDIPF)                !MK
+                     RATEV=RATEV+XRATEV                                 !MK
+                     DIPF = DIPF + XDIPF                                !MK
+                   END IF                                               !MK
+                   IF (CPPHOL) DIPG = DIPG + XDIPG                      !MK
+                   IF (CPPHOV) DIPH = DIPH + XDIPH                      !MK
+                   IF (MNFPHO) THEN                                     !MK
                      XRATEA=D4D3*(ALPHAC*W)**3*XDIPA/XFSEC
+                     WRITE(LUPRI,'(A)')'  Length gauge / mean field spin!MK
+     &-orbit integrals: '                                               !MK
                      WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (AMFI): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,
@@ -2279,8 +2407,10 @@ C ---------------------------------------------------------------endofmcd-------
                      RATEA=RATEA+XRATEA
                      DIPA = DIPA + XDIPA
                    END IF
-                   IF (ECPHOS) THEN
+                   IF (ECPHOS) THEN                                     !MK
                      XRATEE=D4D3*(ALPHAC*W)**3*XDIPE/XFSEC
+                     WRITE(LUPRI,'(A)')'  Length gauge / effective charg!MK
+     &e spin-orbit integrals: '                                         !MK
                      WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')
      &               ' Partial rates (ECSO): ',
      &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEE,
@@ -2288,19 +2418,107 @@ C ---------------------------------------------------------------endofmcd-------
                      RATEE=RATEE+XRATEE
                      DIPE = DIPE + XDIPE
                    END IF
+                   IF (CPPHMF) THEN                                     !MK
+                     XRATEAV=D4D3*(ALPHAC*W)**3*XDIPAV/XFSEC            !MK
+                     WRITE(LUPRI,'(A)')'  Velocity gauge / mean field sp!MK
+     &in-orbit integrals: '                                             !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+     &               ' Partial rates (AMFI): ',                         !MK
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEA,     !MK
+     &               ' Transition moment : ',SQRT(XDIPAV)               !MK
+                     RATEAV=RATEAV+XRATEAV                              !MK
+                     DIPAV = DIPAV + XDIPAV                             !MK
+                   END IF                                               !MK
+                   IF (CPPHEC) THEN                                     !MK
+                     XRATEEV=D4D3*(ALPHAC*W)**3*XDIPEV/XFSEC            !MK
+                     WRITE(LUPRI,'(A)')'  Velocity gauge / effective cha!MK
+     &rge spin-orbit integrals: '                                       !MK
+                     WRITE(LUPRI,'(2A,1P,G12.5,A,G9.3)')                !MK
+     &               ' Partial rates (ECSO): ',                         !MK
+     &               CHAR(ICHAR('X')+I-1)//'-polarization', XRATEEV,    !MK
+     &               ' Transition moment : ',SQRT(XDIPEV)               !MK
+                     RATEEV=RATEEV+XRATEEV                              !MK
+                     DIPEV = DIPEV + XDIPEV                             !MK
+                   END IF                                               !MK
+                   IF (CPPHMF) DIPI = DIPI + XDIPI                      !MK
+                   IF (CPPHEC) DIPJ = DIPJ + XDIPJ                      !MK
                END DO
-               IF (PHOSPH) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
-     &        ' Oscillator strength            (H_SO)', 2*W*DIP/D3,'',
-     &        ' Total transition       rate    (H_SO)', RATE/D3,' s-1',
-     &        ' Total phosphorescence lifetime (H_SO)', D3/RATE,' s'
-               IF (MNFPHO) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
-     &        ' Oscillator strength            (AMFI)', 2*W*DIPA/D3,'',
-     &        ' Total transition       rate    (AMFI)',RATEA/D3,' s-1',
-     &        ' Total phosphorescence lifetime (AMFI)',D3/RATEA,' s'
-               IF (ECPHOS) WRITE(LUPRI,'(1P,3(/A,E12.3,A))')
-     &        ' Oscillator strength            (ECSO)', 2*W*DIPE/D3,'',
-     &        ' Total transition       rate    (ECSO)', RATEE/D3,' s-1',
-     &        ' Total phosphorescence lifetime (ECSO)', D3/RATEE,' s'
+               IF (PHOSPH.OR.CPPHOL)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')!MK DIPVEL is already divided by omega
+     &        '  Phosphorescence - length gauge: ',                     !MK
+     &        ' Oscillator strength (/2PI)     (H_SO)', W*DIP/D3/PI,'', !MK
+     &        ' Dipole strength [a.u.]         (H_SO)', DIP,'',         !MK D = <r><r>
+     &        ' Dipole strength E-40 [esu**2 cm**2]  ', DIP*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (H_SO)', RATE/D3,' s-1', !MK
+     &        ' Total phosphorescence lifetime (H_SO)', D3/RATE,' s'    !MK
+               IF (PHOSPV.OR.CPPHOV)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')!MK
+     &        '  Phosphorescence - velocity gauge: ',                   !MK
+     &        ' Oscillator strength (/2PI)     (H_SO)', W*DIPF/D3/PI,'',!MK
+     &        ' Dipole strength [a.u.]         (H_SO)', DIPF,'',        !MK D = <p><p> / omega^2
+     &        ' Dipole strength E-40 [esu**2 cm**2]  ',DIPF*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (H_SO)', RATEV/D3,' s-1',!MK
+     &        ' Total phosphorescence lifetime (H_SO)', D3/RATEV,' s'   !MK
+               IF (CPPHOL) WRITE(LUPRI,'(1P,/A,4(/A,E16.6,A))')         !MK
+     &        '  Circ. pol. phosphorescence - length gauge: ',          !MK
+     &        ' Rotatory strength [a.u.]       (H_SO)', DIPG/2,'',      !MK R = -(-1/2) <r><L>
+     &       ' Rot. str. E-40 [ esu cm erg / G ]    ',-DIPG*AUROTCGS,'',!MK
+     &        ' Diss. fac. [a.u.]              (H_SO)', 2*DIPG/DIP,'',  !MK g = 4R/D
+     &        ' Diss. fac. [ erg / (esu cm G) ]      ',                 !MK
+     &          (-4)*DIPG*AUROTCGS/(DIP*AUDIPCGS),''                    !MK
+               IF (CPPHOV) WRITE(LUPRI,'(1P,/A,4(/A,E16.6,A))')         !MK
+     &        '  Circ. pol. phosphorescence - velocity gauge: ',        !MK
+     &        ' Rotatory strength [a.u.]       (H_SO)', -DIPH/2,'',     !MK R = -1/(2omega) <p><L>
+     &        ' Rot. str. E-40 [ esu cm erg / G ]    ',DIPH*AUROTCGS,'',!MK
+     &        ' Diss. fac. [a.u.]              (H_SO)',-2*DIPH/DIPF,'', !MK g = 4R/D
+     &        ' Diss. fac. [ erg / (esu cm G) ]      ',                 !MK
+     &          4*DIPH*AUROTCGS/(DIPF*AUDIPCGS),''                      !MK
+               IF (MNFPHO)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')          !MK
+     &        '  Phosphorescence - length gauge / mean field spin-orbit !MK
+     &integrals: ',                                                     !MK
+     &        ' Oscillator strength (/2PI)     (AMFI)', W*DIPA/D3/PI,'',!MK
+     &        ' Dipole strength [a.u.]         (AMFI)', DIPA,'',        !MK
+     &        ' Dipole strength E-40 [esu**2 cm**2]  ',DIPA*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (AMFI)', RATEA/D3,' s-1',!MK
+     &        ' Total phosphorescence lifetime (AMFI)', D3/RATEA,' s'   !MK
+               IF (ECPHOS)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')          !MK
+     &        '  Phosphorescence - length gauge / effective charge spin-!MK
+     &orbit integrals: ',                                               !MK
+     &        ' Oscillator strength (/2PI)     (ECSO)', W*DIPE/D3/PI,'',!MK
+     &        ' Dipole strength [a.u.]         (ECSO)', DIPE,'',        !MK
+     &        ' Dipole strength E-40 [esu**2 cm**2]  ',DIPE*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (ECSO)', RATEE/D3,' s-1',!MK
+     &        ' Total phosphorescence lifetime (ECSO)', D3/RATEE,' s'   !MK
+               IF (CPPHMF)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')          !MK
+     &        '  Phosphorescence - velocity gauge / mean field spin-orbi!MK
+     &t integrals: ',                                                   !MK
+     &        ' Oscillator strength (/2PI)     (AMFI)',W*DIPAV/D3/PI,'',!MK
+     &        ' Dipole strength [a.u.]         (AMFI)', DIPAV,'',       !MK
+     &       ' Dipole strength E-40 [esu**2 cm**2]  ',DIPAV*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (AMFI)',RATEAV/D3,' s-1',!MK
+     &        ' Total phosphorescence lifetime (AMFI)', D3/RATEAV,' s'  !MK
+               IF (CPPHEC)WRITE(LUPRI,'(1P,/A,5(/A,E16.6,A))')!MK
+     &        '  Phosphorescence - velocity gauge / effective charge spi!MK
+     &n-orbit integrals: ',                                             !MK
+     &        ' Oscillator strength (/2PI)     (ECSO)',W*DIPEV/D3/PI,'',!MK
+     &        ' Dipole strength [a.u.]         (ECSO)', DIPEV,'',       !MK
+     &       ' Dipole strength E-40 [esu**2 cm**2]  ',DIPEV*AUDIPCGS,'',!MK
+     &        ' Total transition rate          (ECSO)',RATEEV/D3,' s-1',!MK
+     &        ' Total phosphorescence lifetime (ECSO)', D3/RATEEV,' s'  !MK
+               IF (CPPHMF) WRITE(LUPRI,'(1P,/A,4(/A,E16.6,A))')         !MK
+     &        '  Circ. pol. phosphorescence - velocity gauge / mean fiel!MK
+     &d spin-orbit integrals: ',                                        !MK
+     &        ' Rotatory strength [a.u.]       (AMFI)', -DIPI/2,'',     !MK
+     &        ' Rot. str. E-40 [ esu cm erg / G ]    ',DIPI*AUROTCGS,'',!MK
+     &        ' Diss. fac. [a.u.]              (AMFI)',-2*DIPI/DIPAV,'',!MK
+     &        ' Diss. fac. [ erg / (esu cm G) ]      ',                 !MK
+     &          4*DIPI*AUROTCGS/(DIPAV*AUDIPCGS),''                     !MK
+               IF (CPPHEC) WRITE(LUPRI,'(1P,/A,4(/A,E16.6,A))')         !MK
+     &        '  Circ. pol. phosphorescence - velocity gauge / effective!MK
+     & charge spin-orbit integrals: ',                                  !MK
+     &        ' Rotatory strength [a.u.]       (ECSO)', -DIPJ/2,'',     !MK
+     &        ' Rot. str. E-40 [ esu cm erg / G ]    ',DIPJ*AUROTCGS,'',!MK
+     &        ' Diss. fac. [a.u.]              (ECSO)',-2*DIPJ/DIPEV,'',!MK
+     &        ' Diss. fac. [ erg / (esu cm G) ]      ',                 !MK
+     &          4*DIPJ*AUROTCGS/(DIPEV*AUDIPCGS),''                     !MK
             END DO
          END IF
  300  CONTINUE
@@ -2483,7 +2701,7 @@ C
 CTODO? HJ-910405: exchange 400 and 900 loop
 C In 900 loop, if NGPPP(MSYMC).GT.0 calculate <0/C/i> moments
 C Calculate oscillator strengths,
-C    if DIPVEL then divide by frequency
+C    if DIPVEL then divide by frequency !MK Already done by someone
 C
 C panor:
 C     DOESA=.TRUE.

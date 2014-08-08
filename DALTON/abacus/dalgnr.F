@@ -420,8 +420,7 @@ C     subsystems needed by QM/NP/MM embedding scheme
 C     ***************************************************************
 C
       IF (QMNPMM .AND. .NOT.ONLYOV) THEN
-         call quit('not available in this version')
-!        CALL READ_POT_QMNPMM()
+         CALL READ_POT_QMNPMM()
       END IF
 C
 C     ***************************************************************
@@ -674,7 +673,6 @@ C
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
-      real(8), allocatable :: work(:)
       ! DIMENSION WORK(0:LMWORK)
 
       DIMENSION CORBKP(3*MXCENT)
@@ -684,6 +682,8 @@ C
 #include "trkoor.h"
 #include "taymol.h"
       REAL*8, allocatable ::  GRDMOL(:), HESMOL(:,:)
+
+      real(8), allocatable :: work(:)
 
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
@@ -1892,8 +1892,7 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
 C
 C     "*QMNPMM" input
    12 CONTINUE
-        call quit('not available in this version')
-!       CALL QMNPINP(WORD)
+        CALL QMNPINP(WORD)
       GO TO 200
    13 CONTINUE
 #if defined (BUILD_QFITLIB)

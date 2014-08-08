@@ -60,6 +60,7 @@ C
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infspi.h"
+#include "gnrinf.h"
 C
       LOGICAL ATEST, TEST
       DATA TEST /.FALSE./
@@ -458,6 +459,19 @@ C
          END IF
       END IF
 C
+      IF (QMNPMM) THEN
+         IF (TDHF) THEN
+            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+     *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
+     *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
+     *                        ISPINA,ISPINB,ISPINC)
+               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+     *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
+     *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
+     *                        ISPINA,ISPINC,ISPINB) 
+            END IF   
+       END IF
+C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          IF (TDHF) THEN
@@ -478,6 +492,7 @@ C
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                 WRK(KSYRLM))
          END IF
+C
 C
 Clf 10/06/2002
 C quadratic PCM response (for the time beeing without memory efficent SCF)

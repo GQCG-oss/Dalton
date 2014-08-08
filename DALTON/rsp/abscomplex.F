@@ -1174,7 +1174,7 @@ c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
 C
 c     FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
      &              XTMP,WRK(KFREE),LFREE)
       ENDIF
@@ -2116,11 +2116,11 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
      &   "B(A')+B(G)",'Dichro'
          CALL PRSYMB(LUPRI,'-',94,1)
          DO IFREQ=1,NFREQ_BETA_B
-         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AIMAABB(IFREQ)*
-     &   0.5+
-     &   GREABG(IFREQ)*0.25
-         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AREAABB(IFREQ)*0.5+
-     &   GIMABG(IFREQ)*0.25
+         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AIMAABB(IFREQ)*
+     &   0.5D0+
+     &   GREABG(IFREQ)*0.25D0
+         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AREAABB(IFREQ)*0.5D0+
+     &   GIMABG(IFREQ)*0.25D0
 !          WRITE(LUPRI,'(F13.6,F13.6,F13.6,F13.6,F13.6,F13.6,F13.6)')
 !      &   FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
 !      &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
@@ -2131,13 +2131,13 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
 !      &   FREQ_BETA_B(IFREQ)/5
          WRITE(LUPRI,'(A5,F10.6,F13.6,F13.6,
      &   F13.6,F13.6,F13.6,F13.6,F13.6)')
-     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
-     &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
+     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
+     &   0.25D0*GIMABG(IFREQ),0.5D0*AREAABB(IFREQ),0.5D0*AIMAABB(IFREQ),
      &   BIREFR(IFREQ),
      &   DICHRO(IFREQ)
          WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
-     &   0.5*AIMAABB(IFREQ)*
-     &   FREQ_BETA_B(IFREQ)/5
+     &   0.5D0*AIMAABB(IFREQ)*
+     &   FREQ_BETA_B(IFREQ)/5.0D0
          END DO
          CALL GPCLOSE(LUFU,'KEEP')
       END IF
@@ -2507,7 +2507,7 @@ c      ENDDO
      & ' frequencies:'
          WRITE(LUPRI,'(/A,5(4F12.8,/,9X))')
      &        ' LR FREQ:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
-         WRITE (LUPRI,'(/A,I4,A)')
+         WRITE (LUPRI,'(/A,I5,A)')
      & ' and the evaluation of',NQRF,' quadratic response functions:'
          WRITE(LUPRI,'(/2A,/A3,6A12,/2A)')
      &        '--------------------------------------',
@@ -2517,7 +2517,7 @@ c      ENDDO
      &        '--------------------------------------',
      &        '-------------------------------------'
          DO IQRF=1,NQRF
-            WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
+            WRITE(LUPRI,'(I4,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
          WRITE(LUPRI,'(2A)')

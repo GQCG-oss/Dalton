@@ -19,6 +19,7 @@ module dec_main_mod
   use files !,only:lsopen,lsclose
   use reorder_frontend_module 
   use tensor_interface_module
+  use Matrix_util!, only: get_AO_gradient
 
 
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -61,12 +62,20 @@ contains
     real(realk),intent(inout) :: E
     !local variables
     type(fullmolecule) :: Molecule
+    !SCF gradient norm
+    real(realk) :: gradnorm
 
     print *, 'Hartree-Fock info comes directly from HF calculation...'
+
+    if(.not. DECinfo%full_molecular_cc) then
+       CALL get_AO_gradientnorm(F, D, S, gradnorm)
+       IF(gradnorm.GT.DECinfo%FOT)call SCFgradError(gradnorm)
+    endif
 
     ! Get informations about full molecule
     ! ************************************
     call molecule_init_from_inputs(Molecule,mylsitem,F,S,C,D)
+
 
     !> F12
     !call molecule_init_f12(molecule,mylsitem,D)
@@ -89,6 +98,15 @@ contains
 
   end subroutine dec_main_prog_input
 
+  subroutine SCFgradError(gradnorm)
+    implicit none
+    real(realk) :: gradnorm
+    WRITE(DECinfo%output,'(A,ES16.8)')'WARNING: The SCF gradient norm = ',gradnorm
+    WRITE(DECinfo%output,'(A,ES16.8)')'WARNING: Is greater then the FOT=',DECinfo%FOT
+    WRITE(DECinfo%output,'(A,ES16.8)')'WARNING: The Error of the DEC calculation would be determined by the SCF error.'
+    WRITE(DECinfo%output,'(A,ES16.8)')'WARNING: Tighten the SCF threshold!'
+!    call lsquit('DEC ERROR: SCF gradient too large',-1)
+  end subroutine SCFgradError
 
   !> Wrapper for main DEC program to use when Fock,density,overlap, and MO coefficient
   !> matrices are not directly available from current HF calculation, but rather needs to

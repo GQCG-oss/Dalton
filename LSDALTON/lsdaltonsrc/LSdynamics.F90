@@ -324,6 +324,7 @@ Endif
   If (dyn%PrintLevel >= 1) Then
     Call LSHeader(lupri, 'Current forces (au)')
     Call Print_Vector(lupri, NAtoms, traj%Labels, -traj%Gradient)
+    Call Print_Vector(6, NAtoms, traj%Labels, -traj%Gradient)
   End If
   If (dyn%PrintLevel >= 3) Then
      Call LSHeader(lupri, 'Current velocities (au)')
@@ -331,6 +332,12 @@ Endif
         Call Print_Vector(lupri, NAtoms, traj%Labels, traj%Velocities)
      Else   ! Mass-weighted
         Call Print_Vector(lupri, NAtoms, traj%Labels, Cartesian_Velocities)
+     Endif
+     Call LSHeader(6, 'Current velocities (au)')
+     If (.NOT. dyn%Mass_Weight) then   ! Cartesian 
+        Call Print_Vector(6, NAtoms, traj%Labels, traj%Velocities)
+     Else   ! Mass-weighted
+        Call Print_Vector(6, NAtoms, traj%Labels, Cartesian_Velocities)
      Endif
   End If
 !
@@ -373,10 +380,6 @@ If (dyn%NHchain) then
 Endif
 ! Estimating temperature
 Temperature = 2.0E0_realk*traj%CurrKinetic/(3.0E0_realk*NAtoms*Boltzmann) 
-Print *, 'traj%CurrKinetic=',traj%CurrKinetic
-Print *, 'NAtoms          =',NAtoms
-Print *, 'Boltzmann       =',Boltzmann
-Print *, 'Temperature     =',Temperature
 Write(lupri,'(31X,A,F14.8)') 'Temperature: ',Temperature
 If (dyn%NHChain) traj%T_array(traj%StepNum+1) = Temperature
 !

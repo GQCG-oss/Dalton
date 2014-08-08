@@ -354,10 +354,9 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE IF (QMNPMM) THEN
-         call quit('not implemented in this version')
-!        CALL SCF_QMNPMM_OUT()
-      ELSE IF (PEQM) THEN
-         CONTINUE
+         CALL SCF_QMNPMM_OUT()
+      else if (peqm) then
+         continue
       ELSE
         ESOLT = D0
       END IF

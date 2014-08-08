@@ -1,0 +1,1487 @@
+
+
+     ************************************************************************
+     *************** Dalton - An Electronic Structure Program ***************
+     ************************************************************************
+
+    This is output from DALTON 2013.2
+   ----------------------------------------------------------------------------
+    NOTE:
+     
+    Dalton is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    the appropriate citations would be both of:
+     
+       K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+       L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
+       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
+       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
+       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
+       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
+       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
+       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
+       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
+       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
+       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
+       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
+       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
+       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
+       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
+       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
+       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
+       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
+       M. Ziolkowski and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
+    
+    and
+    
+       Dalton, a Molecular Electronic Structure Program,
+       Release DALTON2013.2 (2013), see http://daltonprogram.org
+   ----------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Kestutis Aidas,           Vilnius University,           Lithuania   (QM/MM)
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
+  Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
+  Luca Frediani,            UiT The Arctic U. of Norway,  Norway      (PCM)
+  Bin Gao,                  UiT The Arctic U. of Norway,  Norway      (Gen1Int library)
+  Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Eirik Hjertenaes,         NTNU,                         Norway      (Cholesky decomposition)
+  Maria Francesca Iozzi,    University of Oslo,           Norway      (RPA)
+  Brano Jansik              Technical Univ. of Ostrava    Czech Rep.  (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
+  Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
+  Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
+  Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
+  Rolf H. Myhre,            NTNU,                         Norway      (Cholesky, subsystems and ECC2)
+  Christian Neiss,          Univ. Erlangen-Nuernberg,     Germany     (CCSD(R12))
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
+  Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
+  David P. Tew,             University of Bristol,        England     (CCSD(R12))
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
+ --------------------------------------------------------------------------------
+
+     Date and time (Linux)  : Thu Jun 26 14:05:05 2014
+     Host name              : nat-100219.local                        
+
+ * Work memory size             :    64000000 =  488.28 megabytes.
+
+ * Directories for basis set searches:
+   1) /Users/hjj/prog/gitDalton_hjaaj-srdft/DALTON/test/rsp_mcabslrs
+   2) /Users/hjj/prog/gitDalton_hjaaj-srdft/build_master_g4.8/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | hjj
+ Host                     | pc-02208.apartment.local
+ System                   | Darwin-13.1.0
+ CMake generator          | Unix Makefiles
+ Processor                | i386
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/local/bin/gfortran
+ C compiler               | /opt/local/bin/gcc
+ C compiler version       | gcc (MacPorts gcc48 4.8.2_0) 4.8.2
+ C++ compiler             | /opt/local/bin/g++
+ C++ compiler version     | g++ (MacPorts gcc48 4.8.2_0) 4.8.2
+ BLAS                     | /opt/local/lib/libf77blas.a;/usr/lib/libcblas.dyli
+                          | b;/opt/local/lib/libatlas.a
+ LAPACK                   | /opt/local/lib/libatlas.a;/usr/lib/liblapack.dylib
+ Static linking           | OFF
+ Last Git revision        | 7f81ab9fe2a024ca3edd8ca9caa95213912d3f8a
+ Configuration time       | 2014-05-25 19:22:05.102603
+
+
+   Content of the .dal input file
+ ----------------------------------
+
+**DALTON INPUT                                    
+.RUN RESPONSE                                     
+**INTEGRALS                                       
+.DIPLEN                                           
+**WAVE FUNCTION                                   
+.HF                                               
+.MP2                                              
+.MCSCF                                            
+*CONFIGURATION INPUT                              
+.SYMMETRY                                         
+ 1                                                
+.INACTIVE                                         
+ 1                                                
+.ELECTRONS                                        
+ 2                                                
+.CAS SPACE                                        
+ 4                                                
+**RESPONSE                                        
+*ABSORPTION                                       
+.OLDCPP                                           
+.ALPHA                                            
+.DAMPING                                          
+ 0.005                                            
+.FREQ I                                           
+0.4425 0.49 0.0025                                
+.MAXRM                                            
+ 800                                              
+.THCLR                                            
+ 1.0D-4                                           
+**END OF DALTON INPUT                             
+
+
+   Content of the .mol file
+ ----------------------------
+
+BASIS                                                                          
+Sadlej-pVTZ                                                                    
+LiH (Exp. geometry from Herzberg R=1.5949 Å)                                   
+--------------------------------------------                                   
+Atomtypes=2 Generators=0     Angstrom                                          
+Charge=1.0 Atoms=1                                                             
+H     0.000000   0.000000    1.196175                                          
+Charge=3.0 Atoms=1                                                             
+Li    0.000000   0.000000   -0.398725                                          
+FINISH                                                                         
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.STAT:    1
+
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: LiH (Exp. geometry from Herzberg R=1.5949 Å)                            
+ 2: --------------------------------------------                            
+    ------------------------------------------------------------------------
+
+  Coordinates are entered in Angstrom and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   1.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   1 :
+     "/Users/hjj/prog/gitDalton_hjaaj-srdft/build_master_g4.8/basis/Sadlej-pVTZ"
+
+  Atomic type no.    2
+  --------------------
+  Nuclear charge:   3.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Basis set file used for this atomic type with Z =   3 :
+     "/Users/hjj/prog/gitDalton_hjaaj-srdft/build_master_g4.8/basis/Sadlej-pVTZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+@    Point group: C1 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           H           1.007825
+                           Li          7.016005
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000   -0.374920
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  Basis set used is "Sadlej-pVTZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  H           1    1.0000    18     9      [6s4p|3s2p]                                        
+  Li          1    3.0000    48    24      [10s6p4d|5s3p2d]                                   
+  ----------------------------------------------------------------------
+  total:      2    4.0000    66    33
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for neglecting AO integrals:  1.00D-12
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  H       :     1  x   0.0000000000    2  y   0.0000000000    3  z   2.2604431476
+  Li      :     4  x   0.0000000000    5  y   0.0000000000    6  z  -0.7534810492
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            H           Li    
+            ------      ------
+ H     :    0.000000
+ Li    :    1.594900    0.000000
+
+
+  Max    interatomic separation is    1.5949 Angstrom (    3.0139 Bohr)
+  between atoms    2 and    1, "Li    " and "H     ".
+
+  Min HX interatomic separation is    1.5949 Angstrom (    3.0139 Bohr)
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  Li         H            1.594900
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB       2.241611          0.000000    1.000000    0.000000
+   IC       2.241611          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+@    The molecule is linear.
+
+               B =       225453.50 MHz     (    7.520319 cm-1)
+
+
+@  Nuclear repulsion energy :    0.995380044141 Hartree
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated as requested:
+          - overlap integrals
+          - dipole length integrals
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000     -0.374920168213
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+
+ Threshold for neglecting two-electron integrals:  1.00D-12
+ Number of two-electron integrals written:       34324 ( 21.8% )
+ Megabytes written:                              0.398
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          T
+     Using EHT  model:          F
+     Number of Huckel orbitals each symmetry:    6
+
+ EWMO - Energy Weighted Maximum Overlap - is a Huckel type method,
+        which normally is better than Extended Huckel Theory.
+ Reference: Linderberg and Ohrn, Propagators in Quantum Chemistry (Wiley, 1973)
+
+ Huckel EWMO eigenvalues for symmetry :  1
+           -2.483511      -0.580537      -0.169653      -0.130000      -0.130000
+           -0.070299
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Thu Jun 26 14:05:06 2014
+     Host name              : nat-100219.local                        
+
+ Title lines from ".mol" input file:
+     LiH (Exp. geometry from Herzberg R=1.5949 Å)                            
+     --------------------------------------------                            
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+@    MC-SCF optimization.
+
+@    Multi-configurational response calculation.
+@              Type: complete active space calculation (CAS).
+
+@    This is a combination run starting with
+@              a restricted, closed shell Hartree-Fock calculation
+@              an MP2 calculation
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EWMO  " input option
+
+     Wave function specification
+     ============================
+@    Wave function type        >>> MC-SCF <<<
+@    Number of closed shell electrons           2
+@    Number of electrons in active shells       2
+@    Total charge of the molecule               0
+
+@    Spin multiplicity and 2 M_S                1         0
+@    Total number of symmetries                 1 (point group: C1 )
+@    Reference state symmetry                   1 (irrep name : A  )
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1
+                                           |  A  
+                                       --- |  ---
+@    Inactive orbitals                   1 |    1
+@    Active orbitals                     4 |    4
+     Secondary orbitals                 28 |   28
+     Total number of orbitals           33 |   33
+     Number of basis functions          33 |   33
+
+      -- Initial occupation of symmetries is determined from total charge (only one symmetry!)
+      -- Initial occupation of symmetries is :
+@    Occupied SCF orbitals               2 |    2
+
+     Optimization information
+     ========================
+@    Number of configurations                10
+@    Number of orbital rotations            144
+     ------------------------------------------
+@    Total number of variables              154
+
+     Maximum number of macro iterations      25
+     Maximum number of micro iterations     600
+     Threshold for MCSCF gradient      1.00D-05
+     Number of initial trial vectors          1
+     Number of initial CI iterations          3
+     Number of simultaneous trial vectors     1
+
+@    This calculation converges to the lowest state for the specified symmetry and spin species.
+
+     Maximum number of NEO/NR iterations  24
+
+
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
+
+ C1-DIIS algorithm; max error vectors =    8
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+     (Precalculated two-electron integrals are transformed to P-supermatrix elements.
+      Threshold for discarding integrals :  1.00D-12 )
+@  1    -7.94303239800        5.60722D-01   -7.94D+00    1
+      Virial theorem: -V/T =      1.967580
+@      MULPOP H      -0.73; Li      0.73; 
+ -----------------------------------------------------------------------------
+@  2    -7.98503811167        7.42330D-02   -4.20D-02    2
+      Virial theorem: -V/T =      1.997513
+@      MULPOP H       0.06; Li     -0.06; 
+ -----------------------------------------------------------------------------
+@  3    -7.98592598434        1.03037D-02   -8.88D-04    3
+      Virial theorem: -V/T =      1.999385
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  4    -7.98595463547        1.50540D-03   -2.87D-05    4
+      Virial theorem: -V/T =      1.999208
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  5    -7.98595538803        2.45677D-04   -7.53D-07    5
+      Virial theorem: -V/T =      1.999173
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  6    -7.98595542055        6.10110D-05   -3.25D-08    6
+      Virial theorem: -V/T =      1.999178
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  7    -7.98595542304        1.31676D-05   -2.49D-09    7
+      Virial theorem: -V/T =      1.999178
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  8    -7.98595542314        1.04846D-06   -1.00D-10    8
+      Virial theorem: -V/T =      1.999179
+@      MULPOP H       0.18; Li     -0.18; 
+ -----------------------------------------------------------------------------
+@  9    -7.98595542314        2.51713D-07   -4.85D-13    8
+
+@ *** DIIS converged in   9 iterations !
+@     Converged SCF energy, gradient:     -7.985955423144    2.52D-07
+    - total time used in SIRFCK :              0.00 seconds
+
+ >>> Writing SIRIFC interface file
+
+ >>>> CPU and wall time for SCF :       0.020       0.021
+
+
+ >>>>> Output from SIRIUS MP2 module <<<<<
+
+ Reference: H.J.Aa.Jensen, P.Jorgensen, H.Agren, and J.Olsen,
+            J. Chem. Phys. 88, 3834 (1988); 89, 5354 (1988)
+
+ Checking that the closed shell orbitals are canonical Hartree-Fock orbitals
+
+    Number of electrons  :    4
+    Closed shell orbitals:    2
+
+ Generating Fock matrix
+
+ Hartree-Fock electronic energy:          -8.981335467285
+ Hartree-Fock total      energy:          -7.985955423144
+
+ Hartree-Fock orbital energies, symmetry 1 ( A  ),    2 occupied SCF orbitals
+
+        -2.44420964    -0.30092790    -0.00698883     0.01394780     0.01394780
+         0.02267940     0.03614145     0.05464168     0.05464168     0.07002817
+         0.08096771     0.08096771     0.08823037     0.08823037     0.10436757
+         0.17030387     0.21041153     0.21099368     0.21099368     0.29236946
+         0.33492957     0.33492957     0.34319396     0.34319396     0.45398325
+         0.45398325     0.45910129     0.79976447     0.88521040     1.24669632
+         1.24669632     1.52995931     5.83283082
+
+    E(LUMO) :    -0.00698883   (in symmetry 1)
+  - E(HOMO) :    -0.30092790   (in symmetry 1)
+  --------------------------
+    gap     :     0.29393907
+
+ Integral transformation: Total CPU and WALL times (sec)       0.015       0.015
+
+ MP2 move   0.031001 electrons to unoccupied HF orbitals
+
+
+@   Hartree-Fock total energy   :            -7.9859554231
+@   + MP2 contribution          :            -0.0375982928
+@   = MP2 second order energy   :            -8.0235537160
+
+ Natural orbital occupation numbers, symmetry 1 (irrep A  )
+ Sum =     4.00000000; RHF =     4.00000000; Difference =     0.00000000
+
+         1.99803402     1.97100930     0.01239081     0.00511555     0.00511555
+         0.00460212     0.00153319     0.00042223     0.00042223     0.00038309
+         0.00029796     0.00020395     0.00014951     0.00014951     0.00005224
+         0.00005224     0.00003580     0.00000621     0.00000621     0.00000508
+         0.00000474     0.00000474     0.00000207     0.00000049     0.00000049
+         0.00000023     0.00000023     0.00000020     0.00000008     0.00000000
+         0.00000000     0.00000000    -0.00000007
+
+ Time used for MP2 natural orbitals :       0.030 CPU seconds,       0.030 wall seconds.
+
+ >>>> CPU and wall time for MP2 :       0.030       0.030
+
+
+        SIRIUS MCSCF optimization (SIROPT)
+ ================================================
+
+
+
+ <<<<< Output from SIRIUS CI module (CICTL) >>>>>
+
+
+
+
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.007
+
+ (CIST1)  4 lowest diagonal elements:
+
+ Element no. Config.no.    Active energy      Total energy
+
+         1 :          1     -1.0840514892     -7.9859189433
+         2 :          5     -0.6394668751     -7.5413343293
+         3 :          6     -0.5928068357     -7.4946742898
+         4 :          8     -0.5928068356     -7.4946742898
+
+
+ Convergence threshold for CI optimization :     0.00000500
+
+
+
+ *** Reached maximum number of CI iterations:    3
+              1 CI roots are not converged.
+
+
+@ Final CI energies and residuals in symmetry 1 (irrep A  )
+@    1       -8.013606237449753       3.62D-04
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.948281184   0.029569582   0.011074617   0.011074617
+
+
+ <<< MACRO ITERATION  1 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.018       0.018
+
+ Total MCSCF energy       :            -8.013606237449753  (MACRO    1)
+
+ - Nuclear repulsion      :             0.995380044140699
+ - Inactive energy        :            -7.897247498298315
+ - Active energy          :            -1.111738783292137
+
+ Norm of total gradient   :             0.029328949671
+ -    of CI gradient      :             0.000724250185
+ -    of orbital gradient :             0.029320005977
+      Virial theorem: -V/T =      1.999113
+@      MULPOP H       0.16; Li     -0.16; 
+
+ Residual norm when dim(red L) =   5
+ NEO root     CSF        orbital          total
+    1     0.00436575     0.00176540     0.00470919 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.944624439   0.034751202   0.010312180   0.010312180
+
+
+ <<< MACRO ITERATION  2 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.024       0.024
+
+ Total MCSCF energy       :            -8.013912790334308  (MACRO    2)
+
+ - Nuclear repulsion      :             0.995380044140699
+ - Inactive energy        :            -7.897689478056038
+ - Active energy          :            -1.111603356418968
+
+ Norm of total gradient   :             0.006148301981
+ -    of CI gradient      :             0.005144066190
+ -    of orbital gradient :             0.003367521386
+      Virial theorem: -V/T =      1.998798
+@      MULPOP H       0.10; Li     -0.10; 
+
+ Residual norm when dim(red L) =   9
+ NEO root     CSF        orbital          total
+    1     0.00000000     0.00004234     0.00004234 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.945415585   0.033396091   0.010594162   0.010594162
+
+
+ <<< MACRO ITERATION  3 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.019       0.019
+
+ Total MCSCF energy       :            -8.013929789483297  (MACRO    3)
+
+ - Nuclear repulsion      :             0.995380044140699
+ - Inactive energy        :            -7.897638425423398
+ - Active energy          :            -1.111671408200598
+
+ Norm of total gradient   :             0.000163764618
+ -    of CI gradient      :             0.000048847735
+ -    of orbital gradient :             0.000156309785
+      Virial theorem: -V/T =      1.999018
+@      MULPOP H       0.10; Li     -0.10; 
+
+ Residual norm when dim(red L) =   7
+ NEO root     CSF        orbital          total
+    1     0.00000005     0.00000273     0.00000273 converged
+
+ (NEONEX) NEO vector is converged.
+
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
+
+
+ Occupations of CAS natural orbitals:
+
+ Symmetry  1
+
+   1.945440955   0.033365565   0.010596740   0.010596740
+
+
+ <<< MACRO ITERATION  4 >>>
+ --------------------------
+
+ Integral transformation: Total CPU and WALL times (sec)       0.018       0.018
+
+ Total MCSCF energy       :            -8.013929798712864  (MACRO    4)
+
+ - Nuclear repulsion      :             0.995380044140699
+ - Inactive energy        :            -7.897638458072236
+ - Active energy          :            -1.111671384781326
+
+ Norm of total gradient   :             0.000002694024
+ -    of CI gradient      :             0.000000089437
+ -    of orbital gradient :             0.000002692539
+      Virial theorem: -V/T =      1.999016
+@      MULPOP H       0.10; Li     -0.10; 
+
+ *** Optimization control: MCSCF converged ***
+     Number of macro iterations used            4
+     Number of micro iterations used           17
+     Total number of CPU seconds used         0.17
+
+ >>>> CPU and wall time for MCSCF :       0.168       0.168
+
+
+                     .----------------------------------------.
+                     | >>> SIRIUS OPTIMIZATION STATISTICS <<< |
+                     `----------------------------------------'
+
+
+ 
+     Date and time (Linux)  : Thu Jun 26 14:05:06 2014
+     Host name              : nat-100219.local                        
+
+
+  ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
+ ---------------------------------------------------------------------
+    1    4     -8.013606237450   0.0293289497  0.000000   0.0890435019
+    2    7     -8.013912790334   0.0061483020  0.902986   0.0150743202
+    3    6     -8.013929789483   0.0001637646  1.008005   0.0004750047
+    4    0     -8.013929798713   0.0000026940  1.000352   0.0000000000
+
+
+  ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
+ ------------------------------------------------------------------------------
+    1      2    0.000444    0.000724     55    0.017387    0.029320    0.029329
+    2      5   -0.003571    0.005144     60   -0.002043    0.003368    0.006148
+    3      2   -0.000037    0.000049     60    0.000137    0.000156    0.000164
+    4      5   -0.000000    0.000000     27   -0.000001    0.000003    0.000003
+
+
+  ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
+ ------------------------------------------------------------------------------
+
+    1     4     1     3      0.04      0.02      0.02      0.01      0.00
+    2     7     3     5      0.06      0.02      0.03      0.03      0.00
+    3     6     2     4      0.04      0.02      0.02      0.02      0.00
+    4     0     0     0      0.02      0.02      0.00      0.00
+
+
+ ITER         EMY                 EACTIV              EMCSCF
+
+    1     -7.897247498298     -1.111738783292     -8.013606237450
+    2     -7.897689478056     -1.111603356419     -8.013912790334
+    3     -7.897638425423     -1.111671408201     -8.013929789483
+    4     -7.897638458072     -1.111671384781     -8.013929798713
+
+
+ ITER         DEPRED              DEACT               RATIO
+
+    1      0.000000000000      0.000000000000      0.000000000000
+    2     -0.000339488064     -0.000306552885      0.902985750521
+    3     -0.000016864151     -0.000016999149      1.008005019809
+    4     -0.000000009226     -0.000000009230      1.000352189737
+
+
+ ITER    BETA           GAMMA             STPLNG              RTRUST
+
+    1      0.20000000  1.00000000      0.089043501911      0.700000000000
+    2      0.20000000  1.00000000      0.015074320200      0.700000000000
+    3      0.20000000  1.00000000      0.000475004702      0.700000000000
+    4      0.00000000  0.00000000      0.000000000000      0.700000000000
+
+
+ Reduced L root no.  1
+ ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
+ ----------------------------------------------------------------------------
+    1   -0.000027150434    0.999841462804   -0.013605086138   -0.003046810404
+    2   -0.000001349120    0.999995455328   -0.000753562927   -0.002204826003
+    3   -0.000000000738    0.999999995487   -0.000084352821   -0.000016933580
+    4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+@    Spin multiplicity:           1
+@    Spatial symmetry:            1 ( irrep  A   in C1  )
+@    Total charge of molecule:    0
+@    State number:                1
+
+@    Final MCSCF energy:           -8.013929798713                 
+@    Nuclear repulsion:             0.995380044141
+@    Electronic energy:            -9.009309842854
+
+@    Final gradient norm:           0.000002694024
+
+ 
+     Date and time (Linux)  : Thu Jun 26 14:05:06 2014
+     Host name              : nat-100219.local                        
+
+ Occupancies of natural orbitals
+ -------------------------------
+
+ Symmetry 1  ( A  ) -- Total occupation in this symmetry is   4.000000000
+
+   2.000000000   1.945440955   0.033365565   0.010596740   0.010596740
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species 1  (A  )
+ ------------------------------------------------
+
+    Orbital         1        2        3        4        5        6        7
+   1 H   :1s     0.0015   0.4774  -1.1206   0.0000  -0.0000  -0.0403   0.0000
+   2 H   :1s    -0.0701   0.0316   0.1716   0.0000  -0.0000  -0.0971  -0.0000
+   3 H   :1s    -0.0305  -0.0236   0.1357  -0.0000   0.0000   1.4528  -0.0000
+   4 H   :2px   -0.0000   0.0000   0.0000  -0.1389   0.6751  -0.0000  -0.0135
+   5 H   :2py    0.0000  -0.0000  -0.0000  -0.6751  -0.1389  -0.0000  -0.0030
+   6 H   :2pz    0.0034  -0.0223   0.0358   0.0000  -0.0000   0.0045  -0.0000
+   7 H   :2px   -0.0000  -0.0000  -0.0000  -0.0290   0.1407  -0.0000   0.0085
+   8 H   :2py    0.0000  -0.0000  -0.0000  -0.1407  -0.0290  -0.0000   0.0019
+   9 H   :2pz    0.0278   0.0890  -0.0158   0.0000   0.0000  -0.0340   0.0000
+  10 Li  :1s    -0.4144  -0.0441  -0.0441   0.0000  -0.0000   0.0042  -0.0000
+  11 Li  :1s    -0.6788  -0.1307  -0.1556   0.0000  -0.0000   0.0115  -0.0000
+  12 Li  :1s     0.0623   0.4519   0.5774  -0.0000   0.0000  -0.0519   0.0000
+  13 Li  :1s     0.0231   0.1323   0.1850   0.0000  -0.0000  -0.6890   0.0000
+  14 Li  :1s     0.0008  -0.0065  -0.0259   0.0000  -0.0000  -0.8976   0.0000
+  15 Li  :2px   -0.0000  -0.0000  -0.0000  -0.0540   0.2624   0.0000   0.0033
+  16 Li  :2py   -0.0000  -0.0000  -0.0000  -0.2624  -0.0540   0.0000   0.0007
+  17 Li  :2pz    0.0506   0.3101   0.3744   0.0000   0.0000   0.0502  -0.0000
+  18 Li  :2px   -0.0000  -0.0000  -0.0000   0.0051  -0.0249   0.0000  -0.1770
+  19 Li  :2py    0.0000   0.0000   0.0000   0.0249   0.0051   0.0000  -0.0389
+  20 Li  :2pz    0.0117   0.0530   0.0490  -0.0000  -0.0000  -0.5273  -0.0000
+  21 Li  :2px   -0.0000   0.0000   0.0000  -0.0020   0.0095   0.0000   1.0617
+  22 Li  :2py    0.0000   0.0000   0.0000  -0.0095  -0.0020   0.0000   0.2334
+  23 Li  :2pz   -0.0004  -0.0050  -0.0077  -0.0000   0.0000   0.7797  -0.0000
+  25 Li  :3d1-  -0.0000  -0.0000  -0.0000  -0.1775  -0.0365  -0.0000  -0.0040
+  26 Li  :3d0    0.0152   0.0618   0.0540   0.0000  -0.0000  -0.0151  -0.0000
+  27 Li  :3d1+   0.0000  -0.0000  -0.0000  -0.0365   0.1775  -0.0000  -0.0183
+  30 Li  :3d1-   0.0000  -0.0000  -0.0000   0.0272   0.0056   0.0000  -0.0348
+  31 Li  :3d0    0.0017   0.0059   0.0033   0.0000  -0.0000  -0.3394   0.0000
+  32 Li  :3d1+  -0.0000  -0.0000  -0.0000   0.0056  -0.0272   0.0000  -0.1582
+
+ Printout of CI-coefficients abs greater than 0.05000 for root  1
+ *** NOTE: this root is the reference state ***
+
+ Printout of coefficients in interval  3.1623E-01 to  1.0000E+00
+ ===============================================================
+
+  Coefficient of CSF no.         1 is      0.98626593    9.86265926E-01
+  Orbital          1
+  Spin coupling    2
+
+ Printout of coefficients in interval  1.0000E-01 to  3.1623E-01
+ ===============================================================
+
+  Coefficient of CSF no.         2 is     -0.12916185   -1.29161846E-01
+  Orbital          2
+  Spin coupling    2
+
+ Printout of coefficients in interval  5.0000E-02 to  1.0000E-01
+ ===============================================================
+
+  Coefficient of CSF no.         3 is     -0.07278990   -7.27899039E-02
+  Orbital          3
+  Spin coupling    2
+
+  Coefficient of CSF no.         4 is     -0.07278990   -7.27899039E-02
+  Orbital          4
+  Spin coupling    2
+
+ Norm of printed CI vector ..      1.00000000
+
+ Magnitude of CI coefficients
+ ============================
+ ( Ranges are relative to norm of vector :  1.00E+00 )
+
+  10- 1 to 10- 0         2    0.98940326E+00      0.9894032598
+  10- 2 to 10- 1         2    0.10596740E-01      1.0000000000
+  Number of coefficients less than 10^-11 times norm is            6
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.22 seconds
+ >>>> Total wall time used in SIRIUS :      0.23 seconds
+
+ 
+     Date and time (Linux)  : Thu Jun 26 14:05:06 2014
+     Host name              : nat-100219.local                        
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+.OLDCPP specify
+
+the old CPP solver is used
+
+
+                  +----------------------------------------------+
+                  ! Variable settings for absorption calculation !
+                  +----------------------------------------------+
+
+ Linear polarizability calculation requested:  ABS_ALPHA =   T
+ Absorption calc over frequency interval  : ABS_INTERVAL =   T
+ Number of frequencies per batch          : NFREQ_BATCH  =  10
+ Start: 0.44250   Stop: 0.49000   Step: 0.00250
+ Damping parameter (a.u. and cm-1)        : DAMPING      = 0.005000  1097.4
+ Number of states used in start iteration : NEXCIT       =   2
+ Threshold of convergence in LR solver    : THCLR        = 1.0D-04
+ Maximum iterations in complex LR solver  : MAX_MACRO    =  30
+ Maximum iterations in real LR solver     : MAX_MICRO    =  10
+ Max iter. in optimal orbital algorithm   : MAX_ITORB    =   5
+ Print level in absorption modules        : IPRABS       =   0
+
+ Old direct access AO file found, SORTA skipped.
+
+ Integral transformation: Total CPU and WALL times (sec)       0.019       0.019
+
+
+ MCSCF energy         :       -8.013929798712864
+ -- inactive part     :       -7.897638458072236
+ --   active part     :       -1.111671384781326
+ -- nuclear repulsion :        0.995380044140699
+
+
+                        **********************************
+                        *** MCSCF response calculation ***
+                        **********************************
+
+
+
+                       +-----------------------------------+
+                       ! Solving Linear Response Equations !
+                       +-----------------------------------+
+
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator XDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.44250000  0.44500000  0.44750000  0.45000000  0.45250000
+             0.45500000  0.45750000  0.46000000  0.46250000  0.46500000
+
+ *** MICROITERATIONS STOPPED DUE TO MAX ITERATIONS REACHED.
+
+ *** WARNING : REQUESTED    1 SOLUTION VECTORS NOT CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 7.07D-06
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   98)
+ RSP solution vector no.    1; norm of residual   1.34D-04
+
+ *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,  30, REACHED
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+
+ *** ABSCTL: THE REQUESTED  10 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 144)
+ Frequency: 0.4425    Damping:  0.005000    Residual: 9.57D-06
+ Frequency: 0.4450    Damping:  0.005000    Residual: 6.88D-06
+ Frequency: 0.4475    Damping:  0.005000    Residual: 5.28D-06
+ Frequency: 0.4500    Damping:  0.005000    Residual: 4.67D-06
+ Frequency: 0.4525    Damping:  0.005000    Residual: 4.78D-06
+ Frequency: 0.4550    Damping:  0.005000    Residual: 5.31D-06
+ Frequency: 0.4575    Damping:  0.005000    Residual: 6.03D-06
+ Frequency: 0.4600    Damping:  0.005000    Residual: 6.80D-06
+ Frequency: 0.4625    Damping:  0.005000    Residual: 7.52D-06
+ Frequency: 0.4650    Damping:  0.005000    Residual: 8.27D-06
+
+@ Value of linear response result for operator: XDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4425   0.005000  -29.898297    5.789742
+@    0.4450   0.005000  -27.462314    4.802179
+@    0.4475   0.005000  -25.394829    4.052560
+@    0.4500   0.005000  -23.617976    3.470827
+@    0.4525   0.005000  -22.073529    3.010791
+@    0.4550   0.005000  -20.717330    2.641066
+@    0.4575   0.005000  -19.515411    2.339756
+@    0.4600   0.005000  -18.441265    2.091234
+@    0.4625   0.005000  -17.473936    1.884118
+@    0.4650   0.005000  -16.596638    1.709975
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator XDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.46750000  0.47000000  0.47250000  0.47500000  0.47750000
+             0.48000000  0.48250000  0.48500000  0.48750000
+
+ *** ABSCTL: THE REQUESTED   9 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 144)
+ Frequency: 0.4675    Damping:  0.005000    Residual: 9.46D-06
+ Frequency: 0.4700    Damping:  0.005000    Residual: 1.18D-05
+ Frequency: 0.4725    Damping:  0.005000    Residual: 1.61D-05
+ Frequency: 0.4750    Damping:  0.005000    Residual: 2.26D-05
+ Frequency: 0.4775    Damping:  0.005000    Residual: 3.17D-05
+ Frequency: 0.4800    Damping:  0.005000    Residual: 4.33D-05
+ Frequency: 0.4825    Damping:  0.005000    Residual: 5.76D-05
+ Frequency: 0.4850    Damping:  0.005000    Residual: 7.47D-05
+ Frequency: 0.4875    Damping:  0.005000    Residual: 9.48D-05
+
+@ Value of linear response result for operator: XDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4675   0.005000  -15.795761    1.562456
+@    0.4700   0.005000  -15.060140    1.436725
+@    0.4725   0.005000  -14.380508    1.329052
+@    0.4750   0.005000  -13.749085    1.236542
+@    0.4775   0.005000  -13.159258    1.156933
+@    0.4800   0.005000  -12.605334    1.088459
+@    0.4825   0.005000  -12.082345    1.029749
+@    0.4850   0.005000  -11.585885    0.979754
+@    0.4875   0.005000  -11.111975    0.937702
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator YDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.44250000  0.44500000  0.44750000  0.45000000  0.45250000
+             0.45500000  0.45750000  0.46000000  0.46250000  0.46500000
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+
+ *** ABSCTL: THE REQUESTED  10 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 198)
+ Frequency: 0.4425    Damping:  0.005000    Residual: 9.89D-05
+ Frequency: 0.4450    Damping:  0.005000    Residual: 9.44D-05
+ Frequency: 0.4475    Damping:  0.005000    Residual: 9.04D-05
+ Frequency: 0.4500    Damping:  0.005000    Residual: 8.67D-05
+ Frequency: 0.4525    Damping:  0.005000    Residual: 8.35D-05
+ Frequency: 0.4550    Damping:  0.005000    Residual: 8.07D-05
+ Frequency: 0.4575    Damping:  0.005000    Residual: 7.82D-05
+ Frequency: 0.4600    Damping:  0.005000    Residual: 7.62D-05
+ Frequency: 0.4625    Damping:  0.005000    Residual: 7.46D-05
+ Frequency: 0.4650    Damping:  0.005000    Residual: 7.35D-05
+
+@ Value of linear response result for operator: YDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4425   0.005000  -29.898313    5.789758
+@    0.4450   0.005000  -27.462325    4.802190
+@    0.4475   0.005000  -25.394837    4.052567
+@    0.4500   0.005000  -23.617982    3.470832
+@    0.4525   0.005000  -22.073532    3.010795
+@    0.4550   0.005000  -20.717333    2.641069
+@    0.4575   0.005000  -19.515412    2.339758
+@    0.4600   0.005000  -18.441265    2.091235
+@    0.4625   0.005000  -17.473936    1.884119
+@    0.4650   0.005000  -16.596637    1.709975
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator YDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.46750000  0.47000000  0.47250000  0.47500000  0.47750000
+             0.48000000  0.48250000  0.48500000  0.48750000
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+
+ *** ABSCTL: THE REQUESTED   9 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 208)
+ Frequency: 0.4675    Damping:  0.005000    Residual: 6.10D-05
+ Frequency: 0.4700    Damping:  0.005000    Residual: 6.00D-05
+ Frequency: 0.4725    Damping:  0.005000    Residual: 5.91D-05
+ Frequency: 0.4750    Damping:  0.005000    Residual: 5.83D-05
+ Frequency: 0.4775    Damping:  0.005000    Residual: 5.77D-05
+ Frequency: 0.4800    Damping:  0.005000    Residual: 5.71D-05
+ Frequency: 0.4825    Damping:  0.005000    Residual: 5.68D-05
+ Frequency: 0.4850    Damping:  0.005000    Residual: 5.66D-05
+ Frequency: 0.4875    Damping:  0.005000    Residual: 5.66D-05
+
+@ Value of linear response result for operator: YDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4675   0.005000  -15.795759    1.562457
+@    0.4700   0.005000  -15.060138    1.436725
+@    0.4725   0.005000  -14.380506    1.329053
+@    0.4750   0.005000  -13.749082    1.236543
+@    0.4775   0.005000  -13.159254    1.156934
+@    0.4800   0.005000  -12.605330    1.088462
+@    0.4825   0.005000  -12.082340    1.029753
+@    0.4850   0.005000  -11.585878    0.979761
+@    0.4875   0.005000  -11.111966    0.937712
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator ZDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.44250000  0.44500000  0.44750000  0.45000000  0.45250000
+             0.45500000  0.45750000  0.46000000  0.46250000  0.46500000
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+
+ *** ABSCTL: THE REQUESTED  10 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 246)
+ Frequency: 0.4425    Damping:  0.005000    Residual: 5.43D-05
+ Frequency: 0.4450    Damping:  0.005000    Residual: 5.11D-05
+ Frequency: 0.4475    Damping:  0.005000    Residual: 4.82D-05
+ Frequency: 0.4500    Damping:  0.005000    Residual: 4.55D-05
+ Frequency: 0.4525    Damping:  0.005000    Residual: 4.32D-05
+ Frequency: 0.4550    Damping:  0.005000    Residual: 4.12D-05
+ Frequency: 0.4575    Damping:  0.005000    Residual: 3.96D-05
+ Frequency: 0.4600    Damping:  0.005000    Residual: 3.85D-05
+ Frequency: 0.4625    Damping:  0.005000    Residual: 3.81D-05
+ Frequency: 0.4650    Damping:  0.005000    Residual: 3.86D-05
+
+@ Value of linear response result for operator: ZDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4425   0.005000   -8.564054    1.090663
+@    0.4450   0.005000   -8.039275    1.035182
+@    0.4475   0.005000   -7.539150    0.988373
+@    0.4500   0.005000   -7.059832    0.949112
+@    0.4525   0.005000   -6.597931    0.916532
+@    0.4550   0.005000   -6.150405    0.889971
+@    0.4575   0.005000   -5.714480    0.868940
+@    0.4600   0.005000   -5.287574    0.853092
+@    0.4625   0.005000   -4.867238    0.842210
+@    0.4650   0.005000   -4.451096    0.836195
+
+ ABSVEC1 -- Solving linear response equations ( E[2] - {w-iW}*S[2] ) N = B[1]  
+ ABSVEC1 -- for operator ZDIPLEN  of symmetry 1  ( A  ) at the frequencies:
+ ABSVEC1 --  0.46750000  0.47000000  0.47250000  0.47500000  0.47750000
+             0.48000000  0.48250000  0.48500000  0.48750000
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+RSPORT:    1 out of    2 new trial vectors linear dependent
+
+ *** ABSCTL: THE REQUESTED   9 SOLUTION VECTORS CONVERGED
+
+ RSP solution vectors written to file.
+ Convergence of RSP solution vectors, threshold = 1.00D-04
+ -------------------------------------------------------------
+ (dimension of reduced space: 256)
+ Frequency: 0.4675    Damping:  0.005000    Residual: 3.28D-05
+ Frequency: 0.4700    Damping:  0.005000    Residual: 3.45D-05
+ Frequency: 0.4725    Damping:  0.005000    Residual: 3.67D-05
+ Frequency: 0.4750    Damping:  0.005000    Residual: 3.95D-05
+ Frequency: 0.4775    Damping:  0.005000    Residual: 4.28D-05
+ Frequency: 0.4800    Damping:  0.005000    Residual: 4.69D-05
+ Frequency: 0.4825    Damping:  0.005000    Residual: 5.17D-05
+ Frequency: 0.4850    Damping:  0.005000    Residual: 5.74D-05
+ Frequency: 0.4875    Damping:  0.005000    Residual: 6.40D-05
+
+@ Value of linear response result for operator: ZDIPLEN 
+@ --------------------------------------------
+@ Frequency   Damping         Real   Imaginary
+@ --------------------------------------------
+@    0.4675   0.005000   -4.036795    0.835061
+@    0.4700   0.005000   -3.621945    0.838942
+@    0.4725   0.005000   -3.204071    0.848096
+@    0.4750   0.005000   -2.780545    0.862920
+@    0.4775   0.005000   -2.348521    0.883978
+@    0.4800   0.005000   -1.904852    0.912036
+@    0.4825   0.005000   -1.445987    0.948104
+@    0.4850   0.005000   -0.967851    0.993517
+@    0.4875   0.005000   -0.465685    1.050023
+
+
+      **********************************************************************
+      ******************** FINAL RESULTS FOR ABSORPTION ********************
+      **********************************************************************
+
+
+
+                 +-----------------------------------------------+
+                 ! Excitation energies for dipole allowed states !
+                 +-----------------------------------------------+
+
+                ==========================================
+                 Sym. State    Excitation energy
+                ==========================================
+                  1     1      0.128498 a.u.    3.4966 eV
+                  1     2      0.164870 a.u.    4.4863 eV
+
+
+                          +-----------------------------+
+                          ! Polarizability with damping !
+                          +-----------------------------+
+
+ ------------------------------------------------------------------
+ No    A-oper    B-oper   Frequency       Real part       Imag part
+ ------------------------------------------------------------------
+
+  1   XDIPLEN   XDIPLEN    0.442500      -29.898297        5.789742
+  2   YDIPLEN   YDIPLEN    0.442500      -29.898313        5.789758
+  3   ZDIPLEN   ZDIPLEN    0.442500       -8.564054        1.090663
+  4   XDIPLEN   YDIPLEN    0.442500        0.000004       -0.000003
+  5   XDIPLEN   ZDIPLEN    0.442500        0.000000       -0.000000
+  6   YDIPLEN   ZDIPLEN    0.442500        0.000001       -0.000000
+
+      Averaged value       0.442500      -22.786888        4.223387
+
+  7   XDIPLEN   XDIPLEN    0.445000      -27.462314        4.802179
+  8   YDIPLEN   YDIPLEN    0.445000      -27.462325        4.802190
+  9   ZDIPLEN   ZDIPLEN    0.445000       -8.039275        1.035182
+ 10   XDIPLEN   YDIPLEN    0.445000        0.000003       -0.000002
+ 11   XDIPLEN   ZDIPLEN    0.445000        0.000000       -0.000000
+ 12   YDIPLEN   ZDIPLEN    0.445000        0.000001       -0.000000
+
+      Averaged value       0.445000      -20.987971        3.546517
+
+ 13   XDIPLEN   XDIPLEN    0.447500      -25.394829        4.052560
+ 14   YDIPLEN   YDIPLEN    0.447500      -25.394837        4.052567
+ 15   ZDIPLEN   ZDIPLEN    0.447500       -7.539150        0.988373
+ 16   XDIPLEN   YDIPLEN    0.447500        0.000003       -0.000002
+ 17   XDIPLEN   ZDIPLEN    0.447500        0.000000       -0.000000
+ 18   YDIPLEN   ZDIPLEN    0.447500        0.000000       -0.000000
+
+      Averaged value       0.447500      -19.442938        3.031167
+
+ 19   XDIPLEN   XDIPLEN    0.450000      -23.617976        3.470827
+ 20   YDIPLEN   YDIPLEN    0.450000      -23.617982        3.470832
+ 21   ZDIPLEN   ZDIPLEN    0.450000       -7.059832        0.949112
+ 22   XDIPLEN   YDIPLEN    0.450000        0.000002       -0.000001
+ 23   XDIPLEN   ZDIPLEN    0.450000        0.000000       -0.000000
+ 24   YDIPLEN   ZDIPLEN    0.450000        0.000000       -0.000000
+
+      Averaged value       0.450000      -18.098597        2.630257
+
+ 25   XDIPLEN   XDIPLEN    0.452500      -22.073529        3.010791
+ 26   YDIPLEN   YDIPLEN    0.452500      -22.073532        3.010795
+ 27   ZDIPLEN   ZDIPLEN    0.452500       -6.597931        0.916532
+ 28   XDIPLEN   YDIPLEN    0.452500        0.000002       -0.000001
+ 29   XDIPLEN   ZDIPLEN    0.452500        0.000000       -0.000000
+ 30   YDIPLEN   ZDIPLEN    0.452500        0.000000       -0.000000
+
+      Averaged value       0.452500      -16.914997        2.312706
+
+ 31   XDIPLEN   XDIPLEN    0.455000      -20.717330        2.641066
+ 32   YDIPLEN   YDIPLEN    0.455000      -20.717333        2.641069
+ 33   ZDIPLEN   ZDIPLEN    0.455000       -6.150405        0.889971
+ 34   XDIPLEN   YDIPLEN    0.455000        0.000001       -0.000001
+ 35   XDIPLEN   ZDIPLEN    0.455000        0.000000       -0.000000
+ 36   YDIPLEN   ZDIPLEN    0.455000        0.000000       -0.000000
+
+      Averaged value       0.455000      -15.861689        2.057369
+
+ 37   XDIPLEN   XDIPLEN    0.457500      -19.515411        2.339756
+ 38   YDIPLEN   YDIPLEN    0.457500      -19.515412        2.339758
+ 39   ZDIPLEN   ZDIPLEN    0.457500       -5.714480        0.868940
+ 40   XDIPLEN   YDIPLEN    0.457500        0.000001       -0.000001
+ 41   XDIPLEN   ZDIPLEN    0.457500        0.000000       -0.000000
+ 42   YDIPLEN   ZDIPLEN    0.457500        0.000000       -0.000000
+
+      Averaged value       0.457500      -14.915101        1.849485
+
+ 43   XDIPLEN   XDIPLEN    0.460000      -18.441265        2.091234
+ 44   YDIPLEN   YDIPLEN    0.460000      -18.441265        2.091235
+ 45   ZDIPLEN   ZDIPLEN    0.460000       -5.287574        0.853092
+ 46   XDIPLEN   YDIPLEN    0.460000        0.000001       -0.000000
+ 47   XDIPLEN   ZDIPLEN    0.460000        0.000000       -0.000000
+ 48   YDIPLEN   ZDIPLEN    0.460000        0.000000       -0.000000
+
+      Averaged value       0.460000      -14.056701        1.678520
+
+ 49   XDIPLEN   XDIPLEN    0.462500      -17.473936        1.884118
+ 50   YDIPLEN   YDIPLEN    0.462500      -17.473936        1.884119
+ 51   ZDIPLEN   ZDIPLEN    0.462500       -4.867238        0.842210
+ 52   XDIPLEN   YDIPLEN    0.462500        0.000000       -0.000000
+ 53   XDIPLEN   ZDIPLEN    0.462500        0.000000       -0.000000
+ 54   YDIPLEN   ZDIPLEN    0.462500        0.000000       -0.000000
+
+      Averaged value       0.462500      -13.271703        1.536816
+
+ 55   XDIPLEN   XDIPLEN    0.465000      -16.596638        1.709975
+ 56   YDIPLEN   YDIPLEN    0.465000      -16.596637        1.709975
+ 57   ZDIPLEN   ZDIPLEN    0.465000       -4.451096        0.836195
+ 58   XDIPLEN   YDIPLEN    0.465000        0.000000       -0.000000
+ 59   XDIPLEN   ZDIPLEN    0.465000        0.000000       -0.000000
+ 60   YDIPLEN   ZDIPLEN    0.465000        0.000000       -0.000000
+
+      Averaged value       0.465000      -12.548124        1.418715
+
+ 61   XDIPLEN   XDIPLEN    0.467500      -15.795761        1.562456
+ 62   YDIPLEN   YDIPLEN    0.467500      -15.795759        1.562457
+ 63   ZDIPLEN   ZDIPLEN    0.467500       -4.036795        0.835061
+ 64   XDIPLEN   YDIPLEN    0.467500        0.000000       -0.000000
+ 65   XDIPLEN   ZDIPLEN    0.467500       -0.000000       -0.000000
+ 66   YDIPLEN   ZDIPLEN    0.467500        0.000000       -0.000000
+
+      Averaged value       0.467500      -11.876105        1.319992
+
+ 67   XDIPLEN   XDIPLEN    0.470000      -15.060140        1.436725
+ 68   YDIPLEN   YDIPLEN    0.470000      -15.060138        1.436725
+ 69   ZDIPLEN   ZDIPLEN    0.470000       -3.621945        0.838942
+ 70   XDIPLEN   YDIPLEN    0.470000        0.000000       -0.000000
+ 71   XDIPLEN   ZDIPLEN    0.470000       -0.000000       -0.000000
+ 72   YDIPLEN   ZDIPLEN    0.470000        0.000000       -0.000000
+
+      Averaged value       0.470000      -11.247408        1.237464
+
+ 73   XDIPLEN   XDIPLEN    0.472500      -14.380508        1.329052
+ 74   YDIPLEN   YDIPLEN    0.472500      -14.380506        1.329053
+ 75   ZDIPLEN   ZDIPLEN    0.472500       -3.204071        0.848096
+ 76   XDIPLEN   YDIPLEN    0.472500       -0.000000       -0.000000
+ 77   XDIPLEN   ZDIPLEN    0.472500       -0.000000       -0.000000
+ 78   YDIPLEN   ZDIPLEN    0.472500        0.000000       -0.000000
+
+      Averaged value       0.472500      -10.655028        1.168733
+
+ 79   XDIPLEN   XDIPLEN    0.475000      -13.749085        1.236542
+ 80   YDIPLEN   YDIPLEN    0.475000      -13.749082        1.236543
+ 81   ZDIPLEN   ZDIPLEN    0.475000       -2.780545        0.862920
+ 82   XDIPLEN   YDIPLEN    0.475000       -0.000000       -0.000000
+ 83   XDIPLEN   ZDIPLEN    0.475000       -0.000000       -0.000000
+ 84   YDIPLEN   ZDIPLEN    0.475000        0.000000       -0.000000
+
+      Averaged value       0.475000      -10.092904        1.112001
+
+ 85   XDIPLEN   XDIPLEN    0.477500      -13.159258        1.156933
+ 86   YDIPLEN   YDIPLEN    0.477500      -13.159254        1.156934
+ 87   ZDIPLEN   ZDIPLEN    0.477500       -2.348521        0.883978
+ 88   XDIPLEN   YDIPLEN    0.477500       -0.000000       -0.000000
+ 89   XDIPLEN   ZDIPLEN    0.477500       -0.000000        0.000000
+ 90   YDIPLEN   ZDIPLEN    0.477500        0.000000       -0.000000
+
+      Averaged value       0.477500       -9.555678        1.065949
+
+ 91   XDIPLEN   XDIPLEN    0.480000      -12.605334        1.088459
+ 92   YDIPLEN   YDIPLEN    0.480000      -12.605330        1.088462
+ 93   ZDIPLEN   ZDIPLEN    0.480000       -1.904852        0.912036
+ 94   XDIPLEN   YDIPLEN    0.480000       -0.000000        0.000000
+ 95   XDIPLEN   ZDIPLEN    0.480000       -0.000000        0.000000
+ 96   YDIPLEN   ZDIPLEN    0.480000       -0.000000       -0.000000
+
+      Averaged value       0.480000       -9.038505        1.029652
+
+ 97   XDIPLEN   XDIPLEN    0.482500      -12.082345        1.029749
+ 98   YDIPLEN   YDIPLEN    0.482500      -12.082340        1.029753
+ 99   ZDIPLEN   ZDIPLEN    0.482500       -1.445987        0.948104
+100   XDIPLEN   YDIPLEN    0.482500       -0.000000        0.000000
+101   XDIPLEN   ZDIPLEN    0.482500       -0.000000        0.000000
+102   YDIPLEN   ZDIPLEN    0.482500       -0.000000       -0.000000
+
+      Averaged value       0.482500       -8.536890        1.002536
+
+103   XDIPLEN   XDIPLEN    0.485000      -11.585885        0.979754
+104   YDIPLEN   YDIPLEN    0.485000      -11.585878        0.979761
+105   ZDIPLEN   ZDIPLEN    0.485000       -0.967851        0.993517
+106   XDIPLEN   YDIPLEN    0.485000       -0.000000        0.000000
+107   XDIPLEN   ZDIPLEN    0.485000       -0.000000        0.000000
+108   YDIPLEN   ZDIPLEN    0.485000       -0.000000       -0.000000
+
+      Averaged value       0.485000       -8.046538        0.984344
+
+109   XDIPLEN   XDIPLEN    0.487500      -11.111975        0.937702
+110   YDIPLEN   YDIPLEN    0.487500      -11.111966        0.937712
+111   ZDIPLEN   ZDIPLEN    0.487500       -0.465685        1.050023
+112   XDIPLEN   YDIPLEN    0.487500        0.000000        0.000000
+113   XDIPLEN   ZDIPLEN    0.487500        0.000000        0.000000
+114   YDIPLEN   ZDIPLEN    0.487500       -0.000000       -0.000000
+
+      Averaged value       0.487500       -7.563209        0.975146
+ 
+ ------------------------------------------------------------------
+ Damping parameter equals  0.005000 au = 0.1361 eV = 1097.4 cm-1
+
+ >>>> Total CPU  time used in RESPONSE:   1.73 seconds
+ >>>> Total wall time used in RESPONSE:   1.68 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   2.00 seconds
+ >>>> Total wall time used in DALTON:   1.96 seconds
+
+ 
+     Date and time (Linux)  : Thu Jun 26 14:05:07 2014
+     Host name              : nat-100219.local                        

@@ -1796,7 +1796,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
-     &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
+     &            '.FNMC  ', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR1INP')
@@ -1819,6 +1819,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .TRUE.
       CAVUSR = .FALSE.
+      FNMC   = .FALSE.
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1864,6 +1865,7 @@ C
                   CAVUSR = .TRUE.
                GO TO 100
     6          CONTINUE
+                  FNMC = .TRUE.
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -1905,12 +1907,18 @@ C
             IF (CAVUSR) WRITE(LUPRI,'(A,3F15.10)')
      &         ' User supplied cavity center',(CAVORG(I),I=1,3)
          END IF
+         IF (FNMC) WRITE (LUPRI,'(/,2A)') ' Finite nuclear mass',
+     &      ' correction by modifying the kinetic energy integrals.'
       END IF
  199  CALL QEXIT('HR1INP')
       RETURN
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1931,7 +1939,7 @@ C
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
      &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.ERFGAU', '.COMLAM',
-     &            '.XXXXXX'/
+     &            '.EFS   '/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2094,18 +2102,23 @@ C
 C See in srdft.F for the associated lambda-dependent density functionals.
 
                COMLAM = .TRUE.
-               READ (LUCMD,*,ERR=1001) VLAMBDA
+               READ (LUCMD,*,ERR=151) VLAMBDA
                GO TO 100
-1001           CALL QUIT('Error reading Lambda for *TWOINT/.COMLAM')
-   16          CONTINUE
+  151          CALL QUIT('Error reading Lambda for *TWOINT/.COMLAM')
 C K. Sharkas and J. Toulouse end
-C&&&
+   16          CONTINUE
+C&&& EFS
+#ifdef ENABLE_EFS
+               use_efs = .true.
+#else
+               call quit('.EFS not available in this version')
+#endif
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in HR2INP.'
+     &            '" not recognized in HR2INP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in HR2INP.')
             END IF

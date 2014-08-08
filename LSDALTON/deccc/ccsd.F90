@@ -2297,7 +2297,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 #ifdef VAR_MPI
      master=(infpar%lg_mynum==infpar%master)
-     if((s==2.or.s==1).and.master)then
+     if((s==2).and.master)then
         ccmodel_copy = ccmodel
         call time_start_phase(PHASE_COMM, at = tw)
         call share_E2_with_slaves(ccmodel_copy,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
@@ -2360,7 +2360,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mo_work_dist(nv*no*no,fai2,tl2,traf2)
 
         if(DECinfo%PL>3.and.me==0)then
-           write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
+           write(DECinfo%output,'("Trafolength in striped E1:",I7," ",I7)')tl1,tl2
         endif
 
         w3size = max(tl1*no,tl2*nv)
@@ -2663,7 +2663,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            lead = tl
            !use w3 as buffer which is allocated largest possible
            w2size  = tlov
-           w3size  = max(o2v2,tlov + els2add)
+           w3size  = min(o2v2,tlov + els2add)
         else
            call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
         endif
@@ -3076,13 +3076,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
+    integer(kind=8) :: v2o2
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
     nba=minbsize
     nbg=minbsize
     nnod=1
-    e2a = 0
+    e2a  = 0
+    v2o2 = (i8*no*no)*nv*nv
 #ifdef VAR_MPI
     nnod=infpar%lg_nodtot
 #endif
@@ -3227,7 +3229,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if(scheme==2)then
       mem_used = get_min_mem_req(no,nv,nb,nba,nbg,iter,2,scheme,.false.)
-      e2a = int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8)
+      e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
 
@@ -3420,15 +3422,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       call array_default_batches(d1,mode,tdim,splt)
       call array_get_ntpm(d1,tdim,mode,ntpm,ntiles)
-      nloctiles=ntiles/nnod
-      if(mod(ntiles,nnod)>0)nloctiles=nloctiles+1
+      nloctiles=ceiling(float(ntiles)/float(nnod))
       tsze = 1
       do i = 1, mode
         tsze = tsze * tdim(i)
       enddo
       !govov stays in pdm and is dense in second part
-      ! u 2 + H +G + space for one update tile 
-      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no) + i8*tsze
+      ! u2 + H +G + space for 2 update tile s
+      memrq = 1.0E0_realk*((i8*tsze)*nloctiles+ i8*nb*nv+i8*nb*no + i8*2*tsze)
       !gvoov gvvoo
       memrq=memrq+ 2.0E0_realk*tsze*nloctiles
 
@@ -3439,10 +3440,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !uigcj sio4
       memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + 1.0E0_realk*nor*nvr*2_long
+      memin  = memin + 1.0E0_realk*(nor*nvr*i8)
       !w0
-      memin = memin + 1.0E0_realk*&
-      &(i8*nb*nb)*nba*nbg
+      memin = memin + 1.0E0_realk*(i8*nb*nb)*nba*nbg
       !w1
       memin = memin + 1.0E0_realk *&
       &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
@@ -4640,41 +4640,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     !                       GET SINGLES CCSD RESIDUAL
     !
-    ! Get A1 term:
-    ! Omega_ai = xvir_aP * G_Pi 
-    call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
-              & 0.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1:
-    if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
-
-    ! Calculate B1 term:
-    ! Omega_ai += - H_aQ * yocc_iQ 
-    call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
-              & 1.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1 + B1:
-    if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
-
-    ! Calculate C1 term:
-    ! Reorder u2[ac, ik] -> u2[ai, kc]
-    call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
-              & 0.0E0_realk,tmp0)
-
-    ! Omega_ai += u2[ai, kc] * F_kc 
-    call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
-              & 1.0E0_realk,omega1%elm1,1)
-    ! Calculate norm of A1 + B1 + C1:
-    if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
-
-    ! Calculate D1 term:
-    ! Omega_ai += F_ai
-    call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
-
-    ! Calculate norm of full single residual:
-    if (print_debug) then
-      call print_norm(omega1,'debug: residual D1 norm:                 ')
-      call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+    !CCD can be achieved by not using singles residual updates here
+    if(.not. DECinfo%CCDhack)then
+      ! Get A1 term:
+      ! Omega_ai = xvir_aP * G_Pi 
+      call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
+                & 0.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1:
+      if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
+       
+      ! Calculate B1 term:
+      ! Omega_ai += - H_aQ * yocc_iQ 
+      call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
+                & 1.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1 + B1:
+      if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
+       
+      ! Calculate C1 term:
+      ! Reorder u2[ac, ik] -> u2[ai, kc]
+      call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
+                & 0.0E0_realk,tmp0)
+       
+      ! Omega_ai += u2[ai, kc] * F_kc 
+      call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
+                & 1.0E0_realk,omega1%elm1,1)
+      ! Calculate norm of A1 + B1 + C1:
+      if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
+       
+      ! Calculate D1 term:
+      ! Omega_ai += F_ai
+      call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
+       
+      ! Calculate norm of full single residual:
+      if (print_debug) then
+        call print_norm(omega1,'debug: residual D1 norm:                 ')
+        call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+      end if
     end if
-
 
     !===========================================================================
     !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
@@ -5275,11 +5277,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! 2) transform s to k g[PQjs]
     call dgemm('n','t',dimP*dimQ*nocc,nocc,ntot,1.0E0_realk,tmp0,dimP*dimQ*nocc, &
               & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*nocc)
-    call lsmpi_poke() 
 
     ! 3) transpose and get g[Qjk,P]
     call mat_transpose(dimP,dimQ*nocc*nocc,1.0E0_realk,tmp1,0.0E0_realk,tmp0)
-    call lsmpi_poke() 
 
     ! 4) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc
@@ -5305,7 +5305,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     
     ! 2) transpose and get g[QjbP]:
     call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
-    call lsmpi_poke() 
   
     ! 3) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc

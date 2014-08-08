@@ -91,7 +91,7 @@ module lspdm_tensor_operations_module
   !with some additional information. Here the storage fort tiled distributed and
   !replicated arrays is allocated, if 500  is not enough, please change here
   !> amount of arrays which are storable in the persistent array
-  integer, parameter :: n_arrays = 1500
+  integer, parameter :: n_arrays = 50000
   !> persistent array type-def
   type persistent_array
     !> collection of arrays
@@ -3211,7 +3211,8 @@ module lspdm_tensor_operations_module
       if(pdm)then
 #ifdef VAR_MPI
         call lsmpi_win_lock(dest,arr%wi(comp_ti),'e')
-        call lsmpi_acc(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(comp_ti))
+        call lsmpi_acc(A(fe_in_block:fe_in_block+act_step-1),&
+           &act_step,comp_el,dest,arr%wi(comp_ti),MAX_SIZE_ONE_SIDED,flush_it=.true.)
         call lsmpi_win_unlock(dest,arr%wi(comp_ti))
 #endif
       else
@@ -3425,7 +3426,7 @@ module lspdm_tensor_operations_module
       call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
       call get_tile_dim(nelmsit,arr,i)
 #ifdef VAR_MPI
-      call array_accumulate_tile(arr,i,buf,nelmsit,lock_set=arr%lock_set(i))
+      call array_accumulate_tile(arr,i,buf,nelmsit,lock_set=arr%lock_set(i),flush_it=.true.)
 #endif
     enddo
     call mem_dealloc(buf)
@@ -3495,7 +3496,7 @@ module lspdm_tensor_operations_module
         b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
         e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
         call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
-        call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
+        call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i),flush_it=.true.)
       enddo
     endif
 
@@ -4341,7 +4342,8 @@ module lspdm_tensor_operations_module
           pos1=get_cidx(glbmodeidx,arr%dims,arr%mode)
           !  call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
           !  call daxpy(ccels,pre1,fort(pos1),1,tileout(1+(i-1)*ccels),1)
-          call lsmpi_acc(A(pos1:pos1+ccels-1),ccels,1+(i-1)*ccels,dest,arr%wi(globtilenr))
+          call lsmpi_acc(A(pos1:pos1+ccels-1),ccels,1+(i-1)*ccels,dest,&
+             &arr%wi(globtilenr),MAX_SIZE_ONE_SIDED,flush_it=.true.)
         enddo
       !case(1)
       !  call manual_3412_reordering_f2t(bs,rtd,dimsA,fels,pre1,fort,pre2,tileout)

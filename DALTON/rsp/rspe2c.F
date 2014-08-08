@@ -3861,7 +3861,17 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
                CALL RSPANC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,
      *                     MULD2H(KSYMOP,IREFSY),XINDX,MULD2H,LUPRI)
             END IF
+            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+     
 
+            IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
+     &                             KZYVAR,KZVAR,CMO,LUPRI,
+     &                             WRK(KWRK2),LWRK2)
+
+            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
+     &                             KZVAR,WRK(KCMO2),LUPRI)
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
@@ -6184,6 +6194,7 @@ C
 C  /* Deck RSPMO2 */
       SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
 C
+C     Author: Casper Steinmann            2014-04-16
 C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR

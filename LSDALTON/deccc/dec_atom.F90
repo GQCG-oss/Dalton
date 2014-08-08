@@ -63,7 +63,8 @@ contains
     !> Logical vector telling which unoccupied AOS orbitals are included in fragment
     logical, dimension(nunocc), intent(in) :: Unocc_list
     !> Logical vector telling which occupied AOS orbitals are included in fragment
-    logical, dimension(nocc), intent(in) :: Occ_list
+    !> inout because we always set core orbitals to false for frozen core approx.
+    logical, dimension(nocc), intent(inout) :: Occ_list
     !> Information about DEC occupied orbitals
     type(decorbital), dimension(nOcc), intent(in) :: OccOrbitals
     !> Information about DEC unoccupied orbitals
@@ -80,6 +81,10 @@ contains
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
+
+
+    ! We always set core orbitals to false for frozen core approx.
+    if (DECinfo%frozencore) Occ_list(1:Mymolecule%ncore) = .false.
 
     all_atoms  => null()
 
@@ -785,8 +790,8 @@ contains
     call mem_alloc( nocc_per_atom,   natoms )
     call mem_alloc( nunocc_per_atom, natoms )
 
-    nocc_per_atom   = get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom = get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    nocc_per_atom   = get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.)
+    nunocc_per_atom = get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
 
     ! Determine logical vectors describing which atoms to include in fragment,
     ! i.e., atoms where the distance to MyAtom is smaller than init_radius
@@ -2266,8 +2271,7 @@ contains
     call mem_alloc(fragment%occAOSorb,Fragment%noccAOS)
     do j=1,Fragment%noccAOS
        idx = fragment%occAOSidx(j)
-       fragment%occAOSorb(j) = orbital_init(idx,OccOrbitals(idx)%centralatom, &
-            OccOrbitals(idx)%numberofatoms,OccOrbitals(idx)%atoms)
+       call copy_orbital(OccOrbitals(idx),fragment%occAOSorb(j))
     end do
     ! --
 
@@ -2275,8 +2279,7 @@ contains
     call mem_alloc(fragment%unoccAOSorb,Fragment%nunoccAOS)
     do j=1,Fragment%nunoccAOS
        idx = fragment%unoccAOSidx(j)
-       fragment%unoccAOSorb(j) = orbital_init(idx,UnoccOrbitals(idx)%centralatom, &
-            UnoccOrbitals(idx)%numberofatoms,UnoccOrbitals(idx)%atoms)
+       call copy_orbital(UnoccOrbitals(idx),fragment%unoccAOSorb(j))
     end do
     ! --
 
@@ -4370,12 +4373,14 @@ contains
     write(DECinfo%output,*) '*****************************************************'
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved '
+    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
     do i=1,njobs
        if(jobs%atom1(i)==jobs%atom2(i)) then ! single
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8)') i,jobs%jobsize(i),jobs%atom1(i)
+          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
+             &i,jobs%jobsize(i),jobs%atom1(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        else ! pair
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8)') i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i)
+          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8,3X,i6,3X,i6,3X,i6)') &
+             &i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i),jobs%nocc(i),jobs%nunocc(i),jobs%nbasis(i)
        end if
     end do
     write(DECinfo%output,*)
@@ -4601,6 +4606,9 @@ contains
           ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
           jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
                &*count(fragbasis(1:nbasis,i))
+          jobs%nocc(k)    = count(occAOS(1:nocc,i))
+          jobs%nunocc(k)  = count(unoccAOS(1:nunocc,i))
+          jobs%nbasis(k)  = count(fragbasis(1:nbasis,i))
 
        end if
 
@@ -4630,6 +4638,9 @@ contains
 
              ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
              jobs%jobsize(k) = count(occpairAOS)*count(unoccpairAOS)*count(basispair)
+             jobs%nocc(k)    = count(occpairAOS)
+             jobs%nunocc(k)  = count(unoccpairAOS)
+             jobs%nbasis(k)  = count(basispair)
 
              if(jobs%jobsize(k)<1) then
                 print *, 'dist', dist
