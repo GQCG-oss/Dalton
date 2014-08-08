@@ -19,7 +19,7 @@ f.add(string = 'CCSD virtual  correlation energy :',
 
 f.add(from_string = ' (T) virtual  correlation energy :',
       to_string   = 'Total CCSD(T) energy:',
-      rel_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-6)
 
 
 # to ignore sign set                      ignore_sign = True   
