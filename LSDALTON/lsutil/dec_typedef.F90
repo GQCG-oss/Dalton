@@ -342,13 +342,8 @@ module dec_typedef_module
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
      integer :: Frag_Exp_Size
-     !===========================================
-     ! NEED TO BE REMOVED AFTER TESTING:
-     integer :: Frag_red_gap_occ
-     integer :: Frag_red_gap_virt
-     real(realk) :: Frag_red_dE_occ
-     real(realk) :: Frag_red_dE_virt
-     !===========================================
+     real(realk) :: Frag_red_occ_thr
+     real(realk) :: Frag_red_virt_thr
      !> Use RI for Fragment Expansion 
      logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
@@ -395,6 +390,8 @@ module dec_typedef_module
      logical :: PairEstimateIgnore
      !> initiation radius of the estimated fragments
      real(realk) :: EstimateINITradius
+     !> number of average atoms that will be included in the estimated fragments
+     integer :: EstimateInitAtom
      ! --
 
 
