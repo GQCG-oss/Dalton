@@ -448,14 +448,10 @@ contains
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
     ! Free remaining arrays
-    if(.not.DECinfo%OnlyVIRTPart.or.MyFragment%ccmodel == MODEL_MP2)then
-       call array_free(VOVOocc)
-       call array_free(t2occ)
-    endif
-    if(.not.DECinfo%OnlyOccPart.or.MyFragment%ccmodel == MODEL_MP2)then
-       call array_free(VOVOvirt)
-       call array_free(t2virt)
-    endif
+    call array_free(VOVOocc)
+    call array_free(t2occ)
+    call array_free(VOVOvirt)
+    call array_free(t2virt)
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
     !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
@@ -1094,14 +1090,10 @@ contains
     endif
 
     ! Free remaining arrays
-    if(.not.DECinfo%OnlyVIRTPart.or.PairFragment%ccmodel == MODEL_MP2)then
-       call array_free(VOVOocc)
-       call array_free(t2occ)
-    endif
-    if(.not.DECinfo%OnlyOccPart.or.PairFragment%ccmodel == MODEL_MP2)then
-       call array_free(t2virt)
-       call array_free(VOVOvirt)
-    endif
+    call array_free(VOVOocc)
+    call array_free(t2occ)
+    call array_free(t2virt)
+    call array_free(VOVOvirt)
 
     !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
