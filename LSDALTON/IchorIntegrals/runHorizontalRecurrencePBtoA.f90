@@ -22,24 +22,35 @@ CONTAINS
     integer,pointer :: TwoTermTUVLIST(:)
     character(len=3) :: ARCSTRING
     logical :: CPU,DoOpenMP,DoOpenACC
-    integer :: GPUrun,MaxAngmomSingle
-    WRITE(*,'(A)')'MODULE AGC_OBS_HorizontalRecurrenceLHSModBtoA'
-    WRITE(*,'(A)')' use IchorPrecisionModule'
-    WRITE(*,'(A)')'  '
-    WRITE(*,'(A)')' CONTAINS'
-DO GPUrun = 1,2
-    CPU = .TRUE.
-    IF(GPUrun.EQ.2)CPU = .FALSE.
-    DoOpenMP = .FALSE.
-    DoOpenACC = .FALSE.
-    IF(CPU)DoOpenMP = .TRUE.
-    IF(.NOT.CPU)DoOpenACC = .TRUE.
-    IF(CPU)THEN
-       ARCSTRING = 'CPU'
-    ELSE
-       ARCSTRING = 'GPU'
-    ENDIF
-    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#ifdef VAR_OPENACC'
+    integer :: GPUrun,MaxAngmomSingle,I,LUFILE
+    Character(len=48) :: FileName    
+    DO GPUrun = 1,2
+       CPU = .TRUE.
+       IF(GPUrun.EQ.2)CPU = .FALSE.
+       DoOpenMP = .FALSE.
+       DoOpenACC = .FALSE.
+       IF(CPU)DoOpenMP = .TRUE.
+       IF(.NOT.CPU)DoOpenACC = .TRUE.
+       IF(CPU)THEN
+          ARCSTRING = 'CPU'
+       ELSE
+          ARCSTRING = 'GPU'
+       ENDIF
+
+       DO I =1,48
+          FileName(I:I) = ' '
+       ENDDO
+       WRITE(FileName,'(4A)')'runHorizontalRecurrence'//ARCSTRING//'LHSModBtoA.F90'
+       print*,'FileName:',FileName
+       LUFILE = 12
+       open(unit = LUFILE, file=TRIM(FileName),status="unknown")
+       
+       WRITE(LUFILE,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
+       WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+       WRITE(LUFILE,'(A)')'  '
+       WRITE(LUFILE,'(A)')' CONTAINS'
+
+!    IF(GPUrun.EQ.2)WRITE(LUFILE,'(A)')'#ifdef VAR_OPENACC'
     MaxAngmomP = 6
     MaxAngmomSingle = 2 !D functions currently
 
@@ -90,26 +101,26 @@ DO GPUrun = 1,2
           NTUVAstart = (AngmomA)*(AngmomA+1)*(AngmomA+2)/6
           NTUVBstart = (AngmomB)*(AngmomB+1)*(AngmomB+2)/6
 
-          WRITE(*,'(A)')''
+          WRITE(LUFILE,'(A)')''
           IF(JP.LT.10)THEN
-             WRITE(*,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
+             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
           ELSE
-             WRITE(*,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
+             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA(nContQP,nPasses,nTUVQ,&'
           ENDIF
-          WRITE(*,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
-          WRITE(*,'(A)')'  implicit none'
-          WRITE(*,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
-          WRITE(*,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
-          WRITE(*,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ*nContQP*nPasses)'
-          WRITE(*,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
-          !             WRITE(*,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',nTUVAspec,',',nTUVBspec,',nTUVQ,nContPasses)'
-          WRITE(*,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ*nContQP*nPasses)'
-          WRITE(*,'(A)')'  !Local variables'
+          WRITE(LUFILE,'(A)')'         & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,AuxCont,ThetaP,lupri)'
+          WRITE(LUFILE,'(A)')'  implicit none'
+          WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContQP,nPasses,nTUVQ,lupri,MaxPasses,nAtomsA,nAtomsB'
+          WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB)'
+          WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: AuxCont(',nTUVP,',nTUVQ*nContQP*nPasses)'
+          WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+          !             WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',nTUVAspec,',',nTUVBspec,',nTUVQ,nContPasses)'
+          WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nTUVQ*nContQP*nPasses)'
+          WRITE(LUFILE,'(A)')'  !Local variables'
           IF(ANGMOMA.NE.0)THEN
-             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
-             WRITE(*,'(A)')'  real(realk) :: Xab,Yab,Zab'
+             WRITE(LUFILE,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
+             WRITE(LUFILE,'(A)')'  real(realk) :: Xab,Yab,Zab'
           ELSE
-             WRITE(*,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
+             WRITE(LUFILE,'(A)')'  integer :: iPassP,iP,iTUVQ,iTUVB,iAtomA,iAtomB'
           ENDIF
           allocate(CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1))
           CREATED  = .FALSE.
@@ -123,69 +134,69 @@ DO GPUrun = 1,2
              nTUVTMPB=(Jab-JTMP+1)*(Jab-JTMP+2)*(Jab-JTMP+3)/6
              nTUVTMPBprev=(Jab-JTMP)*(Jab-JTMP+1)*(Jab-JTMP+2)/6
              if(JTMP.LT.10)THEN
-                WRITE(*,'(A,I1,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVTMPAprev+1,':',nTUVTMPA,',',nTUVBstart+1,':',nTUVTMPB,')'
+                WRITE(LUFILE,'(A,I1,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVTMPAprev+1,':',nTUVTMPA,',',nTUVBstart+1,':',nTUVTMPB,')'
              else
-                WRITE(*,'(A,I2,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVTMPAprev+1,':',nTUVTMPA,',',nTUVBstart+1,':',nTUVTMPB,')'
+                WRITE(LUFILE,'(A,I2,A,I3,A,I3,A,I3,A,I3,A)')'  real(realk) :: Tmp',JTMP,'(',nTUVTMPAprev+1,':',nTUVTMPA,',',nTUVBstart+1,':',nTUVTMPB,')'
              endif
           ENDDO
           IF(JA.GT.1)THEN
-             WRITE(*,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
+             WRITE(LUFILE,'(A)')'!  real(realk) :: Tmp(nTUVA,nTUVB) ordering'
           ENDIF
-!          WRITE(*,'(A)')'  DO iP = 1,nContQP*nPasses'
-!          WRITE(*,'(A)')'   DO iTUVQ = 1,nTUVQ'
+!          WRITE(LUFILE,'(A)')'  DO iP = 1,nContQP*nPasses'
+!          WRITE(LUFILE,'(A)')'   DO iTUVQ = 1,nTUVQ'
           IF(DoOpenMP)THEN
-!             WRITE(*,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
-             WRITE(*,'(A)')'!$OMP DO &'
-             WRITE(*,'(A)')'!$OMP PRIVATE(iP,&'
+!             WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) &'
+             WRITE(LUFILE,'(A)')'!$OMP DO &'
+             WRITE(LUFILE,'(A)')'!$OMP PRIVATE(iP,&'
              IF(JA.NE.0)THEN
                 DO JTMP=1,JA-1
                    if(JTMP.LT.10)THEN
-                      WRITE(*,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
+                      WRITE(LUFILE,'(A,I1,A)')'!$OMP         Tmp',JTMP,',&'
                    else
-                      WRITE(*,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
+                      WRITE(LUFILE,'(A,I2,A)')'!$OMP         Tmp',JTMP,',&'
                    endif
                 ENDDO
-                WRITE(*,'(A)')'!$OMP         iPassP,iTUVB,iAtomA,iAtomB,Xab,Yab,Zab) '
+                WRITE(LUFILE,'(A)')'!$OMP         iPassP,iTUVB,iAtomA,iAtomB,Xab,Yab,Zab) '
              ELSE
-                WRITE(*,'(A)')'!$OMP         iTUVB) '
+                WRITE(LUFILE,'(A)')'!$OMP         iTUVB) '
              ENDIF
-!             WRITE(*,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
+!             WRITE(LUFILE,'(A)')'!$OMP SHARED(nTUVQ,nContQP,nPasses,&'
 !             IF(JA.NE.0)THEN
-!                WRITE(*,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+!                WRITE(LUFILE,'(A)')'!$OMP         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
 !             ELSE
-!                WRITE(*,'(A)')'!$OMP         AuxCont,ThetaP)'
+!                WRITE(LUFILE,'(A)')'!$OMP         AuxCont,ThetaP)'
 !             ENDIF
           ENDIF
           IF(DoOpenACC)THEN
-             WRITE(*,'(A)')'!$ACC PARALLEL LOOP &'
-             WRITE(*,'(A)')'!$ACC PRIVATE(iP,&'
+             WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP &'
+             WRITE(LUFILE,'(A)')'!$ACC PRIVATE(iP,&'
              IF(JA.NE.0)THEN
                 DO JTMP=1,JA-1
                    if(JTMP.LT.10)THEN
-                      WRITE(*,'(A,I1,A)')'!$ACC         Tmp',JTMP,',&'
+                      WRITE(LUFILE,'(A,I1,A)')'!$ACC         Tmp',JTMP,',&'
                    else
-                      WRITE(*,'(A,I2,A)')'!$ACC         Tmp',JTMP,',&'
+                      WRITE(LUFILE,'(A,I2,A)')'!$ACC         Tmp',JTMP,',&'
                    endif
                 ENDDO
-                WRITE(*,'(A)')'!$ACC         iPassP,iTUVB,iAtomA,iAtomB,Xab,Yab,Zab) &'
+                WRITE(LUFILE,'(A)')'!$ACC         iPassP,iTUVB,iAtomA,iAtomB,Xab,Yab,Zab) &'
              ELSE
-                WRITE(*,'(A)')'!$ACC         iTUVB) &'
+                WRITE(LUFILE,'(A)')'!$ACC         iTUVB) &'
              ENDIF
-             WRITE(*,'(A)')'!$ACC PRESENT(nTUVQ,nContQP,nPasses,&'
+             WRITE(LUFILE,'(A)')'!$ACC PRESENT(nTUVQ,nContQP,nPasses,&'
              IF(JA.NE.0)THEN
-                WRITE(*,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
+                WRITE(LUFILE,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
              ELSE
-                WRITE(*,'(A)')'!$ACC         AuxCont,ThetaP)'
+                WRITE(LUFILE,'(A)')'!$ACC         AuxCont,ThetaP)'
              ENDIF
           ENDIF
-          WRITE(*,'(A)')'  DO iP = 1,nTUVQ*nContQP*nPasses'
+          WRITE(LUFILE,'(A)')'  DO iP = 1,nTUVQ*nContQP*nPasses'
           IF(JA.NE.0)THEN
-             WRITE(*,'(A)')'   iPassP = (iP-1)/(nTUVQ*nContQP)+1'
-             WRITE(*,'(A)')'   iAtomA = iAtomApass(iPassP)'
-             WRITE(*,'(A)')'   iAtomB = iAtomBpass(iPassP)'
-             WRITE(*,'(A)')'   Xab = -Pdistance12(1,iAtomA,iAtomB)'
-             WRITE(*,'(A)')'   Yab = -Pdistance12(2,iAtomA,iAtomB)'
-             WRITE(*,'(A)')'   Zab = -Pdistance12(3,iAtomA,iAtomB)'
+             WRITE(LUFILE,'(A)')'   iPassP = (iP-1)/(nTUVQ*nContQP)+1'
+             WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+             WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+             WRITE(LUFILE,'(A)')'   Xab = -Pdistance12(1,iAtomA,iAtomB)'
+             WRITE(LUFILE,'(A)')'   Yab = -Pdistance12(2,iAtomA,iAtomB)'
+             WRITE(LUFILE,'(A)')'   Zab = -Pdistance12(3,iAtomA,iAtomB)'
           ENDIF
 
 
@@ -194,9 +205,9 @@ DO GPUrun = 1,2
              IF(JTMP.EQ.0)THEN
                 
                 IF(nTUVAstart+1.EQ.1)THEN
-                   WRITE(*,'(A,I3,A,I3)')'     DO iTUVB=',NTUVBstart+1,',',nTUVB
-                   WRITE(*,'(A)')   '        ThetaP(1,iTUVB,iP) = AuxCont(iTUVB,iP)'
-                   WRITE(*,'(A)')   '     ENDDO'
+                   WRITE(LUFILE,'(A,I3,A,I3)')'     DO iTUVB=',NTUVBstart+1,',',nTUVB
+                   WRITE(LUFILE,'(A)')   '        ThetaP(1,iTUVB,iP) = AuxCont(iTUVB,iP)'
+                   WRITE(LUFILE,'(A)')   '     ENDDO'
                 ENDIF
                 CYCLE
              ELSE
@@ -219,13 +230,13 @@ DO GPUrun = 1,2
                       IF(VREC)N=N+1
                       IF(TREC)THEN
                          !                         print*,'!A TRECURRENCE iTUV',iTUV
-                         call TRECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA)
+                         call TRECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA,LUFILE)
                       ELSEIF(UREC)THEN
                          !                         print*,'!A URECURRENCE iTUV',iTUV
-                         call URECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA)
+                         call URECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA,LUFILE)
                       ELSEIF(VREC)THEN
                          !                         print*,'!A VRECURRENCE iTUV',iTUV
-                         call VRECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA)
+                         call VRECURRENCE(Ta,Ua,Va,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPB,JMAX,JA,nTUVB,nTUVBSTART,nTUVAstart,nTUVA,LUFILE)
                       ELSE
                          STOP 'TK1'
                       ENDIF
@@ -235,14 +246,14 @@ DO GPUrun = 1,2
              ENDIF
           ENDDO
           deallocate(CREATED)
-!          WRITE(*,'(A)')'   ENDDO'
-          WRITE(*,'(A)')'  ENDDO'
-!          IF(DoOpenMP) WRITE(*,'(A)')'!$OMP END PARALLEL DO'
-          IF(DoOpenMP) WRITE(*,'(A)')'!$OMP END DO'
+!          WRITE(LUFILE,'(A)')'   ENDDO'
+          WRITE(LUFILE,'(A)')'  ENDDO'
+!          IF(DoOpenMP) WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+          IF(DoOpenMP) WRITE(LUFILE,'(A)')'!$OMP END DO'
           IF(JP.LT.10)THEN
-             WRITE(*,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA'
+             WRITE(LUFILE,'(A,I1,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA'
           ELSE
-             WRITE(*,'(A,I2,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA'
+             WRITE(LUFILE,'(A,I2,A,I1,A,I1,A)')'end subroutine HorizontalRR_'//ARCSTRING//'_LHS_P',JP,'A',AngmomA,'B',AngmomB,'BtoA'
           ENDIF
        enddo
        deallocate(TUVINDEX)
@@ -251,13 +262,14 @@ DO GPUrun = 1,2
        deallocate(VINDEX)
        deallocate(JINDEX)
     enddo
-    IF(GPUrun.EQ.2)WRITE(*,'(A)')'#endif'
+!    IF(GPUrun.EQ.2)WRITE(LUFILE,'(A)')'#endif'
+    WRITE(LUFILE,'(A)')'end module'
+    close(unit = LUFILE)
  enddo
- WRITE(*,'(A)')'end module'
 END subroutine PASSsub
   
   subroutine TRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVPSTART,&
-       & nTUVQSTART,nTUVQ)
+       & nTUVQSTART,nTUVQ,LUFILE)
     implicit none
     integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y
     integer :: iTUVQminus1z,nTUVP,JQ,TMQ,TMP,JP,nTUVPSTART,nTUVQSTART,nTUVQ
@@ -269,7 +281,7 @@ END subroutine PASSsub
     integer :: JINDEX(:)
     logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
     character(len=132) :: STRING 
-    integer :: iString
+    integer :: iString,LUFILE
     !Ta = Tq  iTUVA = iTUVC
     iTUVQ = TUVINDEX(Tq,Uq,Vq)
     iTUVQminus1x = TUVINDEX(Tq-1,Uq,Vq)
@@ -284,7 +296,7 @@ END subroutine PASSsub
        
        call XYZRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,&
             & CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVPSTART,nTUVQSTART,nTUVQ,&
-            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Xab')
+            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Xab',LUFILE)
 
     ENDDO
 
@@ -292,7 +304,7 @@ END subroutine PASSsub
 
   subroutine XYZRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,&
        & CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,nTUVQSTART,nTUVQ,&
-       & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,DIRSTRING)
+       & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,DIRSTRING,LUFILE)
     implicit none
     !step 1 add blanks
     integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y
@@ -306,7 +318,7 @@ END subroutine PASSsub
     logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
     character(len=132) :: STRING 
     character(len=3) :: DIRSTRING
-    integer :: iString
+    integer :: iString,LUFILE
     !Q = A so A first A have the 
     !iTUVQ
     !iTUVQminus1x
@@ -472,12 +484,12 @@ END subroutine PASSsub
        ENDIF
     ENDIF
     !Final step write the string
-    WRITE(*,'(A)') STRING(1:iSTRING-1)
+    WRITE(LUFILE,'(A)') STRING(1:iSTRING-1)
     
   end subroutine XYZRECURRENCE
 
 subroutine URECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,&
-       & nTUVQSTART,nTUVQ)
+       & nTUVQSTART,nTUVQ,LUFILE)
     implicit none
     integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y
     integer :: iTUVQminus1z,nTUVP,JQ,TMQ,TMP,JP,nTUVASTART,nTUVQSTART,nTUVQ
@@ -489,7 +501,7 @@ integer :: VINDEX(:)
 integer :: JINDEX(:)
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 character(len=132) :: STRING 
-integer :: iString
+integer :: iString,LUFILE
 iTUVQ = TUVINDEX(Tq,Uq,Vq)
 iTUVQminus1x = TUVINDEX(Tq,Uq-1,Vq)
 iTUVQminus2x = TUVINDEX(Tq,Uq-2,Vq)
@@ -505,14 +517,14 @@ do iTUVP = nTUVASTART+1,nTUVTMPP
 
    call XYZRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,&
             & CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,nTUVQSTART,nTUVQ,&
-            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Yab')
+            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Yab',LUFILE)
 
 ENDDO
 
 end subroutine URECURRENCE
 
 subroutine VRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,&
-       & nTUVQSTART,nTUVQ)
+       & nTUVQSTART,nTUVQ,LUFILE)
     implicit none
     integer :: Tq,Uq,Vq,Tp,Up,Vp,J,JTMP,iTUVQ,iTUVQminus1x,iTUVQminus1y
     integer :: iTUVQminus1z,nTUVP,JQ,TMQ,TMP,JP,nTUVASTART,nTUVQSTART,nTUVQ
@@ -524,7 +536,7 @@ integer :: VINDEX(:)
 integer :: JINDEX(:)
 logical :: CREATED(-2:JMAX+1,-2:JMAX+1,-2:JMAX+1)
 character(len=132) :: STRING 
-integer :: iString
+integer :: iString,LUFILE
 iTUVQ = TUVINDEX(Tq,Uq,Vq)
 iTUVQminus1x = TUVINDEX(Tq,Uq,Vq-1)
 iTUVQminus2x = TUVINDEX(Tq,Uq,Vq-2)
@@ -540,7 +552,7 @@ do iTUVP = nTUVASTART+1,nTUVTMPP
    
    call XYZRECURRENCE(Tq,Uq,Vq,J,TUVINDEX,TINDEX,UINDEX,VINDEX,JINDEX,&
             & CREATED,JTMP,nTUVTMPP,JMAX,JQ,nTUVP,nTUVASTART,nTUVQSTART,nTUVQ,&
-            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Zab')
+            & iTUVQ,iTUVQminus1x,TMQ,iTUVP,Tp,Up,Vp,TMP,iTUVplus1x,Jp,'Zab',LUFILE)
 
 ENDDO
 
