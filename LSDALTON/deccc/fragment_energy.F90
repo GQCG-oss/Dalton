@@ -705,12 +705,10 @@ contains
                 ! Update total atomic fragment energy contribution 3
                 e3 = e3 + tmp
 
-                if(.not. DECinfo%onlyoccpart) then
-                   ! Update contribution from orbital i
-                   occ_tmp(i) = occ_tmp(i) + tmp
-                   ! Update contribution from orbital j (only if different from i to avoid double counting)
-                   if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
-                end if
+                ! Update contribution from orbital i
+                occ_tmp(i) = occ_tmp(i) + tmp
+                ! Update contribution from orbital j (only if different from i to avoid double counting)
+                if(i/=j) occ_tmp(j) = occ_tmp(j) + tmp
 
                 ! Contribution 4
                 ! --------------
