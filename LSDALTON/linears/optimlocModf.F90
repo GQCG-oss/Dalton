@@ -36,7 +36,6 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   type(matrix) :: SC,CSC,S
   logical :: ForcePrint
   
-
   ForcePrint =  .TRUE.
   CALL LSTIMER('START ',TIMSTR,TIMEND,ls%lupri)
   
@@ -142,7 +141,6 @@ if (norb == 0 .or. norb ==1) then
   return
 endif
 
-
 call mem_alloc(tmp,nbas*norb)
 call mat_init(MOblock,nbas,norb)
 ! extract matrix from CMO(1,offset+1)
@@ -159,7 +157,6 @@ else
    call localize_davidson(MOblock,m,ls,CFG)
 endif
 
-if (offset == 0)call mat_print(MOblock,1,MOblock%nrow,1,MOblock%ncol,6)
 
 call mem_alloc(tmp,nbas*norb)
 call mat_to_full(MOblock,1.0_realk,tmp)

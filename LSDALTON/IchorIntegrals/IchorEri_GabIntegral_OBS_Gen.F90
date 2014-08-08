@@ -19,12 +19,12 @@ use AGC_CPU_OBS_TRMODCtoAGen
 use AGC_CPU_OBS_TRMODDtoAGen
 use AGC_CPU_OBS_TRMODCtoBGen
 use AGC_CPU_OBS_TRMODDtoBGen
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_CPU_OBS_Sphcontract1Mod
+use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorGabIntegral_OBS_Gen,IchorGabIntegral_OBS_general_sizeGen  
