@@ -28,6 +28,9 @@ C  /* Deck cimain */
 C
 C 28-Jun-1985 hjaaj
 C
+#ifdef MOD_SRDFT
+      use lucita_mcscf_srdftci_cfg
+#endif
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -86,66 +89,115 @@ C
      *   CALL GETCIX(WORK(KCINDX),LSYM,LSYM,WORK(KFREE),LFREE,0)
       CALL READMO(WORK(KCMO),9,WORK(KFREE),LFREE)
 C
-C     =================
-      IF (.NOT.DOCISRDFT .OR. ISTACI .LE. 0) THEN
-C     =================
-         CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
-     *              WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
-C     =================
-      ELSE
-C     =================
-C
-C     CIDFT Macro-iteration control
-C
+      if(do_sc_ensemble_dft)then
 #ifndef MOD_SRDFT
-         call quit('srdft not implemented in this version')
+        call quit('srdft not implemented in this version')
 #else
-         CALL MEMGET('REAL',KECID,NCROOT*MXCIDFT,WORK,KFREE,LFREE)
-         IMCITR = 0
-         DO I = 1,MXCIDFT
-            IMCITR = IMCITR + 1
-            CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
-     *                 WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
-     *                 WORK(KFREE),LFREE)
-            ICIST  = 5
-C           ... restart CI in next macro CIDFT iteration ...
-            ECIDFT = WORK(KECI + (ISTACI-1) )
-            WORK(KECID + I - 1) = ECIDFT
-            IF(IMCITR.NE.1) EDIFF = ECIDFT - WORK(KECID + I - 2) 
-            IF (IMCITR .GE. MXCIDFT) THEN
-               WRITE(LUPRI,'(///A//A)') 
-     &  '  >>>>> CI-srDFT optimization -- Summary <<<<<',
-     &  '  ** Maximum number of Macro CI-srDFT iterations reached **'
-               GO TO 5
-            ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
-               WRITE(LUPRI,'(///A//A,I3,A)') 
-     &         '  >>>>> CI-DFT optimization -- Summary <<<<<',
-     &         '  ** Convergence reached in',IMCITR,
-     &         ' CI-DFT macro iterations.'
-               GO TO 5
-            ENDIF
-         ENDDO
-5        CONTINUE
-            WRITE(LUPRI,'(3(/2X,A))') 
+           CALL MEMGET('REAL',KECID,MXCIDFT,WORK,KFREE,LFREE)
+           IMCITR = 0
+           DO I = 1,MXCIDFT
+              IMCITR = IMCITR + 1
+              CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
+     *                   WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
+     *                   WORK(KFREE),LFREE)
+              ICIST  = 5
+C             ... restart CI in next macro ensemble-DFT iteration ...
+              ensemble_energy       = WORK(KECI)
+              WORK(KECID + I - 1)   = ensemble_energy
+              IF(IMCITR.NE.1) EDIFF = ensemble_energy-WORK(KECID+I-2) 
+              IF (IMCITR .GE. MXCIDFT) THEN
+                 WRITE(LUPRI,'(///A//A)') 
+     & '  >>>>> ensemble-DFT optimization -- Summary <<<<<',
+     & '  ** Maximum number of Macro ensemble-DFT iterations reached **'
+                 GO TO 3
+              ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
+                 WRITE(LUPRI,'(///A//A,I3,A)') 
+     &           '  >>>>> ensemble-DFT optimization -- Summary <<<<<',
+     &           '  ** Convergence reached in',IMCITR,
+     &           ' ensemble-DFT macro iterations.'
+                 GO TO 3
+              ENDIF
+           ENDDO
+3          CONTINUE
+              WRITE(LUPRI,'(3(/2X,A))') 
      &      '---------------------------------------------------------',
      &      '       Itr.           Energy                Delta(E)',
      &      '---------------------------------------------------------'
-            WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
-     &      1,WORK(KECID),'             ------'
-            DO I = 2,IMCITR
-               DE = WORK(KECID+I-2) - WORK(KECID+I-1)
-               WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
-     &         I,WORK(KECID + I - 1),DE
-            ENDDO
-            WRITE(LUPRI,'(2X,A/)') 
+              WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
+     &        1,WORK(KECID),'             ------'
+              DO I = 2,IMCITR
+                 DE = WORK(KECID+I-2) - WORK(KECID+I-1)
+                 WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
+     &           I,WORK(KECID + I - 1),DE
+              ENDDO
+              WRITE(LUPRI,'(2X,A/)') 
      &      '---------------------------------------------------------'
-            WRITE(LUPRI,'(/2X,A,F20.12/)')
-     &      '@ Final CI-srDFT energy: ',WORK(KECID + IMCITR -1)
+              WRITE(LUPRI,'(/2X,A,F20.12/)')
+     &        '@ Final variational ensemble-DFT energy: ',
+     &         WORK(KECID + IMCITR -1)
+#endif
+      else
+C       =================
+        IF (.NOT.DOCISRDFT .OR. ISTACI .LE. 0) THEN
+C       =================
+          CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),WORK(KCINDX),
+     *               WORK(KECI),ICONV,WORK(KICROO),WORK(KFREE),LFREE)
+C       =================
+        ELSE
+C       =================
+C
+C       regular CIDFT Macro-iteration control
+C
+#ifndef MOD_SRDFT
+           call quit('srdft not implemented in this version')
+#else
+           CALL MEMGET('REAL',KECID,NCROOT*MXCIDFT,WORK,KFREE,LFREE)
+           IMCITR = 0
+           DO I = 1,MXCIDFT
+              IMCITR = IMCITR + 1
+              CALL CICTL(ICIST,NCROOT,MXCIMA,THRCIX,WORK(KCMO),
+     *                   WORK(KCINDX),WORK(KECI),ICONV,WORK(KICROO),
+     *                   WORK(KFREE),LFREE)
+              ICIST  = 5
+C             ... restart CI in next macro CIDFT iteration ...
+              ECIDFT = WORK(KECI + (ISTACI-1) )
+              WORK(KECID + I - 1) = ECIDFT
+              IF(IMCITR.NE.1) EDIFF = ECIDFT - WORK(KECID + I - 2) 
+              IF (IMCITR .GE. MXCIDFT) THEN
+                 WRITE(LUPRI,'(///A//A)') 
+     &    '  >>>>> CI-srDFT optimization -- Summary <<<<<',
+     &    '  ** Maximum number of Macro CI-srDFT iterations reached **'
+                 GO TO 5
+              ELSE IF ((ABS(EDIFF).LT.THRCIDFT).AND.(IMCITR.NE.1)) THEN
+                 WRITE(LUPRI,'(///A//A,I3,A)') 
+     &           '  >>>>> CI-DFT optimization -- Summary <<<<<',
+     &           '  ** Convergence reached in',IMCITR,
+     &           ' CI-DFT macro iterations.'
+                 GO TO 5
+              ENDIF
+           ENDDO
+5          CONTINUE
+              WRITE(LUPRI,'(3(/2X,A))') 
+     &      '---------------------------------------------------------',
+     &      '       Itr.           Energy                Delta(E)',
+     &      '---------------------------------------------------------'
+              WRITE(LUPRI,'(9X,I2,3X,F20.12,A)')
+     &        1,WORK(KECID),'             ------'
+              DO I = 2,IMCITR
+                 DE = WORK(KECID+I-2) - WORK(KECID+I-1)
+                 WRITE(LUPRI,'(9X,I2,2(3X,F20.12))')
+     &           I,WORK(KECID + I - 1),DE
+              ENDDO
+              WRITE(LUPRI,'(2X,A/)') 
+     &      '---------------------------------------------------------'
+              WRITE(LUPRI,'(/2X,A,F20.12/)')
+     &        '@ Final CI-srDFT energy: ',WORK(KECID + IMCITR -1)
 #endif
 C
-C     =================
-      ENDIF
-C     =================
+C       =================
+        ENDIF
+C       =================
+      end if ! ensemble-DFT
       CALL MEMREL('CIMAIN',WORK,1,1,KFREE,LFREE)
       ADDSRI = ADDSRI_SAVE
 C
@@ -219,11 +271,13 @@ C     Local variables
 C
       logical           :: diskh2, natorb, moisno, calc_2p_dens
       character (len=6) :: keywrd
-      integer           :: xctype1, xctype2
+      integer           :: xctype1, xctype2, spindens_lvl_save
 C
-      double precision  :: EMYDFTAUX, EENSEMB
+      double precision  :: EMYDFTAUX, EENSEMB, ESRDV_ens
+      character(len=12) :: myciruntype
       EMYDFTAUX = 0.0D0 ! initialization
       EENSEMB = 0.0D0 
+      ESRDV_ens = 0.0D0 
 C
 C     *****************************************************************
 C     Analyze input control specification
@@ -396,7 +450,9 @@ C
 
         if(docisrdft)then
           srdft_ci_with_lucita = .true.  
-          calc_2p_dens         = spindens_lvl > 1
+!         calc_2p_dens         = spindens_lvl > 1
+          spindens_lvl_save    = spindens_lvl
+          spindens_lvl         = -1
         end if
 
 
@@ -441,16 +497,15 @@ C
 
           call dcopy(ncmot,cmo,1,srdft_cmo_lucita,1)
 
-          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
-     &                                wrk(kfcac),
-     &                                wrk(kh2ac),'srdft   ci  ',
-     &                                wrk(kw3),lw3,iprcix)
+          myciruntype = 'srdft   ci  '
+
         else
-          call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
-     &                                wrk(kfcac),
-     &                                wrk(kh2ac),'initial ci  ',
-     &                                wrk(kw3),lw3,iprcix)
+          myciruntype = 'initial ci  '
         end if
+        call mcscf_lucita_interface(wrk(kcvecs),wrk(ksvecs),
+     &                              wrk(kfcac),
+     &                              wrk(kh2ac),myciruntype,
+     &                              wrk(kw3),lw3,iprcix)
 
         jconv        = jconv_c  ! jconv_c is set in the interface procedure
         kvec_generic = kcvecs   ! for a unique interface to CISAVE (--> final CI vectors are stored in wrk(kcvecs) NOT ACTIVE AT PRESENT)
@@ -480,12 +535,24 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
 
         if(ci_program .eq. 'LUCITA   ')then
           call dcopy(nnashx,srdft_srac_lucita,1,wrk(ksrac),1)
-          EMYDFT    = emydft_mc2lu
-          EJCSR     = ejcsr_mc2lu
-          EJVSR     = ejvsr_mc2lu
-          EDSR      = edsr_mc2lu
-          EDFT      = edft_mc2lu
-          EMYDFTAUX = emydftaux_mc2lu
+          EMYDFT       = emydft_mc2lu
+          EJCSR        = ejcsr_mc2lu
+          EJVSR        = ejvsr_mc2lu
+          EDSR         = edsr_mc2lu
+          EDFT         = edft_mc2lu
+          EMYDFTAUX    = emydftaux_mc2lu
+          spindens_lvl = spindens_lvl_save
+          if(spindens_lvl > 0)then
+            !> compute the spin-density and S**2
+            DO IST = 1,NCROOT
+               KDVREF = KW2
+               KPVREF = KDVREF + NNASHX
+               KW2A   = KPVREF + NNASHX**2
+               LW2A   = LW2   - KW2A
+               CALL GETS2REF(WRK(KPVREF),WRK(KDVREF),IST,
+     &                       dummy,WRK(KW2A),LW2A)
+            end do
+          end if
         end if
 
         WRITE(LUPRI,'(/A,I5)') 'SR 0-el. energy for input .STATE',
@@ -498,10 +565,11 @@ C      write(lupri,*) 'EMYDFTAUX = ', EMYDFTAUX
         WRITE(LUPRI,806) '= Total eff. SR 0-el. energy  :',EMYDFT
 C
 
+
         DO IST = 1,NCROOT
            KDVREF = KW2
            KW2A   = KDVREF + NNASHX
-           LW2A   = LWRK   - KW2A
+           LW2A   = LW2    - KW2A
            CALL GETDVREF(ci_program,WRK(KDVREF),IST,
      &                   INDXCI,WRK(KW2A),LW2A)
 C          ... DVREF is equal to DV for state abs(ISTI),
@@ -520,6 +588,12 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'LR total CI  energy           :',ELRCI
            WRITE(LUPRI,806) 'Total CI-DFT energy           :',ECI(IST)
            ECIAUX = ELRCI+EMYDFTAUX+ESRDV-POTNUC 
+!
+           if (IST .EQ. 1) then 
+           ECIAUX_gs = ECIAUX ! saving the GS auxiliary energy 
+           end if
+!          write(lupri,*) 'eciaux_gs =', ECIAUX_gs
+!
            write(lupri,*) '' 
            write(lupri,*) 
      &    'decomposition of the auxiliary CI-srDFT energy'
@@ -527,21 +601,39 @@ C          write(lupri,*) 'ESRDV = ', ESRDV
            WRITE(LUPRI,805) 'EMYDFTAUX    :',EMYDFTAUX
            WRITE(LUPRI,805) 'ESRDV        :',ESRDV
            WRITE(LUPRI,805) 'POTNUC       :',POTNUC
-           WRITE(LUPRI,806) 'Auxiliary CI-srDFT energy     :',ECIAUX
+           write(lupri,*) ''
+           WRITE(LUPRI,807) 'Auxiliary CI-srDFT energy for root',
+     &                       IST, ':   ', ECIAUX
+           if (IST .GT. 1) then
+!          WRITE(LUPRI,806) 'Auxiliary excitation energy   :',
+!    &                       ECIAUX-ECIAUX_gs
+           WRITE(LUPRI,807) 'Auxiliary excitation energy for root',
+     &                       IST, ': ', ECIAUX-ECIAUX_gs
+           endif
 !          compute the ensemble CI-srDFT energy 
            EENSEMB = EENSEMB + weights(IST) * ECI(IST)
+!          compute the ensemble ESRDV energy contribution 
+!          ESRDV_ens = ESRDV_ens + weights(IST) * ESRDV
         END DO
 
-        write(lupri,806) '*******************************'
-        WRITE(LUPRI,806) 'Final ensemble CI-srDFT energy:',EENSEMB
-        write(lupri,806) '*******************************'
+        write(lupri,806) '*****************************************'
+        WRITE(LUPRI,806) 'Non-variational ensemble CI-srDFT energy:',
+     &                    EENSEMB
+!       WRITE(LUPRI,806) 'ESRDV_ens=', ESRDV_ens
+        write(lupri,806) '*****************************************'
 !           
   805   FORMAT( 1X,A,F25.12)
   806   FORMAT(/1X,A,F25.12)
-      ENDIF
-!       write(lupri,*) 'done with srdft ....'
-!       call flshfo(lupri)
+  807   FORMAT(/1X,A,I2,A,F20.12)
 
+        veensemb = eensemb
+        if(do_sc_ensemble_dft)then
+          call  get_sc_ensemble_energy(veensemb,EDFT,
+     &                                 cmo,nnashx,nnorbt,
+     &                                 ncroot,weights,lupri,
+     &                                 wrk(kw2),lw2)
+        end if
+      ENDIF
 
       J = LUW4
   815 CONTINUE
@@ -715,6 +807,11 @@ C
       END IF
 C
  9999 CONTINUE
+
+      !> save the ensemble-DFT energy for self-consistent convergence
+      if(do_sc_ensemble_dft)then
+        eci(1) = VEENSEMB
+      end if
 C
       if(ci_program .eq. 'LUCITA   ')then
         if(allocated(srdft_srac_lucita))
@@ -2722,6 +2819,129 @@ C
       END
 !******************************************************************************
 
+      SUBROUTINE GETUDVREF(ci_program,UDVREF,IST,INDXCI,WRK,LWRK)
+C
+C     Get DV_ref for CI-DFT and MC-DFT models.
+C
+C     (c) jkp + hjaaj July 2003
+C
+C     =====================================================
+C     Construct active one-electron density matrix
+C     DVREF for CREF vector no. IST
+C     =====================================================
+C
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_srdftci_cfg
+#include "implicit.h"
+C
+      DIMENSION UDVREF(*), INDXCI(*), WRK(LWRK)
+C
+C Used from common blocks:
+C  infvar: NCONF
+C  inftap: LUIT1
+C
+#include "infvar.h"
+#include "inftap.h"
+#include "priunit.h"
+      character (len=9)  :: ci_program
+      integer, parameter :: luci_cvec = 99
+C
+C
+      IF (IST .LE. 0) THEN
+         CALL QUIT('GETUDVREF called with IST .le. 0')
+      END IF
+      KCREF = 1
+      KW1   = KCREF + NCONF
+      LW1   = LWRK  - KW1
+      IF (LW1 .LE. 0) CALL ERRWRK('GETUDVREF',-KW1,LWRK)
+C
+      if(ci_program .eq. 'LUCITA   ')then
+        open(file='srdft-lucita-final.cvec',unit=luci_cvec,status='old',
+     &       form='unformatted',action='read',position='rewind')
+        call skpvcd(luci_cvec,ist-1,wrk(kcref),-1,-1)
+        call dzero(wrk(kcref),nconf)
+        call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
+!       call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
+        close(luci_cvec,status='keep')
+!       set logical flag for new reference CI vector in WRK(KCREF) - 
+!        in the interface to lucita we use this info to save/broadcast the new
+!        reference vector on lucita internal sequential/parallel MPI-I/O files
+        vector_exchange_type1                      = 1
+        vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                            vector_exchange_type1) = .true.
+
+        srdft_ci_1pdens_cref_restore = .true. 
+
+      else
+        REWIND LUIT1
+        CALL MOLLAB('STARTVEC ',LUIT1,LUPRI)
+        DO I = 1, (IST-1)
+           READ (LUIT1)
+        END DO
+        CALL READT(LUIT1,NCONF,WRK(KCREF))
+      end if
+
+      CALL MAKDV(WRK(KCREF),UDVREF,INDXCI,WRK(KW1),LW1)
+      RETURN
+      END
+!******************************************************************************
+
+      SUBROUTINE GETS2REF(PVREF,DVREF,IST,INDXCI,WRK,LWRK)
+C
+C     Get DV_ref for CI-DFT and MC-DFT models.
+C
+C     (c) jkp + hjaaj July 2003
+C
+C     =====================================================
+C     Construct active one- and two-electron density matrix
+C     for CREF vector no. IST
+C     =====================================================
+C
+      use lucita_mcscf_ci_cfg
+      use lucita_mcscf_srdftci_cfg
+#include "implicit.h"
+C
+      DIMENSION DVREF(*), PVREF(*), INDXCI(*), WRK(LWRK)
+C
+C Used from common blocks:
+C  infvar: NCONF
+C  inftap: LUIT1
+C
+#include "infvar.h"
+#include "inftap.h"
+#include "priunit.h"
+      integer, parameter :: luci_cvec = 99
+C
+C
+      IF (IST .LE. 0) THEN
+         CALL QUIT('GETS2REF called with IST .le. 0')
+      END IF
+      KCREF = 1
+      KW1   = KCREF + NCONF
+      LW1   = LWRK  - KW1
+      IF (LW1 .LE. 0) CALL ERRWRK('GETS2REF',-KW1,LWRK)
+C
+      open(file='srdft-lucita-final.cvec',unit=luci_cvec,status='old',
+     &     form='unformatted',action='read',position='rewind')
+      call skpvcd(luci_cvec,ist-1,wrk(kcref),-1,-1)
+      call dzero(wrk(kcref),nconf)
+      call readvcd_exp(luci_cvec,wrk(kcref),0,-1)
+!     call wrtmatmn(wrk(kcref),1,nconf,1,nconf,lupri)
+      close(luci_cvec,status='keep')
+!     set logical flag for new reference CI vector in WRK(KCREF) - 
+!     in the interface to lucita we use this info to save/broadcast the new
+!     reference vector on lucita internal sequential/parallel MPI-I/O files
+      vector_exchange_type1                      = 1
+      vector_update_mc2lu_lu2mc((2-1)*vector_exchange_types+
+     &                          vector_exchange_type1) = .true.
+
+      srdft_ci_1pdens_cref_restore = .true.
+
+      CALL MAKDM(WRK(KCREF),DVREF,PVREF,INDXCI,WRK(KW1),LW1)
+
+      END
+!******************************************************************************
+
       SUBROUTINE CIOPT(EMY,JCONV,ICICTL,NCROOT,MAXITC,CMO,INDXCI,
      &                 EJCSR,EJVSR,EDSR,EDFT,EMYDFT,EMYDFTAUX,
      &                 NCLIN,ITCI,
@@ -2845,7 +3065,7 @@ C
          END IF
 C
          CALL SRFMAT(WRK(KFSR),CMO,WRK(KDVREF),EJCSR,EJVSR,EDSR,EDFT,
-     &               EMYDFTAUX,WRK(KW2A),LW2A,IPRI4)
+     &               EMYDFTAUX,UEJCVSR,WRK(KW2A),LW2A,IPRI4)
 C        ... Correct EMY and CI diagonal
          EMYDFT = EJCSR + EJVSR + EDSR + EDFT
 C       write(lupri,*) 'just after srfmat'  

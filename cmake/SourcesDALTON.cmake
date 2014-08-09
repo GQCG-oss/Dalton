@@ -816,7 +816,12 @@ if(ENABLE_SRDFT)
         DALTON/srdft/sir_srdft.F
         DALTON/srdft/srdft.F
         DALTON/srdft/srdftjt.F)
+    set(DALTON_srdft_FREE_SOURCES
+        DALTON/sirius/sir_ensembledft.F90)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_srdft_SOURCES})
+    set(DALTON_FREE_FORTRAN_SOURCES
+        ${DALTON_FREE_FORTRAN_SOURCES}
+        ${DALTON_srdft_FREE_SOURCES})
 endif()

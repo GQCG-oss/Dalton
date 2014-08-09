@@ -517,6 +517,7 @@ C
      &                      IPRTXX,NPRDIM,H0,IPNTR,
      &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
      &                      IROOTHOMING,LUWRTOUT,c_state_of_interest,
+     &                      doensemble,weight,
      &                      IBLOCKL,NBLOCKDN,
      &                      RCCTOS,LU1LIST,LU2LIST,
      &                      LU3LIST,LU4LIST,LU5LIST,LU6LIST,LU7LIST,
@@ -582,6 +583,8 @@ C
       real(8), allocatable :: tmp_space0(:)
       real(8), allocatable :: tmp_space1(:)
       real(8), allocatable :: tmp_space2(:)
+      LOGICAL, intent(in) :: doensemble
+      real*8 , intent(in) :: weight(nroot)
 *
 * Dimensioning required of local vectors
 *     APROJ  : MAXVEC*(MAXVEC+1)/2
@@ -874,6 +877,12 @@ C
         if(c_state_of_interest /= 0)then
           if(root_converged(abs(c_state_of_interest)) == 0)then ! desired root converged - we are done!
             conver = .true. 
+          end if
+        end if
+        !> do not converge any undesired root
+        if(doensemble)then
+          if(abs(weight(iroot)) == 0.0d0)then
+            root_converged(IROOT) = 0
           end if
         end if
 *

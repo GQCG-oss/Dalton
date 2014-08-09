@@ -177,19 +177,35 @@
      &                                          block_list,
      &                                          MPI_COMM_WORLD,
      &                                          NUM_BLOCKS2,NROOT,1,2)
-#ifdef LUCI_DEBUG
-        CALL REWINE(LUC,LBLK)
-        IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
-          DO IVEC = 1, NROOT
-            WRITE(LUWRT,*) '  final solution vector ==> ',IVEC
-            CALL WRTVCD(VEC1,LUC,0,LBLK)
-          END DO
-        END IF
-        CALL REWINE(LUC,LBLK)
-#endif
-
       END IF ! (LUCI_NMPROC .GT. 1) THEN
 #endif
+
+!#define LUCI_DEBUG
+#ifdef LUCI_DEBUG
+      CALL REWINE(LUC,LBLK)
+      IF(LUCI_MYPROC.EQ.LUCI_MASTER) THEN
+        DO IVEC = 1, NROOT
+          WRITE(LUWRT,*) '  final solution vector for root ==> ',IVEC
+          CALL WRTVCD(VEC1,LUC,0,LBLK)
+        END DO
+      END IF
+      CALL REWINE(LUC,LBLK)
+#undef LUCI_DEBUG
+#endif
+      !> save final vectors on different scratch file
+      if(docisrdft)then
+        CALL REWINE(LUC,LBLK)
+        luci_cvec = 99
+        open(file='srdft-lucita-final.cvec',unit=luci_cvec,
+     &       status='replace',
+     &       form='unformatted',action='write',position='rewind')
+        do ivec = 1, nroot
+          call copvcd(luc,luci_cvec,vec1,0,-1)
+        end do
+        close(luci_cvec, status='keep')
+        CALL REWINE(LUC,LBLK)
+      end if
+
 
 !     eliminate scratch units
 !     -----------------------
@@ -621,7 +637,7 @@ C
          
          CALL SRFMAT(FSR,srdft_cmo_lucita,work(KRHO1_ens),
      &               EJCSR_mc2lu,EJVSR_mc2lu,EDSR_mc2lu,EDFT_mc2lu,
-     &               emydftaux_mc2lu,
+     &               emydftaux_mc2lu,UEJCVSR,
      &               work(ksrdftdal_interface),lscr_local,0)
          
          if(luci_myproc == luci_master)then
@@ -656,7 +672,8 @@ C
            CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
 
            ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
-!          write(luwrt,*) 'esrdv... ',esrdv
+           write(luwrt,*) 'ESRDV_ref = ',esrdv
+           write(luwrt,*) 'EJVSR_ref = ',EJVSR_mc2lu
          end if
 
 #ifdef VAR_MPI
@@ -825,6 +842,7 @@ C     Hamiltonian is totally symmetric)
      &                 SCR1(KWORK),IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &                 H0SCR,LBLK,EIGSHF,THRES_E,IROOTHOMING,
      &                 luwrt,c_state_of_interest,
+     &                 DOCISRDFT.and.NROOTSL>1,weights,
      &                 IBLOCKAR,IBLKDSTND,
      &                 RCCTOS,
      &                 LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
@@ -843,7 +861,14 @@ C     Hamiltonian is totally symmetric)
      &             MAXVEC,ninvec,SCR1(KAPROJ),SCR1(KAVEC),
      &             SCR1(KWORK) ,IPRT,NPRDET,H0,IPNTR,NP1,NP2,NQ,
      &             H0SCR,-1,EIGSHF,THRES_E,IROOTHOMING,luwrt,
-     &             c_state_of_interest)
+     &             c_state_of_interest,
+     &             DOCISRDFT.and.NROOTSL>1,weights)
+!
+!!! Manu july 2014: for ensemble CI-srDFT, wavefunctions will be
+!converged for a given trial ensemble density. The latter should then be
+!updated in the srDFT potential (call SRFMAT ...), and MICDV6 called again until
+!convergence is reached.   
+!
 #else
 #ifndef blubb2
        CALL blubb_MICDV4(VEC1,VEC2,C2,LU1,LU2,SCR1(KRNRM),SCR1(KEIG),

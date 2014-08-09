@@ -272,6 +272,11 @@
 
     call reset_available_kw_list()
 
+    !> set logical to enable self-consistent ensemble-DFT calculation
+    if (kw_matches(word, '.SC-ENS')) then
+      do_sc_ensemble_dft = .true.
+    end if
+
     if (kw_matches(word, '.WEIGHT')) then
 
       call kw_read(word, nr_of_weights)
