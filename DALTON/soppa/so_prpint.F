@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_prpint */
       SUBROUTINE SO_PRPINT(LTYPE,NLBTOT,WORK,LWORK)

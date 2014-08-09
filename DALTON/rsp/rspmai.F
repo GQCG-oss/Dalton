@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -59,7 +59,6 @@
 !===========================================================================
 #endif
 C
-#include "single.h"
 C  /* Deck rspdrv */
       SUBROUTINE RSPDRV(WRK,LWRK)
 C
@@ -787,12 +786,16 @@ C
       GO TO 200
 C
  1    CONTINUE
-      IPRRSP = MAX(IPRPP,IPRLR,IPRC6)
-      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)
+      IPRRSP_default = IPRRSP
+      IPRRSP = MAX(IPRPP ,IPRLR ,IPRC6)         ! LR
+      IPRRSP = MAX(IPRRSP,IPRHYP,IPRSMO)        ! QR
+      IPRRSP = MAX(IPRRSP,IPRCR,IPRTMO,IPRTPA)  ! CR
       IPRRSP = MAX(IPRRSP,IPRESR)
-      IPRRSP = MAX(IPRRSP,IPRCR)
-      IPRRSP = MAX(IPRRSP,IPRTMO)
-      IPRRSP = MAX(IPRRSP,IPRTPA,IPRABS)
+      IPRRSP = MAX(IPRRSP,IPRABS)
+      IF (IPRRSP .ne. IPRRSP_default) THEN
+         WRITE(LUPRI,'(/A,I10)')
+     &   ' General print level in RESPONS is IPRRSP =',IPRRSP
+      END IF
 C
 C     We arrive at 2100 if no input file found. We return.
 C
@@ -3946,9 +3949,6 @@ C
 C CALCULATE DIAGONAL CONFIGURATION PART OF E[2]
 C
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-#endif
          IF (KZCONF.GE.1) THEN
             KECDIA = 1
             KWRK1  = KECDIA + KZCONF
@@ -3979,11 +3979,7 @@ C              CALL CIDIAG(ICSYM,NOH2,FCAC,H2AC,XNDXCI,DIAGC,WRK,LFREE)
 C                  wrk(kecdia-1+i) = 1.0d0
  50            CONTINUE
             ENDIF
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZCONF,WRK(KECDIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZCONF,WRK(KECDIA))
-#endif
             IF (IPRRSP.GT.110) THEN
                WRITE(LUPRI,'(/A)')
      *         ' DIAGONAL CONFIGURATION PART OF E[2] '
@@ -4017,11 +4013,7 @@ C           CALL ORBDIA(FOCK,FC,FV,UDV,EDIA,SDIA)
 C
 C WRITE diagonals of orbital part of E[2]-matrix needed for RSPLIN
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KEODIA),JRSP4)
-#else
             CALL WRITT(LURSP4,KZWOPT,WRK(KEODIA))
-#endif
 C
             IF (IPRRSP.GT.100) THEN
                IF (KZWOPT.GT.0) THEN
@@ -4041,11 +4033,7 @@ C
 C *** now WRITE orbital diagonal of S[2]-matrix
 C
          IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP4,KZWOPT,WRK(KSODIA),JRSP4)
-#else
             CALL  WRITT(LURSP4,KZWOPT,WRK(KSODIA))
-#endif
          END IF
 C
          IF (IPRRSP.GT.100) THEN

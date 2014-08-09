@@ -1,12 +1,12 @@
 !define DEBUG_RSPOLI
 #undef DEBUG_RSPOLI
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -37,7 +37,6 @@ C
 920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 ========================================================================
 #endif
-#include "single.h"
 
 #ifdef ENABLE_EFS
 C Use this hack to correctly pass the arrays to c++
@@ -467,10 +466,12 @@ C
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         IF (NASHT .GT. 0) THEN
          WRITE(LUPRI,'(/2A,I5)')' FVOEX MULLIKEN DISTRIBUTION CONTRB'
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FVX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         END IF
  1002    CONTINUE
       END IF
       IF ((IPRRSP.GT.50).AND.(NCSIM.GT.0).AND.(NASHT.GT.1)) THEN

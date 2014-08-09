@@ -138,7 +138,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption)
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
      !the return statement leads to memory leaks but I do not care about this
      !for now atleast
      RETURN
@@ -704,6 +704,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use init_lsdalton_mod, only: open_lsdalton_files
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
+  use dft_memory_handling
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
   use lspdm_tensor_operations_module,only:init_persistent_array
@@ -733,6 +734,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
+  call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()

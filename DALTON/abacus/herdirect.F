@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,10 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
-!===========================================================================
+!=======================================================================
 !/* Comdeck herdirect_log */
 !941206-hjaaj
 !HERPAR: new routine for defining parallel hermit calc. of Fock matr.
@@ -35,19 +34,17 @@ C
 !HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
 !941103-hjaaj:
 !implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
-!HERDI1,HERDI2: excluded; not used, are also incomplete
 !ABARUN: moved to here from abadrv.u (needed for HERMIT)
 !931026-hjaaj: sether now calls READIN; + consistency check
 !HERFCK: new parameter (print level in CBITWO)
 !931025-hjaaj: sirdirn04.u (i.e. HERFCK,SETHER) added to herdirect.u
 !GETFCK now calls HERFCK
-!AOLABE renamed to AOLAB4, generalized, and moved to GP.
 !GETFCK is now only internal test routine; HERFCK is called from the
 !outside (SIRIUS and RESPONSE).
 !921201-hjaaj:
 !   new Sirius input routine for Hermit parameters ? an extended sether?
 !   also direct calculation of solvent integrals ?
-!===========================================================================
+!=======================================================================
 #endif
 C  /* Deck tstdir */
       SUBROUTINE TSTDIR(FMAT,DMAT,NDMAT,WORK,LWORK,IPRINT)

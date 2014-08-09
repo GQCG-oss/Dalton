@@ -1,4 +1,3 @@
-#include "single.h"
 C  /* Deck cc_lhtr_rccd */
       SUBROUTINE CC_LHTR_RCCD(ECURR,
      *                   FRHO1,LUFR1,FRHO2,LUFR2,

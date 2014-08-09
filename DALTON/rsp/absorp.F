@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -368,31 +368,16 @@ C
      &     WRK(KFREE),LFREE)
       CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
       CALL REWSPL(LURSP3)
-      KRSP3 = 0
       IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP3,NRSP5,DUMMY,KRSP3,.FALSE.)
-#else
          READ (LURSP3)
-#endif
       END IF
       DO I = 1, KZRED
          IF (IBTYP(KOFFTY+I).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-            IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSREDUC')
-#else
             CALL READT(LURSP3,KZCONF,WRK(KBVEC))
-#endif
             PZY = DDOT(KZCONF,WRK(KBVEC),1,WRK(KGD),1)
             PYZ = DDOT(KZCONF,WRK(KBVEC),1,WRK(KGD+KZVAR),1)
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-            IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSREDUC')
-#else
             CALL READT(LURSP3,KZYWOP,WRK(KBVEC))
-#endif
             PZY = DDOT(KZWOPT,WRK(KBVEC),1,WRK(KGD+KZCONF),1)
      &          + DDOT(KZWOPT,WRK(KBVEC+KZWOPT),1,
      &            WRK(KGD+KZCONF+KZVAR),1)
@@ -859,20 +844,10 @@ C
 C     Read trial and sigma vectors and add contributions to residual vector
 C
          CALL REWSPL(LURSP3)
-         KRSP3 = 0
          CALL REWSPL(LURSP5)
-         KRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,IREC,DUMMY,KRSP3,.FALSE.)
-#else
             READ (LURSP3)
-#endif
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,IREC,DUMMY,KRSP5,.FALSE.)
-#else
             READ (LURSP5)
-#endif
          END IF
          DO I = 1, KZRED
 C
@@ -888,12 +863,7 @@ C
 C
 C     Sigma vectors used that equal E[2]*N
 C
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,IREC,WRK(KBVEC),KRSP5,.TRUE.)
-            IF (IREC.NE.KZYVAR) CALL QUIT('Read error in ABSRESID')
-#else
             CALL READT(LURSP5,KZYVAR,WRK(KBVEC))
-#endif
 C
             CALL DAXPY(KZYVAR,-FR1,WRK(KBVEC),1,WRK(KRR),1)
             CALL DAXPY(KZVAR,-FR2,WRK(KBVEC+KZVAR),1,WRK(KRR),1)
@@ -905,22 +875,12 @@ C
 C     Trial vectors used to perform S[2]*N
 C
             IF (IBTYP(KOFFTY+I).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSRESID')
-#else
                CALL READT(LURSP3,KZCONF,WRK(KBVEC))
-#endif
                CALL DZERO(WRK(KSLI),KZYVAR)
                CALL RSPSLI(1,0,WRK(KBVEC),DUMMY,
      &                     UDV,WRK(KSLI),XINDX,WRK(KFREE),LFREE)
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSRESID')
-#else
                CALL READT(LURSP3,KZYWOP,WRK(KBVEC))
-#endif
                CALL DZERO(WRK(KSLI),KZYVAR)
                CALL RSPSLI(0,1,DUMMY,WRK(KBVEC),
      &                     UDV,WRK(KSLI),XINDX,WRK(KFREE),LFREE)
@@ -1025,14 +985,8 @@ C
 C     Read trial vectors and add contributions to gradient
 C
          CALL REWSPL(LURSP3)
-         KRSP3 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,IREC,DUMMY,KRSP3,.FALSE.)
-            IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSLR')
-#else
             READ (LURSP3)
-#endif
          END IF
          DO I = 1, KZRED
             FR1 = DAMPING * REDVEC(4*I-3,IFREQ)
@@ -1040,12 +994,7 @@ C
             FI1 = DAMPING * REDVEC(4*I-2,IFREQ)
             FI2 = DAMPING * REDVEC(4*I,IFREQ)
             IF (IBTYP(KOFFTY+I).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSLR')
-#else
                CALL READT(LURSP3,KZCONF,WRK(KBVEC))
-#endif
                CALL DZERO(WRK(KSLI),KZYVAR)
                CALL RSPSLI(1,0,WRK(KBVEC),DUMMY,
      &                     UDV,WRK(KSLI),XINDX,WRK(KFREE),LFREE)
@@ -1054,12 +1003,7 @@ C
                CALL DAXPY(KZCONF,FR1,WRK(KSLI),1,WRK(KGD2),1)
                CALL DAXPY(KZCONF,-FR2,WRK(KSLI),1,WRK(KGD2+KZVAR),1)
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSLR')
-#else
                CALL READT(LURSP3,KZYWOP,WRK(KBVEC))
-#endif
                CALL DZERO(WRK(KSLI),KZYVAR)
                CALL RSPSLI(0,1,DUMMY,WRK(KBVEC),
      &                     UDV,WRK(KSLI),XINDX,WRK(KFREE),LFREE)
@@ -1196,13 +1140,8 @@ C
 C     Read trial vectors and add contributions to response vector
 C
          CALL REWSPL(LUIN)
-         KRSP3 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LUIN,IREC,DUMMY,KRSP3,.FALSE.)
-#else
             READ (LUIN)
-#endif
          END IF
 C
          CALL DZERO(WRK(KNR),2*KZYVAR)
@@ -1213,23 +1152,13 @@ C
             FI2 = REDVEC(4*I,IFREQ)
 C
             IF (IBTYP(KOFFTY+I).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LUIN,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZCONF) CALL QUIT('Read error in ABSWRT')
-#else
                CALL READT(LUIN,KZCONF,WRK(KBVEC))
-#endif
                CALL DAXPY(KZCONF,FR1,WRK(KBVEC),1,WRK(KNR),1)
                CALL DAXPY(KZCONF,FR2,WRK(KBVEC),1,WRK(KNR+KZVAR),1)
                CALL DAXPY(KZCONF,FI1,WRK(KBVEC),1,WRK(KNI),1)
                CALL DAXPY(KZCONF,FI2,WRK(KBVEC),1,WRK(KNI+KZVAR),1)
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LUIN,IREC,WRK(KBVEC),KRSP3,.TRUE.)
-               IF (IREC.NE.KZYWOP) CALL QUIT('Read error in ABSWRT')
-#else
                CALL READT(LUIN,KZYWOP,WRK(KBVEC))
-#endif
 C
                CALL DAXPY(KZWOPT,FR1,WRK(KBVEC),1,WRK(KNR+KZCONF),1)
                CALL DAXPY(KZWOPT,FR1,WRK(KBVEC+KZWOPT),1,
@@ -1693,19 +1622,12 @@ C
          KBTMP=KB
          KSTMP=KS
 C
-         KRSP3 = 0
-         KRSP5 = 0
          CALL REWSPL(LURSP3)
          CALL REWSPL(LURSP5)
 C
          DO J=1,I-1-NLINDEP
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,KZYVAR,WRK(KBTMP),KRSP3,.TRUE.)
-            CALL READST(LURSP5,KZYVAR,WRK(KSTMP),KRSP5,.TRUE.)
-#else
             CALL READT(LURSP3,KZYVAR,WRK(KBTMP))
             CALL READT(LURSP5,KZYVAR,WRK(KSTMP))
-#endif
 C     Orthogonalize against trial vectors (Z,Y)
             FAC = DDOT(KZYVAR,WRK(KBTMP),1,WRK(KBVEC),1)
             CALL DAXPY(KZYVAR,-FAC,WRK(KBTMP),1,WRK(KBVEC),1)
@@ -1745,13 +1667,8 @@ C     symemtric orthogonalization to keep paired structure
             CALL DAXPY(KZVAR,C2,WRK(KSTMP),1,WRK(KSVEC+KZVAR),1)
             CALL DAXPY(KZVAR,C2,WRK(KSTMP+KZVAR),1,WRK(KSVEC),1)
 C
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP3,KZYVAR,WRK(KBVEC),KRSP3)
-            CALL WRITST(LURSP5,KZYVAR,WRK(KSVEC),KRSP5)
-#else
             CALL WRITT(LURSP3,KZYVAR,WRK(KBVEC))
             CALL WRITT(LURSP5,KZYVAR,WRK(KSVEC))
-#endif
             IF (IPRABS.GE.10) THEN
                WRITE(LUPRI,'(/A,I4,A,I2)')
      &              ' INFO: Normalized trial vector',I,

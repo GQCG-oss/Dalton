@@ -1,6 +1,6 @@
 C
 C
-C...   Dalton, Release DALTON2013
+C...   Dalton, Release DALTON2014
 C...
 C...   These routines are in the public domain and can be
 C...   used freely in other programs.
@@ -26,7 +26,6 @@ C            (zero block of matrix; find next element .gt. a)
 C 5) DSPSOL, DSPSLI, DGESOL, DGEINV : driver routines calling LINPACK
 C
 C
-#include "single.h"
 C
 C Block 1:
 C DNORM2 (emulate ESSL DNORM2: do not use extended precision for intermediates)

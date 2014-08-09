@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -1172,16 +1172,6 @@ c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
 c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
-c     FLAG(16) MEANS SOLVENT CALCULATION
-C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM) THEN
-        CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     &              XTMP,WRK(KFREE),LFREE)
-      ENDIF
-      IF (QMMM) THEN
-        CALL QUIT('ERROR: CPP cannot be used with QMMM')
-      END IF
-c
       CALL QEXIT('ABS_LINE2')
       RETURN
       END
@@ -1289,10 +1279,14 @@ c
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
       ENDDO
 C
-      IF (PEQM) THEN
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
+      IF (EMBEDDING) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF
+      IF (QMMM) THEN
+        CALL QUIT('ERROR: CPP cannot be used with QMMM')
+      END IF
 C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)

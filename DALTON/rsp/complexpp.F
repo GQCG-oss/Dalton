@@ -1,10 +1,10 @@
 C
-C...   Copyright (c) 2013 by the authors of Dalton (see below).
+C...   Copyright (c) 2014 by the authors of Dalton (see below).
 C...   All Rights Reserved.
 C...
 C...   The source code in this file is part of
 C...   "Dalton, a molecular electronic structure program,
-C...    Release DALTON2013 (2013), see http://daltonprogram.org"
+C...    Release DALTON2014 (2014), see http://daltonprogram.org"
 C...
 C...   This source code is provided under a written licence and may be
 C...   used, copied, transmitted, or stored only in accord with that
@@ -379,7 +379,7 @@ C
            IF (INFO /= 0) THEN
                WRITE(LUABSPRI,'(/A, i4)') 
      &            'Problem in DGESV, IERR = ', INFO
-               STOP ' Problem in DGESV'
+               CALL QUIT(' Problem in DGESV')
            ENDIF
 C
 C          Solution vector is found in RHS.
@@ -514,7 +514,7 @@ C
            IF (INFO /= 0) THEN
                WRITE(LUABSPRI,'(/A, i4)') 
      &            'Problem in DGESV, IERR = ', INFO
-               STOP ' Problem in DGESV'
+               CALL QUIT(' Problem in DGESV')
            ENDIF
 C
 C          Solution vector is found in RHS.
@@ -1162,7 +1162,7 @@ C
         KLRED(1)=KLRED(1)+KNVEC(1)
         KLRED(2)=KLRED(2)+KNVEC(2)
         IF ((KLRED(1).GT.ABS_MAXRM).OR.(KLRED(2).GT.ABS_MAXRM)) THEN 
-          STOP 'Error in ABS_RED, Increase ABS_MAXRM!'
+          CALL QUIT('Error in ABS_RED, Increase ABS_MAXRM!')
         ENDIF
       ELSE
         REWIND(LUSB) 
@@ -1173,7 +1173,7 @@ c           CALL READT(LUSB,KZVAR,WRK(KBVEC))
           IF ((ITER.EQ.1) .AND. (NOLT.GT.1)) THEN 
             REDGD(I,1) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),1,GD(1),1)
           ELSE
-            STOP 'ERROR IN ABS_RED, no trial vectors!'
+            CALL QUIT('ERROR IN ABS_RED, no trial vectors!')
           ENDIF
         END DO
         DO I=1,NOA
@@ -1183,7 +1183,7 @@ c           CALL READT(LUAB,KZVAR,WRK(KBVEC))
             REDGD(I,2) = 2.0d0*DDOT(KZVAR,WRK(KBVEC),
      &                   1,GD(1+KZVAR),1)
           ELSE
-            STOP 'ERROR IN ABS_RED, no trial vectors!'
+            CALL QUIT('ERROR IN ABS_RED, no trial vectors!')
           ENDIF
         END DO
       END IF
@@ -1371,7 +1371,7 @@ c
               IF (ITURN==1) THEN
                 ORCHK(I)=.TRUE.
               ELSE
-                STOP 'error in R orthonormalization'
+                CALL QUIT('error in R orthonormalization')
               ENDIF 
             ELSE
               PR2=1.0d0/PR1
@@ -1384,7 +1384,7 @@ c
               IF (ITURN==1) THEN
                 ORCHK(NBNEW/2+I)=.TRUE.
               ELSE
-                STOP 'error in I orthonormalization'
+                CALL QUIT('error in I orthonormalization')
               ENDIF 
             ELSE
               PI2=1.0d0/PI1

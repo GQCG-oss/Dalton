@@ -1534,7 +1534,7 @@ contains
 
     ! Working arrays:
     MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
-    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M, O**4)
     MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
 
     ! T1-Transfo. matrices:

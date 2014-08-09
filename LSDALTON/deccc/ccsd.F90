@@ -4376,7 +4376,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp0, tmp_size)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N)
+    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
 

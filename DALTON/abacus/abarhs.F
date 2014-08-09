@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 !===========================================================================
 !  FILE : abarhs.F
@@ -750,7 +749,7 @@ C
 #if defined (SYS_CRAY) || defined (SYS_NEC) || defined (SYS_T90)
                         LWUSE = LWRK
 #else 
-                        CALL MEMSRT(MEMMIN,WORK(KNCONT))
+                        CALL MEM_PSORT(MEMMIN,WORK(KNCONT))
 C     
 C     1000000 is just an estimate of what the rest of the sorting 
 C     program needs
@@ -2908,24 +2907,18 @@ C
      &            .FALSE.)
       CALL REWSPL(LUINTA)
       CALL MOLLAB('BASINFO ',LUINTA,LUPRI)
-      READ (LUINTA) MSYM, (MBAS(I),I=1,8), KBUF, NIBUF, NBITS
+      READ (LUINTA) MSYM, MBAS, KBUF, NIBUF, NBITS, LENINT4
       IF (KBUF .NE. LBUF) CALL QUIT('OFABH1: KBUF .ne. LBUF')
 C
-      LENINT = IRAT*LBUF + NIBUF*LBUF + 1
       KFREE = 1
       LFREE = LWORK
-      CALL MEMGET('INTE',KINT ,LENINT,WRK,KFREE,LFREE)
+      CALL MEMGET('INT4',KINT ,LENINT4,WRK,KFREE,LFREE)
       KIINT = KINT + LBUF
 C
       CALL MOLLAB('BASTWOEL',LUINTA,LUPRI)
       CALL DZERO(UMOG,N2BASX*N2BASX)
-      JBUF = 608
   200 CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LUINTA,LENINT,WRK(KINT),JBUF)
-#else
-         CALL READI(LUINTA,LENINT,WRK(KINT))
-#endif
+         CALL READI4(LUINTA,LENINT4,WRK(KINT))
          CALL AOLAB4(WRK(KIINT),LBUF,NIBUF,NBITS,IBUF,NINT)
          IF (NINT .EQ. 0) GO TO 200
          IF (NINT .LT. 0) GO TO 400
@@ -2978,27 +2971,17 @@ C  /* Deck rumog1 */
 #include "inftap.h"      
 #include "ibtfun.h"
 C
-      JBUF = 256
-C
-      LENINT = IRAT*LBUF + LBUF + 1
-      KINT = 1
+      LENINT4 = 2*LBUF + NIBUF*LBUF + 1  ! length in integer*4 units
+      KINT  = 1
       KIINT = KINT + LBUF
 C
       CALL DZERO(UMOGA,NORBT**4)
       IF (NOH2 .OR. NOLOND) RETURN
-#if defined (VAR_INT64)
-      call quit('RUMOGA1: NBITS=16 not implemented here yet')
-!     Feb 2011 TODO : see her2out.F for how LU2DER is written
-#endif
 C
       CALL REWSPL(LU2DER)
       CALL MOLLAB('AO2MGINT',LU2DER,LUPRI)
  150  CONTINUE
-#if defined (VAR_SPLITFILES)         
-         CALL READSI(LU2DER,LENINT,WORK(KINT),JBUF)
-#else
-         CALL READI(LU2DER,LENINT,WORK(KINT))
-#endif
+         CALL READI4(LU2DER,LENINT4,WORK(KINT))
          CALL AOLAB4(WORK(KIINT),LBUF,NIBUF,NBITS,IBUF,LENGTH)
          IF (LENGTH .GT. 0) THEN
             DO 100 I = 1, LENGTH

@@ -18,12 +18,12 @@ use AGC_GPU_OBS_TRMODCtoAGen
 use AGC_GPU_OBS_TRMODDtoAGen
 use AGC_GPU_OBS_TRMODCtoBGen
 use AGC_GPU_OBS_TRMODDtoBGen
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_GPU_OBS_Sphcontract1Mod
+use AGC_GPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorCoulombIntegral_GPU_OBS_Gen,IchorCoulombIntegral_GPU_OBS_general_sizeGen  

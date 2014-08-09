@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -507,7 +507,7 @@
     ! allocates memory for AO density matrices
     allocate(ao_dens(num_dens), stat=ierr)
     if (ierr/=0) then
-      stop "gen1int_worker_get_expt>> failed to allocate ao_dens!"
+      call quit("gen1int_worker_get_expt>> failed to allocate ao_dens!")
     end if
     ! gets AO density matrices
     do idens = 1, num_dens
@@ -609,7 +609,7 @@
                              decode_str=str_idx_mo)
         allocate(idx_cube_mo(num_cube_mo), stat=ierr)
         if (ierr/=0) then
-          stop "gen1int_host_cube_init>> failed to allocate idx_cube_mo!"
+          call quit("gen1int_host_cube_init>> failed to allocate idx_cube_mo!")
         end if
         call StrDecodeGetInts(decode_str=str_idx_mo, &
                               num_ints=num_cube_mo,  &
@@ -636,7 +636,7 @@
         if (key_word(1:1)/="#" .and. key_word(1:1)/="!") then
           write(io_viewer,100) "keyword """//trim(key_word)// &
                                """ is not recognized in *CUBE!"
-          stop
+          call quit('unknown keyword in *CUBE')
         end if
       end select
       ! reads next line
@@ -665,7 +665,7 @@
     return
 999 write(io_viewer,100) "failed to process input after reading "// &
                          trim(key_word)//"!"
-    stop
+    call quit('failed to process input')
 100 format("gen1int_host_cube_init>> ",A,I8)
 110 format("gen1int_host_cube_init>> ",10I5)
 120 format("gen1int_host_cube_init>> ",A,3F16.8)
@@ -729,7 +729,7 @@
     num_points = product(cube_num_inc)
     allocate(grid_points(3,num_points), stat=ierr)
     if (ierr/=0) then
-      stop "gen1int_host_get_cube>> failed to allocate grid_points!"
+      call quit("gen1int_host_get_cube>> failed to allocate grid_points!")
     end if
     ipoint = 0
     do ic = 1, cube_num_inc(1)
@@ -777,7 +777,7 @@
       allocate(cube_values(cube_num_inc(3),cube_num_inc(2),cube_num_inc(1),1), &
                stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_get_cube>> failed to allocate cube_values!"
+        call quit("gen1int_host_get_cube>> failed to allocate cube_values!")
       end if
       cube_values = 0.0_REALK  !necessary to zero
       call Gen1IntAPIPropGetFunExpt(prop_comp=prop_comp,             &
@@ -834,14 +834,14 @@
       ! reads the molecular orbital coefficients
       wrk_space(1:NCMOT) = 0.0_REALK
 #ifdef PRG_DIRAC
-      print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
+      print *, 
+      call quit('error: RD_SIRIFC not available in DIRAC')
 #else
       call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(NCMOT+1), &
                      len_work-NCMOT)
 #endif
       if (.not.found) then
-        stop "gen1int_host_get_cube>> CMO is not found on SIRIFC!"
+        call quit("gen1int_host_get_cube>> CMO is not found on SIRIFC!")
       end if
       if (close_sirifc) call GPCLOSE(LUSIFC, "KEEP")
       ! gets the number of required MOs
@@ -850,12 +850,12 @@
       ! sets MO coefficients
       call MatCreate(A=mo_coef, num_row=NBAST, num_col=num_cube_mo, info_mat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_get_cube>> failed to create mo_coef!"
+        call quit("gen1int_host_get_cube>> failed to create mo_coef!")
       end if
       if (do_mo_cube) then
         do imo = 1, size(idx_cube_mo)
           if (idx_cube_mo(imo)>NCMOT .or. idx_cube_mo(imo)<1) then
-            stop "gen1int_host_get_cube>> incorrect MOs!"
+            call quit("gen1int_host_get_cube>> incorrect MOs!")
           end if
           start_ao = (idx_cube_mo(imo)-1)*NBAST
           end_ao = start_ao+NBAST
@@ -890,7 +890,7 @@
                            cube_num_inc(1),num_cube_mo),    &
                stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_get_cube>> failed to allocate cube_values!"
+        call quit("gen1int_host_get_cube>> failed to allocate cube_values!")
       end if
 #ifdef PRG_DIRAC
       call Gen1IntAPIGetMO(comp_shell=(/1,2/),      &
@@ -1199,13 +1199,13 @@
       ! allocates integral matrices
       allocate(val_ints(NUM_INTS(itest)), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_test>> failed to allocate val_ints!"
+        call quit("gen1int_host_test>> failed to allocate val_ints!")
       end if
       do imat = 1, NUM_INTS(itest)
         call MatCreate(A=val_ints(imat), num_row=num_ao, info_mat=ierr, &
                        triangular=TRIANG(itest), symmetric=SYMMETRIC(itest))
         if (ierr/=0) then
-          stop "gen1int_host_test>> failed to creates integral matrices!"
+          call quit("gen1int_host_test>> failed to creates integral matrices!")
         end if
       end do
       ! calculates integrals using Gen1Int
@@ -1232,7 +1232,7 @@
       end if
       allocate(int_rep(max_typ), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_test>> failed to allocate int_rep!"
+        call quit("gen1int_host_test>> failed to allocate int_rep!")
       end if
       int_rep = 0
       if (trim(PROP_NAME(itest))=="ELFGRDC" .or. trim(PROP_NAME(itest))=="ELFGRDS") then
@@ -1242,12 +1242,12 @@
       end if
       allocate(int_adr(lint_ad), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_test>> failed to allocate int_adr!"
+        call quit("gen1int_host_test>> failed to allocate int_adr!")
       end if
       int_adr = 0
       allocate(lb_int(max_typ), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_host_test>> failed to allocate lb_int!"
+        call quit("gen1int_host_test>> failed to allocate lb_int!")
       end if
 #if !defined(PRG_DIRAC)
       base_free = 1
@@ -1431,7 +1431,7 @@
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     len_name = len_trim(prop_name)
     if (len_name>MAX_LEN_STR) then
-      stop "gen1int_host_prop_create>> too long property name!"
+      call quit("gen1int_host_prop_create>> too long property name!")
     end if
     call MPI_Bcast(len_name, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
@@ -1503,7 +1503,7 @@
     call MPI_Bcast(gto_type, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(len_name, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     if (len_name>MAX_LEN_STR) then
-      stop "gen1int_worker_prop_create>> too long property name!"
+      call quit("gen1int_worker_prop_create>> too long property name!")
     end if
     prop_name = ""
     call MPI_Bcast(prop_name(1:len_name), len_name, MPI_CHARACTER, &
@@ -1519,7 +1519,7 @@
     call MPI_Bcast(nr_active_blocks,       1,                  MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     allocate(active_component_pairs(nr_active_blocks*2), stat=ierr)
     if (ierr /= 0) then
-      stop "gen1int_worker_prop_create>> failed to allocate active_component_pairs!"
+      call quit("gen1int_worker_prop_create>> failed to allocate active_component_pairs!")
     end if
     call MPI_Bcast(active_component_pairs, nr_active_blocks*2, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     call MPI_Bcast(add_sr,     1, MPI_LOGICAL, MANAGER, MPI_COMM_WORLD, ierr)
@@ -1664,7 +1664,7 @@
     if (num_atoms_bra>0) then
       allocate(idx_atoms_bra(num_atoms_bra), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_worker_geom_create>> failed to allocate idx_atoms_bra!"
+        call quit("gen1int_worker_geom_create>> failed to allocate idx_atoms_bra!")
       end if
       call MPI_Bcast(idx_atoms_bra, num_atoms_bra, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     end if
@@ -1674,7 +1674,7 @@
     if (num_atoms_ket>0) then
       allocate(idx_atoms_ket(num_atoms_ket), stat=ierr)
       if (ierr/=0) then          
-        stop "gen1int_worker_geom_create>> failed to allocate idx_atoms_ket!"
+        call quit("gen1int_worker_geom_create>> failed to allocate idx_atoms_ket!")
       end if
       call MPI_Bcast(idx_atoms_ket, num_atoms_ket, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     end if
@@ -1684,7 +1684,7 @@
     if (num_geo_atoms>0) then
       allocate(idx_geo_atoms(num_geo_atoms), stat=ierr)
       if (ierr/=0) then
-        stop "gen1int_worker_geom_create>> failed to allocate idx_geo_atoms!"
+        call quit("gen1int_worker_geom_create>> failed to allocate idx_geo_atoms!")
       end if
       call MPI_Bcast(idx_geo_atoms, num_geo_atoms, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
     end if
@@ -1764,26 +1764,26 @@
     wrk_space(1:NCMOT) = 0.0_REALK
 #ifdef PRG_DIRAC
       print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
+      call quit('error: RD_SIRIFC not available in DIRAC')
 #else
     call RD_SIRIFC("CMO", found, wrk_space(1), wrk_space(start_left_wrk), &
                    len_left_wrk)
 #endif
     if (.not.found) then
-      stop "gen1int_host_get_dens>> CMO is not found on SIRIFC!"
+      call quit("gen1int_host_get_dens>> CMO is not found on SIRIFC!")
     end if
     ! reads active part of one-electron density matrix (MO)
     if (get_dv) then
       wrk_space(start_dv_mo:start_dv_mo+NNASHX-1) = 0.0_REALK
 #ifdef PRG_DIRAC
-      print *, 'error: RD_SIRIFC not available in DIRAC'
-      stop 1
+      print *,'error: RD_SIRIFC not available in DIRAC' 
+      call quit('error: RD_SIRIFC not available in DIRAC')
 #else
       call RD_SIRIFC("DV", found, wrk_space(start_dv_mo), &
                      wrk_space(start_left_wrk), len_left_wrk)
 #endif
       if (.not.found) then
-        stop "gen1int_host_get_dens>> DV is not found on SIRIFC!"
+        call quit("gen1int_host_get_dens>> DV is not found on SIRIFC!")
       end if
       wrk_space(start_dv_ao:start_dv_ao+N2BASX-1) = 0.0_REALK
     end if
@@ -1812,7 +1812,7 @@
     ! sets AO density matrix
     call MatCreate(A=ao_dens, num_row=NBAST, info_mat=ierr)
     if (ierr/=0) then
-      stop "gen1int_host_get_dens>> failed to create ao_dens!"
+      call quit("gen1int_host_get_dens>> failed to create ao_dens!")
     end if
     call MatSetValues(ao_dens, 1, NBAST, 1, NBAST, &
                       values=wrk_space(start_ao_dens), trans=.false.)

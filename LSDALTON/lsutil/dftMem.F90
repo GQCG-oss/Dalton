@@ -11,8 +11,10 @@ MODULE dft_memory_handling
    public init_dft_threadmemvar
    public stats_dft_mem
    public stats_dft_mem_debug
+   public PrintDFTmem,setPrintDFTmem
    integer(KIND=long),save :: mem_allocated_dft, max_mem_used_dft
    logical,save :: mem_dft_InsideOMPsection
+   logical,save :: PrintDFTmem
 !THREADPRIVATE LOCAL VARIABLES 
 integer(KIND=long),save :: mem_tp_allocated_dft, max_mem_tp_used_dft
 !$OMP THREADPRIVATE(mem_tp_allocated_dft,max_mem_tp_used_dft)
@@ -41,6 +43,12 @@ INTERFACE mem_dft_dealloc
 END INTERFACE
 
 CONTAINS
+subroutine setPrintDFTmem(inputPrintDFTmem )
+implicit none
+logical :: inputPrintDFTmem 
+PrintDFTmem = inputPrintDFTmem 
+end subroutine setPrintDFTmem
+
 subroutine init_dftmemvar()
 implicit none
 mem_allocated_dft = 0

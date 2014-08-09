@@ -12,7 +12,7 @@
 ! - mcscf with lucita (after merge with hjaaj-srdft)
 ! - hermit
 !
-! written by sknecht - linkoeping jan 2013
+! written by sknecht - linkoeping jan 2014
 !
 ! note for merge with hjaaj-srdft in Dalton: routines are modified copies of the existing routines for lucita in this branch. 
 ! (whoever is doing that one day)            merging could be a pain in the a** but i guess i will do that anyway. (for now i
@@ -122,11 +122,11 @@ contains
       select case(models_check)
         case('all')
 !         call check_all_models
-          stop 'parallel model check for all modules not implemented yet'
+          call quit('parallel model check for all modules not implemented yet')
         case('lucita')
           call check_lucita_models()
         case default 
-          stop 'parallel model check for all modules not implemented yet'
+          call quit('parallel model check for all modules not implemented yet')
       end select
 
   end subroutine check_parallel_models_mpi
