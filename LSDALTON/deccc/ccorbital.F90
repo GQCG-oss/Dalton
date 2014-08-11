@@ -1106,18 +1106,20 @@ contains
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    do i =1,nbasis
-     do j=1,MyMolecule%nocc
     !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    do j=1,MyMolecule%nocc
+    do i =1,nbasis
     basis(i,j) =MyMolecule%Co(i,j)
+    enddo
     enddo
     k = MyMolecule%nocc+1
     do j = 1,MyMolecule%nunocc
+    do i =1,nbasis
     basis(i,k) = MyMolecule%Cv(i,j)
+    enddo
     k=k+1
     enddo
-    enddo
-    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
 
     ! Get S^{1/2} matrix
     ! ******************
