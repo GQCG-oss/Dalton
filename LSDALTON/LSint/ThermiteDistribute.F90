@@ -402,6 +402,7 @@ ELSE
    atomB   = P%orb2atom(1)
    IA   = P%orb1batch(1)
    IB   = P%orb2batch(1)
+!$OMP CRITICAL 
    IF (maxgabelm.GT.shortintCRIT) THEN
       RES%maxgab(IA,IB) = CEILING(LOG10(sqrt(maxgabelm)))
    ELSE
@@ -411,6 +412,7 @@ ELSE
    IF (dopermutation) THEN
       RES%maxgab(IB,IA) =  RES%maxgab(IA,IB)
    ENDIF
+!$OMP END CRITICAL 
 ENDIF
 CONTAINS
 SUBROUTINE findMaxAbsGabElm(Gabint,nP,maxgabelm,thresh,lupri)
