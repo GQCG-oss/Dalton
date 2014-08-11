@@ -53,9 +53,6 @@ cat > decrpa_energy.dal <<'%EOF%'
 TRILEVEL
 .NOATOMSTART
 **DEC
-.MPISPLIT
-0
-.CCDEBUG
 .RPA
 .SOSEX
 .FOT
