@@ -1455,7 +1455,7 @@ SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,at,&
 implicit none
 TYPE(BASISSETINFO),intent(inout)  :: BASINFO
 TYPE(lsmatrix),intent(in) :: Contractionmatrix,ContractionmatrixNORM
-TYPE(lsmatrix),intent(in) :: Exponents
+TYPE(lsmatrix),intent(inout) :: Exponents
 INTEGER,intent(in)      :: at,nAngmom,nprim,nOrbital
 !local variables
 INTEGER      :: ncol,nrow,K,L,LUPRI,J,IPRINT
