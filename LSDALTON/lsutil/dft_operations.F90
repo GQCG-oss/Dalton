@@ -152,29 +152,26 @@ IF(associated(DFTdata%energy))THEN
    nullify(DFTdata%energy)
 endif
 
-!IF (associated(DFTdata%BMAT))THEN
-!   call mem_dft_dealloc(DFTDATA%BMAT)
-!   nullify(DFTdata%BMAT)
-!ENDIF
+IF (associated(DFTdata%BMAT))THEN
+   call mem_dft_dealloc(DFTDATA%BMAT)
+   nullify(DFTdata%BMAT)
+ENDIF
 
-!IF (associated(DFTdata%FKSM))THEN
-!   call mem_dft_dealloc(DFTDATA%FKSM)
-!   nullify(DFTdata%FKSM)
-!endif
+IF (associated(DFTdata%FKSM))THEN
+   call mem_dft_dealloc(DFTDATA%FKSM)
+   nullify(DFTdata%FKSM)
+endif
 
-! BROADCAST DFTdata%FKSMS
-!IF (associated(DFTdata%FKSMS))THEN
-!   call mem_dft_dealloc(DFTDATA%FKSMS)
-!   nullify(DFTdata%FKSMS)
-!endif
+IF (associated(DFTdata%FKSMS))THEN
+   call mem_dft_dealloc(DFTDATA%FKSMS)
+   nullify(DFTdata%FKSMS)
+endif
 
-! BROADCAST DFTdata%orb2atom
 IF(associated(DFTdata%orb2atom))THEN
    call mem_dft_dealloc(DFTDATA%orb2atom)
    nullify(DFTDATA%orb2atom)   
 ENDIF
 
-! BROADCAST DFTdata%grad
 IF (associated(DFTdata%grad))THEN
    call mem_dft_dealloc(DFTDATA%grad)
    nullify(DFTDATA%grad)   
@@ -266,9 +263,9 @@ subroutine initDFTdatatype(DFTdata)
 implicit none
 type(DFTDATATYPE) :: DFTdata
 
-!nullify(DFTdata%BMAT)
-!nullify(DFTdata%FKSM)
-!nullify(DFTdata%FKSMS)
+nullify(DFTdata%BMAT)
+nullify(DFTdata%FKSM)
+nullify(DFTdata%FKSMS)
 nullify(DFTdata%orb2atom)
 nullify(DFTdata%grad)
 nullify(DFTdata%Energy)
@@ -315,23 +312,27 @@ if(associated(DFTdata%Energy))then
 else
    nullify(newDFTdata%energy)
 endif
+
+!THE BMAT, FKSM and FKSMS are NOT copied because this routine
+!is used to distribute data to a private variable and these should be SHARED 
+
 !if(associated(DFTdata%BMAT))then
 !   call mem_dft_alloc(newDFTDATA%BMAT,nbast,nbast,nbmat)
 !   CALL DCOPY(nbast*nbast*nbmat,DFTDATA%BMAT,1,newDFTDATA%BMAT,1)
 !else
-!   nullify(newDFTdata%BMAT)
+   nullify(newDFTdata%BMAT)
 !endif
 !if(associated(DFTdata%FKSM))then
 !   call mem_dft_alloc(newDFTDATA%FKSM,nbast,nbast,nfmat)
 !   CALL LS_DZERO(newDFTDATA%FKSM,nbast*nbast*nfmat)
 !else
-!   nullify(newDFTdata%FKSM)
+   nullify(newDFTdata%FKSM)
 !endif
 !if(associated(DFTdata%FKSMS))then
 !   call mem_dft_alloc(newDFTDATA%FKSMS,nbast,nbast,nfmat)
 !   CALL LS_DZERO(newDFTDATA%FKSMS,nbast*nbast*nfmat)
 !else
-!   nullify(newDFTdata%FKSMS)
+   nullify(newDFTdata%FKSMS)
 !endif
 newDFTdata%dosympart = DFTdata%dosympart
 newDFTdata%natoms = natoms
@@ -373,19 +374,19 @@ if(associated(inputDFTdata%energy))then
 endif
 nullify(inputDFTDATA%energy)   
 
-!if(associated(inputDFTdata%FKSM))then 
-!   !collect result
-!   CALL DAXPY(nbast*nbast*nfmat,1E0_realk,inputDFTDATA%FKSM,1,collectDFTdata%FKSM,1)
-!   call mem_dft_dealloc(inputDFTDATA%FKSM)
-!endif
-!nullify(inputDFTdata%FKSM)
+if(associated(inputDFTdata%FKSM))then 
+   !collect result
+   CALL DAXPY(nbast*nbast*nfmat,1E0_realk,inputDFTDATA%FKSM,1,collectDFTdata%FKSM,1)
+   call mem_dft_dealloc(inputDFTDATA%FKSM)
+endif
+nullify(inputDFTdata%FKSM)
 
-!if(associated(inputDFTdata%FKSMS))then
-!   !collect result
-!   CALL DAXPY(nbast*nbast*nfmat,1E0_realk,inputDFTDATA%FKSMS,1,collectDFTdata%FKSMS,1)
-!   call mem_dft_dealloc(inputDFTDATA%FKSMS)
-!endif
-!nullify(inputDFTdata%FKSMS)
+if(associated(inputDFTdata%FKSMS))then
+   !collect result
+   CALL DAXPY(nbast*nbast*nfmat,1E0_realk,inputDFTDATA%FKSMS,1,collectDFTdata%FKSMS,1)
+   call mem_dft_dealloc(inputDFTDATA%FKSMS)
+endif
+nullify(inputDFTdata%FKSMS)
 
 if(associated(inputDFTdata%grad))then
    !collect result
@@ -394,10 +395,10 @@ if(associated(inputDFTdata%grad))then
 endif
 nullify(inputDFTDATA%grad)   
 
-!if(associated(inputDFTdata%BMAT))then
-!   call mem_dft_dealloc(inputDFTDATA%BMAT)
-!endif
-!nullify(inputDFTdata%BMAT)
+if(associated(inputDFTdata%BMAT))then
+   call mem_dft_dealloc(inputDFTDATA%BMAT)
+endif
+nullify(inputDFTdata%BMAT)
 
 if(associated(inputDFTdata%orb2atom))then
    call mem_dft_dealloc(inputDFTDATA%orb2atom)   
@@ -465,47 +466,47 @@ else
 endif
 
 ! BROADCAST DFTdata%BMAT
-!IF (.NOT.SLAVE) THEN
-!   TESTassociatedBMAT = associated(DFTdata%BMAT)
-!ENDIF
-!CALL LS_MPI_BUFFER(TESTassociatedBmat,Master)
+IF (.NOT.SLAVE) THEN
+   TESTassociatedBMAT = associated(DFTdata%BMAT)
+ENDIF
+CALL LS_MPI_BUFFER(TESTassociatedBmat,Master)
 
-!if(TESTassociatedBmat)then
-!   IF (SLAVE) call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-!   CALL LS_MPI_BUFFER(DFTDATA%BMAT,nbast,nbast,nbmat,Master)
-!else
-!   IF (SLAVE)nullify(DFTdata%BMAT)
-!endif
+if(TESTassociatedBmat)then
+   IF (SLAVE) call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+   CALL LS_MPI_BUFFER(DFTDATA%BMAT,nbast,nbast,nbmat,Master)
+else
+   IF (SLAVE)nullify(DFTdata%BMAT)
+endif
 
 ! BROADCAST DFTdata%FKSM
-!IF (.NOT.SLAVE) THEN
-!   TESTassociatedFMAT = associated(DFTdata%FKSM)
-!ENDIF
-!CALL LS_MPI_BUFFER(TESTassociatedFmat,Master)
+IF (.NOT.SLAVE) THEN
+   TESTassociatedFMAT = associated(DFTdata%FKSM)
+ENDIF
+CALL LS_MPI_BUFFER(TESTassociatedFmat,Master)
 
-!if(TESTassociatedFmat)then
-!   IF (SLAVE)THEN
-!      call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,nfmat)
-!      CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*nfmat)
-!   ENDIF
-!else
-!   IF (SLAVE)nullify(DFTdata%FKSM)
-!endif
+if(TESTassociatedFmat)then
+   IF (SLAVE)THEN
+      call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,nfmat)
+      CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*nfmat)
+   ENDIF
+else
+   IF (SLAVE)nullify(DFTdata%FKSM)
+endif
 
 ! BROADCAST DFTdata%FKSMS
-!IF (.NOT.SLAVE) THEN
-!   TESTassociatedFMATS = associated(DFTdata%FKSMS)
-!ENDIF
-!CALL LS_MPI_BUFFER(TESTassociatedFmatS,Master)
+IF (.NOT.SLAVE) THEN
+   TESTassociatedFMATS = associated(DFTdata%FKSMS)
+ENDIF
+CALL LS_MPI_BUFFER(TESTassociatedFmatS,Master)
 
-!if(TESTassociatedFmatS)then
-!   IF (SLAVE)THEN
-!      call mem_dft_alloc(DFTDATA%FKSMS,nbast,nbast,nfmat)
-!      CALL LS_DZERO(DFTDATA%FKSMS,nbast*nbast*nfmat)
-!   ENDIF
-!else
-!   IF(SLAVE)nullify(DFTdata%FKSMS)
-!endif
+if(TESTassociatedFmatS)then
+   IF (SLAVE)THEN
+      call mem_dft_alloc(DFTDATA%FKSMS,nbast,nbast,nfmat)
+      CALL LS_DZERO(DFTDATA%FKSMS,nbast*nbast*nfmat)
+   ENDIF
+else
+   IF(SLAVE)nullify(DFTdata%FKSMS)
+endif
 
 ! BROADCAST DFTdata%orb2atom
 IF (.NOT.SLAVE) THEN
