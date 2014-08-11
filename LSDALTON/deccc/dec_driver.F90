@@ -883,11 +883,9 @@ subroutine print_dec_info()
 
     ! Initialize local groups 
     call init_mpi_groups(groupsize,DECinfo%output)
-    write(DECinfo%output,*) 'Johannes DEBUG init_mpi_groups'
 
     ! Send fragment job list
     call bcast_dec_fragment_joblist(jobs,MPI_COMM_LSDALTON)
-    write(DECinfo%output,*) 'Johannes DEBUG dec_fragment'
 
 #endif
 
@@ -917,9 +915,7 @@ subroutine print_dec_info()
        ! (if jobdone=0 it is an empty job used just for starting up the scheme)
 
 
-       write(DECinfo%output,*) 'Johannes DEBUG sendrecv 1'
        call ls_mpisendrecv(jobdone,MPI_COMM_LSDALTON,MPISTATUS(MPI_SOURCE),master)
-       write(DECinfo%output,*) 'Johannes DEBUG sendrecv 2'
 
        ! Local master "MPISTATUS(MPI_SOURCE)" did job "jobdone"
        ! ******************************************************
@@ -943,10 +939,8 @@ subroutine print_dec_info()
              if(atomA/=atomB) call lsquit('fragment_jobs: Fragment opt. only for atomic frags!',-1)
 
              ! Job is fragment optimization --> receive atomic fragment info from slave
-    write(DECinfo%output,*) 'Johannes DEBUG sendrecv'
              call mpi_send_recv_single_fragment(AtomicFragments(atomA),MPI_COMM_LSDALTON,&
                   & sender,master,singlejob)
-    write(DECinfo%output,*) 'Johannes DEBUG after sendrecv'
 
           else
 
@@ -1217,7 +1211,6 @@ subroutine print_dec_info()
     call free_joblist(singlejob)
 #endif
 
-       write(DECinfo%output,*) 'Johannes DEBUG finished fragment jobs'
 
   end subroutine fragment_jobs
 
