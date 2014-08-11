@@ -776,20 +776,26 @@ implicit none
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
   
+  IF(OnMaster)THEN
+     !these routines free matrices and must be called while the 
+     !slaves are still in mpislave routine
+     call free_IIDF_matrix
+     call free_AO2GCAO_GCAO2AO()
+  ENDIF
+  call lstmem_free
+#ifdef VAR_ICHOR
+  if(OnMaster)call FreeIchorSaveGabModule()
+#endif
+  
+
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
 #ifdef VAR_MPI
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_IIDF_matrix
-  call lstmem_free
-
-#ifdef VAR_ICHOR
-  call FreeIchorSaveGabModule()
-#endif
-  call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
   call free_decinfo()
+
 
   if(OnMaster) call stats_mem(lupri)
 
