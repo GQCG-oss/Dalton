@@ -4632,6 +4632,7 @@ contains
             call mem_dealloc(longintbufferInt)
             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
             call stats_mpi_mem(lupri)
+            call flush(lupri)
          ENDDO
       ENDIF
 
