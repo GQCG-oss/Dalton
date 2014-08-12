@@ -9,10 +9,8 @@
 1.D-6
 .START
 TRILEVEL
-**CC
-.CCSD
-.ccThr
-1e-7
+**DEC
+.MP2
 .MEMORY
 1.0
 *END OF INPUT

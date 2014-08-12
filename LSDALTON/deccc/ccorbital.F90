@@ -1101,13 +1101,25 @@ contains
     !> S^{1/2} C matrix
     real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis
+    integer :: nbasis,i,j,k
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
-    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    do j=1,MyMolecule%nocc
+    do i =1,nbasis
+    basis(i,j) =MyMolecule%Co(i,j)
+    enddo
+    enddo
+    k = MyMolecule%nocc+1
+    do j = 1,MyMolecule%nunocc
+    do i =1,nbasis
+    basis(i,k) = MyMolecule%Cv(i,j)
+    enddo
+    k=k+1
+    enddo
 
     ! Get S^{1/2} matrix
     ! ******************
@@ -2057,7 +2069,8 @@ contains
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    real(realk), dimension(natoms,natoms) :: SortedDistTable
+    !real(realk), dimension(natoms,natoms) :: SortedDistTable
+    real(realk), pointer :: SortedDistTable(:,:)
     integer, dimension(nAtoms,nAtoms) :: TrackMatrix
     integer :: i,j,centralatom,neighbor,atomnumber,neighbor_atomnumber
     logical :: included, reassign
@@ -2069,7 +2082,13 @@ contains
     maxdist = 1.5E0_realk/bohr
 
     ! Sort atoms according to distance, and keep track of original indices in TrackMatrix
-    SortedDistTable(:,:)=DistanceTable(:,:)
+    call mem_alloc(SortedDistTable,natoms,natoms)
+    do i = 1,natoms
+     do j=1,natoms
+     SortedDistTable(i,j)=DistanceTable(i,j)
+     enddo
+    enddo
+    !SortedDistTable(:,:)=DistanceTable(:,:)
     call sort_track(SortedDistTable,TrackMatrix,nAtoms)
 
 
@@ -2155,6 +2174,7 @@ contains
        end if Hatom
 
     end do OrbitalLoop
+    call mem_dealloc(SortedDistTable)
 
   end subroutine reassign_orbitals
 
