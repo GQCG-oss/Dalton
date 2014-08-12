@@ -91,6 +91,10 @@ contains
     type(array),intent(inout) :: ccsdpt_doubles
     type(array),intent(inout) :: ccsdpt_singles
     logical :: master
+#ifdef VAR_OPENACC
+    !> device type
+    integer(acc_device_kind) :: acc_device_type
+#endif
 
     call time_start_phase(PHASE_WORK)
 
@@ -209,6 +213,16 @@ contains
     ! here: the main ijk-loop: this is where the magic happens!
     !**********************************************************
 
+!#ifdef VAR_OPENACC
+!
+!    ! probe for device type
+!    acc_device_type = acc_get_device_type()
+!
+!    ! initialize the device
+!    call acc_init(acc_device_type)
+!
+!#endif
+
 #ifdef VAR_MPI
 
     call time_start_phase(PHASE_WORK)
@@ -233,6 +247,13 @@ contains
     ! *******************************************
     ! *********** done w/ main loop *************
     ! *******************************************
+
+!#ifdef VAR_OPENACC
+!
+!    ! shut down the device
+!    call acc_shutdown(acc_device_type)
+!
+!#endif
 
 #ifdef VAR_MPI
 
@@ -1012,7 +1033,7 @@ contains
     !> async handles
 #ifdef VAR_OPENACC
     ! 9 is the unique number of handles
-    integer(kind=acc_handle_kind), dimension(9) :: async_id
+    integer(kind=acc_handle_kind), dimension(10) :: async_id
 #else
     integer, dimension(9) :: async_id
 #endif
@@ -1038,6 +1059,7 @@ contains
     async_id(7) = int(7,kind=acc_handle_kind) ! handle for ccsdpt_singles
     async_id(8) = int(8,kind=acc_handle_kind) ! handle for ccsdpt_doubles
     async_id(9) = int(9,kind=acc_handle_kind) ! handle for ccsdpt_doubles_2
+    async_id(10) = int(10,kind=acc_handle_kind) ! handle for ccsd_doubles_portions_i/j/k
 #else
     async_id(1) = -1
     async_id(2) = -2
@@ -1048,6 +1070,7 @@ contains
     async_id(7) = -7
     async_id(8) = -8
     async_id(9) = -9
+    async_id(10) = -10
 #endif
 
 ! copy in orbital energies and create triples amplitudes and work arrays
@@ -1060,11 +1083,11 @@ contains
 ! move integral and ccsd_doubles blocks to the device
 !$acc enter data copyin(ccsd_doubles(:,:,:,i)) async(async_id(1))
 
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
              call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
-                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(1))
-
+                     & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i,async_id(10))
 #else
              call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,i),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
@@ -1096,10 +1119,11 @@ contains
 !$acc enter data copyin(ovoo(:,:,i,j),ovoo(:,:,j,i)) async(async_id(3))
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(4))
 
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
 ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                     call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
-                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(1))
+                            & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j,async_id(10))
 #else
                     call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,j),nvirt,nvirt,&
                             & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
@@ -1174,10 +1198,11 @@ contains
                     ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
                     if ((tuple_type .eq. 1) .or. (tuple_type .eq. 3)) then
 
+!$acc wait(async_id(1),async_id(5)) async(async_id(10))
                        ! store portion of ccsd_doubles (the k'th index) to avoid unnecessary reorderings
 #ifdef VAR_OPENACC
                        call array_reorder_3d_acc(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
-                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(1))
+                               & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k,async_id(10))
 #else
                        call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,k),nvirt,nvirt,&
                                & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
@@ -1190,7 +1215,7 @@ contains
     
                     case(1)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
 
                        call trip_generator_ijk_case1(i,k,nocc,nvirt,ccsd_doubles(:,:,i,i),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,k,i),ccsd_doubles_portions_i,&
@@ -1198,6 +1223,10 @@ contains
                                                & vvvo(:,:,:,i),vvvo(:,:,:,k),&
                                                & ovoo(:,:,i,i),ovoo(:,:,i,k),ovoo(:,:,k,i),&
                                                & trip_tmp,trip_ampl,async_id(5))
+
+! delete reference to the ccsd_doubles
+!$acc wait(async_id(5)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
  
                        ! generate triples amplitudes from trip arrays
     
@@ -1216,8 +1245,8 @@ contains
                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,k)) async(async_id(2))
 !$acc wait(async_id(6)) async(async_id(3))
@@ -1235,7 +1264,7 @@ contains
  
                     case(2)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(6)) async(async_id(5))
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5))
 
                        call trip_generator_ijk_case2(i,j,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,j,i),&
                                                & ccsd_doubles(:,:,j,j),ccsd_doubles_portions_i,&
@@ -1272,7 +1301,7 @@ contains
  
                     case(3)
 
-!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(6)) async(async_id(5)) 
+!$acc wait(async_id(1),async_id(2),async_id(3),async_id(4),async_id(10),async_id(6)) async(async_id(5)) 
 
                        call trip_generator_ijk_case3(i,j,k,nocc,nvirt,ccsd_doubles(:,:,i,j),ccsd_doubles(:,:,i,k),&
                                                & ccsd_doubles(:,:,j,i),ccsd_doubles(:,:,j,k),&
@@ -1283,6 +1312,10 @@ contains
                                                & ovoo(:,:,i,j),ovoo(:,:,i,k),ovoo(:,:,j,i),&
                                                & ovoo(:,:,j,k),ovoo(:,:,k,i),ovoo(:,:,k,j),&
                                                & trip_tmp,trip_ampl,async_id(5))
+
+! delete reference to the ccsd_doubles
+!$acc wait(async_id(5)) async(async_id(1))
+!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
                        ! generate triples amplitudes from trip arrays
     
@@ -1304,8 +1337,8 @@ contains
                                             & ccsdpt_doubles_2(:,:,:,k),trip_tmp,trip_ampl,async_id(6))
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1)) 
-!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1)) 
+!!$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,k)) async(async_id(2))
 !$acc wait(async_id(6)) async(async_id(3))
@@ -1341,7 +1374,8 @@ contains
                  else ! i .gt. j
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,j)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,j)) async(async_id(2))
@@ -1363,7 +1397,8 @@ contains
               end do jrun_ser
 
 ! delete reference to device arrays such that the memory may be be re-used
-!$acc wait(async_id(6)) async(async_id(1))
+!!$acc wait(async_id(6)) async(async_id(1))
+!$acc wait(async_id(5)) async(async_id(1))
 !$acc exit data delete(ccsd_doubles(:,:,:,i)) async(async_id(1))
 !$acc wait(async_id(6)) async(async_id(2))
 !$acc exit data delete(vvvo(:,:,:,i)) async(async_id(2))
