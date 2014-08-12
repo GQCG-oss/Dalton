@@ -17,7 +17,7 @@ subroutine VerticalRecurrenceGPUSegQ1D(nPassP,nPrimP,nPrimQ,&
   real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(4,nPrimP*nPassP)
+  real(realk),intent(inout) :: AUXarray(nPrimP*nPassP,4)
   !local variables
   Integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: Xqd,Yqd,Zqd
@@ -43,10 +43,10 @@ subroutine VerticalRecurrenceGPUSegQ1D(nPassP,nPrimP,nPrimQ,&
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
   DO iP = 1,nPrimP*nPassP
-    AUXarray(1,iP)=0.0E0_realk
-    AUXarray(2,iP)=0.0E0_realk
-    AUXarray(3,iP)=0.0E0_realk
-    AUXarray(4,iP)=0.0E0_realk
+    AUXarray(iP,1)=0.0E0_realk
+    AUXarray(iP,2)=0.0E0_realk
+    AUXarray(iP,3)=0.0E0_realk
+    AUXarray(iP,4)=0.0E0_realk
   ENDDO
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
@@ -110,10 +110,10 @@ subroutine VerticalRecurrenceGPUSegQ1D(nPassP,nPrimP,nPrimQ,&
      PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)
      TMP1 = PREF*RJ000(0)
      TMP2 = PREF*RJ000(1)
-     AUXarray(1,iP) = AUXarray(1,iP) + TMP1
-     AUXarray(2,iP) = AUXarray(2,iP) + Xqd*TMP1 + alphaXpq*TMP2
-     AUXarray(3,iP) = AUXarray(3,iP) + Yqd*TMP1 + alphaYpq*TMP2
-     AUXarray(4,iP) = AUXarray(4,iP) + Zqd*TMP1 + alphaZpq*TMP2
+     AUXarray(iP,1) = AUXarray(iP,1) + TMP1
+     AUXarray(iP,2) = AUXarray(iP,2) + Xqd*TMP1 + alphaXpq*TMP2
+     AUXarray(iP,3) = AUXarray(iP,3) + Yqd*TMP1 + alphaYpq*TMP2
+     AUXarray(iP,4) = AUXarray(iP,4) + Zqd*TMP1 + alphaZpq*TMP2
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
 end subroutine VerticalRecurrenceGPUSegQ1D
@@ -125,12 +125,12 @@ subroutine VerticalRecurrenceGPUSegQ2D(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(0: 2,nPrimQ,nPrimP,nPassP)
+  REAL(REALK),intent(in) :: RJ000Array(nPrimQ,nPrimP,nPassP,0: 2)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   10,nPrimP*nPassP)
+  real(realk),intent(inout) :: AUXarray(nPrimP*nPassP,   10)
   !local variables
   integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(    4)
@@ -147,7 +147,7 @@ subroutine VerticalRecurrenceGPUSegQ2D(nPassP,nPrimP,nPrimQ,&
   !We include scaling of RJ000 
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   10
-     AUXarray(iTUV,iP)=0.0E0_realk
+     AUXarray(iP,iTUV)=0.0E0_realk
     ENDDO
   ENDDO
 !$ACC PARALLEL LOOP &
@@ -188,9 +188,9 @@ subroutine VerticalRecurrenceGPUSegQ2D(nPassP,nPrimP,nPrimQ,&
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
      PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)
-     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)
-     TMParray1(1, 2) = PREF*RJ000Array( 1,iPrimQ,iPrimP,iPassP)
-     TMParray1(1, 3) = PREF*RJ000Array( 2,iPrimQ,iPrimP,iPassP)
+     TMPAuxarray(1) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP,0)
+     TMParray1(1, 2) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP, 1)
+     TMParray1(1, 3) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP, 2)
      TMPAuxArray(2) = Xqd*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Yqd*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zqd*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -199,14 +199,14 @@ subroutine VerticalRecurrenceGPUSegQ2D(nPassP,nPrimP,nPrimQ,&
      tmpArray2(4,2) = Zqd*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expQ*(TMPAuxArray(1) + alphaQ*TmpArray1(1,2))
      do iTUV = 1,    4
-      AuxArray(iTUV,iP) = AuxArray(iTUV,iP) + TMPAuxarray(iTUV)
+      AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(5,iP) = AuxArray(5,iP) + Xqd*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
-     AuxArray(6,iP) = AuxArray(6,iP) + Xqd*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
-     AuxArray(7,iP) = AuxArray(7,iP) + Xqd*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
-     AuxArray(8,iP) = AuxArray(8,iP) + Yqd*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
-     AuxArray(9,iP) = AuxArray(9,iP) + Yqd*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
-     AuxArray(10,iP) = AuxArray(10,iP) + Zqd*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
+     AuxArray(iP,5) = AuxArray(iP,5) + Xqd*TMPAuxArray(2) + alphaXpq*TmpArray2(2,2) + TwoTerms(1)
+     AuxArray(iP,6) = AuxArray(iP,6) + Xqd*TMPAuxArray(3) + alphaXpq*TmpArray2(3,2)
+     AuxArray(iP,7) = AuxArray(iP,7) + Xqd*TMPAuxArray(4) + alphaXpq*TmpArray2(4,2)
+     AuxArray(iP,8) = AuxArray(iP,8) + Yqd*TMPAuxArray(3) + alphaYpq*TmpArray2(3,2) + TwoTerms(1)
+     AuxArray(iP,9) = AuxArray(iP,9) + Yqd*TMPAuxArray(4) + alphaYpq*TmpArray2(4,2)
+     AuxArray(iP,10) = AuxArray(iP,10) + Zqd*TMPAuxArray(4) + alphaZpq*TmpArray2(4,2) + TwoTerms(1)
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
  end subroutine
@@ -218,12 +218,12 @@ subroutine VerticalRecurrenceGPUSegQ3D(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(0: 3,nPrimQ,nPrimP,nPassP)
+  REAL(REALK),intent(in) :: RJ000Array(nPrimQ,nPrimP,nPassP,0: 3)
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Qexp(nPrimQ)
   real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)
   real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)
   real(realk),intent(in) :: Dcenter(3)
-  real(realk),intent(inout) :: AUXarray(   20,nPrimP*nPassP)
+  real(realk),intent(inout) :: AUXarray(nPrimP*nPassP,   20)
   !local variables
   integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB
   real(realk) :: TMPAUXarray(   10)
@@ -241,7 +241,7 @@ subroutine VerticalRecurrenceGPUSegQ3D(nPassP,nPrimP,nPrimQ,&
   !We include scaling of RJ000 
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   20
-     AUXarray(iTUV,iP)=0.0E0_realk
+     AUXarray(iP,iTUV)=0.0E0_realk
     ENDDO
   ENDDO
 !$ACC PARALLEL LOOP &
@@ -283,10 +283,10 @@ subroutine VerticalRecurrenceGPUSegQ3D(nPassP,nPrimP,nPrimQ,&
      alphaYpq = alphaQ*Ypq
      alphaZpq = alphaQ*Zpq
      PREF = integralPrefactor(iPrimQ,iPrimP)*QpreExpFac(iPrimQ)*PpreExpFac(iPrimP,iAtomA,iAtomB)
-     TMPAuxarray(1) = PREF*RJ000Array(0,iPrimQ,iPrimP,iPassP)
-     TMParray1(1, 2) = PREF*RJ000Array( 1,iPrimQ,iPrimP,iPassP)
-     TMParray1(1, 3) = PREF*RJ000Array( 2,iPrimQ,iPrimP,iPassP)
-     TMParray1(1, 4) = PREF*RJ000Array( 3,iPrimQ,iPrimP,iPassP)
+     TMPAuxarray(1) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP,0)
+     TMParray1(1, 2) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP, 1)
+     TMParray1(1, 3) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP, 2)
+     TMParray1(1, 4) = PREF*RJ000Array(iPrimQ,iPrimP,iPassP, 3)
      TMPAuxArray(2) = Xqd*TMPAuxArray(1) + alphaXpq*TmpArray1(1,2)
      TMPAuxArray(3) = Yqd*TMPAuxArray(1) + alphaYpq*TmpArray1(1,2)
      TMPAuxArray(4) = Zqd*TMPAuxArray(1) + alphaZpq*TmpArray1(1,2)
@@ -314,18 +314,18 @@ subroutine VerticalRecurrenceGPUSegQ3D(nPassP,nPrimP,nPrimQ,&
      TwoTerms(2) = inv2expQ*(TMPAuxArray(3) + alphaQ*TmpArray2(3,2))
      TwoTerms(3) = inv2expQ*(TMPAuxArray(4) + alphaQ*TmpArray2(4,2))
      do iTUV = 1,   10
-      AuxArray(iTUV,iP) = AuxArray(iTUV,iP) + TMPAuxarray(iTUV)
+      AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo
-     AuxArray(11,iP) = AuxArray(11,iP) + Xqd*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
-     AuxArray(12,iP) = AuxArray(12,iP) + Yqd*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
-     AuxArray(13,iP) = AuxArray(13,iP) + Zqd*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
-     AuxArray(14,iP) = AuxArray(14,iP) + Xqd*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
-     AuxArray(15,iP) = AuxArray(15,iP) + Xqd*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
-     AuxArray(16,iP) = AuxArray(16,iP) + Xqd*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
-     AuxArray(17,iP) = AuxArray(17,iP) + Yqd*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
-     AuxArray(18,iP) = AuxArray(18,iP) + Zqd*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
-     AuxArray(19,iP) = AuxArray(19,iP) + Yqd*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
-     AuxArray(20,iP) = AuxArray(20,iP) + Zqd*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
+     AuxArray(iP,11) = AuxArray(iP,11) + Xqd*TMPAuxArray(5) + alphaXpq*TmpArray3(5,2) + 2*TwoTerms(1)
+     AuxArray(iP,12) = AuxArray(iP,12) + Yqd*TMPAuxArray(5) + alphaYpq*TmpArray3(5,2)
+     AuxArray(iP,13) = AuxArray(iP,13) + Zqd*TMPAuxArray(5) + alphaZpq*TmpArray3(5,2)
+     AuxArray(iP,14) = AuxArray(iP,14) + Xqd*TMPAuxArray(8) + alphaXpq*TmpArray3(8,2)
+     AuxArray(iP,15) = AuxArray(iP,15) + Xqd*TMPAuxArray(9) + alphaXpq*TmpArray3(9,2)
+     AuxArray(iP,16) = AuxArray(iP,16) + Xqd*TMPAuxArray(10) + alphaXpq*TmpArray3(10,2)
+     AuxArray(iP,17) = AuxArray(iP,17) + Yqd*TMPAuxArray(8) + alphaYpq*TmpArray3(8,2) + 2*TwoTerms(2)
+     AuxArray(iP,18) = AuxArray(iP,18) + Zqd*TMPAuxArray(8) + alphaZpq*TmpArray3(8,2)
+     AuxArray(iP,19) = AuxArray(iP,19) + Yqd*TMPAuxArray(10) + alphaYpq*TmpArray3(10,2)
+     AuxArray(iP,20) = AuxArray(iP,20) + Zqd*TMPAuxArray(10) + alphaZpq*TmpArray3(10,2) + 2*TwoTerms(3)
    ENDDO !iPrimP=1, nPrimP
   ENDDO !iP = 1,nPrimQ*nPassP
  end subroutine
