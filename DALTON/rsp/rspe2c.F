@@ -3166,7 +3166,8 @@ C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
 !     DOMO2 = DODFT
-      DOMO2 = NASHT .EQ. 0
+!     DOMO2 = NASHT .EQ. 0
+      DOMO2 = KZCONF .EQ. 0 ! also exclude SOPPA
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -3635,17 +3636,7 @@ C
                   END IF
   545          CONTINUE
             END IF
-            IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
-     
 
-            IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
-     &                             KZYVAR,KZVAR,CMO,LUPRI,
-     &                             WRK(KWRK2),LWRK2)
-
-            IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
-     &                             KZVAR,WRK(KCMO2),IPRRSP,LUPRI)
             IF (IPRRSP .GT. 3) THEN
                WRITE (LUPRI,'(/A,I3)')
      &              ' Eigenvector for state no.',(ISIM-1+INUM)
@@ -3658,14 +3649,14 @@ C              CALL RSPPRC(WRK(KBVECS+(INUM-1)*KZYVAR),KZCONF,KZVAR,LUPRI)
             IF (TRDQF) CALL TRCHAR(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,UDV,LUPRI,
      &                             WRK(KWRK2),LWRK2)
-     
 
             IF (DOMO2) CALL RSPMO2(WRK(KBVECS+(INUM-1)*KZYVAR),
      &                             KZYVAR,KZVAR,CMO,LUPRI,
      &                             WRK(KWRK2),LWRK2)
 
             IF (DOMO2) CALL RSPPMO(WRK(KBVECS+(INUM-1)*KZYVAR+KZCONF),
-     &                             KZVAR,WRK(KCMO2),LUPRI)
+     &                             KZVAR,WRK(KCMO2),IPRRSP,LUPRI)
+
             CALL WRTRSP(LURSP,KZYVAR,WRK(KBVECS+(INUM-1)*KZYVAR),
      &                  'EXCITLAB',BLANK,WRK(KEIVAL-1+ISIM-1+INUM),D0,
      &                  KSYMOP,0,WRK(KRESID-1+ISIM-1+INUM),D0)
