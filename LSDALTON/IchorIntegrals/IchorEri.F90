@@ -25,8 +25,11 @@ MODULE IchorErimodule
   use IchorParametersModule
   use IchorSaveGabModule
 
-public:: IchorEri
-private
+  public:: IchorEri
+  private
+
+logical,parameter :: UseCPU = .TRUE.
+
 CONTAINS
 subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
@@ -623,11 +626,19 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(DoLink) NOTDoSSSS=.TRUE.
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
-         call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
-              & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-              & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-              & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-              & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         IF(UseCPU)THEN
+            call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
+                 & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
+                 & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         ELSE !use GPU code
+            call IchorCoulombIntegral_GPU_OBS_general_size(TMParray1maxsize,&
+                 & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
+                 & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         ENDIF
          nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
       ENDIF
       allocate(QpreExpFac(nPrimQ))
@@ -1458,32 +1469,65 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-             & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-             & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-             & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-             & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-             & Qiprim1,Qiprim2,expA,expB,expC,expD,&
-             & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-             & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
-             & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
-             & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-             & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-             & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
-!     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=0
-     !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
-     !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
-     !this can be done on the accelerator
-     IF(.TRUE.)THEN !nPrimLast
-        call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
-             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
-     ELSE !nPrimLast
-        call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
-             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+
+     IF(UseCPU)THEN
+      call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+           & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
+           & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+      !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+      !this can be done on the accelerator
+      call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+           & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+           & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+           & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ELSE
+
+
+!$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+!$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+!$ACC             ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+!$ACC             pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+!$ACC             Qiprim1,Qiprim2,expA,expB,expC,expD,&
+!$ACC             Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+!$ACC             AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+!$ACC             nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+!$ACC             nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+!$ACC             TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
+!$ACC             BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,&
+!$ACC             IatomAPass,iatomBPass) &
+!$ACC COPYOUT(LocalIntPass1)
+      call IchorCoulombIntegral_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+           & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
+           & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+
+!$ACC END DATA
+
+      !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+      !this can be done on the accelerator
+      call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+           & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+           & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+           & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
      ENDIF
 !================================================================================
      IF(PermuteLHSTypes)THEN
