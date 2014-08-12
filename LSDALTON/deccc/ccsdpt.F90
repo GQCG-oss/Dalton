@@ -1035,7 +1035,7 @@ contains
     ! 9 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(10) :: async_id
 #else
-    integer, dimension(9) :: async_id
+    integer, dimension(10) :: async_id
 #endif
 
     ! init ccsd_doubles_help_arrays
