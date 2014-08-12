@@ -84,7 +84,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     endif()
     if(ENABLE_OMP)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -openmp -parallel"
+            "${CMAKE_Fortran_FLAGS} -openmp"
             )
     endif()
     if(ENABLE_64BIT_INTEGERS)
@@ -106,8 +106,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+
     add_definitions(-DVAR_PGI)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90 -mcmodel=medium")
+
+# Patrick: mcmodel=medium is not available on PGI Free for MacOS X
+    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
+    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -mcmodel=medium")
+    endif()
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
@@ -120,6 +127,14 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     if(ENABLE_OMP) 
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -mp -Mconcur"
+            )
+    endif()
+# WARNING you may need to add -Mcuda=5.5 
+# For now use --extra-fc-flags="-Mcuda=5.5"
+# ./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --openacc --extra-fc-flags="-Mcuda=5.5" build
+    if(ENABLE_OPENACC) 
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -acc"
             )
     endif()
     if(ENABLE_BOUNDS_CHECK)
@@ -164,7 +179,13 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Cray) 
     add_definitions(-DVAR_CRAY)
+
     set(CMAKE_Fortran_FLAGS         "-DVAR_CRAY -eZ")
+    # Patrick: For cray we want to use the system allocator since it is faster and has less memory requirements than the cray allocator
+    if(ENABLE_TITANBUILD)
+       set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -hsystem_alloc")
+    endif()
+
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE " ")
     set(CMAKE_Fortran_FLAGS_PROFILE "-g")

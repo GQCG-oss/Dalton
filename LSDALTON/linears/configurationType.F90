@@ -65,6 +65,14 @@ type ConfigItem
    logical              :: doDEC
    !> Turns off DEC energy contribution for get_energy calls
    logical              :: noDecEnergy
+   !> Should Memory Information be printet 
+   logical              :: PrintMemory
+   !> Perform interaction energy calculation using Counter Poise Correction
+   logical              :: InteractionEnergy
+   !> Same SubSystems in Interaction energies
+   logical              :: SameSubSystems
+   !> Construct SubSystems Density matrix in Interaction energies
+   logical              :: SubSystemDensity
    !> Used for Augmented Roothaan-Hall, direct density optimization etc.
    type(SolverItem),pointer     :: solver
    !> Used for davidson solver in SCF opt
@@ -84,7 +92,7 @@ type ConfigItem
    !> Used to store info about molecule
    type(moleculeinfo)   :: molecule
    !> Used to store info about which atoms have which basisset
-   type(basissetlibraryitem):: lib
+   type(basissetlibraryitem):: lib(nBasisBasParam)
    !> Used to store info about response calculation
    type(responseitem) :: response
    !> Used to store info about geometry optimization
@@ -114,6 +122,12 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+   !> do MPI testing of mpicopy_setting and mpicopy_screen
+   logical              :: doTestMPIcopy
+   !> set debugging mode for the PDM type arrays
+   logical              :: type_array_debug
+   !> skip SCF calculations
+   logical              :: skipscfloop
 end type ConfigItem
 
 type LowAccuracyStartType

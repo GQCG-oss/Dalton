@@ -5,6 +5,7 @@ module dec_fragment_utils
 
   use fundamental
   use precision
+  use lstiming
   use ls_util!,only: dgemm_ts
   use typedeftype!,only: lsitem
   use molecule_module!, only: get_geometry
@@ -16,10 +17,13 @@ module dec_fragment_utils
   use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use matrix_module!, only:matrix
   use matrix_operations
+  use tensor_interface_module
+  use array4_simple_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_op
 #endif
 
 #ifdef VAR_PAPI
@@ -33,17 +37,13 @@ module dec_fragment_utils
   ! DEC DEPENDENCIES (within deccc directory)
   ! *****************************************
 
-  !> Maximum number of files to be opened at the same time
-  ! NOTE: If you change this number, you have to change
-  ! max_file accordingly in crayio.c.
-  integer, parameter :: max_number_files=250
-  !> Number of opened files using C file handling
-  integer,save :: files_opened=0
-  !> Keeping control of which file units are available
-  logical,save :: available_file_units(max_number_files)=.true.
-
-
   !> Read 64 bit integer(s) from file and convert to 32 bit
+  interface read_64bit_to_int
+     module procedure read_64bit_to_32bit_singleinteger
+     module procedure read_64bit_to_32bit_vectorinteger
+     module procedure read_64bit_to_32bit_singlelogical
+     module procedure read_64bit_to_32bit_vectorlogical
+  end interface read_64bit_to_int
   interface read_64bit_to_32bit
      module procedure read_64bit_to_32bit_singleinteger
      module procedure read_64bit_to_32bit_vectorinteger
@@ -56,8 +56,145 @@ module dec_fragment_utils
      module procedure read_32bit_to_64bit_singlelogical
      module procedure read_32bit_to_64bit_vectorlogical
   end interface read_32bit_to_64bit
+  interface get_combined_SingleDouble_amplitudes
+     module procedure get_combined_SingleDouble_amplitudes_newarr
+     module procedure get_combined_SingleDouble_amplitudes_oldarr
+  end interface get_combined_SingleDouble_amplitudes
+  interface remove_core_orbitals_from_last_index
+     module procedure remove_core_orbitals_from_last_index_oldarr
+     module procedure remove_core_orbitals_from_last_index_newarr
+  end interface remove_core_orbitals_from_last_index
 
 contains
+!> \brief Get maximum batch dimension encountered in integral program.
+!> \author Kasper Kristensen
+!> \date February 2011
+function max_batch_dimension(mylsitem,nbasis) result(maxdim)  
+  implicit none 
+  !> LS item info
+  type(lsitem), intent(inout) :: mylsitem
+  !> Number of basis function
+  integer, intent(in) :: nbasis
+  integer :: maxdim
+  integer, pointer :: orb2batch(:), batchdim(:)
+  integer :: i, nbatches
+  
+  ! Initialize stuff
+  nullify(orb2batch)
+  nullify(batchdim)
+  call mem_alloc(orb2batch,nbasis)
+  
+  ! Get batch info
+  call II_getBatchOrbitalInfo(mylsitem%setting,nbasis,&
+       & orb2Batch,nbatches,DECinfo%output,DECinfo%output)
+  
+  ! Vector containing dimensions for each batch
+  call mem_alloc(batchdim,nbatches)
+  batchdim = 0
+  do i=1,nbasis
+     batchdim(orb2batch(i)) = batchdim(orb2batch(i))+1
+  end do
+  
+  ! Find maximum batch dimension
+  maxdim=0
+  do i=1,nbatches
+     if( batchdim(i) > maxdim ) maxdim=batchdim(i)
+  end do
+  
+  ! Clean up
+  call mem_dealloc(batchdim)
+  call mem_dealloc(orb2batch)
+  
+end function max_batch_dimension
+
+  subroutine dec_time_evaluate_efficiency_frag(frag,t,ccmodel,label)
+     implicit none
+     type(decfrag), intent(inout) :: frag
+     real(realk), pointer, intent(inout) :: t(:)
+     integer, intent(in) :: ccmodel
+     character*(*), intent(in) :: label
+     integer(kind=ls_mpik) :: nnod,nod
+     real(realk) :: tottime_work, tottime_idle, tottime_comm
+     real(realk) :: max_work, max_comm, max_idle, time_tts, time_tot
+     real(realk),pointer :: time_tot_node(:)
+     nnod = 1
+#ifdef VAR_MPI
+     nnod = infpar%lg_nodtot
+#endif
+     call mem_alloc(time_tot_node,nnod)
+
+     tottime_work = 0.0E0_realk
+     tottime_comm = 0.0E0_realk
+     tottime_idle = 0.0E0_realk
+     time_tts     = t(PHASE_WORK_IDX) + t(PHASE_COMM_IDX) + t(PHASE_IDLE_IDX)
+
+     !skip local master time, this time will be added outside
+     do nod = 1, nnod
+        tottime_work = tottime_work + t((nod-1)*nphases + PHASE_WORK_IDX)
+        tottime_comm = tottime_comm + t((nod-1)*nphases + PHASE_COMM_IDX)
+        tottime_idle = tottime_idle + t((nod-1)*nphases + PHASE_IDLE_IDX)
+        time_tot_node(nod) = &
+           &t((nod-1)*nphases + PHASE_WORK_IDX) + &
+           &t((nod-1)*nphases + PHASE_COMM_IDX) + &
+           &t((nod-1)*nphases + PHASE_IDLE_IDX)
+     enddo
+
+     time_tot = tottime_work + tottime_comm + tottime_idle
+
+     !timings are not precise of course, test if they are correct within 1%
+     if( abs(time_tot - time_tts*nnod) > time_tot*1.0E-2_realk )then
+        print *,"WARNING(dec_time_evaluate_efficiency_frag)&
+           &MAYBE SOMETHING WRONG WITH TIMERS",time_tot,time_tts,nnod
+        print *,"TOTAL TIMES ON NODES",time_tot_node
+     endif
+
+     frag%slavetime_work(ccmodel) = tottime_work
+     frag%slavetime_comm(ccmodel) = tottime_comm
+     frag%slavetime_idle(ccmodel) = tottime_idle
+
+     if(DECinfo%PL>0)then
+        if(time_tot>0.1E-13)then
+           write(DECinfo%output,'("Portion time spent working       in ",a," is: ",g10.3,"%")')label,tottime_work/time_tot*100
+           write(DECinfo%output,'("Portion time spent communicating in ",a," is: ",g10.3,"%")')label,tottime_comm/time_tot*100
+           write(DECinfo%output,'("Portion time spent idle          in ",a," is: ",g10.3,"%")')label,tottime_idle/time_tot*100
+        endif
+     endif
+
+     call mem_dealloc(time_tot_node)
+     call mem_dealloc(t)
+  end subroutine dec_time_evaluate_efficiency_frag
+
+
+  subroutine dec_fragment_time_init(t)
+     implicit none
+     real(realk), pointer, intent(inout) :: t(:)
+
+#ifdef VAR_MPI
+     call init_slave_timers(t,infpar%lg_comm)
+#else
+     call mem_alloc(t,nphases)
+     call time_start_phase(PHASE_WORK, &
+        &swinit = t(PHASE_INIT_IDX) ,&
+        &swwork = t(PHASE_WORK_IDX) ,&
+        &swcomm = t(PHASE_COMM_IDX) ,&
+        &swidle = t(PHASE_IDLE_IDX) )
+#endif
+
+  end subroutine dec_fragment_time_init
+
+  subroutine dec_fragment_time_get(t)
+     implicit none
+     real(realk), pointer, intent(inout) :: t(:)
+#ifdef VAR_MPI
+     call get_slave_timers(t,infpar%lg_comm)
+#else
+     call time_start_phase(PHASE_WORK, &
+        &dwinit = t(PHASE_INIT_IDX) ,&
+        &dwwork = t(PHASE_WORK_IDX) ,&
+        &dwcomm = t(PHASE_COMM_IDX) ,&
+        &dwidle = t(PHASE_IDLE_IDX) )
+#endif
+  end subroutine dec_fragment_time_get
 
   !> \brief Returns number of unique elements in a vector
   function unique_entries(vector,size_of_vector) result(num)
@@ -629,6 +766,28 @@ contains
     return
   end subroutine adjust_square_matrix_mo
 
+  !> \brief Get SubSystem indexes 
+  subroutine GetSubSystemIndex(SubSystemIndex,nAtoms,mylsitem,int_output)
+    implicit none
+    type(lsitem), intent(inout) :: mylsitem
+    integer, intent(in) :: nAtoms,int_output
+    integer, intent(inout) :: SubSystemIndex(nAtoms)
+    ! local variables
+    integer :: i
+    IF(DECinfo%InteractionEnergy.OR.DECinfo%PrintInteractionEnergy)THEN
+       IF(mylsitem%input%molecule%nSubSystems.NE.2)THEN
+          print*,'The .INTERACTIONENEGY requires 2 subsystem labels you have ',&
+               & mylsitem%input%molecule%nSubSystems
+          call lsquit('The .INTERACTIONENEGY requires 2 subsystem labels',-1)
+       ENDIF
+       do i=1,nAtoms
+          SubSystemIndex(i)=mylsitem%input%molecule%ATOM(I)%SubSystemIndex
+       end do
+    ELSE
+       SubSystemIndex=1
+    ENDIF
+  end subroutine GetSubSystemIndex
+
   !> \brief Get a table with interatomic distances
   subroutine GetDistances(DistanceTable,nAtoms,mylsitem,int_output)
 
@@ -661,7 +820,6 @@ contains
     end do
 
     call mem_dealloc(geometry)
-    return
   end subroutine GetDistances
 
   !> \brief distance between two points r1=(x1,y1,z1) and r2=(x2,y2,z2)
@@ -761,225 +919,6 @@ contains
 
     return
   end subroutine invert_matrix
-
-
-
-  !> \brief Open file using C routine to be able to access arbitrary address in file.
-  !> \author Kasper Kristensen
-  !> \date September 2010
-  subroutine openfile(funit,filename)
-    implicit none
-    !> File unit number
-    integer, intent(in) :: funit
-    !> Name of file
-    character(*), intent(in) :: filename
-    integer :: length,io_err,status
-    logical :: is_open
-
-    status=0
-    io_err=0
-
-    ! Length of file (avoid blank spaces)
-    length = len(trim(filename))
-
-    ! If file is opened in fortran, then close it
-    inquire(file=filename,opened=is_open)
-    if(is_open) close(funit,status='KEEP')
-
-    ! Open file using C routine
-    call wopen(funit,filename(1:length),length,status,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC openfile: Something wrong when opening file'
-       write(DECinfo%output,*) 'Filename:', filename(1:length)
-       write(DECinfo%output,*) 'File unit:', funit
-       write(DECinfo%output,*) 'Total number of opened files:', files_opened
-       CALL lsQUIT('DEC openfile: Something went wrong when opening file!',DECinfo%output)
-    end if
-
-    files_opened = files_opened+1
-
-  end subroutine openfile
-
-
-  !> \brief Find available file unit for opening file
-  !> using C file handling routine.
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  subroutine get_available_file_unit(funit)
-    implicit none
-    !> File unit
-    integer, intent(inout) :: funit
-    integer :: i
-
-    funit=0
-
-    do i=1,max_number_files
-
-       ! Avoid numbers 5 and 6 and output file unit.
-       ! (I am quite sure this is redundant as these file units
-       !  would only be problematic if the array4 file handling
-       !  was done using Fortran. However, just in case,
-       ! we omit these numbers here...)
-       if(i==5 .or. i==6 .or. i==DECinfo%output) cycle
-
-       if(available_file_units(i)) then ! File unit i is available
-          funit=i
-          exit
-       end if
-
-
-    end do
-
-    ! Check that an available file unit was found
-    if(funit == 0) then
-       call lsquit('get_available_file_unit: &
-            & No available file unit was found for opening file using &
-            & C file handling. Try increasing max_number_files &
-            & in dec_utils.f90.',DECinfo%output)
-    end if
-
-    ! Now funit is no longer available to open another file
-    available_file_units(funit) = .false.
-
-  end subroutine get_available_file_unit
-
-
-
-
-  !> \brief Close file using C routine.
-  !> \author Kasper Kristensen
-  !> \date September 2010
-  subroutine closefile(funit,keep_or_delete)
-    implicit none
-    !> File unit number
-    integer, intent(in) :: funit
-    !> Status for file? 'KEEP' or 'DELETE'
-    character(*), intent(in) :: keep_or_delete
-    integer ::io_err, status_for_file
-
-    io_err=0
-
-    ! The integer status_for_file is set to:
-    ! 0 if the file is to be deleted
-    ! 1 if the file is to be kept
-    ! In this way the communication with C routine wclose is consistent
-    if(keep_or_delete=='delete' .or. keep_or_delete=='DELETE') then
-       status_for_file=0
-    elseif(keep_or_delete=='keep' .or. keep_or_delete=='KEEP') then
-       status_for_file=1
-    else
-       CALL lsQUIT('DEC closefile: keep_or_delete can only be KEEP or DELETE!',DECinfo%output)
-    end if
-
-    ! Close file using C routine
-    call wclose(funit,io_err,status_for_file)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC closefile: Something wrong when closing file unit:', funit
-       CALL lsQUIT('DEC closefile: Something went wrong when closing file!',DECinfo%output)
-    end if
-
-    files_opened = files_opened-1
-    ! Now funit is again available to open another file
-    available_file_units(funit) = .true.
-
-
-  end subroutine closefile
-
-  !> \brief Writes vector to file at given address using C routine
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  !> Note: The input is a VECTOR and elements are written in "Fortran order".
-  !> I.e. if one inputs an two-dimensional real array as the "vector"
-  !> then it is written to file column by column.
-  subroutine writevector(funit,begin_add,nelements,vector)
-    implicit none
-    !> Logical unit number for file
-    integer, intent(in) :: funit
-    !> Begin address (where we start writing the vector elements)
-    integer(kind=long), intent(in) :: begin_add
-    !> Number of elements to write
-    integer(kind=long), intent(in) :: nelements
-    !> Real elements to write to file
-    real(realk), dimension(nelements) :: vector
-    integer :: io_err
-
-    io_err=0
-
-    ! Call C routine to write to file at begin_add
-    call putwa(funit,vector,begin_add,nelements,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC writevector Something wrong &
-            &when writing to file unit:', funit
-       CALL lsQUIT('DEC writevector: Something went wrong when writing to file!',DECinfo%output)
-    end if
-
-  end subroutine writevector
-
-
-  !> \brief Reads vector from file at given address using C routine
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  !> Note: The output is a VECTOR and elements are read in Fortran order.
-  !> I.e. if one inputs an two-dimensional real array as the "vector" ,
-  !> then the elements in the file is read into the vector column by column.
-  subroutine readvector(funit,begin_add,nelements,vector)
-    implicit none
-    !> Logical unit number for file
-    integer, intent(in) :: funit
-    !> Begin address (where we start reading the vector elements)
-    integer(kind=long), intent(in) :: begin_add
-    !> Number of elements to read
-    integer(kind=long), intent(in) :: nelements
-    !> Real elements to read from file
-    real(realk), dimension(nelements) :: vector
-    integer :: io_err
-
-    io_err=0
-
-    ! Call C routine to write to file at begin_add
-    call getwa(funit,vector,begin_add,nelements,io_err)
-
-    ! Check that everything went fine
-    if(io_err /= 0) then
-       write(DECinfo%output,*) 'DEC readvector Something wrong &
-            &when reading from file unit:', funit
-       CALL lsQUIT('DEC readvector: Something went wrong &
-            & when reading from file! &
-            & Perhaps the file has not been opened before reading...',DECinfo%output)
-    end if
-
-  end subroutine readvector
-
-
-
-  !> \brief Copy file using C routine.
-  !> \author Kasper Kristensen
-  !> \date October 2010
-  subroutine copyfile(source_file, destination_file)
-    implicit none
-    !> Name of (old) source file to copy
-    character(*), intent(in) :: source_file
-    !> Name of (new) destination file
-    character(*), intent(in) :: destination_file
-    integer :: source_length, destination_length
-
-    ! Length of source file (avoid blank spaces)
-    source_length = len(trim(source_file))
-
-    ! Length of destination file (avoid blank spaces)
-    destination_length = len(trim(destination_file))
-
-    ! Copy file using C routine
-    call filecopy_c(source_file(1:source_length),source_length, &
-         & destination_file(1:destination_length),destination_length )
-
-  end subroutine copyfile
 
 
 
@@ -1083,75 +1022,6 @@ contains
 
 
 
-  !> \brief Solve eigenvalue problem: F*C = S*C*eival
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine solve_eigenvalue_problem(n,F,S,eival,C)
-    implicit none
-
-    !> Dimension of matrices (Number of eigenvalues)
-    integer,intent(in) :: n
-    !> F matrix in eigenvalue problem (typically Fock matrix)
-    real(realk),intent(in) :: F(n,n)
-    !> Overlap matrix
-    real(realk),intent(in) :: S(n,n)
-    !> Eigenvectors
-    real(realk),intent(inout) :: C(n,n)
-    real(realk),intent(inout) :: eival(n)
-    real(realk), pointer :: tmp(:,:)
-
-    ! We must use temporary matrix as overlap matrix input because it is overwritten
-    call mem_alloc(tmp,n,n)
-    tmp(1:n,1:n) = S(1:n,1:n)
-
-    ! Copy F elements to C, then use C as "F input".
-    ! At the end, C is then overwritten by the eigenvectors.
-    C(1:n,1:n) = F(1:n,1:n)
-
-    ! Solve eigenvalue problem
-    call my_DSYGV(N,C,tmp,eival,"DEC_SOLVE_EIGENVALUE")
-
-    ! Free stuff
-    call mem_dealloc(tmp)
-
-  end subroutine solve_eigenvalue_problem
-
-
-
-  !> \brief Solve eigenvalue problem: F*C = C*eival   (overlap matrix is the unit matrix)
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine solve_eigenvalue_problem_unitoverlap(n,F,eival,C)
-    implicit none
-
-    !> Dimension of matrices (Number of eigenvalues)
-    integer,intent(in) :: n
-    !> F matrix in eigenvalue problem (typically Fock matrix)
-    real(realk),intent(in) :: F(n,n)
-    !> Eigenvectors
-    real(realk),intent(inout) :: C(n,n)
-    real(realk),intent(inout) :: eival(n)
-    real(realk), pointer :: tmp(:,:)
-    integer :: i
-
-    ! Overlap matrix is unit matrix
-    call mem_alloc(tmp,n,n)
-    tmp = 0.0_realk
-    do i=1,n
-       tmp(i,i) = 1.0_realk
-    end do
-
-    ! Copy F elements to C, then use C as "F input".
-    ! At the end, C is then overwritten by the eigenvectors.
-    C(1:n,1:n) = F(1:n,1:n)
-
-    ! Solve eigenvalue problem
-    call my_DSYGV(n,C,tmp,eival,"DEC_SOLVE_EIGENVALU2")
-
-    ! Free stuff
-    call mem_dealloc(tmp)
-
-  end subroutine solve_eigenvalue_problem_unitoverlap
 
 
   subroutine ExcludeIfNoOrbs(Track,NewTrack,natoms,norb_per_atom)
@@ -1297,7 +1167,8 @@ contains
   !> \brief Subroutine that creates initial fragment
   !> \date august 2011
   !> \author Ida-Marie Hoyvik
-  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,init_radius,Occ,Virt)
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
+       & init_Occradius,init_Virtradius,Occ,Virt)
     implicit none
     !> number of atoms in MOLECULE
     Integer, intent(in)    :: natoms
@@ -1305,8 +1176,10 @@ contains
     integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
-    !> Include orbitals assigned to atoms within this distance of central atom
-    real(realk),intent(in) :: init_radius
+    !> Include Occ orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Occradius
+    !> Include Virt orbitals assigned to atoms within this distance of central atom
+    real(realk),intent(in) :: init_Virtradius
     !> Which AOS atoms to include for occ and virt spaces
     !> (entry i is T if orbitals on atom i is included)
     !> (In practice occ and virt will be identical but we keep it general)
@@ -1316,18 +1189,19 @@ contains
 
     FOT=DECinfo%FOT
 
-    write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
+    write(DECinfo%output,'(a,f5.2)') " FOP Occ Radius for initial fragment: ",init_Occradius
+    write(DECinfo%output,'(a,f5.2)') " FOP Virt Radius for initial fragment: ",init_Virtradius
 
     ! Include atoms within init_radius
     Occ=.false.
     Virt=.false.
     do i=1,natoms
 
-       ! Skip if no orbitals are assigned - do NOT modify this line.
-       if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
-
-       if (DistMyAtom(i) .le. init_radius) then
+       ! Skip if no orbitals are assigned
+       if (DistMyAtom(i) .le. init_Occradius .and. (nocc_per_atom(i)/=0)) then
           Occ(i) = .true.
+       end if
+       if (DistMyAtom(i) .le. init_Virtradius .and. (nunocc_per_atom(i)/=0)) then
           Virt(i) = .true.
        end if
 
@@ -1404,46 +1278,6 @@ contains
 
   end subroutine dec_read_mat_from_file
 
-
-
-  !> \brief Print all elements of four-dimensional array to LSDALTON.OUT.
-  !> Only to be used for testing purposes!
-  !> \author Kasper Kristensen
-  !> \date November 2011
-  subroutine print_4_dimensional_array(dims,A,label)
-
-    implicit none
-    !> Dimensions of 4-dimensional array
-    integer,dimension(4),intent(in) :: dims
-    !> 4-dimensional array to be printed
-    real(realk),intent(in) :: A(dims(1),dims(2),dims(3),dims(4))
-    !> Label for array
-    character(*), intent(in) :: label
-    integer :: i,j,k,l
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '***********************************************************'
-    write(DECinfo%output,*) '             ARRAY LABEL: ', label
-    write(DECinfo%output,*) '***********************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a,8X,a,8X,a,8X,a,12X,a)') 'i','j','k','l', 'value'
-
-    do i=1,dims(1)
-       do j=1,dims(2)
-          do k=1,dims(3)
-             do l=1,dims(4)
-                write(DECinfo%output,'(4i9,5X,g18.10)') i,j,k,l,A(i,j,k,l)
-             end do
-          end do
-       end do
-    end do
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-  end subroutine print_4_dimensional_array
 
 
 
@@ -1673,6 +1507,7 @@ contains
     !> Simple pointer structure
     type(mypointer),intent(inout) :: thepointer
     integer(kind=long),parameter :: IL512=512,IL1=1
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
     if(start < 1) then
        print *, 'start = ', start
        call lsquit('mypointer_init: start value is smaller than 1!',-1)
@@ -1698,6 +1533,13 @@ contains
     ! Make pointer point to requested values
     nullify(thepointer%p)
     thepointer%p => arr(thepointer%start:thepointer%end)
+#else
+    call mem_alloc(thepointer%p,N)
+    ! Set simple pointer info
+    thepointer%start = 1
+    thepointer%N = N
+    thepointer%end = start + N -1
+#endif
 
   end subroutine mypointer_init
 
@@ -1945,10 +1787,6 @@ contains
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
    
-    if(DECinfo%F12debug) then 
-       print *, "atomic_fragment_free"
-    end if
-
   end subroutine atomic_fragment_free
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.
@@ -2060,6 +1898,10 @@ contains
        call mem_dealloc(fragment%basis_idx)
     end if
 
+    if(associated(fragment%cabsbasis_idx)) then
+       call mem_dealloc(fragment%cabsbasis_idx)
+    end if
+
     ! DEC orbitals
     if(associated(fragment%occAOSorb)) then
        do i=1,size(fragment%occAOSorb)
@@ -2159,10 +2001,6 @@ contains
     !> Atomic fragment to be freed
     type(decfrag),intent(inout) :: fragment
     
-    if(DECinfo%F12debug) then   
-        print *, "atomic_fragment_free_f12"
-    end if
-
     ! Free CABS MOs !
     if(associated(fragment%Ccabs)) then
        call mem_dealloc(fragment%Ccabs)
@@ -2300,13 +2138,30 @@ contains
     !> Currently available memory in GB
     real(realk),intent(inout) :: mem
     real(realk) :: MemInUse
+    logical :: memfound
 
-    ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
-    ! Memory currently in use is mem_allocated_global (see memory.f90)
-    ! Memory available: Total memory - memory in use
-    ! Mem in use in GB
-    MemInUse = 1.0E-9_realk*mem_allocated_global
-    mem = DECinfo%memory - MemInUse
+    if(DECinfo%use_system_memory_info)then
+       ! Use the system available memory information accessible via
+       ! /proc/meminfo or the top command on mac os X. Especially the latter is
+       ! error prone and not recommended. The /proc/meminfo can be preferred
+       ! over the input setting on some systems
+
+       call get_available_memory(DECinfo%output,mem,memfound)
+
+       if(.not.memfound)then
+          call lsquit("ERROR(get_currently_available_memory):system call failed,&
+          & use .MEMORY keyword to specify memory in LSDALTON.INP",-1)
+       endif
+
+    else
+       ! Total memory was determined at the beginning of DEC calculaton (DECinfo%memory)
+       ! Memory currently in use is mem_allocated_global (see memory.f90)
+       ! Memory available: Total memory - memory in use
+       ! Mem in use in GB
+       MemInUse = 1.0E-9_realk*mem_allocated_global
+       mem = DECinfo%memory - MemInUse
+
+    endif
 
     ! Sanity check
     if(mem < 0.0E0_realk) then
@@ -2328,24 +2183,24 @@ contains
   !> \brief Get list of atoms sorted according to distance from "MyAtom".
   !> \author Ida-Marie Hoeyvik
   subroutine GetSortedList(ListMyAtom,ListTrack,ToSort,&
-       & natoms,MyAtom)
+       & n1,natoms,MyAtom)
     implicit none
-    integer,intent(in)     :: natoms,MyAtom
-    real(realk),intent(in) :: ToSort(natoms,natoms)
-    real(realk)            :: ListMyAtom(natoms), TempList(natoms)
-    integer                :: ListTrack(natoms), TempTrack(natoms)
+    integer,intent(in)     :: n1,natoms,MyAtom
+    real(realk),intent(in) :: ToSort(n1,natoms)
+    real(realk)            :: ListMyAtom(n1), TempList(n1)
+    integer                :: ListTrack(n1), TempTrack(n1)
     integer                :: counter,i
 
     ListMyAtom(:)=ToSort(:,MyAtom)
     ! Sort large--> small
-    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,natoms)
+    call real_inv_sort_with_tracking(ListMyAtom,ListTrack,n1)
 
     TempList = 0.0E0_realk
     TempTrack = 0
     counter = 1
 
     ! change to small-->large
-    do i=natoms,1,-1
+    do i=n1,1,-1
        TempList(counter) = ListMyAtom(i)
        TempTrack(counter)= ListTrack(i)
        counter = counter + 1
@@ -2921,7 +2776,7 @@ contains
     integer(kind=4) :: myint_long
 
     read(funit) myint_long
-    myint = myint_long
+    myint = int(myint_long)
 
   end subroutine read_32bit_to_64bit_singleinteger
 
@@ -3237,40 +3092,43 @@ contains
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%noccEOS   ! Occupied EOS for fragment 1
-       do b=1,fragment2%noccEOS ! Occupied EOS for fragment 2
 
-          ax=fragment1%occEOSidx(a)  ! index in full list orbitals
-          bx=fragment2%occEOSidx(b)  ! index in full list orbitals
-          p1=0
-          p2=0
-
-          ! Index for fragment 1 in pair fragment list
-          do i=1,PairFragment%noccEOS
-
-             ! "ax" index in PairFragment%occEOSidx list
-             if(PairFragment%occEOSidx(i) == ax) p1 = i
-
-             ! "bx" index in PairFragment%occEOSidx list
-             if(PairFragment%occEOSidx(i) == bx) p2 = i
-
+    ! Skip this when only virtual part. is requested
+    DoCheckOcc: if(.not. DECinfo%onlyvirtpart) then
+       do a=1,fragment1%noccEOS   ! Occupied EOS for fragment 1
+          do b=1,fragment2%noccEOS ! Occupied EOS for fragment 2
+             
+             ax=fragment1%occEOSidx(a)  ! index in full list orbitals
+             bx=fragment2%occEOSidx(b)  ! index in full list orbitals
+             p1=0
+             p2=0
+             
+             ! Index for fragment 1 in pair fragment list
+             do i=1,PairFragment%noccEOS
+                
+                ! "ax" index in PairFragment%occEOSidx list
+                if(PairFragment%occEOSidx(i) == ax) p1 = i
+                
+                ! "bx" index in PairFragment%occEOSidx list
+                if(PairFragment%occEOSidx(i) == bx) p2 = i
+                
+             end do
+             
+             ! Sanity check
+             if(p1==p2 .or. p1==0 .or. p2==0 ) then
+                write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
+                call lsquit('which_pairs_occ: &
+                     & Something wrong with indices in pair',DECinfo%output)
+             end if
+             
+             
+             ! Pair interaction for (p1,p2) index pair
+             dopair(p1,p2)=.true.
+             dopair(p2,p1)=.true.
+             
           end do
-
-          ! Sanity check
-          if(p1==p2 .or. p1==0 .or. p2==0 ) then
-             write(DECinfo%output,'(1X,a,4i6)') 'ax,bx,p1,p2', ax,bx,p1,p2
-             call lsquit('which_pairs_occ: &
-                  & Something wrong with indices in pair',DECinfo%output)
-          end if
-
-
-          ! Pair interaction for (p1,p2) index pair
-          dopair(p1,p2)=.true.
-          dopair(p2,p1)=.true.
-
        end do
-    end do
-
+    endif DoCheckOcc
 
   end subroutine which_pairs_occ
 
@@ -3353,27 +3211,40 @@ contains
     type(joblist),intent(in) :: jobs
     !> File unit number to write to (of course assumes that file is open)
     integer,intent(in) :: funit
+    logical(8) :: jobsdone64(jobs%njobs),dofragopt64(jobs%njobs),esti64(jobs%njobs)
+
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    jobsdone64  = jobs%jobsdone
+    dofragopt64 = jobs%dofragopt
+    esti64      = jobs%esti
 
     ! Pair cutoff
     write(funit) DECinfo%pair_distance_threshold
 
-    write(funit) jobs%njobs
-    write(funit) jobs%atom1
-    write(funit) jobs%atom2
-    write(funit) jobs%jobsize
-    write(funit) jobs%jobsdone
-    write(funit) jobs%dofragopt
-    write(funit) jobs%esti
+    write(funit) int(jobs%njobs,kind=8)
+    write(funit) int(jobs%atom1,kind=8)
+    write(funit) int(jobs%atom2,kind=8)
+    write(funit) int(jobs%jobsize,kind=8)
+    write(funit) jobsdone64
+    write(funit) dofragopt64
+    write(funit) esti64
 
     ! MPI fragment statistics
-    write(funit) jobs%nslaves
-    write(funit) jobs%nocc
-    write(funit) jobs%nunocc
-    write(funit) jobs%nbasis
-    write(funit) jobs%ntasks
+    write(funit) int(jobs%nslaves,kind=8)
+    write(funit) int(jobs%nocc,kind=8)
+    write(funit) int(jobs%nunocc,kind=8)
+    write(funit) int(jobs%nbasis,kind=8)
+    write(funit) int(jobs%ntasks,kind=8)
     write(funit) jobs%flops
     write(funit) jobs%LMtime
-    write(funit) jobs%load
+    write(funit) jobs%workt
+    write(funit) jobs%commt
+    write(funit) jobs%idlet
 
   end subroutine write_fragment_joblist_to_file
 
@@ -3391,70 +3262,40 @@ contains
     integer,intent(in) :: funit
     integer :: njobs
 
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! IMPORTANT: ALWAYS WRITE AND READ INTEGERS AND LOGICALS WITH 64BIT!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
     ! Pair cutoff
     read(funit) DECinfo%pair_distance_threshold
     write(DECinfo%output,'(1X,a,g20.8)') 'Pair cutoff read from file:', DECinfo%pair_distance_threshold
 
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(funit,njobs)
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
-       end if
-       call read_64bit_to_32bit(funit,njobs,jobs%atom1)
-       call read_64bit_to_32bit(funit,njobs,jobs%atom2)
-       call read_64bit_to_32bit(funit,njobs,jobs%jobsize)
-       call read_64bit_to_32bit(funit,njobs,jobs%jobsdone)
-       call read_64bit_to_32bit(funit,njobs,jobs%dofragopt)
-       call read_64bit_to_32bit(funit,njobs,jobs%esti)
-       call read_64bit_to_32bit(funit,njobs,jobs%nslaves)
-       call read_64bit_to_32bit(funit,njobs,jobs%nocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nunocc)
-       call read_64bit_to_32bit(funit,njobs,jobs%nbasis)
-       call read_64bit_to_32bit(funit,njobs,jobs%ntasks)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(funit,njobs)
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file2: Error in number of jobs!',-1)
-       end if
-       call read_32bit_to_64bit(funit,njobs,jobs%atom1)
-       call read_32bit_to_64bit(funit,njobs,jobs%atom2)
-       call read_32bit_to_64bit(funit,njobs,jobs%jobsize)
-       call read_32bit_to_64bit(funit,njobs,jobs%jobsdone)
-       call read_32bit_to_64bit(funit,njobs,jobs%dofragopt)
-       call read_32bit_to_64bit(funit,njobs,jobs%esti)
-       call read_32bit_to_64bit(funit,njobs,jobs%nslaves)
-       call read_32bit_to_64bit(funit,njobs,jobs%nocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nunocc)
-       call read_32bit_to_64bit(funit,njobs,jobs%nbasis)
-       call read_32bit_to_64bit(funit,njobs,jobs%ntasks)
-    else
-       read(funit) njobs
-       if(njobs/=jobs%njobs) then
-          print *, 'Number of jobs in job list   : ', jobs%njobs
-          print *, 'Number of jobs read from file: ', njobs
-          call lsquit('read_fragment_joblist_from_file3: Error in number of jobs!',-1)
-       end if
-       read(funit) jobs%atom1
-       read(funit) jobs%atom2
-       read(funit) jobs%jobsize
-       read(funit) jobs%jobsdone
-       read(funit) jobs%dofragopt
-       read(funit) jobs%esti
-
-       read(funit) jobs%nslaves
-       read(funit) jobs%nocc
-       read(funit) jobs%nunocc
-       read(funit) jobs%nbasis
-       read(funit) jobs%ntasks
+    call read_64bit_to_int(funit,njobs)
+    if(njobs/=jobs%njobs) then
+       print *, 'Number of jobs in job list   : ', jobs%njobs
+       print *, 'Number of jobs read from file: ', njobs
+       call lsquit('read_fragment_joblist_from_file1: Error in number of jobs!',-1)
     end if
+    call read_64bit_to_int(funit,njobs,jobs%atom1)
+    call read_64bit_to_int(funit,njobs,jobs%atom2)
+    call read_64bit_to_int(funit,njobs,jobs%jobsize)
+    call read_64bit_to_int(funit,njobs,jobs%jobsdone)
+    call read_64bit_to_int(funit,njobs,jobs%dofragopt)
+    call read_64bit_to_int(funit,njobs,jobs%esti)
+    call read_64bit_to_int(funit,njobs,jobs%nslaves)
+    call read_64bit_to_int(funit,njobs,jobs%nocc)
+    call read_64bit_to_int(funit,njobs,jobs%nunocc)
+    call read_64bit_to_int(funit,njobs,jobs%nbasis)
+    call read_64bit_to_int(funit,njobs,jobs%ntasks)
 
     read(funit) jobs%flops
     read(funit) jobs%LMtime
-    read(funit) jobs%load
+    read(funit) jobs%workt
+    read(funit) jobs%commt
+    read(funit) jobs%idlet
 
     write(DECinfo%output,*)
     write(DECinfo%output,*) 'JOB LIST RESTART'
@@ -3488,12 +3329,12 @@ contains
     call mem_alloc(jobs%jobsdone,njobs)
     call mem_alloc(jobs%dofragopt,njobs)
     call mem_alloc(jobs%esti,njobs)
-    jobs%atom1=0
-    jobs%atom2=0
-    jobs%jobsize=0
-    jobs%jobsdone=.false. ! no jobs are done
-    jobs%dofragopt=.false. 
-    jobs%esti=.false.
+    jobs%atom1     = 0
+    jobs%atom2     = 0
+    jobs%jobsize   = 0
+    jobs%jobsdone  = .false. ! no jobs are done
+    jobs%dofragopt = .false. 
+    jobs%esti      = .false.
 
     ! MPI fragment statistics
     call mem_alloc(jobs%nslaves,njobs)
@@ -3503,15 +3344,19 @@ contains
     call mem_alloc(jobs%ntasks,njobs)
     call mem_alloc(jobs%flops,njobs)
     call mem_alloc(jobs%LMtime,njobs)
-    call mem_alloc(jobs%load,njobs)
-    jobs%nslaves=0
-    jobs%nocc=0
-    jobs%nunocc=0
-    jobs%nbasis=0
-    jobs%ntasks=0
-    jobs%flops=0.0E0_realk
-    jobs%LMtime=0.0E0_realk
-    jobs%load=0.0E0_realk
+    call mem_alloc(jobs%commt,njobs)
+    call mem_alloc(jobs%workt,njobs)
+    call mem_alloc(jobs%idlet,njobs)
+    jobs%nslaves = 0
+    jobs%nocc    = 0
+    jobs%nunocc  = 0
+    jobs%nbasis  = 0
+    jobs%ntasks  = 0
+    jobs%flops   = 0.0E0_realk
+    jobs%LMtime  = 0.0E0_realk
+    jobs%commt   = 0.0E0_realk
+    jobs%workt   = 0.0E0_realk
+    jobs%idlet   = 0.0E0_realk
 
   end subroutine init_joblist
 
@@ -3591,11 +3436,20 @@ contains
        nullify(jobs%LMtime)
     end if
 
-    if(associated(jobs%load)) then
-       call mem_dealloc(jobs%load)
-       nullify(jobs%load)
+    if(associated(jobs%workt)) then
+       call mem_dealloc(jobs%workt)
+       nullify(jobs%workt)
     end if
 
+    if(associated(jobs%commt)) then
+       call mem_dealloc(jobs%commt)
+       nullify(jobs%commt)
+    end if
+
+    if(associated(jobs%idlet)) then
+       call mem_dealloc(jobs%idlet)
+       nullify(jobs%idlet)
+    end if
 
   end subroutine free_joblist
 
@@ -3625,20 +3479,22 @@ contains
     end if
 
     ! Copy info from single job into big job list
-    jobs%atom1(position) = singlejob%atom1(1)
-    jobs%atom2(position) = singlejob%atom2(1)
-    jobs%jobsize(position) = singlejob%jobsize(1)
-    jobs%jobsdone(position) = singlejob%jobsdone(1)
+    jobs%atom1(position)     = singlejob%atom1(1)
+    jobs%atom2(position)     = singlejob%atom2(1)
+    jobs%jobsize(position)   = singlejob%jobsize(1)
+    jobs%jobsdone(position)  = singlejob%jobsdone(1)
     jobs%dofragopt(position) = singlejob%dofragopt(1)
-    jobs%esti(position) = singlejob%esti(1)
-    jobs%nslaves(position) = singlejob%nslaves(1)
-    jobs%nocc(position) = singlejob%nocc(1)
-    jobs%nunocc(position) = singlejob%nunocc(1)
-    jobs%nbasis(position) = singlejob%nbasis(1)
-    jobs%ntasks(position) = singlejob%ntasks(1)
-    jobs%flops(position) = singlejob%flops(1)
-    jobs%LMtime(position) = singlejob%LMtime(1)
-    jobs%load(position) = singlejob%load(1)
+    jobs%esti(position)      = singlejob%esti(1)
+    jobs%nslaves(position)   = singlejob%nslaves(1)
+    jobs%nocc(position)      = singlejob%nocc(1)
+    jobs%nunocc(position)    = singlejob%nunocc(1)
+    jobs%nbasis(position)    = singlejob%nbasis(1)
+    jobs%ntasks(position)    = singlejob%ntasks(1)
+    jobs%flops(position)     = singlejob%flops(1)
+    jobs%LMtime(position)    = singlejob%LMtime(1)
+    jobs%workt(position)     = singlejob%workt(1)
+    jobs%commt(position)     = singlejob%commt(1)
+    jobs%idlet(position)     = singlejob%idlet(1)
 
   end subroutine put_job_into_joblist
 
@@ -3877,8 +3733,68 @@ contains
        end if
     end do
 
-
   end subroutine add_dec_energies
+
+  !> Add DEC interaction energies: E = sum_{P>Q} dE_PQ for P and Q on
+  !> different SubSystems
+  !> taking into account that not all atoms have orbitals assigned.
+  !> \author Thomas Kjaergaard
+  !> \date March 2014
+  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE,SubSystemIndex,option)
+    implicit none
+    !> Transposition option
+    integer,intent(in),optional :: option
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> Fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
+    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
+    !> Which atoms have orbitals assigned?
+    logical,dimension(natoms) :: orbitals_assigned
+    !> Total energy E = sum_P E_P  +  sum_{P>Q} dE_PQ 
+    real(realk),intent(inout) :: interactionE
+    !> Subsystem Index
+    integer,dimension(natoms) :: SubSystemIndex
+    !
+    integer :: P,Q
+    logical :: Trans
+    IF(present(option))THEN
+       IF(option.EQ.2)THEN
+          Trans = .TRUE.
+       ELSE
+          Trans = .FALSE.
+       ENDIF
+    ELSE
+       Trans = .FALSE.
+    ENDIF
+
+    IF(Trans)THEN
+       interactionE = 0.0_realk
+       do P=1,natoms
+          if(orbitals_assigned(P)) then
+             do Q=P+1,natoms
+                if(orbitals_assigned(Q)) then
+                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
+                      interactionE = interactionE + FragEnergies(P,Q)
+                   ENDIF
+                end if
+             end do
+          end if
+       end do
+    ELSE !default
+       interactionE = 0.0_realk
+       do P=1,natoms
+          if(orbitals_assigned(P)) then
+             do Q=1,P-1
+                if(orbitals_assigned(Q)) then
+                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
+                      interactionE = interactionE + FragEnergies(P,Q)
+                   ENDIF
+                end if
+             end do
+          end if
+       end do
+    ENDIF
+  end subroutine add_dec_interactionenergies
 
 
 
@@ -4157,6 +4073,19 @@ contains
 
   end subroutine print_total_energy_summary
 
+  !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
+  subroutine print_Interaction_energy(Ecorr,Eerr)
+    implicit none
+    !> Interaction Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    integer :: lupri
+    lupri=6
+    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
+    lupri=DECinfo%output
+    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
+  end subroutine print_Interaction_energy
 
   !> \brief Print short energy summary (both HF and correlation) to specific logical unit number.
   !> (Necessary to place here because it is used both for DEC and for full calculation).
@@ -4180,17 +4109,22 @@ contains
     write(lupri,*)
     write(lupri,'(13X,a)') '**********************************************************'
     if(DECinfo%full_molecular_cc) then
-       write(lupri,'(13X,a,19X,a,19X,a)') '*', 'CC ENERGY SUMMARY', '*'
+       write(lupri,'(13X,a,19X,a,20X,a)') '*', 'CC ENERGY SUMMARY', '*'
     else
        write(lupri,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
     end if
     write(lupri,'(13X,a)') '**********************************************************'
     write(lupri,*)
     if(DECinfo%first_order) then
-       write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       IF(DECinfo%InteractionEnergy)THEN
+          call lsquit('InteractionEnergy and first_order not implemented',-1)
+       ENDIF
+       IF(.NOT.DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
+       if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
           write(lupri,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
@@ -4207,33 +4141,72 @@ contains
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
        end if
     else
-       write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       ! skip error print for full calculation (0 by definition)
-       if(.not. DECinfo%full_molecular_cc .and. (.not. DECinfo%onlyoccpart) ) then  
-          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       end if
-       if(DECinfo%ccmodel==MODEL_MP2) then
-          if (DECinfo%F12) then
+       IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
+          write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
+          ! skip error print for full calculation (0 by definition)
+          if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
+          end if
+#endif
+       ELSE
+          IF(.NOT.DECinfo%DFTreference)THEN
+             write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+          ENDIF
+          write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+          ! skip error print for full calculation (0 by definition)
+          if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
+             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+          end if
+       ENDIF
+       IF(.NOT.DECinfo%InteractionEnergy)THEN
+          if(DECinfo%ccmodel==MODEL_MP2) then
+             if (DECinfo%F12) then
+                write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+             else          
+                write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+             endif
+          elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-          else          
-             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
-          endif
-       elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CCSD) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
+          elseif(DECinfo%ccmodel==MODEL_CC2) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+          elseif(DECinfo%ccmodel==MODEL_CCSD) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+          elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+          end if
+       ENDIF
     end if
     write(lupri,*)
     write(lupri,*)
 
 
   end subroutine print_total_energy_summary_lupri
+
+  !> \brief Print short interaction energy to specific logical unit number.
+  !> \author Thomas Kjaergaard
+  !> \date Marts 2014
+  subroutine print_interaction_energy_lupri(Ecorr,Eerr,lupri)
+    implicit none
+    !> Interaction Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+    !> Logical unit number to print to
+    integer,intent(in) :: lupri
+    write(lupri,*)
+    if(DECinfo%first_order) then
+       IF(DECinfo%PrintInteractionEnergy)THEN
+          call lsquit('InteractionEnergy and first_order not implemented',-1)
+       ENDIF
+    else
+#ifdef MOD_UNRELEASED
+       write(lupri,'(15X,a,f20.10)') 'I: Interaction Correlation energy  :', Ecorr
+       write(lupri,'(15X,a,f20.10)') 'I: Estimated Interaction DEC error :', Eerr
+#endif
+    end if
+    write(lupri,*)
+  end subroutine print_interaction_energy_lupri
 
 
   !> \brief Print all fragment energies for given CC model.
@@ -4252,81 +4225,110 @@ contains
     real(realk),intent(inout) :: DistanceTable(natoms,natoms)
     !> Total DEC energies (sum of frag energies)
     real(realk),intent(in) :: energies(ndecenergies)
-
-
+    !local variables 
+    character(len=30) :: CorrEnergyString
+    integer :: iCorrLen
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '============================================================================='
 
+    IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
+       CorrEnergyString = 'interaction correlation energy'
+       iCorrLen = 30
+#else
+       call lsquit('interaction correlation energy feature not released',-1)
+#endif
+    ELSE
+       CorrEnergyString = 'correlation energy            '
+       iCorrLen = 18
+    ENDIF
+    
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
-            & 'MP2 occupied single energies','AF_MP2_OCC')
-       if(.not. DECinfo%onlyoccpart) then
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
+               & 'MP2 occupied single energies','AF_MP2_OCC')
+       endif
+       if(.not. DECinfo%onlyoccpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
                & 'MP2 virtual single energies','AF_MP2_VIR')
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
                & 'MP2 Lagrangian single energies','AF_MP2_LAG')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
-            & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
-       if(.not.DECinfo%onlyoccpart) then
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
+               & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
+       endif
+       if(.not. DECinfo%onlyoccpart) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
                & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')          
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
                & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'MP2 occupied   correlation energy : ', &
-            & energies(FRAGMODEL_OCCMP2)
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,A,A,A,g20.10)') &
+               & 'MP2 occupied   ',CorrEnergyString(1:iCorrLen),' : ',energies(FRAGMODEL_OCCMP2)
+       endif
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 virtual    correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTMP2)
-          write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Lagrangian correlation energy : ', &
+       endif
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 Lagrangian ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_LAGMP2)
        end if
        write(DECinfo%output,*)
-
     case(MODEL_CC2)
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
-            & 'CC2 occupied single energies','AF_CC2_OCC')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
+               & 'CC2 occupied single energies','AF_CC2_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
                & 'CC2 virtual single energies','AF_CC2_VIR')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
-            & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
+               & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
                & DistanceTable, 'CC2 virtual pair energies','PF_CC2_VIR')
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CC2 occupied   correlation energy : ', &
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
             & energies(FRAGMODEL_OCCCC2)
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'CC2 virtual    correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCC2)
        end if
        write(DECinfo%output,*)
 
     case(MODEL_RPA)
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-            & 'RPA occupied single energies','AF_RPA_OCC')
-
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+               & 'RPA occupied single energies','AF_RPA_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
                & 'RPA virtual single energies','AF_RPA_VIR')
        endif
 
-
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
-            & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
-
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
+               & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
                & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
@@ -4334,48 +4336,58 @@ contains
 
     case(MODEL_CCSD)
        if(.not.DECinfo%CCDhack)then
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-               & 'CCSD occupied single energies','AF_CCSD_OCC')
+          if(.not.DECinfo%onlyvirtpart) then  
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+                  & 'CCSD occupied single energies','AF_CCSD_OCC')
+          endif
           if(.not.DECinfo%onlyoccpart) then
              call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & 'CCSD virtual single energies','AF_CCSD_VIR')
           end if
 
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-               & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+          if(.not.DECinfo%onlyvirtpart) then  
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+                  & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+          endif
           if(.not.DECinfo%onlyoccpart) then
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
           end if
 
           write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', &
-               & energies(FRAGMODEL_OCCCCSD)
+          if(.not.DECinfo%onlyvirtpart) then  
+             write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+                  & energies(FRAGMODEL_OCCCCSD)
+          endif
           if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', &
+             write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                   & energies(FRAGMODEL_VIRTCCSD)
           end if
           write(DECinfo%output,*)
        else
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-               & 'CCD occupied single energies','AF_CCD_OCC')
+          if(.not.DECinfo%onlyvirtpart) then  
+             call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+                  & 'CCD occupied single energies','AF_CCD_OCC')
+          endif
           if(.not.DECinfo%onlyoccpart) then
              call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & 'CCD virtual single energies','AF_CCD_VIR')
           end if
 
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-               & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
+          if(.not.DECinfo%onlyvirtpart) then  
+             call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+                  & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
+          endif
           if(.not.DECinfo%onlyoccpart) then
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
           end if
 
           write(DECinfo%output,*)
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCD occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_OCCCCSD)
           if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') 'CCD virtual    correlation energy : ', &
+             write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCD virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
                   & energies(FRAGMODEL_VIRTCCSD)
           end if
           write(DECinfo%output,*)
@@ -4383,85 +4395,122 @@ contains
 
     case(MODEL_CCSDpT)
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-            & 'CCSD occupied single energies','AF_CCSD_OCC')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & 'CCSD occupied single energies','AF_CCSD_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                & 'CCSD virtual single energies','AF_CCSD_VIR')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
-            & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
+               & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied correlation energy : ', &
-            & energies(FRAGMODEL_OCCCCSD)
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_OCCCCSD)
+       endif
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual  correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCCSD)
        end if
        write(DECinfo%output,*)
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
-            & '(T) occupied single energies','AF_ParT_OCC_BOTH')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
+               & '(T) occupied single energies','AF_ParT_OCC_BOTH')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
                & '(T) virtual single energies','AF_ParT_VIR_BOTH')
        end if
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
-            & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
+               & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
        end if
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
-            & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
+               & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & '(T) virtual single energies (fifth order)','AF_ParT_VIR5')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
-            & DistanceTable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
+               & DistanceTable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
                & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
-            & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
+               & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
        end if
 
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
-            & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
+       if(.not.DECinfo%onlyvirtpart) then  
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
+               & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
+       endif
        if(.not.DECinfo%onlyoccpart) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fifth order)','PF_ParT_VIR5')
        end if
 
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
-       write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
-       if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
-       end if
+       IF(DECinfo%InteractionEnergy)THEN
+#ifdef MOD_UNRELEASED
+          if(.not.DECinfo%onlyvirtpart) then  
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied Interaction correlation energy : ', energies(FRAGMODEL_OCCpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order Interaction energy   : ', energies(FRAGMODEL_OCCpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order Interaction energy   : ', energies(FRAGMODEL_OCCpT5)
+          endif
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  Interaction correlation energy : ', energies(FRAGMODEL_VIRTpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT5)
+          end if
+#endif
+       ELSE
+          if(.not.DECinfo%onlyvirtpart) then  
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
+          endif
+          if(.not.DECinfo%onlyoccpart) then
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
+             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
+          end if
+       ENDIF
        write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) occupied correlation energy : ', &
-            & energies(FRAGMODEL_OCCCCSD)+energies(FRAGMODEL_OCCpT)
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) occupied ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_OCCCCSD)+energies(FRAGMODEL_OCCpT)
+       endif
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) virtual  correlation energy : ', &
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
                & energies(FRAGMODEL_VIRTCCSD)+energies(FRAGMODEL_VIRTpT)
        end if
        write(DECinfo%output,*)
@@ -4477,15 +4526,47 @@ contains
 #ifdef MOD_UNRELEASED
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
+
+       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+       
+       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2f12_OCC')
+       
        write(DECinfo%output,*)
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(13X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
-       write(DECinfo%output,'(13X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY : ', energies(FRAGMODEL_OCCMP2)  
-       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY : ', energies(FRAGMODEL_MP2f12)
-       write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-            & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+       write(DECinfo%output,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(1X,a)') '**********************************************************'
+
+       if(DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_VIRTMP2)  
+       else
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
+       endif
+       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
+       if(DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+               & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
+       else
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+               & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+       endif
        write(DECinfo%output,*)       
+
+       if(DECinfo%F12debug) then
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+          write(*,'(1X,a)') '**********************************************************'
+          write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
+          write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
+          if(DECinfo%onlyvirtpart) then  
+             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+                  & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
+          else
+             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+                  & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
+          endif
+       endif
     endif
 #endif
 
@@ -4514,19 +4595,37 @@ contains
     character(*),intent(in) :: greplabel
     integer :: i
 
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '================================================================='
-    write(DECinfo%output,*) trim(headline)
-    write(DECinfo%output,*) '================================================================='
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Fragment       Energy'
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
-       write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
-    end do
-
+    IF(DECinfo%RepeatAF)THEN 
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*) trim(headline)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) 'Fragment       Energy'
+       do i=1,natoms
+          if(.not. dofrag(i)) cycle
+          write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+       end do
+    ELSE
+       IF(.NOT.DECinfo%InteractionEnergy)THEN !default
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
+          write(DECinfo%output,*) '================================================================='
+          write(DECinfo%output,*) trim(headline)
+          write(DECinfo%output,*) '================================================================='
+          write(DECinfo%output,*)
+          write(DECinfo%output,*) 'Fragment       Energy'
+          do i=1,natoms
+             if(.not. dofrag(i)) cycle
+             write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+          end do
+!         ELSE
+          !DECinfo%InteractionEnergy sets the RepeatAF to FALSE 
+          !so the FragEnergies might be the MP2 energy used for the fragment optimization
+          !to avoid confusion we do not print the energy
+       ENDIF
+    ENDIF
 
   end subroutine print_atomic_fragment_energies
 
@@ -4583,6 +4682,67 @@ contains
     end do
 
   end subroutine print_pair_fragment_energies
+
+
+  !> \brief Print specific set  of pair fragment energies (modified version 
+  !         of kasper's print_pair_fragment_energies routine)
+  !> \author Pablo Baudin
+  !> \date June 2014
+  subroutine print_spec_pair_fragment_energies(natoms,npairs,pair_set,FragEnergies,&
+       & dofrag, DistanceTable, headline, greplabel)
+
+    implicit none
+
+    !> Number of pairs to print:
+    integer,intent(in) :: npairs
+    !> Number of atoms in the molecule:
+    integer,intent(in) :: natoms
+    !> Atomic indices of the pairs
+    integer,intent(in) :: pair_set(npairs,2)
+    ! Fragment energies 
+    real(realk),intent(in) :: FragEnergies(natoms,natoms)
+    !> Logical vector describing which atoms have orbitals assigned 
+    !> (i.e., which atoms to consider in atomic fragment calculations)
+    logical,intent(in) :: dofrag(natoms)
+    !> Distances between all atoms (a.u.)
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    !> Character string to print as headline
+    character(*),intent(in) :: headline
+    !> Label to print after each energy for easy grepping
+    character(*),intent(in) :: greplabel
+    integer :: i,P,Q
+    real(realk) :: pairdist, thr
+
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*) trim(headline)
+    write(DECinfo%output,*) '================================================================='
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(2X,a)') 'Atom1  Atom2     Dist(Ang)        Energy'
+    thr=1.0E-15_realk
+    do i=1,npairs
+      P=pair_set(i,1)
+      Q=pair_set(i,2)
+
+      ! Skip if no fragment
+      if(.not. dofrag(P)) cycle
+      if(.not. dofrag(Q)) cycle
+
+      pairdist = DistanceTable(P,Q)
+
+      ! Only print if pair distance is below threshold and nonzero
+      DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold &
+           & .and. abs(FragEnergies(P,Q)) > thr  ) then
+
+        write(DECinfo%output,'(I6,2X,I6,2X,g14.5,2X,g20.10,2a)') &
+             & P,Q,pairdist*bohr_to_angstrom, FragEnergies(P,Q),"    ",greplabel
+      end if DistanceCheck
+
+    end do
+
+  end subroutine print_spec_pair_fragment_energies
 
 
   !> \brief Get total number of atomic fragments + pair fragments
@@ -4667,7 +4827,47 @@ contains
 
   end subroutine get_occfragenergies
 
+  !> \brief Extract fragment energies for occupied partitioning for given CC model
+  !> from set of all fragment energies.
+  !> \author Kasper Kristensen - TK
+  !> \date October 2013
+  subroutine get_virtfragenergies(natoms,ccmodel,FragEnergiesAll,FragEnergies)
+    implicit none
+    !> Number of atoms in molecule
+    integer,intent(in) :: natoms
+    !> CC model according to MODEL_* conventions in dec_typedef.F90
+    integer,intent(in) :: ccmodel
+    !> Fragment energies for all models (see FRAGMODEL_* in dec_typedef.F90)
+    real(realk),intent(in) :: FragEnergiesAll(natoms,natoms,ndecenergies)
+    !> Fragment energies for occupied partitioning for given CC model
+    real(realk),intent(inout) :: FragEnergies(natoms,natoms)
 
+    ! MODIFY FOR NEW MODEL
+    select case(ccmodel)
+    case(MODEL_MP2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTMP2)
+
+    case(MODEL_CC2)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTCC2)
+
+    case(MODEL_RPA)
+
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTRPA)
+
+    case(MODEL_CCSD)
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTCCSD)
+
+    case(MODEL_CCSDpT)
+       ! CCSD(T): Add CCSD and (T) contributions using occupied partitioning
+       FragEnergies=FragEnergiesAll(:,:,FRAGMODEL_VIRTCCSD) &
+            & + FragEnergiesAll(:,:,FRAGMODEL_VIRTpT)
+
+    case default
+       print *, 'Model is: ', ccmodel
+       call lsquit('get_virtfragenergies: Model needs implementation!',-1)
+    end select
+
+  end subroutine get_virtfragenergies
 
   !> \brief Estimate (absolute) energy error in DEC calculation.
   !> \author Kasper Kristensen
@@ -4893,5 +5093,238 @@ contains
     allocate(fragment%nunoccFA)
 
   end subroutine fragment_init_dimension_pointers
+
+  !> \brief Calculate combined single+double amplitudes:
+  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+  !> \author Kasper Kristensen
+  !> \date January 2012
+  subroutine get_combined_SingleDouble_amplitudes_oldarr(t1,t2,u)
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(array2),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(array4),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(array4),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt
+
+     ! Number of occupied/virtual orbitals assuming index ordering given above
+     nocc=t1%dims(2)
+     nvirt=t1%dims(1)
+
+     ! Init combined amplitudes
+     u = array4_init(t2%dims)
+
+     if(DECinfo%use_singles)then
+        do j=1,nocc
+           do b=1,nvirt
+              do i=1,nocc
+                 do a=1,nvirt
+                    u%val(a,i,b,j) = t2%val(a,i,b,j) + t1%val(a,i)*t1%val(b,j)
+                 end do
+              end do
+           end do
+        end do
+     else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(u%val,'=',t2%val,t2%nelements)
+#else
+        !$OMP WORKSHARE
+        u%val = t2%val
+        !$OMP END WORKSHARE
+#endif
+     endif
+
+
+  end subroutine get_combined_SingleDouble_amplitudes_oldarr
+
+  !> \brief Calculate combined single+double amplitudes:
+  !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)
+  !> \author Patrick Ettenhuber adapted from Kasper Kristensen
+  !> \date January 2014
+  subroutine get_combined_SingleDouble_amplitudes_newarr(t1,t2,u)
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(array),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(array),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(array),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt
+
+     ! Number of occupied/virtual orbitals assuming index ordering given above
+     nocc  = t2%dims(2)
+     nvirt = t2%dims(1)
+
+     if(t2%itype == DENSE)then
+        ! Init combined amplitudes
+        u = array_init(t2%dims,4)
+
+        if(DECinfo%use_singles)then
+           do j=1,nocc
+              do b=1,nvirt
+                 do i=1,nocc
+                    do a=1,nvirt
+                       u%elm4(a,i,b,j) = t2%elm4(a,i,b,j) + t1%elm2(a,i)*t1%elm2(b,j)
+                    end do
+                 end do
+              end do
+           end do
+        else
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+           call assign_in_subblocks(u%elm1,'=',t2%elm1,t2%nelms)
+#else
+           !$OMP WORKSHARE
+           u%elm1 = t2%elm1
+           !$OMP END WORKSHARE
+#endif
+        endif
+     else
+        call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr) no PDM version implemented yet",-1)
+     endif
+
+
+  end subroutine get_combined_SingleDouble_amplitudes_newarr
+
+  !> Assuming that the last index in the array A contains core+valence indices,
+  !> remove the core indices. Only to be used for frozen core approx.
+  !> Assumes core indices are placed BEFORE valence indices!
+  !> \author Kasper Kristensen
+  !> \date December 2012
+  subroutine remove_core_orbitals_from_last_index_oldarr(MyFragment,A,B)
+    implicit none
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Original array
+    type(array4),intent(in) :: A
+    !> New array where core indices for the last index are removed
+    type(array4),intent(inout) :: B
+    integer :: dims(4), i,j,k,l
+
+    ! Sanity check 1: Frozen core.
+    if(.not. DECinfo%frozencore) then
+       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
+    end if
+
+    ! Sanity check 2: Correct dimensions
+    if(A%dims(4) /= MyFragment%nocctot) then
+       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
+       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
+    end if
+
+    ! Init with new dimensions - same as before, except for last index which is only valence indices
+    dims(1) = A%dims(1)
+    dims(2) = A%dims(2)
+    dims(3) = A%dims(3)
+    dims(4) = MyFragment%noccAOS
+    B = array4_init_standard(dims) 
+
+
+    ! Copy elements from A to B, but only valence for last index
+    do l=1,B%dims(4)
+       do k=1,B%dims(3)
+          do j=1,B%dims(2)
+             do i=1,B%dims(1)
+                B%val(i,j,k,l) = A%val(i,j,k,l+MyFragment%ncore)
+             end do
+          end do
+       end do
+    end do
+
+
+  end subroutine remove_core_orbitals_from_last_index_oldarr
+  !> Assuming that the last index in the array A contains core+valence indices,
+  !> remove the core indices. Only to be used for frozen core approx.
+  !> Assumes core indices are placed BEFORE valence indices!
+  !> \author Kasper Kristensen
+  !> \date December 2012
+  subroutine remove_core_orbitals_from_last_index_newarr(MyFragment,A,B)
+    implicit none
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    !> Original array
+    type(array),intent(in) :: A
+    !> New array where core indices for the last index are removed
+    type(array),intent(inout) :: B
+    integer :: dims(4), i,j,k,l
+
+    ! Sanity check 1: Frozen core.
+    if(.not. DECinfo%frozencore) then
+       call lsquit('remove_core_orbitals_from_last_index: Only works for frozen core approx!',-1)
+    end if
+
+    ! Sanity check 2: Correct dimensions
+    if(A%dims(4) /= MyFragment%nocctot) then
+       print *, 'Array dim, #occ orbitals', A%dims(4), MyFragment%nocctot
+       call lsquit('remove_core_orbitals_from_last_index: Dimension mismatch!',-1)
+    end if
+
+    ! Init with new dimensions - same as before, except for last index which is only valence indices
+    dims(1) = A%dims(1)
+    dims(2) = A%dims(2)
+    dims(3) = A%dims(3)
+    dims(4) = MyFragment%noccAOS
+
+    if( A%itype == DENSE )then
+       B = array_init(dims,4) 
+
+       ! Copy elements from A to B, but only valence for last index
+       do l=1,B%dims(4)
+           B%elm4(:,:,:,l) = A%elm4(:,:,:,l+MyFragment%ncore)
+       end do
+    else
+       call lsquit("ERROR(remove_core_orbitals_from_last_index_newarr)NO PDM VERSION",-1)
+    endif
+
+
+ end subroutine remove_core_orbitals_from_last_index_newarr
+
+
+ 
+ !> Set logical arrays according to secondary assignment
+ !>
+ !> SEC_occ(i) = .true.   
+ !>
+ !> if the secondary atom of occ orbital "i" is identical to the central atom
+ !> defining the atomic fragments (or to one of the central atoms for pair fragments).
+ !> Otherwise SEC_occ=.false.  (and similarly for SEC_unocc).
+ subroutine secondary_assigning(MyFragment,SEC_occ,SEC_unocc)
+
+   implicit none
+
+   !> fragment info
+   type(decfrag), intent(inout) :: MyFragment
+   !> Logical arrays defined as described above
+   logical,intent(inout) :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
+   integer :: noccAOS,nunoccAOS,i,P
+
+
+   noccAOS = MyFragment%noccAOS
+   nunoccAOS = MyFragment%nunoccAOS
+   SEC_occ=.false.
+   SEC_unocc=.false.
+   do i=1,noccAOS
+      ! Set SEC_occ(i) to true if secondary atom equals (one of the) atom(s) 
+      ! defining atomic (pair) fragment
+      do P=1,MyFragment%nEOSatoms
+         if(MyFragment%occAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
+            SEC_occ(i)=.true.
+         end if
+      end do
+   end do
+
+   ! Same for unocc orbitals
+   do i=1,nunoccAOS
+      do P=1,MyFragment%nEOSatoms
+         if(MyFragment%unoccAOSorb(i)%secondaryatom == MyFragment%EOSatoms(P)) then
+            SEC_unocc(i)=.true.
+         end if
+      end do
+   end do
+
+
+ end subroutine secondary_assigning
+
+
 
 end module dec_fragment_utils

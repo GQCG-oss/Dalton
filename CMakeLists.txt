@@ -3,6 +3,16 @@
 # exit if cmake version is below 2.8
 # we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+if("${CMAKE_MAJOR_VERSION}" GREATER 2)
+   cmake_policy(VERSION 3.0)
+#  allow add_executable in "tools/" subdirectory in cmake 3.?
+   cmake_policy(SET CMP0037 OLD)
+   MESSAGE(STATUS "Changed cmake policy to version 3.0, except for policy CMP037")
+endif("${CMAKE_MAJOR_VERSION}" GREATER 2)
+
+# set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
+# will do no harm if not CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 # set project name and languanges that are involved
 project(DALTON Fortran C CXX)
@@ -21,7 +31,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/mpi
-    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard/
+    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
@@ -38,6 +48,7 @@ option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
+option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
@@ -48,14 +59,20 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          ON)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
+option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
+
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
+option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+
 
 set(EXTERNAL_LIBS)
 
@@ -67,7 +84,13 @@ include(ConfigCompilerFlags)
 include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
+
+# math detection
+set(BLAS_LANG "Fortran")
+set(LAPACK_LANG "Fortran")
+set(MKL_COMPILER_BINDINGS ${CMAKE_Fortran_COMPILER_ID})
 include(ConfigMath)
+
 include(ConfigExplicitLibs)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -155,6 +178,12 @@ include(LibsLSDALTON)
 
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
+
+# copy test scripts to build/test
+# FIXME this will not work on windows
+execute_process(COMMAND mkdir -p ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest.py        ${CMAKE_BINARY_DIR}/test)
+execute_process(COMMAND cp ${CMAKE_SOURCE_DIR}/DALTON/test/runtest_dalton.py ${CMAKE_BINARY_DIR}/test)
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

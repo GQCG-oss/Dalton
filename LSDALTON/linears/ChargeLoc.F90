@@ -5,14 +5,11 @@
 !*                                                                         *
 !* Implemented for                                                         *
 !* - Pipek measure using Lowdin or Mulliken charge and power m             *
-!* (Charge localization using either Mulliken or Lowdin and power m)       *
 !* - Pipek-Mezey with external power m, Lowdin charge only                 *
 !* - Generalized Pipek-Mezey, external power m, Lowdin charge              *
 !*                                                                         *
 !* Lowdin orbitals may be optimized using orbspread scheme                 *
 !*                                                                         *
-!* NOTE: For Pipek measure -->   .CLL , m > 0                              *
-!* NOTE: For generalized Pipek measure --> .CLL,  m < 0                    *
 !* NOTE: For Pipek-Mezey --> .PML m=2, Lowdin pop.analysis                 *
 !* NOTE: For Pipek-Mezey --> .PMM m=2, Mulliken pop.analysis               *
 !*                                                                         *
@@ -32,61 +29,6 @@ CONTAINS
 ! MAIN ROUTINES FOR GRADIENT AND LINEAR TRANSFORMATIONS
 !==========================================================
 
-subroutine Gradient_ChargeLoc(Grad,OrbLoc)
-implicit none
-type(PMitem) :: OrbLoc
-type(matrix) :: Grad
-!!##### TESTING ########
-!type(matrix) :: kappa
-!type(matrix) :: Hkappa,diaH
-!real(realk) :: mat(1,1)
-!integer :: p,q
-!p=2
-!q=3
-!call mat_init(kappa,OrbLoc%CMO%ncol,OrbLoc%CMO%ncol)
-!call mat_init(Hkappa,OrbLoc%CMO%ncol,OrbLoc%CMO%ncol)
-!call mat_init(diaH,OrbLoc%CMO%ncol,OrbLoc%CMO%ncol)
-!call mat_zero(kappa)
-!mat(1,1)=1d0
-!call mat_create_block(kappa,mat,1,1,q,p)
-!mat(1,1)=-1d0
-!call mat_create_block(kappa,mat,1,1,p,q)
-!if (OrbLoc%PipekMezeyLowdin) then
-!  call ComputeGrad_PipekMezey(OrbLoc,Grad)
-!  call PMLowdin_precond(OrbLoc,diaH)
-!  call PMLowdin_LinTra(Grad,HKappa,kappa,OrbLoc) 
-!elseif (OrbLoc%PipekMezeyMull) then
-!  call ComputeGrad_PipekMezey(OrbLoc,Grad)
-!  call PMMull_LinTra(Grad,HKappa,kappa,OrbLoc)
-!  call PMMull_precond(OrbLoc,diaH)
-!elseif (OrbLoc%ChargeLocLowdin .or. OrbLoc%ChargeLocMulliken) then
-!  call ComputeGrad_ChargeLoc(OrbLoc,Grad) 
-!  call CL_precond(OrbLoc,diaH)
-!  call CLLinearTrans(Grad,HKappa,kappa,OrbLoc)
-!endif
-!!call PMMull_precond(OrbLoc,diah)
-!!call CL_precond(OrbLoc,diaH)
-!print*,"**** GRADIENT ****"
-!call mat_print(Grad,1,6,1,6,6)
-!print*, "**** DIAGONAL HESS ****"
-!call mat_print(diaH,1,6,1,6,6)
-!print*, "**** LINEAR TRANS  ****"
-!call mat_print(Hkappa,1,6,1,6,6)
-!STOP 'TESTING'
-!
-!
-!!!##### END TESTING ######
-
-if (OrbLoc%ChargeLocLowdin .or. OrbLoc%ChargeLocMulliken) then
-   call ComputeGrad_ChargeLoc(OrbLoc,Grad)
-elseif (OrbLoc%PipekMezeyLowdin .or. OrbLoc%PipekMezeyMull) then
-   call ComputeGrad_PipekMezey(OrbLoc,Grad)
-else
-  STOP  'Something wrong in ChargeLoc.f90. Neither option is chosen'
-end if
-
-
-end subroutine Gradient_ChargeLoc
 
 !> \brief Calls correct routine for computing diagonal hessian elements
 !> \param P Matrix with diagonal elements (output)
@@ -96,9 +38,7 @@ type(PMitem) :: OrbLoc
 type(matrix) :: P
 
 
-if (OrbLoc%ChargeLocLowdin .or. OrbLoc%ChargeLocMulliken) then
-   call CL_precond(OrbLoc,P)
-elseif (OrbLoc%PipekMezeyLowdin) then
+if (OrbLoc%PipekMezeyLowdin) then
    call PMLowdin_precond(OrbLoc,P)
 elseif (OrbLoc%PipekMezeyMull) then
    call PMMull_precond(OrbLoc,P)
@@ -107,76 +47,6 @@ endif
 
 end subroutine Precond_ChargeLoc
 
-!> \brief Compute gradient for charge localization (both Mull. and Lowdin)
-!> \param Grad gradient (output)
-subroutine ComputeGrad_ChargeLoc(OrbLoc,Grad)
-implicit none
-type(PMitem)      :: OrbLoc
-type(matrix)            :: Grad
-type(matrix)            :: lA,rA,lAd,rAd
-real(realk),pointer :: temp(:,:) 
-real(realk),pointer :: factor(:)
-integer :: i,A,norb
-
-call mat_zero(Grad)
-norb = OrbLoc%norb
-
-call mem_alloc(factor,norb) 
-if (OrbLoc%ChargeLocMulliken) then
-   ComputeGrad: do A=1,OrbLoc%natoms
-      call mat_init(lA,OrbLoc%nbasA(A),norb)
-      call mat_init(rA,OrbLoc%nbasA(A),norb)
-      call mat_init(lAd,norb,OrbLoc%nbasA(A))
-      call mat_init(rAd,norb,OrbLoc%nbasA(A))
-      do i=1,norb;factor(i)=OrbLoc%Q(i,A)*OrbLoc%d_m(i);end do
-      !Construct lA and rA
-      call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-      call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-      call mat_set_from_full(temp,1.0d0,lA)
-      call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-      call mat_set_from_full(temp,1.0d0,rA)
-      call mem_dealloc(temp)
-      ! Make lAd=diag(f)*lA^T
-      call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-      call mat_dmul(factor(:),rA,'T',1.0d0,0.0d0,rAd)
-      
-      call mat_mul(rAd,lA,'n','n',-2.0d0*OrbLoc%m,1.0d0,Grad)
-      call mat_mul(lAd,ra,'n','n',-2.0d0*OrbLoc%m,1.0d0,Grad)
-      call mat_mul(rA,lAd,'T','T',2.0d0*OrbLoc%m,1.0d0,Grad)
-      call mat_mul(lA,rAd,'T','T',2.0d0*OrbLoc%m,1.0d0,Grad)
-      call mat_free(lA);call mat_free(rA)
-      call mat_free(lAd);call mat_free(rAd)
-   end do ComputeGrad
-end if
-if (Orbloc%ChargeLocLowdin) then
-   ComputeGradL: do A=1,OrbLoc%natoms
-      call mat_init(lA,OrbLoc%nbasA(A),norb)
-      call mat_init(lAd,norb,OrbLoc%nbasA(A))
-      factor=OrbLoc%Q(:,A)*OrbLoc%d_m
-      !Construct lA and rA
-      call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-      call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-      call mat_set_from_full(temp,1.0d0,lA)
-      call mem_dealloc(temp)
-      ! Make lAd=diag(f)*lA^T
-      call mat_dmul(factor,lA,'T',1.0d0,0.0d0,lAd)
-      call mat_mul(lAd,lA,'n','n',-4*OrbLoc%m,1.0d0,Grad)
-      call mat_free(lA)
-      call mat_free(lAd)
-   end do ComputeGradL
-   call mat_init(la,Grad%ncol,Grad%nrow)
-   call mat_trans(Grad,la)
-   call mat_daxpy(-1d0,la,Grad)
-   call mat_free(la)
-end if
-call mem_dealloc(factor)
-
-call mat_scal(-1.0d0,Grad)
-if (OrbLoc%m < 0) then 
-    call mat_scal(-1.0d0,Grad)
-end if
-
-end subroutine ComputeGrad_ChargeLoc
 
 !> \brief COmpute gradient for PM loc (both Mull and Lowdin)
 !> \param Grad  gradient (output)
@@ -247,96 +117,6 @@ end if
 call mem_dealloc(factor)
 
 end subroutine ComputeGrad_PipekMezey
-
-!> \brief Compute preconditioner for charge localization (both Mull. and Lowdin)
-!> \param diaH matrix with diagonal elements
-subroutine CL_precond(OrbLoc,diaH)
-use matrix_operations_aux
-implicit none
-type(PMitem) :: OrbLoc
-type(matrix) :: diaH
-real(realk),pointer :: x(:)
-integer             :: natoms,norb
-type(matrix)        :: lA,rA,Qtemp,QB
-integer :: A,i
-real(realk) :: m
-real(realk),pointer :: temp(:,:)
-
-norb   = OrbLoc%norb
-natoms = OrbLoc%natoms
-m      = OrbLoc%m
-call mat_zero(diaH)
-call mat_init(QB,diaH%nrow,diaH%ncol)
-call mat_zero(QB)
-do A=1,natoms
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(rA,norb,OrbLoc%nbasA(A))
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   if (OrbLoc%ChargeLocMulliken) then
-      call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   elseif (OrbLoc%ChargeLocLowdin) then
-      call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   endif
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mat_dmul(OrbLoc%Q(:,A),lA,'T',1d0,0d0,rA)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,lA)
-   if (OrbLoc%ChargeLocMulliken) then
-      call mat_mul(ra,la,'n','n',0.5d0,1d0,QB)
-      call mat_dmul(OrbLoc%Q(:,A),lA,'T',1d0,0d0,rA)
-      call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-      call mat_set_from_full(temp,1.0d0,lA)
-      call mat_mul(ra,la,'n','n',0.5d0,1d0,QB)
-   elseif (OrbLoc%ChargeLocLowdin)then
-      call mat_mul(ra,la,'n','n',1d0,1d0,QB)
-   end if
-   call mat_free(la)
-   call mat_free(ra)
-   call mem_dealloc(temp)
-enddo
-
-call mem_alloc(x,norb)
-x=1d0
-do A=1,natoms
-  call mat_dger(4*m,x,OrbLoc%d_m*OrbLoc%Q(:,A)*OrbLoc%Q(:,A),diaH)
-  call mat_dger(-4*m,OrbLoc%Q(:,A)*OrbLoc%d_m,OrbLoc%Q(:,A),diaH)
-
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(rA,OrbLoc%nbasA(A),norb)
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   if (OrbLoc%ChargeLocMulliken) then
-       call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   elseif (OrbLoc%ChargeLocLowdin) then
-       call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   end if
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,rA)
-   call mem_dealloc(temp)
-   call mat_init(Qtemp,norb,norb)
-   if (OrbLoc%ChargeLocMulliken) then
-       call mat_mul(la,ra,'T','n',0.5d0,0d0,Qtemp)
-       call mat_mul(ra,la,'T','n',0.5d0,1d0,Qtemp)
-   elseif (OrbLoc%ChargeLocLowdin) then
-       call mat_mul(ra,la,'T','n',1.0d0,0d0,Qtemp)
-   end if
-   call mat_dhmul(OrbLoc%d_m,Qtemp,Qtemp,'n','n',-8*m,1d0,diaH)
-   call mat_free(la)
-   call mat_free(ra)
-   call mat_dhmul(OrbLoc%d_m2*OrbLoc%Q(:,A),Qtemp,QB,'n','n',16*m*(m+1),1d0,diaH)
-   call mat_free(Qtemp)
-enddo
-call mem_dealloc(x)
-call mat_init(Qtemp,diaH%ncol,diaH%nrow)
-call mat_trans(diaH,Qtemp)
-call mat_daxpy(1d0,Qtemp,diaH)
-call mat_free(Qtemp)
-call mat_scal_dia(0d0,diaH)
-
-if(OrbLoc%m< 0) call mat_scal(-1d0,diaH)
-
-
-end subroutine CL_precond
 
 
 !> \brief Compute precond for PM using Lowdin pop.analysis
@@ -499,53 +279,6 @@ Mulliken: if (OrbLoc%PipekMezeyMull) then
     call mem_dealloc(rA)
  enddo
 end if Mulliken
-ChargeLocMulliken: if (OrbLoc%ChargeLocMulliken) then
-OrbLoc%d_m2=0.0d0
-OrbLoc%d_m=0.0d0
-      A2:do A=1,natoms
-         call mem_alloc(lA,OrbLoc%nbasA(A),norb)
-	 call mem_alloc(rA,OrbLoc%nbasA(A),norb)
-         call mat_retrieve_block(CMO,lA,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-         call mat_retrieve_block(OrbLoc%SC,rA,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-         do i=1,norb
-                OrbLoc%Q(i,A)=DDOT(OrbLoc%nbasA(A),lA(:,i),1,rA(:,i),1)
-                OrbLoc%d_m(i)=OrbLoc%d_m(i)+OrbLoc%Q(i,A)*OrbLoc%Q(i,A)
-                if (A==natoms) then
-      	          OrbLoc%di(i)= OrbLoc%d_m(i)
-      	          OrbLoc%d_m2(i)= OrbLoc%d_m(i)
-      	          OrbLoc%d_m(i) = OrbLoc%d_m(i)**(-(m+1))
-      	          OrbLoc%d_m2(i)= OrbLoc%d_m2(i)**(-(m+2))
-	          OrbLoc%di(i) = OrbLoc%di(i)**(-m)
-		  if (OrbLoc%m<0) OrbLoc%di(i)=-OrbLoc%di(i)
-                end if
-         end do
-         call mem_dealloc(lA)
-	 call mem_dealloc(rA)
-      end do A2
-end if ChargeLocMulliken 
-
-ChargeLocLowdin:if (OrbLoc%ChargeLocLowdin) then
-! Use pipek measure with Lowdin charges
-OrbLoc%d_m2=0.0d0
-OrbLoc%d_m=0.0d0
-      do A=1,natoms
-         call mem_alloc(lA,OrbLoc%nbasA(A),norb)
-         call mat_retrieve_block(OrbLoc%SC,lA,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-         do i=1,norb
-                OrbLoc%Q(i,A)=DDOT(OrbLoc%nbasA(A),lA(:,i),1,lA(:,i),1)
-                OrbLoc%d_m(i)=OrbLoc%d_m(i)+OrbLoc%Q(i,A)*OrbLoc%Q(i,A)
-                if (A==natoms) then
-                  OrbLoc%d_m2(i)= OrbLoc%d_m(i)
-                  OrbLoc%di(i)= OrbLoc%d_m(i)
-                  OrbLoc%d_m(i) = OrbLoc%d_m(i)**(-(m+1))
-                  OrbLoc%d_m2(i)= OrbLoc%d_m2(i)**(-(m+2))
-                  OrbLoc%di(i)= OrbLoc%di(i)**(-m)
-		  if (OrbLoc%m<0) OrbLoc%di(i)=-OrbLoc%di(i)
-                end if
-         end do
-         call mem_dealloc(lA)
-      end do 
-end if ChargeLocLowdin
 
 end subroutine get_dm_and_Qii
 
@@ -672,318 +405,6 @@ end subroutine compute_fVal
 !==========================================================
 
 
-!Additional result:  Qkappa
-subroutine CL_add_terms_1_4L(OrbLoc,kappa,Hkappa) 
-implicit none
-type(PMitem)  :: OrbLoc
-integer       :: natoms,norb,m
-type(matrix)  :: kappa,Hkappa !Hkappa: result
-type(matrix)  :: lA,lAd,lAk
-real(realk)   :: factor(OrbLoc%norb)
-real(realk),pointer :: temp(:,:)
-real(realk),pointer :: lAki(:,:),lAi(:,:)
-integer :: A,i
-real(realk) :: DDOT
-
-norb   = OrbLoc%norb
-natoms = OrbLoc%natoms
-m      = OrbLoc%m
-OrbLoc%Qkappa = 0.0d0
-
-do A=1,natoms
-   factor=OrbLoc%Q(:,A)*OrbLoc%d_m
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(lAd,norb,OrbLoc%nbasA(A))
-   call mat_init(lAk,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mem_dealloc(temp)
-   ! Make lAd=diag(f)*lA^T
-   call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-   ! Make lAk= lA*kappa 
-   call mat_mul(lA,kappa,'n','n',1.0d0,0.0d0,lAk)
-   ! Term 1
-   call mat_mul(lAd,lAk,'n','n',4.0d0*m,1.0d0,Hkappa)
-   ! Term 2
-   call mat_mul(lAk,lAd,'T','T',-4.0d0*m,1.0d0,Hkappa)
-
-   !Make lAkd= diag(dQ)*lAk^T, use lAd as the matrix lAkd
-   call mat_dmul(factor(:),lAk,'T',1.0d0,0.0d0,lAd)
-
-   ! Term 3
-   call mat_mul(lAd,lA,'n','n',4.0d0*m,1.0d0,Hkappa)
-   ! Term 4
-   call mat_mul(lA,lAd,'T','T',-4.0d0*m,1.0d0,Hkappa)
-
-   !Use lAk to make diag(Qkappa)
-   call mem_alloc(lAki,OrbLoc%nbasA(A),norb)
-   call mem_alloc(lAi,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(lAk,lAki,OrbLoc%nbasA(A),norb,1,1)
-   call mat_retrieve_block(lA,lAi,OrbLoc%nbasA(A),norb,1,1)
-   do i=1,norb
-      OrbLoc%Qkappa(i,A)=DDOT(OrbLoc%nbasA(A),lAi(:,i),1,lAki(:,i),1)
-   end do
- 
-   call mem_dealloc(lAki)
-   call mem_dealloc(lAi)
-   call mat_free(lA)
-   call mat_free(lAd)
-   call mat_free(lAk)
-end do
-
-end subroutine CL_add_terms_1_4L
-
-!Additional result:  Qkappa
-subroutine CL_add_terms_1_4M(OrbLoc,kappa,Hkappa) 
-implicit none
-type(PMitem)  :: OrbLoc
-integer       :: natoms,norb,m
-type(matrix)  :: kappa,Hkappa !Hkappa: result
-type(matrix)  :: lA,rA,lAd,rAd,lAk,rAk
-real(realk)   :: factor(OrbLoc%norb)
-real(realk),pointer :: temp(:,:)
-real(realk),pointer :: lAki(:,:),lAi(:,:),rAki(:,:),rAi(:,:)
-integer :: A,i
-real(realk) :: DDOT
-
-norb   = OrbLoc%norb
-natoms = OrbLoc%natoms
-m      = OrbLoc%m
-OrbLoc%Qkappa = 0.0d0
-
-do A=1,natoms
-   factor=OrbLoc%Q(:,A)*OrbLoc%d_m(:)
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(rA,OrbLoc%nbasA(A),norb)
-   call mat_init(lAd,norb,OrbLoc%nbasA(A))
-   call mat_init(rAd,norb,OrbLoc%nbasA(A))
-   call mat_init(lAk,OrbLoc%nbasA(A),norb)
-   call mat_init(rAk,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1) 
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,rA)
-   call mem_dealloc(temp)
-   ! Make lAd=diag(f)*lA^T
-   call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-   call mat_dmul(factor(:),rA,'T',1.0d0,0.0d0,rAd)
-   ! Make lAk= lA*kappa 
-   call mat_mul(lA,kappa,'n','n',1.0d0,0.0d0,lAk)
-   call mat_mul(rA,kappa,'n','n',1.0d0,0.0d0,rAk)
-   !Term 1
-   call mat_mul(lAd,rAk,'n','n',2.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rAd,lAk,'n','n',2.0d0*m,1.0d0,Hkappa)
-   !Term 2
-   call mat_mul(lAk,rAd,'T','T',-2.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rAk,lAd,'T','T',-2.0d0*m,1.0d0,Hkappa)
-
-   !Make lAkd= diag(dQ)*lAk^T, use lAd as the matrix lAkd
-   call mat_dmul(factor(:),lAk,'T',1.0d0,0.0d0,lAd)
-   call mat_dmul(factor(:),rAk,'T',1.0d0,0.0d0,rAd)
-
-   ! Term 3
-   call mat_mul(lAd,rA,'n','n',2.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rAd,lA,'n','n',2.0d0*m,1.0d0,Hkappa)
-   ! Term 4
-   call mat_mul(lA,rAd,'T','T',-2.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rA,lAd,'T','T',-2.0d0*m,1.0d0,Hkappa)
-
-   !Use lAk and rAk to make diag(Qkappa)
-   call mem_alloc(lAki,OrbLoc%nbasA(A),norb)
-   call mem_alloc(lAi,OrbLoc%nbasA(A),norb)
-   call mem_alloc(rAki,OrbLoc%nbasA(A),norb)
-   call mem_alloc(rAi,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(lAk,lAki,OrbLoc%nbasA(A),norb,1,1)
-   call mat_retrieve_block(rAk,rAki,OrbLoc%nbasA(A),norb,1,1)
-   call mat_retrieve_block(lA,lAi,OrbLoc%nbasA(A),norb,1,1)
-   call mat_retrieve_block(rA,rAi,OrbLoc%nbasA(A),norb,1,1)
-   do i=1,norb
-      OrbLoc%Qkappa(i,A)=DDOT(OrbLoc%nbasA(A),lAi(:,i),1,rAki(:,i),1)
-      OrbLoc%Qkappa(i,A)=0.5d0*(OrbLoc%Qkappa(i,A)+&
-      & DDOT(OrbLoc%nbasA(A),rAi(:,i),1,lAki(:,i),1))
-   end do
- 
-   call mem_dealloc(lAki)
-   call mem_dealloc(lAi)
-   call mem_dealloc(rAki)
-   call mem_dealloc(rAi)
-   call mat_free(lA);call mat_free(rA)
-   call mat_free(lAd);call mat_free(rAd)
-   call mat_free(lAk);call mat_free(rAk)
-end do
-
-end subroutine CL_add_terms_1_4M
-
-
-subroutine CL_add_terms_7_8L(OrbLoc,Hkappa)
-implicit none
-type(PMitem)      :: OrbLoc
-integer                 :: natoms,norb
-type(matrix)            :: Hkappa
-type(matrix)            :: lA,lAd
-real(realk),pointer :: temp(:,:) 
-real(realk),pointer :: factor(:)
-integer     :: i,A
-real(realk) :: m
-
-norb = OrbLoc%norb
-natoms = OrbLoc%natoms
-m = OrbLoc%m
-call mem_alloc(factor,norb) 
-do A=1,natoms
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(lAd,norb,OrbLoc%nbasA(A))
-   factor=OrbLoc%Qkappa(:,A)*OrbLoc%d_m
-   !Construct lA and rA
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mem_dealloc(temp)
-   ! Make lAd=diag(f)*lA^T
-   call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-   
-   call mat_mul(lAd,lA,'n','n',8.0d0*m,1.0d0,Hkappa)
-   call mat_mul(lA,lAd,'T','T',-8.0d0*m,1.0d0,Hkappa)
-   call mat_free(lA);call mat_free(lAd)
-end do 
-call mem_dealloc(factor)
-end subroutine CL_add_terms_7_8L
-
-subroutine CL_add_terms_7_8M(OrbLoc,Hkappa)
-implicit none
-type(PMitem)      :: OrbLoc
-integer                 :: natoms,norb
-type(matrix)            :: Hkappa
-type(matrix)            :: lA,rA,lAd,rAd
-real(realk),pointer :: temp(:,:) 
-real(realk),pointer :: factor(:)
-integer     :: i,A
-real(realk) :: m
-
-norb = OrbLoc%norb
-natoms = OrbLoc%natoms
-m = OrbLoc%m
-call mem_alloc(factor,norb) 
-do A=1,natoms
-   call mat_init(lA,OrbLoc%nbasA(A),norb)
-   call mat_init(rA,OrbLoc%nbasA(A),norb)
-   call mat_init(lAd,norb,OrbLoc%nbasA(A))
-   call mat_init(rAd,norb,OrbLoc%nbasA(A))
-   factor=OrbLoc%Qkappa(:,A)*OrbLoc%d_m
-   !Construct lA and rA
-   call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-   call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,lA)
-   call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-   call mat_set_from_full(temp,1.0d0,rA)
-   call mem_dealloc(temp)
-   ! Make lAd=diag(f)*lA^T
-   call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-   call mat_dmul(factor(:),rA,'T',1.0d0,0.0d0,rAd)
-   
-   call mat_mul(lAd,rA,'n','n',4.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rAd,lA,'n','n',4.0d0*m,1.0d0,Hkappa)
-   call mat_mul(lA,rAd,'T','T',-4.0d0*m,1.0d0,Hkappa)
-   call mat_mul(rA,lAd,'T','T',-4.0d0*m,1.0d0,Hkappa)
-   call mat_free(lA);call mat_free(rA)
-   call mat_free(lAd);call mat_free(rAd)
-end do 
-call mem_dealloc(factor)
-end subroutine CL_add_terms_7_8M
-
-subroutine CL_add_terms_9_10L(OrbLoc,Hkappa)
-implicit none
-type(PMitem)      :: OrbLoc
-integer                 :: natoms,norb
-type(matrix)            :: Hkappa
-type(matrix)            :: lA,lAd
-real(realk),pointer :: temp(:,:) 
-real(realk),pointer :: factor(:)
-real(realk) :: m
-real(realk) :: prefactor
-integer     :: i,A,B
-
-norb = OrbLoc%norb
-natoms= OrbLoc%natoms
-m = OrbLoc%m
-prefactor= 16.0d0*m*(m+1.0d0)
-
-call mem_alloc(factor,norb)
-do A=1,natoms
-   do B=1,natoms
-        call mat_init(lA,OrbLoc%nbasA(A),norb)
-        call mat_init(lAd,norb,OrbLoc%nbasA(A))
-        factor=OrbLoc%d_m2*OrbLoc%Q(:,B)*OrbLoc%Q(:,A)*OrbLoc%Qkappa(:,B)
-        !Construct lA and rA
-        call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-        call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-        call mat_set_from_full(temp,1.0d0,lA)
-        call mem_dealloc(temp)
-        ! Make lAd=diag(f)*lA^T
-        call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-        
-        call mat_mul(lAd,la,'n','n',-prefactor,1.0d0,Hkappa)
-        call mat_mul(lA,lAd,'T','T',prefactor,1.0d0,Hkappa)
-        call mat_free(lA)
-        call mat_free(lAd)
-    end do
-end do
-call mem_dealloc(factor)
-
-end subroutine CL_add_terms_9_10L
-
-
-subroutine CL_add_terms_9_10M(OrbLoc,Hkappa)
-implicit none
-type(PMitem)      :: OrbLoc
-integer                 :: natoms,norb
-type(matrix)            :: Hkappa
-type(matrix)            :: lA,rA,lAd,rAd
-real(realk),pointer :: temp(:,:) 
-real(realk),pointer :: factor(:)
-real(realk) :: m
-real(realk) :: prefactor
-integer     :: i,A,B
-
-norb = OrbLoc%norb
-natoms= OrbLoc%natoms
-m = OrbLoc%m
-prefactor= 8.0d0*m*(m+1.0d0)
-
-call mem_alloc(factor,norb)
-do A=1,natoms
-   do B=1,natoms
-        call mat_init(lA,OrbLoc%nbasA(A),norb)
-        call mat_init(rA,OrbLoc%nbasA(A),norb)
-        call mat_init(lAd,norb,OrbLoc%nbasA(A))
-        call mat_init(rAd,norb,OrbLoc%nbasA(A))
-        factor=OrbLoc%d_m2*OrbLoc%Q(:,B)*OrbLoc%Q(:,A)*OrbLoc%Qkappa(:,B)
-        !Construct lA and rA
-        call mem_alloc(temp,OrbLoc%nbasA(A),norb)
-        call mat_retrieve_block(OrbLoc%CMO,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-        call mat_set_from_full(temp,1.0d0,lA)
-        call mat_retrieve_block(OrbLoc%SC,temp,OrbLoc%nbasA(A),norb,OrbLoc%Pos(A),1)
-        call mat_set_from_full(temp,1.0d0,rA)
-        call mem_dealloc(temp)
-        ! Make lAd=diag(f)*lA^T
-        call mat_dmul(factor(:),lA,'T',1.0d0,0.0d0,lAd)
-        call mat_dmul(factor(:),rA,'T',1.0d0,0.0d0,rAd)
-        
-        call mat_mul(lAd,ra,'n','n',-prefactor,1.0d0,Hkappa)
-        call mat_mul(rAd,lA,'n','n',-prefactor,1.0d0,Hkappa)
-        call mat_mul(lA,rAd,'T','T',prefactor,1.0d0,Hkappa)
-        call mat_mul(rA,lAd,'T','T',prefactor,1.0d0,Hkappa)
-        call mat_free(lA);call mat_free(rA)
-        call mat_free(lAd);call mat_free(rAd)
-    end do
-end do
-call mem_dealloc(factor)
-
-end subroutine CL_add_terms_9_10M
-
-
 
 subroutine Lowdin_add_terms_1_4(OrbLoc,kappa,Hkappa)
 implicit none
@@ -1048,17 +469,12 @@ end do
 call mem_dealloc(factor)
 end subroutine Lowdin_add_terms_1_4
 
-subroutine add_grad_terms(Grad,kappa,Hkappa,Lowdin)
+subroutine add_grad_terms(Grad,kappa,Hkappa)
 implicit none
 type(matrix) :: Grad,kappa,Hkappa
 real(realk)  :: factor
-logical :: lowdin
 
-if (Lowdin) then
-    factor = -0.5d0
-else
-    factor = -0.5d0
-end if
+factor = -0.5d0
 
 call mat_mul(kappa,Grad,'n','n',-factor,1.0d0,Hkappa)
 call mat_mul(Grad,kappa,'T','T',factor,1.0d0,Hkappa)

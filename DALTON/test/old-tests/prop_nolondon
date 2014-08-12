@@ -1,0 +1,330 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > prop_nolondon.info <<'%EOF%'
+   prop_nolondon
+   -------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA)
+   Test Purpose:     Calculation of no-London shielding constants
+                     through ABACUS
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > prop_nolondon.mol <<'%EOF%'
+INTGRL
+Calculation of no-London shielding constants through ABACUS
+
+c   2    2  X  Y      0.10D-15  0.10D-15
+      8.00    1    3    6    5    1
+O   0.00000             0.00000              0.1241444240
+F  6    1
+31195.6 0.00021
+4669.38 0.001628
+1062.62 0.00845
+301.426 0.034191
+98.5153 0.110311
+35.4609 .269493
+F  1    1
+13.6179 .423545
+F  1    1
+5.38618 .283038
+F  1    1
+1.53873 .027484
+F  1    1
+.6055 -.005144
+F  1    1
+.22054 .00164
+F  3    1
+114.863 .002266
+26.8767 0.017192
+8.32077 0.075341
+F  1    1
+2.97237 .212775
+F  1    1
+1.12848 .370478
+F  1    1
+.4236 .398523
+F  1    1
+.15074 .184703
+F  2    1
+1.21879 .357851
+.36102 .759561
+      1.00    1    2    3    1
+H   0.00000             1.43153              -0.985265576
+F  3    1
+33.865014 .006068
+5.094788 0.045316
+1.158786 0.202846
+F  1    1
+0.32584 0.503709
+F  1    1
+.102741 .383568
+F  1    1
+1.16 1.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > prop_nolondon.dal <<'%EOF%'
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+.MP2
+**PROPERTIES
+.SOPPA
+.MAGNET
+.SHIELD
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >prop_nolondon.check
+cat >>prop_nolondon.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+if $GREP -q "ERI does not work with Cartesian basis." $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8\.0000 * 44 * 27 * \[11s7p2d\|6s5p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 8 * 6 * \[5s1p\|3s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 60 * 39" $log | wc -l`
+CRIT4=`$GREP "Cartesian basis used" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.1241444240" $log | wc -l`
+CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "5 * y * 1\.4315300000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (\-0|\-)\.9852655760" $log | wc -l`
+CRIT8=`$GREP "7 * x * (0| )\.0000000000" $log | wc -l`
+CRIT9=`$GREP "8 * y * \-1\.4315300000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (\-0|\-)\.9852655760" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmetry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 2 * 3 * 1" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 19 * 7 * 11 * 2" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-76\.060784218" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.31096828" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="ENERGIES NOT CORRECT"
+
+# Property calculation
+CRIT1=`$GREP "Nuclear magnetic shieldings" $log | wc -l`
+CRIT2=`$GREP "Magnetic susceptibilities" $log | wc -l`
+CRIT3=`$GREP "London orbitals are NOT used" $log | wc -l`
+CRIT4=`$GREP "No mass\-velocity correction calculated" $log | wc -l`
+CRIT5=`$GREP "No Darwin correction calculated" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[5]=5
+ERROR[5]="CALCULATION OF PROPERTIES NOT SET UP CORRECTLY"
+
+# Magnetizabilities
+CRIT1=`$GREP "Isotropic magnetizability\: * \-3\.037[0-9] * \-239\.660[0-9] * \-14\.432[0-9]" $log | wc -l`
+CRIT2=`$GREP "Diamagnetic contribution\: * \-3\.311[0-9] * \-261\.296[0-9] * \-15\.735[0-9]" $log | wc -l`
+CRIT3=`$GREP "Paramagnetic contribution\: * (0| )\.274[0-9] * 21\.635[0-9] * 1\.302[0-9]" $log | wc -l`
+CRIT4=`$GREP "1st anisotropy\: * (\-0|\-)\.037[0-9] * \-2\.971[0-9] * (\-0|\-)\.178[0-9]" $log | wc -l`
+CRIT5=`$GREP "2nd anisotropy\: * (0| )\.062[0-9] * 4\.942[0-9] * (0| )\.297[0-9]" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[6]=5
+ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
+
+# Total magnetizability tensor
+CRIT1=`$GREP "Bx *   \-3\.053778.* \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *  \-2\.99536[34].*  * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 *\-*0*\.000000000000 *   \-3\.062225" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[7]=3
+ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
+
+# Diamagnetic magnetizability tensor
+CRIT1=`$GREP "Bx *   \-3\.50938[56].*  * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-3\.123016...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.301507......" $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[8]=3
+ERROR[8]="DIAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
+
+# Paramagnetic magnetizability tensor
+CRIT1=`$GREP "Bx * (0| )\.455607...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 * (0| )\.127652...... * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 * (0| )\.239281......" $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[9]=3
+ERROR[9]="PARAMAGNETIC MAGNETIZABILITY TENSOR NOT CORRECT"
+
+# Molecular rotational g-factor
+CRIT1=`$GREP "Isotropic g\-tensor *  \: * (0| )\.722310" $log | wc -l`
+CRIT2=`$GREP "Nuclear contribution * \: * (0| )\.974533" $log | wc -l`
+CRIT3=`$GREP "Diamagnetic contribution \: * (0| )\.00000000" $log | wc -l`
+CRIT4=`$GREP "Electronic contribution * \: * (\-0|\-)\.252222" $log | wc -l`
+CRIT5=`$GREP "1st anisotropy\: * (\-0|\-)\.01765[56]" $log | wc -l`
+CRIT6=`$GREP "2nd anisotropy\: * (0| )\.065616" $log | wc -l`
+TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[10]=6
+ERROR[10]="MOLECULAR ROTATIONAL G-TENSOR NOT CORRECT"
+
+# Molecular rotational g-factor in principal axis system
+CRIT1=`$GREP "A * (0| )\.710539.. * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000" $log | wc -l`
+CRIT2=`$GREP "B * (\-0| \-| 0|  )\.00000000 * (0| )\.766054.. * (\-0| \-| 0|  )\.00000000" $log | wc -l`
+CRIT3=`$GREP "C * (\-0| \-| 0|  )\.00000000 * (\-0| \-| 0|  )\.00000000 * (0| )\.69033[67]" $log | wc -l`
+TEST[11]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[11]=3
+ERROR[11]="MOLECULAR ROT G-TENSOR IN PRINCIPAL AXIS SYSTEM NOT CORRECT"
+
+# Shielding tensors (symmetry coordinates)
+CRIT1=`$GREP "O * y * 355\.218" $log | wc -l`
+CRIT2=`$GREP "H * y * 78\.2471" $log | wc -l`
+CRIT3=`$GREP "H * z * \-15\.2051" $log | wc -l`
+CRIT4=`$GREP "H * x * 46\.8178" $log | wc -l`
+CRIT5=`$GREP "O * z * 304\.755" $log | wc -l`
+CRIT6=`$GREP "H * y * \-19\.1405" $log | wc -l`
+CRIT7=`$GREP "H * z * 59\.8959" $log | wc -l`
+TEST[12]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7`
+CTRL[12]=7
+ERROR[12]="SHIELDING TENSORS IN SYMMETRY COORDINATES NOT CORRECT"
+
+# Chemical shielding for O
+CRIT1=`$GREP "Shielding constant\: * 319\.045[0-9] ppm" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * 54\.259[0-9] ppm" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.209[0-9]" $log | wc -l`
+CRIT4=`$GREP "S parameter\: * 54\.656[0-9] ppm" $log | wc -l`
+CRIT5=`$GREP "A parameter\: * (0| )\.0000 ppm" $log | wc -l`
+TEST[13]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[13]=5
+ERROR[13]="CHEMICAL SHIELDING FOR OXYGEN NOT CORRECT"
+
+# Total shielding tensor for O
+CRIT1=`$GREP "O * x * 297\.16(1|2)....[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "O * y * (0| )\.00000000 * 355\.218....[0-9] * (0| )\.00000000" $log | wc -l`
+CRIT3=`$GREP "O * z * (0| )\.00000000 * (0| )\.00000000 * 304\.755....[0-9]" $log | wc -l`
+TEST[14]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[14]=3
+ERROR[14]="TOTAL SHIELDING TENSOR FOR OXYGEN NOT CORRECT"
+
+# Diamagnetic and paramagnetic contributions
+CRIT1=`$GREP "Diamagnetic contribution\: * 414\.92569[0-9] * Paramagnetic\: * \-95\.880[34]" $log | wc -l`
+TEST[15]=`expr	$CRIT1`
+CTRL[15]=1
+ERROR[15]="DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR OXYGEN NOT CORRECT"
+
+# Chemical shielding for H
+CRIT1=`$GREP "Shielding constant\: * 30\.826[0-9] ppm" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * 20\.166[0-9] ppm" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.103[0-9]" $log | wc -l`
+CRIT4=`$GREP "S parameter\: * 20\.202[0-9] ppm" $log | wc -l`
+CRIT5=`$GREP "A parameter\: * (0| )\.983[0-9] ppm" $log | wc -l`
+TEST[16]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[16]=10
+ERROR[16]="CHEMICAL SHIELDING FOR HYDROGEN NOT CORRECT"
+
+# Total shielding tensor for H1
+CRIT1=`$GREP "H * _1 x * 23\.4089...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * _1 y * (0| )\.00000000 * 39\.1235...[0-9] * \-9\.5702...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _1 z * (0| )\.00000000 * \-7\.6025...[0-9] * 29\.9479...[0-9]" $log | wc -l`
+TEST[17]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[17]=3
+ERROR[17]="TOTAL SHIELDING TENSOR FOR HYDROGEN1 NOT CORRECT"
+
+# Diamagnetic and paramagnetic contributions
+CRIT1=`$GREP "Diamagnetic contribution\: * 24\.87352[0-9] * Paramagnetic\: * 5\.95329[0-9]" $log | wc -l`
+TEST[18]=`expr	$CRIT1`
+CTRL[18]=2
+ERROR[18]="DIAMAGNETIC AND PARAMAGNETIC CONTRIBUTIONS FOR HYDROGEN NOT CORRECT"
+
+# Total shielding tensor for H2
+CRIT1=`$GREP "H * _2 x * 23\.4089...[0-9] * (0| )\.00000000 * (0| )\.00000000" $log | wc -l`
+CRIT2=`$GREP "H * _2 y * (0| )\.00000000 * 39\.1235...[0-9] * 9\.5702...[0-9]" $log | wc -l`
+CRIT3=`$GREP "H * _2 z * (0| )\.00000000 * 7\.6025...[0-9] * 29\.9479...[0-9]" $log | wc -l`
+TEST[19]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[19]=3
+ERROR[19]="TOTAL SHIELDING TENSOR FOR HYDROGEN2 NOT CORRECT"
+
+# Chemical shieldings
+CRIT1=`$GREP "\@1 O *     319\.045[0-9] * 414\.925[0-9] * \-95\.880[0-9] * (0| )\.738[0-9] * 58\.056[0-9] * 54\.259[0-9] * (0| )\.209[0-9]" $log | wc -l`
+CRIT2=`$GREP "\@1 H * _1 * 30\.826[0-9] * 24\.873[0-9] * 5\.953[0-9] * (0| )\.866[0-9] * 20\.862[0-9] * 20\.166[0-9] * (0| )\.103[0-9]" $log | wc -l`
+CRIT3=`$GREP "\@1 H * _2 * 30\.826[0-9] * 24\.873[0-9] * 5\.953[0-9] * (0| )\.866[0-9] * 20\.862[0-9] * 20\.166[0-9] * (0| )\.103[0-9]" $log | wc -l`
+CRIT4=`$GREP "\@2 O *     319\.045[0-9] * 414\.925[0-9] * \-95\.880[0-9] * 54\.259[0-9] * (0| )\.209[0-9] * 54\.656[0-9] * (0| )\.0000" $log | wc -l`
+CRIT5=`$GREP "\@2 H * _1 * 30\.826[0-9] * 24\.873[0-9] * 5\.953[0-9] * 20\.166[0-9] * (0| )\.103[0-9] * 20\.202[0-9] * (0| )\.983[0-9]" $log | wc -l`
+CRIT6=`$GREP "\@2 H * _2 * 30\.826[0-9] * 24\.873[0-9] * 5\.953[0-9] * 20\.166[0-9] * (0| )\.103[0-9] * 20\.202[0-9] * (0| )\.983[0-9]" $log | wc -l`
+TEST[20]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[20]=6
+ERROR[20]="CHEMICAL SHIELDINGS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

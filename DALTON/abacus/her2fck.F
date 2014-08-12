@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef UNDEF
 !===========================================================================
@@ -147,11 +146,12 @@ C
 C*****************************************************************************
 
 !       module dependencies
-        use parallel_communication_models_mpi
-        use one_sided_communication_wrappers
         use rma_windows
 
 #ifdef VAR_MPI
+        use parallel_communication_models_mpi
+        use one_sided_communication_wrappers
+
 #ifdef USE_MPI_MOD_F90
         use mpi
 #include "implicit.h"
@@ -728,8 +728,8 @@ C
          KINDEX = KFAC   + 3*NUCDEP*(MAXREP + 1)
          KPOINT = KINDEX + (3*NUCIND*(MAXREP + 1) + 1)/IRAT
          KCSTRA = KPOINT + (3*NUCDEP*(MAXREP + 1) + 1)/IRAT
-         KSCTRA = KCSTRA + MXCOOR*MXCOOR
-         KLAST  = KSCTRA + MXCOOR*MXCOOR
+         KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+         KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
          IF (KLAST .GT. LWORK) CALL STOPIT('SKLFCK','EXP',KLAST,LWORK)
          CALL SKLEXP(WORK(KSKLTN),HESSEE,WORK(KCSTRA),WORK(KSCTRA),
      &               WORK(KFAC),WORK(KINDEX),WORK(KPOINT),MAXDER,IPRINT)

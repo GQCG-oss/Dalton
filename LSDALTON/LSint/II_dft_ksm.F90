@@ -62,7 +62,7 @@ ELECTRONS = 0E0_realk
 call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 !MPI Specific
@@ -223,7 +223,7 @@ END SUBROUTINE II_DFT_KSM
 !!$#ifdef MOD_UNRELEASED
 !!$LOGICAL          :: USE_MPI
 !!$REAL(REALK)      :: DFTHRI
-!!$USE_MPI = .TRUE.
+!!$USE_MPI = SETTING%SCHEME%doMPI
 !!$IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 !!$#ifdef VAR_MPI
 !!$!MPI Specific
@@ -291,7 +291,7 @@ call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 !MPI Specific
@@ -437,7 +437,7 @@ INTEGER          :: GRDONE,NHTYP
 REAL(REALK)      :: SUM,NELE
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -468,7 +468,7 @@ ENDIF
    ENDIF
 #else
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
 
@@ -516,7 +516,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -581,7 +581,7 @@ ELSE
 ENDIF
 #ifndef VAR_MPI
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),&
      &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -616,7 +616,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -679,7 +679,7 @@ ENDIF
 
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -715,7 +715,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -802,7 +802,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT,nbmat
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -872,7 +872,7 @@ ENDIF
   END DO
 #ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
-  IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
+  IF(IPRINT.GT. 1) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
        &     ' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
@@ -908,7 +908,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -987,7 +987,7 @@ INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-USE_MPI = .TRUE.
+USE_MPI = SETTING%SCHEME%doMPI
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
@@ -1072,7 +1072,7 @@ TYPE(DFTDATATYPE) :: DFTDATA
 !REAL(REALK), pointer
 CALL ls_mpi_buffer(DMAT,NBAST,NBAST,NDMAT,infpar%master)
 !SETTING
-CALL mpicopy_setting(setting,comm)
+CALL mpicopy_setting(setting,comm,.FALSE.)
 !DFTDATA
 call mpicopy_dftdata(dftdata,setting%node)
 call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
@@ -1123,7 +1123,7 @@ end subroutine lsmpi_XCgeneric_masterToSlave
 !!$ENDIF
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
 !!$!SETTING
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$end subroutine lsmpi_ABSVAL_masterToSlave
 
@@ -1182,7 +1182,7 @@ end subroutine lsmpi_II_DFT_KSM_Slave
 !!$ENDIF
 !!$call mem_dft_alloc(ABSVALOVERLAP,NMO,NMO)
 !!$CALL ls_mpi_buffer(ABSVALOVERLAP,NMO,NMO,infpar%master)
-!!$CALL mpicopy_setting(setting,comm)
+!!$CALL mpicopy_setting(setting,comm,.FALSE.)
 !!$call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
 !!$
 !!$IF(SameCmat)THEN

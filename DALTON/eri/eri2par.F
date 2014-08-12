@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
@@ -1117,8 +1116,10 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
+#if defined (BUILD_PELIB)
          ELSE IF (IPRTYP == POLARIZABLE_EMBEDDING) THEN
-            CALL PE_IFC_MPI(WORK(1), MWORK, IPRINT)
+            CALL PE_IFC_MPI(IPRINT)
+#endif
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
@@ -1143,6 +1144,22 @@ C added by Bin Gao, May 12, 2012
          ! XCint: XC integration, added by R. Bast
          else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
             call xc_integrate_worker()
+#endif
+
+         ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+            CALL vpotdamped_slave()
+
+#if defined(ENABLE_EFS)
+         else if (IPRTYP.eq.efs_add_atomtype_work) then
+            call efs_add_atomtype_slave()
+         else if (IPRTYP.eq.efs_init_work) then
+            call efs_init_slave()
+         else if (IPRTYP.eq.efs_generate_basis_work) then
+            call efs_generate_basis_product_slave()
+         else if (IPRTYP.eq.efs_init_2efock_work) then
+            call efs_init_2efock_slave()
+         else if (IPRTYP.eq.efs_fock_update_work) then
+            call efs_fock_update_slave()
 #endif
 
          ELSE

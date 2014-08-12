@@ -23,10 +23,10 @@ module full_molecule
 
   ! CABS
   use CABS_operations
-
+#ifdef MOD_UNRELEASED
   ! F12 MO-matrices
   use f12_routines_module!,only: get_F12_mixed_MO_Matrices, MO_transform_AOMatrix
-
+#endif
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use dec_fragment_utils
@@ -76,16 +76,23 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+#ifdef MOD_UNRELEASED
        !> Sanity check 
        if(.NOT. present(D)) then
           call lsquit("ERROR: (molecule_init_from_files) : Density needs to be persent for F12 calc",-1)
        end if
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-       
-       !> F12 Fock matrices in MO basis
-       call molecule_mo_f12(molecule,mylsitem,D)
+       IF(DECinfo%full_molecular_cc)THEN
+          call dec_get_CABS_orbitals(molecule,mylsitem)
+          call dec_get_RI_orbitals(molecule,mylsitem)
+       ELSE
+          !> F12 Fock matrices in MO basis
+          call molecule_mo_f12(molecule,mylsitem,D)
+       ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -134,12 +141,19 @@ contains
      
     call molecule_get_carmom(molecule,mylsitem)
        
+    call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
+    call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
+
     if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
-       call dec_get_CABS_orbitals(molecule,mylsitem)
-       call dec_get_RI_orbitals(molecule,mylsitem)
-  
-       !> F12 Fock matrices in MO basis
-       call molecule_mo_f12(molecule,mylsitem,D)
+#ifdef MOD_UNRELEASED
+       IF(DECinfo%full_molecular_cc)THEN
+          call dec_get_CABS_orbitals(molecule,mylsitem)
+          call dec_get_RI_orbitals(molecule,mylsitem)
+       ELSE
+          !> F12 Fock matrices in MO basis
+          call molecule_mo_f12(molecule,mylsitem,D)
+       ENDIF
+#endif
     end if
     
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
@@ -183,9 +197,12 @@ contains
     call calculate_fullmolecule_memory(molecule,memory_use)
     DECinfo%fullmolecule_memory = memory_use
 
+    !> SubSystem index
+    call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
+    call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
+
     !> Interatomic distances in atomic units
     call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    molecule%DistanceTable=0.0E0_realk
     call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
 
     !> Which model to use for different pair calculations?
@@ -195,7 +212,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
+    write(DECinfo%output,'(/,a)') '-- Full molecular info --'
     write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
     write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
     write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
@@ -315,6 +332,7 @@ contains
     electrons = 0
     natoms = mylsitem%input%molecule%natoms
     do i=1,natoms
+       IF(mylsitem%input%molecule%Atom(i)%Phantom)CYCLE
        electrons = electrons + mylsitem%input%molecule%Atom(i)%Charge
     end do
     charge = nint(mylsitem%input%molecule%charge)
@@ -322,6 +340,18 @@ contains
 
     return
   end function get_num_electrons
+
+  subroutine getPhantomAtoms(mylsitem,PhantomAtom,nAtoms)
+    implicit none
+    integer,intent(in) :: nAtoms
+    logical,intent(inout) :: PhantomAtom(nAtoms)
+    type(lsitem), intent(inout) :: mylsitem
+    !
+    integer :: i
+    do i=1,natoms
+       PhantomAtom(i) = mylsitem%input%molecule%Atom(i)%Phantom
+    end do
+  end subroutine getPhantomAtoms
 
   !> \brief Get number of regular basis functions
   !> \param mylsitem Integral program input
@@ -590,9 +620,39 @@ contains
        
        call mem_alloc(molecule%AtomCenters,3,nAtoms)
        call getAtomicCenters(mylsitem%setting,molecule%AtomCenters,nAtoms)
+
+       !> Distances between Occ Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomOcc,nocc,nAtoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomOcc,nocc,natoms,&
+            & Molecule%carmomocc,molecule%AtomCenters) 
+       !> Distances between Virtual Orbitals and Atoms
+       call mem_alloc(molecule%DistanceTableOrbAtomVirt,nvirt,natoms)
+       call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
+            & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
   end subroutine molecule_get_carmom
 
+
+  subroutine GetOrbAtomDistances(DistanceTableOrbAtom,nocc,natoms,&
+       & Carmom,AtomCenters) 
+    implicit none
+    integer,intent(in) :: nocc,natoms
+    real(realk),intent(inout) :: DistanceTableOrbAtom(nocc,natoms)
+    real(realk),intent(in) :: AtomCenters(3,nAtoms)
+    real(realk),intent(in) :: Carmom(3,nocc)
+    !local variables
+    integer :: iatom,i
+    real(realk) :: Xa,Ya,Za
+    do iatom=1,nAtoms
+     Xa = -AtomCenters(1,iatom)
+     Ya = -AtomCenters(2,iatom)
+     Za = -AtomCenters(3,iatom)
+     do i=1,nocc
+      DistanceTableOrbAtom(i,iatom)=&
+ & sqrt((Xa+Carmom(1,i))*(Xa+Carmom(1,i))+(Ya+Carmom(2,i))*(Ya+Carmom(2,i))+(Za+Carmom(3,i))*(Za+Carmom(3,i)))
+     end do
+    end do
+  end subroutine GetOrbAtomDistances
 
   !> \brief Destroy fullmolecule structure
   !> \param molecule Full molecular info
@@ -614,14 +674,14 @@ contains
     end if
 
     !Deallocate CABS MO!
-    if(associated(molecule%Ccabs)) then
-       call mem_dealloc(molecule%Ccabs)
-    end if
+!    if(associated(molecule%Ccabs)) then
+!       call mem_dealloc(molecule%Ccabs)
+!    end if
 
     !Deallocate CABS RI MO!
-    if(associated(molecule%Cri)) then
-       call mem_dealloc(molecule%Cri)
-    end if
+!    if(associated(molecule%Cri)) then
+!       call mem_dealloc(molecule%Cri)
+!    end if
 
     ! Delete AO fock matrix
     if(associated(molecule%fock)) then
@@ -680,6 +740,14 @@ contains
        call mem_dealloc(molecule%atom_end)
     end if
 
+    if(associated(molecule%atom_cabssize)) then
+       call mem_dealloc(molecule%atom_cabssize)
+    end if
+
+    if(associated(molecule%atom_cabsstart)) then
+       call mem_dealloc(molecule%atom_cabsstart)
+    end if
+
     if(associated(molecule%overlap)) then
        call mem_dealloc(molecule%overlap)
     end if
@@ -694,6 +762,22 @@ contains
 
     if(associated(molecule%AtomCenters)) then
        call mem_dealloc(molecule%AtomCenters)
+    end if
+
+    if(associated(molecule%DistanceTableOrbAtomOcc)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomOcc)
+    endif
+
+    if(associated(molecule%DistanceTableOrbAtomVirt)) then
+       call mem_dealloc(molecule%DistanceTableOrbAtomVirt)
+    endif
+
+    if(associated(molecule%PhantomAtom)) then
+       call mem_dealloc(molecule%PhantomAtom)
+    end if
+
+    if(associated(molecule%SubSystemIndex)) then
+       call mem_dealloc(molecule%SubSystemIndex)
     end if
 
     if(associated(molecule%DistanceTable)) then
@@ -721,19 +805,19 @@ contains
     call mem_alloc(molecule%atom_size,natoms)
     molecule%atom_size=0
 
-    r = mylsitem%input%basis%regular%labelindex
+    r = mylsitem%input%basis%binfo(RegBasParam)%labelindex
 
     ! loop over atoms
     do i=1,natoms
 
        if(r == 0) then
           icharge = int(mylsitem%input%molecule%atom(i)%charge)
-          itype = mylsitem%input%basis%regular%chargeindex(icharge)
+          itype = mylsitem%input%basis%binfo(RegBasParam)%chargeindex(icharge)
        else
           itype = mylsitem%input%molecule%atom(i)%idtype(1)
        end if
 
-       molecule%atom_size(i) = mylsitem%input%basis%regular%&
+       molecule%atom_size(i) = mylsitem%input%basis%binfo(RegBasParam)%&
             atomtype(itype)%TotNOrb
 
     end do
@@ -754,7 +838,35 @@ contains
             + molecule%atom_size(i+1)-1
     end do
 
-    return
+
+    IF(decinfo%F12)THEN
+     call mem_alloc(molecule%atom_cabssize,natoms)
+     molecule%atom_cabssize=0
+
+     r = mylsitem%input%basis%binfo(CABBasParam)%labelindex
+       
+     ! loop over atoms
+     do i=1,natoms
+      if(r == 0) then
+         icharge = int(mylsitem%input%molecule%atom(i)%charge)
+         itype = mylsitem%input%basis%binfo(CABBasParam)%chargeindex(icharge)
+      else
+         itype = mylsitem%input%molecule%atom(i)%idtype(r)
+      end if
+      molecule%atom_cabssize(i) = &
+           & mylsitem%input%basis%binfo(CABBasParam)%atomtype(itype)%TotNOrb
+     end do
+
+     ! get first and last index of an atom in ao matrix
+     call mem_alloc(molecule%atom_cabsstart,natoms)
+     molecule%atom_cabsstart = 0
+     molecule%atom_cabsstart(1) = 1
+     basis=1
+     do i=1,natoms-1
+        basis = basis + molecule%atom_cabssize(i)
+        molecule%atom_cabsstart(i+1) = basis
+     end do
+    ENDIF
   end subroutine molecule_get_atomic_sizes
 
   !> \brief Set occupied and virtual MO orbitals in molecule type
@@ -833,96 +945,72 @@ contains
     type(fullmolecule), intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: MyLsitem
     type(matrix), intent(in) :: D
+#ifdef MOD_UNRELEASED
     
-    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,ncabsMO,nocvfull
+    integer :: nbasis,nocc,nvirt,noccfull,ncabsAO,nocvfull,ncabsMO
     
-    real(realk), pointer :: hJir(:,:)
-    real(realk), pointer :: Krs(:,:) 
-    real(realk), pointer :: Frs(:,:) 
-    real(realk), pointer :: Fac(:,:) 
-    real(realk), pointer :: Fpq(:,:) 
-    real(realk), pointer :: Fij(:,:) 
-    real(realk), pointer :: Frm(:,:) 
-    real(realk), pointer :: Fcp(:,:) 
-
     nbasis   = MyMolecule%nbasis
     nocc     = MyMolecule%nocc
     nvirt    = MyMolecule%nunocc
     noccfull = nocc
-    ncabsAO  = MyMolecule%nCabsAO    
-    ncabsMO  = MyMolecule%nCabsMO
+
+!HACK we do call Fcp for Fcp - indicating 
+!     that this is a Fock(nCabsMO,nbasis)
+!     However all AO -> MO transformations
+!     realted to CABS and RI is postponed
+!     so Fock(nCabsMO,nbasis) will actually be 
+!     Fock(nCabsAO,nbasis) and be a 
+!     half transfomed matrix
+
+    call determine_CABS_nbast(ncabsAO,ncabsMO,MyLsitem%setting,DECinfo%output)
+    MyMolecule%nCabsAO = ncabsAO
+    MyMolecule%nCabsMO = ncabsMO
+
     nocvfull = nocc + nvirt
 
    if(DECinfo%F12debug) then
        print *, "--------------------------"
        print *, "Molecule_mo_f12"
        print *, "--------------------------"
-       print *, "nbasis: ", nbasis
-       print *, "nocc: ", nocc
-       print *, "nvirt: ", nvirt
+       print *, "nbasis:   ", nbasis
+       print *, "nocc:     ", nocc
+       print *, "nvirt:    ", nvirt
        print *, "--------------------------"
-       print *, "ncabsAO: ", ncabsAO
-       print *, "ncabsMO: ", ncabsMO
+       print *, "ncabsAO:  ", ncabsAO
+       print *, "ncabsMO:  ", ncabsMO
        print *, "nocvfull: ", nocc+nvirt
        print *, "--------------------------"
     end if
 
-
-    call mem_alloc(hJir,nocc,ncabsAO) 
-    call mem_alloc(Krs,ncabsAO,ncabsAO)
-    call mem_alloc(Fac,nvirt,ncabsMO)
-    call mem_alloc(Frs,ncabsAO,ncabsAO)
-    call mem_alloc(Fij,nocc,nocc)
-    call mem_alloc(Frm,ncabsAO,noccfull)
-    call mem_alloc(Fcp,ncabsMO,nbasis)
+    ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
+    call mem_alloc(MyMolecule%hJir,nocc,ncabsAO)    !HACK not RI MO orbitals (AO basis)
+    call mem_alloc(MyMolecule%Krs,ncabsAO,ncabsAO)  !HACK not RI MO orbitals (AO basis)
+    call mem_alloc(MyMolecule%Fac,nvirt,ncabsAO)    !HACK not nvirt,ncabsMO - not CABS MOs
+    call mem_alloc(MyMolecule%Frs,ncabsAO,ncabsAO)  !HACK not RI MO orbitals (AO basis)
+    call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull) !HACK not RI MO orbitals (AO basis)
+    call mem_alloc(MyMolecule%Fcp,ncabsAO,nbasis)   !HACK not ncabsMO,nbasis - not CABS MOs
+    call mem_alloc(MyMolecule%Fij,nocc,nocc)
 
     ! Constructing the F12 MO matrices from F12_routines.F90
     call get_F12_mixed_MO_Matrices_real(MyLsitem,MyMolecule,D,nbasis,ncabsAO,&
-         & nocc,noccfull,nvirt,ncabsMO,hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
+         & nocc,noccfull,nvirt,MyMolecule%hJir,MyMolecule%Krs,MyMolecule%Frs,&
+         & MyMolecule%Fac,MyMolecule%Fij,MyMolecule%Frm,MyMolecule%Fcp)
 
-    !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
-    IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
-
-    ! Mixed regular/CABS one-electron  and Coulomb matrix (h+J) combination in AO basis
-    call mem_alloc(MyMolecule%hJir,nocc,ncabsAO) 
-    call mem_alloc(MyMolecule%Krs,ncabsAO,ncabsAO)
-    call mem_alloc(MyMolecule%Fac,nvirt,ncabsMO)
-    call mem_alloc(MyMolecule%Frs,ncabsAO,ncabsAO)
-    call mem_alloc(MyMolecule%Frm,ncabsAO,noccfull)
-    call mem_alloc(MyMolecule%Fcp,ncabsMO,nbasis)
-    call mem_alloc(MyMolecule%Fij,nocc,nocc)
-
-    MyMolecule%hJir = hJir
-    MyMolecule%Krs  = Krs
-    MyMolecule%Fac  = Fac
-    MyMolecule%Frs  = Frs
-    MyMolecule%Fij  = Fij
-    MyMolecule%Frm  = Frm
-    MyMolecule%Fcp  = Fcp
-    
     if(DECinfo%F12debug) then  
-      print *,'-----------------------------------------'
-      print *,'        Get all F12 Fock integrals       '
-      print *,'-----------------------------------------'
+      print *,'-------------------------------------------'
+      print *,'molecule_mo_f12: Get all F12 Fock integrals'
+      print *,'-------------------------------------------'
       print *, "norm2D(hJir)", norm2D(MyMolecule%hJir)
-      print *, "norm2D(Krs)", norm2D(MyMolecule%Krs)
-      print *, "norm2D(Frs)", norm2D(MyMolecule%Frs)
-      print *, "norm2D(Fac)", norm2D(MyMolecule%Fac)
-      print *, "norm2D(Frm)", norm2D(MyMolecule%Frm)
-      print *, "norm2D(Fcp)", norm2D(MyMolecule%Fcp)
-      print *, "norm2D(Fij)", norm2D(MyMolecule%Fij)
-      print *,'-----------------------------------------' 
+      print *, "norm2D(Krs)",  norm2D(MyMolecule%Krs)
+      print *, "norm2D(Frs)",  norm2D(MyMolecule%Frs)
+      print *, "norm2D(Fac)",  norm2D(MyMolecule%Fac)
+      print *, "norm2D(Frm)",  norm2D(MyMolecule%Frm)
+      print *, "norm2D(Fcp)",  norm2D(MyMolecule%Fcp)
+      print *, "norm2D(Fij)",  norm2D(MyMolecule%Fij)
+      print *,'-------------------------------------------' 
     end if
 
-    ! Mixed CABS/CABS exchange matrix
-    ! Mixed CABS/CABS Fock matrix
-    ! Mixed AO/CABS Fock matrix
-    ! Mixed AO/AO full MO Fock matrix
-    ! Mixed CABS/AO MO Fock matrix
-
-    ! call free_F12_mixed_MO_Matrices(hJir,Krr,Frr,Fac,Fpp,Fij,Fmm,Frm,Fcp)
-    call free_F12_mixed_MO_Matrices_real(hJir,Krs,Frs,Fac,Fij,Frm,Fcp)
-
+#endif
   end subroutine molecule_mo_f12
 
 
@@ -980,7 +1068,7 @@ contains
     integer(kind=8) :: longdim1,longdim2
     integer(kind=4) :: dim1_32,dim2_32
     real(realk),pointer :: Dfull(:,:)
-
+    logical :: gcbasis
     ! Open density file
     funit=-1
     call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
@@ -1011,7 +1099,31 @@ contains
 
     ! Read density elements
     read(funit) Dfull
-    call lsclose(funit,'KEEP')
+
+    read(funit) gcbasis
+
+    ! Basis set Sanity check
+    if (gcbasis .and. .not. DECinfo%GCBASIS) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
+        WRITE(DECinfo%output,*) 'while your LSDALTON.INP uses the standard input basis. '
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in standard basis, dens.restart in GC basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Your dens.restart was constructed using the standard input basis, while your'
+        WRITE(DECinfo%output,*) 'LSDALTON.INP uses the grand-canonical (GC) basis.'
+        WRITE(DECinfo%output,*) 'The GC basis is default unless you use a dunnings basis set,'
+        WRITE(DECinfo%output,*) 'or you specify .NOGCBASIS under *GENERAL'
+        call lsquit('Calculation in GC basis, dens.restart in standard input basis!',DECinfo%output)
+     else if (DECinfo%GCBASIS .and. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using GC basis consistently'
+     else if (.not. DECinfo%GCBASIS .and. .not. gcbasis) then
+        WRITE(DECinfo%output,*) 'Basis check ok: Using standard basis consistently'
+     else
+        call lsquit('Basis check is messed up!!',DECinfo%output)
+     endif
+
+     call lsclose(funit,'KEEP')
 
     ! Init density matrix
     call mat_init(D,nbasis,nbasis)
@@ -1043,8 +1155,8 @@ contains
     IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
-    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
-    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
+!    call mem_alloc(molecule%Ccabs,ncabsAO,nCabs)
+!    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%Ccabs)
     call mat_free(CMO_cabs)
 
   end subroutine dec_get_CABS_orbitals
@@ -1070,8 +1182,8 @@ contains
     IF(.NOT.DECinfo%full_molecular_cc)call free_cabs()
 
     ! NB! Memory leak need to be freed somewhere
-    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
-    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
+!    call mem_alloc(molecule%Cri,ncabsAO,ncabsAO) 
+!    call mat_to_full(CMO_RI,1.0E0_realk,molecule%Cri)
 
     call mat_free(CMO_RI)
 

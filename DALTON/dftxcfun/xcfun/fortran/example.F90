@@ -55,12 +55,12 @@ program xc_example
    print *, 'Order:', order
    if (.not.xc_try_order(id,order)) then
       print *, 'Could not set order ',order
-      stop
+      call quit('Could not set order ')
    endif
 
    if (.not.xc_try_vars(id,XC_A_B_GAA_GAB_GBB)) then
       print *, 'Could not set order ',order
-      stop
+      call quit('Could not set order ')
    endif
 
    olen = xc_output_length(id, order)

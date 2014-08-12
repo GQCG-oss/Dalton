@@ -7,6 +7,8 @@ MODULE CABS_operations
   use matrix_operations
   use integralinterfaceMod
   use lstiming
+  use dec_typedef_module
+
 SAVE
 logical  :: CMO_CABS_save_created
 TYPE(Matrix) :: CMO_CABS_save
@@ -50,7 +52,7 @@ CONTAINS
 
   subroutine free_cabs()
     implicit none
-    print*,'FREE CABS'
+        ! print*,'FREE CABS'
     IF(CMO_CABS_save_created)THEN
        call mat_free(CMO_CABS_save)
     ENDIF
@@ -138,7 +140,7 @@ CONTAINS
        call mem_dealloc(optwrk) 
        nnull = nbast_cabs
        DO I=1,SIZE(SV)
-          IF(ABS(SV(I)).GT.1.0E-12)THEN
+          IF(ABS(SV(I)).GT.1.0E-12_realk)THEN
              nnull=nnull-1
           ENDIF
        ENDDO
@@ -164,8 +166,12 @@ CONTAINS
        call mat_free(tmp)
        
        call mat_mul(S_minus_sqrt_cabs,Vnull,'N','N',1.0E0_realk,0.0E0_realk,CMO_cabs)
-       !test
-       call test_CABS_MO_orthonomality(CMO_cabs,SETTING,lupri)
+
+       !test of cabs orthonomality
+       !If(DECinfo%F12debug) then
+        !call test_CABS_MO_orthonomality(CMO_cabs,SETTING,lupri)
+       !endif
+
        call mat_free(S_minus_sqrt_cabs)
        call mat_free(Vnull)       
        
@@ -174,7 +180,8 @@ CONTAINS
           CALL MAT_INIT(CMO_CABS_save,CMO_cabs%nrow,CMO_cabs%ncol)
           call mat_assign(CMO_CABS_save,CMO_cabs)
        ENDIF
-       print*,'BUILD CABS'
+
+       !   print*,'BUILD CABS'
 
        CALL LSTIMER('build_CABS_MO',TIMSTR,TIMEND,lupri)       
        SETTING%SCHEME%OD_SCREEN = ODSCREEN
@@ -238,7 +245,7 @@ CONTAINS
     call mat_identity(tmp2)
     call mat_add(1E0_realk,tmp,-1E0_realk,tmp2,tmp3)
     
-    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-10)THEN
+    IF(sqrt(mat_sqnorm2(tmp3)/tmp%nrow).GT.1.0E-10_realk)THEN
        write(lupri,*)'sqrt(Ccabs^T*Scabs*Ccabs - I)',sqrt(mat_sqnorm2(tmp3)/tmp%nrow)  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthonormal',-1)
@@ -268,7 +275,7 @@ CONTAINS
     call mat_init (tmp, nbast, Cmo_cabs%ncol)
     call mat_mul(Cmo,Smix,'T','N',1.0E0_realk,0.0E0_realk,tmp2)
     call mat_mul(tmp2,Cmo_cabs,'N','N',1.0E0_realk,0.0E0_realk,tmp)  
-    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-10)THEN
+    IF(sqrt(mat_sqnorm2(tmp)/tmp%nrow).GT.1.0E-10_realk)THEN
        write(lupri,*)'Ccabs^T*Scabs*Ccabs = '  
        call mat_print(tmp,1,tmp%nrow,1,tmp%ncol,lupri)
        call lsquit('CABS not Orthogonal to MOs',-1)

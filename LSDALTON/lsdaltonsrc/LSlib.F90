@@ -52,6 +52,31 @@ call lsfree_all(OnMaster,lupri,luerr,tstart,tend,memslave)
 
 END SUBROUTINE LSlib_free
 
+#ifdef VAR_MPI
+SUBROUTINE LSlib_set_external_comm(external_comm)
+use infpar_module, only : call_mpi_init
+use lsmpi_type,    only : MPI_COMM_LSDALTON
+use precision,     only : ls_mpik
+implicit none
+integer(kind=ls_mpik),intent(IN) :: external_comm
+
+MPI_COMM_LSDALTON = external_comm
+call_mpi_init = .FALSE.
+
+END SUBROUTINE LSlib_set_external_comm
+
+SUBROUTINE LSlib_exit_slave()
+use infpar_module,      only : infpar
+use lsmpi_type,         only : ls_mpibcast
+use Integralparameters, only : LSMPIQUIT
+use lslib_state
+implicit none
+
+CALL ls_mpibcast(LSMPIQUIT,infpar%master,ls%setting%comm)
+
+END SUBROUTINE LSlib_exit_slave
+#endif
+
 !> \brief Returns the number of basis functions
 !> \author S. Reine
 !> \date 2013-01-20
@@ -1163,7 +1188,7 @@ ENDDO
 call mat_init(S,nbast,nbast)
 CALL II_get_overlap(lupri,luerr,setting,S)
 call mat_init(OverlapMat,nbast,nbast)
- call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_Overlap(Overlapmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(S,OverlapMat,'LSlib_debug: lsdalton_get_overlap',THR,lupri)
 call mat_free(S)
 call mat_free(OverlapMat)
@@ -1174,11 +1199,11 @@ call mat_init(DIPLEN(3),nbast,nbast)
 call II_get_prop(LUPRI,LUERR,SETTING,DIPLEN,3,'DIPLEN ')
 
 call mat_init(DIPLENMat,nbast,nbast)
- call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_XDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(1),DIPLENmat,'LSlib_debug: lsdalton_get_XDIPLEN',THR,lupri)
- call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_YDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(2),DIPLENmat,'LSlib_debug: lsdalton_get_YDIPLEN',THR,lupri)
- call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
+call lsdalton_get_ZDIPLEN(DIPLENmat%elms,nbast,nAtoms,Coord,Charge,'ccD',lupri)
 call VerifyMatrices(DIPLEN(3),DIPLENmat,'LSlib_debug: lsdalton_get_ZDIPLEN',THR,lupri)
 
 call mat_free(DIPLENMat)
@@ -1419,7 +1444,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   !
   TYPE(integralconfig)   :: integral
   character(len=80) :: BasisString2
-  TYPE(BASISSETLIBRARYITEM) :: LIBRARY  
+  TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)  
   integer,pointer     :: UNIQUECHARGES(:)
   Integer             :: nbas,I,J,nUCharge
   integer(kind=ls_mpik)::ierr,mynum,nodtot
@@ -1473,20 +1498,20 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
         ENDIF
      ENDDO ATOMloop2
   ENDDO
-  LIBRARY%BASISSETNAME(1) = BasisString2
-  LIBRARY%nbasissets = 1
-  LIBRARY%nCharges(1) = nUCharge
-  LIBRARY%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
-  LIBRARY%pointcharges = .FALSE.
-  LIBRARY%phantom = .FALSE.
+
+  call nullifyMainBasis(input%BASIS)
+  LIBRARY(RegBasParam)%BASISSETNAME = BasisString2
+  LIBRARY(RegBasParam)%nbasissets = 1
+  LIBRARY(RegBasParam)%nCharges(1) = nUCharge
+  LIBRARY(RegBasParam)%Charges(1,1:nUCharge) = UNIQUECHARGES(1:nUCharge)
+  LIBRARY(RegBasParam)%pointcharges = .FALSE.
+  LIBRARY(RegBasParam)%phantom = .FALSE.
+  LIBRARY(RegBasParam)%DunningsBasis = .TRUE.
   call mem_dealloc(UNIQUECHARGES)  
-  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%REGULAR,LIBRARY,&
-       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.)
-  input%BASIS%AUXILIARY%natomtypes = 0
-  input%BASIS%CABS%natomtypes = 0
-  input%BASIS%JK%natomtypes = 0
-  input%BASIS%GCtrans%natomtypes = 0
-  input%BASIS%VALENCE%natomtypes = 0
+  call Build_BASIS(LUPRI,0,input%MOLECULE,input%BASIS%BINFO(RegBasParam),LIBRARY,&
+       &'REGULAR  ',.FALSE.,.FALSE.,.FALSE.,.TRUE.,RegBasParam)
+  input%BASIS%WBASIS(RegBasParam)=.TRUE.
+
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)
   setting%SCHEME%DoSpherical = .TRUE.

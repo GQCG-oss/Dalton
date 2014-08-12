@@ -479,7 +479,7 @@ else
     do j=1,soeo%space%Nact
       tmp = fohess(i,j) - fohess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo
@@ -497,7 +497,7 @@ else
     do j=1,soeo%space%Nact
       tmp = sohess(i,j) - sohess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo
@@ -516,7 +516,7 @@ else
     do j=1,soeo%space%Nact
       tmp = hess(i,j) - hess(j,i)
       tmp = dsqrt(tmp*tmp)
-      if (tmp > 1.0E-5) then
+      if (tmp > 1.0E-5_realk) then
         sym = .false.
       endif
     enddo

@@ -90,7 +90,10 @@ else
    GREP="egrep"
 fi
 
-
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
 
 # ?
 CRIT1=`$GREP "Final MCSCF energy\: * 2\.092637575387" $log | wc -l`

@@ -1,0 +1,143 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION                                                   #
+#######################################################################
+cat > rsp_cpp_mcd.info <<'%EOF%'
+   rsp_cpp_mcd
+   -------
+   Molecule:         H2O
+   Wave Function:    DFT (CAMB3LYP)
+   Test Purpose:     MCD calculations with damping using
+                     the solver with symmetrized trial vectors
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT                                                     #
+#######################################################################
+cat > rsp_cpp_mcd.mol <<'%EOF%'
+BASIS                                                                          
+cc-pVDZ                                                                        
+magnet                                                                         
+nuova base                                                                     
+    2    2 X Y                                                                 
+        8.    1                                                                
+O      0.0000000000  0.0000000000  -0.1258515023                               
+        1.    1                                                                
+H      0.0000000000  1.4523500000   0.9986773907
+FINISH
+%EOF%
+
+#######################################################################
+#  DALTON INPUT                                                       #
+#######################################################################
+cat > rsp_cpp_mcd.dal <<'%EOF%'
+**DALTON INPUT
+.RUN RESPONSE                                     
+.DIRECT                                           
+**INTEGRALS                                       
+.DIPLEN                                           
+.ANGMOM                                           
+**WAVE FUNCTION INPUT                             
+.DFT                                              
+ CAMB3LYP                                         
+**RESPONSE INPUT                                  
+*ABSORP                                           
+.MCD                                              
+.BFREQ                                            
+ 2                                                 
+ 0.505 0.51                                             
+.DAMPING                                          
+ 0.004556                                         
+.MAXRM                                            
+ 1000                                             
+.THCLR                                            
+ 1.0D-5
+**END OF DALTON INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT                                                       #
+#######################################################################
+echo $CHECK_SHELL > rsp_cpp_mcd.check
+cat >> rsp_cpp_mcd.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# ?
+CRIT1=`$GREP "Final DFT energy\: * \-76\.391852155" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="HF energy is NOT CORRECT"
+
+# ?
+CRIT1=`$GREP " XDIPLEN * XDIPLEN * 0*\.000000 * 3\.1707.. * \-*0*\.000000" $log | wc -l`
+CRIT2=`$GREP " YDIPLEN * YDIPLEN * 0*\.000000 * 7\.4644.. * \-*0*\.000000" $log | wc -l`
+CRIT3=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.000000 * 5\.4730.. * \-*0*\.000000" $log | wc -l`
+CRIT4=`$GREP " XDIPLEN * XDIPLEN * 0*\.505000 * 2\.2813.. * 0*\.01748" $log | wc -l`
+CRIT5=`$GREP " YDIPLEN * YDIPLEN * 0*\.505000 * 94\.704... * 113\.10" $log | wc -l`
+CRIT6=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.505000 * 4\.0225.. * 0*\.1868" $log | wc -l`
+CRIT7=`$GREP " XDIPLEN * XDIPLEN * 0*\.510000 * 2\.3004.. * 0*\.0172" $log | wc -l`
+CRIT8=`$GREP " YDIPLEN * YDIPLEN * 0*\.510000 * \-46\.29(6|7)... * 175\.83" $log | wc -l`
+CRIT9=`$GREP " ZDIPLEN * ZDIPLEN * 0*\.510000 * 4\.2294.. * 0*\.1916" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+                $CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[2]=9
+ERROR[2]="Polarizability is NOT CORRECT"
+
+# ?
+ CRIT1=`$GREP  "1 * ZDIPLEN * XDIPLEN * YANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * \-0\.2377.. * 6\.067[0-2]" $log | wc -l`
+ CRIT2=`$GREP  "2 * ZDIPLEN * YDIPLEN * XANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * 604\.97.... * 474\.1" $log | wc -l`
+ CRIT3=`$GREP  "3 * XDIPLEN * ZDIPLEN * YANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * 0*\.2724.. * \-6\.066(1|2)" $log | wc -l`
+ CRIT4=`$GREP  "4 * XDIPLEN * YDIPLEN * ZANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * \-166\.25.... * \-144\.(3|4)" $log | wc -l`
+ CRIT5=`$GREP  "5 * YDIPLEN * ZDIPLEN * XANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * \-604\.71.... * \-474\.16" $log | wc -l`
+ CRIT6=`$GREP  "6 * YDIPLEN * XDIPLEN * ZANGMOM * \-*0*\.505000 * \-*0*\.505000 * \-*0*\.000000 * 166\.36.... * 144\.19" $log | wc -l`
+ CRIT7=`$GREP  "7 * ZDIPLEN * XDIPLEN * YANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * \-0*\.2112.. * 5\.803[0-2]" $log | wc -l`
+ CRIT8=`$GREP  "8 * ZDIPLEN * YDIPLEN * XANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * 940\.59.... * \-281\.(6|7)" $log | wc -l`
+ CRIT9=`$GREP  "9 * XDIPLEN * ZDIPLEN * YANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * 0*\.2446.. * \-5\.802(1|2)" $log | wc -l`
+CRIT10=`$GREP "10 * XDIPLEN * YDIPLEN * ZANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * \-258\.96.... * 64\.(0|1)" $log | wc -l`
+CRIT11=`$GREP "11 * YDIPLEN * ZDIPLEN * XANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * \-940\.4(1|2).... * 281\.63" $log | wc -l`
+CRIT12=`$GREP "12 * YDIPLEN * XDIPLEN * ZANGMOM * \-*0*\.510000 * \-*0*\.510000 * \-*0*\.000000 * 258\.82.... * \-64\.40(6|7)" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12`
+CTRL[3]=12
+ERROR[3]="Hyperpolarizability is NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+      PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+
+%EOF%

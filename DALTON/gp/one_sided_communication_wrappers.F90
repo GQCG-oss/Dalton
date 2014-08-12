@@ -5,16 +5,16 @@
 
 ! this module contains macros for MPI-one-sided communication calls.
 !
-! re-written by sknecht for Dalton - linkoeping jan 2013
+! re-written by sknecht for Dalton - linkoeping jan 2014
 ! original collection in Dirac - sknecht October 2007
 !
 !
 ! ideas for window hints: window for get operations in 2e-integral codes: no_locks == .true. (MPI-3)
 !
 !
+#ifdef VAR_MPI
 module one_sided_communication_wrappers
 
-#ifdef VAR_MPI
 #ifdef USE_MPI_MOD_F90
   use mpi
   implicit none
@@ -224,7 +224,11 @@ contains
 !     write(*,*) ' window closed', my_win,myid
 !
   end subroutine mpixwinfree
-#endif
 !*******************************************************************************
 
 end module one_sided_communication_wrappers
+#else
+subroutine one_sided_communication_wrappers
+! dummy routine for non-mpi compilation
+end
+#endif

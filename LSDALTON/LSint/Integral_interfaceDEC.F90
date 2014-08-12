@@ -21,11 +21,12 @@ MODULE IntegralInterfaceDEC
   use BUILDAOBATCH, only: BUILD_SHELLBATCH_AO
   use lstiming
   use memory_handling,only: mem_alloc, mem_dealloc
-  use basis_typetype, only: BASISSETINFO
+  use basis_typetype, only: BASISSETINFO,RegBasParam,CABBasParam
   PUBLIC:: II_precalc_DECScreenMat,II_getBatchOrbitalScreen,&
        & II_getBatchOrbitalScreen2,II_getBatchOrbitalScreenK,&
        & II_getBatchOrbitalScreen2K,II_GET_DECPACKED4CENTER_J_ERI,&
-       & II_GET_DECPACKED4CENTER_J_ERI2, II_GET_DECPACKED4CENTER_K_ERI
+       & II_GET_DECPACKED4CENTER_K_ERI
+!       & II_GET_DECPACKED4CENTER_J_ERI2
   PRIVATE
 CONTAINS
 !> \brief Calculates and stores the screening integrals
@@ -224,9 +225,9 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
 
    SELECT CASE(AO(3))
    CASE (AORegular)
-      AObasis1 => setting%basis(3)%p%REGULAR
+      AObasis1 => setting%basis(3)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
-      AObasis1 => setting%basis(3)%p%CABS
+      AObasis1 => setting%basis(3)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(3)
       WRITE(luerr,*) 'case: ',AO(3)
@@ -235,9 +236,9 @@ IF(ASSOCIATED(DECSCREEN%masterGabRHS))THEN
    
    SELECT CASE(AO(4))
    CASE (AORegular)
-      AObasis2 => setting%basis(4)%p%REGULAR
+      AObasis2 => setting%basis(4)%p%BINFO(RegBasParam)
    CASE (AOdfCABS)
-      AObasis2 => setting%basis(4)%p%CABS
+      AObasis2 => setting%basis(4)%p%BINFO(CABBasParam)
    CASE DEFAULT
       print*,'case: ',AO(4)
       WRITE(luerr,*) 'case: ',AO(4)
@@ -370,9 +371,9 @@ AOT1batch1 = 0
 
 SELECT CASE(AOspec)
 CASE (AORegular)
-   AObasis => setting%basis(1)%p%REGULAR
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
-   AObasis => setting%basis(1)%p%CABS
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
    WRITE(lupri,*) 'case: ',AOspec
@@ -424,9 +425,9 @@ ENDIF
 
 SELECT CASE(AOspec)
 CASE (AORegular)
-   AObasis => setting%basis(1)%p%REGULAR
+   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
 CASE (AOdfCABS)
-   AObasis => setting%basis(1)%p%CABS
+   AObasis => setting%basis(1)%p%BINFO(CABBasParam)
 CASE DEFAULT
    print*,'case: ',AOspec
    WRITE(lupri,*) 'case: ',AOspec
@@ -663,173 +664,173 @@ do l=1,dim4
 end do
 end subroutine JZERO
 
-!> \brief Calculates the decpacked explicit 4 center eri 
-!> \author T. Kjaergaard
-!> \date 2010
-!> \param lupri Default print unit
-!> \param luerr Default error print unit
-!> \param setting Integral evalualtion settings
-!> \param outputintegral the output (full,batchC,batchD,full)
-!> \param batchC batch index 
-!> \param batchD batch index 
-!> \param nbast1 full orbital dimension of ao 1
-!> \param nbast2 full orbital dimension of ao 2
-!> \param dim3 the dimension of batch index 
-!> \param dim4 the dimension of batch index 
-!> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
-SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2(LUPRI,LUERR,SETTING,&
-     &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,nbatches,intSpec)
-IMPLICIT NONE
-TYPE(LSSETTING),intent(inout) :: SETTING
-INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
-INTEGER,intent(in)            :: batchsizeC,batchSizeD,nbatches
-REAL(REALK),target            :: outputintegral(nbast1,dim3,dim4,nbast2,1)
-logical,intent(in)            :: FullRhs
-Character,intent(IN)          :: intSpec(5)
-!
-integer               :: I,J
-type(matrixp)         :: intmat(1)
-logical               :: ps_screensave,saveRecalcGab,cs_screensave
-integer               :: nAO,iA,iB,iC,iD
-logical,pointer       :: OLDsameMOLE(:,:),OLDsameBAS(:,:)
-integer               :: oper,ao(4)
-real(realk)         :: coeff(6),exponent(6),tmp
-real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
-integer             :: iunit,k,l,IJ
-integer             :: nGaussian,nG2
-real(realk)         :: GGem
-call time_II_operations1()
-IF (intSpec(5).NE.'C') THEN
-  nGaussian = 6
-  nG2 = nGaussian*(nGaussian+1)/2
-  GGem = 0E0_realk
-  call stgfit(1E0_realk,nGaussian,exponent,coeff)
-  IJ=0
-  DO I=1,nGaussian
-     DO J=1,I
-        IJ = IJ + 1
-        coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
-        prodexponent(IJ) = exponent(I) * exponent(J)
-        sumexponent(IJ) = exponent(I) + exponent(J)
-     ENDDO
-     coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
-  ENDDO
-ENDIF
+! !> \brief Calculates the decpacked explicit 4 center eri 
+! !> \author T. Kjaergaard
+! !> \date 2010
+! !> \param lupri Default print unit
+! !> \param luerr Default error print unit
+! !> \param setting Integral evalualtion settings
+! !> \param outputintegral the output (full,batchC,batchD,full)
+! !> \param batchC batch index 
+! !> \param batchD batch index 
+! !> \param nbast1 full orbital dimension of ao 1
+! !> \param nbast2 full orbital dimension of ao 2
+! !> \param dim3 the dimension of batch index 
+! !> \param dim4 the dimension of batch index 
+! !> \param intSpec Specified first the four AOs and then the operator ('RRRRC' give the standard AO ERIs)
+! SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2(LUPRI,LUERR,SETTING,&
+!      &outputintegral,batchC,batchD,batchsizeC,batchSizeD,nbast1,nbast2,dim3,dim4,fullRHS,nbatches,intSpec)
+! IMPLICIT NONE
+! TYPE(LSSETTING),intent(inout) :: SETTING
+! INTEGER,intent(in)            :: LUPRI,LUERR,nbast1,nbast2,dim3,dim4,batchC,batchD
+! INTEGER,intent(in)            :: batchsizeC,batchSizeD,nbatches
+! REAL(REALK),target            :: outputintegral(nbast1,dim3,dim4,nbast2,1)
+! logical,intent(in)            :: FullRhs
+! Character,intent(IN)          :: intSpec(5)
+! !
+! integer               :: I,J
+! type(matrixp)         :: intmat(1)
+! logical               :: ps_screensave,saveRecalcGab,cs_screensave
+! integer               :: nAO,iA,iB,iC,iD
+! logical,pointer       :: OLDsameMOLE(:,:),OLDsameBAS(:,:)
+! integer               :: oper,ao(4)
+! real(realk)         :: coeff(6),exponent(6),tmp
+! real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+! integer             :: iunit,k,l,IJ
+! integer             :: nGaussian,nG2
+! real(realk)         :: GGem
+! call time_II_operations1()
+! IF (intSpec(5).NE.'C') THEN
+!   nGaussian = 6
+!   nG2 = nGaussian*(nGaussian+1)/2
+!   GGem = 0E0_realk
+!   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+!   IJ=0
+!   DO I=1,nGaussian
+!      DO J=1,I
+!         IJ = IJ + 1
+!         coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+!         prodexponent(IJ) = exponent(I) * exponent(J)
+!         sumexponent(IJ) = exponent(I) + exponent(J)
+!      ENDDO
+!      coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+!   ENDDO
+! ENDIF
     
 
-! ***** SELECT OPERATOR TYPE *****
-IF (intSpec(5).EQ.'C') THEN
-! Regular Coulomb operator 1/r12
-  oper = CoulombOperator
-ELSE IF (intSpec(5).EQ.'G') THEN
-! The Gaussian geminal operator g
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'F') THEN
-! The Gaussian geminal divided by the Coulomb operator g/r12
-  oper = GGemCouOperator
-  call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
-ELSE IF (intSpec(5).EQ.'D') THEN
-! The double commutator [[T,g],g]
-  oper = GGemGrdOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE IF (intSpec(5).EQ.'2') THEN
-! The Gaussian geminal operator squared g^2
-  oper = GGemOperator
-  call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
-ELSE
-  call lsquit('Error in specification of operator in II_GET_DECPACKED4CENTER_J_ERI',-1)
-ENDIF
+! ! ***** SELECT OPERATOR TYPE *****
+! IF (intSpec(5).EQ.'C') THEN
+! ! Regular Coulomb operator 1/r12
+!   oper = CoulombOperator
+! ELSE IF (intSpec(5).EQ.'G') THEN
+! ! The Gaussian geminal operator g
+!   oper = GGemOperator
+!   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+! ELSE IF (intSpec(5).EQ.'F') THEN
+! ! The Gaussian geminal divided by the Coulomb operator g/r12
+!   oper = GGemCouOperator
+!   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+! ELSE IF (intSpec(5).EQ.'D') THEN
+! ! The double commutator [[T,g],g]
+!   oper = GGemGrdOperator
+!   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+! ELSE IF (intSpec(5).EQ.'2') THEN
+! ! The Gaussian geminal operator squared g^2
+!   oper = GGemOperator
+!   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+! ELSE
+!   call lsquit('Error in specification of operator in II_GET_DECPACKED4CENTER_J_ERI',-1)
+! ENDIF
 
-! ***** SELECT AO TYPES *****
-DO i=1,4
-  IF (intSpec(i).EQ.'R') THEN
-!   The regular AO-basis
-    ao(i) = AORegular
-  ELSE IF (intSpec(i).EQ.'C') THEN
-!   The CABS AO-type basis
-    ao(i) = AOdfCABS
-  ELSE
-    call lsquit('Error in specification of ao1 in II_GET_DECPACKED4CENTER_J_ERI',-1)
-  ENDIF
-ENDDO
+! ! ***** SELECT AO TYPES *****
+! DO i=1,4
+!   IF (intSpec(i).EQ.'R') THEN
+! !   The regular AO-basis
+!     ao(i) = AORegular
+!   ELSE IF (intSpec(i).EQ.'C') THEN
+! !   The CABS AO-type basis
+!     ao(i) = AOdfCABS
+!   ELSE
+!     call lsquit('Error in specification of ao1 in II_GET_DECPACKED4CENTER_J_ERI',-1)
+!   ENDIF
+! ENDDO
 
-call mem_alloc(OLDsameBAS,setting%nAO,setting%nAO)
-OLDsameBAS = setting%sameBAS
-DO I=1,4
-  DO J=1,4
-    setting%sameBas(I,J) = setting%sameBas(I,J) .AND. ao(I).EQ.ao(J)
-  ENDDO
-ENDDO
+! call mem_alloc(OLDsameBAS,setting%nAO,setting%nAO)
+! OLDsameBAS = setting%sameBAS
+! DO I=1,4
+!   DO J=1,4
+!     setting%sameBas(I,J) = setting%sameBas(I,J) .AND. ao(I).EQ.ao(J)
+!   ENDDO
+! ENDDO
 
-!DEC wants the integrals in (nbast1,nbast2,dim3,dim4) but it is faster 
-!to calculate them as (dim3,dim4,nbast1,nbast2) 
-!so we calculate them as (dim3,dim4,nbast1,nbast1) but store the 
-!result as (nbast1,nbast2,dim3,dim4)
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-IF(.NOT.FULLRHS)THEN
-   nAO = setting%nAO
-   call mem_alloc(OLDsameMOLE,nAO,nAO)
-   OLDsameMOLE = setting%sameMol
-   setting%batchindex(1)=batchC
-   setting%batchindex(2)=batchD
-   setting%batchSize(1)=batchSizeC
-   setting%batchSize(2)=batchSizeD
-   setting%batchdim(1)=dim3
-   setting%batchdim(2)=dim4
-   setting%sameMol(1,2)=.FALSE.
-   setting%sameMol(2,1)=.FALSE.
-   DO I=1,2
-      DO J=3,4
-         setting%sameMol(I,J)=.FALSE.
-         setting%sameMol(J,I)=.FALSE.
-      ENDDO
-   ENDDO
-ENDIF
-!saveRecalcGab = setting%scheme%recalcGab
-!setting%scheme%recalcGab = .TRUE.
-SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
-nullify(setting%output%resulttensor)
-call initIntegralOutputDims(setting%output,nbast1,dim3,dim4,nbast2,1)
-setting%output%DECPACKED2 = .TRUE.
-setting%output%Resultmat => outputintegral
+! !DEC wants the integrals in (nbast1,nbast2,dim3,dim4) but it is faster 
+! !to calculate them as (dim3,dim4,nbast1,nbast2) 
+! !so we calculate them as (dim3,dim4,nbast1,nbast1) but store the 
+! !result as (nbast1,nbast2,dim3,dim4)
+! SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+! IF(.NOT.FULLRHS)THEN
+!    nAO = setting%nAO
+!    call mem_alloc(OLDsameMOLE,nAO,nAO)
+!    OLDsameMOLE = setting%sameMol
+!    setting%batchindex(1)=batchC
+!    setting%batchindex(2)=batchD
+!    setting%batchSize(1)=batchSizeC
+!    setting%batchSize(2)=batchSizeD
+!    setting%batchdim(1)=dim3
+!    setting%batchdim(2)=dim4
+!    setting%sameMol(1,2)=.FALSE.
+!    setting%sameMol(2,1)=.FALSE.
+!    DO I=1,2
+!       DO J=3,4
+!          setting%sameMol(I,J)=.FALSE.
+!          setting%sameMol(J,I)=.FALSE.
+!       ENDDO
+!    ENDDO
+! ENDIF
+! !saveRecalcGab = setting%scheme%recalcGab
+! !setting%scheme%recalcGab = .TRUE.
+! SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+! nullify(setting%output%resulttensor)
+! call initIntegralOutputDims(setting%output,nbast1,dim3,dim4,nbast2,1)
+! setting%output%DECPACKED2 = .TRUE.
+! setting%output%Resultmat => outputintegral
 
-! Set to zero
-call JZERO(setting%output%ResultMat,nbast1,dim3,dim4,nbast2)
+! ! Set to zero
+! call JZERO(setting%output%ResultMat,nbast1,dim3,dim4,nbast2)
 
-CALL ls_setDefaultFragments(setting)
-IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
-   IF(.NOT.associated(SETTING%LST_GAB_RHS))THEN
-      CALL LSQUIT('SETTING%LST_GAB_RHS not associated in DEC_ERI',-1)
-   ENDIF
-   IF(.NOT.associated(SETTING%LST_GAB_LHS))THEN
-      CALL LSQUIT('SETTING%LST_GAB_LHS not associated in DEC_ERI',-1)
-   ENDIF
-   if(.not. fullrhs) then
-     IF(SETTING%LST_GAB_LHS%nbatches(1).NE.batchSizeC)call lsquit('error BatchsizeC.',-1)
-     IF(SETTING%LST_GAB_LHS%nbatches(2).NE.batchSizeD)call lsquit('error BatchsizeD.',-1)
-   end if
-ENDIF
-CALL ls_getIntegrals1(ao(3),ao(4),ao(1),ao(2),oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
-call mem_dealloc(setting%output%postprocess)
-setting%output%DECPACKED2 = .FALSE.
-!back to normal
-IF(.NOT.FULLRHS)THEN
-   setting%batchindex(1)=0
-   setting%batchindex(2)=0
-   setting%batchSize(1)=1
-   setting%batchSize(2)=1
-   setting%batchdim(1)=0
-   setting%batchdim(2)=0
-   setting%sameFrag=.TRUE.
-   setting%sameMol = OLDsameMOLE
-   call mem_dealloc(OLDsameMOLE) 
-ENDIF
-setting%sameBas = OLDsameBAS
-call mem_dealloc(OLDsameBAS) 
+! CALL ls_setDefaultFragments(setting)
+! IF(Setting%scheme%cs_screen.OR.Setting%scheme%ps_screen)THEN
+!    IF(.NOT.associated(SETTING%LST_GAB_RHS))THEN
+!       CALL LSQUIT('SETTING%LST_GAB_RHS not associated in DEC_ERI',-1)
+!    ENDIF
+!    IF(.NOT.associated(SETTING%LST_GAB_LHS))THEN
+!       CALL LSQUIT('SETTING%LST_GAB_LHS not associated in DEC_ERI',-1)
+!    ENDIF
+!    if(.not. fullrhs) then
+!      IF(SETTING%LST_GAB_LHS%nbatches(1).NE.batchSizeC)call lsquit('error BatchsizeC.',-1)
+!      IF(SETTING%LST_GAB_LHS%nbatches(2).NE.batchSizeD)call lsquit('error BatchsizeD.',-1)
+!    end if
+! ENDIF
+! CALL ls_getIntegrals1(ao(3),ao(4),ao(1),ao(2),oper,RegularSpec,ContractedInttype,0,SETTING,LUPRI,LUERR)
+! call mem_dealloc(setting%output%postprocess)
+! setting%output%DECPACKED2 = .FALSE.
+! !back to normal
+! IF(.NOT.FULLRHS)THEN
+!    setting%batchindex(1)=0
+!    setting%batchindex(2)=0
+!    setting%batchSize(1)=1
+!    setting%batchSize(2)=1
+!    setting%batchdim(1)=0
+!    setting%batchdim(2)=0
+!    setting%sameFrag=.TRUE.
+!    setting%sameMol = OLDsameMOLE
+!    call mem_dealloc(OLDsameMOLE) 
+! ENDIF
+! setting%sameBas = OLDsameBAS
+! call mem_dealloc(OLDsameBAS) 
 
-call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_J_ERI)
-END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2
+! call time_II_operations2(JOB_II_GET_DECPACKED4CENTER_J_ERI)
+! END SUBROUTINE II_GET_DECPACKED4CENTER_J_ERI2
 
 !> \brief Calculates the decpacked explicit 4 center eri
 !> \author T. Kjaergaard

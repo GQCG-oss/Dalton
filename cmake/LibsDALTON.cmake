@@ -1,4 +1,31 @@
 set(DALTON_LIBS)
+if(ENABLE_VPOTDAMP)
+    add_subdirectory(DALTON/1e_cpp ${CMAKE_BINARY_DIR}/vpotdamp)
+    set(DALTON_LIBS
+        vpotdamp
+        ${LIBS}
+        )
+endif()
+
+if(ENABLE_EFS)
+    include(LibsEFS)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        DALTON/abacus/efs_interface.F90
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        )
+    add_subdirectory(DALTON/efs ${CMAKE_BINARY_DIR}/efs_interface)
+    set(DALTON_LIBS
+        efs_interface
+        ${DALTON_LIBS}
+        )
+endif()
+
+if(ENABLE_CHEMSHELL)
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
+        )
+endif()
 
 add_library(
     dalton
@@ -10,6 +37,10 @@ add_library(
 
 add_dependencies(dalton generate_binary_info)
 
+if(ENABLE_EFS)
+    add_dependencies(dalton efs)
+endif()
+
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)
@@ -20,48 +51,30 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
-if(ENABLE_PELIB)
-    if(ENABLE_OPENRSP)
-        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER -DBUILD_OPENRSP")
-    else()
-        set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
-    endif()
-    if(ENABLE_GEN1INT)
-        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DBUILD_GEN1INT")
-    else()
-        message(FATAL_ERROR "-- Gen1Int not enabled. The PE library requires the Gen1Int library.")
-    endif()
-    if(MPI_FOUND)
-        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
-        if(MPI_COMPILER_MATCHES)
-            set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DUSE_MPI_MOD_F90")
-        endif()
-    endif()
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
-        -DENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE}
-        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-        )
-    add_external(pelib)
-    add_dependencies(dalton pelib)
-    add_dependencies(pelib gen1int_interface)
-    add_definitions(-DBUILD_PELIB)
+if(ENABLE_LSLIB)
+    add_definitions( -DBUILD_LSLIB )
+    add_dependencies(dalton lsdalton)
     set(DALTON_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
+        lsdalton
         ${DALTON_LIBS}
         )
+endif()
+
+if(ENABLE_PELIB)
+    include(LibsPElib)
+    add_dependencies(dalton pelib)
+endif()
+
+if(ENABLE_QFITLIB)
+    include(LibsQFITlib)
+    add_dependencies(dalton qfitlib)
 endif()
 
 if(ENABLE_OPENRSP)
     include(LibsOpenRSP)
 endif()
 
+if(NOT ENABLE_CHEMSHELL)
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F
@@ -75,6 +88,7 @@ target_link_libraries(
     ${DALTON_LIBS}
     ${EXTERNAL_LIBS}
     )
+endif()
 
 # compile utilities
 

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -32,7 +32,6 @@ C
 #define VAR_INT64
 #endif
 !
-#include "single.h"
 C
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
@@ -47,6 +46,26 @@ C
       END IF
       WRITE (LUPRI, '(//,150A)') (' ',I=1,INDENT), HEAD(1:LHEAD)
       WRITE (LUPRI, '(   150A)') (' ',I=1,INDENT), ('-',I=1,LHEAD)
+      WRITE (LUPRI, '()')
+      CALL FLSHFO(LUPRI)
+      RETURN
+      END
+      SUBROUTINE HEADER_A(HEAD,IN)
+C
+C     HEADER_A is same as HEADER, except with an '@ in column 1
+C     April 2014, Hans Joergen Aa. Jensen
+C
+      CHARACTER HEAD*(*)
+#include "priunit.h"
+C
+      LHEAD = LNBLNK(HEAD)
+      IF (IN .GE. 0) THEN
+         INDENT = MAX(1,IN)
+      ELSE
+         INDENT = MAX(1,(80 - LHEAD)/2)
+      END IF
+      WRITE (LUPRI, '(//,150A)') '@',(' ',I=1,INDENT), HEAD(1:LHEAD)
+      WRITE (LUPRI, '(   150A)') ' ',(' ',I=1,INDENT), ('-',I=1,LHEAD)
       WRITE (LUPRI, '()')
       CALL FLSHFO(LUPRI)
       RETURN
@@ -256,6 +275,10 @@ C     ... define exit code to the environment for MPI_ABORT
 #endif
 C
       CALL our_own_traceback
+
+#if defined(SYS_T3D)
+      CALL STOP_ALL()
+#endif
 #if defined(VAR_IFORT)||defined(SYS_IRIX)||defined(SYS_AIX)
       CALL EXIT(100)
 #else
@@ -270,9 +293,11 @@ C   Error message if code is not implemented for parallel calculations.
       IMPLICIT NONE
 
 #include "priunit.h"
-      CHARACTER TEXT*(*)
+      CHARACTER*(*) TEXT
+      CHARACTER*(43) ERROR
       INTEGER LUPRIN
 C
+      ERROR = ' not implemented for parallel calculations.'
 C
       IF (LUPRI .GE. 0) THEN
          LUPRIN = LUPRI
@@ -281,9 +306,8 @@ C
       ELSE
          LUPRIN = 6
       END IF
-      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,
-     & ' not implemented for parallel calculations!'
-      CALL QUIT(TEXT)
+      WRITE (LUPRIN,'(//3A)') 'ERROR: ',TEXT,ERROR
+      CALL QUIT(TEXT//ERROR)
       RETURN
       END
 C  /* Deck parqarn */
@@ -372,21 +396,17 @@ C
 C     ERROR HANDLING (JAA 1997-06-06)
 C
  301     IF (IOS .GT. 0) THEN
-            WRITE(102,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
-            WRITE(102,*) '    FILE=',NAME,', UNIT=',LUDX,
+            WRITE(lupri,*) '--> ERROR (OPENDX) NEW FILE OPEN FAILED'
+            WRITE(lupri,*) '    FILE=',NAME,', UNIT=',LUDX,
      $           ', IOSTAT=',IOS
             IF (IOS .LT. 1000) THEN
-               WRITE(102,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
+               WRITE(lupri,'(A,I3.3,A)') '    (try explain sys-',IOS,')'
             ELSE IF (IOS .LT. 6000) THEN
-               WRITE(102,'(A,I4,A)') '    (try explain lib-',IOS,')'
+               WRITE(lupri,'(A,I4,A)') '    (try explain lib-',IOS,')'
             ENDIF
-            CALL FLUSH(102,IOS)
+            CALL FLUSH(lupri,IOS)
             CALL TRBK()
-#if defined(SYS_T3D)
-            CALL STOP_ALL()
-#else
             CALL QUIT('OPENDX: new file open failed')
-#endif
          ENDIF
   600 CONTINUE
 #endif
@@ -662,56 +682,138 @@ C
 C     Written by Henrik Koch 22-Nov-1991 (as AOLABE)
 C     Generalized 25-Oct-1993 hjaaj
 C                 31-Jul-1996 hjaaj (new NIBUF parameter)
+C                 31-Jul-2014 hjaaj (always INTEGER*4 IINDPK)
 C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
 C
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION IINDPK(*), IINDX4(4,*)
+#ifdef VAR_DEBUG
+#include "inforb.h"
+#endif
+      INTEGER*4 IINDPK(*)
+      INTEGER   IINDX4(4,*)
 #include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
       IF (N .GT. NMAX) THEN
          WRITE(LUPRI,*) 'AOLAB4 error, N .gt. NMAX',N,NMAX
+         WRITE(LUPRI,*) '- NMAX,NIBUF,NBITS:',NMAX,NIBUF,NBITS
          CALL QENTER('AOLAB4')
          CALL QUIT('buffer length greater than max length')
       END IF
+      IF (8*NIBUF .ne. NBITS) THEN
+         WRITE(LUPRI,*) 'AOLAB4 error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
+         WRITE(LUPRI,*) '- NMAX,NIBUF,NBITS:',NMAX,NIBUF,NBITS
+         CALL QENTER('AOLAB4')
+         CALL QUIT('Invalid NIBUF, NBITS combination')
+      END IF
 C
       IF (NIBUF .EQ. 1) THEN
-        IF (NBITS .EQ. 8) THEN
-          DO I = 1,N
+         DO I = 1,N
             LABEL = IINDPK(I)
             IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
             IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
             IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
             IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
-          END DO
-        ELSE IF (NBITS .EQ. 16) THEN
-#ifdef VAR_INT64
-          DO I = 1,N
-            LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
-          END DO
-#else
-          CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
-#endif
-        ELSE
-          CALL QUIT('AOLAB4 error; NBITS neither 8 nor 16')
-        END IF
+         END DO
       ELSE
-        DO I = 1,N
-          LABEL = IINDPK(I)
-          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
-          LABEL = IINDPK(NMAX+I)
-          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
-        END DO
+         DO I = 1,N
+            LABEL = IINDPK(2*I-1)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            LABEL = IINDPK(2*I)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+         END DO
       END IF
 C
+#ifdef VAR_DEBUG
+      ierr = 0
+      do i = 1,n
+         if (iindx4(1,i) .eq. 0) cycle  ! new component info for spin-orbit or derivatives
+         do j = 1,4
+            if (IINDX4(j,i).gt.NBAST .or. IINDX4(j,i).le.0) THEN
+               ierr = ierr + 1
+            end if
+         end do
+      end do
+      if (ierr .gt. 0) then
+         write(lupri,*) ierr,' errors in AOLAB4, n =',n
+         write(lupri,*) 'nmax, nibuf, nbits:',nmax,nibuf,nbits
+         write(lupri,*) 'DUMP of IINDX4 array:'
+         do i = 1,n
+            write(lupri,'(I5,A,4I8,O12)') i,' : ',
+     &         iindx4(1:4,i),IINDPK(i)
+         end do
+         call quit('error in AOLAB4')
+      end if
+#endif
+      RETURN
+      END
+C  /* Deck aolab4_cc */
+      SUBROUTINE AOLAB4_cc(IINDPK,NIBUF,NBITS,IINDX4,N)
+C
+C     31-Jul-2014 hjaaj (special version of ALOAB4 for CC)
+C
+C     Unpack 4 integer indices packed in NIBUF *4 integer(s).
+C
+#include "implicit.h"
+#include "priunit.h"
+#ifdef VAR_DEBUG
+#include "inforb.h"
+#endif
+      INTEGER*4 IINDPK(*)
+      INTEGER   IINDX4(4,*)
+#include "ibtdef.h"
+C
+      IF (8*NIBUF .ne. NBITS) THEN
+         WRITE(LUPRI,*) 'AOLAB4 error, 8*NIBUF .ne. NBITS',NIBUF,NBITS
+         WRITE(LUPRI,*) '- N,NIBUF,NBITS:',N,NIBUF,NBITS
+         CALL QENTER('AOLAB4')
+         CALL QUIT('Invalid NIBUF, NBITS combination')
+      END IF
+C
+      IF (NIBUF .EQ. 1) THEN
+         DO I = 1,N
+            LABEL = IINDPK(I)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
+            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
+            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+         END DO
+      ELSE
+         DO I = 1,N
+            LABEL = IINDPK(2*I-1)
+            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+            IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+            LABEL = IINDPK(2*I)
+            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
+            IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+         END DO
+      END IF
+C
+#ifdef VAR_DEBUG
+      ierr = 0
+      do i = 1,n
+         if (iindx4(1,i) .eq. 0) cycle  ! new component info for spin-orbit or derivatives
+         do j = 1,4
+            if (IINDX4(j,i).gt.NBAST .or. IINDX4(j,i).le.0) THEN
+               ierr = ierr + 1
+            end if
+         end do
+      end do
+      if (ierr .gt. 0) then
+         write(lupri,*) ierr,' errors in AOLAB4, n =',n
+         write(lupri,*) 'n, nibuf, nbits:',n,nibuf,nbits
+         write(lupri,*) 'DUMP of IINDX4 array:'
+         do i = 1,n
+            write(lupri,'(I5,A,4I8,O12)') i,' : ',
+     &         iindx4(1:4,i),IINDPK(i)
+         end do
+         call quit('error in AOLAB4')
+      end if
+#endif
       RETURN
       END
 C  /* Deck GPOPEN */
@@ -782,6 +884,12 @@ C
       IF (FIRST) THEN
          CALL IZERO(IUNTAB,99)
          FIRST = .FALSE.
+      END IF
+
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
       END IF
 
       IF (MYNUM .GT. 0) THEN
@@ -886,8 +994,8 @@ C
 #endif
          LENOUT = LNBLNK(OUTFIL)
          if (LENOUT .EQ. max_filename_length) then
-            write (lupri,*) 'max_filename_length is too short'
-            write (lupri,*) OUTFIL
+            write (lugppri,*) 'max_filename_length is too short'
+            write (lugppri,*) OUTFIL
             call quit('file name too long')
          end if
          if (LENOUT .gt. 0) then
@@ -905,8 +1013,8 @@ c43         CONTINUE
 #endif
             LENWRK = lnblnk(WRKDIR)
             if (LENWRK .EQ. max_filename_length) then
-               write (lupri,*) 'max_filename_length is too short'
-               write (lupri,*) WRKDIR
+               write (lugppri,*) 'max_filename_length is too short'
+               write (lugppri,*) WRKDIR
                call quit('GPOPEN: work directory name too long')
             end if
 c           LENWRK = 0
@@ -917,8 +1025,8 @@ c           END DO
 c44         CONTINUE
             FILELN = LENWRK + LENOUT + 1
             if (FILELN .EQ. max_filename_length) then
-               write (lupri,*) 'max_filename_length is too short'
-               write (lupri,*) WRKDIR(1:LENWRK)//'/'//
+               write (lugppri,*) 'max_filename_length is too short'
+               write (lugppri,*) WRKDIR(1:LENWRK)//'/'//
      &                         OUTFIL(1:LENOUT)
                call quit('GPOPEN: file name too long')
             end if
@@ -1035,64 +1143,55 @@ C                  calculation.
          END IF
       END IF
  8000 IUNTAB(LUNIT) = 1
+#ifdef VAR_DEBUG
+      write (lugppri,*) 'GPOPEN opened unit',LUNIT,
+     &' with file name ',FILENM(1:FILELN)
+#endif
       CALL QEXIT('GPOPEN')
       RETURN
 C     
 C error branches
 C
  9001 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) NO MORE AVAILABLE FILE NUMBERS!',
      &   '--> THIS CALCULATION EITHER NEEDS TOO MANY SIMULTANEOUS '//
      &   'FILES OR', 
      &   '--> SOMEBODY HAS FORGOTTEN TO CLOSE FILES IN THE SOURCE CODE',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) NO MORE FILE NUMBERS')
 C
  9002 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I3/A//2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO OPEN UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS RESERVED '//
      &   'UNIT NUMBER',
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) ILLEGAL FILE NUMBER REQUESTED')
 C
  9003 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
-      WRITE (LUGPPRI,'(//A/A//A,I5/2A//A)')
-     &   '--> ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE',
-     &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT IS '//
-     &   'ALREADY IN USE',
-     &   '--> Offending UNIT number: ',LUNIT,
+      WRITE (LUGPPRI,'(//A//A,I5/2A//A)')
+     &   '--> ERROR (GPOPEN) TRYING TO USE A FILE NUMBER ALREADY IN USE'
+     &  ,'--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ', FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
+      INQUIRE(UNIT=LUNIT,OPENED=FEXST)
+      IF (FEXST) THEN
+         INQUIRE(UNIT=LUNIT,NAME=FILENM)
+         WRITE (LUGPPRI,'(/2A)')
+     &   '--> Name of file already opened for this unit: ',FILENM
+      ELSE
+         WRITE (LUGPPRI,'(/A)')
+     &   '--> No file is opened with that unit number ...'
+      END IF
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A FILE ALREADY IN USE')
 C
  9004 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A,I3/2A/A,I7)')
      &   '--> ERROR (GPOPEN) UPON TRYING TO OPEN FILE ON UNIT',LUNIT,
      &   '--> with filename ',FILENM(1:FILELN),
@@ -1101,50 +1200,35 @@ C
       CALL QUIT('ERROR (GPOPEN) UPON OPENING A FILE')
 C
  9005 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD, BUT THE TABLE',
      &   '--> ENTRY INDICATES THAT IT DOES NOT EXIST',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
 C
  9006 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
-     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING NEW FILE',
+     &   '--> ERROR (GPOPEN) TRYING TO OPEN AN EXISTING FILE AS NEW',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE NEW, BUT THE TABLE',
-     &   '--> ENTRY INDICATES THAT IT ALREADY EXISTS',
+     &   '--> ENTRY INDICATES THAT THE UNIT IS ALREADY IN USE',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN AN EXISTING '//
      &          'FILE AS NEW')
 C
  9007 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A,I5/2A//A)')
      &   '--> ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING OLD FILE',
      &   '--> A FILE HAS BEEN SPECIFIED TO BE OLD,',
      &   '--> BUT THE FILE DOES NOT EXIST',
      &   '--> Offending UNIT number: ',LUNIT,
      &   '--> Name of offending file (if any): ',FILENM(1:FILELN),
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPOPEN) TRYING TO OPEN A NON-EXISTING '//
      &          'FILE AS OLD')
@@ -1183,6 +1267,13 @@ C
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
 #include "chrnos.h"
+
+      IF (LUPRI .GE. 0) THEN
+         LUGPPRI = LUPRI
+      ELSE
+         LUGPPRI = 6
+      END IF
+
 C
 C     We first deal with the unit number
 C
@@ -1198,10 +1289,10 @@ C
 C
       INQUIRE(UNIT=LUNIT,EXIST=FEXIST,OPENED=OPND)
       IF (.NOT. FEXIST .OR. .NOT. OPND) THEN
-         WRITE (LUPRI,'(/A/A,I3)')
+         WRITE (LUGPPRI,'(/A/A,I3)')
      &     ' WARNING: Tried to close a non-existent or already '//
      &     'closed file', ' Unit number was: ',LUNIT
-         CALL FLSHFO(LUPRI)
+         CALL FLSHFO(LUGPPRI)
       END IF
       IF (DISP .EQ. 'KEEP') THEN
          IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
@@ -1214,8 +1305,7 @@ C
          IF (IPRSTAT.gt.1) write (LUSTAT,*) 'GPCLOSE keep',LUNIT
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
 #else
-         INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
-         INQUIRE(UNIT=LUNIT,NAME=FNNAME)
+         INQUIRE(UNIT=LUNIT,DIRECT=IODIR,NAME=FNNAME)
          IF (IODIR .EQ. 'YES') THEN
             INQUIRE(UNIT=LUNIT,RECL=LRECL)
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
@@ -1271,49 +1361,37 @@ C
 C     We release that saved unit number by resetting it to -(code)-LUNIT
 C
  30   CONTINUE
+#ifdef VAR_DEBUG
+      write (lugppri,*) 'GPCLOSE closed unit',LUNIT
+#endif
       RETURN
 C     
 C error branches
 C
  9001 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I15/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE AN ILLEGAL FILE NUMBER',
      &   '--> SOMEBODY HAS TRIED TO CLOSE UNIT',LUNIT,
      &   '--> THE PROGRAM DOES NOT ALLOW THE USE OF THIS UNIT NUMBER',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) ILLEGAL FILE NUMBER REQUESTED')
 C
  9002 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A,I15//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE',
      &   '--> SOMEBODY IS TRYING TO USE A FILE NUMBER THAT HAS '//
      &   'NOT BEEN USED :',LUNIT,
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A FILE NOT IN USE')
 C
  9003 CONTINUE
-      IF (LUPRI .GE. 0) THEN
-         LUGPPRI = LUPRI
-      ELSE
-         LUGPPRI = 6
-      END IF
       WRITE (LUGPPRI,'(//A/A/A//A)')
      &   '--> ERROR (GPCLOSE) TRYING TO KEEP A SCRATCH FILE',
      &   '--> A FILE HAS BEEN INDICATED TO BE CLOSED AND KEPT,',
      &   '--> BUT IT APPEARS THE FILE IS A SCRATCH FILE',
-     &   '### Please report the problem to dalton-admin@kjemi.uio.no'
+     &   '### Please report the problem on http://daltonforum.org'
       CALL QTRACE(LUGPPRI)
       CALL QUIT('ERROR (GPCLOSE) TRYING TO CLOSE A SCRATCH FILE ')
 C
@@ -1353,6 +1431,8 @@ C
 #include "implicit.h"
       CHARACTER*(*) FILENM, TASK
       CHARACTER FILTMP*80
+      PARAMETER (LEN_NODEID = 6)
+      CHARACTER*(LEN_NODEID) F_NODEID
       INTEGER FILELN
       LOGICAL VALUE
 #include "chrnos.h"
@@ -1361,11 +1441,13 @@ C
 C
       FILELN = LNBLNK(FILENM)
       IF (MYNUM .GT. 0) THEN
-         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
-     &                        '#'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-         FILELN = FILELN + 4
+         F_NODEID = '.n' //
+     &             CHRNOS(    MYNUM/1000    ) //
+     &             CHRNOS(MOD(MYNUM/ 100,10)) //
+     &             CHRNOS(MOD(MYNUM/  10,10)) //
+     &             CHRNOS(MOD(MYNUM     ,10))
+         FILTMP(1:FILELN+LEN_NODEID) = FILENM(1:FILELN)//F_NODEID
+         FILELN = FILELN + LEN_NODEID
       ELSE
          FILTMP(1:FILELN) = FILENM(1:FILELN)
       END IF
@@ -1413,4 +1495,12 @@ C
  9000 CONTINUE
       RETURN
       END
-! -- end of gptrygve.F --
+
+
+      subroutine clear_iuntab()
+#include "implicit.h"
+         common /unitar/ iuntab(1:99)
+         do i = 1, 99
+            iuntab(i) = 0
+         end do
+      end subroutine

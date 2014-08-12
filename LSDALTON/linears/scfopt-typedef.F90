@@ -59,8 +59,6 @@ type OptItem
       integer     :: hfcalc
       !> Calctype can be set to HF or dft:
       integer     :: dftcalc
-      !> Request to add a Level 4 using regular integrals - no densfit or increm
-      logical     :: purescf
       !> Use Block-Sparse Matrices:
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
@@ -146,7 +144,6 @@ implicit none
    opt%hfcalc                    = 1
    opt%dftcalc                   = 2
    opt%calctype                  = opt%hfcalc !Default is HF
-   opt%purescf                   = .false.
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
    opt%crashcalc                 = .false.

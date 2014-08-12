@@ -19,6 +19,9 @@ type trajtype
      ! Coordinates and masses
      Real(realk), pointer :: Coordinates(:)
      Real(realk), pointer :: Mass(:)
+     ! Coordinates  and velocities for Nose-Hoover chain thermostat
+     Real(realk), pointer :: eta(:)
+     Real(realk), pointer :: v_eta(:)
      ! Charges
      Real(realk), pointer :: Charges(:)
      ! Atom symbols
@@ -55,6 +58,8 @@ type trajtype
      Type(matrix), pointer :: Fock_array(:) 
      ! Fock matrix dynamics coefficients
      Real(realk), pointer :: fmd_coef(:) 
+     ! Temperature array
+     Real(realk), pointer :: T_array(:) 
 endtype trajtype
 Contains
 !==============================!
@@ -104,7 +109,7 @@ Subroutine Deallocate_traj(Trajectory,TimRev,FMD)
 ! DeCall mem_allocs space for velocities and other entities for
 ! trajectory integration
 Implicit none
-Logical :: TimRev, FMD
+Logical :: TimRev, FMD ! Niklasson, Fock matrix dynamics
 Type(trajtype) :: Trajectory
 integer :: i
    Call mem_dealloc (Trajectory%Velocities)
@@ -171,7 +176,19 @@ Subroutine LS_dynamics_init(dynamics_input)
   Dynamics_Input%IntStepSize = 1E-3_realk
   Dynamics_Input%NumIntAccuracy = 1E-12_realk
   Dynamics_Input%Verlet = .TRUE.
+  Dynamics_Input%Steered = .FALSE.
   Dynamics_Input%update_step = .FALSE.
+  Dynamics_Input%Proj_grad = .FALSE.
+  ! Nose-Hoover chain thermostat is turned off by default
+  Dynamics_Input%NHChain = .FALSE.
+  ! Thermostat 'masses' are set to 0.011 a.u. (2500 cm-1) by default
+  Dynamics_Input%omega = 0.0110E0_realk
+  ! Nose-Hoover chain length is set to 3 by default
+  Dynamics_Input%CLen = 3
+  ! Number of Nose-Hoover multisteps is set to 1 by default
+  Dynamics_Input%MStep = 1
+  ! Whether initial variables of NH chain thermostat are read
+  Dynamics_Input%Init_NHC = .FALSE.
 End subroutine LS_dynamics_init
 !=========================!
 !   LS_dynamics_input     !
@@ -189,16 +206,17 @@ Subroutine LS_dynamics_input(dynamics_input,ReadWord,keyword,lucmd,lupri,NAtoms)
   Integer, Parameter      :: DefUpdMethod = 3, DefNUpdates = 5, DefInteg = 5
   Integer, Dimension(1:2) :: KWordInd
   Character(Len = 1)      :: Prompt
-  Character(Len = 70)      :: Keyword 
-  Character(Len = 7), Dimension(1:46) :: KWordTable = &
-    (/ '.2NDORD', '.5THORD','.NEW5OR', '.ACCURA', '.CMDIST', '.DISTCR', '.FRAGDI', &
-       '.FRAGSI', '.HESUPD', '.INTSTP', '.INTEGR', '.ANDERS', &
-       '.MAX IT', '.MAX TI', '.NOMOVE', '.NOPROJ', '.NUMTRA','.MAXSAM', &
+  Character(Len = 70)     :: Keyword 
+  Character(Len = 7), Dimension(1:53) :: KWordTable = &
+    (/ '.2NDORD', '.5THORD','.NEW5OR' , '.ACCURA', '.CMDIST', '.DISTCR', &
+       '.FRAGDI', '.FRAGSI', '.HESUPD', '.INTSTP', '.INTEGR', '.ANDERS', &
+       '.MAX IT', '.MAX TI', '.NOMOVE', '.NOPROJ', '.NUMTRA','.MAXSAM' , &
        '.NUPDAT', '.OLDALG', '.OPTION', '.ORIENT', '.PATH L', '.PATHWA', &
        '.PRINT ', '.QUADRA', '.RANDOM', '.RANMAX', '.RANMIN', '.ROTSAM', &
        '.ROTTEM', '.SEED  ', '.STEP L', '.TEMP  ', '.TIMEST', '.TRAJEC', &
-       '.VELOCI', '.VERLET', '.VIBSAM', '.VIBTEM','.FOCKMD','.TIMREV', &
-       '.MASSWE','.MWVEL ','.ORBCON','.STEPUP' /)
+       '.VELOCI', '.VERLET', '.VIBSAM', '.VIBTEM','.FOCKMD' ,'.TIMREV' , &
+       '.MASSWE','.MWVEL ' ,'.ORBCON' , '.STEPUP','.STMDYN' ,'.NHCHAI' , &
+       '.BATHFR','.CHAINL', '.MULTIS' , '.ININHC' ,'.PROJGR' /)
   Logical :: file_exist,Const_TS
   Logical,intent(inout)   :: ReadWord
   Integer :: FileStatus
@@ -211,6 +229,7 @@ NWarning        = 0
 ! Allocating initial velocities
 !
 Call mem_alloc(Dynamics_input%Initial_velocities,NAtoms*3)
+
 !
 ! Read keywords
 !
@@ -277,6 +296,31 @@ Write(*,*)'READWORD',ReadWord
               Read(lucmd,*) Dynamics_Input%Temp
             Case('.ANDERS')
               Dynamics_Input%Andersen = .TRUE.
+            Case('.NHCHAI')
+              Dynamics_Input%NHChain = .TRUE.
+            Case('.CHAINL')
+              Read(lucmd,*) Dynamics_Input%CLen
+            ! If initial conditions for thermostat are
+            ! specified (say, to restart)
+            Case('.ININHC')
+               Dynamics_Input%Init_NHC = .TRUE.
+               !
+               ! Allocate initial conditions for Nose-Hoover chain
+               !
+               Call mem_alloc(Dynamics_Input%eta,Dynamics_Input%CLen)
+               Call mem_alloc(Dynamics_Input%v_eta,Dynamics_Input%CLen)
+               Do i = 1, Dynamics_Input%Clen
+                  Read(lucmd,*) Dynamics_Input%eta(i)
+               Enddo
+               Do i = 1, Dynamics_Input%Clen
+                  Read(lucmd,*) Dynamics_Input%v_eta(i)
+               Enddo
+            Case('.MULTIS')
+              Read(lucmd,*) Dynamics_Input%MStep
+            Case('.BATHFR')
+              Read(lucmd,*) Dynamics_Input%omega
+            Case('.PROJGR')
+              Dynamics_Input%Proj_grad = .TRUE.
             Case('.TIMEST')
               Read(lucmd,*) Dynamics_Input%TimeStep
               Write(*,*)'TIMESTEP=',Dynamics_Input%TimeStep 
@@ -321,6 +365,14 @@ Write(*,*)'READWORD',ReadWord
               Endif
             Case('.VERLET')
                 Dynamics_input%Verlet = .TRUE.
+            ! Steered dynamics
+            Case('.STMDYN')
+                Dynamics_input%Steered = .TRUE.
+                Do i = 1,2
+                   Read(lucmd,*) Dynamics_input%Att_atom(i)
+                Enddo
+                Read(lucmd,*) Dynamics_input%Ext_force
+            !
             Case('.PRINT ')
               Read(lucmd,*) Dynamics_input%PrintLevel
 !            Case('.VIBSAM')
@@ -370,6 +422,12 @@ Write(*,*)'READWORD',ReadWord
       Dynamics_Input%LowerRandom = -1.1E3_realk
       Dynamics_Input%UpperRandom = -1.1E3_realk
     End If
+!
+    If (Dynamics_Input%NHchain) then 
+      Write(lupri,'(A)') ' Nose-Hoover chain thermostat is used'
+      Write(lupri,'(A,F10.6,A)') ' The temperature is ', &
+      & Dynamics_Input%Temp, ' K'
+    Endif
 !   For the first time we run only Verlet!   
     Write(lupri,'(A)') ' Verlet algorithm (1st order) will be used.'
     Write(lupri,'(A,F10.5)') ' Num. integ. step size  : ', Dynamics_Input%TimeStep

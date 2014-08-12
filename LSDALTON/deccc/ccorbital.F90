@@ -92,6 +92,10 @@ contains
             &OccOrbitals,UnoccOrbitals,natoms,DECinfo%simulate_natoms)
     end if
 
+    ! Set secondary atom for orbitals (see set_secondary_atom_for_orbitals)
+    call set_secondary_atom_for_orbitals(natoms,nocc,nunocc,MyMolecule,mylsitem,&
+         & OccOrbitals,UnoccOrbitals)
+
     ! Print orbital info
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -102,7 +106,7 @@ contains
        write(DECinfo%output,*) 'Simple Lowdin-based orbital assignment: Summary'
        write(DECinfo%output,*) '-----------------------------------------------'
     end if
-    call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals)
+    call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,ncore=MyMolecule%ncore)
 
 
     ! Check that assigment is meaningful
@@ -114,6 +118,129 @@ contains
             &OccOrbitals,UnoccOrbitals)
 
   end subroutine GenerateOrbitals_driver
+
+
+  !> \brief Set secondary central atom for orbitals. 
+  !> For example, if virtual orbital "a" is assigned to a hydrogen atom "H_A" for which 
+  !> there are no occupied orbitals assigned, the secondary          
+  !> central atom for orbital "a" will be the atom closest to "H_A" which has a nonzero number
+  !> of occupied AND virtual orbitals in the original assignment.
+  !> \author Kasper Kristensen
+  !> \date June 2014
+  subroutine set_secondary_atom_for_orbitals(natoms,nocc,nunocc,MyMolecule,mylsitem,&
+       & OccOrbitals,UnoccOrbitals)
+    implicit none
+
+    !> Number of atoms in the molecule
+    integer,intent(in) :: natoms
+    !> Number of occupied orbitals
+    integer,intent(in) :: nocc
+    !> Number of unoccupied orbitals
+    integer,intent(in) :: nunocc
+    !> Full molecule structure ( Note: MyMolecule is only changed if modbasis=.true.!)
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LSitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    !> Occupied orbitals to be generated
+    type(decorbital),intent(inout) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals to be generated
+    type(decorbital),intent(inout) :: UnoccOrbitals(nunocc)
+    integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms),offset,P,i,central,secondary
+    logical :: reset_secondary_atom(natoms),found
+    real(realk) :: dummy(natoms)
+    integer,pointer :: DistSortedIdx(:,:)
+
+
+    !> Set offset for frozen core to not consider core orbitals in bookkeeping.
+    if(DECinfo%frozencore) then
+       offset=MyMolecule%ncore
+    else
+       offset=0
+    end if
+
+    ! Number of orbitals assigned to each atom
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=offset)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
+
+    ! First, set secondary atom equal to central atom
+    do i=1,nocc
+       OccOrbitals(i)%secondaryatom=OccOrbitals(i)%centralatom
+    end do
+    do i=1,nunocc
+       UnoccOrbitals(i)%secondaryatom=UnoccOrbitals(i)%centralatom
+    end do
+
+    ! Now we determine if any atoms have zero occ and nonzero virtual orbitals assigned (or vice versa)
+    ! to determine which orbitals need a new secondary atom.
+    ! Also, for each atom we sort the other atoms according to distance.
+    reset_secondary_atom=.false.
+    call mem_alloc(DistSortedIdx,natoms,natoms)
+    do P=1,natoms
+       ! Reset secondary atom?
+       if(nocc_per_atom(P)==0 .and. nunocc_per_atom(P)/=0) reset_secondary_atom(P)=.true.
+       if(nocc_per_atom(P)/=0 .and. nunocc_per_atom(P)==0) reset_secondary_atom(P)=.true.
+       
+       ! Set sorted distance table
+       call GetSortedList(dummy,DistSortedIdx(:,P),mymolecule%DistanceTable,natoms,natoms,P)
+
+    end do
+
+
+    ! Reassign occupied orbitals
+    do i=1,nocc
+       central = OccOrbitals(i)%centralatom
+       if(reset_secondary_atom(central)) then
+
+          ! Find atom closest to current central atom which has both occ and virt orbitals assigned
+          found=.false.
+          Ploop: do P=1,natoms
+             ! Secondary atom from distance list
+             secondary = DistSortedIdx(P,central)
+             if(nocc_per_atom(secondary)/=0 .and. nunocc_per_atom(secondary)/=0) then
+                found=.true.
+                OccOrbitals(i)%secondaryatom = secondary
+                exit Ploop
+             end if
+          end do Ploop
+          ! Sanity check
+          if(.not. found) then
+             call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,&
+                  & ncore=MyMolecule%ncore)
+             call lsquit('set_secondary_atom_for_orbitals: Occupied orbital reassigning failed!')
+          end if
+
+       end if
+    end do
+
+    ! Reassign unoccupied orbitals
+    do i=1,nunocc
+       central = UnoccOrbitals(i)%centralatom
+       if(reset_secondary_atom(central)) then
+
+          ! Find atom closest to current central atom which has both occ and virt orbitals assigned
+          found=.false.
+          Ploop2: do P=1,natoms
+             ! Secondary atom from distance list
+             secondary = DistSortedIdx(P,central)
+             if(nocc_per_atom(secondary)/=0 .and. nunocc_per_atom(secondary)/=0) then
+                found=.true.
+                UnoccOrbitals(i)%secondaryatom = secondary
+                exit Ploop2
+             end if
+          end do Ploop2
+          ! Sanity check
+          if(.not. found) then
+             call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,&
+                  & ncore=MyMolecule%ncore)
+             call lsquit('set_secondary_atom_for_orbitals: Unoccupied orbital reassigning failed!')
+          end if
+
+       end if
+    end do
+
+    call mem_dealloc(DistSortedIdx)
+
+  end subroutine set_secondary_atom_for_orbitals
 
 
 
@@ -132,6 +259,9 @@ contains
     myorbital%centralatom = central_atom
     myorbital%numberofatoms = num_atoms
 
+    ! Set secondary atom equal to central atom in initialization (may be changed later)
+    myorbital%secondaryatom = central_atom
+
     call mem_alloc(myorbital%atoms,num_atoms)
     myorbital%atoms = 0
 
@@ -142,56 +272,55 @@ contains
   end function orbital_init
 
 
-  !> \brief Initialize orbital, assign center and list of significant atoms from logical array.
-  !> (Small wrapper for orbital_init)
-  function orbital_init_from_logical_array(orb_number,central_atom,natoms,which_atoms) result(myorbital)
-
-    implicit none
-    !> Orbital to initialize
-    type(decorbital) :: myorbital
-    !> Orbital index
-    integer, intent(in) :: orb_number
-    !> Central atom for orbital
-    integer, intent(in) :: central_atom
-    !> Number of atoms in FULL molecule
-    integer,intent(in) :: natoms
-    !> Which atoms are included in orbital extent?
-    logical,dimension(natoms) :: which_atoms
-    integer :: num_atoms
-    integer, pointer :: list_atoms(:)
-    integer :: i,idx
-
-    ! Number of atoms in orbital extent
-    num_atoms = count(which_atoms)
-
-    ! Sanity check
-    if(num_atoms ==0) then
-       write(DECinfo%output,*) 'No atoms for orbital: ', orb_number
-       call lsquit('orbital_init_from_logical_array: No atoms in orbital extent!',-1)
-    end if
-
-    ! Convert logical atom list to integer list of atomic indices
-    call mem_alloc(list_atoms,num_atoms)
-    idx=0
-    do i=1,natoms
-       if(which_atoms(i)) then
-          idx =idx+1
-          list_atoms(idx) = i
-       end if
-    end do
-
-    ! Init orbital
-    myorbital = orbital_init(orb_number,central_atom,num_atoms,list_atoms)
-
-    call mem_dealloc(list_atoms)
-
-  end function orbital_init_from_logical_array
-
-
-
+!!$  !> \brief Initialize orbital, assign center and list of significant atoms from logical array.
+!!$  !> (Small wrapper for orbital_init)
+!!$  function orbital_init_from_logical_array(orb_number,central_atom,natoms,which_atoms) result(myorbital)
+!!$
+!!$    implicit none
+!!$    !> Orbital to initialize
+!!$    type(decorbital) :: myorbital
+!!$    !> Orbital index
+!!$    integer, intent(in) :: orb_number
+!!$    !> Central atom for orbital
+!!$    integer, intent(in) :: central_atom
+!!$    !> Number of atoms in FULL molecule
+!!$    integer,intent(in) :: natoms
+!!$    !> Which atoms are included in orbital extent?
+!!$    logical,dimension(natoms) :: which_atoms
+!!$    integer :: num_atoms
+!!$    integer, pointer :: list_atoms(:)
+!!$    integer :: i,idx
+!!$
+!!$    ! Number of atoms in orbital extent
+!!$    num_atoms = count(which_atoms)
+!!$
+!!$    ! Sanity check
+!!$    if(num_atoms ==0) then
+!!$       write(DECinfo%output,*) 'No atoms for orbital: ', orb_number
+!!$       call lsquit('orbital_init_from_logical_array: No atoms in orbital extent!',-1)
+!!$    end if
+!!$
+!!$    ! Convert logical atom list to integer list of atomic indices
+!!$    call mem_alloc(list_atoms,num_atoms)
+!!$    idx=0
+!!$    do i=1,natoms
+!!$       if(which_atoms(i)) then
+!!$          idx =idx+1
+!!$          list_atoms(idx) = i
+!!$       end if
+!!$    end do
+!!$
+!!$    ! Init orbital
+!!$    myorbital = orbital_init(orb_number,central_atom,num_atoms,list_atoms)
+!!$
+!!$    call mem_dealloc(list_atoms)
+!!$
+!!$  end function orbital_init_from_logical_array
+!!$
+!!$
+!!$
   !> \brief Copy orbital (orbital also intialized here)
   subroutine copy_orbital(OriginalOrbital,OrbitalCopy)
-
     implicit none
 
     !> Original orbital
@@ -202,6 +331,7 @@ contains
     OrbitalCopy%orbitalnumber = OriginalOrbital%orbitalnumber
     OrbitalCopy%centralatom = OriginalOrbital%centralatom
     OrbitalCopy%numberofatoms = OriginalOrbital%numberofatoms
+    OrbitalCopy%secondaryatom = OriginalOrbital%secondaryatom
 
     call mem_alloc(OrbitalCopy%atoms,OrbitalCopy%numberofatoms)
     OrbitalCopy%atoms = OriginalOrbital%atoms
@@ -318,11 +448,12 @@ contains
              endif
              central_atom = central_atom2 
           else
-             ! -- number of atom with max value of the Mulliken charge
-             catom = maxloc(abs(gross_charge),dim=1)
+             ! -- number of atom with max value of the Mulliken charge             
+             catom = maxloc(abs(gross_charge),dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
              central_atom = catom(1)
           endif
        else
+
 
           ! sort mulliken charge/atomic density keeping track on the original index
           call mem_alloc(atomic_idx,natoms)
@@ -331,6 +462,9 @@ contains
           end do
 
           gross_charge = abs(gross_charge)
+          !obtain the central atom - as the atom (which is not Phantom) with biggest 
+          !mulliken charge
+          catom = maxloc(gross_charge,dim=1,MASK=.NOT.MyMolecule%PhantomAtom)
           call real_inv_sort_with_tracking(gross_charge,atomic_idx,natoms)
 
           if(DECinfo%PL>0) then
@@ -442,6 +576,9 @@ contains
 
           ! -- number of atom with max value of the Mulliken charge
           central_atom = atomic_idx(1)
+          iF(MyMolecule%PhantomAtom(atomic_idx(1)))THEN
+             central_atom = catom(1)
+          ENDIF
           call mem_dealloc(atomic_idx)
        endif
 
@@ -522,8 +659,7 @@ contains
     real(realk), pointer :: lowdin_charge(:,:)
     integer, pointer :: atomic_idx(:,:), countOcc(:), countUnocc(:),central_atom2(:)
     integer :: maxidx,offset,changedatom,nreass
-    logical,pointer :: which_hydrogens(:), dofrag(:)
-    integer,pointer :: MyHeavyAtom(:),nhydrogens(:),CentralHydrogen(:)
+    logical,pointer ::which_hydrogens(:), dofrag(:)
     real(realk),pointer :: tmplowdin_charge(:)
     integer,pointer :: tmpatomic_idx(:)
     integer :: nunoccperatom
@@ -557,13 +693,46 @@ contains
           ! Use Distance criteria to determine central atom for orbital "i"  
           call GetDistanceCentralAtom(i,nbasis,natoms,MyMolecule,central_atom2(i))
        endif
-       
+
        ! Get vector with Lowdin charges for all atoms for orbital "i"
        call GetLowdinVector(i,nbasis,natoms,MyMolecule,ShalfC,lowdin_charge(:,i) )
 
        ! Sort Lowdin charges
        call real_inv_sort_with_tracking(lowdin_charge(:,i),atomic_idx(:,i),natoms)
 
+       IF(MyMolecule%PhantomAtom(atomic_idx(1,i)))THEN
+          !the first atom in the lowdin_charge(:,i) list is a Phantom atom
+          !we reorder the lowdin_charge(:,i) list to put a non Phantom atom on top
+          call mem_alloc(tmplowdin_charge,nAtoms)
+          call mem_alloc(tmpatomic_idx,nAtoms)
+          ni=0
+          do n=1,natoms
+             tmplowdin_charge(n) = lowdin_charge(n,i)
+             tmpatomic_idx(n) = atomic_idx(n,i)
+             IF(.NOT.MyMolecule%PhantomAtom(atomic_idx(n,i)))THEN
+                IF(ni.EQ.0)THEN
+                   !found the first non Phantom atom in lowdin list
+                   ni = n
+                ENDIF
+             ENDIF
+          enddo
+          !place the first non Phantom atom first
+          lowdin_charge(1,i) = tmplowdin_charge(ni) 
+          atomic_idx(1,i) = tmpatomic_idx(ni)
+          !place the other atoms in list
+          do n=1,ni-1                               
+             lowdin_charge(1+n,i) = tmplowdin_charge(n)
+             atomic_idx(1+n,i) = tmpatomic_idx(n)                
+          enddo
+          !number ni should not be placed because it is now number 1
+          !place the rest of the atoms in the list
+          do n=ni+1,nAtoms
+             lowdin_charge(n,i) = tmplowdin_charge(n)
+             atomic_idx(n,i) = tmpatomic_idx(n)                
+          enddo
+          call mem_dealloc(tmplowdin_charge)
+          call mem_dealloc(tmpatomic_idx)
+       ENDIF
     end do GetLowdinCharges
     call mem_dealloc(ShalfC)
 
@@ -593,7 +762,7 @@ contains
                    !found the central_atom in lowdin list
                    ni = n
                 ENDIF
-             enddo             
+             enddo
              !place the central atom first
              lowdin_charge(1,i) = tmplowdin_charge(ni) 
              atomic_idx(1,i) = tmpatomic_idx(ni)
@@ -619,7 +788,8 @@ contains
           charge = charge + lowdin_charge(n,i)
           error = 1E0_realk - charge
 
-          if(error < approximated_norm_threshold) then ! atom list converged for orbital i
+          if(error < approximated_norm_threshold .or. n==natoms ) then 
+             ! atom list converged for orbital i
 
              ! Set list of atoms to consider for orbital and exit loop
              norbital_extent = n
@@ -660,114 +830,33 @@ contains
 
     end do OrbitalLoop
 
-    IF(.NOT.decinfo%PureHydrogendebug)THEN
-     ! *******************************************************************************
-     ! *                   Assign each hydrogen atom to a heavy atom                 *
-     ! *******************************************************************************
-     ! Note: "Heavy atom" is anything that is not hydrogen
 
-     ! Which atoms are hydrogens?
-     call mem_alloc(which_hydrogens,natoms)
-     which_hydrogens=.false.
-     do atom=1,natoms
+    ! Which atoms are hydrogens?
+    call mem_alloc(which_hydrogens,natoms)
+    which_hydrogens=.false.
+    do atom=1,natoms
        if(myLsitem%input%molecule%Atom(atom)%atomic_number==1) then
           which_hydrogens(atom)=.true.
        end if
-     end do
+    end do
 
+    if(count(which_hydrogens)==natoms .and. (.NOT.decinfo%PureHydrogendebug) &
+         & .and. (.not. DECinfo%OnlyOccPart.AND..not. DECinfo%OnlyVirtPart) ) then
+       print*,'Orbital assignment failed because there are only hydrogen atoms!'
+       print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
+       call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
+    end if
 
-     ! For each hydrogen atom, find nearest heavy atom
-     ! -----------------------------------------------
-     ! nearest heavy atom for hydrogen atom (zero for heavy atom)
-     call mem_alloc(MyHeavyAtom,natoms)   
-     ! number of hydrogens for each heavy atom 
-     ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
-     call mem_alloc(nhydrogens,natoms)    
-     ! For each heavy atom, choose one hydrogen to be the central one 
-     ! (zero for hydrogen atom or heavy atom with no hydrogen neighbours)
-     call mem_alloc(centralHydrogen,natoms)
-     nhydrogens=0
-     MyHeavyAtom=0
-     centralHydrogen=0
-
-
-
-
-     AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
+    ! Assign each hydrogen atom to a heavy atom
+    AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms .and. (.NOT.decinfo%PureHydrogendebug)) then 
        ! Reassign orbitals originally assigned to hydrogen
        call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
        call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
-
-     else ! we want fragments of hydrogen atoms
-
-
-       ! Very special case: Only hydrogen atoms in molecule
-       OnlyHydrogen: if(count(which_hydrogens)==natoms) then
-
-          write(DECinfo%output,*) 'WARNING: DEC is not recommended for systems with only hydrogen atoms!'
-          write(DECinfo%output,*) '--> we try to make a meaningful orbital assignment anyway.'
-
-       else
-
-          do i=1,natoms
-             mindist = 100000.0_realk
-             heavyatom=0
-
-             if(which_hydrogens(i)) then  ! atom "i" is hydrogen
-
-                ! Find nearest heavy atom for hydrogen atom "i"
-                do j=1,natoms
-                   if(.not. which_hydrogens(j)) then ! atom "j" is a heavy atom
-
-                      if(MyMolecule%DistanceTable(i,j) < mindist) then
-                         mindist = MyMolecule%DistanceTable(i,j)
-                         heavyatom = j
-                      end if
-
-                   end if
-                end do
-
-                ! Set heavy atom and increase counter for heavy atom
-                if(heavyatom>0) then
-                   MyHeavyAtom(i) = heavyatom
-                   nhydrogens(heavyatom) = nhydrogens(heavyatom)+1
-
-                   ! Choose (arbitrary) hydrogen to be the central hydrogen atom
-                   ! in the list of hydrogen atoms assigned to heavy atom
-                   ! (We simply choose the first hydrogen we encounter)
-                   if(centralHydrogen(heavyatom)==0) centralHydrogen(heavyatom)=i
-                end if
-
-             end if
-          end do
+    end if AbsorbHydrogenAtoms
 
 
+    HydrogenDebug: if( decinfo%PureHydrogendebug ) THEN
 
-          ! ******************************************************************************************
-          !    Reassign orbital assigned to hydrogen to the central hydrogen in hydrogen fragments   *
-          ! ******************************************************************************************
-
-          ! Occupied orbital
-          do i=1,nocc
-             central_atom = OccOrbitals(i)%centralatom ! current central atom for orbital "i"
-             if(which_hydrogens(central_atom)) then  ! only reassign for hydrogens
-                ! Set central atom = central hydrogen for "hydrogen fragment"
-                OccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
-             end if
-          end do
-
-          ! Unoccupied orbital
-          do i=1,nunocc
-             central_atom = UnoccOrbitals(i)%centralatom
-             if(which_hydrogens(central_atom)) then
-                UnoccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
-             end if
-          end do
-
-       end if OnlyHydrogen
-
-     end if AbsorbHydrogenAtoms
-    ELSE       
        do i=1,nocc
           OccOrbitals(i)%centralatom = i
        enddo
@@ -785,150 +874,150 @@ contains
              enddo
           ENDIF
        enddo
-    ENDIF !PUREHYDROGENS
-    ! ******************************************************************************************
-    ! * Reassign 2: Ensure that all atoms have both occupied and unoccupied orbitals assigned  *
-    ! ******************************************************************************************
 
-    ! Count # orbitals assigned to each atom
-    call mem_alloc(countOcc,natoms)
-    call mem_alloc(countUnocc,natoms)
-    countOcc=0
-    countUnocc=0
-    do i=offset+1,nocc
-       countocc(OccOrbitals(i)%centralatom) = countocc(OccOrbitals(i)%centralatom)+1
-    end do
-    do i=1,nunocc
-       countunocc(UnoccOrbitals(i)%centralatom) = countunocc(UnoccOrbitals(i)%centralatom)+1
-    end do
+    end if HydrogenDebug
 
-    ! The atoms which will be central in atomic fragments are those which
-    ! at this point have some orbitals assigned
-    call mem_alloc(dofrag,natoms)
-    dofrag=.false.
-    do i=1,natoms
-       if( countocc(i)/=0 .or. countunocc(i)/=0 ) dofrag(i)=.true.
-    end do
 
-    ! Now reassign to ensure that all atomic fragment have both occupied and unoccupied orbitals
-    keepon = .true.
-    nreass=0  ! number of reassigment steps
-    ContinueReassign: do while(keepon)
-       nreass = nreass+1
+    ! ****************************************************************************************
+    ! * Reassign: Ensure that all atoms have both occupied and unoccupied orbitals assigned  *
+    ! ****************************************************************************************
 
-       ReassignAtomLoop: do atom=1,natoms
+    REASSIGNING: if((.not. (DECinfo%onlyoccpart.or.DECinfo%OnlyVirtPart)).and.&
+         & (.not. decinfo%PureHydrogendebug) ) then
 
-          ! Reassign occupied orbitals          
-          OccReassign: if(dofrag(atom) .and. countocc(atom)==0) then
+       ! Count # orbitals assigned to each atom
+       call mem_alloc(countOcc,natoms)
+       call mem_alloc(countUnocc,natoms)
+       countOcc=0
+       countUnocc=0
+       do i=offset+1,nocc
+          countocc(OccOrbitals(i)%centralatom) = countocc(OccOrbitals(i)%centralatom)+1
+       end do
+       do i=1,nunocc
+          countunocc(UnoccOrbitals(i)%centralatom) = countunocc(UnoccOrbitals(i)%centralatom)+1
+       end do
 
-             ! Atom is supposed to be central in an atomic fragment but
-             ! it has no occupied orbitals assigned:
-             ! 1. Check orbitals for which atom is number 2 in the Lowdin priority list
-             !    and find orbital with largest Lowdin charge in this set of orbitals
-             ! 2. Reassign that orbital to atom under consideration
-             maxlowdin = 0.0_realk
-             maxidx = 0
-             changedatom=0
-             do j=offset+1,nocc
+       ! The atoms which will be central in atomic fragments are those which
+       ! at this point have some orbitals assigned
+       call mem_alloc(dofrag,natoms)
+       dofrag=.false.
+       do i=1,natoms
+          if( countocc(i)/=0 .or. countunocc(i)/=0 ) dofrag(i)=.true.
+       end do
 
-                ! Only consider reassigning if:
-                ! (i)   Atom under consideration is number 2 in Lowdin list
-                ! (ii)  Lowdin charge for atom is larger than current max value
-                ! (iii) Orbital is not a core orbital
-                if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
-                   maxlowdin = lowdin_charge(2,j)
-                   maxidx = j
-                   changedatom=OccOrbitals(j)%centralatom  ! atom which will "loose" an orbital
+       ! Now reassign to ensure that all atomic fragment have both occupied and unoccupied orbitals
+       keepon = .true.
+       nreass=0  ! number of reassigment steps
+       ContinueReassign: do while(keepon)
+          nreass = nreass+1
+
+          ReassignAtomLoop: do atom=1,natoms
+
+             ! Reassign occupied orbitals          
+             OccReassign: if(dofrag(atom) .and. countocc(atom)==0) then
+
+                ! Atom is supposed to be central in an atomic fragment but
+                ! it has no occupied orbitals assigned:
+                ! 1. Check orbitals for which atom is number 2 in the Lowdin priority list
+                !    and find orbital with largest Lowdin charge in this set of orbitals
+                ! 2. Reassign that orbital to atom under consideration
+                maxlowdin = 0.0_realk
+                maxidx = 0
+                changedatom=0
+                do j=offset+1,nocc
+
+                   ! Only consider reassigning if:
+                   ! (i)   Atom under consideration is number 2 in Lowdin list
+                   ! (ii)  Lowdin charge for atom is larger than current max value
+                   ! (iii) Orbital is not a core orbital
+                   if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
+                      maxlowdin = lowdin_charge(2,j)
+                      maxidx = j
+                      changedatom=OccOrbitals(j)%centralatom  ! atom which will "loose" an orbital
+                   end if
+                end do
+
+                ! Reassign orbital
+                if(maxidx/=0) then
+                   if(DECinfo%PL>1) write(DECinfo%output,'(1X,a,i8,a,i8)') &
+                        & 'Reassign occ orbital ', maxidx, ' to atom ', atom
+                   OccOrbitals(maxidx)%centralatom = atom
+                   countocc(changedatom) = countocc(changedatom) - 1
+                   countocc(atom) = countocc(atom) + 1
                 end if
-             end do
 
-             ! Reassign orbital
-             if(maxidx/=0) then
-                if(DECinfo%PL>1) write(DECinfo%output,'(1X,a,i8,a,i8)') &
-                     & 'Reassign occ orbital ', maxidx, ' to atom ', atom
-                OccOrbitals(maxidx)%centralatom = atom
-                countocc(changedatom) = countocc(changedatom) - 1
-                countocc(atom) = countocc(atom) + 1
-             end if
-
-          end if OccReassign
+             end if OccReassign
 
 
-          ! Reassign unoccupied orbitals (same procedure as for occ space)
-          UnoccReassign: If(dofrag(atom) .and. countunocc(atom)==0) then
+             ! Reassign unoccupied orbitals (same procedure as for occ space)
+             UnoccReassign: If(dofrag(atom) .and. countunocc(atom)==0) then
 
-             maxlowdin = 0.0_realk
-             maxidx = 0
-             changedatom=0
-             do j=nocc+1,nbasis
-                if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
-                   maxlowdin = lowdin_charge(2,j)
-                   maxidx = j-nocc   ! unoccupied index in list of unoccupied orbitals
-                   changedatom=UnoccOrbitals(j-nocc)%centralatom
+                maxlowdin = 0.0_realk
+                maxidx = 0
+                changedatom=0
+                do j=nocc+1,nbasis
+                   if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
+                      maxlowdin = lowdin_charge(2,j)
+                      maxidx = j-nocc   ! unoccupied index in list of unoccupied orbitals
+                      changedatom=UnoccOrbitals(j-nocc)%centralatom
+                   end if
+                end do
+
+                ! Reassign orbital
+                if(maxidx/=0) then
+                   if(DECinfo%PL>1) write(DECinfo%output,'(1X,a,i8,a,i8)') &
+                        & 'Reassign unocc orbital ', maxidx, ' to atom ', atom
+                   UnoccOrbitals(maxidx)%centralatom = atom
+                   countunocc(changedatom) = countunocc(changedatom) - 1
+                   countunocc(atom) = countunocc(atom) + 1
                 end if
-             end do
 
-             ! Reassign orbital
-             if(maxidx/=0) then
-                if(DECinfo%PL>1) write(DECinfo%output,'(1X,a,i8,a,i8)') &
-                     & 'Reassign unocc orbital ', maxidx, ' to atom ', atom
-                UnoccOrbitals(maxidx)%centralatom = atom
-                countunocc(changedatom) = countunocc(changedatom) - 1
-                countunocc(atom) = countunocc(atom) + 1
-             end if
-
-          end if UnoccReassign
+             end if UnoccReassign
 
 
-          ! Check that all atoms have either have
-          ! (i) both occupied AND unoccupied orbitals assigned   OR
-          ! (ii) zero orbitals assigned
-          keepon=.false.
-          CheckAssignment: do i=1,natoms
-             if( (countocc(i)/=0 .and. countunocc(i)==0) .or. &
-                  & (countocc(i)==0 .and. countunocc(i)/=0) ) then
-                ! Still not acceptable orbital distribution - keep on
-                keepon=.true.
-                exit CheckAssignment
-             end if
-          end do CheckAssignment
-
-       end do ReassignAtomLoop
-
-       ! Avoid infinite loop
-       if(nreass>5) then
-          if(count(which_hydrogens)==natoms) then
-             print*,'Orbital assignment failed because there are only hydrogen atoms!'
-             print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
-             call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
-          else 
-             write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
-             write(DECinfo%output,*) 'Fallback solution: I now turn on .ABSORBH'
-             DECinfo%AbsorbHatoms=.true.
+             ! Check that all atoms have either have
+             ! (i) both occupied AND unoccupied orbitals assigned   OR
+             ! (ii) zero orbitals assigned
              keepon=.false.
+             CheckAssignment: do i=1,natoms
+                if( (countocc(i)/=0 .and. countunocc(i)==0) .or. &
+                     & (countocc(i)==0 .and. countunocc(i)/=0) ) then
+                   ! Still not acceptable orbital distribution - keep on
+                   keepon=.true.
+                   exit CheckAssignment
+                end if
+             end do CheckAssignment
+
+          end do ReassignAtomLoop
+
+          ! Avoid infinite loop
+          if(nreass>5) then
+             if(count(which_hydrogens)==natoms) then
+                print*,'Orbital assignment failed because there are only hydrogen atoms!'
+                print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
+                call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
+             else 
+                write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
+                write(DECinfo%output,*) 'Fallback solution: I now turn on .ABSORBH'
+                DECinfo%AbsorbHatoms=.true.
+                keepon=.false.
+             end if
           end if
-       end if
 
-    end do ContinueReassign
+       end do ContinueReassign
 
-    if(DECinfo%PL>1) then
-       write(DECinfo%output,*) 'Number of reassignment steps: ', nreass
-    end if
+       call mem_dealloc(dofrag)
+       call mem_dealloc(countOcc)
+       call mem_dealloc(countUnocc)
 
-    IF(.NOT.DECinfo%PureHydrogenDebug)THEN
-       call mem_dealloc(which_hydrogens)
-       call mem_dealloc(MyHeavyAtom)
-       call mem_dealloc(nhydrogens)
-       call mem_dealloc(centralHydrogen)
-    ENDIF
-    call mem_dealloc(dofrag)
+    end if REASSIGNING
+
+    call mem_dealloc(which_hydrogens)
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
     if(DECinfo%Distance) then
        call mem_dealloc(central_atom2)
     endif
-    call mem_dealloc(countOcc)
-    call mem_dealloc(countUnocc)
 
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
@@ -1012,13 +1101,25 @@ contains
     !> S^{1/2} C matrix
     real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis
+    integer :: nbasis,i,j,k
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
-    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    do j=1,MyMolecule%nocc
+    do i =1,nbasis
+    basis(i,j) =MyMolecule%Co(i,j)
+    enddo
+    enddo
+    k = MyMolecule%nocc+1
+    do j = 1,MyMolecule%nunocc
+    do i =1,nbasis
+    basis(i,k) = MyMolecule%Cv(i,j)
+    enddo
+    k=k+1
+    enddo
 
     ! Get S^{1/2} matrix
     ! ******************
@@ -1101,9 +1202,9 @@ contains
     type(fullmolecule), intent(in) :: MyMolecule
     integer, intent(inout) :: central_atom
     !
-    integer :: atom,catom(1),nocc,nvirt
+    integer :: atom,catom,nocc,nvirt
     real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
-    real(realk) :: SQDIST(nAtoms)    
+    real(realk) :: SQDIST(nAtoms),SQDISTVAL    
     nocc=MyMolecule%nocc
     ! Init stuff
     IF(orbI.GT.nocc)THEN
@@ -1127,8 +1228,17 @@ contains
        ZDIST = ZATOM + ZMO
        SQDIST(atom) = XDIST*XDIST + YDIST*YDIST + ZDIST*ZDIST
     enddo
-    catom = MINLOC(SQDIST)
-    central_atom = catom(1)    
+    SQDISTVAL=HUGE(SQDIST(1))
+    catom = -101
+    do atom=1,natoms
+       IF(SQDIST(atom).LT.SQDISTVAL)THEN
+          IF(.NOT.MyMolecule%PhantomAtom(atom))THEN
+             SQDISTVAL = SQDIST(atom)
+             catom = atom
+          ENDIF
+       ENDIF
+    enddo
+    central_atom = catom
   end subroutine GetDistanceCentralAtom
 
 
@@ -1249,13 +1359,18 @@ contains
     implicit none
     type(decorbital), intent(in) :: orb
     integer, intent(in) :: iunit
+    integer(kind=8) :: orbitalnumber64,centralatom64,numberofatoms64,atoms64(orb%numberofatoms)
 
-    write(iunit) orb%orbitalnumber
-    write(iunit) orb%centralatom
-    write(iunit) orb%numberofatoms
-    write(iunit) orb%atoms
+    orbitalnumber64 = orb%orbitalnumber
+    centralatom64   = orb%centralatom
+    numberofatoms64 = orb%numberofatoms
+    atoms64         = orb%atoms
 
-    return
+    write(iunit) orbitalnumber64
+    write(iunit) centralatom64
+    write(iunit) numberofatoms64
+    write(iunit) atoms64
+
   end subroutine orbital_write
 
   !> \brief Read orbital from file
@@ -1269,49 +1384,48 @@ contains
     integer(kind=8),pointer :: atoms64(:)
     integer(kind=4),pointer :: atoms32(:)
 
-    ConvertFrom64Bit: if(DECinfo%convert64to32) then
-       ! file uses 64 bit integers but current run uses 32 bit integers
+    !ConvertFrom64Bit: if(DECinfo%convert64to32) then
        read(iunit) orbitalnumber64
        read(iunit) centralatom64
        read(iunit) numberofatoms64
        call mem_alloc(atoms64,numberofatoms64)
        read(iunit) atoms64
-       ! Convert 64 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = int(orbitalnumber64,4)
-       orb%centralatom = int(centralatom64,4)
-       orb%numberofatoms = int(numberofatoms64,4)
+
+       orb%orbitalnumber = int(orbitalnumber64)
+       orb%centralatom   = int(centralatom64)
+       orb%numberofatoms = int(numberofatoms64)
        call mem_alloc(orb%atoms,orb%numberofatoms)
        do i=1,orb%numberofatoms
-          orb%atoms(i) = int(atoms64(i),4)
+          orb%atoms(i) = int(atoms64(i))
        end do
        call mem_dealloc(atoms64)
 
-    elseif(DECinfo%convert32to64)then
+    !elseif(DECinfo%convert32to64)then
 
-       read(iunit) orbitalnumber32
-       read(iunit) centralatom32
-       read(iunit) numberofatoms32
-       call mem_alloc(atoms32,numberofatoms32)
-       read(iunit) atoms32
-       ! Convert 32 bit integers to 32 bit and store in decorbital type
-       orb%orbitalnumber = orbitalnumber32
-       orb%centralatom = centralatom32
-       orb%numberofatoms = numberofatoms32
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       do i=1,orb%numberofatoms
-          orb%atoms(i) = atoms32(i)
-       end do
-       call mem_dealloc(atoms32)
+    !   read(iunit) orbitalnumber32
+    !   read(iunit) centralatom32
+    !   read(iunit) numberofatoms32
+    !   call mem_alloc(atoms32,numberofatoms32)
+    !   read(iunit) atoms32
+    !   ! Convert 32 bit integers to 32 bit and store in decorbital type
+    !   orb%orbitalnumber = orbitalnumber32
+    !   orb%centralatom = centralatom32
+    !   orb%numberofatoms = numberofatoms32
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   do i=1,orb%numberofatoms
+    !      orb%atoms(i) = atoms32(i)
+    !   end do
+    !   call mem_dealloc(atoms32)
 
-    else
+    !else
 
-       read(iunit) orb%orbitalnumber
-       read(iunit) orb%centralatom
-       read(iunit) orb%numberofatoms
-       call mem_alloc(orb%atoms,orb%numberofatoms)
-       read(iunit) orb%atoms
+    !   read(iunit) orb%orbitalnumber
+    !   read(iunit) orb%centralatom
+    !   read(iunit) orb%numberofatoms
+    !   call mem_alloc(orb%atoms,orb%numberofatoms)
+    !   read(iunit) orb%atoms
 
-    end if ConvertFrom64Bit
+    !end if ConvertFrom64Bit
 
   end function orbital_read
 
@@ -1570,6 +1684,268 @@ contains
   end subroutine check_lcm_against_canonical
 
 
+  !> \brief Check the norm of the occupied orbitals on the other Subsystem
+  !> \author Thomas Kjaergaard
+  !> \date November 2014
+  subroutine check_Occupied_SubSystemLocality(MyMolecule,MyLsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LSDALTON info
+    type(lsitem), intent(inout) :: MyLsitem
+    !
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
+    real(realk),pointer :: Cocc1(:,:),Cocc2(:,:)
+    integer :: nbasis,nocc,nvirt,natoms,noccsub(2),nsize
+    integer,pointer :: nOrb(:),centralatom(:)
+    integer :: i,isys,iatom,ibasissub(2),nbasisSub(2)
+    real(realk), external :: ddot
+
+    nbasis = MyMolecule%nbasis
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
+    nBasis = MyMolecule%nbasis
+    nAtoms = MyMolecule%natoms
+
+    call mem_alloc(OccOrbitals,nOcc)
+    call mem_alloc(UnoccOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, UnoccOrbitals)
+    !I do not need the UnoccOrbitals
+    do i=1,nvirt
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(UnoccOrbitals)
+
+    call mem_alloc(CentralAtom,nocc)
+    do i=1,nocc
+       CentralAtom(i) = OccOrbitals(i)%centralatom
+    enddo
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+
+    !determine number of occupied orbitals assigned to which subsystems
+    noccsub = 0 
+    do i=1,nocc
+       isys = Mymolecule%SubSystemIndex(centralatom(i))
+       noccsub(isys) = noccsub(isys) + 1       
+    enddo
+    !determine the number of AO orbitals for each atom
+    call mem_alloc(nOrb,nAtoms)
+    do iAtom=1,nAtoms
+       nOrb(iAtom) = mylsitem%input%molecule%ATOM(IAtom)%nContOrbREG
+    enddo
+    !determine the number of AO orbitals in each subsystem
+    ibasisSub = 0     
+    do iAtom=1,nAtoms
+       isys = Mymolecule%SubSystemIndex(iAtom)
+       ibasisSub(isys) = ibasisSub(isys) + nOrb(iAtom)
+    enddo
+    nbasisSub = ibasisSub
+    !make 2 seperate MO coefficient matrices
+    !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
+    call mem_alloc(Cocc1,nbasisSub(2),noccsub(1))
+    call BuildSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,Cocc1,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    !MOs assigned to SubSystem 2 and AOs belonging to Subsystem 1
+    call mem_alloc(Cocc2,nbasisSub(1),noccsub(2))
+    call BuildSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,Cocc2,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    ! Delete orbitals
+    call mem_dealloc(nOrb)
+    call mem_dealloc(CentralAtom)
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a)') '================================================'
+    write(DECinfo%output,'(1X,a)') '         Occupied SubSystem Locality            '
+    write(DECinfo%output,'(1X,a)') '================================================'
+
+    write(DECinfo%output,'(1X,a,A)') ' The Occupied Orbitals Assigned to SubSystem: ',&
+         & mylsitem%input%molecule%SubsystemLabel(1)
+    nsize = nbasisSub(2)*noccsub(1)
+    write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
+    write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(2),noccsub(1)
+    call output(Cocc1,1,nbasisSub(2),1,noccsub(1),nbasisSub(2),noccsub(1),1,DECinfo%output)
+
+    write(DECinfo%output,'(1X,a,A)') ' The Occupied Orbitals Assigned to SubSystem: ',&
+         & mylsitem%input%molecule%SubsystemLabel(2)
+    nsize = nbasisSub(1)*noccsub(2)
+    write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
+    write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(1),noccsub(2)
+    call output(Cocc2,1,nbasisSub(1),1,noccsub(2),nbasisSub(1),noccsub(2),1,DECinfo%output)
+
+    WRITE(DECinfo%output,*)'Full CMO '
+    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+
+    call mem_dealloc(Cocc1)
+    call mem_dealloc(Cocc2)
+  end subroutine check_Occupied_SubSystemLocality
+
+  !> \brief Check the norm of the occupied orbitals on the other Subsystem
+  !> \author Thomas Kjaergaard
+  !> \date November 2014
+  subroutine force_Occupied_SubSystemLocality(MyMolecule,MyLsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(inout) :: MyMolecule
+    !> LSDALTON info
+    type(lsitem), intent(inout) :: MyLsitem
+    !
+    type(decorbital), pointer :: OccOrbitals(:)
+    type(decorbital), pointer :: UnoccOrbitals(:)
+    real(realk),pointer :: Cocc1(:,:),Cocc2(:,:)
+    integer :: nbasis,nocc,nvirt,natoms,noccsub(2),nsize
+    integer,pointer :: nOrb(:),centralatom(:)
+    integer :: i,isys,iatom,ibasissub(2),nbasisSub(2)
+    real(realk), external :: ddot
+
+    nbasis = MyMolecule%nbasis
+    nocc = MyMolecule%nocc
+    nvirt = MyMolecule%nunocc
+    nBasis = MyMolecule%nbasis
+    nAtoms = MyMolecule%natoms
+
+    call mem_alloc(OccOrbitals,nOcc)
+    call mem_alloc(UnoccOrbitals,nvirt)
+    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nvirt,natoms, &
+         & OccOrbitals, UnoccOrbitals)
+    !I do not need the UnoccOrbitals
+    do i=1,nvirt
+       call orbital_free(UnoccOrbitals(i))
+    end do
+    call mem_dealloc(UnoccOrbitals)
+
+    call mem_alloc(CentralAtom,nocc)
+    do i=1,nocc
+       CentralAtom(i) = OccOrbitals(i)%centralatom
+    enddo
+    do i=1,nOcc
+       call orbital_free(OccOrbitals(i))
+    end do
+    call mem_dealloc(OccOrbitals)
+
+    !determine number of occupied orbitals assigned to which subsystems
+    noccsub = 0 
+    do i=1,nocc
+       isys = Mymolecule%SubSystemIndex(centralatom(i))
+       noccsub(isys) = noccsub(isys) + 1       
+    enddo
+    !determine the number of AO orbitals for each atom
+    call mem_alloc(nOrb,nAtoms)
+    do iAtom=1,nAtoms
+       nOrb(iAtom) = mylsitem%input%molecule%ATOM(IAtom)%nContOrbREG
+    enddo
+    !determine the number of AO orbitals in each subsystem
+    ibasisSub = 0     
+    do iAtom=1,nAtoms
+       isys = Mymolecule%SubSystemIndex(iAtom)
+       ibasisSub(isys) = ibasisSub(isys) + nOrb(iAtom)
+    enddo
+    nbasisSub = ibasisSub
+    !make 2 seperate MO coefficient matrices
+    !MOs assigned to SubSystem 1 and AOs belonging to Subsystem 2
+
+    call ZeroSubsystemCMO(1,nbasisSub(2),noccsub(1),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    call ZeroSubsystemCMO(2,nbasisSub(1),noccsub(2),nocc,nAtoms,nbasis,&
+         & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
+
+    WRITE(DECinfo%output,*)'CMO after force_Occupied_SubSystemLocality'
+    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+
+    ! Delete orbitals
+    call mem_dealloc(nOrb)
+    call mem_dealloc(CentralAtom)
+
+  end subroutine force_Occupied_SubSystemLocality
+
+  !suboutine can be used for both subsystems combinations but made (name conventions)
+  !for the case where:
+  !this occupied orbital have been assigned to subsystem 1
+  !we therefore loop over all AO basis functions that belog to 
+  !subsystem 2     
+  subroutine BuildSubsystemCMO(isysInput,nbas2,nocc1,nocc,nAtoms,nbasis,&
+       & nOrb,Co,CoccSub,CentralAtom,SubSystemIndex)      
+    implicit none
+    integer :: nbas2,nocc1,nocc,isysInput,nAtoms,nbasis
+    integer,intent(in) :: nOrb(nAtoms)
+    real(realk),intent(in) :: Co(nbasis,nocc)
+    real(realk),intent(inout) :: CoccSub(nbas2,nocc1)
+    integer,intent(in) :: CentralAtom(nOcc),SubSystemIndex(nAtoms)
+    !
+    integer :: noccsub,i,iatom,isys
+    integer :: ibasis,ibasisSub,iAO,isys2
+    noccsub = 0 
+    do i=1,nocc
+       isys = SubSystemIndex(CentralAtom(i))
+       IF(isys.EQ.isysInput)THEN
+          noccsub = noccsub + 1       
+          ibasis = 0 
+          ibasisSub = 0 
+          do iAtom=1,nAtoms
+             isys2 = SubSystemIndex(iAtom)
+             IF(isys2.NE.isys)THEN
+                !include this in the Cocc (assuming isysinput=1)
+                !this occupied orbital have been assigned to subsystem 1
+                !we therefore loop over all AO basis functions that belog to 
+                !subsystem 2 
+                do iAO = 1,nOrb(iAtom)
+                   CoccSub(ibasisSub+iAO,noccsub)=Co(ibasis+iAO,i)
+                enddo
+                ibasisSub=ibasisSub+nOrb(iAtom)
+             ENDIF
+             ibasis=ibasis+nOrb(iAtom)
+          end do
+       ENDIF
+    enddo
+  end subroutine BuildSubsystemCMO
+
+  !suboutine can be used for both subsystems combinations but made (name conventions)
+  !for the case where:
+  !this occupied orbital have been assigned to subsystem 1
+  !we therefore loop over all AO basis functions that belog to 
+  !subsystem 2     
+  subroutine ZeroSubsystemCMO(isysInput,nbas2,nocc1,nocc,nAtoms,nbasis,&
+       & nOrb,Co,CentralAtom,SubSystemIndex)      
+    implicit none
+    integer :: nbas2,nocc1,nocc,isysInput,nAtoms,nbasis
+    integer,intent(in) :: nOrb(nAtoms)
+    real(realk),intent(inout) :: Co(nbasis,nocc)
+    integer,intent(in) :: CentralAtom(nOcc),SubSystemIndex(nAtoms)
+    !
+    integer :: noccsub,i,iatom,isys
+    integer :: ibasis,ibasisSub,iAO,isys2
+    noccsub = 0 
+    do i=1,nocc
+       isys = SubSystemIndex(CentralAtom(i))
+       IF(isys.EQ.isysInput)THEN
+          noccsub = noccsub + 1       
+          ibasis = 0 
+          ibasisSub = 0 
+          do iAtom=1,nAtoms
+             isys2 = SubSystemIndex(iAtom)
+             IF(isys2.NE.isys)THEN
+                !include this in the Cocc (assuming isysinput=1)
+                !this occupied orbital have been assigned to subsystem 1
+                !we therefore loop over all AO basis functions that belog to 
+                !subsystem 2 
+                do iAO = 1,nOrb(iAtom)
+                   Co(ibasis+iAO,i) = 0.0E0_realk
+                enddo
+                ibasisSub=ibasisSub+nOrb(iAtom)
+             ENDIF
+             ibasis=ibasis+nOrb(iAtom)
+          end do
+       ENDIF
+    enddo
+  end subroutine ZeroSubsystemCMO
 
   !> \brief Write all orbitals to file "DECorbitals.info"
   !> with occupied orbitals before unoccupied orbitals.
@@ -1693,7 +2069,8 @@ contains
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    real(realk), dimension(natoms,natoms) :: SortedDistTable
+    !real(realk), dimension(natoms,natoms) :: SortedDistTable
+    real(realk), pointer :: SortedDistTable(:,:)
     integer, dimension(nAtoms,nAtoms) :: TrackMatrix
     integer :: i,j,centralatom,neighbor,atomnumber,neighbor_atomnumber
     logical :: included, reassign
@@ -1705,7 +2082,13 @@ contains
     maxdist = 1.5E0_realk/bohr
 
     ! Sort atoms according to distance, and keep track of original indices in TrackMatrix
-    SortedDistTable(:,:)=DistanceTable(:,:)
+    call mem_alloc(SortedDistTable,natoms,natoms)
+    do i = 1,natoms
+     do j=1,natoms
+     SortedDistTable(i,j)=DistanceTable(i,j)
+     enddo
+    enddo
+    !SortedDistTable(:,:)=DistanceTable(:,:)
     call sort_track(SortedDistTable,TrackMatrix,nAtoms)
 
 
@@ -1791,6 +2174,7 @@ contains
        end if Hatom
 
     end do OrbitalLoop
+    call mem_dealloc(SortedDistTable)
 
   end subroutine reassign_orbitals
 
@@ -2032,46 +2416,41 @@ contains
   !> \brief Count number of orbitals assigned to each atom.
   !> \author Kasper Kristensen
   !> \date October 2010
-  function get_number_of_orbitals_per_atom(Orbitals,norb,natoms,offset) &
+  function get_number_of_orbitals_per_atom(Orbitals,norb,natoms,mainass,offset) &
        & result(norb_per_atom)
 
-    !> Number of orbitals assigned to each atom
-    integer, dimension(natoms) :: norb_per_atom
+    implicit none
     !> Total number of orbitals in Orbitals vector
     integer, intent(in) :: norb
-    !> Orbital vector (may either be occupied or virtual orbitals)
-    type(decorbital), dimension(norb), intent(in) :: Orbitals
     !> Number of atoms in the molecule
     integer, intent(in) :: natoms
+    !> Orbital vector (may either be occupied or virtual orbitals)
+    type(decorbital), dimension(norb), intent(in) :: Orbitals
+    !> Count orbital based on main assignment (true) or secondary assignment (false)
+    logical,intent(in) :: mainass
     !> Not consider orbitals with indices 1:offset (default: consider all orbitals)
     integer,intent(in),optional :: offset
-    integer :: i,j,OtherAtom,MyAtom,norb_calc,startidx
+    !> Number of orbitals assigned to each atom
+    integer, dimension(natoms) :: norb_per_atom
+    integer :: j,MyAtom,startidx
 
     norb_per_atom=0
-    norb_calc=0
 
     if(present(offset)) then
-       startidx = offset+1  ! not consider orbital 1:offset
+       startidx = offset+1  ! not consider orbitals 1:offset
     else
        startidx=1 ! consider all orbitals
     end if
 
-    Atom_loop: do i=1,natoms
-       MyAtom=i
-
-       ! Count number of orbitals assigned to each atom
-       orbital_loop: do j=startidx,norb
-          OtherAtom=Orbitals(j)%centralatom
-
-          if( MyAtom == OtherAtom ) then
-             norb_per_atom(i) = norb_per_atom(i) +1
-             norb_calc = norb_calc + 1
+    do j=startidx,norb
+          if(mainass) then
+             ! main assignment
+             MyAtom=Orbitals(j)%centralatom
+          else ! secondary assigment
+             MyAtom=Orbitals(j)%secondaryatom
           end if
-
-       end do orbital_loop
-
-    end do Atom_loop
-
+          norb_per_atom(MyAtom) = norb_per_atom(MyAtom) +1
+    end do
 
   end function get_number_of_orbitals_per_atom
 
@@ -2118,7 +2497,7 @@ contains
   !> all atoms in the molecule.
   !> \author Kasper Kristensen
   subroutine print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,&
-       & UnoccOrbitals)
+       & UnoccOrbitals,ncore)
 
     implicit none
     !> Dalton LSITEM (just for printing atom type)
@@ -2133,10 +2512,19 @@ contains
     type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> Number of of core orbitals. If present and frozen core approx is used,
+    !> the first ncore orbitals will not be printed.
+    integer,intent(in),optional :: ncore
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j
+    integer :: SECnocc_per_atom(natoms), SECnunocc_per_atom(natoms)
+    integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j,offset
     real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
 
+    if(present(ncore) .and. DECinfo%frozencore) then
+       offset=ncore
+    else
+       offset=0
+    end if
 
     ! Find average and maximum orbital extent
     ! ***************************************
@@ -2154,10 +2542,18 @@ contains
     ! ***************************
 
     ! Occupied
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
+    ! --------
+    ! Main assigning
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=offset)
+    ! Secondary assigning
+    SECnocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,offset=offset)
 
     ! Unoccupied
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    ! ----------
+    ! Main assigninig
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
+    ! Secondary assigning
+    SECnunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
 
     ! Print out number of orbitals
     ! ****************************
@@ -2166,12 +2562,16 @@ contains
     write(DECinfo%output,*) 'ORBITAL DISTRIBUTION INFORMATION'
     write(DECinfo%output,*) '********************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,*) '   Atom type     Occ Orbitals     Unocc Orbitals '
+    if(DECinfo%frozencore) then
+       write(DECinfo%output,*) '--- using frozen core approximation, only valence orbitals are printed'
+       write(DECinfo%output,*)
+    end if
+    write(DECinfo%output,*) '   Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Secondary'
     do i=1,natoms
-       write(DECinfo%output,'(1X,I5,4X,A4,4X,I6,11X,I6)') i, MyLsitem%input%molecule%atom(i)%name,&
-            & nocc_per_atom(i), nunocc_per_atom(i)
+       write(DECinfo%output,'(1X,I5,4X,A4,4X,I6,11X,I6,11X,I6,11X,i6)') i, MyLsitem%input%molecule%atom(i)%name,&
+            & nocc_per_atom(i), nunocc_per_atom(i), SECnocc_per_atom(i), SECnunocc_per_atom(i)
     end do
-    write(DECinfo%output,'(1X,A,11X,I6,11X,I6)') 'Total:', nocc, nunocc
+    write(DECinfo%output,'(1X,A,11X,I6,11X,I6)') 'Total:', nocc-offset, nunocc
     write(DECinfo%output,*)
 
     ! Print out orbital extent summary
@@ -2222,7 +2622,6 @@ contains
     end if
 
 
-
   end subroutine print_orbital_info
 
 
@@ -2256,32 +2655,44 @@ contains
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMolecule
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i,nfrags
+    integer :: i,nfrags,offset
     logical :: something_wrong
 
+
+    if(DECinfo%frozencore) then
+       offset=MyMolecule%ncore
+    else
+       offset=0
+    end if
 
     ! Number of orbitals per atom
     ! ***************************
 
     ! Occupied
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,&
-         & offset=MyMolecule%ncore)
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,&
+         & offset=offset)
 
     ! Unoccupied
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
 
 
     something_wrong=.false.
     nfrags=0
     do i=1,natoms
-       if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
-       if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
-       if(something_wrong) then
-          write(DECinfo%output,*) 'Atom = ',i
-          write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
-          write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
-          call lsquit('Orbital assigment is inconsistent &
-               & with DEC scheme',DECinfo%output)
+
+       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)&
+            & .and.(.NOT.decinfo%PureHydrogendebug))then
+          if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
+          if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
+          if(something_wrong) then
+             write(DECinfo%output,*) 'Atom = ',i
+             write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
+             write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+             write(DECinfo%output,*) 'If you use Phantom Atoms try .ONLYOCCPART keyword'
+             print*,'If you use Phantom Atoms try .ONLYOCCPART keyword'
+             call lsquit('Orbital assigment is inconsistent &
+                  & with DEC scheme',DECinfo%output)
+          end if
        end if
 
        ! Count number of atomic fragments
@@ -2289,6 +2700,27 @@ contains
           nfrags=nfrags+1
        end if
     end do
+
+
+    ! Secondary assignment check
+    ! **************************
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,&
+         & offset=offset)
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
+    something_wrong=.false.
+    do i=1,natoms
+       if( (nocc_per_atom(i) == 0) .and. (nunocc_per_atom(i)/=0) ) something_wrong=.true.
+       if( (nocc_per_atom(i) /= 0) .and. (nunocc_per_atom(i)==0) ) something_wrong=.true.
+       if(something_wrong) then
+          write(DECinfo%output,*) 'Atom = ',i
+          write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
+          write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
+          call lsquit('Secondary orbital assigment is inconsistent &
+               & with DEC scheme',DECinfo%output)
+       end if
+    end do
+
+
 
 
     ! Repeat atomic fragment calcs after fragment optimization???
@@ -2303,7 +2735,15 @@ contains
     else
        DECinfo%RepeatAF=.false.
     end if
-
+    IF(DECinfo%FragmentExpansionRI)THEN
+       DECinfo%RepeatAF=.true.
+    ENDIF
+    IF(DECinfo%InteractionEnergy)THEN
+       IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
+          !turn of recalculation of Atomic fragment calculations
+          DECinfo%RepeatAF = .FALSE.
+       ENDIF
+    ENDIF
 
   end subroutine dec_orbital_sanity_check
 
@@ -2357,9 +2797,11 @@ contains
   !> \brief Determine which atoms have one or more orbitals assigned.
   !> \author Kasper Kristensen
   !> \date October 2013
-  subroutine which_atoms_have_orbitals_assigned(nocc,nunocc,natoms,OccOrbitals,UnoccOrbitals,dofrag)
-
+  subroutine which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,&
+       & OccOrbitals,UnoccOrbitals,dofrag,PhantomAtom)
     implicit none
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
     !> Number of unoccupied orbitals in full molecule
@@ -2372,26 +2814,71 @@ contains
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
     logical,intent(inout) :: dofrag(natoms)
+    !> Which atoms are Phantom Atoms
+    logical, intent(in) :: PhantomAtom(natoms)
+    !local 
     integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     integer :: i
 
     ! Number of orbitals per atom
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms)
+    if(DECinfo%frozencore) then ! only count valence orbitals
+       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,offset=ncore)
+    else
+       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.)
+    end if
+
+    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnOccOrbitals,nunocc,natoms,.true.)
 
     ! Which fragments to consider
     dofrag=.true.
     do i=1,natoms
        if(DECinfo%onlyoccpart) then
           ! Only consider occupied orbitals
-          if( (nocc_per_atom(i)==0) ) dofrag(i)=.false.
+
+          if( (nocc_per_atom(i)==0) ) then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
+       elseif(DECinfo%onlyvirtpart) then
+          ! Only consider virtual orbitals
+          if( (nunocc_per_atom(i)==0) ) then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        else
           ! Consider occupied as well as unoccupied orbitals
-          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) ) dofrag(i)=.false.
+          if( (nocc_per_atom(i)==0) .and. (nunocc_per_atom(i)==0) )then
+             dofrag(i)=.false.
+          else
+             if(PhantomAtom(i))then
+                print*,'ERROR   nocc_per_atom',nocc_per_atom(i),'nunocc_per_atom(i)',nunocc_per_atom(i)
+                print*,'ERROR   i',i,'PhantomAtom',PhantomAtom(i)
+                dofrag(i)=.false.
+                print*,'Setting dofrag to false'
+             endif
+          endif
        end if
     end do
+    if( DECinfo%only_n_frag_jobs>0)then
+       print *,"HACK TO ONLY DO ONE FRAGMENT JOB"
+       dofrag = .false.
+       do i = 1, DECinfo%only_n_frag_jobs
+          dofrag(DECinfo%frag_job_nr(i)) = .true.
+       enddo
+    endif
 
   end subroutine which_atoms_have_orbitals_assigned
-
 
 end module orbital_operations

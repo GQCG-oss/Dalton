@@ -43,7 +43,8 @@ contains
 !> THE BASISSETINFO CAN BE PRINTED WITH 'PRINT_BASISSETINFO'
 !>
 SUBROUTINE Build_BASIS(LUPRI,IPRINT,MOLECULE,BASINFO,BASISSETLIBRARY,&
-     &BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,BASISSETNAME)
+     & BASISLABEL,UNCONTRACTED,SINGLESEGMENT,doprint,DOSPHERICAL,iBAS,&
+     & BASISSETNAME)
 implicit none
 !> the logical unit number for the output file
 INTEGER            :: LUPRI
@@ -54,8 +55,8 @@ TYPE(MOLECULEINFO) :: MOLECULE
 !> the basisinfo to be build
 TYPE(BASISSETINFO) :: BASINFO
 !> the basissetlibrary contains info on basisset from molecule file.
-TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
-!> label 'REGULAR  ' or 'AUXILIARY' or 'CABS     ' or 'JKAUX    '
+TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY(nBasisBasParam)
+!> label 'REGULAR  ' or 'AUXILIARY' or 'CABS     ' or 'JKAUX    ' or 'ADMM     '
 CHARACTER(len=9)   :: BASISLABEL
 !> if the AOitem should be uncontracted
 LOGICAL            :: UNCONTRACTED
@@ -65,6 +66,8 @@ LOGICAL            :: SINGLESEGMENT
 LOGICAL            :: doprint
 !> if you want to use spherical basis function (default) or cartesian
 LOGICAL            :: dospherical
+! which basis in BASISSETLIBRARY(nBasisBasParam)
+INTEGER :: iBAS
 !> if you want to disregard the input basis and use own basis use this option
 CHARACTER(len=80),OPTIONAL  :: BASISSETNAME
 !
@@ -73,10 +76,10 @@ REAL(REALK),pointer         :: CHARGES(:)
 LOGICAL,pointer    :: uCHARGES(:)
 TYPE(CAR200),pointer :: BASISDIR(:)
 INTEGER,pointer    :: LEN_BASISDIR(:)
-INTEGER            :: LUBAS,NEND,i,j,k,IPOLST,IAUG,NBASDIR,IBAS,IPOS
+INTEGER            :: LUBAS,NEND,i,j,k,IPOLST,IAUG,NBASDIR,IPOS,iBAS2
 LOGICAL            :: FILE_EXIST,POLFUN,CONTRACTED,GCONT,pointcharge,BASIS_EXIST
 TYPE(CAR200),pointer :: STRING(:)
-INTEGER,pointer  :: BINDEXES(:)
+!INTEGER,pointer  :: BINDEXES(:)
 real(realk)        :: tstart,tend
 integer            :: IT,II,natomtypes,atomtype,MaxCharge,iatom,icharge
 logical,pointer    :: POINTCHARGES(:)
@@ -92,48 +95,50 @@ BASINFO%GCbasis = .FALSE.
 BASINFO%SPHERICAL = DOSPHERICAL
 IF(present(BASISSETNAME))THEN
  BASINFO%Labelindex = 0
- call mem_alloc(BINDEXES,1)
- BINDEXES(1)=1
+! call mem_alloc(BINDEXES,1)
+! BINDEXES(1)=1
  J=1
  BASINFO%DunningsBasis = .FALSE.
  IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
-ELSEIF(BASISSETLIBRARY%nbasissets == 1)THEN
- !This is the case of BASIS OR ALL BASISSETS USING ATOMBASIS IS THE SAME
- BASINFO%Labelindex = 0
- call mem_alloc(BINDEXES,1)
- BINDEXES(1)=1
- J=1
- BASINFO%DunningsBasis = BASISSETLIBRARY%DunningsBasis
- IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
+!ELSEIF(BASISSETLIBRARY(iBas)%nbasissets == 1)THEN
+! !This is the case of BASIS OR ALL BASISSETS USING ATOMBASIS IS THE SAME
+! BASINFO%Labelindex = 0
+!! call mem_alloc(BINDEXES,1)
+!! BINDEXES(1)=1
+! J=1
+! BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
+! IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
 ELSE
- !This is the case of BASIS AND AUXBASIS OR ATOMBASIS
- call mem_alloc(BINDEXES,BASISSETLIBRARY%nbasissets)
- J = BASISSETLIBRARY%nbasissets
- BASINFO%DunningsBasis = .FALSE.
+! call mem_alloc(BINDEXES,BASISSETLIBRARY(iBas)%nbasissets)
+ BASINFO%DunningsBasis = BASISSETLIBRARY(iBas)%DunningsBasis
  SELECT CASE(BASISLABEL)
- CASE('REGULAR  ')
-    BASINFO%Labelindex = 1
-    BASINFO%DunningsBasis = BASISSETLIBRARY%DunningsBasis
- CASE('AUXILIARY')
-    BASINFO%Labelindex = 2
- CASE('CABS     ')
-    BASINFO%Labelindex = 3
- CASE('JKAUX    ')
-    BASINFO%Labelindex = 4
- CASE('VALENCE  ')
-    BASINFO%Labelindex = 5
+ CASE('REGULAR  ') !identical to BasParamLABEL(RegBasParam)
+    BASINFO%Labelindex = RegBasParam
+ CASE('AUXILIARY') !identical to BasParamLABEL(AUXBasParam)
+    BASINFO%Labelindex = AUXBasParam
+ CASE('CABS     ') !identical to BasParamLABEL(CABBasParam)
+    BASINFO%Labelindex = CABBasParam
+ CASE('JKAUX    ') !identical to BasParamLABEL(JKBasParam)
+    BASINFO%Labelindex = JKBasParam
+ CASE('ADMM     ') !identical to BasParamLABEL(ADMBasParam)
+    BASINFO%Labelindex = ADMBasParam
+ CASE('VALENCE  ') !identical to BasParamLABEL(VALBasParam)
+    !build as subset of regular in trilevel algorithm
     call LSQUIT('VALENCE no legal keyword in Build_Basis.',lupri)  
+ CASE('GCTRANS  ')!identical to BasParamLABEL(GCTBasParam)
+    !build as a transformation basis in trilevel algorithm
+    call LSQUIT('GCTRANS no legal keyword in Build_Basis.',lupri)  
  CASE DEFAULT
     WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
     WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
     WRITE (LUPRI,'(a80)') ' maybe it is not implemented yet.'
     CALL LSQUIT('Illegal keyword in Build_Basis.',lupri)  
  END SELECT
- CALL UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEXES,J)
+ J = BASISSETLIBRARY(iBas)%nbasissets
  IF(IPRINT .GT. 5)WRITE(LUPRI,*)'UNIQUE BASISSETS',J
  IF(IPRINT .GT. 5)THEN
   DO I=1,J  
-   WRITE(LUPRI,'(A18,2X,A20)')'BUILD BASIS FOR ',BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))
+   WRITE(LUPRI,'(A18,2X,A20)')'BUILD BASIS FOR ',BASISSETLIBRARY(iBas)%BASISSETNAME(I)
   ENDDO
  ENDIF
 ENDIF
@@ -168,7 +173,7 @@ DO I=1,J
     ENDDO
     call mem_dealloc(uCHARGES)    
  ELSE
-   k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+   k=BASISSETLIBRARY(iBas)%nCharges(I)
  ENDIF
  natomtypes = natomtypes + k
 ENDDO
@@ -179,8 +184,8 @@ atomtype = 0
 DO I=1,J  
  IF(present(BASISSETNAME))THEN
 !  call mem_alloc(CHARGES,MOLECULE%nAtoms)
-!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
-!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY,CHARGES,k)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY(iBas),CHARGES,k)
+!  CALL UNIQUE_CHARGES(LUPRI,BASISSETLIBRARY(iBas),CHARGES,k)
   DO II=1,k
    BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETNAME
   ENDDO
@@ -191,14 +196,14 @@ DO I=1,J
    ENDDO
   ENDIF
  ELSE
-  k=BASISSETLIBRARY%nCharges(BINDEXES(I))
+  k=BASISSETLIBRARY(iBas)%nCharges(I)
   DO II=1,k
-   BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))
+   BASINFO%ATOMTYPE(atomtype+II)%NAME = BASISSETLIBRARY(iBas)%BASISSETNAME(I)
   ENDDO
   IF(IPRINT .GT. 5)THEN 
    WRITE(LUPRI,*)'UNIQUE CHARGES FOR BASISSET',BASINFO%ATOMTYPE(atomtype+k)%NAME
    DO IT=1,K
-    WRITE(LUPRI,*)'CHARGE(IT):',BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+    WRITE(LUPRI,*)'CHARGE(IT):',BASISSETLIBRARY(iBas)%CHARGES(I,IT)
    ENDDO
   ENDIF
  ENDIF
@@ -206,8 +211,8 @@ DO I=1,J
   CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETNAME,IAUG)
   CALL DETERMINE_POLARIZATION(LUPRI,BASISSETNAME,POLFUN,IPOLST)
   NEND = INDEX(BASISSETNAME,' ') - 1
-  DO IBAS=1,NBASDIR
-    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETNAME(1:NEND)//' '
+  DO IBAS2=1,NBASDIR
+    STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETNAME(1:NEND)//' '
   ENDDO
   IF(BASISSETNAME(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
@@ -215,13 +220,19 @@ DO I=1,J
      pointcharge=.FALSE.
   ENDIF
  ELSE
-  CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),IAUG)
-  CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),POLFUN,IPOLST)
-  NEND = INDEX(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I)),' ') - 1
-  DO IBAS=1,NBASDIR
-    STRING(IBAS)%p = BASISDIR(IBAS)%p(1:LEN_BASISDIR(IBAS))//BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:NEND)//' '
-  ENDDO
-  IF(BASISSETLIBRARY%BASISSETNAME(BINDEXES(I))(1:11).EQ.'pointcharge')THEN
+  CALL DETERMINE_AUGMENTATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),IAUG)
+  CALL DETERMINE_POLARIZATION(LUPRI,BASISSETLIBRARY(iBas)%BASISSETNAME(I),POLFUN,IPOLST)
+  NEND = INDEX(BASISSETLIBRARY(iBas)%BASISSETNAME(I),' ') - 1
+  IF(IAUG.EQ.0)THEN
+     DO IBAS2=1,NBASDIR
+        STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:NEND)//' '
+     ENDDO
+  ELSE
+     DO IBAS2=1,NBASDIR
+        STRING(IBAS2)%p = BASISDIR(IBAS2)%p(1:LEN_BASISDIR(IBAS2))//BASISSETLIBRARY(iBas)%BASISSETNAME(I)(2:NEND)//' '
+     ENDDO
+  ENDIF
+  IF(BASISSETLIBRARY(iBas)%BASISSETNAME(I)(1:11).EQ.'pointcharge')THEN
      pointcharge=.TRUE.
   ELSE
      pointcharge=.FALSE.
@@ -235,7 +246,7 @@ DO I=1,J
        ENDDO
     ELSE
        DO II=1,k
-          BASINFO%ATOMTYPE(atomtype+II)%Charge = NINT(BASISSETLIBRARY%CHARGES(BINDEXES(I),II))
+          BASINFO%ATOMTYPE(atomtype+II)%Charge = NINT(BASISSETLIBRARY(iBas)%CHARGES(I,II))
           BASINFO%ATOMTYPE(atomtype+II)%nAngmom=0
        ENDDO
     ENDIF
@@ -243,7 +254,7 @@ DO I=1,J
   NEND= INDEX(STRING(1)%p(1:),' ') - 1
   LUBAS=-1
   IF(STRING(1)%p(NEND-10:NEND).EQ.'USERDEFINED')THEN
-     IBAS = 1
+     IBAS2 = 1
      CALL LSOPEN(LUBAS,'MOLECULE.INP','OLD','FORMATTED')
      call FIND_BASIS_IN_MOLFILE(LUPRI,LUBAS) 
   ELSE
@@ -253,19 +264,19 @@ DO I=1,J
        INQUIRE (FILE = STRING(II)%p(1:NEND), EXIST = FILE_EXIST)
        IF (FILE_EXIST) THEN
          BASIS_EXIST = .TRUE.
-         IBAS = II
+         IBAS2 = II
          EXIT
        ENDIF
      ENDDO
      IF(BASIS_EXIST) THEN
-        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(IBAS)%p(1:NEND)
-        CALL LSOPEN(LUBAS,STRING(IBAS)%p(1:NEND),'OLD','FORMATTED')
+        IF(doprint) WRITE(LUPRI,*)'OPENING FILE',STRING(IBAS2)%p(1:NEND)
+        CALL LSOPEN(LUBAS,STRING(IBAS2)%p(1:NEND),'OLD','FORMATTED')
      ELSE
         IPOS = INDEX(STRING(1)%p,'/',.TRUE.)+1
         WRITE (LUPRI,'(/,3A)')'Basis "',STRING(1)%p(IPOS:NEND),&
      &    '" doesn''t exist in any of the provided basis-set libraries:'
-        DO IBAS=1,NBASDIR
-          WRITE(LUPRI,'(3X,A)') BASISDIR(IBAS)%p
+        DO IBAS2=1,NBASDIR
+          WRITE(LUPRI,'(3X,A)') BASISDIR(IBAS2)%p
         ENDDO
         CALL LSQUIT('Non-existing basis set in Linsca Integral',lupri)
      ENDIF
@@ -277,22 +288,22 @@ DO I=1,J
      ENDDO
   ELSE
      DO IT=1,k
-        POINTCHARGES(IT) = BASISSETLIBRARY%POINTCHARGES(BINDEXES(I),IT)
+        POINTCHARGES(IT) = BASISSETLIBRARY(iBas)%POINTCHARGES(I,IT)
      ENDDO     
   ENDIF
   IF(present(BASISSETNAME))THEN
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
+        &CONTRACTED,STRING(IBAS2)%p,IAUG,POLFUN,IPOLST,BASINFO,CHARGES,&
         &k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ELSE
    call mem_alloc(CHARGES,k)
    DO IT=1,k
-    CHARGES(IT) = BASISSETLIBRARY%CHARGES(BINDEXES(I),IT)
+    CHARGES(IT) = BASISSETLIBRARY(iBas)%CHARGES(I,IT)
 !    BASINFO%ATOMTYPE(atomtype+IT)%Charge = CHARGES(IT)
    ENDDO
    CALL READ_BASISSET_FILE_AND_BUILD_BASISINFO(LUPRI,IPRINT,LUBAS,&
-        &CONTRACTED,STRING(IBAS)%p,IAUG,POLFUN,IPOLST,BASINFO,&
+        &CONTRACTED,STRING(IBAS2)%p,IAUG,POLFUN,IPOLST,BASINFO,&
         &CHARGES,k,atomtype,SINGLESEGMENT,DOSPHERICAL,POINTCHARGES)
    call mem_dealloc(CHARGES)
   ENDIF
@@ -302,12 +313,12 @@ DO I=1,J
  ENDIF
 ENDDO
 BASINFO%nChargeindex = 0  
-CALL ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY)
+CALL ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY(iBas))
 CALL DETERMINE_NBAST(MOLECULE,BASINFO,DOSPHERICAL,.FALSE.)
 
 IF(IPRINT .GT. 5) CALL PRINT_BASISSETINFO(LUPRI,BASINFO)
 
-call mem_dealloc(BINDEXES)
+!call mem_dealloc(BINDEXES)
 
 CALL DETERMINE_FAMILYTYPEBASISSET(lupri,iprint,BASINFO)
 
@@ -407,10 +418,11 @@ END SUBROUTINE DETERMINE_GENERALCONTRACTED
 !> BASINFO%Labelindex = n:
 !> for n>0 indicate MoleculeSpecific ordering which means that 
 !> the molecule%ATOM(iatom)%IDtype(n) determines which ATOMTYPE the given atom has
-!> labelindex=1 is for regularMoleculeSpecific ordering 
-!> labelindex=2 is for auxiliaryMoleculeSpecific ordering
-!> labelindex=3 is for cabs MoleculeSpecific ordering
-!> labelindex=4 is for JKaux MoleculeSpecific ordering
+!> labelindex=RegBasParam is for regular MoleculeSpecific ordering 
+!> labelindex=AuxBasParam is for auxiliary MoleculeSpecific ordering
+!> labelindex=CABBasParam is for cabs MoleculeSpecific ordering
+!> labelindex=JKBasParam is for JK MoleculeSpecific ordering
+!> labelindex=ADMBasParam is for ADMM MoleculeSpecific ordering
 !> This is the case when ATOMBASIS is used in MOLECULE.INP
 !>
 SUBROUTINE ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY)
@@ -421,7 +433,7 @@ TYPE(MOLECULEINFO)        :: MOLECULE
 TYPE(BASISSETINFO)        :: BASINFO
 !> contains all info about the input basis from the molecule input file
 TYPE(BASISSETLIBRARYITEM) :: BASISSETLIBRARY
-INTEGER                   :: R,itype,J,I,MAXCHARGE,icharge
+INTEGER                   :: R,itype,J,I,MAXCHARGE,icharge,IR
 IF(BASINFO%Labelindex .EQ. 0)THEN
 !  labelindex=0 indicate charge based indexing which means that all atoms 
 !  share the same basisset like 6-31G or cc-pVTZ - this is the case when 
@@ -443,22 +455,32 @@ IF(BASINFO%Labelindex .EQ. 0)THEN
 ELSE
 !  labelindex=n for n>0 indicate MoleculeSpecific ordering which means that 
 !  the molecule%ATOM(iatom)%IDtype(n) determines which ATOMTYPE the given atom has
-!  labelindex=1 is for regularMoleculeSpecific ordering 
-!  labelindex=2 is for auxiliaryMoleculeSpecific ordering
-!  labelindex=3 is for cabsMoleculeSpecific ordering
-!  labelindex=4 is for JKauxMoleculeSpecific ordering
+!  labelindex=RegBasParam is for regular MoleculeSpecific ordering 
+!  labelindex=AuxBasParam is for auxiliary MoleculeSpecific ordering
+!  labelindex=CABBasParam is for cabs MoleculeSpecific ordering
+!  labelindex=JKBasParam is for JKaux MoleculeSpecific ordering
+!  labelindex=ADMBasParam is for ADMM aux MoleculeSpecific ordering
 !  This is the case when ATOMBASIS is used in MOLECULE.INP
    R = BASINFO%Labelindex
    DO I=1,MOLECULE%natoms
       MOLECULE%ATOM(I)%IDtype(R) = 0
+      IR = MOLECULE%ATOM(I)%basisindex(R)
       IF(MOLECULE%ATOM(I)%pointcharge)THEN
          MOLECULE%ATOM(I)%IDtype(R) = -56
-      ELSE
+      ELSE       
          DO J=1,BASINFO%natomtypes
+!            print*,'iatomtype=',J,'basisindex=IR=',IR,'IATOM=',I
+!            print*,'BASINFO%ATOMTYPE(J)%NAME',BASINFO%ATOMTYPE(J)%NAME
+!            print*,'BASISSETLIBRARY%BASISSETNAME(IR)',BASISSETLIBRARY%BASISSETNAME(IR)
+!            print*,'BASINFO%ATOMTYPE(J)%NAME .EQ.BASISSETLIBRARY%BASISSETNAME(IR)',&
+!                 &BASINFO%ATOMTYPE(J)%NAME .EQ.BASISSETLIBRARY%BASISSETNAME(IR)
             IF(BASINFO%ATOMTYPE(J)%NAME .EQ. &
-                 &BASISSETLIBRARY%BASISSETNAME(MOLECULE%ATOM(I)%basisindex(R))) THEN
+                 &BASISSETLIBRARY%BASISSETNAME(IR)) THEN
+!               print*,'BASINFO%ATOMTYPE(J)%Charge',BASINFO%ATOMTYPE(J)%Charge
+!               print*,'INT(Molecule%Atom(I)%Charge)',INT(Molecule%Atom(I)%Charge)
                IF(BASINFO%ATOMTYPE(J)%Charge .EQ. INT(Molecule%Atom(I)%Charge))THEN
                   MOLECULE%ATOM(I)%IDtype(R) = J
+!                  print*,'MOLECULE%ATOM(I)%IDtype(R) = J = ',J
                ENDIF
             ENDIF
          ENDDO
@@ -563,65 +585,6 @@ DO IBAS=1,NBASDIR
 ENDDO
 END SUBROUTINE GET_BASISSET_LIBS
 
-!> \brief DETERMINE NAMES OF AND NUMBER OF UNIQUE BASISSETS 
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE UNIQUE_BASISSETS(LUPRI,MOLECULE,BASISLABEL,BINDEX,b)
-implicit none
-TYPE(MOLECULEINFO) :: MOLECULE
-CHARACTER(len=9)   :: BASISLABEL
-INTEGER            :: I,J,LUPRI,BINDEX(:),K,b
-LOGICAL            :: NEWBASIS
-
-K=0
-SELECT CASE(BASISLABEL)
-CASE('REGULAR  ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'REGULAR  ') K=I
-   ENDDO
-CASE('AUXILIARY')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'AUXILIARY') K=I
-   ENDDO
-CASE('CABS     ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'CABS     ') K=I
-   ENDDO
-CASE('JKAUX    ')
-   DO I=1,MOLECULE%ATOM(1)%nbasis
-      IF(MOLECULE%ATOM(1)%basislabel(I) .EQ. 'JKAUX    ') K=I
-   ENDDO
-CASE DEFAULT
-   WRITE (LUPRI,'(A5,2X,A9)') 'LABEL',BASISLABEL
-   WRITE (LUPRI,'(a80)') ' not recognized in Build_basis.'
-   WRITE (LUPRI,'(a80)') ' maybe it is not implemented yet.'
-   CALL LSQUIT('Illegal keyword in Build_Basis.',lupri)  
-END SELECT
-
-IF(K==0)THEN
-   print*,'BASISLABEL',BASISLABEL
-   write(lupri,*)'BASISLABEL',BASISLABEL
-   CALL LSQUIT('Something wrong in Unique_basissets TK',lupri)
-ENDIF
-
-DO I=1,MOLECULE%nAtoms
-   IF(I == 1) THEN
-     BINDEX(1)=MOLECULE%ATOM(I)%basisindex(K)
-     b=1
-   ELSE
-      NEWBASIS=.TRUE.
-      DO J=1,b 
-         IF(MOLECULE%ATOM(I)%basisindex(K) == BINDEX(J)) NEWBASIS=.FALSE.
-      ENDDO
-      IF(NEWBASIS) THEN
-         b=b+1
-         BINDEX(b)=MOLECULE%ATOM(I)%basisindex(K)
-      ENDIF
-   ENDIF
-ENDDO
-       
-END SUBROUTINE UNIQUE_BASISSETS
-
 !> \brief DETERMINE NUMBER OF UNIQUE CHARGES
 !> \author T. Kjaergaard
 !> \date 2010
@@ -663,7 +626,8 @@ INTEGER            :: IAUG,LUPRI
 
 IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
   BASTMP = BASNAM
-  BASNAM(1:79) = BASTMP(2:80)
+!  BASNAM(1:79) = BASTMP(2:80)
+!  BASNAM(80:80) = ' '
   IF (BASTMP(1:1) .EQ. 'd') THEN
     IAUG = 1
   ELSEIF (BASTMP(1:1) .EQ. 't') THEN
@@ -675,24 +639,28 @@ IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
     CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
   END IF
 ELSEIF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
-  BASTMP = BASNAM
-  BASNAM(1:75) = BASTMP(5:80)
-  IAUG = 1
+   CALL LSQUIT('ecp not supported',-1)
+   BASTMP = BASNAM
+   !  BASNAM(1:75) = BASTMP(5:80)
+   !  BASNAM(76:80) = '     '
+   IAUG = 1
 ELSEIF (BASNAM(2:8) .EQ. 'aug-ecp') THEN
-  BASTMP = BASNAM
-  BASNAM(1:74) = BASTMP(6:80)
-  IF (BASTMP(1:1) .EQ. 'd') THEN
-    IAUG = 1
-  ELSE IF (BASTMP(1:1) .EQ. 't') THEN
-    IAUG = 2
-  ELSE IF (BASTMP(1:1) .EQ. 'q') THEN
-    IAUG = 3
-  ELSE
-    WRITE (LUPRI,'(/A1,A)') BASTMP(1:1),' is an unknown augmentation level'
-    CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
-  END IF
+   CALL LSQUIT('ecp not supported',-1)
+   BASTMP = BASNAM
+   !  BASNAM(1:74) = BASTMP(6:80)
+   !  BASNAM(75:80) = '      '
+   IF (BASTMP(1:1) .EQ. 'd') THEN
+      IAUG = 1
+   ELSE IF (BASTMP(1:1) .EQ. 't') THEN
+      IAUG = 2
+   ELSE IF (BASTMP(1:1) .EQ. 'q') THEN
+      IAUG = 3
+   ELSE
+      WRITE (LUPRI,'(/A1,A)') BASTMP(1:1),' is an unknown augmentation level'
+      CALL LSQUIT('Illegal augmentation level in LINSCA',lupri)
+   END IF
 ELSE
-  IAUG=0
+   IAUG=0
 ENDIF
 
 END SUBROUTINE DETERMINE_AUGMENTATION
@@ -1481,344 +1449,237 @@ END SUBROUTINE LINES_OF_CONTRACTION
 !> SEGMENTED BLOCKS SO NOT TO STORE ZERO ELEMENTS AND PREPARE TO CONSTRUCT
 !> AOBATCHES
 !>
-SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,atomtype,&
-          &nAngmom,nprim,nOrbital,Contractionmatrix,ContractionmatrixNORM,Exponents)
+SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,at,&
+          & nAngmom,nprim,nOrbital,Contractionmatrix,&
+          & ContractionmatrixNORM,Exponents)
 implicit none
-TYPE(BASISSETINFO)  :: BASINFO
-TYPE(lsmatrix) :: Contractionmatrix,ContractionmatrixNORM
-TYPE(lsmatrix) :: Exponents
-INTEGER      :: atomtype,nAngmom,nprim,nOrbital,ELEMENTS
-INTEGER      :: ncol,nrow,K,L,LUPRI,J,istart,iend,IPRINT,EXTRAROWS
-INTEGER      :: start(maxBASISsegment),end(maxBASISsegment),I,segments,Nsegments
-INTEGER      :: Nend(maxBASISsegment),Nstart(maxBASISsegment)
-LOGICAL      :: NEWBLOCK,INSIDEBLOCK
-INTEGER,pointer :: SEGMENTrow(:),SEGMENTcol(:)
-REAL(REALK),pointer :: TEMPEXP1(:),TEMPEXP2(:)
-IF (IPRINT .GT. 200)THEN
-WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
-CALL LSMAT_DENSE_PRINT(Contractionmatrix,1,Contractionmatrix%nrow,1,&
-                                &Contractionmatrix%ncol,lupri)
-ENDIF
-!**********************************************************
-!*
-!* STEP 1. DETERMINE SECTIONS OF NONZERO ELEMENTS
-!*
-!**********************************************************
-start=0
-end=0
-start(1)=1
-segments=0
-NEWBLOCK=.FALSE.
-DO I=1,nprim*nOrbital
-  IF(NEWBLOCK)THEN
-    IF(ABS(Contractionmatrix%elms(I)) .LT. 1.0E-30_realk) THEN 
-      segments=segments+1      
-      end(segments)=I-1        
-      NEWBLOCK=.FALSE.
-      start(segments+1)=I+1    
-    ENDIF
-  ELSE
-    IF(ABS(Contractionmatrix%elms(I)) .LT. 1.0E-30_realk) THEN 
-      start(segments+1)=start(segments+1)+1 
-    ELSE
-      NEWBLOCK=.TRUE.
-    ENDIF
-  ENDIF
-  IF(I==nprim*nOrbital) then
-    segments=segments+1
-    end(segments)=nprim*nOrbital 
-  ENDIF
-ENDDO
-
-DO I=1,segments
-   IF(start(I).GT.end(I))THEN
-      write(lupri,*)'Error in basis set, the last primitive most contribute to the last contracted function'
-      print*,'Error in basis set, the last primitive most contribute to the last contracted function'
-      call lsquit('Error in basis set, the last primitive most contribute to the last contracted function',-1)
-   ENDIF
-ENDDO
+TYPE(BASISSETINFO),intent(inout)  :: BASINFO
+TYPE(lsmatrix),intent(in) :: Contractionmatrix,ContractionmatrixNORM
+TYPE(lsmatrix),intent(inout) :: Exponents
+INTEGER,intent(in)      :: at,nAngmom,nprim,nOrbital
+!local variables
+INTEGER      :: ncol,nrow,K,L,LUPRI,J,IPRINT
+INTEGER      :: I,Nsegments,kk,icol
+INTEGER      :: SEGMENTrow(nOrbital),SEGMENTcol(nOrbital)
+INTEGER      :: nOrb(nprim),mPrim(nOrbital)
+LOGICAL      :: Segmented,Prim(nPrim,nOrbital),PerfomMerge
+LOGICAL      :: merged(nOrbital),MergedPrim(nPrim,nOrbital)
+LOGICAL      :: SEGMENTCOLID(nOrbital,nOrbital)
+real(realk),pointer  :: CCN(:,:),CC(:,:) 
+real(realk)  :: newExponents,newCC,newCCN
 
 IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 1'
-   WRITE(lupri,*)'SEGMENT    START     END'
-   DO I=1,segments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,start(I),end(I)
-   ENDDO
+   WRITE(LUPRI,*)'ANALYSE CONTRACTION MATRIX'
+   CALL LSMAT_DENSE_PRINT(ContractionmatrixNorm,1,ContractionmatrixNorm%nrow,1,&
+        &ContractionmatrixNorm%ncol,lupri)
 ENDIF
-IF (segments.GT.maxBASISsegment) THEN
-  WRITE(LUPRI,'(1X,A,I2,A,I2)') 'Error in ANALYSE_CONTRACTIONMATRIX. segments =', &
-     & segments,' > maxBASISsegment = ',maxBASISsegment
-  CALL LSQUIT('Error in ANALYSE_CONTRACTIONMATRIX. segments > maxBASISsegment',lupri)
+
+nrow = Contractionmatrix%nrow
+ncol = Contractionmatrix%ncol
+call mem_alloc(CCN,nrow,ncol)
+call dcopy (nrow*ncol,ContractionmatrixNorm%elms,1,CCN,1)
+call mem_alloc(CC,nrow,ncol)
+call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
+IF (IPRINT .GT. 200)THEN
+   WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
+   WRITE(LUPRI,*)'CCN'
+   call output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   WRITE(LUPRI,*)'CC'
+   call output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
 ENDIF
-!**********************************************************
-!*
-!* STEP 2. IF NUMBER OF NONZERO ELEMENTS IN A SECTION IS
-!* LARGER THAN # EXPONENT THE NUMBER OF COLLUMS IS 
-!* DETERMINED AND THE NUMBER OF BLOCKS IS DETERMINED
-!*
-!**********************************************************
-
-istart=1
-iend=1
-
-DO I=1,segments
-   IF (segments==1)THEN
-     Nstart(1)=1
-     Nend(1)=nprim*nOrbital
-   ELSE
-      IF(I==1)THEN
-         Nstart(1)=1
-         istart=istart+1
-         IF(START(I+1)-END(I) > nprim)THEN  
-            !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-            !END FIRST BLOCK
-            Nend(1)=end(I)
-            iend=2
-            INSIDEBLOCK=.FALSE.
-         ELSE !5-9=4
-            !THEY BELONG TO SAME BLOCK
-            INSIDEBLOCK=.TRUE.
-            Nend(1)=end(1)+nprim  !10
-            end(2)=end(1)+nprim    !10
-         ENDIF
-      ELSEIF(I==segments) THEN
-         IF(.NOT.INSIDEBLOCK) THEN
-            Nstart(istart)=START(I)  
-         ENDIF
-         Nend(iend)=nprim*nOrbital
-      ELSE
-         IF(INSIDEBLOCK)THEN
-            IF(START(I+1)-END(I) > nprim)THEN  !15-10=5
-               !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-               !END ONE BLOCK
-               Nend(iend)=end(I)  
-               iend=iend+1 
-               INSIDEBLOCK=.FALSE.
-            ELSE
-               end(I+1)=end(I)+nprim  
-               !THEY BELONG TO SAME BLOCK
-            ENDIF
-         ELSE
-            !I START A NEW BLOCK
-            IF(START(I+1)-END(I) > nprim)THEN
-               !THEY BELONG TO 2 DIFFERENT BLOCKS MEANING THAT I CAN 
-               !END FIRST BLOCK
-               Nstart(istart)=start(I)
-               Nend(iend)=end(I)
-               iend=iend+1 
-               istart=istart+1
-               INSIDEBLOCK=.FALSE.
-            ELSE
-               !THEY BELONG TO SAME BLOCK
-               Nstart(istart)=start(I)
-               istart=istart+1
-               INSIDEBLOCK=.TRUE.
-            ENDIF
-         ENDIF
+!reorder primitives at this level using basic bubblesort
+DO K=1,nrow
+   DO J=1,nrow-1
+      IF(Exponents%elms(J+1).GT. Exponents%elms(J))THEN
+         newExponents=Exponents%elms(J)
+         Exponents%elms(J)=Exponents%elms(J+1)
+         Exponents%elms(J+1)=newExponents
+         do I=1,nOrbital
+            newCC=CC(J,I)
+            CC(J,I)=CC(J+1,I)
+            CC(J+1,I)=newCC
+            newCCN=CCN(J,I)
+            CCN(J,I)=CCN(J+1,I)
+            CCN(J+1,I)=newCCN
+         enddo
       ENDIF
+   ENDDO
+ENDDO
+
+!Determine the number of orbitals each primitive function contributes to
+do i=1,nPrim
+   nOrb(i) = 0 
+   do j=1,nOrbital
+      IF(ABS(CC(i,j)).GT.1.0E-12_realk) nOrb(i) = nOrb(i) + 1
+   enddo
+enddo
+
+Segmented = .TRUE.
+do i=1,nPrim
+   IF(nOrb(i).NE.1)THEN
+      !at least one primitive contribute to more than 1 contracted function
+      !hence the basis set is general contracted
+      Segmented = .FALSE.
    ENDIF
-ENDDO
+enddo
 
-Nsegments=iend
+IF(Segmented)THEN
+ IF (IPRINT .GT. 2)WRITE(LUPRI,*)'This BasisBlock is a Segmented Basis  '
+ !all primitive orbitals only contribute to one contracted function
+ nSegments = ncol
+ IF (IPRINT .GT. 5)WRITE(LUPRI,*)'nSegments',nSegments
+ CALL INIT_BASISSETINFO_ContractionM(BasInfo,at,nAngmom,Nsegments)
 
-IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 2'
-   WRITE(lupri,*)'SEGMENT    START     END'
-   DO I=1,Nsegments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,Nstart(I),Nend(I)
-   ENDDO
-ENDIF
+ !DETERMINE number of Primitives FOR EACH SEGMENT
+ do j=1,nOrbital
+    mPrim(j) = 0 
+    do i=1,nPrim
+       IF(ABS(CC(i,j)).GT.1.0E-12_realk) mPrim(j) = mPrim(j) + 1
+    enddo
+ enddo
 
-CALL INIT_BASISSETINFO_ContractionM(BasInfo,atomtype,&
-     &nAngmom,Nsegments)
+ DO J=1,Nsegments
+   !For each segment copy info into structure
+   nrow=mPrim(J)
+   ncol=1
+   CALL INIT_BASISSETINFO_elms(BasInfo,at,nAngmom,J,nrow,ncol)
+   K=0
+   do i=1,nPrim
+      IF(ABS(CC(i,j)).GT.1.0E-12_realk)THEN
+         K = K + 1
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(K)=CCN(I,J)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(K)=CC(I,J)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Exponents%elms(I)
+      ENDIF
+   enddo
 
-!**********************************************************
-!*
-!* STEP 3. DETERMINE nROW AND nCOL FOR EACH SEGMENT
-!*
-!**********************************************************
-call mem_alloc(SEGMENTROW,Nsegments)
-call mem_alloc(SEGMENTCOL,Nsegments)
-
-DO I=1,Nsegments
-  ELEMENTS=Nend(I)-Nstart(I)+1
-  IF(ELEMENTS < nprim)THEN
-    SEGMENTROW(I)=ELEMENTS
-    SEGMENTcol(I)=1
-  ELSE
-    SEGMENTcol(I)=ELEMENTS/nprim
-    IF(MOD(ELEMENTS,nprim).NE. 0)THEN
-       SEGMENTcol(I)=SEGMENTcol(I)+1
-       SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
-       DO K=1,SEGMENTrow(I)
-          IF(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1.LE.nprim*norbital)THEN
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)THEN
-                WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',&
-                     &Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
-                CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
-             ENDIF
-          ENDIF
-       ENDDO
-       EXTRAROWS=0
-       DO L=1,SEGMENTcol(I)
-          IF(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim.LE.nprim*norbital)THEN
-!          WRITE(LUPRI,*)'CC(',Nstart(I)+SEGMENTrow(I)+(L-1)*nprim,')=',Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
-          ENDIF
-       ENDDO
-       IF(EXTRAROWS .GT. 0) SEGMENTrow(I)=SEGMENTrow(I)+1
-    ELSE
-       SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
-    ENDIF
-  ENDIF
-ENDDO
-
-IF (IPRINT .GT. 200)THEN
-   WRITE(lupri,*)'STEP 3'
-   WRITE(lupri,*)'SEGMENT    ROW     COL'
-   DO I=1,Nsegments
-      WRITE(lupri,'(I5,2X,I5,2X,I5)') I,SEGMENTrow(I),SEGMENTcol(I)
-   ENDDO
-ENDIF
-
-!**********************************************************
-!*
-!* STEP 4. REORDER PRIMITIVES
-!*
-!**********************************************************
-!DO I=1,Nsegments
-!   nrow=SEGMENTrow(I)
-!   ncol=SEGMENTcol(I)
-!   WRITE(lupri,*)'SECTION =',I,'nrow',nrow,'ncol',ncol
-!ENDDO
-
-K=1
-I=1
-DO 
-   IF(I.EQ.Nsegments)EXIT
-   ELEMENTS=Nend(I)-Nstart(I)+1
-   nrow=SEGMENTrow(I)
-   ncol=SEGMENTcol(I)
+   !Print Stuff
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+   ENDIF
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   ENDIF
+   IF(IPRINT .GT. 200)THEN
+    WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow
+    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   ENDIF
+ ENDDO
+ELSE
+   IF(IPRINT .GT. 2)WRITE(LUPRI,*)'This BasisBlock is a General Contracted Basis'
+   !primitive orbitals can contribute to more than one contracted function
    
-   IF(Exponents%elms(K) .LE. Exponents%elms(nrow+K))THEN
-!      WRITE(lupri,*)'EXP',Exponents%elms(K),'is less than',Exponents%elms(nrow+K)
-!      WRITE(lupri,*)'SO WE SWAP'
-!      WRITE(lupri,*)'THE ORIGINAL VERSION'
-!      DO J=K,K+SEGMENTrow(I)+SEGMENTrow(I+1)-1
-!         WRITE(lupri,*)'EXP(',J,')=',Exponents%elms(J)
-!      ENDDO
-      !SWAP EXPONENTS AND SWAP THE SEGMENTS
-      call mem_alloc(TEMPEXP1,SEGMENTrow(I))
-      DO J=1,SEGMENTrow(I)
-         TEMPEXP1(J)=Exponents%elms(K+J-1)
-      ENDDO
-!      DO J=1,SEGMENTrow(I)
-!         WRITE(lupri,*)'TEMPEXP1(',J,')=',TEMPEXP1(J)
-!      ENDDO
-      call mem_alloc(TEMPEXP2,(SEGMENTrow(I+1)))
-      DO J=1,SEGMENTrow(I+1)
-         TEMPEXP2(J)=Exponents%elms(K+SEGMENTrow(I)+J-1)
-      ENDDO
-!      DO J=1,SEGMENTrow(I+1)
-!         WRITE(lupri,*)'TEMPEXP2(',J,')=',TEMPEXP2(J)
-!      ENDDO
-
-      DO J=1,SEGMENTrow(I+1)
-         Exponents%elms(K+J-1)=TEMPEXP2(J)
-      ENDDO
-      DO J=1,SEGMENTrow(I)
-         Exponents%elms(K+SEGMENTrow(I+1)+J-1)=TEMPEXP1(J)
-      ENDDO
-
-      !SWAP SEGMENTS
-      nrow=SEGMENTrow(I+1)
-      SEGMENTrow(I+1)=SEGMENTrow(I)
-      SEGMENTrow(I)=nrow
-      ncol=SEGMENTcol(I+1)
-      SEGMENTcol(I+1)=SEGMENTcol(I)
-      SEGMENTcol(I)=ncol     
-      nrow=Nend(I+1)
-      Nend(I+1)=Nend(I)
-      Nend(I)=nrow
-      nrow=Nstart(I+1)
-      Nstart(I+1)=Nstart(I)
-      Nstart(I)=nrow
-      call mem_dealloc(TEMPEXP1)
-      call mem_dealloc(TEMPEXP2)
-!      WRITE(lupri,*)'THE SWAPED VERSION'
-!      DO J=K,K+SEGMENTrow(I+1)+SEGMENTrow(I)-1
-!         WRITE(lupri,*)'EXP(',J,')=',Exponents%elms(J)
-!      ENDDO
-      K=K+SEGMENTrow(I+1)
-      I=I+1
-   ELSE     
-      K=K+nrow
-      I=I+1
+   !for each contracted function determine which Primitives contribute. 
+   do j=1,nOrbital
+      do i=1,nPrim
+         Prim(i,j) = ABS(CC(i,j)).GT.1.0E-12_realk
+      enddo
+   enddo
+   !loop over contracted functions if j can be merged with j+1 do so
+   !Determine the number of segments and sizes of the segments
+   merged = .FALSE.
+   Nsegments = 0
+   SEGMENTCOLID = .FALSE.
+   do j=1,nOrbital
+      IF(.NOT.merged(j))THEN
+         Nsegments = Nsegments + 1  
+         do i=1,nPrim
+            MergedPrim(i,Nsegments) = Prim(i,j) 
+         enddo
+         SEGMENTROW(Nsegments) = COUNT(MergedPrim(:,Nsegments))
+         SEGMENTCOL(Nsegments) = 1
+         SEGMENTCOLID(j,Nsegments) = .TRUE.
+         do k=j+1,nOrbital
+            IF(.NOT.merged(k))THEN
+               PerfomMerge = TrueSubset(Prim(:,j),Prim(:,k),nrow)
+               IF(PerfomMerge)THEN
+                  !merge k into j 
+                  merged(k) = .TRUE.
+                  do i=1,nPrim
+                     MergedPrim(i,Nsegments) = Prim(i,k) .OR. MergedPrim(i,Nsegments)
+                  enddo
+                  SEGMENTROW(Nsegments) = COUNT(MergedPrim(:,Nsegments))
+                  SEGMENTCOL(Nsegments) = SEGMENTCOL(Nsegments) + 1  
+                  SEGMENTCOLID(k,Nsegments) = .TRUE.
+               ENDIF
+            ENDIF
+         enddo
+      ENDIF
+   enddo
+   IF(IPRINT.GT.10)THEN
+      WRITE(lupri,*)'Nsegments',Nsegments
+      WRITE(lupri,*)'SEGMENTROW:',SEGMENTROW(1:Nsegments)
+      WRITE(lupri,*)'SEGMENTCOL:',SEGMENTCOL(1:Nsegments)
+      do k=1,nOrbital
+         WRITE(lupri,*)'SEGMENTCOLID(',k,'):',SEGMENTCOLID(k,1:Nsegments)
+      enddo
    ENDIF
-ENDDO
+   CALL INIT_BASISSETINFO_ContractionM(BasInfo,at,nAngmom,Nsegments)
+   DO J=1,Nsegments
+      nrow=SEGMENTROW(J)
+      ncol=SEGMENTCOL(J)
+      !For each segment copy info into structure
+      CALL INIT_BASISSETINFO_elms(BasInfo,at,nAngmom,J,nrow,ncol)
+      kk=0
+      do i=1,nPrim
+         IF(MergedPrim(i,J))THEN
+            kk=kk+1           
+            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Exponents%elms(I)
+         ENDIF
+      enddo
+      icol = 0
+      do k=1,nOrbital
+         IF(SEGMENTCOLID(k,J))THEN
+            icol = icol + 1
+            kk=0
+            do i=1,nPrim
+               IF(MergedPrim(i,J))THEN
+                  kk=kk+1
+                  BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(kk+(icol-1)*nrow)=CCN(I,k)
+                  BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(kk+(icol-1)*nrow)=CC(I,k)
+               ENDIF
+            enddo
+         ENDIF
+      enddo
+      !Print Stuff
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+      ENDIF
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow,'ncol',ncol
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+      ENDIF
+      IF(IPRINT .GT. 200)THEN
+         WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow,'ncol',ncol
+         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+      ENDIF
+   enddo
+ENDIF
 
-!**********************************************************
-!*
-!* STEP 5. BUILD CONTRACTIONMATRIX
-!*
-!**********************************************************
-
-DO I=1,Nsegments
-   nrow=SEGMENTrow(I)
-   ncol=SEGMENTcol(I)
-   CALL INIT_BASISSETINFO_elms(BasInfo,atomtype,nAngmom,I,nrow,ncol)
-   DO K=1,nrow
-      DO L=1,ncol
-         BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-              &segment(I)%elms(K+(L-1)*nrow)=&
-              &ContractionmatrixNORM%elms(Nstart(I)+K+(L-1)*nprim-1)
-      ENDDO
-   ENDDO
-   DO K=1,nrow
-      DO L=1,ncol
-         BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-              &segment(I)%UCCelms(K+(L-1)*nrow)=&
-              &Contractionmatrix%elms(Nstart(I)+K+(L-1)*nprim-1)
-      ENDDO
-   ENDDO
-   IF(IPRINT .GT. 200)THEN
-      WRITE(LUPRI,*)'Exponents nr.',I,'nrow',nrow
-      call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-           &segment(I)%elms, 1, nrow, 1, ncol, nrow, ncol, 1, LUPRI)
-   ENDIF
-   IF(IPRINT .GT. 200)THEN
-      WRITE(LUPRI,*)'UCC Exponents nr.',I,'nrow',nrow
-      call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-           &segment(I)%UCCelms, 1, nrow, 1, ncol, nrow, ncol, 1, LUPRI)
-   ENDIF
-ENDDO
-
-!**********************************************************
-!*
-!* STEP 6. BUILD EXPONENTS
-!*
-!**********************************************************
-
-k=1
-DO I=1,Nsegments
-  nrow=BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-        &segment(I)%nrow
-  DO J=1,nrow
-     BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-     &segment(I)%Exponents(J)=Exponents%elms(k)
-     k=k+1
-  ENDDO 
-  IF(IPRINT .GT. 200)THEN
-     WRITE(LUPRI,*)'Exponents nr.',I,'nrow',nrow
-     call OUTPUT(BASINFO%ATOMTYPE(atomtype)%SHELL(nAngmom)%&
-          &segment(I)%Exponents, 1, nrow, 1, 1, nrow, 1, 1, LUPRI)
-  ENDIF
-ENDDO
-
-call mem_dealloc(SEGMENTROW)
-call mem_dealloc(SEGMENTCOL)
+call mem_dealloc(CCN)
+call mem_dealloc(CC)
 
 END SUBROUTINE ANALYSE_CONTRACTIONMATRIX
+
+logical function TrueSubset(PrimJ,PrimK,ndim)
+implicit none
+integer :: ndim
+logical :: PrimJ(ndim),PrimK(ndim)
+!
+integer :: I 
+
+TrueSubset = .FALSE.
+do I = 1,ndim
+   IF(PrimJ(I).AND.PrimK(I))THEN
+      !share primitive orbital
+      TrueSubset = .TRUE.
+      EXIT
+   ENDIF
+enddo
+end function TrueSubset
 
 !> \brief Normalize the orbitals
 !> \author T. Kjaergaard

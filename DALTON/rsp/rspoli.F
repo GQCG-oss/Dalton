@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
@@ -36,6 +35,40 @@ C
 920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 ========================================================================
 #endif
+
+#ifdef ENABLE_EFS
+C Use this hack to correctly pass the arrays to c++
+      SUBROUTINE SIREFS(FMAT, DMAT, NMAT, ITYP)
+      use efs_interface
+#include "implicit.h"
+#include "cbihr2.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*),ITYP(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT, ITYP
+
+!      write (*,*) "nmat in sirk4m ", nmat
+
+      call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
+      iprint = 0
+      call mpixbcast (iprint, 1, 'INTEGER', 0)
+      call efs_fock_update(FMAT, DMAT, IFTHRS, NMAT, ITYP)
+      END
+
+      SUBROUTINE SIRPRNT(FMAT, DMAT, NMAT)
+#include "implicit.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT
+
+      write (*,*) "nmat in sirprnt ", nmat
+
+      call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
+      END
+
+#endif
+
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
@@ -45,7 +78,9 @@ C  /* Deck rspoli */
 #ifdef USE_XCINT_RESPONSE
       use xcint_integrator
 #endif
-
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
 C
@@ -85,6 +120,8 @@ C
 C
 #include "thrzer.h"
 #include "dummy.h"
+
+#include "cbihr2.h"
 C
 C  INFDIM : NASHDI
 C  INFINP : DIRFCK
@@ -244,10 +281,11 @@ C If also single determinant, then nothing to do in MO part
 C
       !IF (DIRFCK .AND. (TDHF .OR. DODFT)) GO TO 1000
       !IF (DIRFCK .AND. KZCONF .EQ. 0) GO TO 1000
-      IF ((DIRFCK.OR.HSFOCK.OR.DODFT) .AND. KZCONF.EQ.0) GO TO 1000
-      ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
-      ! where TDHF true /hjaaj
+      IF (HSFOCK.OR.DODFT) GO TO 1000
       ! ... KS-DFT only works with direct code, even if DIRFCK is false /hjaaj
+      IF (DIRFCK .AND. KZCONF.EQ.0 .AND. NASHT.EQ.0) GO TO 1000
+      ! new test Dec. 2011, also valid for SOPPA .and. DIRFCK
+      ! where TDHF true (KZCONF > 0 and NASHT == 0 for SOPPA) /hjaaj
 
 CSONIA SONIA SONIA
 CSONIA SONIA SONIA control direct for kappabar of CCSD(T)
@@ -426,10 +464,12 @@ C
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         IF (NASHT .GT. 0) THEN
          WRITE(LUPRI,'(/2A,I5)')' FVOEX MULLIKEN DISTRIBUTION CONTRB'
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FVX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         END IF
  1002    CONTINUE
       END IF
       IF ((IPRRSP.GT.50).AND.(NCSIM.GT.0).AND.(NASHT.GT.1)) THEN
@@ -504,12 +544,11 @@ C
             write(lupri,*) 'NOSIM=', NOSIM
          ENDIF
          IF (NOSIM.GT.0) THEN
-            IF (.NOT.DIRFCK)
-     &         CALL FONEDR(NOSIM,ICI,IDI,WRK(KH2),
+            IF (.NOT.DIRFCK) CALL FONEDR(NOSIM,ICI,IDI,WRK(KH2),
      &                  WRK(KFCOCO),WRK(KFVOCO),FCX,FVX,ZYMAT,
      &                  WRK(KDENA),WRK(KDENB),WRK(KFREE),LFREE)
 C           CALL FONEDR(NSIM,ICI1,IDI1,H2D,FCOCO,FVOCO,
-C    *                     FCOEX,FVOEX,ZYMAT,DENA,DENB,WRK,LWRK)
+C    &                  FCOEX,FVOEX,ZYMAT,DENA,DENB,WRK,LWRK)
 C
 C CONTRIBUTIONS TO QAX AND QBX
 C
@@ -518,8 +557,8 @@ C
      &            WRK(KH2),WRK(KH2X),PVX,WRK(KPVCD2),WRK(KPVCD3),
      &            WRK(KPVDC2),WRK(KPVDC3),WRK(KFREE),LFREE)
 C           CALL QONEDI(NOSIM,NCIW,NDIW,ICDSYM,
-C    *               QAX,QBX,ZYMAT,H2,H2X,
-C    *               PVX,PVCD2,PVCD3,PVDC2,PVDC3,WRK,LWRK)
+C    &               QAX,QBX,ZYMAT,H2,H2X,
+C    &               PVX,PVCD2,PVCD3,PVDC2,PVDC3,WRK,LWRK)
          END IF
 #ifdef DEBUG_RSPOLI
 
@@ -567,29 +606,29 @@ C SUM UP COULOMB CONTRIBUTIONS WHICH ARE OBTAINED USING THE
 C TERM IS SYMMETRIC
 C
          IF (IPRRSP.GT.50) THEN
-            DO 1010 IOSIM = 1,NOSIM
-               WRITE(LUPRI,'(/2A,I5)')' FCOEX  CONTRB'
-     *                              ,' FOR VECTOR ',IOSIM
+            DO, IOSIM = 1,NOSIM
+               WRITE(LUPRI,'(/A,I5)')
+     &            ' FCOEX contribution for vector',IOSIM
                CALL OUTPUT(FCX(1,1,IOSIM),
-     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
-               WRITE(LUPRI,'(/2A,I5)')' FCOCO CONTRB'
-     *                              ,' FOR VECTOR ',IOSIM
+     &                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+               WRITE(LUPRI,'(/A,I5)')
+     &            ' FCOCO contribution for vector',IOSIM
                CALL OUTPUT(WRK(KFCOCO+ (IOSIM-1)*NORBT*NORBT),
-     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+     &                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                IF (NASHT.GT.0) THEN
-                  WRITE(LUPRI,'(/2A,I5)')' FVOEX  CONTRB'
-     *                                 ,' FOR VECTOR ',IOSIM
+                  WRITE(LUPRI,'(/A,I5)')
+     &            ' FVOEX contribution for vector',IOSIM
                   CALL OUTPUT(FVX(1,1,IOSIM),
-     *                        1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
-                  WRITE(LUPRI,'(/2A,I5)')' FVOCO CONTRB'
-     *                                 ,' FOR VECTOR ',IOSIM
+     &                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+                  WRITE(LUPRI,'(/A,I5)')
+     &            ' FVOCO contribution for vector',IOSIM
                   CALL OUTPUT(WRK(KFVOCO+ (IOSIM-1)*NORBT*NORBT),
-     *                        1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+     &                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                END IF
- 1010       CONTINUE
+            END DO
          END IF
          CALL FONEDN(NOSIM,WRK(KFCOCO),WRK(KFVOCO),FCX,FVX)
-      ENDIF
+      END IF
 C
       CALL MEMREL('RSPOLI.h2m+d',WRK,KFRSAV,KWRK0,KFREE,LFREE)
       GO TO 2000
@@ -636,13 +675,13 @@ C
       END IF
       KDTOTAO = KDTVAO + NCSIM*N2BASX
 
-#ifdef DEBUG_RSPOLI
+!ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
       write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
      &                        KDTOTAO,kfree',
      &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
-#endif
+!endif
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
@@ -709,15 +748,15 @@ C They should be consecutive in core. We transpose the inactive
 C and active D-matrices and multiply the inactive D-matrix by 2.0
 C to get things to work for RPA !!
 C
+      IF (DOFXC .AND. NISHT .EQ.  0) THEN ! FXC needed for DFT/srDFT, also when NISHT.eq.0
+         CALL DZERO(WRK(KDXCAO),NOSIM*N2BASX)
+      END IF
       JOFFAO = 0
       DO IOSIM = 1,NOSIM
          CALL DEQ27(CMO,ZYMAT(1,IOSIM),UDV,WRK(KDXCAO+JOFFAO),
      *              WRK(KDXVAO+JOFFAO),WRK(KFREE),LFREE)
          JOFFAO = JOFFAO + N2BASX
       END DO
-      IF (DOFXC .AND. .NOT. NISHT > 0) THEN
-         CALL DZERO(WRK(KDXCAO),NOSIM*N2BASX)
-      END IF
 C
 C     Set ISYMDM and IFCTYP information
 C
@@ -757,10 +796,6 @@ C
          IX = 10 * MATSYM(NBAST,NBAST,WRK(JDXCAO),THRZER)
 C        INTEGER FUNCTION MATSYM(N,NDIM,AMAT,THRZER)
 C
-         IF (IPRRSP .GT. 60) THEN
-         write(lupri,*) 'Fock matrix I, IX = ', I, IX 
-         END IF
-C
          IF (IX .EQ. 30) THEN
 C           zero density matrix, do nothing !
             IFCTYP(I) = 0
@@ -775,6 +810,10 @@ C           Coulomb+exchange
             IFCTYP(I) = IX + 3
          END IF
          JDXCAO = JDXCAO + N2BASX
+C
+         IF (IPRRSP .GT. 60) write(lupri,*)
+     &      'Fock matrix I, IX, IFCTYP(I) = ', I, IX ,IFCTYP(I)
+
       END DO ! I = 1,NFMAT
 
 #ifdef MOD_SRDFT
@@ -832,21 +871,9 @@ C     Change IFCTYP for all Fa matrices
             CALL OUTPUT(WRK(JDXCAO),1,NBAST,1,NBAST,
      &                  NBAST,NBAST,-1,LUPRI)
          END DO
-         write(lupri,*) 'calling sirfck in rspoli'
       END IF
-      DFTADX = DFTADD
-      DFTADD = .FALSE.
 #ifdef DEBUG_RSPOLI
       write(lupri,*) 'RSPOLI: before calling sirfck'
-      write(lupri,*) 'RSPOLI: '
-#endif
-! Manu test !!!!!!!!!!!
-!     IFCTYP(1)=1
-!     IFCTYP(3)=1
-!     ISYMDM(1)=5
-#ifdef DEBUG_RSPOLI
-      print *, 'just called SIRFCK'
-      write(lupri,*) 'before call sirfck in rspoli'
       IF (DOFXC.AND.NOSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFXCAO)='
        CALL OUTPUT(WRK(KFXCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
@@ -883,12 +910,24 @@ C     Change IFCTYP for all Fa matrices
        CALL OUTPUT(WRK(KDTVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 #endif
+
 ! Manu test !!!!!!!!!!!
+      DFTADX = DFTADD
+      DFTADD = .FALSE.
+#if defined (ENABLE_EFS)
+      if (use_efs) then
+          call sirefs(WRK(KFXCAO),WRK(KDXCAO),NFMAT,       IFCTYP)
+      else
+#endif
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+#if defined (ENABLE_EFS)
+      end if
+#endif
+      DFTADD = DFTADX
+
 #ifdef DEBUG_RSPOLI
-      print *, 'just called SIRFCK'
-      write(lupri,*) 'after call sirfck in rspoli'
+      write(lupri,*) 'just after call sirfck in rspoli'
       IF (DOFXC.AND.NOSIM.gt.0) THEN
        write(lupri,*) 'WRK(KFXCAO)='
        CALL OUTPUT(WRK(KFXCAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
@@ -906,7 +945,7 @@ C     Change IFCTYP for all Fa matrices
        CALL OUTPUT(WRK(KFTVAO),1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 #endif
-      DFTADD = DFTADX
+
       IF (HSFOCK) THEN
 C
 C Calculated matrices are (FC+FV,-FV(exch)=FV-Q)
@@ -980,18 +1019,19 @@ C
 C
       CALL MEMREL('RSPOLI.sirfck',WRK,KFRSAV,KWRK0,KFREE,LFREE)
 C
-C Manu debug1
-         IF (IPRRSP.GT.30) THEN
-            DO 1015 ICSIM = 1,NCSIM
-            WRITE(LUPRI,'(/2A,I5)')' FVTD before aotomo'
+         IF (IPRRSP.GT.30) THEN   ! Manu debug1
+            DO, ICSIM = 1,NCSIM
+               WRITE(LUPRI,'(/2A,I5)')' FVTD before aotomo'
      *         ,' FOR VECTOR ',ICSIM
-            CALL OUTPUT(FVTD(1,1,ICSIM),
+               CALL OUTPUT(FVTD(1,1,ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
-            WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc before aotomo'
+            IF (DOMCSRDFT) THEN
+               WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc before aotomo'
      *         ,' FOR VECTOR ',ICSIM
-            CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
+               CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
- 1015       CONTINUE
+            END IF
+            END DO
          END IF
 C Manu debug2
 C
@@ -1168,20 +1208,20 @@ C
          END IF
          IF (IPRRSP.GT.50) THEN
             DO 1012 IOSIM = 1,NOSIM
-               WRITE(LUPRI,'(/2A,I5)')' FCX total contribution'
-     *                              ,' FOR VECTOR ',IOSIM
+               WRITE(LUPRI,'(/A,I5)')
+     *         ' FCX total contribution for vector',IOSIM
                CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                IF (DOFXV) THEN
-                  WRITE(LUPRI,'(/2A,I5)')' FVX total contribution'
-     *                                 ,' FOR VECTOR ',IOSIM
+                  WRITE(LUPRI,'(/A,I5)')
+     *         ' FVX total contribution for vector',IOSIM
                   CALL OUTPUT(FVX(1,1,IOSIM),
-     *                           1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
                END IF
  1012       CONTINUE
          END IF
 #ifdef DEBUG_RSPOLI
-         write(lupri,*) 'I call RSPORB with ONEIND true'
+         write(lupri,*) 'I (RSPOLI) call RSPORB with ONEIND true'
 #endif
          CALL RSPORB(.TRUE.,NOSIM,FC,FCX,FVX,QAX,QBX,UDV,
      *               EVECS(NCSIM*KZYVAR+1))
@@ -1200,32 +1240,31 @@ C
              CALL DSCAL(NCSIM*N2ORBX,DM1,FVTD(1,1,NCSIM+1),1)
          END IF
 C
-         IF (IPRRSP.GT.30 .AND. .NOT.SOPPA) THEN
-            DO 800 ICSIM = 1,NCSIM
-               WRITE(LUPRI,'(/A,I5,A)') ' QATD FOR ',ICSIM,
-     *             ' CONFIGURATION TRIAL VECTOR'
+         IF (IPRRSP.GT.30) THEN
+            DO, ICSIM = 1,NCSIM
+               WRITE(LUPRI,'(/A,I5)')
+     *         ' FVTD total contribution FOR VECTOR ',ICSIM
+               CALL OUTPUT(FVTD(1,1,ICSIM),
+     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            IF (.NOT.SOPPA) THEN
+               WRITE(LUPRI,'(/A,I5,A)')
+     *         ' QATD FOR ',ICSIM,' CONFIGURATION TRIAL VECTOR'
                CALL OUTPUT(QATD(1,1,ICSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,-1,LUPRI)
-               WRITE(LUPRI,'(/A,I5,A)') ' QBTD FOR',ICSIM,
-     *             ' CONFIGURATION TRIAL VECTOR'
+               WRITE(LUPRI,'(/A,I5,A)')
+     *         ' QBTD FOR',ICSIM,' CONFIGURATION TRIAL VECTOR'
                CALL OUTPUT(QBTD(1,1,ICSIM),1,NORBT,1,NASHT,
      *                     NORBT,NASHT,-1,LUPRI)
- 800        CONTINUE
-         END IF
-         IF (IPRRSP.GT.30) THEN
-            DO 1014 ICSIM = 1,NCSIM
-            WRITE(LUPRI,'(/2A,I5)')' FVTD total contribution'
-     *         ,' FOR VECTOR ',ICSIM
-            CALL OUTPUT(FVTD(1,1,ICSIM),
-     *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+            END IF
             IF (DOMCSRDFT) THEN
-                WRITE(LUPRI,'(/2A,I5)')'V^[2c]sr_Hxc total contribution'
-     *         ,' FOR VECTOR ',ICSIM
+               WRITE(LUPRI,'(/A,I5)')
+     *         'V^[2c]sr_Hxc total contribution FOR VECTOR ',ICSIM
                CALL OUTPUT(FVTD(1,1,NCSIM+ICSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
             END IF
- 1014       CONTINUE
+            END DO
          END IF
+
          IF (HSROHF.OR.DODFT) THEN
             CALL RSPORB(.TRUE.,NCSIM,FC,WRK(KFC),FVTD,QATD,QBTD,UDV,
      *               EVECS)
@@ -1249,6 +1288,16 @@ C           ... special MCSRDFT contribution to csf sigma-vectors,
 C               stored in FTV(1,NCSIM+ICSIM) in SIRTR1 after the
 C               standard FTV matrices.
 C               In paper: V^([2c]xc-SR) matrix.
+
+            IF (TRPLET) THEN
+               CALL QUIT('ERROR: triplet linear response '//
+     &            'not implemented for MC-srDFT yet')
+               JSPIN1 = 1
+               JSPIN2 = 0
+            ELSE
+               JSPIN1 = 0
+               JSPIN2 = 0
+            END IF
 C
 C           Aug. 09: structure inspired from rspsol:SLVSC routine /hjaaj
 C
@@ -1266,8 +1315,6 @@ C
                   CALL OUTPUT(WRK(KSRW),
      &               1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
                END IF
-               JSPIN1 = 0
-               JSPIN2 = 0
 C
 #ifdef DEBUG_RSPOLI
                IF (IPRRSP.GT.101) THEN
@@ -1275,10 +1322,10 @@ C
      *            ' Z CONF  PART OF LINEAR TRANSFORMED',
      *            ' before Vsr[2c] contr.',
      *            'CONF TRIAL VECTOR'
-                  CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
-     *                                        KZVAR,2,-1,LUPRI)
                   write(lupri,*) 'kzvar  = ', kzvar
                   write(lupri,*) 'kzconf = ', kzconf
+                  CALL OUTPUT(EVECS(JEVECS),1,KZVAR,1,2,
+     *                                        KZVAR,2,-1,LUPRI)
                 END IF
 #endif
 C
@@ -1296,7 +1343,7 @@ C
                write(lupri,*) 'KSYMST = ', KSYMST
 #endif
 
-               IF (IREFSY .EQ. KSYMST) THEN
+               IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
                   FAC = DDOT(KZCONF,EVECS(JEVECS),1,WRK(KCREF),1)
                   CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JEVECS),1)
                END IF
@@ -1322,13 +1369,10 @@ C
      &                  EVECS(JYEVECS),WRK(KSRW),DUMMY,
      &                  .TRUE.,.FALSE.,XINDX,JSPIN1,JSPIN2,
      &                  WRK(KFREE),LFREE)
-               IF (IREFSY .EQ. KSYMST) THEN
+               IF (IREFSY .EQ. KSYMST .AND. .NOT.TRPLET) THEN
                   FAC = DDOT(KZCONF,EVECS(JYEVECS),1,WRK(KCREF),1)
-                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,EVECS(JYEVECS),
-     &                       1)
-!
-!
-
+                  CALL DAXPY(KZCONF,(-FAC),WRK(KCREF),1,
+     &                       EVECS(JYEVECS),1)
                END IF
 !
 ! Manu:        For the Y conf. part, the transition density matrix changes sign.

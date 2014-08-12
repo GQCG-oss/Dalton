@@ -95,7 +95,7 @@ C
 
 /* INTERFACE PART */
 static integer  optx_isgga(void) { return 1; }
-static integer  optx_read(const char* conf_line, real *hfweight);
+static integer  optxread(const char* conf_line, real *hfweight);
 static real optx_energy(const FunDensProp* dens_prop);
 static void optx_first(FunFirstFuncDrv *ds, real factor, 
                         const FunDensProp* dens_prop);
@@ -105,9 +105,9 @@ static void optx_third(FunThirdFuncDrv *ds, real factor,
                         const FunDensProp* dens_prop);
 
 Functional OPTXFunctional = {
-    "OPTX",      /* name */
+    "OPTX_",      /* name */
     optx_isgga,  /* gga-corrected */
-    optx_read,   /* set bloody common blocks */
+    optxread,   /* set bloody common blocks */
     NULL,         /* reporter */
     optx_energy, 
     optx_first,
@@ -119,7 +119,7 @@ Functional OPTXFunctional = {
 /* IMPLEMENTATION PART */
 
 static integer
-optx_read(const char* conf_line, real *hfweight)
+optxread(const char* conf_line, real *hfweight)
 {
     return 1;
 }

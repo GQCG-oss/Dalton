@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck oneinp */
       SUBROUTINE ONEINP(WORD)
@@ -254,8 +253,8 @@ C     in relativistic calculations). /Mar2001 hjaaj
       KJCENT = KJSYMC +  (NUCDEP + 1)/IRAT
       KGEXP  = KJCENT +  (NUCDEP + 1)/IRAT
       KCSTRA = KGEXP  +  NUCDEP
-      KSCTRA = KCSTRA + MXCOOR*MXCOOR
-      KTLMD  = KSCTRA + MXCOOR*MXCOOR
+      KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
+      KTLMD  = KSCTRA + 9*NUCDEP*NUCDEP
       IF (SOLVNT) THEN
          KHESKE = KTLMD + LMNTOT*6*NUCDEP
          IF (MAXDIF .GE. 2) THEN
@@ -436,9 +435,9 @@ C
          CALL DZERO(GRADFS,3*NUCDEP)
 #endif
          IF (SECDER) THEN
-            CALL HESZER(HESSKE)
-            CALL HESZER(HESSNA)
-            CALL HESZER(HESFS2)
+            HESSKE(:,:) = 0.0D0
+            HESSNA(:,:) = 0.0D0
+            HESFS2(:,:) = 0.0D0
          END IF
          IF (DIFDIP) THEN
             CALL DZERO(DDIPE,9*NUCDEP)
@@ -454,8 +453,8 @@ C
             CALL DZERO(GSOLTT,3*NUCDEP)
             CALL DZERO(GSOLNN,3*NUCDEP)
             IF (SECDER) THEN
-               CALL HESZER(HSOLT2)
-               CALL HESZER(HSOLNN)
+               HSOLT2(:,:) = 0.0D0
+               HSOLNN(:,:) = 0.0D0
             END IF
          ELSEIF (PCM) THEN
             ESOLTT = D0
@@ -1721,5 +1720,54 @@ C
             ENDIF
          ENDDO
       ENDDO
+      RETURN
+      END
+      SUBROUTINE FNMCKE(DKEINT,NBAST,NNBASX,IPRINT)
+C
+C     Modify kinetic energy integrals for finite nuclear mass
+C     correction.  See J.R. Mohallem and C.P. Goncalves tca ???
+C
+C     The element <a|T|b> is scaled by the factor (1 + 1/M) if the
+C     atomic orbitals a and b belong the same atomic center.  M is the
+C     mass of the atom at that center relative to the electron mass.
+C
+C     DJ Jun 2014
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxorb.h>
+#include <mxcent.h>
+#include <infinp.h>
+#include <aosotr.h>
+#include <nuclei.h>
+#include <codata.h>
+      DIMENSION DKEINT(NNBASX)
+      PARAMETER (ONE=1.0D0)
+
+      WRITE(LUPRI,*) 'FNMCKE: Scaling the kinetic energy integrals'
+      IF (IPRINT.GE.50) THEN
+         WRITE(LUPRI,*) 'Integrals before scaling'
+         CALL OUTPAK(DKEINT,NBAST,1,LUPRI)
+      END IF
+
+      IAB = 0
+      DO IA = 1, NBAST
+         ICA = IPCEN(IA)
+         AMASS = XFAMU*DISOTP(NINT(CHARGE(ICA)),ISOTOP(ICA),'MASS')
+         FACT = ONE + ONE/AMASS
+         DO IB = 1, IA
+            IAB = IAB + 1
+            ICB = IPCEN(IB)
+            IF (ICA.EQ.ICB) THEN
+               DKEINT(IAB) = FACT*DKEINT(IAB)
+            END IF
+         END DO
+      END DO
+
+      IF (IPRINT.GE.50) THEN
+         WRITE(LUPRI,*) 'Integrals after scaling'
+         CALL OUTPAK(DKEINT,NBAST,1,LUPRI)
+      END IF
+
       RETURN
       END

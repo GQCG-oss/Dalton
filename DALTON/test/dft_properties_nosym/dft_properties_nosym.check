@@ -1,0 +1,98 @@
+#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+CRIT1=`$GREP "Final DFT energy\:  * \-76\.38305" $log | wc -l`
+CRIT3=`$GREP "Electronic energy\: * \-85\.60122" $log | wc -l`
+CRIT2=`$GREP "Nuclear repulsion\: *    9\.218170507464" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=3
+ERROR[1]="DFT/B3LYP ENERGY NOT CORRECT"
+
+# Response/spin orbit/p-viola
+CRIT1=`$GREP "\@.*PVIOLA X .* PVIOLA X .* 1\.9716.*(D|E)\+05" $log | wc -l`
+CRIT2=`$GREP "\@.*PVIOLA X .* Y1SPNORB .* 4\.8640.*(D|E)\-02" $log | wc -l`
+CRIT3=`$GREP "\@.*PVIOLA Y .* PVIOLA Y .* 1\.4954.*(D|E)\+05" $log | wc -l`
+CRIT4=`$GREP "\@.*PVIOLA Y .* X1SPNORB .* 5\.0585.*(D|E)\-02" $log | wc -l`
+CRIT5=`$GREP "\@.*PVIOLA Z .* PVIOLA Z .* 1\.8703.*(D|E)\+05" $log | wc -l`
+CRIT6=`$GREP "\@.*X1SPNORB .* X1SPNORB .* 2\.2983.*(D|E)\-06" $log | wc -l`
+CRIT7=`$GREP "\@.*Y1SPNORB .* Y1SPNORB .* 2\.0058.*(D|E)\-06" $log | wc -l`
+CRIT8=`$GREP "\@.*Z1SPNORB .* Z1SPNORB .* 2\.3922.*(D|E)\-06" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8`
+CTRL[2]=8
+ERROR[2]="RESPONSE/SPIN ORBIT/PVIOLA NOT CORRECT"
+
+# Relativistic prop.
+CRIT1=`$GREP "Darwin correction\:         *    0*\.1987572" $log | wc -l`
+CRIT2=`$GREP "Mass\-velocity correction\: * \-*0*\.2502969" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="RELATIVISTIC ENERGY CORRECTIONS NOT CORRECT"
+
+# Dipole moment
+CRIT1=`$GREP "(0| )\.748785 * 1\.90322" $log | wc -l`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="DIPOLE MOMENT NOT CORRECT"
+
+# Excitation energies
+CRIT1=`$GREP "1 * 1 * (0| )\.28013. * 7\.6227" $log | wc -l`
+CRIT2=`$GREP "1 * 2 * (0| )\.34860. * 9\.4860" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[5]=2
+ERROR[5]="EXCITATION ENERGIES NOT CORRECT"
+
+# H and O shieldings
+CRIT1=`$GREP "Shielding constant\: * 347\.058. ppm" $log | wc -l`
+CRIT2=`$GREP "Anisotropy\: * \-27\.930. ppm" $log | wc -l`
+CRIT3=`$GREP "Asymmetry\: * (0| )\.746." $log | wc -l`
+CRIT4=`$GREP "Shielding constant\: * 31\.988. ppm" $log | wc -l`
+CRIT5=`$GREP "Anisotropy\: * 18\.457. ppm" $log | wc -l`
+CRIT6=`$GREP "Asymmetry\: * (0| )\.133." $log | wc -l`
+CRIT7=`$GREP "Shielding constant\: * 31\.988. ppm" $log | wc -l`
+CRIT8=`$GREP "Anisotropy\: * 18\.457. ppm" $log | wc -l`
+CRIT9=`$GREP "Asymmetry\: * (0| )\.133." $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[6]=15
+ERROR[6]="SHIELDINGS NOT CORRECT"
+
+# H-H spin-spin coupling
+CRIT1=`$GREP "Isotropic coupling * \: * \-2\.6215 Hz" $log | wc -l`
+CRIT2=`$GREP "Anisotropic coupling * \: * \-36\.7740 Hz" $log | wc -l`
+CRIT3=`$GREP "Asymmetry * \: * (\-0| \-)\.0891" $log | wc -l`
+CRIT4=`$GREP "S parameter * \: * 36\.8226 Hz" $log | wc -l`
+CRIT5=`$GREP "A parameter * \: * 6\.2015 Hz" $log | wc -l`
+CRIT6=`$GREP "Isotropic DSO contribution\: * \-7\.1975 Hz" $log | wc -l`
+CRIT7=`$GREP "Isotropic PSO contribution\: * 7\.6125 Hz" $log | wc -l`
+CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.7621 Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-3\.7986 Hz" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9`
+CTRL[7]=9
+ERROR[7]="H-H SPIN-SPIN COUPLING NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+

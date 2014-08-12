@@ -10,6 +10,7 @@ MODULE density_optimization
    use files
    use queue_ops
    use diagonalization
+   use matrix_util
    PUBLIC :: DOPT_get_density, get_density
    PRIVATE   
 
@@ -69,7 +70,10 @@ CONTAINS
       endif
 
       !** If virtual part of F should be scaled
-      if (config%opt%cfg_scale_virt) call diag_scale_virt_fock(config%decomp%S,H1,F,D,config%decomp%nocc)
+      if (config%opt%cfg_scale_virt)then
+         call lsquit('diag_scale_virt_fock removed',-1)
+         ! call diag_scale_virt_fock(config%decomp%S,H1,F,D,config%decomp%nocc)
+      endif
 !
 !** Level-shift ??
 !
@@ -114,8 +118,22 @@ CONTAINS
          call mat_free(Dnew)
       endif
 !
-!** Write density to disk for possible restart
+!     Symmetrize the newly found density matrix
+!     The Dmat should be symmetric but the norm of antisymmetric part 
+!     can be of size 10.0E-12_realk which is enough that the 
+!     subroutine mat_get_isym will denote it as nonsymmetric and then
+!     the integral code will split the matrix up into a symmetric and 
+!     antisymmetric contribution which is not good for performance. 
+!     Alternatively the Integral code will construct an almost 
+!     Symmetric Fock matrix from the almost symmetric Density which  
+!     can give problems for the LAPACK, when the input is not fully symmetric. 
+!     TK 
+
+      call util_get_symm_part(D)
+
 !
+!** Write density to disk for possible restart
+!      
       IF(config%decomp%cfg_DumpDensRestart)THEN
          dens_lun = -1
          call lsopen(dens_lun,'dens.restart','UNKNOWN','UNFORMATTED')

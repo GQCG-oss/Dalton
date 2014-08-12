@@ -195,9 +195,8 @@ IPRUNE = 1
 IF (GridObject%NOPRUN) IPRUNE = 0
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-GridObject%NBUFLEN=1024
-BoxMemRequirement = NBAST*NBAST
-
+GridObject%NBUFLEN= 1024
+BoxMemRequirement = 160000
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
@@ -571,7 +570,7 @@ DO XX=1+tid,IT,nthreads
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
            &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
-           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
+           &myDFTDATA,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
    ENDDO
 ENDDO
 
@@ -1984,14 +1983,14 @@ DO IV = 1, NVCLEN
          SPHZZ = D0 
          DO J = 1, KCKTA
             SPHFAC = CSP(I,J)
-            IF (ABS(SPHFAC).GT.D0) THEN
+!            IF (ABS(SPHFAC).GT.D0) THEN
                SPHXX = SPHXX + SPHFAC*CAOXX(J)
                SPHXY = SPHXY + SPHFAC*CAOXY(J)
                SPHXZ = SPHXZ + SPHFAC*CAOXZ(J)
                SPHYY = SPHYY + SPHFAC*CAOYY(J)
                SPHYZ = SPHYZ + SPHFAC*CAOYZ(J)
                SPHZZ = SPHZZ + SPHFAC*CAOZZ(J)
-            END IF
+!            END IF
          END DO
          TEMPI = ISTART+I
          GAOXX(IV,TEMPI) = SPHXX
@@ -2477,14 +2476,14 @@ IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
+  call lsmpi_setmasterToSlaveFunc(Func,hfweight)
 ELSE
   call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF
 #endif
 END SUBROUTINE II_DFTsetFunc
 
-SUBROUTINE II_DFTaddFunc(Func,hfweight)
+SUBROUTINE II_DFTaddFunc(Func,GGAfactor)
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
@@ -2492,13 +2491,14 @@ use lsmpi_type
 #endif
 implicit none
 Character(len=80),intent(IN) :: Func
-Real(realk),intent(INOUT)    :: hfweight
-CALL DFTaddFunc(Func,hfweight)
+Real(realk),intent(IN)       :: GGAfactor
+!
+CALL DFTaddFunc(Func,GGAfactor)
 #ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)
-  call lsmpi_setmasterToSlaveFunc(Func)
+  call lsmpi_setmasterToSlaveFunc(Func,GGAfactor)
 ELSE
   call lsquit('Error in II_DFTsetFunc. Can only be called from the master',-1)
 ENDIF

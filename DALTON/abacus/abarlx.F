@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rlxinp */
       SUBROUTINE RLXINP(WORD)
@@ -57,9 +56,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in RLXINP.'
+     *            '" not recognized for *RELAX.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in RLXINP.')
+               CALL QUIT('Illegal keyword for *RELAX.')
     1          CONTINUE
                   SKIP = .TRUE.
                GO TO 100
@@ -78,14 +77,14 @@ C
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in RLXINP.'
+     *            '" not recognized for *RELAX.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in RLXINP.')
+               CALL QUIT('Illegal prompt under *RELAX.')
             END IF
       END IF
   300 CONTINUE
       IF (ICHANG .GT. 0) THEN
-         CALL HEADER('Changes of defaults for RELAX:',0)
+         CALL HEADER('Changes of defaults by *RELAX:',0)
          IF (SKIP) THEN
             WRITE (LUPRI,'(A)') ' RELAX skipped in this run.'
          ELSE
@@ -276,9 +275,9 @@ C     ***** and orbital rotation matrix   *****
 C     *****************************************
 C
       IF (DOTRPL) THEN
-         CALL HESZER(SPNSD)
-         CALL HESZER(SPNFC)
-         CALL HESZER(SPSDFC)
+         CALL DZERO(SPNSD,MXCOOR*MXCOOR)
+         CALL DZERO(SPNFC,MXCOOR*MXCOOR)
+         CALL DZERO(SPSDFC,MXCOOR*MXCOOR)
          CALL DZERO(WORK(KWRKSD),9*9*NUCDEP*NUCDEP)
 #ifdef VAR_G95
 !bugfix for the G95 compiler May 2011
@@ -290,11 +289,11 @@ C
          CALL DZERO(WORK(KWRKSF),9*NUCDEP*NUCDEP)
       ELSE
          IF (POLAR)  CALL DZERO(POLARS,9)
-         IF (MOLHES) CALL HESZER(WORK(KHESRL))
+         IF (MOLHES) CALL DZERO(WORK(KHESRL),MXCOOR*MXCOOR)
          IF (DIPDER) CALL DZERO(DIP1,9*NUCDEP)
          IF (SHIELD) CALL DZERO(SIGMAR,9*NUCDEP)
          IF (SPINRO) CALL DZERO(ELSPRP,9*NUCDEP)
-         IF (SPNSPN) CALL HESZER(SPNPSO)
+         IF (SPNSPN) CALL DZERO(SPNPSO,MXCOOR*MXCOOR)
          IF (QPGRAD) CALL DZERO(SEC1,27*NUCDEP)
       END IF
       
@@ -328,8 +327,8 @@ C
             IF (NVEC .GT. 0) THEN
                CALL ABAVAR(ISYM,DOTRPL,IPRINT,WORK(KLAST),LWRK1)
                IF (IPRINT .GT. 10) THEN
-                  WRITE (LUPRI,'(1X,A,I10)') ' NCONST ', NCONST
-                  WRITE (LUPRI,'(1X,A,I10)') ' NVARPT ', NVARPT
+                  WRITE (LUPRI,'(A,I10)') '  NCONST', NCONST
+                  WRITE (LUPRI,'(A,I10)') '  NVARPT', NVARPT
                END IF
             IF (NVARPT .EQ. 0) GO TO 210
                KREL = KLAST
@@ -515,9 +514,9 @@ C
       PASS = .TRUE.
       IF (CUT) THEN
          WRITE (LUPRI,'(/A/A)')
-     &      ' Program stopped after RELAX as required.',
-     &      ' No restart file has been written.'
-         CALL QUIT(' ***** End of ABACUS (in RELAX) *****')
+     &      '@ Program stopped after RELAX as requested.',
+     &      '@ No restart file has been written.'
+         CALL QUIT(' ***** User requested end of ABACUS (in RELAX)')
       END IF
       CALL QEXIT('RELAX')
       RETURN

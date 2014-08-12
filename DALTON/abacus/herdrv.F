@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
@@ -110,12 +109,6 @@ C     ***** Input Section *****
 C     *************************
 C
       TIMSTR = SECOND()
-      CALL GPINQ('AOPROPER','EXIST',FEXIST)
-      IF (FEXIST) THEN
-         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
-     &                                  IDUMMY,.FALSE.)
-         CALL GPCLOSE(LUPROP,'DELETE')
-      END IF
       CALL HERINP(WORK,LWORK)
       IF (TSTINP) THEN
          WRITE (LUPRI,'(/15X,A)')
@@ -129,7 +122,13 @@ C     ************************************
 C     ***** Calculation of Integrals *****
 C     ************************************
 C
-      CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
+
+      CALL GPINQ('AOPROPER','EXIST',FEXIST)
+      IF (FEXIST) THEN
+         IF (LUPROP .LE. 0) CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',' ',
+     &                                  IDUMMY,.FALSE.)
+         CALL GPCLOSE(LUPROP,'DELETE')
+      END IF
 C
       IF (QM3) THEN
          QM3LO1 = .TRUE.
@@ -179,7 +178,16 @@ C      the case if DIRCAL and DOMP2))
 
       IF (LUINTA  .LE. 0) CALL GPOPEN(LUINTA,'AOTWOINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL GPCLOSE(LUINTA,'DELETE')
+Casm
+C     Let's give a chance to the user who konows what he does
+C
+C     CALL GPCLOSE(LUINTA,'DELETE')
+      IF (RMAOTWO) THEN
+         CALL GPCLOSE(LUINTA,'DELETE')
+      ELSE
+         CALL GPCLOSE(LUINTA,'KEEP')
+      END IF
+C
       IF (DOSRIN) THEN
          IF (LUSRINT .LE. 0) CALL GPOPEN(LUSRINT,'AO2SRINT',
      &        'UNKNOWN',' ',' ',IDUMMY,.FALSE.)
@@ -270,10 +278,10 @@ C     ***** End of Calculation *****
 C     ******************************
 C
       CALL GPCLOSE(LUONEL,'KEEP')
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
-      IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
-      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
+      IF (LUPROP  .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      IF (LUQM3E  .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
+      IF (LUQM3P  .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
+      IF (LUSOL   .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
 C
       IF (LUINTA  .GT. 0) CALL GPCLOSE(LUINTA ,'KEEP')
       IF (LUSRINT .GT. 0) CALL GPCLOSE(LUSRINT,'KEEP')
@@ -308,7 +316,7 @@ C
 #include "maxaqn.h"
 C
 C     NTABLE has been increased 118 (WK/UniKA/07-25-2005).
-      PARAMETER (NDIR = 9, NTABLE = 143)
+      PARAMETER (NDIR = 9, NTABLE = 144)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D4 = 4.0D0, D10 = 1.0D1)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
@@ -426,11 +434,13 @@ C     Bin Gao, Oct. 3, 2011
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
      &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
-!                    241        242        243
-     &             '.S2MKET', '.S2MMIX', '.LRINTS'/
+!                    241        242        243        244
+     &             '.S2MKET', '.S2MMIX', '.LRINTS', '.NORMAO'/
 C
 C
       CALL QENTER('HERINP')
+C
+      RMAOTWO = .TRUE.
 C
       IPRDEF = IPRUSR + 1
       CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',IDUMMY,
@@ -462,29 +472,35 @@ C
          ONEPRP = .TRUE.
       END IF
 C
-      CALL TITLER('Output from HERMIT input processing','*',118)
+      CALL TITLER('Output from **INTEGRALS input processing (HERMIT)',
+     &   '*',118)
 C
 C     **** Find Hermit input *****
 C
       REWIND (LUCMD,IOSTAT=IOS)
 C     ... IOSTAT to avoid program abort on some systems
 C         if reading input from a terminal
-  900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD
-      CALL UPCASE(WORD)
-      IF ((WORD .EQ. '**HERMI') .OR. (WORD .EQ. '*HERMIT') .OR.
-     &    (WORD .EQ. '**INTEG')) THEN
+  900 READ (LUCMD,'(A7)',ERR=910,END=920) WORD1
+      CALL UPCASE(WORD1)
+      IF ((WORD1 .EQ. '**HERMI') .OR. (WORD1 .EQ. '*HERMIT') .OR.
+     &    (WORD1 .EQ. '**INTEG')) THEN
          GO TO 930
       ELSE
          GO TO 900
       END IF
   910 CONTINUE
          NWARN = NWARN + 1
-         WRITE (LUPRI,*) 'WARNING HERINP: error reading Dalton input'
+         WRITE (LUPRI,'(//A)')
+     &   'WARNING **INTEGRALS input: error reading Dalton input file'
   920 CONTINUE
-         WORD = '**END O'
+         WORD  = '**END O'
+         WORD1 = '**END O'
+         WRITE (LUPRI,'(/A)')
+     &   ' - Using defaults, no **INTEGRALS input found'
          GOTO 300
   930 CONTINUE
-      WORD1 = WORD
+C
+      CALL TITLER('Output from HERMIT input processing','*',118)
 C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
@@ -510,7 +526,7 @@ C
      &                211,212,213,214,215,216,217,218,219,220,
      &                221,222,223,224,225,226,227,228,229,230,
      &                231,232,233,234,235,236,237,238,239,240,
-     &                241,242,243), I
+     &                241,242,243,244), I
             END IF
          END DO
             IF (WORD .EQ. '.OPTION') THEN
@@ -518,10 +534,10 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                GO TO 100
             END IF
-            WRITE (LUPRI,'(/,3A,/)')
-     *         ' Keyword ',WORD,' not recognized in HERINP.'
+            WRITE (LUPRI,'(/4A/)')
+     &         'ERROR: Keyword ',WORD,' not recognized under ',WORD1
             CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-            CALL QUIT('Illegal keyword in HERINP.')
+            CALL QUIT('Illegal keyword under '//WORD1)
   101    CONTINUE
             READ (LUCMD,*) IPRDEF
             GO TO 100
@@ -605,11 +621,11 @@ C
   120    CONTINUE
             READ (LUCMD, *) NPATOM
             IF (NPATOM .GT. MXCENT) THEN
-               WRITE (LUPRI,'(/A,/A,I3,/A,I3)')
-     &             ' Too many atoms selected.',
-     &             ' Number of atoms selected:    ',NPATOM,
-     &             ' Number of atoms allowed:     ',MXCENT
-               CALL QUIT('Error in HERINP')
+               WRITE (LUPRI,'(//2A/A,I8/A,I6)')
+     &             'ERROR: Too many atoms selected under ',WORD,
+     &             'ERROR: Number of atoms selected:',NPATOM,
+     &             'ERROR: Number of atoms allowed: ',MXCENT
+               CALL QUIT('Error in '//WORD1)
             END IF
             READ (LUCMD, *) (IPATOM(I),I=1,NPATOM)
             ALLATM = .FALSE.
@@ -894,9 +910,9 @@ C&&& Nuclear model
             ELSEIF(INUC.EQ.2) THEN
               GAUNUC = .TRUE.
             ELSE
-              WRITE(LUPRI,'(A,I5)')
-     &         '*** ERROR *** Unknown nuclear model:',INUC
-              CALL QUIT('*** ERROR *** HERINP: Unknown nuclear model')
+              WRITE(LUPRI,'(//3A,I5)')
+     &         '*** ERROR ',WORD1,' *** Unknown nuclear model:',INUC
+              CALL QUIT('*** ERROR '//WORD1//': Unknown nuclear model')
             ENDIF
             GO TO 100
 !      .SORT Integrals
@@ -1000,8 +1016,7 @@ C&&& Nuclear model
             ONEPRP = .TRUE.
             GO TO 100
   201    CONTINUE
-C Modified by Bin Gao, December 14, 2009
-C adds XYZ-ALL
+C Modified by Bin Gao, December 14, 2009: adds XYZ-ALL
             READ (LUCMD,'(A7)') FIELD3
             IF (.NOT. ((FIELD3 .EQ. 'XX-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XY-FGRD')
@@ -1010,8 +1025,8 @@ C adds XYZ-ALL
      &          .OR.   (FIELD3 .EQ. 'YZ-FGRD')
      &          .OR.   (FIELD3 .EQ. 'ZZ-FGRD')
      &          .OR.   (FIELD3 .EQ. 'XYZ-ALL'))) THEN
-               WRITE (LUPRI,'(/,3A,/)') ' Field direction "',FIELD1,
-     &               '" illegal'
+               WRITE (LUPRI,'(/4A/)') 'ERROR: Field direction "',FIELD3,
+     &               '" illegal for input ',WORD
                CALL QUIT('Illegal field direction for QDBINT integrals')
             END IF
             QDBINT = .TRUE.
@@ -1297,15 +1312,18 @@ cs              WRITE(LUPRI,*) 'Error in reading (GAGORG(I),I=1,3)!'
 cs              WRITE(LUPRI,*) '(GAGORG(I),I=1,3):', (GAGORG(I),I=1,3)
 cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
 cs            ENDIF
+            GO TO 100
+  244    CONTINUE
+            RMAOTWO = .FALSE.
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
-         GO TO 299
+         GO TO 300
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,'" illegal'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal prompt in HERINP.')
+         CALL QUIT('Illegal prompt in '//WORD1)
       END IF
-  299 CONTINUE
+  300 CONTINUE
 
       IF (.NOT. BGWEIL) BGWEIN = WEINBG 
 cLig <>
@@ -1323,7 +1341,7 @@ cLig <>
          WRITE (LUPRI,'(/A)')
      *    ' FATAL ERROR in input: .SPIN-ORBIT and .SOTEST cannot '/
      *    /'both be specified.'
-          CALL QUIT('Error in HERMIT input.')
+          CALL QUIT('Error in **INTEGRALS input.')
       END IF
       IF (HAMILT) THEN
           IF (NOTWO) THEN
@@ -1687,7 +1705,6 @@ cLig <<
 C
 C     **** Process input for various program sections  *****
 C
-  300 CONTINUE
       CALL ER2INI
   301 PROMPT = WORD(1:1)
       IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
@@ -1703,12 +1720,12 @@ C
          END DO
          WRITE (LUPRI,'(/3A/)') ' Input module ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
-         CALL QUIT('Illegal input directive in HERINP.')
+         CALL QUIT('Illegal input directive in '//WORD1)
       ELSE
          WRITE (LUPRI,'(/3A/)') ' Prompter "',PROMPT,
      &      '" illegal or out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input modules',LUPRI)
-         CALL QUIT('Program stopped in HERINP, error in prompt.')
+         CALL QUIT('Error in prompt in '//WORD1//', input section.')
       END IF
 
 !     DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',  ! TABDIR(1:4)
@@ -1778,7 +1795,7 @@ C
 C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.SOLVEN', '.NOT AL', '.CAVORG',
-     &            'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
+     &            '.FNMC  ', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX', 'XXXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR1INP')
@@ -1801,6 +1818,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .TRUE.
       CAVUSR = .FALSE.
+      FNMC   = .FALSE.
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1846,6 +1864,7 @@ C
                   CAVUSR = .TRUE.
                GO TO 100
     6          CONTINUE
+                  FNMC = .TRUE.
                GO TO 100
     7          CONTINUE
                GO TO 100
@@ -1887,12 +1906,18 @@ C
             IF (CAVUSR) WRITE(LUPRI,'(A,3F15.10)')
      &         ' User supplied cavity center',(CAVORG(I),I=1,3)
          END IF
+         IF (FNMC) WRITE (LUPRI,'(/,2A)') ' Finite nuclear mass',
+     &      ' correction by modifying the kinetic energy integrals.'
       END IF
  199  CALL QEXIT('HR1INP')
       RETURN
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1912,7 +1937,7 @@ C
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ', '.PANAS ', '.RETURN', '.SOFOCK',
      &            '.TIME  ', '.ICEDIF', '.IFTHRS', '.THRFAC', '.ERF   ',
-     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.XXXXXX', '.XXXXXX'/
+     &            '.ERFEXP', '.DOSRIN', '.KSPT2M', '.EFS   ', '.XXXXXX'/
       DATA SET/.FALSE./
 C
       CALL QENTER('HR2INP')
@@ -2050,6 +2075,11 @@ C&&& KSPT2M
  38            CALL QUIT('Error reading CHIVAL for *TWOINT/.MU ')
    14          CONTINUE
 C&&&
+#ifdef ENABLE_EFS
+               use_efs = .true.
+#else
+               call quit('.EFS not available in this version')
+#endif
                GO TO 100
    15          CONTINUE
 C&&&
@@ -2314,8 +2344,16 @@ C     **********************************
 C     ***** One-Electron Integrals *****
 C     **********************************
 C
+C     Both Hamiltionian and property one-electron integrals.
+C
       IF (RUNONE) THEN
          IF (IPRDEF .GT. 1) CALL TITLER('Output from HERONE','*',126)
+
+!        Open standard property integral file AOPROPER if LUPROP .le. 0
+!        (if calculating integrals for DKH, then LUPROP is already opened
+!         as AODKHINT)
+         IF (LUPROP .LE. 0)
+     &   CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
 C
 C           ***** These integrals are used to modify the Hamiltonian ****
 C           ***** thus calculated first of all if requested          ****
@@ -2408,7 +2446,7 @@ C
             CALL FLSHFO(LUPRI)
 C
             IF (ONLYOV) THEN
-              CALL QUITMM('Overlap integrals calculated')
+              CALL QUIT('Overlap integrals calculated')
             END IF
 C
 C           ***** Modified overlap integrals *****
@@ -3475,7 +3513,8 @@ C
             END IF
 cLig <<
          END IF
-      END IF
+      END IF  ! (RUNONE)
+      RUNONE = .TRUE. ! enable one-electron integrals for next iteration if e.g. geometry optimization
 C
 C     Determine number of different integrals in R12 method (WK/UniKA/19-11-2002).
       NOPP12 = 0
@@ -4226,7 +4265,7 @@ C     Open Mean-field input file generate in READIN
 C
       LUTMP2   = -1
       LUMNFPRP = -1
-      CALL GPOPEN(LUTMP2,'MNF.INP','OLD',' ','FORMATTED',
+      CALL GPOPEN(LUTMP2,'AMFI_MNF.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       CALL GPOPEN(LUMNFPRP,'AOPROPER.MNF','UNKNOWN',' ','UNFORMATTED',
      &            IDUMMY,.FALSE.)
@@ -4236,7 +4275,7 @@ C
       BREIT = .NOT.DKTRAN
 CBS  SO FAR ONLY BREIT-PAULI  !!!   Not no-pair
 C
-C     We loop over symmetry-independent center
+C     We loop over symmetry-independent centers
 C
       REWIND (LUMNFPRP)
       DO IATOM = 1, NUCIND
@@ -4248,7 +4287,7 @@ C     We should now have all the atomic mean-field SO integrals,
 C     now generate them in symmetry-orbital basis
 C
       REWIND (LUMNFPRP)
-      CALL SYMTRAFO(LUMNFPRP,LUPROP,PROPRI,IPRINT,WORK,LWORK)
+      CALL SYMTRAFO(LUMNFPRP,PROPRI,IPRINT,WORK,LWORK)
 C
       CALL GPCLOSE(LUTMP2,'KEEP')
       CALL GPCLOSE(LUMNFPRP,'DELETE')

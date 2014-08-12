@@ -286,24 +286,24 @@ CTRL[3]=1
 ERROR[3]="ENERGY NOT CORRECT"
 
 # ESR parameters
-CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Be 01\" LAGRANGIAN\: * (0| )\.571695 AVERAGE\: * 2\.805693 TOTAL\: * 3\.37738." $log | wc -l`
-CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O * 02\" LAGRANGIAN\: (\-0| \-)\.00802[0-9] AVERAGE\: * (0| )\.5528(8|9). TOTAL\: * (0| )\.5448(6|7)[0-9]" $log | wc -l`
-CRIT3=`$GREP "TRIPLET OPERATOR\: \"FC H * 03\" LAGRANGIAN\: * (0| )\.003256 AVERAGE\: * (0| )\.008743 TOTAL\: * (0| )\.011999" $log | wc -l`
-CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 001 z\" LAGRANGIAN\: * (0| )\.002178 AVERAGE\: (\-0| \-)\.043424 TOTAL\: (\-0| \-)\.041246" $log | wc -l`
-CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 002 z\" LAGRANGIAN\: (\-0| \-)\.019432 AVERAGE\: (\-0| \-)\.04419. TOTAL\: (\-0| \-)\.06362." $log | wc -l`
-CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 003 z\" LAGRANGIAN\: * (0| )\.001676 AVERAGE\: (\-0| \-)\.003111 TOTAL\: (\-0| \-)\.001434" $log | wc -l`
-CRIT7=`$GREP "TRIPLET OPERATOR\: \"SD * 004 x\" LAGRANGIAN\: (\-0| \-)\.004355 AVERAGE\: * (0| )\.086848 TOTAL\: * (0| )\.082493" $log | wc -l`
+CRIT1=`$GREP "TRIPLET OPERATOR\: \"FC Be 01\" LAGRANGIAN\: * (0| )\.532083 AVERAGE\: * 2\.805693 TOTAL\: * 3\.33777." $log | wc -l`
+CRIT2=`$GREP "TRIPLET OPERATOR\: \"FC O * 02\" LAGRANGIAN\: (\-0| \-)\.014483 AVERAGE\: * (0| )\.5528(8|9). TOTAL\: * (0| )\.53840[0-9]" $log | wc -l`
+CRIT3=`$GREP "TRIPLET OPERATOR\: \"FC H * 03\" LAGRANGIAN\: * (0| )\.002783 AVERAGE\: * (0| )\.008743 TOTAL\: * (0| )\.011526" $log | wc -l`
+CRIT4=`$GREP "TRIPLET OPERATOR\: \"SD * 001 z\" LAGRANGIAN\: * (0| )\.002185 AVERAGE\: (\-0| \-)\.043424 TOTAL\: (\-0| \-)\.041239" $log | wc -l`
+CRIT5=`$GREP "TRIPLET OPERATOR\: \"SD * 002 z\" LAGRANGIAN\: (\-0| \-)\.018994 AVERAGE\: (\-0| \-)\.04419. TOTAL\: (\-0| \-)\.06318." $log | wc -l`
+CRIT6=`$GREP "TRIPLET OPERATOR\: \"SD * 003 z\" LAGRANGIAN\: * (0| )\.001617 AVERAGE\: (\-0| \-)\.003111 TOTAL\: (\-0| \-)\.001493" $log | wc -l`
+CRIT7=`$GREP "TRIPLET OPERATOR\: \"SD * 004 x\" LAGRANGIAN\: (\-0| \-)\.004369 AVERAGE\: * (0| )\.086848 TOTAL\: * (0| )\.082479" $log | wc -l`
 CRIT8=`$GREP "TRIPLET OPERATOR\: \"SD * 004 y\" LAGRANGIAN\: (\-0| \-)\.000012 AVERAGE\: (\-0| \-)\.000118 TOTAL\: (\-0| \-)\.000130" $log | wc -l`
 CRIT9=`$GREP "TRIPLET OPERATOR\: \"SD * 005 x\" LAGRANGIAN\: (\-0| \-)\.000012 AVERAGE\: (\-0| \-)\.000118 TOTAL\: (\-0| \-)\.000130" $log | wc -l`
-CRIT10=`$GREP "TRIPLET OPERATOR\: \"SD * 005 y\" LAGRANGIAN\: * (0| )\.002178 AVERAGE\: (\-0| \-)\.043424 TOTAL\: (\-0| \-)\.041246" $log | wc -l`
-CRIT11=`$GREP "TRIPLET OPERATOR\: \"SD * 006 x\" LAGRANGIAN\: * (0| )\.03885(8|9) AVERAGE\: * (0| )\.08837(6|7) TOTAL\: * (0| )\.12723." $log | wc -l`
-CRIT12=`$GREP "TRIPLET OPERATOR\: \"SD * 006 y\" LAGRANGIAN\: (\-0| \-)\.000332 AVERAGE\: (\-0| \-)\.000080 TOTAL\: (\-0| \-)\.000411" $log | wc -l`
-CRIT13=`$GREP "TRIPLET OPERATOR\: \"SD * 007 x\" LAGRANGIAN\: (\-0| \-)\.000332 AVERAGE\: (\-0| \-)\.000080 TOTAL\: (\-0| \-)\.000411" $log | wc -l`
-CRIT14=`$GREP "TRIPLET OPERATOR\: \"SD * 007 y\" LAGRANGIAN\: (\-0| \-)\.01942(6|7) AVERAGE\: (\-0| \-)\.044185 TOTAL\: (\-0| \-)\.063612" $log | wc -l`
-CRIT15=`$GREP "TRIPLET OPERATOR\: \"SD * 008 x\" LAGRANGIAN\: (\-0| \-)\.003353 AVERAGE\: * (0| )\.006221 TOTAL\: * (0| )\.00286(8|9)" $log | wc -l`
-CRIT16=`$GREP "TRIPLET OPERATOR\: \"SD * 008 y\" LAGRANGIAN\: * (0| )\.000036 AVERAGE\: (\-0| \-)\.000005 TOTAL\: * (0| )\.000030" $log | wc -l`
-CRIT17=`$GREP "TRIPLET OPERATOR\: \"SD * 009 x\" LAGRANGIAN\: * (0| )\.000036 AVERAGE\: (\-0| \-)\.000005 TOTAL\: * (0| )\.000030" $log | wc -l`
-CRIT18=`$GREP "TRIPLET OPERATOR\: \"SD * 009 y\" LAGRANGIAN\: * (0| )\.001676 AVERAGE\: (\-0| \-)\.003111 TOTAL\: (\-0| \-)\.001434" $log | wc -l`
+CRIT10=`$GREP "TRIPLET OPERATOR\: \"SD * 005 y\" LAGRANGIAN\: * (0| )\.002184 AVERAGE\: (\-0| \-)\.043424 TOTAL\: (\-0| \-)\.041240" $log | wc -l`
+CRIT11=`$GREP "TRIPLET OPERATOR\: \"SD * 006 x\" LAGRANGIAN\: * (0| )\.037975 AVERAGE\: * (0| )\.08837(6|7) TOTAL\: * (0| )\.12635." $log | wc -l`
+CRIT12=`$GREP "TRIPLET OPERATOR\: \"SD * 006 y\" LAGRANGIAN\: (\-0| \-)\.000315 AVERAGE\: (\-0| \-)\.0000(79|80) TOTAL\: (\-0| \-)\.00039(4|5)" $log | wc -l`
+CRIT13=`$GREP "TRIPLET OPERATOR\: \"SD * 007 x\" LAGRANGIAN\: (\-0| \-)\.000315 AVERAGE\: (\-0| \-)\.0000(79|80) TOTAL\: (\-0| \-)\.00039(4|5)" $log | wc -l`
+CRIT14=`$GREP "TRIPLET OPERATOR\: \"SD * 007 y\" LAGRANGIAN\: (\-0| \-)\.018981 AVERAGE\: (\-0| \-)\.044185 TOTAL\: (\-0| \-)\.063166" $log | wc -l`
+CRIT15=`$GREP "TRIPLET OPERATOR\: \"SD * 008 x\" LAGRANGIAN\: (\-0| \-)\.003234 AVERAGE\: * (0| )\.006221 TOTAL\: * (0| )\.002987" $log | wc -l`
+CRIT16=`$GREP "TRIPLET OPERATOR\: \"SD * 008 y\" LAGRANGIAN\: * (0| )\.000033 AVERAGE\: (\-0| \-)\.000005 TOTAL\: * (0| )\.000027" $log | wc -l`
+CRIT17=`$GREP "TRIPLET OPERATOR\: \"SD * 009 x\" LAGRANGIAN\: * (0| )\.000033 AVERAGE\: (\-0| \-)\.000005 TOTAL\: * (0| )\.000027" $log | wc -l`
+CRIT18=`$GREP "TRIPLET OPERATOR\: \"SD * 009 y\" LAGRANGIAN\: * (0| )\.001617 AVERAGE\: (\-0| \-)\.003111 TOTAL\: (\-0| \-)\.001493" $log | wc -l`
 CRIT19=`$GREP "TRIPLET OPERATOR\: \"SD * 001 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT20=`$GREP "TRIPLET OPERATOR\: \"SD * 001 y\" contribution \= (0| )\.0 by symmetry" $log | wc -l`
 CRIT21=`$GREP "TRIPLET OPERATOR\: \"SD * 002 x\" contribution \= (0| )\.0 by symmetry" $log | wc -l`

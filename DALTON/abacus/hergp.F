@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,74 +23,64 @@
 !
 C
 C FILE    : hergp.F
-#include "single.h"
 C
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         GRDMOL(I) = D0
-  100 CONTINUE
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      GRDMOL(:) = 0.0D0
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.D00)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
-            HESMOL(J,I) = D0
-  200    CONTINUE
-  100 CONTINUE
-      RETURN
-      END
-C  /* Deck heszer */
-      SUBROUTINE HESZER(HESS)
-#include "implicit.h"
-#include "mxcent.h"
-      DIMENSION HESS(MXCOOR,MXCOOR)
-#include "nuclei.h"
-      DO 100 I = 1, 3*NUCDEP
-         CALL DZERO(HESS(1,I),3*NUCDEP)
-  100 CONTINUE
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      HESMOL(:,:) = 0.0D0
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
 #include "implicit.h"
 #include "mxcent.h"
-      DIMENSION GRAD(MXCOOR)
-#include "taymol.h"
-#include "nuclei.h"
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
+#include "trkoor.h"
+      REAL*8 GRAD(MXCOOR)
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DO, I = 1, NCOOR
          GRDMOL(I) = GRDMOL(I) + GRAD(I)
-  100 CONTINUE
+      END DO
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       RETURN
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
 #include "implicit.h"
 #include "mxcent.h"
+#include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
-#include "taymol.h"
-#include "nuclei.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
-      NCOORD = 3*NUCDEP
-      DO 100 I = 1, NCOORD
-         DO 200 J = 1, NCOORD
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+      DO 100 I = 1, NCOOR
+         DO 200 J = 1, NCOOR
             HESMOL(J,I) = HESMOL(J,I) + HESS(J,I)
   200    CONTINUE
   100 CONTINUE
+      CALL ABAWRIT_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
+
       RETURN
       END
 C  /* Deck prigrd */
@@ -150,25 +140,32 @@ C
 #include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
-      DIMENSION SHESS(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
+      DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-      INTEGER BEGIN
+      INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
-      IF (KEY .EQ. 'CENTERS') THEN
+      IF (KEY .EQ. 'HESMOL') THEN
          NROW = 3*NUCDEP
+         NROW_DIM = NROW
+         ITYPE = 1
+      ELSE IF (KEY .EQ. 'CENTERS') THEN
+         NROW = 3*NUCDEP
+         NROW_DIM = MXCOOR
          ITYPE = 1
       ELSE IF (KEY .EQ. 'ATOMS') THEN
          NROW = 3*NATOMS
+         NROW_DIM = MXCOOR
          ITYPE = 1
       ELSE IF (KEY .EQ. 'SPNSPN') THEN
          NROW = 3*NUCDEP
+         NROW_DIM = MXCOOR
          ITYPE = 2
       ELSE
          WRITE (LUPRI,'(//A/2A//)') ' >>> ERROR in PRIHES ',
-     &      '     - incorrect specification of keyword:', KEY
+     &      '     - incorrect specification of keyword: ', KEY
          CALL QUIT('Incorrect keyword in PRIHES.')
       END IF
       IF (MAXREP .EQ. 0) THEN
@@ -180,11 +177,11 @@ C
          NCOL = 1
          DO 100 K = BEGIN,NROW
             DO 200 I = 1,NCOL
-               IF (SHESS(K,(BEGIN-1)+I) .NE. D0) GO TO 400
+               IF (SHESS(K+NROW_DIM*(BEGIN-2+I)) .NE. D0) GO TO 400
   200       CONTINUE
             GO TO 300
   400       WRITE (LUPRI,2000) NAMEX(K),
-     &            (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &            (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
             IF (MOD(K,3) .EQ. 0) WRITE (LUPRI,'()')
   300       IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
   100    CONTINUE
@@ -207,7 +204,7 @@ C
                   NCOL = 1
                   DO 40 K = BEGIN, NROW
                      WRITE (LUPRI,2000) NAMEX(IPTCOR(K,ITYPE)),
-     &                     (SHESS(K,(BEGIN-1)+J),J=1,NCOL)
+     &                     (SHESS(K+NROW_DIM*(BEGIN-2+J)),J=1,NCOL)
                      IF (K .LT. (BEGIN+KCOL-1)) NCOL = NCOL + 1
    40             CONTINUE
                   WRITE (LUPRI,'()')
@@ -224,7 +221,7 @@ C
          NCOOR = 3*NUCDEP
          allocate( CHESS(NCOOR,NCOOR) )
          CALL DZERO(CHESS,NCOOR*NCOOR)
-         CALL TRAHES(SHESS,MXCOOR,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
+         CALL TRAHES(SHESS,NROW_DIM,CHESS,CSTRA,SCTRA,NCOOR,NCOOR,ITYPE)
          CALL PR2DER(CHESS,NCOOR,NCOOR,LUPRI)
          deallocate( CHESS )
       END IF
@@ -411,13 +408,12 @@ C
 
       end subroutine
 
-
 C  /* Deck symhes */
-      SUBROUTINE SYMHES(HESS)
+      SUBROUTINE SYMHES(HESS,NROW_HESS)
 #include "implicit.h"
+      DIMENSION HESS(NROW_HESS,NROW_HESS)
       PARAMETER (DP5 = 0.5D0)
 #include "mxcent.h"
-      DIMENSION HESS(MXCOOR,MXCOOR)
 #include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
@@ -519,6 +515,11 @@ C     Nuclear moments and spins:
 C
 C        P. Raghavan,
 C        Atomic Data and Nuclear Data Tables 42 (1989) 189
+C
+C        2014-03-03 Radovan Bast: updated Ag value as suggested by Michal Jaszunski in private communication
+C                                 corrected values for Nd (lines interchanged) and Tl (typo)
+C                                 as suggested by Michal Jaszunski in private communication
+C
 C
 C     Quadrupole moments:
 C
@@ -1005,7 +1006,7 @@ C
 C     Ag:
 C
      &106.905095D0, 51.839000D0,   .500000D0,  -.113570D0,   .000000D0,
-     &108.904754D0, 48.161000D0,   .500000D0,   .130563D0,   .000000D0,
+     &108.904754D0, 48.161000D0,   .500000D0,  -.130691D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
      &   .000000D0,   .000000D0,   .000000D0,   .000000D0,   .000000D0,
@@ -1132,8 +1133,8 @@ C
      &141.907719D0, 27.130000D0,   0.00000D0,  0.000000D0,   0.000000D0,
      &143.910083D0, 23.800000D0,   0.00000D0,  0.000000D0,   0.000000D0,
      &145.913113D0, 17.190000D0,   0.00000D0,  0.000000D0,   0.000000D0,
-     &142.909810D0, 12.180000D0,   3.50000D0, -0.065000D0,  -0.630000D0,
-     &144.912570D0,  8.300000D0,   3.50000D0, -1.065000D0,  -0.330000D0,
+     &142.909810D0, 12.180000D0,   3.50000D0, -1.065000D0,  -0.630000D0,
+     &144.912570D0,  8.300000D0,   3.50000D0, -0.650000D0,  -0.330000D0,
      &147.916889D0,  5.760000D0,   0.00000D0,  0.000000D0,   0.000000D0,
 C
 C     Pm:
@@ -1324,7 +1325,7 @@ C     Tl:
 C
       DATA (((DATNUC(I,J,K),I=1,5),J=1,MAXISO),K=81,86) /
 C
-     &204.974401D0, 70.476000D0,   0.500000D0, 1.63831461D0, 0.000000D0,
+     &204.974401D0, 70.476000D0,   0.500000D0, 1.63821461D0, 0.000000D0,
      &202.972320D0, 29.524000D0,   0.500000D0, 1.62225787D0, 0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,

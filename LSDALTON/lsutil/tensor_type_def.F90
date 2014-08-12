@@ -100,6 +100,7 @@ module tensor_type_def_module
 
   !> execution time variables
   logical :: lspdm_use_comm_proc
+  logical :: array_debug_mode = .false.
 
 
 

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dalton import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+
+f.add(string = 'Final HF energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(string = "ZDIPLEN  total ",
+      abs_tolerance = 1.0e-5)
+
+# first and second hyperpolarizability
+f.add(re = '[XYZ]DIPLEN   [XYZ]DIPLEN',
+      rel_tolerance = 1.0e-5)
+
+test.run(['rsp_absorp.dal'], ['LiH_Sadlej-pVTZ.mol'], {'out': f})
+
+sys.exit(test.return_code)

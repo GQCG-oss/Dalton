@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: sirius/sirmp2.F
 C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
@@ -47,7 +46,7 @@ C
 !===========================================================================
 #endif
 C  /* Deck mp2inp */
-      SUBROUTINE MP2INP(WORD,INPERR,ALLOPT)
+      SUBROUTINE MP2INP(WORD1,INPERR,ALLOPT)
 C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
@@ -73,7 +72,6 @@ CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
 C
-      WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
@@ -104,7 +102,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN MP2INP ')
+         CALL QUIT('Illegal keyword for "*MP2 INPUT"')
 C
 C *** Option 1 >MP2 FROZEN<   Frozen MP2 orbitals
   101 READ(LUCMD,*) (NFRMP2(I),I=1,NSYM)
@@ -205,6 +203,7 @@ C
          END IF
       END IF
 
+      WORD1 = WORD
       RETURN
       END
 C  /* Deck mp2ctl */
@@ -268,11 +267,10 @@ C
       KFRSAV= 1
       KFREE = KFRSAV
       LFREE = LFRSAV
-      CALL MEMGET('REAL',KORBEN,NORBT ,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCCUP,NORBT ,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDONE ,N2ORBX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO  ,NCMOT ,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIADR1,MAXVIR*MAXOCC,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ORBEN',KORBEN,NORBT ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','OCCUP',KOCCUP,NORBT ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DONE ',KDONE ,N2ORBX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO  ',KCMO  ,NCMOT ,WRK,KFREE,LFREE)
 C
 C     Read in MOs and check for canonical Hartree-Fock orbitals
 C     Use DONE as scratch for FC in MP2FCK.
@@ -291,7 +289,14 @@ C
 C     MP2SET called after MP2FCK because if (FCKFRO) then
 C     the number of frozen MP2 orbitals may have been changed.
 C
-      CALL MP2SET(WRK(KIADR1))
+      CALL MP2SET
+C
+C Determine ph offset array IADR1(VIRT,OCC) for symmetry 1
+C
+      CALL MEMGET2('INTE','IADR1',KIADR1,NP*NH,WRK,KFREE,LFREE)
+      NPHTOT(1:8) = 0 ! initialize all symmetries once
+      CALL PHADR1(WRK(KIADR1),1)
+C
       MP2FRZ = MP2FRO
 C     Disable "MP2FRO" if result not to be printed
       IF (IPRMP2 .LE. 0) MP2FRO = .FALSE.
@@ -355,10 +360,10 @@ C        ... force new sort of AO integrals
 C
 cmjp If response calculation then make space for the correlation coefficients.
       IF (FLAG(25) .AND. .NOT.SRMP2_SRINTS) THEN
-         CALL MEMGET('REAL',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','KAPPA',KKAPPA,NPHTOT(1),WRK,KFREE,LFREE)
          CALL DZERO(WRK(KKAPPA),NPHTOT(1))
       ELSE
-         CALL MEMGET('REAL',KKAPPA,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','KAPPA',KKAPPA,0,WRK,KFREE,LFREE)
       END IF
 
       IF (.NOT.NEWTRA .AND. (MP2_NO_OCCVIR .OR. SRMP2_SRINTS) ) THEN
@@ -383,17 +388,17 @@ C     CALL TRACTL(ITRLVL,CMO,WRK,LFREE)
 C
 C
       IF (MP2FRO) THEN
-         CALL MEMGET('REAL',KDONEF,N2ORBX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KCMO1 ,NCMOT ,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIFRRHF,NORBT ,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DONEF',KDONEF,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO1 ',KCMO1 ,NCMOT ,WRK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IFRRHF',KIFRRHF,NORBT ,WRK,KFREE,LFREE)
          CALL FCKIFR(WRK(KIFRRHF))
       ELSE
-         CALL MEMGET('REAL',KDONEF,0,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KCMO1 ,0,WRK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIFRRHF,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DONEF',KDONEF,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO1 ',KCMO1 ,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IFRRHF',KIFRRHF,0,WRK,KFREE,LFREE)
       END IF
-      CALL MEMGET('REAL',KH2M  ,N2ORBX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2D  ,N2ORBX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2M',KH2M  ,N2ORBX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H2D',KH2D  ,N2ORBX,WRK,KFREE,LFREE)
 C
 C     DETERMINE NUMBER OF PARTICLE-HOLE DIRAC DISTRIBUTIONS WHICH CAN BE
 C     KEPT IN CORE IN ONE LOAD
@@ -424,9 +429,10 @@ C     Make load per batch even :
        END IF
       END IF
       IF (MP2_SOS) THEN
-         CALL MEMGET('REAL',KH2PHD,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','H2PHD',KH2PHD,0,WRK,KFREE,LFREE)
       ELSE
-         CALL MEMGET('REAL',KH2PHD,NPSTP*NH*NH*NP,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','H2PHD',KH2PHD,NPSTP*NH*NH*NP,
+     &      WRK,KFREE,LFREE)
       END IF
 C
       EMP2   = D0
@@ -579,7 +585,7 @@ C calculate the F operator instead of HF-SRDFT orbitals
 C (which leads to symmetry dependent results ...)
 C
       IF (DOHFSRDFT .AND. SRMP2_SELFCONSISTENT) THEN
-         CALL MEMGET('REAL',KCMO2,NCMOT,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO2',KCMO2,NCMOT,WRK,KFREE,LFREE)
          CALL DCOPY(NCMOT,WRK(KCMO),1,WRK(KCMO2),1)
       END IF
 C
@@ -750,7 +756,7 @@ C        Manu July 07 : we copy (as done previously) CMO1 into CMO2 since we nee
 C        the HF-SRDFT orbitals in MP2SRDFTDEN
 C
          IF (DOHFSRDFT .AND. SRMP2_SELFCONSISTENT) THEN
-            CALL MEMGET('REAL',KCMO2,NCMOT,WRK,KFREE,LFREE)
+            CALL MEMGET2('REAL','CMO2',KCMO2,NCMOT,WRK,KFREE,LFREE)
             CALL DCOPY(NCMOT,WRK(KCMO1),1,WRK(KCMO2),1)
          END IF
 C
@@ -847,11 +853,13 @@ C
 C
 C Used from common blocks:
 C
+C pgroup : REP
 C INFIND : ISSMO
 C
 #include "maxorb.h"
 #include "maxash.h"
 #include "priunit.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "infind.h"
@@ -862,8 +870,8 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      CALL MEMGET('REAL',KDMAT ,NNORBT,WRK,KFREE,LFREE)
-      CALL MEMGET('WORK',KWRK1 ,LWRK1 ,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMAT',KDMAT ,NNORBT,WRK,KFREE,LFREE)
+      CALL MEMGET2('WORK','WRK1',KWRK1 ,LWRK1 ,WRK,KFREE,LFREE)
       IJ     = 0
       DO 150 ISYM = 1,NSYM
          NORBI = NORB(ISYM)
@@ -884,9 +892,9 @@ C
          IIORBI = IIORB(ISYM)
          ICSYM  = ICMO(ISYM)
 C
-         CALL JACO(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
-     &             NORBI,NORBI,NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
-C        CALL JACO(F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
+     &                 NORBI,NORBI,NBASI,1.D-12)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          OCCSUM = D0
          DO 175 I=1,NORBI
@@ -904,7 +912,8 @@ C          Done, Aug. 2004 /hjaaj
 #endif
          IF (IPRNO .GE. 1) THEN
             OCCRHF = 2 * NRHF(ISYM) + NASH(ISYM)
-            WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
+            WRITE (LUPRI,1840) ISYM,REP(ISYM-1),
+     &         OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
             WRITE (LUPRI,1850) (OCCUP(IORBI+I),I=1,NORBI)
 #else
@@ -922,7 +931,8 @@ C          Done, Aug. 2004 /hjaaj
 C     ... remake ISSORD() as ISSMO() may have changed in ORD2SS
 #endif
 C
- 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2
+ 1840 FORMAT(/' Natural orbital occupation numbers, symmetry',I2,
+     &        ' (irrep ',A,')'
      &       /' Sum =',F15.8,'; RHF =',F15.8,'; Difference =',F15.8)
  1850 FORMAT(/,(4X,5F15.8))
 #if defined (VAR_MP2SUPSYM)
@@ -993,7 +1003,7 @@ C
 #include "infpri.h"
 #include "infinp.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 C
       SAVE    TVALUE
       DATA    TVALUE/D0/
@@ -1291,6 +1301,7 @@ C
 C
 C  Used from common blocks:
 C     GNRINF : EMBEDDING
+C     pgroup : REP
 C     INFINP : POTNUC, HSROHF
 C     INFORB : NRHF(*), NRHFT, ...
 C     SCBRHF : IOPRHF,NFRRHF(*)
@@ -1300,6 +1311,7 @@ C
 #include "maxorb.h"
 #include "priunit.h"
 #include "gnrinf.h"
+#include "pgroup.h"
 #include "infinp.h"
 #include "inforb.h"
 #include "scbrhf.h"
@@ -1523,12 +1535,13 @@ C           zero active-secondary block
          END IF
 
 C        generate canonical orbitals
+C        hjaaj: THR_JACO=1.D-8 means max off-diag element 1.D-8
+C               => orb.en. error < 1.D-16*NORBT/DIF and
+C                  orbital error < 1.D-8*NORBT/DIF
+C               (which is usually sharper than convergence threshold for RHF)
 
-         KBIG  = 1
-         KJBIG = KBIG + NORBI
-         CALL JACO(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             SCRA(KBIG),SCRA(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,1.0D-8)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          NOCCI = NRHFI + NASH(ISYM)
          DO I = 1,NORBI
@@ -1548,7 +1561,7 @@ C
          END DO
 
          IF (IPRMP2 .GE. 3) THEN
-            WRITE (LUPRI,1740) ISYM, NRHFI
+            WRITE (LUPRI,1740) ISYM, REP(ISYM-1), NRHFI
             IF (NFRRHF_I .GT. 0) WRITE (LUPRI,'(A,I3,A)')
      +        ' Note: the first',NFRRHF_I ,' orbitals are frozen in SCF'
             WRITE (LUPRI,1750) (ORBEN(IORBI+I),I=1,NORBI)
@@ -1583,7 +1596,7 @@ C
  1730 FORMAT(/' Hartree-Fock electronic energy:',F25.12)
  1732 FORMAT( ' Hartree-Fock total      energy:',F25.12)
  1740 FORMAT(/' Hartree-Fock orbital energies, symmetry',I2,
-     &         ', number of occupied SCF orbitals is',I5/)
+     &        ' ( ',A,'),',I5,' occupied SCF orbitals'/)
  1750 FORMAT(4X,5F15.8)
 C
 C
@@ -1676,7 +1689,7 @@ C
 #include "infpri.h"
 #include "scbrhf.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 C
       LOGICAL CHOLE,DHOLE, L_MP2_TDA
 
@@ -1692,17 +1705,17 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
       IF (MP2FRO) THEN
-         CALL MEMGET('REAL',KH2M1 ,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','H2M1',KH2M1 ,N2ORBX,WRK,KFREE,LFREE)
       ELSE
-         CALL MEMGET('REAL',KH2M1 ,0,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','H2M1',KH2M1 ,0,WRK,KFREE,LFREE)
       END IF
       CALL DZERO(H2D,N2ORBX)
       L_MP2_TDA = MP2_TDA .AND. IPLOW .EQ. 1
       IF (L_MP2_TDA) THEN
          NEEDTP(1) = 1
          NEEDTP(6) = 1
-         CALL MEMGET('REAL',KJ,N2ORBX,WRK,KFREE,LFREE)
-         CALL MEMGET('REAL',KK,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','J',KJ,N2ORBX,WRK,KFREE,LFREE)
+         CALL MEMGET2('REAL','K',KK,N2ORBX,WRK,KFREE,LFREE)
          CALL DZERO(WRK(KJ),N2ORBX)
          CALL DZERO(WRK(KK),N2ORBX)
 !        write(0,*) 'hjaaj MP2MUL: allocated RJ and RK, KFREE',KFREE
@@ -1768,12 +1781,13 @@ C        MP2FRO true.
 C
          IF (MP2FRO) CALL DCOPY(N2ORBX,H2M,1,WRK(KH2M1),1)
          IF (IPRMP2 .GE. 25) THEN
-            WRITE(LUPRI,*) 'MP2MUL IC, ID =',IC,ID
+            WRITE(LUPRI,*) 'MP2MUL IC, ID, ICHO, IDPA =',
+     &         IC, ID, ICHO, IDPA
          END IF
          IF ( IFRMP2(IC).EQ.0 .AND. IFRMP2(ID).EQ.0 ) THEN
 C        If ( IC and ID not frozen   ) then
             CALL MP2DEN(NFRMP2,IFRMP2,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,DONE,
-     *                  COEMP2,IADR1,ORBEN,H2M,H2D,EMP2,0)
+     &                  COEMP2,IADR1,ORBEN,H2M,H2D,EMP2,0)
 C           CALL MP2DEN(NFROZ,IFROZ,ICHO,IDPA,ICHDP,ISYMCD,H2PHD,DONE,
 C     *                 COEMP2,IADR1,ORBEN,H2M),H2D,EMP2,KFRO)
          END IF
@@ -1972,7 +1986,7 @@ C
       RETURN
       END
 C  /* Deck mp2set */
-      SUBROUTINE MP2SET(IADR1)
+      SUBROUTINE MP2SET
 C
 C 19-May-1987 hjaaj
 C 20-MAY-1987 PJ     INSERTED IPHORD
@@ -1996,7 +2010,6 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "infmp2.h"
-      DIMENSION IADR1(MAXVIR,MAXOCC)
 #include "infind.h"
 C
       CALL QENTER('MP2SET')
@@ -2069,11 +2082,6 @@ C
             NPHMAX = MAX(NPHMAX,NPHSYM(I))
          ENDDO
 C
-C Determine ph offset array IADR1(VIRT,OCC) for symmetry 1
-C
-         NPHTOT(1:8) = 0
-         CALL PHADR1(IADR1,1)
-C
       CALL QEXIT('MP2SET')
       RETURN
       END
@@ -2111,14 +2119,18 @@ C
          IF (IWAY .GE. 0) THEN
             IF (IPHLAB .GE. 0) THEN
                DO II = IIST,IIEND
+               IF (IFRMP2(II).EQ.1) CYCLE
                   DO JA = JAST, JAEND
+                  IF (IFRMP2(JA).EQ.1) CYCLE
                      IA = IA + 1
                      XKP(IA) = XK(II,JA)
                   END DO
                END DO
             ELSE
                DO II = IIST,IIEND
+               IF (IFRMP2(II).EQ.1) CYCLE
                   DO JA = JAST, JAEND
+                  IF (IFRMP2(JA).EQ.1) CYCLE
                      IA = IA + 1
                      XKP(IA) = XK(JA,II)
                   END DO
@@ -2127,21 +2139,27 @@ C
          ELSE
             IF (IPHLAB .GE. 0) THEN
                DO II = IIST,IIEND
+               IF (IFRMP2(II).EQ.1) CYCLE
                   DO JA = JAST,JAEND
+                  IF (IFRMP2(JA).EQ.1) CYCLE
                      IA = IA + 1
                      XK(II,JA) = XKP(IA)
                   END DO
                END DO
                IF (IPHLAB .EQ. 0) THEN
                   DO II=IIST,IIEND
+                  IF (IFRMP2(II).EQ.1) CYCLE
                      DO JA=JAST,JAEND
+                     IF (IFRMP2(JA).EQ.1) CYCLE
                         XK(JA,II) = XK(II,JA)
                      ENDDO
                   ENDDO
                ENDIF
             ELSE
                DO II = IIST,IIEND
+               IF (IFRMP2(II).EQ.1) CYCLE
                   DO JA = JAST,JAEND
+                  IF (IFRMP2(JA).EQ.1) CYCLE
                      IA = IA + 1
                      XK(JA,II) = XKP(IA)
                   END DO
@@ -2173,13 +2191,12 @@ C
 #include "infmp2.h"
 C
       INTEGER   A, AA
-      DIMENSION IADR1(MAXVIR,MAXOCC)
+      DIMENSION IADR1(NP,NH)
 C
 C
-      CALL ISETVC(IADR1,-100 000 000,MAXVIR*MAXOCC)
+      CALL ISETVC(IADR1,-100 000 000,NP*NH)
 C     call isetvc(ivector,ivalue,ndim)
       IAB = 0
-      NPHTOT(KSYMOP) = 0
       DO II = 1,NH
         I = IPHORD(II)
       IF (IFRMP2(I) .EQ. 1) CYCLE
@@ -2188,11 +2205,11 @@ C     call isetvc(ivector,ivalue,ndim)
          IF (IFRMP2(A) .EQ. 1) CYCLE
             IASYM = MULD2H(ISMO(I),ISMO(A))
             JBSYM = MULD2H(IASYM,KSYMOP)
-            NPHTOT(KSYMOP) = NPHTOT(KSYMOP) + NPHSYM(JBSYM)
             IADR1(AA,II) = IAB
             IAB = IAB + NPHSYM(JBSYM)
          ENDDO
       ENDDO
+      NPHTOT(KSYMOP) = IAB
       RETURN
       END
 C  /* Deck phadr2 */

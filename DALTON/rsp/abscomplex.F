@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -614,12 +614,13 @@ C
       KFREE = 1
       LFREE = LWRK
 C    
+      LUABSVECS = -1
       CALL GPINQ('ABSVECS','EXIST',EX)
       IF (.NOT.EX) THEN
-        OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','NEW',' ',' ',IDUMMY,.FALSE.)
         WRITE(LUABSVECS) 'EOFLABEL'
       ELSE
-        OPEN(LUABSVECS,file='ABSVECS',status='old',form='unformatted')
+        CALL GPOPEN(LUABSVECS,'ABSVECS','OLD',' ',' ',IDUMMY,.FALSE.)
       END IF
 C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
@@ -663,7 +664,7 @@ C     Print-out a summary of results
 C
       CALL ABSLRSRESULT(WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 c
-      CLOSE(LUABSVECS,status='keep')
+      CALL GPCLOSE(LUABSVECS,'KEEP')
 C
       RETURN
       END
@@ -833,7 +834,6 @@ C
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK(KFREE),LFREE)
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
@@ -884,7 +884,6 @@ c
         ENDDO
       ENDDO
       LUABSPRI=LUPRI
-c      LUABSVECS=LURSP
       CALL SETZY(MJWOP)
       ABS_KZVAR=KZVAR
 C
@@ -955,7 +954,6 @@ C
       ELSE
         NTMAX=NNMAX
       ENDIF
-      ABS_DIRFCK = DIRFCK
 c
       CALL MEMGET('REAL',KDENS,NTMAX*N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,NTMAX*N2BASX,WRK,KFREE,LFREE)
@@ -1054,6 +1052,7 @@ c          END IF
         END DO
       END IF  
 C
+      CALL DZERO(WRK(KFMAO(1)),NTMAX*N2BASX)
       CALL SIRFCK(WRK(KFMAO(1)),WRK(KDMAO(1)),NTMAX,ISYMDM,IFCTYP,
      &     DIRFCK,WRK(KFREE),LFREE)
 C
@@ -1149,13 +1148,6 @@ c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
 c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
-c     FLAG(16) MEANS SOLVENT CALCULATION
-C
-      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
-         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
-     &               XTMP,WRK(KFREE),LFREE)
-      ENDIF
-c
       CALL QEXIT('ABS_LINE2')
       RETURN
       END
@@ -1249,19 +1241,28 @@ c
          IF (KMOD.NE.0) THEN
            KTOT=KINT+1
          ENDIF
-       ELSE
+      ELSE
          KINT=1
          KTOT=1
          KNMAX=NNMAX
-       ENDIF
-       KNTOT=KNMAX
-       CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
-       DO K=1,KTOT
+      ENDIF
+      KNTOT=KNMAX
+      CALL MEMGET('REAL',KZYMB,KNMAX*NORBT*NORBT,WRK,KFREE,LFREE)
+      DO K=1,KTOT
          IF (K.GT.KINT) KNTOT=KMOD
          CALL ABS_LINE2(KZVAR,XTMP(1,(K-1)*KNMAX+1),WRK(KZYMB),ISYMDM,
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
-       ENDDO
+      ENDDO
+C
+C      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMNPMM .OR. PEQM) THEN
+      IF (EMBEDDING) THEN
+         CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
+     &               XTMP,WRK(KFREE),LFREE)
+      ENDIF
+      IF (QMMM) THEN
+        CALL QUIT('ERROR: CPP cannot be used with QMMM')
+      END IF
 C
       CALL DZERO(VECS,NLT*KZVAR)
       DO I=1,MIN(NNS,NNA)
@@ -2085,11 +2086,11 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
      &   "B(A')+B(G)",'Dichro'
          CALL PRSYMB(LUPRI,'-',94,1)
          DO IFREQ=1,NFREQ_BETA_B
-         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AIMAABB(IFREQ)*
-     &   0.5+
-     &   GREABG(IFREQ)*0.25
-         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AREAABB(IFREQ)*0.5+
-     &   GIMABG(IFREQ)*0.25
+         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AIMAABB(IFREQ)*
+     &   0.5D0+
+     &   GREABG(IFREQ)*0.25D0
+         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5.0D0)*AREAABB(IFREQ)*0.5D0+
+     &   GIMABG(IFREQ)*0.25D0
 !          WRITE(LUPRI,'(F13.6,F13.6,F13.6,F13.6,F13.6,F13.6,F13.6)')
 !      &   FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
 !      &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
@@ -2100,13 +2101,13 @@ C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
 !      &   FREQ_BETA_B(IFREQ)/5
          WRITE(LUPRI,'(A5,F10.6,F13.6,F13.6,
      &   F13.6,F13.6,F13.6,F13.6,F13.6)')
-     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
-     &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
+     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25D0*GREABG(IFREQ),
+     &   0.25D0*GIMABG(IFREQ),0.5D0*AREAABB(IFREQ),0.5D0*AIMAABB(IFREQ),
      &   BIREFR(IFREQ),
      &   DICHRO(IFREQ)
          WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
-     &   0.5*AIMAABB(IFREQ)*
-     &   FREQ_BETA_B(IFREQ)/5
+     &   0.5D0*AIMAABB(IFREQ)*
+     &   FREQ_BETA_B(IFREQ)/5.0D0
          END DO
          CALL GPCLOSE(LUFU,'KEEP')
       END IF
@@ -2476,7 +2477,7 @@ c      ENDDO
      & ' frequencies:'
          WRITE(LUPRI,'(/A,5(4F12.8,/,9X))')
      &        ' LR FREQ:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
-         WRITE (LUPRI,'(/A,I4,A)')
+         WRITE (LUPRI,'(/A,I5,A)')
      & ' and the evaluation of',NQRF,' quadratic response functions:'
          WRITE(LUPRI,'(/2A,/A3,6A12,/2A)')
      &        '--------------------------------------',
@@ -2486,7 +2487,7 @@ c      ENDDO
      &        '--------------------------------------',
      &        '-------------------------------------'
          DO IQRF=1,NQRF
-            WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
+            WRITE(LUPRI,'(I4,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
          WRITE(LUPRI,'(2A)')

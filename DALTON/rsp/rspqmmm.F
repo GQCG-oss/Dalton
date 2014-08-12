@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -22,13 +22,528 @@
 !
 !
 C**************************************************************************
+C  /* Deck peltr */
+      SUBROUTINE QMMMLTR(NCSIM,NOSIM,BCVECS,BOVECS,CREF,CMO,INDXCI,
+     &                  UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,SOVECS,
+     &                  WRK,LWRK)     
+C
+C Erik Donovan Hedegaard 2. may 2012: Based on PELIN
+C
+C Common driver for QMMMLNC and QMMMLNO
+#include "implicit.h"
+#include "dummy.h"
+
+      DIMENSION BCVECS(*),BOVECS(*),CREF(*),CMO(*),INDXCI(*)
+      DIMENSION UDV(*),DV(*),DTV(*),SCVECS(*),SOVECS(*),WRK(LWRK)
+      DIMENSION UDVTR(*),DVTR(*),DTVTR(*)
+C
+
+#include "maxorb.h"
+#include "priunit.h"
+#include "infpri.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+C
+      CALL QENTER('QMMMLTR')
+C
+      CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
+     *        'UNFORMATTED',IDUMMY,.FALSE.)
+
+      IF (NCSIM .GT. 0) THEN
+          IF (IPQMMM .GT. 15) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE QMMMLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
+         CALL QMMMLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
+     *                UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
+         IF (IPQMMM .GT. 15) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+            WRITE(LUPRI,*)' **** AFTER QMMMLNC **** '
+            CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+         END IF
+      END IF
+C
+      IF ( NOSIM .GT.0 ) THEN
+         IF (IPQMMM .GT. 15) THEN
+             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+             WRITE(LUPRI,*)' **** BEFORE QMMMLNO **** '
+             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+          END IF
+         CALL QMMMLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
+     *                UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
+
+         IF (IPQMMM .GT. 15) THEN
+             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+             WRITE(LUPRI,*)' **** AFTER QMMMLNO **** '
+             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+          END IF
+      END IF
+      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      CALL QEXIT('QMMMLTR')
+      RETURN
+      END
+C  /* Deck qmmmlnc */
+      SUBROUTINE QMMMLNC(NCSIM,BCVEC,CREF,CMO,INDXCI,
+     *                  UDV,DV,UDVTR,DVTR,DTV,DTVTR,SVEC,
+     *                  WRK,LFREE)
+
+C Erik Donovan Hedegård 4. may 2012. With contributions from JK.
+C
+C  Purpose:  Calculate MCSCF E2 contribution from a
+C            PE surrounding medium to a csf trial vector.
+C
+#include "implicit.h"
+#include "iratdef.h"
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "orgcom.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "infrsp.h"
+#include "wrkrsp.h"
+#include "inftap.h"
+#include "infpri.h"
+#include "qmmm.h"
+#include "gnrinf.h"
+#include "qm3.h"
+
+      DIMENSION BCVEC(*),  CREF(*), CMO(*)
+      DIMENSION INDXCI(*), UDV(*), DV(*),   DTV(N2ASHX,*)
+      DIMENSION SVEC(KZYVAR,*),     WRK(LFREE)
+      DIMENSION UDVTR(*),DVTR(*),DTVTR(N2ASHX,*)
+      LOGICAL FNDLAB, LPOL, TOFILE, TRIMAT, EXP1VL, LOCDEB
+      LOGICAL LOPEN
+
+      CHARACTER*8 LABINT(9*MXCENT)
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, THRZER = 1.0D-14)
+
+      LPOL = .FALSE.
+      LOPEN = .FALSE.
+
+      CALL QENTER('QMMMLNC')
+
+      IF (IPOLTP .GT. 0) LPOL = .TRUE.
+
+      XSAVE = DIPORG(1)
+      YSAVE = DIPORG(2)
+      ZSAVE = DIPORG(3)
+
+C
+C     Core allocation
+C
+      KUCMO    = 1
+      KFPEMO   = KUCMO    + NORBT*NBAST     
+      KFPEAC   = KFPEMO   + NNORBT
+C     ---------------------------------
+      KINVMAT  = KFPEAC   + NNASHX
+      KEFIELD  = KINVMAT  + 3*NNZAL*(3*NNZAL+1)/2
+      KINDMOM  = KEFIELD  + 3*NNZAL*NCSIM
+C     -------------------------------------------
+      KFXC     = KINDMOM  + 3*NNZAL*NCSIM
+      KFXCAC   = KFXC     + NCSIM*NNORBT
+      KTFXCAC  = KFXCAC   + NCSIM*NNASHX
+C     -------------------------------------------
+      KUFPE    = KTFXCAC  + NCSIM
+      KUFXC    = KUFPE    + N2ORBX
+      KWRK1    = KUFXC    + N2ORBX
+      LWRK1    = LFREE    - KWRK1
+
+C
+C     1. KUCMO   : MO coefficients 
+C     2. KFPEMO  : Fg(PE) operator mo basis
+C     3. KFPEAC  : active part of Fg(PE)
+C     ------------------------------------
+C     4. KINVMAT : [alpha]^(-1)
+C     5. KEFIELD : Electric field on MM (polarizable) 
+C        sites due to F^(1) field 
+C        F(tilde) = < 0 | Fel(1) | B > (for B each state)
+C     6. KINDMOM : induced moments (from NNZAL
+C        polarizable sites)
+C     ------------------------------------------ 
+
+      CALL DZERO(WRK(KUCMO),NORBT*NBAST)
+      CALL DZERO(WRK(KFPEMO),NNORBT)
+      CALL DZERO(WRK(KFPEAC),NNASHX)
+      CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
+      CALL DZERO(WRK(KEFIELD),3*NNZAL*NCSIM)
+      CALL DZERO(WRK(KINDMOM),3*NNZAL*NCSIM)
+      CALL DZERO(WRK(KFXC),NCSIM*NNORBT)
+      CALL DZERO(WRK(KFXCAC),NCSIM*NNASHX)
+      CALL DZERO(WRK(KTFXCAC),NCSIM)
+      CALL DZERO(WRK(KUFPE),N2ORBX)
+      CALL DZERO(WRK(KUFXC),N2ORBX)
+
+      IF (LWRK1 .LT. 0) CALL ERRWRK('PELNC',-KWRK1,LWRK1)
+
+      CALL UPKCMO(CMO,WRK(KUCMO))
+
+C    2. Construct Txc operator (Rxc) ******* 
+
+C    2.a  Construct B(r) response (relay) matrix from file or solve iteratively
+
+      N = 3*NNZAL
+
+      IF (LPOL .AND. MMMAT) THEN
+      LUQMMM = -1
+        IF (LUQMMM .LT. 0) THEN
+        CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+     &               'UNFORMATTED',IDUMMY,.FALSE.)
+        ENDIF
+      REWIND(LUQMMM)
+
+        IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
+        ELSE
+          CALL QUIT('Problem reading the matrix from the QMMMIM file.')
+        ENDIF
+
+        CALL GPCLOSE(LUQMMM,'KEEP')
+
+      ENDIF
+
+C     2.b  Loop over MM sites (inner loop memory)
+
+      IF (.NOT. LPOL) GOTO 755
+
+      KMATAO   = KWRK1
+      KMATMO   = KMATAO + 3*NNBASX
+      KMATAC   = KMATMO + 3*NNORBT
+      KWRK2    = KMATAC + 3*NNASHX
+      LWRK2    = LFREE  - KWRK2
+
+C     1. KMATAO: QM dipole one-elctron integrals
+C        (F^(1) in ao basis)
+C     2. KMATMO  : F^(1) in mo basis
+C     3. KMATAC  : Active part of F^(1)
+C      ------------------------------------
+
+      IF (LWRK2 .LT. 0) CALL ERRWRK('PELNC',-KWRK2,LWRK2)
+
+      LRI = 0 ! counter for index in transformed electric field vector
+
+      DO I = 1,MMCENT
+
+        KPATOM = 0
+        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
+        TOFILE = .FALSE.
+        TRIMAT = .TRUE.
+        EXP1VL = .FALSE.
+
+        CALL DZERO(WRK(KMATAO),3*NNBASX)
+        CALL DZERO(WRK(KMATMO),3*NNORBT)
+        CALL DZERO(WRK(KMATAC),3*NNASHX)
+
+        DIPORG(1) = MMCORD(1,I)
+        DIPORG(2) = MMCORD(2,I)
+        DIPORG(3) = MMCORD(3,I)
+
+C       2.c  Fel^(1) operator in AO basis
+C
+C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
+
+         RUNQM3 = .TRUE.
+
+         CALL GET1IN(WRK(KMATAO),'NEFIELD',NCOM,WRK(KWRK2),
+     &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+
+         RUNQM3 = .FALSE.
+
+
+C        2.d Fel^(1) operator in MO basis
+
+         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
+     &             WRK(KWRK2),NBAST,NORBT)
+
+         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
+     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+
+         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
+     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+
+
+C        2.e Active part of Fel(1) operator in MO basis
+
+         IF (NASHT .GT. 0) THEN
+
+             CALL GETAC2(WRK(KMATMO),
+     &                   WRK(KMATAC))
+
+             CALL GETAC2(WRK(KMATMO + 1*NNORBT),
+     &                   WRK(KMATAC + 1*NNASHX))
+
+             CALL GETAC2(WRK(KMATMO + 2*NNORBT),
+     &                   WRK(KMATAC + 2*NNASHX))
+         ENDIF
+
+C        2.f ) Make F(tilde)_R = B * < 0(L)| Fel^(1) |0 > +  < 0 | Fel^(1) |0(R) > 
+
+         LCI = 0
+
+         DO ICSIM = 1,NCSIM
+
+             TXPE1 = SLVELM(DTV(1,ICSIM),WRK(KMATAC),
+     &                      WRK(KMATMO),TXPEAC1)
+
+             TXPE2 = SLVELM(DTV(1,ICSIM),WRK(KMATAC + 1*NNASHX),
+     &                      WRK(KMATMO + 1*NNORBT),TXPEAC2)
+
+             TXPE3 = SLVELM(DTV(1,ICSIM),WRK(KMATAC + 2*NNASHX),
+     &                      WRK(KMATMO + 2*NNORBT),TXPEAC3)
+
+C         ...To store the F(tilde) in dynamical memory, get
+C         KEFIELD x, y, z first time loop is run. Next time  
+C         Set LRI + 3 to get next MM center.         
+
+C         x-value                                   ! This is for storage of the vector
+          WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
+C         y-value                                   ! LCI is a counter for each state in 
+          WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
+C         z-value
+          WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
+C         start from x MM center of next root
+          LCI = LCI + 3*NNZAL
+
+        END DO ! NCSIM
+
+        LRI = LRI + 3
+
+      END DO ! MMCENT
+
+      DO ICSIM = 1, NCSIM
+
+         NDIM=3*NNZAL
+         IF (MMMAT) THEN
+             CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
+     &                   WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &                   WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
+         ELSE IF (MMITER) THEN
+             IOPT = 2 ! Do not read from file any previuos induced moments
+             CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &                   WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &                   WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+         ENDIF
+        
+          WRITE(LUPRI,*)'Induced moments'
+          CALL OUTPUT(WRK(KINDMOM),1,NDIM,1,1,1,1,1,LUPRI)
+   
+      END DO ! ICSIM
+
+C     2.f  Make F(el) and daxpy first x, then y and then z
+C          for each CI B vector
+
+      LRI = 0
+
+      DO I = 1, MMCENT
+
+         DIPORG(1) = MMCORD(1,I)
+         DIPORG(2) = MMCORD(2,I)
+         DIPORG(3) = MMCORD(3,I)
+
+         CALL DZERO(WRK(KMATAO),3*NNBASX)
+         CALL DZERO(WRK(KMATMO),3*NNORBT)
+         CALL DZERO(WRK(KMATAC),3*NNASHX)
+
+C       2.g Fel^(1) operator in AO basis
+
+        RUNQM3 = .TRUE.
+
+        CALL GET1IN(WRK(KMATAO),'NEFIELD',NCOM,WRK(KWRK2),
+     &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
+     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
+
+        RUNQM3 = .FALSE.
+
+
+C       2.h Fel(1) operator in MO basis
+
+        CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
+     &             WRK(KWRK2),NBAST,NORBT)
+         
+
+        CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
+     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+
+        CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
+     &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+
+          LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
+
+          DO ICSIM = 1,NCSIM
+
+            FACx = -WRK(KINDMOM + LRI + 0 + LCI)
+
+            CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,
+     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
+
+            FACy = -WRK(KINDMOM + LRI + 1 + LCI)
+
+            CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1,
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
+
+            FACz = -WRK(KINDMOM + LRI + 2 + LCI)
+
+            CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1,
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
+
+            IF (NASHT .GT. 0) THEN
+              CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
+     &                    WRK(KFXCAC + (ICSIM-1)*NNASHX))
+            END IF
+
+            LCI = LCI + 3*NNZAL
+        END DO
+        LRI = LRI + 3
+      END DO
+                   
+      DO ICSIM = 1,NCSIM
+         WRITE(LUPRI,*)'FXC Operator'
+         CALL OUTPAK(WRK(KFXC),NORBT,1,LUPRI) 
+         IF (NASHT .GT. 0) THEN
+             WRITE(LUPRI,*)'FXC Operator (active part)'
+             CALL OUTPAK(WRK(KFXCAC),NASHX,1,LUPRI)
+         END IF
+      END DO
+
+      DO ICSIM = 1,NCSIM
+         IF (TRPLET) THEN 
+            TFXC = SOLELM(DVTR,WRK(KFXCAC + (ICSIM-1)*NNASHX),
+     &                    WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
+            TFXC = TFXCAC
+         ELSE
+            TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
+     &                    WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
+         END IF
+         WRK(KTFXCAC-1+ICSIM) = TFXCAC
+      END DO
+
+C    ***************************************
+
+C    3. Construct Fg operator (Ryc) 
+
+  755 CONTINUE ! IF LPOL
+
+C      CALL PEFCMO(WRK(KUCMO),WRK(KFPEMO),DV,WRK(KWRK1),LWRK1,IPQMMM)
+
+C    *** Read the solvent contributions from PEFCMO from file ***
+
+      IF (LUSIFC .LE. 0) THEN
+        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        LOPEN = .TRUE.
+      ENDIF 
+
+      REWIND(LUSIFC)
+
+      MMORBT = MAX(4,NNORBT)
+      IF (MMORBT .NE. NNORBX) THEN
+      CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNC')
+      END IF
+
+      CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
+      CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
+
+      IF (LOPEN)   CALL GPCLOSE(LUSIFC,'KEEP')
+
+      IF (NASHT .GT. 0) THEN
+          CALL GETAC2(WRK(KFPEMO),WRK(KFPEAC))
+      END IF
+
+      TFPEMO = SOLELM(DV,WRK(KFPEAC),WRK(KFPEMO),TFPEAC)
+
+C    ***************************************
+
+C     Calculate Fxc(Rxc) and Fg(Ryc) contributions to SCVECS(NVAR,NCSIM)
+C     =================================================================
+
+C     ... CSF part of sigma vectors
+C
+      IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+         WRITE(LUPRI,*)' **** BEFORE SLVSC in SLVLNC **** '
+         CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+      ENDIF
+
+      CALL SLVSC(NCSIM,0,NNASHX,BCVEC,CREF,SVEC,WRK(KFXCAC),WRK(KFPEAC),
+     *           WRK(KTFXCAC),TFPEAC,INDXCI,WRK(KWRK1),LWRK1)
+
+      IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+         WRITE(LUPRI,*)' **** AFTER SLVSC in SLVLNC **** '
+         CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+      END IF
+C
+C     ... orbital part of sigma vector(s)
+C
+      IF (KZWOPT .GT. 0) THEN
+         JRXC   = KFXC
+         CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))       
+         DO ICSIM = 1,NCSIM
+            CALL DSPTSI(NORBT,WRK(JRXC),WRK(KUFXC))    
+            IF (TRPLET) THEN
+               CALL SLVSOR(.TRUE.,.FALSE.,1,UDVTR,
+     *                     SVEC(1,ICSIM),WRK(KUFXC))
+            ELSE
+               CALL SLVSOR(.TRUE.,.TRUE.,1,UDV,        ! Construct < j | Fg | 0^(R) >  + < j | Fxc | 0 > 
+     *                     SVEC(1,ICSIM),WRK(KUFXC))   !           < 0^(L) | Fg | j >  + < 0 | Fxc | j >
+            END IF
+            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN
+               WRITE(LUPRI,*)' **** AFTER SLVSOR  in SLVLNC **** '
+               WRITE(LUPRI,*)
+     *         ' orbital part of LINEAR TRANSFORMED CONF VEC No',ICSIM
+               WRITE(LUPRI,*)' TXC CONTRIBUTION'
+               CALL OUTPUT(SVEC(1,ICSIM),1,KZYVAR,1,1,KZYVAR,1,1,LUPRI)
+            END IF
+            IF (TRPLET) THEN
+               CALL SLVSOR(.FALSE.,.FALSE.,1,DTVTR(1,ICSIM),
+     *                      SVEC(1,ICSIM),WRK(KUFPE))
+            ELSE
+               CALL SLVSOR(.FALSE.,.FALSE.,1,DTV(1,ICSIM), ! edh: Construct < 0 | Fg | 0 > Sj 
+     *                     SVEC(1,ICSIM),WRK(KUFPE))       !            S*j < 0 | Fg | 0 >
+            END IF
+            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN 
+               WRITE(LUPRI,*)
+     *         ' orbital part of LINEAR TRANSFORMED CONF VEC No',ICSIM
+               WRITE(LUPRI,*)' TG CONTRIBUTION'
+               CALL OUTPUT(SVEC(1,ICSIM),1,KZYVAR,1,1,KZYVAR,1,1,LUPRI)
+            END IF
+
+            JRXC   = JRXC   + NNORBX
+         END DO
+
+            IF ( (IPQMMM.GE. 15 ) .OR. (LOCDEB) ) THEN 
+               WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
+               WRITE(LUPRI,*)' **** AFTER SLVSOR  in SLVLNC **** '
+               CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
+            END IF
+      END IF
+
+      IF (NCREF .NE. KZCONF) CALL QUIT('QMMMLNC: NCREF .ne. KZCONF')
+
+C     ...Restore the dipole origin.
+
+      DIPORG(1) = XSAVE
+      DIPORG(1) = YSAVE
+      DIPORG(1) = ZSAVE
+
+      CALL QEXIT('QMMMLNC')
+      RETURN
+C     end of QMMMLNC.
+      END
 C  /* Deck qmmmlno */
-      SUBROUTINE QMMMLNO(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
-     &                  DVTR,EVECS,WRK,LWRK)
+      SUBROUTINE QMMMLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
+     &                   UDV,DV,UDVTR,DVTR,SVEC,
+     &                   WRK,LWRK)
 C
-C  JK, Nov.08
+C  JK, Nov.08 and modification to mcscf by edh and jk June 2012
 C
-C  Purpose:  Calculate SCF/DFT E^2 contribution from a surrounding
+C  Purpose:  Calculate MCSCF or SCF/DFT E^2 contribution from a surrounding
 C            polarizable MM medium to an orbital trial vector. New QMMM
 C            code.
 C  
@@ -60,18 +575,23 @@ C
 #include "cbiher.h"
 #include "infdim.h"
 
-      DIMENSION BOVECS(*), CMO(*), XINDX(*), UDV(NASHDI,NASHDI)
-      DIMENSION UDVTR(N2ASHX), DVTR(*), EVECS(KZYVAR,*)
-      DIMENSION WRK(*), DV(*), CREF(*)
+
+      DIMENSION BOVECS(*), CMO(*), CREF(*)
+      DIMENSION INDXCI(*), UDV(*), DV(*)
+      DIMENSION UDVTR(*), DVTR(*)
+      DIMENSION WRK(*), SVEC(KZYVAR,*)
 
       CHARACTER*8 LABINT(9*MXCENT)
       LOGICAL TOFILE, TRIMAT, EXP1VL, LOCDEB
-      LOGICAL FNDLAB
+      LOGICAL FNDLAB, LOPEN, LPOL 
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
 
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, FOUR = 4.0D0)
 
       LOCDEB = .FALSE.
+      LOPEN  = .FALSE.
+
+      LPOL = .FALSE.
 
       CALL QENTER('QMMMLNO')
 
@@ -80,8 +600,22 @@ C
         BTIME = SECOND()
       ENDIF
 
-      IF (NNZAL .EQ. 0) THEN ! no pol. and nothing to do here
-        CALL QEXIT('QMMMLNO')
+      IF (IPOLTP .GT. 0) LPOL = .TRUE.
+C
+C     Determine if full Hessian or only orbital Hessian
+C
+      IF (IPQMMM .GE. 15) THEN
+         WRITE (LUPRI,'(//A)') ' >>> TEST OUTPUT FROM QMMMLNO >>>'
+      END IF
+      IF (IPQMMM .GE. 15) THEN
+         WRITE (LUPRI,'(/A)') ' >>> QMMMLNO - svec(1,nosim) on entry'
+         CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+      END IF
+
+c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
+
+      IF ((NNZAL .EQ. 0) .AND. (KZCONF .EQ. 0)) THEN ! edh: No pol. (and not MCSCF) and nothing to do here
+        CALL QEXIT('QMMMLNO')                        ! edh: KZCONF *not* optimal for triplet response
         RETURN
       ENDIF
 
@@ -95,10 +629,16 @@ C
         RETURN
       ENDIF
 
-
+C     Memory allocation   
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
-      KRXYO   = KUBO    + NOSIM*N2ORBX
+C     ---------F(yo) construction--------
+      KFPEMO  = KUBO    + NOSIM*N2ORBX
+      KFPEAC  = KFPEMO  + NNORBX
+      KUFPE   = KFPEAC  + NNASHX
+      KUFPEX  = KUFPE   + N2ORBX
+C     ---------F(xo) construction--------   
+      KRXYO   = KUFPEX  + N2ORBX
       IF (TRPLET) THEN
         KRXYOT  = KRXYO   + NOSIM*N2ORBX
         KEFIELD = KRXYOT  + NOSIM*N2ORBX
@@ -107,28 +647,51 @@ C
       ENDIF
       KINDMOM = KEFIELD + 3*NNZAL
       IF (MMMAT) THEN
-        KINVMAT = KINDMOM + 3*NNZAL
-        KLAST    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2
+        KINVMAT  = KINDMOM + 3*NNZAL
+        KWRK1    = KINVMAT + 3*NNZAL*(3*NNZAL+1)/2   
       ELSE IF (MMITER) THEN
-        KLAST    = KINDMOM + 3*NNZAL
+        KWRK1   = KINDMOM + 3*NNZAL
       ENDIF
-      LWRK1 = LWRK - KLAST + 1      
+      KRXYOA = KWRK1
+      IF (TRPLET) THEN
+        KRXYAT = KRXYOA + NOSIM*N2ASHX
+        KTXYOA = KRXYAT + NOSIM*N2ASHX
+      ELSE
+        KTXYOA = KRXYOA + NOSIM*N2ASHX
+      END IF
+      IF (TRPLET) THEN
+        KTXYAT = KTXYOA + NOSIM
+        KOVLP  = KTXYAT + NOSIM
+      ELSE
+        KOVLP  = KTXYOA + NOSIM
+      END IF
+      KWRK2  = KOVLP  + NOSIM
+      LWRK2  = LWRK  - KWRK2
 
-      IF (LWRK1 .LT. 0) CALL ERRWRK('QMMMLNO',-KLAST,LWRK)
+      IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO',-KWRK2,LWRK2)
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
+      CALL DZERO(WRK(KFPEMO),NNORBX)
+      CALL DZERO(WRK(KFPEAC),NNASHX)
+      CALL DZERO(WRK(KUFPE),N2ORBX)
+      CALL DZERO(WRK(KUFPEX),N2ORBX)     
       CALL DZERO(WRK(KRXYO),NOSIM*N2ORBX)
       IF (TRPLET) CALL DZERO(WRK(KRXYOT),NOSIM*N2ORBX)
       CALL DZERO(WRK(KEFIELD),3*NNZAL)
       CALL DZERO(WRK(KINDMOM),3*NNZAL)
       IF (MMMAT) CALL DZERO(WRK(KINVMAT),3*NNZAL*(3*NNZAL+1)/2)
+      CALL DZERO(WRK(KRXYOA),NOSIM*N2ASHX)
+      IF (TRPLET) CALL DZERO(WRK(KRXYAT),NOSIM*N2ASHX)
+      CALL DZERO(WRK(KTXYOA),NOSIM)
+      IF (TRPLET) CALL DZERO(WRK(KTXYAT),NOSIM)
+      CALL DZERO(WRK(KOVLP),NOSIM)
 
 C     Read the relay matrix from file
 
       N = 3*NNZAL 
 
-      IF (MMMAT) THEN
+      IF (LPOL .AND. MMMAT) THEN
         LUQMMM = -1
         IF (LUQMMM .LT. 0) THEN
           CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
@@ -144,7 +707,7 @@ C     Read the relay matrix from file
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
@@ -153,7 +716,31 @@ C     Read the relay matrix from file
         ENDIF
       ENDIF
 
+C     *** Read the solvent contributions from PEFCMO from file ***
+
+      IF (LUSIFC .LE. 0) THEN
+        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        LOPEN = .TRUE.
+      END IF
+
+      REWIND(LUSIFC)
+
+      MMORBT = MAX(4,NNORBT)
+      IF (MMORBT .NE. NNORBX) THEN
+        CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
+      END IF
+
+      CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
+      CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
+
+      IF (LOPEN) THEN
+        CALL GPCLOSE(LUSIFC,'KEEP')
+      END IF
+      
       CALL UPKCMO(CMO,WRK(KUCMO))
+
+      CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
 
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
@@ -164,19 +751,35 @@ C     Read the relay matrix from file
         DTIME = SECOND() - DTIME
         TMMLNO0 = TMMLNO0 + DTIME
       ENDIF
-C     In contrast to the old code, the zero-order contribution, i.e.
+C     For SCF the zero-order contribution, i.e.
 C     - sum_a mu_ind_a t_a_pq has been included since we in 
-C     sirius do not subtract this from the fock/ks-operator. We here only 
-C     need to calculate the explicit electronic contribution, i.e.
-C     - sum_a mu_ind_a[delta rho] t_q_pa, where delta rho is the first order
-C     response/change in the density due to the applied perturbation. 
+C     sirius do not subtract this from the fock/ks-operator.
+C     Add this explicitly only for MCSCF.
 C
       DO 200 IOSIM = 1,NOSIM
 
          IF (MMTIME) DTIME = SECOND()
+
+         ! edh: Arrange Fyo (KRXYO in memory)
+         ! edh: Arrange Fyo triplet (KRXYOT in memory) 
+         ! edh: Unpack orbital response trial vectors k(t) = sum(u)k(t)q + k*(t)q(dagger)
          JRXYO = KRXYO + (IOSIM-1)*N2ORBX
          IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
          JUBO  = KUBO  + (IOSIM-1)*N2ORBX
+C
+C        Calculate one-index transformed integrals
+C
+      IF (KZCONF .GT. 0) THEN    ! edh: KZCONF *not* optimal for triplet    
+
+        CALL DZERO(WRK(KUFPEX),N2ORBX)                        
+        CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
+
+          IF (TRPLET) THEN
+            CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYOT),1)
+          ELSE
+            CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYO),1) 
+          ENDIF
+      ENDIF
 
 C-------------------------------------------------------
 C 1. Construct vector containing expectation value of electric 
@@ -184,12 +787,14 @@ C    field due to first order change in the density. Length of vector
 C    is NNZAL = no. of pol. sites.
 C-------------------------------------------------------
 
+      IF (LPOL) THEN
+
          CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
 #if defined(VAR_MPI)
-         IF (NODTOT .GE. 1) THEN
+         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
             CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
-     *                      WRK(JUBO),WRK(KLAST),LWRK1)
+     *                      WRK(JUBO),WRK(KWRK2),LWRK2)
          ELSE
 #endif
            LRI = 1             ! group-index in vector
@@ -200,7 +805,7 @@ C-------------------------------------------------------
              CALL MMLNO_ITER1(J,WRK(KEFIELD+LRI-1+0),
      *                        WRK(KEFIELD+LRI-1+1),WRK(KEFIELD+LRI-1+2),
      *                        UDV,UDVTR,WRK(KUCMO),WRK(JUBO),
-     *                        WRK(KLAST),LWRK1,IPRRSP)
+     *                        WRK(KWRK2),LWRK2,IPRRSP)
              LRI = LRI + 3
              GOTO 201
   201      CONTINUE        
@@ -227,19 +832,17 @@ C        Calculate the induced dipoles corresponding to this field
      &                ZERO, WRK(KINDMOM), 1)
          ELSE IF (MMITER) THEN
            IOPT = 2 ! Do not read from file any previuos induced moments
-           CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KLAST),LWRK1,
+           CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KWRK2),LWRK2,
      *                 IOPT,IPQMMM)
          ENDIF
 
-         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
            WRITE(LUPRI,*) 'Transformed induced dipole moments' 
            CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
            WRITE(LUPRI,*)
          ENDIF
 
 C        Now we need the integrals again transformed to the MO basis. 
-C        These could have been stored
-C        before, but we choose to do all of this integral-direct.
          IF (MMTIME) THEN
            DTIME = SECOND() - DTIME
            TMMLNO2 = TMMLNO2 + DTIME
@@ -252,11 +855,11 @@ C        before, but we choose to do all of this integral-direct.
          ELSE
             LRXYO = JRXYO
          ENDIF
-
+        ! Make Fxo (add to Fyo and store in KRXYO) 
 #if defined(VAR_MPI)
-         IF (NODTOT .GE. 1) THEN
+         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
             CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
-     *                      WRK(KLAST),LWRK1)
+     *                      WRK(KWRK2),LWRK2)
          ELSE
 #endif
             LRI = 1
@@ -265,29 +868,99 @@ C        before, but we choose to do all of this integral-direct.
                CALL MMLNO_ITER2(J,WRK(KINDMOM+LRI-1),
      *                        WRK(KINDMOM+LRI),WRK(KINDMOM+LRI+1),
      *                        WRK(KUCMO),WRK(LRXYO),
-     *                        WRK(KLAST),LWRK1,IPRRSP)
+     *                        WRK(KWRK2),LWRK2,IPRRSP)
                LRI = LRI + 3
  202        CONTINUE 
 #if defined(VAR_MPI)
          ENDIF
 #endif
+
+      ENDIF
+
          IF (MMTIME) THEN
            DTIME = SECOND() - DTIME
            TMMLNO3 = TMMLNO3 + DTIME
          ENDIF
  200  CONTINUE
 
+      IF (TDHF) GOTO 300
+
 C--------------------------------------------
 C 3.  Add effective operators to response
+C     Calculate Fxo (Rxo) and Fyo (Ryo) 
+C     contributions to SVEC(NSVEC,NOSIM)
 C--------------------------------------------
 
       IF (MMTIME) DTIME = SECOND()
 
+      DO IOSIM = 1,NOSIM         
+         JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX
+         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX 
+         IF (TRPLET) THEN
+            JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
+            JRXYAT = KRXYAT + (IOSIM-1)*N2ASHX
+         END IF
+         IF (IREFSY .EQ. KSYMST) THEN
+            WRK(KOVLP-1+IOSIM) = DDOT(KZCONF,CREF,1,SVEC(1,IOSIM),1)
+         ELSE
+            WRK(KOVLP-1+IOSIM) = D0
+         END IF
+  
+            CALL GETACQ(WRK(JRXYO),WRK(JRXYOA))
+            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  
+            WRK(KTXYOA-1+IOSIM) = TXYOAC
+ 
+            WRITE (LUPRI,*)'TXYOAC', TXYOAC
+
+         IF (TRPLET) THEN
+              CALL GETACQ(WRK(JRXYOT),WRK(JRXYAT))
+              TXYOT  = SLVQLM(UDVTR,WRK(JRXYAT),WRK(JRXYOT),TXYACT)
+              WRK(KTXYAT-1+IOSIM) = TXYACT
+              IF (IPQMMM .GE. 15) THEN
+                WRITE (LUPRI,*) ' TRIPLET CALCULATION'
+                WRITE (LUPRI,'(/A,I5,3F15.10)')
+     *          ' IOSIM, C_OVLP, TXYOAC, TXYO :',
+     *          IOSIM,WRK(KOVLP-1+IOSIM),TXYOAC,TXYO
+                WRITE (LUPRI,'(/A,I5,3F15.10)')
+     *          ' IOSIM, C_OVLP, TXYACT, TXYOT :',
+     *          IOSIM,WRK(KOVLP-1+IOSIM),TXYACT,TXYOT
+              END IF
+             ELSE
+             IF (IPQMMM .GE. 15) THEN
+               WRITE (LUPRI,'(/A,I5,3F15.10)')
+     *             ' IOSIM, C_OVLP, TXYOAC, TXYO :',
+     *               IOSIM,WRK(KOVLP-1+IOSIM),TXYOAC,TXYO
+             END IF
+         END IF
+      ENDDO
+         CALL SLVSC(0,NOSIM,N2ASHX,DUMMY,CREF,SVEC,WRK(KRXYOA),
+     *            WRK(KRXYAT),WRK(KTXYOA),DUMMY,INDXCI,WRK(KWRK2),LWRK2)
+
+         IF (IPQMMM.GT.15) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER SLVSC in QMMMLNO **** '
+            CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
+
+  300 CONTINUE ! IF TDHF 
+
       IF (TRPLET) THEN
-         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,EVECS(1,1),WRK(KRXYO))
-         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYOT))
+          ! SLVSOR: < 0 | [ q_j, A ] | 0 >
+         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KRXYO))
+         ! we need A = F(xo) + F(yo)
+         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,SVEC(1,1),WRK(KRXYOT))
       ELSE
-         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,EVECS(1,1),WRK(KRXYO))
+         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,SVEC(1,1),WRK(KRXYO))
+      ENDIF
+
+      IF (IPQMMM.GT.101) THEN
+         WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+         WRITE(LUPRI,*)' **** AFTER SLVSOR in QMMMLNO **** '
+         CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+      END IF
+
+      IF (.NOT. TDHF) THEN
+        IF (NCREF .NE. KZCONF) CALL QUIT('QMMMLNO: NCREF .ne. KZCONF')
       ENDIF
 
       IF (MMTIME) THEN
@@ -450,7 +1123,7 @@ C     Unpack symmetry blocked CMO
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2
@@ -758,7 +1431,7 @@ C     Unpack symmetry blocked CMO
 
         CALL GPCLOSE(LUQMMM,'KEEP')
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
           DO I = 1, N*(N+1)/2

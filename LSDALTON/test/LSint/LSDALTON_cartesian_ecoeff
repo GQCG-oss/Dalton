@@ -50,6 +50,8 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_cartesian_ecoeff.dal <<'%EOF%'
+**GENERAL
+.TESTMPICOPY
 **INTEGRALS
 .CART-E
 .BASPRINT

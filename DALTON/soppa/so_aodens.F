@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_aodens */
       SUBROUTINE SO_AODENS(DENS,LDENS,CMO,LCMO,TR1E,LTR1E,

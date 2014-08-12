@@ -39,6 +39,8 @@ type infpar_struct
 end type infpar_struct
 
 type(infpar_struct) :: infpar
+!> specifies if mpi_init should be called in lsmpi_init
+logical, save :: call_mpi_init = .true.
 #endif
 contains
 

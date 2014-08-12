@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: abacus/abawalk.F
 C
@@ -1311,16 +1310,18 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
      *          DIPM(3), WORK(LWORK)
 C
-#include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
+
+      REAL*8 GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
 C     ***** Initialize *****
 C
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL DZERO(GRDCAR,NCRTOT)
 C
 C     ***** Multiplicities *****
@@ -2554,9 +2555,12 @@ C  /* Deck wlkir1 */
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(NUCDEP), CSTRA(*), SCTRA(*)
+
+#include "trkoor.h"
+      REAL*8 ERGMOL, GRDMOL(NCOOR), HESMOL(NCOOR,NCOOR) ! automatic arrays
+
 #include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
@@ -2580,8 +2584,9 @@ C
             END IF
   200    CONTINUE
   100 CONTINUE
+      CALL ABAREAD_TAYMOL(ERGMOL,GRDMOL,HESMOL,NCOOR)
       CALL TRAGRD(GRDMOL,CGRAD,CSTRA,SCTRA,NCRREP(0,1),NCOOR)
-      CALL TRAHES(HESMOL,MXCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
+      CALL TRAHES(HESMOL,NCOOR,CHESS,CSTRA,SCTRA,MXCOOR,NCOOR,1)
       ARC = AACCUM - STPNRM
       WRITE (LUWLK) IPOINT, NCOOR, DUMMY, DUMMY, DUMMY,
      &     DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY
@@ -7345,44 +7350,6 @@ C
       END IF
       RETURN
       END
-C  /* Deck ircpot */
-#if defined (VAR_IRCPOT)
-      PROGRAM IRCPOT
-#include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "mxcent.h"
-      DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
-     &          DMASS(MXCENT)
-      LUTRJ = -1
-      CALL GPOPEN(LUTRJ,'DALTON.IRC','OLD','SEQUENTIAL','UNFORMATTED',
-     &            IDUMMY,.FALSE.)
-      NPOINT = 2
-      REWIND LUTRJ
-      DO 100 JPOINT = 1, NPOINT
-         READ (LUTRJ)
-         READ (LUTRJ) IPOINT, NCOOR
-         READ (LUTRJ) AACCUM, ERGMOL
-         READ (LUTRJ) (DMASS(I),I=1,NCOOR/3)
-         READ (LUTRJ) (COOR (I),I=1,NCOOR)
-         READ (LUTRJ) (CGRAD(I),I=1,NCOOR)
-         READ (LUTRJ) ((CHESS(I,J),I=1,NCOOR),J=1,NCOOR)
-         WRITE (LUPRI,'(//A,I5)') ' Point No. ',IPOINT
-         WRITE (LUPRI,'(/A,F12.6)') ' Arc length ', AACCUM
-         WRITE (LUPRI,'(/A,F16.8)') ' Energy     ', ERGMOL
-         CALL HEADER('Masses',-1)
-         CALL OUTPUT(DMASS,1,NCOOR/3,1,1,MXCENT,1,1,LUPRI)
-         CALL HEADER('Coordinates',-1)
-         CALL OUTPUT(COOR,1,3,1,NCOOR,3,MXCOOR,1,LUPRI)
-         CALL HEADER('Gradient',-1)
-         CALL OUTPUT(CGRAD,1,3,1,NCOOR,3,MXCOOR,1,LUPRI)
-         CALL HEADER('Hessian',-1)
-         CALL OUTPUT(CHESS,1,NCOOR,1,NCOOR,MXCOOR,MXCOOR,1,LUPRI)
-  100 CONTINUE
-      CALL GPCLOSE(LUTRJ,'KEEP')
-      STOP
-      END
-#endif
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
 #include "implicit.h"

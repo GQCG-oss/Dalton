@@ -1,0 +1,152 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > choles_kt3_ctocd.info << '%EOF%'
+   choles_kt3_ctocd
+    ---------------
+   Molecule:         HCP
+   Wave Function:    KT3 / Turbomole-TZP
+   Test Purpose:     Cholesky KT3 energy and CTOCD shieldings
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > choles_kt3_ctocd.mol << '%EOF%'
+BASIS
+Turbomole-TZP
+HCP Turbomole-TZP
+......
+    3  0           a  0.10E-14
+        6.    1
+C         0.0000000        0.00000000         0.000000
+        1.    1
+H         0.0000000        0.00000000        -1.0686323668
+       15.    1
+P         0.0000000        0.00000000         1.5421482850
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > choles_kt3_ctocd.dal << '%EOF%'
+**DALTON INPUT
+.RUN PROPERTIES
+.CHOLES
+**CHOLES
+.REDUCE
+.SPANDI
+  1.0d-3
+!.RSTDIA
+!.RSTCHO
+.THRCOM
+ 1.0D-8
+**WAVE FUNCTIONS
+.DFT
+ KT3
+**PROPERTIES
+.CTOCD
+.SHIELD
+**END OF DALTON INPUT
+%EOF%
+
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > choles_kt3_ctocd.check
+cat >> choles_kt3_ctocd.check << '%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+if $GREP -q "not implemented for parallel calculations" $log; then
+   echo "TEST ENDED AS EXPECTED"
+   exit 0
+fi
+
+# KT3 energy
+CRIT1=`$GREP "Final * DFT energy: * -383\.2383416" $log | wc -l`
+TEST[1]=$CRIT1
+CTRL[1]=1
+ERROR[1]="KT3 ENERGY NOT CORRECT"
+
+# Dipole moment
+CRIT1=`$GREP  " \-0*\.1713.." $log | wc -l`
+TEST[2]=$CRIT1
+CTRL[2]=1
+ERROR[2]="DIPOLE MOMENT NOT CORRECT"
+
+# Shieldings
+#CRIT1=`$GREP "Shielding constant\: * \-134\.133. ppm" $log | wc -l`
+#CRIT2=`$GREP "Anisotropy\: * 346\.735. ppm" $log | wc -l`
+#CRIT3=`$GREP "Asymmetry\: * (0| )\.000." $log | wc -l`
+#
+#CRIT4=`$GREP "Shielding constant\: * 23\.811. ppm" $log | wc -l`
+#CRIT5=`$GREP "Anisotropy\: * 9\.478. ppm" $log | wc -l`
+#CRIT6=`$GREP "Asymmetry\: * (0| )\.000." $log | wc -l`
+#
+#CRIT7=`$GREP "Shielding constant\: * \-411\.865. ppm" $log | wc -l`
+#CRIT8=`$GREP "Anisotropy\: * 882\.196. ppm" $log | wc -l`
+#CRIT9=`$GREP "Asymmetry\: * (0| )\.000." $log | wc -l`
+CRIT1=`$GREP "@1 C * -134\.133. * 139\.472. * -273\.605. * 1\.0000 * 346\.735. * 346\.735. * 0*\.0000" $log | wc -l`
+CRIT2=`$GREP "@1 H *   23\.811. *  73\.131. *  -49\.319. * 1\.0000 *   9\.478. *   9\.478. * 0*\.0000" $log | wc -l`
+CRIT3=`$GREP "@1 P * -411\.865. * 205\.208. * -617\.074. * 1\.0000 * 882\.196. * 882\.196. * 0*\.0000" $log | wc -l`
+CRIT4=`$GREP "@1 C * -134\.133. * 119\.370. * -253\.503. * 1\.0000 * 346\.735. * 346\.735. * 0*\.0000" $log | wc -l`
+CRIT5=`$GREP "@1 H *   23\.811. * -16\.241. *   40\.052. * 1\.0000 *   9\.478. *   9\.478. * 0*\.0000" $log | wc -l`
+CRIT6=`$GREP "@1 P * -411\.865. * 205\.151. * -617\.017. * 1\.0000 * 882\.196. * 882\.196. * 0*\.0000" $log | wc -l`
+CRIT7=`$GREP "@1 C *   56\.739. * 310\.243. * -253\.503. * 1\.0000 * 340\.498. * 340\.498. * 0*\.0000" $log | wc -l`
+CRIT8=`$GREP "@1 H *   17\.290. * -22\.762. *   40\.052. * 1\.0000 *  37\.489. *  37\.489. * 0*\.0000" $log | wc -l`
+CRIT9=`$GREP "@1 P *  377\.563. * 994\.580. * -617\.01[67]. * 1\.0000 * 893\.217. * 893\.217. * 0*\.0000" $log | wc -l`
+TEST[3]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ $CRIT6  \
+           \+ $CRIT7  \+ $CRIT8  \+ $CRIT9`
+
+CTRL[3]=9
+ERROR[3]="SHILEDINGS NOT CORRECT"
+
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

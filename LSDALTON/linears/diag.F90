@@ -1175,36 +1175,36 @@ end subroutine diag_set_default_config
 !      call mat_free(Fnew)
 !   end subroutine debug_MU_DELTA_E_ORB
 
-!> \brief Calculate minpr = TrDoldSDnewS/sqrt(TrDoldSDoldS*TrDnewSDnewS)
-!> \author L. Thogersen
-!> \date October 2005
-!> \param Didem Idempotent density matrix
-!> \param Dnonidem Non-idempotent density matrix
-!> \param S Overlap matrix
-!> \param minpr = TrDoldSDnewS/sqrt(TrDoldSDoldS*TrDnewSDnewS)
-   SUBROUTINE Cchange(Didem, Dnonidem, S, minpr)
-     !     implicit none
-     type(Matrix), intent(in) :: Didem, Dnonidem, S
-     real(realk), intent(out) :: minpr
-     type(Matrix) :: SDnewS,SDnew !, pointer
-     real(realk) :: nrm1, nrm2
- 
-     call mat_init(SDnew, S%nrow,S%ncol)
-     call mat_init(SDnewS,S%nrow,S%ncol)
-     call mat_mul(S,Dnonidem,'n','n',1E0_realk,0E0_realk,SDnew)
-     call mat_mul(SDnew,S,'n','n',1E0_realk,0E0_realk,SDnewS)
-     !TrDnewSDoldS
-     minpr = mat_dotproduct(Didem,SDnewS)
-     !TrDoldSDoldS
-     nrm1  = mat_dotproduct(Dnonidem,SDnewS)
-     call mat_mul(S,Didem,'n','n',1E0_realk,0E0_realk,SDnew)
-     call mat_mul(SDnew,S,'n','n',1E0_realk,0E0_realk,SDnewS)
-     !TrDnewSDnewS
-     nrm2 = mat_dotproduct(Didem,SDnewS)
-     minpr = minpr / sqrt(nrm1*nrm2)
-     call mat_free(SDnew)
-     call mat_free(SDnewS)
-   end subroutine Cchange
+!!$!> \brief Calculate minpr = TrDoldSDnewS/sqrt(TrDoldSDoldS*TrDnewSDnewS)
+!!$!> \author L. Thogersen
+!!$!> \date October 2005
+!!$!> \param Didem Idempotent density matrix
+!!$!> \param Dnonidem Non-idempotent density matrix
+!!$!> \param S Overlap matrix
+!!$!> \param minpr = TrDoldSDnewS/sqrt(TrDoldSDoldS*TrDnewSDnewS)
+!!$   SUBROUTINE Cchange(Didem, Dnonidem, S, minpr)
+!!$     !     implicit none
+!!$     type(Matrix), intent(in) :: Didem, Dnonidem, S
+!!$     real(realk), intent(out) :: minpr
+!!$     type(Matrix) :: SDnewS,SDnew !, pointer
+!!$     real(realk) :: nrm1, nrm2
+!!$ 
+!!$     call mat_init(SDnew, S%nrow,S%ncol)
+!!$     call mat_init(SDnewS,S%nrow,S%ncol)
+!!$     call mat_mul(S,Dnonidem,'n','n',1E0_realk,0E0_realk,SDnew)
+!!$     call mat_mul(SDnew,S,'n','n',1E0_realk,0E0_realk,SDnewS)
+!!$     !TrDnewSDoldS
+!!$     minpr = mat_dotproduct(Didem,SDnewS)
+!!$     !TrDoldSDoldS
+!!$     nrm1  = mat_dotproduct(Dnonidem,SDnewS)
+!!$     call mat_mul(S,Didem,'n','n',1E0_realk,0E0_realk,SDnew)
+!!$     call mat_mul(SDnew,S,'n','n',1E0_realk,0E0_realk,SDnewS)
+!!$     !TrDnewSDnewS
+!!$     nrm2 = mat_dotproduct(Didem,SDnewS)
+!!$     minpr = minpr / sqrt(nrm1*nrm2)
+!!$     call mat_free(SDnew)
+!!$     call mat_free(SDnewS)
+!!$   end subroutine Cchange
 
 !> \brief Diagonalize Fock/KS matrix to get density.
 !> \author S. Host
@@ -1248,95 +1248,95 @@ end subroutine diag_set_default_config
      endif
    end subroutine diag_get_density
 
-!> \brief Scale virtual orbitals.
-!> \author L. Thogersen
-!> \date 2003
-!> \param S Overlap matrix
-!> \param H1 One-electron Hamiltonian
-!> \param F Fock/Kohn-Sham matrix
-!> \param D Density matrix
-!>
-!> Create a N-1 potential for the virtual orbitals
-!> allowing for more 'occupied-like' virtual orbitals
-!> good when configuration shifts are needed!!!
-!> ** F_mod = F + (n-1/n - 1)Q^T (F - H1) Q
-!>
-   subroutine diag_scale_virt_fock(S,H1,F,D,cfg_nocc)
-     implicit none
-     type(Matrix), intent(in) :: S,H1,D
-     type(Matrix), intent(inout) :: F
-     type(matrix) :: Q,wrk1,wrk2
-     real(realk) :: konst
-     integer :: ndim,cfg_nocc
-     
-     ndim = S%nrow
-     call mat_init(Q,ndim,ndim)
-     call mat_init(wrk1,ndim,ndim)
-     call mat_init(wrk2,ndim,ndim)
-
-     !** wrk2 = F - h1
-     call mat_add(1E0_realk,F,-1E0_realk,H1,wrk2)
-     !** Q = 1 - DS
-     call mat_mul(D,S,'n','n',1E0_realk,0E0_realk,wrk1)
-     call mat_add_identity(1E0_realk,-1E0_realk,wrk1,Q)
-     !** wrk1 = (F - h1) Q = wrk2 Q
-     call mat_mul(wrk2,Q,'n','n',1E0_realk,0E0_realk,wrk1)
-     !** konst = -1/n
-     konst = -1E0_realk/(2E0_realk*cfg_nocc)
-     !** F_mod = F + konst Q^T (F - H1) Q = F + konst Q^T wrk1
-     call mat_mul(Q,wrk1,'T','n',konst,1E0_realk,F)
-
-     call mat_free(Q)
-     call mat_free(wrk1)
-     call mat_free(wrk2)
-   end subroutine diag_scale_virt_fock
+!!$!> \brief Scale virtual orbitals.
+!!$!> \author L. Thogersen
+!!$!> \date 2003
+!!$!> \param S Overlap matrix
+!!$!> \param H1 One-electron Hamiltonian
+!!$!> \param F Fock/Kohn-Sham matrix
+!!$!> \param D Density matrix
+!!$!>
+!!$!> Create a N-1 potential for the virtual orbitals
+!!$!> allowing for more 'occupied-like' virtual orbitals
+!!$!> good when configuration shifts are needed!!!
+!!$!> ** F_mod = F + (n-1/n - 1)Q^T (F - H1) Q
+!!$!>
+!!$   subroutine diag_scale_virt_fock(S,H1,F,D,cfg_nocc)
+!!$     implicit none
+!!$     type(Matrix), intent(in) :: S,H1,D
+!!$     type(Matrix), intent(inout) :: F
+!!$     type(matrix) :: Q,wrk1,wrk2
+!!$     real(realk) :: konst
+!!$     integer :: ndim,cfg_nocc
+!!$     
+!!$     ndim = S%nrow
+!!$     call mat_init(Q,ndim,ndim)
+!!$     call mat_init(wrk1,ndim,ndim)
+!!$     call mat_init(wrk2,ndim,ndim)
+!!$
+!!$     !** wrk2 = F - h1
+!!$     call mat_add(1E0_realk,F,-1E0_realk,H1,wrk2)
+!!$     !** Q = 1 - DS
+!!$     call mat_mul(D,S,'n','n',1E0_realk,0E0_realk,wrk1)
+!!$     call mat_add_identity(1E0_realk,-1E0_realk,wrk1,Q)
+!!$     !** wrk1 = (F - h1) Q = wrk2 Q
+!!$     call mat_mul(wrk2,Q,'n','n',1E0_realk,0E0_realk,wrk1)
+!!$     !** konst = -1/n
+!!$     konst = -1E0_realk/(2E0_realk*cfg_nocc)
+!!$     !** F_mod = F + konst Q^T (F - H1) Q = F + konst Q^T wrk1
+!!$     call mat_mul(Q,wrk1,'T','n',konst,1E0_realk,F)
+!!$
+!!$     call mat_free(Q)
+!!$     call mat_free(wrk1)
+!!$     call mat_free(wrk2)
+!!$   end subroutine diag_scale_virt_fock
 
 !Returns the overlap of the new MO with the smallest overlap to the old MOs
-   subroutine util_min_MO_overlap(cfg_nocc,S,Cold,Cnew,noverlap,overlap)
-      implicit none
-      integer, intent(in)      :: cfg_nocc
-      type(Matrix), intent(in) :: S,Cold,Cnew
-      integer, intent(in) :: noverlap
-      real(realk), intent(out) :: overlap(noverlap)
-      type(Matrix) :: ColdTS,ColdTSCnew
-      real(realk) :: scr(cfg_nocc),xxx
-      real(realk) :: overlap_x
-      integer :: i,j
-
-      call mat_init(ColdTS,S%nrow,S%ncol)
-      call mat_init(ColdTSCnew,S%nrow,S%ncol)
-      call mat_mul(Cold,S,'t','n',1E0_realk,0E0_realk,ColdTS)
-      call mat_mul(ColdTS,Cnew,'n','n',1E0_realk,0E0_realk,ColdTSCnew)
-      if (noverlap < 1) STOP ' wrong input for util_min_MO_overlap'
-      if (noverlap == 1) then
-         overlap = mat_column_norm(ColdTSCnew,1,1,CFG_NOCC)
-         do i = 2,CFG_NOCC
-           !Returns the sum of the elements in th ith column squared
-           !with the row limits 1:CFG_NOCC
-           overlap_x = mat_column_norm(ColdTSCnew,i,1,CFG_NOCC)
-           overlap = MIN(overlap,overlap_x)
-         enddo
-      else
-         do i = 1,CFG_NOCC
-           !Returns the sum of the elements in th ith column squared
-           !with the row limits 1:CFG_NOCC
-           scr(i) = mat_column_norm(ColdTSCnew,i,1,CFG_NOCC)
-         enddo
-         !sort them such that the lowest is first
-         !FIXME: use better sorting algorithm
-         do i = 1,cfg_nocc
-           do j = 1,cfg_nocc-1
-             if (scr(j) > scr(j+1)) then
-               xxx = scr(j+1)
-               scr(j+1) = scr(j)
-               scr(j) = xxx
-             endif
-           enddo
-         enddo
-         overlap(1:noverlap) = scr(1:noverlap)
-      endif
-      call mat_free(ColdTS)
-      call mat_free(ColdTSCnew)
-   end subroutine util_min_MO_overlap
+!!$   subroutine util_min_MO_overlap(cfg_nocc,S,Cold,Cnew,noverlap,overlap)
+!!$      implicit none
+!!$      integer, intent(in)      :: cfg_nocc
+!!$      type(Matrix), intent(in) :: S,Cold,Cnew
+!!$      integer, intent(in) :: noverlap
+!!$      real(realk), intent(out) :: overlap(noverlap)
+!!$      type(Matrix) :: ColdTS,ColdTSCnew
+!!$      real(realk) :: scr(cfg_nocc),xxx
+!!$      real(realk) :: overlap_x
+!!$      integer :: i,j
+!!$
+!!$      call mat_init(ColdTS,S%nrow,S%ncol)
+!!$      call mat_init(ColdTSCnew,S%nrow,S%ncol)
+!!$      call mat_mul(Cold,S,'t','n',1E0_realk,0E0_realk,ColdTS)
+!!$      call mat_mul(ColdTS,Cnew,'n','n',1E0_realk,0E0_realk,ColdTSCnew)
+!!$      if (noverlap < 1) STOP ' wrong input for util_min_MO_overlap'
+!!$      if (noverlap == 1) then
+!!$         overlap = mat_column_norm(ColdTSCnew,1,1,CFG_NOCC)
+!!$         do i = 2,CFG_NOCC
+!!$           !Returns the sum of the elements in th ith column squared
+!!$           !with the row limits 1:CFG_NOCC
+!!$           overlap_x = mat_column_norm(ColdTSCnew,i,1,CFG_NOCC)
+!!$           overlap = MIN(overlap,overlap_x)
+!!$         enddo
+!!$      else
+!!$         do i = 1,CFG_NOCC
+!!$           !Returns the sum of the elements in th ith column squared
+!!$           !with the row limits 1:CFG_NOCC
+!!$           scr(i) = mat_column_norm(ColdTSCnew,i,1,CFG_NOCC)
+!!$         enddo
+!!$         !sort them such that the lowest is first
+!!$         !FIXME: use better sorting algorithm
+!!$         do i = 1,cfg_nocc
+!!$           do j = 1,cfg_nocc-1
+!!$             if (scr(j) > scr(j+1)) then
+!!$               xxx = scr(j+1)
+!!$               scr(j+1) = scr(j)
+!!$               scr(j) = xxx
+!!$             endif
+!!$           enddo
+!!$         enddo
+!!$         overlap(1:noverlap) = scr(1:noverlap)
+!!$      endif
+!!$      call mat_free(ColdTS)
+!!$      call mat_free(ColdTSCnew)
+!!$   end subroutine util_min_MO_overlap
 
 END MODULE diagonalization

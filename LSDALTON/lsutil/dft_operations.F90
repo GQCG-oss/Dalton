@@ -162,19 +162,16 @@ IF (associated(DFTdata%FKSM))THEN
    nullify(DFTdata%FKSM)
 endif
 
-! BROADCAST DFTdata%FKSMS
 IF (associated(DFTdata%FKSMS))THEN
    call mem_dft_dealloc(DFTDATA%FKSMS)
    nullify(DFTdata%FKSMS)
 endif
 
-! BROADCAST DFTdata%orb2atom
 IF(associated(DFTdata%orb2atom))THEN
    call mem_dft_dealloc(DFTDATA%orb2atom)
    nullify(DFTDATA%orb2atom)   
 ENDIF
 
-! BROADCAST DFTdata%grad
 IF (associated(DFTdata%grad))THEN
    call mem_dft_dealloc(DFTDATA%grad)
    nullify(DFTDATA%grad)   
@@ -182,7 +179,6 @@ ENDIF
 end subroutine free_DFTdata
 
 
-#ifdef VAR_MPI
 subroutine mpicopy_DFTparam(DFT,master)
 implicit none
 integer(kind=ls_mpik) :: master
@@ -210,12 +206,20 @@ call LS_MPI_BUFFER(DFT%DODISP,Master)
 !AMT New Dispersion values
 call LS_MPI_BUFFER(DFT%DO_DFTD2,Master)
 call LS_MPI_BUFFER(DFT%L_INP_D2PAR,Master)
+call LS_MPI_BUFFER(DFT%D2_s6_inp,Master)  
+call LS_MPI_BUFFER(DFT%D2_alp_inp,Master)
+call LS_MPI_BUFFER(DFT%D2_rs6_inp,Master)
 call LS_MPI_BUFFER(DFT%DODISP2,Master)
 call LS_MPI_BUFFER(DFT%DODISP3,Master)
 call LS_MPI_BUFFER(DFT%DO_DFTD3,Master)
 call LS_MPI_BUFFER(DFT%DO_BJDAMP,Master)
 call LS_MPI_BUFFER(DFT%DO_3BODY,Master)
 call LS_MPI_BUFFER(DFT%L_INP_D3PAR,Master)
+call LS_MPI_BUFFER(DFT%D3_s6_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_alp_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_rs6_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_rs18_inp,Master)
+call LS_MPI_BUFFER(DFT%D3_s18_inp,Master)
 !AMT
 call LS_MPI_BUFFER(DFT%DFTIPT,Master)
 call LS_MPI_BUFFER(DFT%DFTBR1,Master)
@@ -254,7 +258,6 @@ do i=1,size(DFT%GridObject)
 enddo
 
 end subroutine mpicopy_DFTparam
-#endif
 
 subroutine initDFTdatatype(DFTdata)
 implicit none
@@ -309,24 +312,28 @@ if(associated(DFTdata%Energy))then
 else
    nullify(newDFTdata%energy)
 endif
-if(associated(DFTdata%BMAT))then
-   call mem_dft_alloc(newDFTDATA%BMAT,nbast,nbast,nbmat)
-   CALL DCOPY(nbast*nbast*nbmat,DFTDATA%BMAT,1,newDFTDATA%BMAT,1)
-else
+
+!THE BMAT, FKSM and FKSMS are NOT copied because this routine
+!is used to distribute data to a private variable and these should be SHARED 
+
+!if(associated(DFTdata%BMAT))then
+!   call mem_dft_alloc(newDFTDATA%BMAT,nbast,nbast,nbmat)
+!   CALL DCOPY(nbast*nbast*nbmat,DFTDATA%BMAT,1,newDFTDATA%BMAT,1)
+!else
    nullify(newDFTdata%BMAT)
-endif
-if(associated(DFTdata%FKSM))then
-   call mem_dft_alloc(newDFTDATA%FKSM,nbast,nbast,nfmat)
-   CALL LS_DZERO(newDFTDATA%FKSM,nbast*nbast*nfmat)
-else
+!endif
+!if(associated(DFTdata%FKSM))then
+!   call mem_dft_alloc(newDFTDATA%FKSM,nbast,nbast,nfmat)
+!   CALL LS_DZERO(newDFTDATA%FKSM,nbast*nbast*nfmat)
+!else
    nullify(newDFTdata%FKSM)
-endif
-if(associated(DFTdata%FKSMS))then
-   call mem_dft_alloc(newDFTDATA%FKSMS,nbast,nbast,nfmat)
-   CALL LS_DZERO(newDFTDATA%FKSMS,nbast*nbast*nfmat)
-else
+!endif
+!if(associated(DFTdata%FKSMS))then
+!   call mem_dft_alloc(newDFTDATA%FKSMS,nbast,nbast,nfmat)
+!   CALL LS_DZERO(newDFTDATA%FKSMS,nbast*nbast*nfmat)
+!else
    nullify(newDFTdata%FKSMS)
-endif
+!endif
 newDFTdata%dosympart = DFTdata%dosympart
 newDFTdata%natoms = natoms
 

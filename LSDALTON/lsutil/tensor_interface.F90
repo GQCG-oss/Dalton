@@ -13,7 +13,7 @@ module tensor_interface_module
   use reorder_frontend_module
   use lspdm_tensor_operations_module
   use matrix_module
-
+  use dec_workarounds_module
 
   !> Number of created arrays
   integer(kind=long) :: ArraysCreated=0
@@ -67,6 +67,12 @@ module tensor_interface_module
 
 
 contains
+
+  subroutine array_enable_debug_mode()
+     implicit none
+     array_debug_mode = .true.
+  end subroutine array_enable_debug_mode
+
   subroutine copy_array(arr_in,arr_out)
     implicit none
     type(array), intent(in) :: arr_in
@@ -595,6 +601,300 @@ contains
 
   end function array_ddot
 
+  !> \brief Extract EOS indices from array4 for both occupied and virtual partitioning schemes:
+  !> 1. Arr_occEOS: The occupied orbitals not assigned to the central atom are removed while
+  !>                the virtual indices are unchanged.
+  !> 2. Arr_virtEOS: The virtual orbitals not assigned to the central atom are removed while
+  !>                 the occupied indices are unchanged.
+  !> \author Patrick Ettenhuber, adapted from Kasper Kristensen
+  !> \date August 2014
+  subroutine array_extract_eos_indices(Arr_orig,MyFragment,Arr_occEOS,Arr_virtEOS)
+
+
+    implicit none
+    !> Array where occupied EOS indices are extracted
+    type(array),intent(inout),optional :: Arr_occEOS
+    !> Array where virtual EOS indices are extracted
+    type(array),intent(inout),optional :: Arr_virtEOS
+    !> Original array with AOS fragment indices for both occ and virt spaces
+    type(array),intent(in) :: Arr_orig
+    !> Atomic fragment
+    type(decfrag),intent(inout) :: MyFragment
+    integer :: nocc, nvirt
+
+    ! Number of occ and virt orbitals on central atom in fragment
+    nocc  = MyFragment%noccEOS
+    nvirt = MyFragment%nunoccEOS
+
+    ! Extract virtual EOS indices and leave occupied indices untouched
+    ! ****************************************************************
+
+    if(present(Arr_virtEOS))then
+       call array_extract_eos_indices_virt(Arr_virtEOS,Arr_orig,&
+          & nvirt,MyFragment%idxu(1:nvirt))
+    endif
+
+    ! Extract occupied EOS indices and leave virtual indices untouched
+    ! ****************************************************************
+
+    if(present(Arr_occEOS))then
+       call array_extract_eos_indices_occ(Arr_occEOS,Arr_orig,&
+          & nocc, MyFragment%idxo(1:nocc))
+    endif
+
+  end subroutine array_extract_eos_indices
+
+
+  subroutine array_extract_eos_indices_virt(Arr,Arr_full,nEOS,EOS_idx)
+
+    implicit none
+    !> Array output where EOS indices are extracted
+    type(array),intent(inout) :: Arr
+    !> Original array
+    type(array),intent(in) :: Arr_full
+    !> Number of EOS indices
+    integer,intent(in) :: nEOS
+    !> List of EOS indices in the total (EOS+buffer) list of orbitals
+    integer, dimension(nEOS),intent(in) :: EOS_idx
+    integer :: nocc,nvirt,i,a,b,j,ax,bx
+    integer, dimension(4) :: new_dims
+
+    ! Initialize stuff
+    ! ****************
+    nocc = arr_full%dims(2)  ! Total number of occupied orbitals
+    nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
+    new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
+
+
+    ! Sanity checks
+    ! *************
+
+    ! 1. Positive number of orbitals
+    if( (nocc<1) .or. (nvirt<1) ) then
+       write(DECinfo%output,*) 'nocc = ', nocc
+       write(DECinfo%output,*) 'nvirt = ', nvirt
+       call lsquit('array_extract_eos_indices_virt: &
+          & Negative or zero number of orbitals!',DECinfo%output)
+    end if
+
+    ! 2. Array structure is (virt,occ,virt,occ)
+    if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
+       write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
+       write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
+       write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
+       write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
+       call lsquit('array_extract_eos_indices_virt: &
+          & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+    end if
+
+    ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
+    if(nEOS > nvirt) then
+       write(DECinfo%output,*) 'nvirt = ', nvirt
+       write(DECinfo%output,*) 'nEOS  = ', nEOS
+       call lsquit('array4_extract_eos_indices_virt_memory: &
+          & Number of EOS orbitals must be smaller than (or equal to) total number of &
+          & virtual orbitals!',DECinfo%output)
+    end if
+
+    ! 4. EOS indices must not exceed total number of virtual orbitals
+    do i=1,nEOS
+       if(EOS_idx(i) > nvirt) then
+          write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+          write(DECinfo%output,*) 'nvirt   = ', nvirt
+          write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+          call lsquit('array4_extract_eos_indices_virt_memory: &
+             & EOS index value larger than nvirt!',DECinfo%output)
+       end if
+    end do
+
+
+    ! Extract virtual EOS indices and store in Arr
+    ! ********************************************
+
+    if( arr_full%itype == DENSE )then
+       ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
+       Arr=array_init(new_dims,4)
+
+       ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
+       do j=1,nocc
+          do b=1,nEOS
+             bx=EOS_idx(b)
+             do i=1,nocc
+                do a=1,nEOS
+                   ax=EOS_idx(a)
+                   Arr%elm4(a,i,b,j) = arr_full%elm4(ax,i,bx,j)
+                end do
+             end do
+          end do
+       end do
+    else
+       call lsquit("ERROR(array_extract_eos_indices_virt): NO PDM version implemented yet",-1)
+    endif
+
+
+  end subroutine array_extract_eos_indices_virt
+
+  subroutine array_extract_eos_indices_occ(Arr,arr_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(array),intent(inout) :: Arr
+     !> Original array
+     type(array),intent(in) :: arr_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims
+
+     ! Initialize stuff
+     ! ****************
+     nocc = arr_full%dims(2)  ! Total number of occupied orbitals
+     nvirt = arr_full%dims(1)  ! Total number of virtual orbitals
+     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
+
+     ! Sanity checks
+     ! *************
+     if( arr_full%mode /= 4)then
+        call lsquit("ERROR(array_extract_eos_indices_occ): wrong mode of arr_full",-1)
+     endif
+
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('array_extract_eos_indices_occ: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
+
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=arr_full%dims(3)) .or. (nocc/=arr_full%dims(4)) ) then
+        write(DECinfo%output,*) 'arr_full%dims(1) = ', arr_full%dims(1)
+        write(DECinfo%output,*) 'arr_full%dims(2) = ', arr_full%dims(2)
+        write(DECinfo%output,*) 'arr_full%dims(3) = ', arr_full%dims(3)
+        write(DECinfo%output,*) 'arr_full%dims(4) = ', arr_full%dims(4)
+        call lsquit('array_extract_eos_indices_occ: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of occ orbitals
+     if(nEOS > nocc) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nEOS = ', nEOS
+        call lsquit('array_extract_eos_indices_occ: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & occupied orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of occupied orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nocc) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nocc!'
+           write(DECinfo%output,*) 'nocc = ', nocc
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('array_extract_eos_indices_occ: &
+              & EOS index value larger than nocc!',DECinfo%output)
+        end if
+     end do
+
+
+     ! Extract occupied EOS indices and store in Arr
+     ! *********************************************
+
+     if( arr_full%itype == DENSE )then
+
+        ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
+        Arr=array_init(new_dims,4)
+
+        ! Set Arr equal to the EOS indices of the original Arr array (arr_full)
+        do j=1,nEOS
+           jx=EOS_idx(j)
+           do b=1,nvirt
+              do i=1,nEOS
+                 ix=EOS_idx(i)
+                 do a=1,nvirt
+                    Arr%elm4(a,i,b,j) = arr_full%elm4(a,ix,b,jx)
+                 end do
+              end do
+           end do
+        end do
+     else
+        call lsquit("ERROR(array_extract_eos_indices_occ): NO PDM version implemented yet",-1)
+     endif
+
+
+  end subroutine array_extract_eos_indices_occ
+
+
+  !> \brief Reorder indices with additional memory allocation
+  !> \author Patrick Ettenhuber
+  subroutine array_reorder(arr,order)
+
+     implicit none
+     type(array), intent(inout) :: arr
+     integer, dimension(arr%mode), intent(in) :: order
+     integer, dimension(arr%mode) :: new_dims,order1,order2
+     real(realk), pointer :: new_data(:)
+     integer :: a,b,c,d
+     integer :: dim1,dim2,dim3,dim4
+     integer :: i,j
+     integer :: aa,bb,cc,dd
+     integer :: order_type,m,n
+     real(realk) :: tcpu1,twall1,tcpu2,twall2
+     integer(kind=long) :: nelms
+
+     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
+
+
+     nelms = arr%nelms
+     do i=1,arr%mode
+        new_dims(i) = arr%dims(order(i))
+     end do
+
+     if( arr%itype == DENSE )then
+
+        ! Allocate space for reordered data
+
+        call deassoc_ptr_arr(arr)
+
+        call mem_alloc( new_data,nelms )
+
+        select case(arr%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              & order,0.0E0_realk,new_data)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),order,0.0E0_realk,new_data)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+              &arr%dims(3),arr%dims(4),order,0.0E0_realk,new_data)
+        case default
+           call lsquit("ERROR(arr_reorder) no default for arbitrary modes",-1)
+        end select
+
+        arr%dims=new_dims
+
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',new_data,nelms)
+#else
+        !$OMP WORKSHARE
+        arr%elm1 = new_data
+        !$OMP END WORKSHARE
+#endif
+
+        call mem_dealloc(new_data)
+
+        call assoc_ptr_arr(arr)
+
+     else
+        call lsquit("ERROR(arr_reorder) only implemented for dense arrs yet",-1)
+     endif
+
+     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+
+  end subroutine array_reorder
+
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY de-/init ROUTINES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -630,7 +930,7 @@ contains
 #ifdef VAR_MPI
     if(loc) then
       select case(at)
-      case('LDAR','REAR','REPD','TDAR','TDPD')
+      case('LDAR','REAR','REPD','TDAR','TDPD','RTAR')
         arr=array_init_standard(dims,nmodes,pdm=NO_PDM_ACCESS)
         arr%atype='LDAR'
       !case('TDAR','TDPD')
@@ -709,7 +1009,7 @@ contains
     logical :: loc
  
     ! Sanity check
-    if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(array_ainit):array already initialized",-1) 
     do i=1, nmodes
       if (dims(i) == 0) call lsquit("ERROR(array_minit): 0 dimendion not allowed",-1)
     end do
@@ -802,7 +1102,7 @@ contains
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
 
-    if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
+    !if(arr%initialized)call lsquit("ERROR(array_init):array already initialized",-1) 
 
     !DEFAULTS
     it     = DENSE
@@ -1150,32 +1450,28 @@ contains
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper1
   subroutine array_convert_arr2fort_wrapper2(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper2
   subroutine array_convert_arr2fort_wrapper3(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper3
   subroutine array_convert_arr2fort_wrapper4(arr,fort,order)
     implicit none
     type(array), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    if(present(order))call array_convert_arr2fort(arr,fort,arr%nelms,order)
-    if(.not.present(order))call array_convert_arr2fort(arr,fort,arr%nelms)
+    call array_convert_arr2fort(arr,fort,arr%nelms,order=order)
   end subroutine array_convert_arr2fort_wrapper4
 
   !\brief all the following wrappers are necessary to use the conversion routine
@@ -1185,32 +1481,28 @@ contains
     type(array), intent(inout) :: arr
     real(realk), intent(in) :: fortarr(arr%nelms)
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper1
   subroutine array_convert_fort2arr_wrapper2(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper2
   subroutine array_convert_fort2arr_wrapper3(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper3
   subroutine array_convert_fort2arr_wrapper4(fortarr,arr,order)
     implicit none
     real(realk), intent(in) :: fortarr(:,:,:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
-    if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
+    call array_convert_fort2arr(fortarr,arr,arr%nelms,order=order)
   end subroutine array_convert_fort2arr_wrapper4
 
 
@@ -1244,7 +1536,18 @@ contains
     &dimensions are not the same",-1)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
         call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
+      case(REPLICATED)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+#else
+        call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+#endif
+        call array_sync_replicated(arr)
       case(TILED)
         call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
       case(TILED_DIST)
@@ -1298,7 +1601,11 @@ contains
     &dimensions are not the same",DECinfo%output)
     select case(arr%itype)
       case(DENSE)
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+        call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+#else
         call dcopy(int(nelms),arr%elm1,1,fort,1)
+#endif
       case(TILED)
         if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
         if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
@@ -1620,7 +1927,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1629,7 +1936,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1638,7 +1945,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1647,7 +1954,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(:,:,:,:)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     logical,intent(in),optional :: square
     if(.not.present(square))call print_norm_fort_customprint(fort,nelms,msg)
     if(present(square))call print_norm_fort_customprint(fort,nelms,msg,square)
@@ -1667,7 +1974,7 @@ contains
   subroutine array2_print_norm_customprint(arrtwo,msg,square)
     implicit none
     type(array2),intent(in) :: arrtwo
-    character(ARR_MSG_LEN), intent(in) :: msg
+    character*(*), intent(in) :: msg
     integer(kind=8) :: nelms
     logical,intent(in),optional :: square
     nelms = int(arrtwo%dims(1)*arrtwo%dims(2),kind=8)
@@ -1688,7 +1995,7 @@ contains
   subroutine array4_print_norm_customprint(arrf,msg,square)
     implicit none
     type(array4),intent(in) :: arrf
-    character(ARR_MSG_LEN),intent(in):: msg
+    character*(*),intent(in):: msg
     logical,intent(in),optional :: square
     integer(kind=8) :: nelms
     nelms = int(arrf%dims(1)*arrf%dims(2)*arrf%dims(3)*arrf%dims(4),kind=8)
@@ -1731,7 +2038,7 @@ contains
     implicit none
     real(realk),intent(in) :: fort(*)
     integer(kind=8),intent(in) ::  nelms
-    character(ARR_MSG_LEN),intent(in) :: string
+    character*(*),intent(in) :: string
     logical,intent(in),optional :: returnsquared
     integer(kind=8) :: i
     real(realk) :: norm
@@ -1782,18 +2089,20 @@ contains
     real(realk) :: normher,ref,ref2,ref3
     integer(kind=long) :: testint
     logical :: master
-    integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver, nnod
+    integer :: no,nv,nb,na,i,j,succ,to_get_from,ti,midx(4)
+    integer(kind=ls_mpik) :: sender, recver, nnod, rnk, me
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
     nnod   = 1_ls_mpik
+    me     = 0
 #ifdef VAR_MPI
-    if(infpar%lg_mynum /= 0) then
+    me = infpar%lg_mynum
+    if(me /= 0) then
       master =.false.
     endif
     nnod = infpar%lg_nodtot
-    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
+    if(nnod < 3) print*,"WARNING(test_array_struct): not enough MPI processes to test all features"
 #endif
     nb =  21
     nv =  18
@@ -1821,6 +2130,7 @@ contains
       write (DECinfo%output,*) "TESTING SIMPLE ARRAY FUNCTIONS - MASTER DIRECTED"
       write (DECinfo%output,*) ""
       write (DECinfo%output,*)"ALLOC-DEALLOC TESTS"
+      print *,"alloc dealloc tests"
       teststatus="SUCCESS"
       test=array_init([nv,na,nv,nb],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
       test2=array_init([na,nb,nv,no],4,TILED_DIST,MASTER_ACCESS,[nv,no-1,1,2])
@@ -1832,6 +2142,7 @@ contains
       if(succ/=0)teststatus=" FAILED"
       test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_ACCESS,[nb,2,3,4])
       write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)')teststatus  
+      print *,"DIFFERENT ALLOCATION AND DEALLOCATION STEPS: ",teststatus
 
       !ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY
       !check for errors via norm
@@ -1845,49 +2156,75 @@ contains
       write(DECinfo%output,'("NORM OF PDM ARRAY  : ",f20.15)')normher
       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
       write (DECinfo%output,'("CNVRT: NORM, TEST STATUS:",f19.10," : ",A7)')normher,teststatus
+      print *,"ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY: ",normher,teststatus
+
+
       !GET A TILE OF A PDM ARRAY
       !calculate how many elements are in the desired tile, and allocate the
       !respective amount of memory in a fortran array
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_GET"
-      testint=2
+      do ti = 1, test%ntiles
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
+      print *,"trying to get",testint," with size", j
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
       teststatus="SUCCESS"
-      call array_print_tile_norm(test,2,ref)
+      if(nnod>1) call array_print_tile_norm(test,ti,ref)
       write(DECinfo%output,'("NORM OF TILE IN ARRAY   : ",f20.15)')ref
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT BEFORE GET : ",f20.15)')normher
-      call array_get_tile(test,2,tileget,j)
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call array_get_tile(test,ti,tileget,j)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT AFTER GET  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"GET A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("GET: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
       call mem_dealloc(tileget)
+      print *,"GET A TILE OF A PDM ARRAY: ",normher,teststatus
 
       write(DECinfo%output,*)""
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_PUT"
       teststatus="SUCCESS"
-      testint=2
+      do ti = test%ntiles,1, -1
+        to_get_from = get_residence_of_tile(ti,test)
+        if(to_get_from /= me .or. nnod==1)then
+         testint = ti
+         exit
+        endif 
+      enddo
       call get_tile_dim(j,test,testint)
       call mem_alloc(tileget,j)
       call random_number(tileget)
       !initiatilize with some weird number here 10 and after get compare the
       !norms of the tile and the local fortran array
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE BEFORE PUT : ",f20.15)')normher
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),ref)
       write(DECinfo%output,'("NORM OF FORT TO PUT     : ",f20.15)')ref
-      call array_put_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_put_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM OF TILE AFTER PUT  : ",f20.15)')normher
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"PUT A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("PUT: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_PUT",normher,teststatus
      
 
       !GET A TILE FROM YOURSELF AS CHECK
@@ -1907,21 +2244,28 @@ contains
       write(DECinfo%output,*)""
       write(DECinfo%output,*)"TESTING MPI_ACCUMULATE"
       teststatus="SUCCESS"
-      do i=1,j
-        tileget(i)=tileget(i)+3.0E0_realk
-      enddo
-      call print_norm(tileget,int(j,kind=8),ref)
+      if(nnod>1)then
+        do i=1,j
+          tileget(i)=tileget(i)+3.0E0_realk
+        enddo
+        call print_norm(tileget,int(j,kind=8),ref)
+      endif
       write(DECinfo%output,'("NORM LOCAL ACCUMULATION : ",f20.15)')ref
       !initialize the local tile with 3 and accumulate it --> compare norm
       tileget=3.0E0_realk
-      call print_norm(tileget,int(j,kind=8),normher)
+      if(nnod>1) call print_norm(tileget,int(j,kind=8),normher)
       write(DECinfo%output,'("NORM OF FORT TO ADD:      ",f20.15)')normher
-      call array_accumulate_tile(test,2,tileget,j)
-      call array_print_tile_norm(test,2,normher)
+      if(nnod>1) call array_accumulate_tile(test,ti,tileget,j)
+      if(nnod>1) call array_print_tile_norm(test,ti,normher)
       write(DECinfo%output,'("NORM REMOTE ACCUMULATION: ",f20.15)')normher
       !use the tile with three in it, print its norm put and compare norms
-      if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      if(nnod>1)then 
+        if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+      else
+        print *,"ACCUMULATE A TILE OF A PDM ARRAY has been skipped"
+      endif
       write (DECinfo%output,'("ACC: NORM, TEST STATUS:  ",f20.15," : ",A7)')normher,teststatus
+      print *,"TESTING MPI_ACCUMULATE: ",normher,teststatus
 
 
       call array_free(test)
@@ -1949,6 +2293,7 @@ contains
         endif
       enddo
       write (DECinfo%output,'("ORDER: TEST STATUS:                              ",A7)')teststatus
+      print *,"TESTING CONVERSION TO FORT: ",teststatus
 
 
 
@@ -1997,34 +2342,56 @@ contains
     if(master) write (DECinfo%output,*)"DONE -- NOW COMMUNICATION"
     if(master) write(DECinfo%output,*)""
     if(master) write(DECinfo%output,*)""
+    print *,"ALL-INIT ALLOC-DEALLOC TESTS",teststatus
     !call lsmpi_barrier(infpar%lg_comm)
 
-    !IF MY RANK IS THREE, PUT A MATRIX CONTAINING 10 in TILE 2 (ON THE
-    !RESPECTIVE THREAD) 
+    !IF MY RANK IS NNOD-1, PUT A MATRIX CONTAINING 10 the first tile not on the
+    !current rank
     teststatus="SUCCESS"
-    if(infpar%lg_mynum==3.or.master)then
-      recver=3
+    rnk = nnod - 1
+    do ti = test%ntiles,1, -1
+      to_get_from = get_residence_of_tile(ti,test)
+      if(to_get_from /= nnod-1 .and. to_get_from/=nnod-2)then
+       testint = ti
+       exit
+      endif 
+    enddo
+
+
+    if((infpar%lg_mynum==rnk.or.master).and. nnod > 2)then
+
+      recver=rnk
+
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
         tileget = 1.0E1_realk
-        call array_put_tile(test2,2,tileget,j)
+        call array_put_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         call mem_dealloc(tileget)
+
       else
         call ls_mpisendrecv(ref,infpar%lg_comm,recver,infpar%master)
         write(DECinfo%output,'("NORM PARALLEL 3LPN: ",f20.15)')ref
       endif
+
+    else
+      if(master) print*,"WARNING: skipping test NORM PARALLEL 3LPN, not enough nodes"
     endif
-    !BEFORE 2 CAN GET THE 
+
+
+    !BEFORE rank NNOD - 2  CAN GET THE TILE
+    rnk = nnod - 2
+
+    
     call lsmpi_barrier(infpar%lg_comm)
-    if(infpar%lg_mynum==2.or.master)then
-      recver=2
+    if((infpar%lg_mynum==rnk.or.master).and.nnod>2)then
+      recver=rnk
       if(.not.master)then
-        call get_tile_dim(j,test2,testint)
+        call get_tile_dim(j,test2,ti)
         call mem_alloc(tileget,j)
-        call array_get_tile(test2,2,tileget,j)
+        call array_get_tile(test2,ti,tileget,j)
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         do i=1,j
@@ -2033,7 +2400,8 @@ contains
         call print_norm(tileget,int(j,kind=8),normher)
         call ls_mpisendrecv(normher,infpar%lg_comm,recver,infpar%master)
         tileget = 2.4E0_realk
-        call array_accumulate_tile(test2,[2,1,1,1],tileget,j)
+        call get_midx(ti,midx,test2%ntpm,test2%mode)
+        call array_accumulate_tile(test2,midx,tileget,j)
         call mem_dealloc(tileget)
       else
         teststatus="SUCCESS"
@@ -2046,16 +2414,23 @@ contains
         write(DECinfo%output,'("NORM PARALLEL 2LAC: ",f20.15)')ref
       endif
     endif
+
     !BE CAREFUL ABOUT WHETER THE INFORMATION IS ALREADY TRANSMITTED --> AT
     !CRITICAL POINTS INSERT BARRIER STATEMENTS TO SYNCHONIZE THE NODES 
     call lsmpi_barrier(infpar%lg_comm)
-    call array_print_tile_norm(test2,2,normher)
+
+    if(nnod>2)call array_print_tile_norm(test2,ti,normher)
     call array_free(test2)
     if(master)then
        teststatus="SUCCESS"
        write(DECinfo%output,'("NORM PARALLEL WORK: ",f20.15)')normher
-       if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       if(nnod>2)then
+         if(abs(normher-ref)>1.0E-12_realk)teststatus=" FAILED"
+       else
+         print *,"AS TEST WAS SKIPPED WE DO NOT CHECK FOR THE RESULT"
+       endif
        write (DECinfo%output,'("ACC2    : NORM, TEST STATUS: ",f19.10," : ",A7)')ref,teststatus
+       print *,"ACC2    : NORM, TEST STATUS:",teststatus
     endif
     if(master) write (DECinfo%output,*)""
 
@@ -2074,7 +2449,12 @@ contains
       write (msg,*)"local test norm master"
       call print_norm(test%elm1,test%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(me==rnk)then
       write (msg,*)"local test norm slave"
       call print_norm(test%elm1,test%nelms,msg)
     endif
@@ -2102,7 +2482,12 @@ contains
       write (msg,*)"local test 2 norm master"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif
-    if(infpar%lg_mynum==1)then
+    if(infpar%lg_nodtot>1)then
+      rnk = 1
+    else
+      rnk = 0
+    endif
+    if(infpar%lg_mynum==rnk)then
       write (msg,*)"local test 2 norm slave"
       call print_norm(test2%elm1,test2%nelms,msg)
     endif

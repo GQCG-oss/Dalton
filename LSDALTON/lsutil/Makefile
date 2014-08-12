@@ -62,7 +62,6 @@ F90_OBJS = \
 	ls_math.o\
 	ptr_assoc.o \
 	OverlapDistributionType.o\
-	ls_screenMPI.o\
 	lstensor_operations.o\
         reorder_frontend.o\
 	reord2d_2_reord.o\
@@ -119,6 +118,7 @@ F90_OBJS = \
 	TestMPI.o\
 	ks-settings.o\
 	dec_typedef.o\
+	dec_workarounds.o\
 	SphCartMatrices.o\
 	GCtrans.o\
 	TYPE-DEF.o\

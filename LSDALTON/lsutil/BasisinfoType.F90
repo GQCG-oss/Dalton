@@ -10,6 +10,19 @@ MODULE basis_typetype
  INTEGER, PARAMETER      :: maxBasisSetInLIB=10
  INTEGER, PARAMETER      :: maxNumberOfChargesinLIB=10
 
+ Integer,parameter :: nBasisBasParam=7
+ Integer,parameter :: RegBasParam=1
+ Integer,parameter :: AUXBasParam=2
+ Integer,parameter :: CABBasParam=3
+ Integer,parameter :: JKBasParam=4
+ Integer,parameter :: VALBasParam=5
+ Integer,parameter :: GCTBasParam=6
+ Integer,parameter :: ADMBasParam=7
+
+ character(len=9),parameter :: BasParamLABEL(nBasisBasParam) = &
+      & (/'REGULAR  ','AUXILIARY','CABS     ','JKAUX    ',&
+      & 'VALENCE  ','GCTRANS  ','ADMM     '/)
+
 TYPE segment
 INTEGER                 :: nrow
 INTEGER                 :: ncol
@@ -72,14 +85,10 @@ TYPE BASISSET_PT
 TYPE(BASISSETINFO),pointer :: p
 END TYPE BASISSET_PT
 
+!todo change to BASIS(nBasis) using Regularbasis=1,GCtransbasis=2,..
 TYPE BASISINFO
-LOGICAL                   :: GCtransAlloc 
-TYPE(BASISSETINFO)        :: REGULAR
-TYPE(BASISSETINFO)        :: GCtrans
-TYPE(BASISSETINFO)        :: AUXILIARY
-TYPE(BASISSETINFO)        :: CABS
-TYPE(BASISSETINFO)        :: JK
-TYPE(BASISSETINFO)        :: VALENCE 
+LOGICAL                 :: WBASIS(nBasisBasParam)!Which basis is used/allocated
+TYPE(BASISSETINFO)      :: BINFO(nBasisBasParam)
 END TYPE BASISINFO
 
 TYPE BASIS_PT
@@ -110,10 +119,74 @@ INTEGER,pointer     :: CHARGE(:)!size natoms
 END TYPE BASINF
 
 contains
+subroutine nullifyBasisset(BAS)
+  implicit none
+  TYPE(BASISSETINFO) :: BAS
+  BAS%DunningsBasis = .FALSE.
+  BAS%SPHERICAL = .FALSE.
+  BAS%GCbasis = .FALSE.
+  BAS%GCONT = .FALSE.
+  BAS%nAtomtypes=0
+  nullify(BAS%ATOMTYPE)
+  BAS%labelindex = 0  
+  nullify(BAS%Chargeindex)
+  BAS%nChargeindex = 0  
+  BAS%nbast = -1
+  BAS%nprimbast = -1
+  BAS%label = 'Empty Bas'
+end subroutine nullifyBasisset
 
-!Added to avoid "has no symbols" linking warning
-subroutine basis_typetype_void()
-end subroutine basis_typetype_void
+subroutine nullifyMainBasis(BAS)
+  implicit none
+  TYPE(BASISINFO) :: BAS
+  integer :: I
+  BAS%WBASIS = .FALSE.
+  DO I=1,nBasisBasParam
+     call nullifyBasisset(BAS%BINFO(I))
+  ENDDO
+end subroutine nullifyMainBasis
+
+subroutine nullifyAtomType(AT)
+implicit none
+type(atomtypeitem) :: AT
+!
+integer :: j
+AT%FAMILY = .FALSE.
+AT%nAngmom=0
+AT%ToTnorb=0
+AT%ToTnprim=0
+AT%Charge=0
+do J=1,80
+   AT%NAME(J:J) = ' '
+enddo
+do J=1,maxAOangmom
+   call nullifySHELL(AT%SHELL(J))
+end do
+end subroutine nullifyAtomType
+
+subroutine nullifyShell(sh)
+implicit none
+type(SHELL) :: SH
+!
+integer :: I
+
+SH%nprim = 0
+SH%norb = 0 
+SH%nsegments = 0 
+do I=1,maxBASISsegment
+   call nullifySegment(SH%segment(I))
+enddo
+end subroutine nullifyShell
+
+subroutine nullifySegment(se)
+implicit none
+type(Segment) :: Se
+Se%nrow = 0
+Se%ncol = 0 
+nullify(Se%elms)
+nullify(Se%Exponents)
+nullify(Se%UCCelms)
+end subroutine nullifySegment
 
 END MODULE basis_typetype
 

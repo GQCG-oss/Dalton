@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 C FILE: sirius/sirpcm.F
 C
-#include "single.h"
 C
 C/* Deck pcminp */
       SUBROUTINE PCMINP(WORD,INPERR,ALLOPT)
@@ -1276,7 +1275,6 @@ C
 #include "infpar.h"
 #include "inftap.h"
 #include "krcom.h"
-#include "wavpcm.h"
 C
       CHARACTER*7 INTLAB
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1346,7 +1344,7 @@ C
          LWRK = LWORK - KLAST
       END IF
 #if defined (VAR_MPI)
-      IF (NODTOT .GE. 1 .AND. .NOT. WAVPCM) THEN
+      IF (NODTOT .GE. 1) THEN
          CALL J1INTP(NBAST,NOSIM,KSYMP,WORK(KDEN),EXP1VL,EXPVAL,TOFILE,
      &               IPRTYP,MATDIM,WORK(KLAST),LWRK)
          IF (.NOT. EXP1VL) CALL DAXPY(MATDIM*NOSIM,1.0D0,WORK(KDEN),1,
@@ -1368,17 +1366,18 @@ C
          IF (.NOT. TOFILE .AND. .NOT. EXP1VL) THEN
             KMAT = KTMP + 8
             IF (IPRTYP .EQ. 11) THEN
-               KLAST = KMAT + (MAXREP + 1)*MATDIM
+               KLAST1 = KMAT + (MAXREP + 1)*MATDIM
             ELSE
-               KLAST = KMAT + (MAXREP + 1)*MATDIM*NCOMP
+               KLAST1 = KMAT + (MAXREP + 1)*MATDIM*NCOMP
             END IF
             NCOMP = NSYM
          ELSE
             KMAT  = KTMP + 8
-            KLAST = KMAT
+            KLAST1 = KMAT
             NCOMP = 0
          END IF
-         CALL GET1IN(WORK(KMAT),INTLAB,NCOMP,WORK(KLAST),LWRK,LABINT,
+         LWRK1 = LWORK - KLAST1
+         CALL GET1IN(WORK(KMAT),INTLAB,NCOMP,WORK(KLAST1),LWRK1,LABINT,
      &               INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,WORK(KTMP),
      &               EXP1VL,WORK(KDEN),IPRPCM)
          IF (IPRTYP .EQ. 13) THEN

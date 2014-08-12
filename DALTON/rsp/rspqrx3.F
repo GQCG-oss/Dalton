@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================
@@ -60,6 +59,7 @@ C
 #include "wrkrsp.h"
 #include "infpri.h"
 #include "infspi.h"
+#include "gnrinf.h"
 C
       LOGICAL ATEST, TEST
       DATA TEST /.FALSE./
@@ -398,19 +398,21 @@ C
       END IF
 
       IF (PEQM) THEN
-        IF (.NOT. TDHF) then 
+#ifdef BUILD_PELIB
+         IF (.NOT. TDHF) THEN
             CALL QUIT('ERROR: MCSCF quadratic response not'//
      &                ' implemented with the PE library.')
-        ELSE IF (NASHT > 0) THEN
+         ELSE IF (NASHT > 0) THEN
             CALL QUIT('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with the PE library.')
-        ELSE IF (TRPLET) THEN
+         ELSE IF (TRPLET) THEN
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
         ENDIF
         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
      &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
      &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+#endif
       END IF
 
       IF (QM3) THEN
@@ -456,6 +458,19 @@ C
          END IF
       END IF
 C
+      IF (QMNPMM) THEN
+         IF (TDHF) THEN
+            CALL QMNPMMQRO(VECB,VECC,ETRS,XINDX,WRK(KZYMB),
+     *                        WRK(KZYMC),UDV,WRK(KFREE),LFREE, KZYVA,
+     *                        KZYVB,KZYVC, ISYMA,ISYMB,ISYMC,CMO,MJWOP,
+     *                        ISPINA,ISPINB,ISPINC)
+               CALL QMNPMMQRO(VECC,VECB,ETRS,XINDX,WRK(KZYMC),
+     *                        WRK(KZYMB), UDV,WRK(KFREE),LFREE,KZYVA,
+     *                        KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP,
+     *                        ISPINA,ISPINC,ISPINB) 
+            END IF   
+       END IF
+C
       IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          IF (TDHF) THEN
@@ -476,6 +491,7 @@ C
      *                 KZYVA,KZYVB,KZYVC,ISYMA,ISYMB,ISYMC,CMO,MJWOP,
      *                 WRK(KSYRLM))
          END IF
+C
 C
 Clf 10/06/2002
 C quadratic PCM response (for the time beeing without memory efficent SCF)
@@ -2177,7 +2193,7 @@ C
 C
 C        If we are testing, control for the CREF component
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC,1,WRK(KTRS),1)
                IF( IPRRSP .GT.  200) THEN
@@ -2263,7 +2279,7 @@ C
      *                 1,WRK(KTRS),1)
          END IF
 C
-         IF( ITEST ) THEN
+         IF( ITEST .AND. ISPIN1 .EQ. 0 .AND. ISPIN2 .EQ. 0 ) THEN
 C
             IF (LREFST .AND. ISYMCI.EQ.ISYMJ) THEN
                T1 = DDOT(NZCVEC,VEC(ICOFF),1,WRK(KTRS),1)
@@ -3958,7 +3974,7 @@ C
      *              OTRS,1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ( LREFST .AND. (ISYMCI .EQ .ISYMJ) ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Z part of linear transformation',
@@ -4012,13 +4028,13 @@ C
      *            NOH2,IH8SM,XINDX,ISPIN1,ISPIN2,WRK(KFREE),
      *            LFREE)
 C
-      IF (ISYMCI .EQ. ISYMJ .AND..NOT.TRPLET) THEN
+      IF (ISYMCI .EQ. ISYMJ .AND. .NOT.TRPLET) THEN
          IF ( NISHT .GT. 0 )
      *      CALL DAXPY(NZCVEC,OPINAC,VEC(ICOFF),1,
      *                 OTRS(ISOFF),1)
       END IF
 C
-      IF( ITEST ) THEN
+      IF( ITEST .AND. .NOT.TRPLET ) THEN
          IF ((IREFSY .EQ .ISYMJ).AND. LREFST ) THEN
             WRITE(LUPRI,'(//A,/A)')
      *          ' Sigma vector after Y part of linear transformation',

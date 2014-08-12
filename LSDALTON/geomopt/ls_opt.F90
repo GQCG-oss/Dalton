@@ -3756,19 +3756,6 @@ Implicit Real(realk) (A-H,O-Z)
 !!$         end if
       END IF
 !
-!     If the energy difference is below THRSYM and the total Hessian is
-!     non-zero, we can be pretty sure that we're approaching a saddle
-!     point, and the symmetry should be broken. Only applies to
-!     second order methods.
-!
-!      IF ((optinfo%Newton .OR. optinfo%QuadSD) .AND. (optinfo%IndHes .GT. 0) .AND. &
-!     &     (EDIFF .LE. MAX(optinfo%ThrErg,THRSYM)) .AND. &
-!     &     ((optinfo%ItrNmr-1) .NE. optinfo%ItBreak) .AND. (.NOT. optinfo%Saddle)) THEN
-!         BRKSYM = .TRUE.
-!         optinfo%Restart = .TRUE.
-!         NWSYMM = .TRUE.
-!      END IF
-!
 !     Output from the testing is written.
 !
       IF (.NOT. optinfo%NatNorm .AND. (optinfo%IPrint .GT. 2)) THEN
@@ -4329,3 +4316,38 @@ Rotation(3,2) = normal(3)*normal(2)*(1-cos(angle)) + normal(1)*sin(angle)
 Rotation(3,3) = cos(angle) + normal(3)**2*(1-cos(angle))
 !
 End subroutine Rotation_axis_angle
+!=============!
+! FM_Energy   !
+!=============!
+! Adds terms from extermnal force
+! to the energy
+Subroutine FM_energy(E,optinfo)
+Use precision
+use optimization_input
+Implicit none
+Type(opt_setting) :: optinfo
+Real(realk) :: R_a(3),R_b(3),direction(3)
+Real(realk) :: E
+! Define the direction
+R_a = optinfo%Coordinates(:,optinfo%Att_atom(1))
+R_b = optinfo%Coordinates(:,optinfo%Att_atom(2))
+direction = (R_b - R_a)/(sqrt(dot_product(R_b-R_a,R_b-R_a)))
+!
+Write(*,*)'Non-modified   E=',E
+E = E + dot_product(optinfo%Ext_force*direction,R_a) - &
+& dot_product(optinfo%Ext_force*direction,R_b)
+Write(*,*)'Force-modified E=',E
+!
+End subroutine FM_energy
+
+
+
+
+
+
+
+
+
+
+
+

@@ -621,7 +621,7 @@ debugging purposes.
 calculation of the Atomic Axial Tensors\index{atomic axial tensor}\index{AAT}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: \Sec{ABALNR}}\label{sec:abalnr}
+\subsection{Freguency-dependent linear response calculations: \Sec{ABALNR}}\label{sec:abalnr}
 
 Directives to control the calculation of frequency dependent linear
 response\index{linear response}\index{response!linear}
@@ -1043,9 +1043,9 @@ will be printed.
 \begin{description}
 \item[\Key{ANGLES}]\verb| |\newline
 \verb|READ (LUCMD,*) NANG|\newline
-\verb|    DO 310 I = 1, NANG|\newline
-\verb|       READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
-\verb|310 CONTINUE|
+\verb|DO  I = 1, NANG|\newline
+\verb|   READ (LUCMD,*) (IANG(J,I), J = 1,3)|\newline
+\verb|END DO|
 
 Calculate and print
 bond angles\index{bond angle}\index{geometry!bond angle}. Read one
@@ -1060,9 +1060,9 @@ Waals radius} radii of the atoms.
 
 \item[\Key{DIHEDR}]\verb| |\newline
 \verb|READ (LUCMD,*) NDIHED|\newline
-\verb|    DO 410 I = 1, NDIHED|\newline
-\verb|       READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
-\verb|410 CONTINUE|
+\verb|DO  I = 1, NDIHED|\newline
+\verb|   READ (LUCMD,*) (IDIHED(J,I), J = 1,4)|\newline
+\verb|END DO|
 
 Calculate and print dihedral\index{dihedral angle}\index{geometry!dihedral angle}
 (torsional) angles.  Read one more line specifying the number of angles,
@@ -1078,12 +1078,12 @@ value, but it is overwritten by the keywords \verb|.ANGLES| and
 \verb|.DIHEDR|.
 \end{description}
 
-\subsection{Right-hand sides for response equations: \Sec{GETSGY}}
+\subsection{Right-hand sides for geometry response equations: \Sec{GETSGY}}
 
 Directives affecting the construction of the right-hand
 sides~(RHS)\index{property gradient}\index{right-hand side}---that is,
-property gradient terms---for the response
-calculation as well as some matrices needed for reorthonormalization
+wave function gradient terms---for the geometric derivative response
+calculations as well as some matrices needed for reorthonormalization
 contributions appear in the \verb|*GETSGY| section.
 
 \begin{description}
@@ -1284,7 +1284,8 @@ transformation. The calculation will not be aborted. Mainly for
 debugging purposes.
 \end{description}
 
-\subsection{Linear response calculation: \Sec{LINRES}}\label{sec:linres}
+\subsection{Linear response for static singlet property operators:
+\Sec{LINRES}}\label{sec:linres}
 
 Directives to control the calculation of frequency-independent linear
 response functions\index{linear response}\index{response!linear}. At
@@ -1496,7 +1497,7 @@ one-electron integral contributions to the molecular gradients and
 Hessians has been evaluated\index{molecular gradient}\index{molecular Hessian}. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Relaxation contribution to Hessian: \Sec{RELAX}}
+\subsection{Relaxation contribution to geometric Hessian: \Sec{RELAX}}
 
 Directives controlling the calculation of the relaxation
 contributions ({\it i.e.\/} those from the response terms) to the different
@@ -1530,7 +1531,7 @@ the relaxation Hessian to verify its Hermiticity or anti-Hermiticity
 purposes.
 \end{description}
 
-\subsection{Reorthonormalization contributions: \Sec{REORT}}
+\subsection{Reorthonormalization contributions to geometric Hessian: \Sec{REORT}}
 
 Directives affecting the calculation of reorthonormalization
 contributions to the geometric Hessian appear in the \verb|*REORT |
@@ -1553,12 +1554,11 @@ calculation of the reorthonormalization contributions to the molecular
 Hessian. Mainly for debugging purposes.
 \end{description}
 
-\subsection{Response calculation: \Sec{RESPON}}
+\subsection{Response calculations for geometric Hessian: \Sec{RESPON}}
 \label{sec:abares}
 
 Directives affecting the response (coupled-perturbed MCSCF)
-calculation  of geometric perturbations appear in the \verb|*RESPON|
-section.
+calculation of geometric perturbations appear in the \verb|*RESPON| section.
 \begin{description}
 \item[\Key{D1DIAG}] Neglect diagonal elements of the orbital
 Hessian when generating trial vectors. Mainly for debugging
@@ -1912,7 +1912,7 @@ supposedly independent coordinates.  Read one more line specifying
 value.  Default is~0.1.
 \end{description}
 
-\subsection{Response equations for triplet operators:
+\subsection{Linear response for static triplet property operators:
 \Sec{TRPRSP}}\label{sec:trprsp}
 
 Directives controlling the set-up of right-hand sides for triplet
@@ -2200,7 +2200,6 @@ of \verb|IPRDEF| from the general input module.
 \item[\Key{SKIP}] Skip the analysis of the vibrational frequencies
 and normal modes of the molecule.
 \end{description}
-
 
 %%% Local Variables:
 %%% mode: latex
