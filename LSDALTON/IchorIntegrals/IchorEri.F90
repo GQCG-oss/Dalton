@@ -1474,10 +1474,17 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
      !this can be done on the accelerator
-     call MainTriDistributetoLocalIntPass2(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-     & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-     & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
-     & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     IF(.TRUE.)THEN !nPrimLast
+        call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ELSE !nPrimLast
+        call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ENDIF
 !================================================================================
      IF(PermuteLHSTypes)THEN
       IF(PermuteRHS)THEN
@@ -1605,7 +1612,7 @@ end subroutine IchorTypeIntegralLoop
 !Reorder LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
 !(including LHS permute) to LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
 !this can be done on the accelerator
-subroutine MainTriDistributetoLocalIntPass2(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+subroutine MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
      & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
      & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
      & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
@@ -1620,19 +1627,19 @@ subroutine MainTriDistributetoLocalIntPass2(TotalAngmom,nOrbCompA,nOrbCompB,nOrb
   IF(TriangularLHSAtomLoop)THEN
      IF(Qsegmented.AND.Psegmented)THEN
         IF(TotalAngmom.NE.0)THEN
-           call TriDistributeToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+           call TriDistributeCPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
                 & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
         ELSE !TotalAngmom=0
-           call TriDistributeToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+           call TriDistributeCPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
                 & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
         ENDIF
      ELSE
         IF(TotalAngmom.NE.0)THEN
-           call TriDistributeToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+           call TriDistributeCPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
                 & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
                 & MaxPasses,IatomAPass,iatomBPass,nPasses)
         ELSE !TotalAngmom=0
-           call TriDistributeToLocalIntPass0000(LocalIntPass1,&
+           call TriDistributeCPUToLocalIntPass0000(LocalIntPass1,&
                 & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
                 & IatomAPass,iatomBPass,nPasses)
         ENDIF
@@ -1640,26 +1647,85 @@ subroutine MainTriDistributetoLocalIntPass2(TotalAngmom,nOrbCompA,nOrbCompB,nOrb
   ELSE
      IF(Qsegmented.AND.Psegmented)THEN
         IF(TotalAngmom.NE.0)THEN
-           call DistributeToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+           call DistributeCPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
                 & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,&
                 & nPasses)
         ELSE !TotalAngmom=0
-           call DistributeToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+           call DistributeCPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
                 & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
         ENDIF
      ELSE
         IF(TotalAngmom.NE.0)THEN
-           call DistributeToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+           call DistributeCPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
                 & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
                 & MaxPasses,IatomAPass,iatomBPass,nPasses)
         ELSE !TotalAngmom=0
-           call DistributeToLocalIntPass0000(LocalIntPass1,&
+           call DistributeCPUToLocalIntPass0000(LocalIntPass1,&
                 & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
                 & IatomAPass,iatomBPass,nPasses)
         ENDIF
      ENDIF
   ENDIF
-end subroutine MainTriDistributetoLocalIntPass2
+end subroutine MainTriDistributetoLocalIntPass2CPU
+
+!Reorder LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+!(including LHS permute) to LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+!this can be done on the accelerator
+subroutine MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+     & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+     & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+     & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+  implicit none
+  integer,intent(in) :: TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,nContQ,nContP
+  integer,intent(in) :: nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD
+  integer,intent(in) :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  logical,intent(in) :: TriangularLHSAtomLoop,Qsegmented,Psegmented
+  real(realk),intent(in) :: LocalIntPass1(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+  real(realk),intent(inout) :: LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+  integer,intent(in) :: IatomAPass(MaxPasses),iatomBPass(MaxPasses)
+  IF(TriangularLHSAtomLoop)THEN
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeGPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeGPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeGPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeGPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ELSE
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeGPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,&
+                & nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeGPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeGPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeGPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ENDIF
+end subroutine MainTriDistributetoLocalIntPass2GPU
 
 SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,BATCHGAB,&
@@ -2403,13 +2469,24 @@ subroutine Distribute_seg_seg_SSSS(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
   ENDIF
 end subroutine Distribute_seg_seg_SSSS
 
-subroutine DistributeToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+!=====================================================================================================
+!
+!   Distribution routines to 
+! LocalIntPass2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!
+!=====================================================================================================
+!
+!      ======================
+!      First the CPU routines - OpenMP
+!      ======================
+!
+subroutine DistributeCPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
 implicit none 
 integer,intent(in)    :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
 integer,intent(in)    :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
 integer,intent(in)    :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-real(realk),intent(in)::LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,MaxPasses)
+real(realk),intent(in)::LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nPasses)
 real(realk),intent(inout)::LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
 !local variables
 integer :: iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB
@@ -2456,15 +2533,15 @@ integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine DistributeToLocalIntPass
+end subroutine DistributeCPUToLocalIntPass
 
-subroutine TriDistributeToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine TriDistributeCPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
 implicit none 
 integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
 integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
 integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-real(realk),intent(in)   :: LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,MaxPasses)
+real(realk),intent(in)   :: LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nPasses)
 real(realk),intent(inout):: LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
 !local variables
 integer :: iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,iContA,iContB
@@ -2537,9 +2614,9 @@ integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPass
+end subroutine TriDistributeCPUToLocalIntPass
 
-subroutine TriDistributeToLocalIntPassSeg0000(LP1,&
+subroutine TriDistributeCPUToLocalIntPassSeg0000(LP1,&
      & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses,nPasses
@@ -2560,14 +2637,14 @@ subroutine TriDistributeToLocalIntPassSeg0000(LP1,&
     ENDIF
   ENDDO
 !$OMP END DO
-end subroutine TriDistributeToLocalIntPassSeg0000
+end subroutine TriDistributeCPUToLocalIntPassSeg0000
 
-subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine TriDistributeCPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,MaxPasses)
+  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,nPasses)
   real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
   !local variables
   integer :: iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA
@@ -2605,15 +2682,15 @@ subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrb
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPassSeg
+end subroutine TriDistributeCPUToLocalIntPassSeg
 
-subroutine TriDistributeToLocalIntPass0000(LP1,&
+subroutine TriDistributeCPUToLocalIntPass0000(LP1,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB
   integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
   real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
   !local variables
   integer :: iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB
@@ -2650,14 +2727,14 @@ subroutine TriDistributeToLocalIntPass0000(LP1,&
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPass0000
+end subroutine TriDistributeCPUToLocalIntPass0000
 
-subroutine DistributeToLocalIntPass0000(LP1,&
+subroutine DistributeCPUToLocalIntPass0000(LP1,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
   real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
   !local variables
   integer :: iContA,iContB,iContQ,ipass,iAtomA,iAtomB
@@ -2682,9 +2759,9 @@ subroutine DistributeToLocalIntPass0000(LP1,&
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine DistributeToLocalIntPass0000
+end subroutine DistributeCPUToLocalIntPass0000
 
-subroutine DistributeToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
+subroutine DistributeCPUToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
      & MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses
@@ -2702,14 +2779,14 @@ subroutine DistributeToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
   ENDDO
 !$OMP END DO
 
-end subroutine DistributeToLocalIntPassSeg0000
+end subroutine DistributeCPUToLocalIntPassSeg0000
 
-subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine DistributeCPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
-  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,MaxPasses)
+  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,nPasses)
   real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
   !local variables
   integer :: iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB
@@ -2735,7 +2812,272 @@ subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCom
 
 !!$OMP END PARALLEL DO
 
-end subroutine DistributeToLocalIntPassSeg
+end subroutine DistributeCPUToLocalIntPassSeg
+!
+!      ====================
+!      Now the GPU routines - OpenACC 
+!      ====================
+!
+subroutine DistributeGPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+implicit none 
+integer,intent(in)    :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
+integer,intent(in)    :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+integer,intent(in)    :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+real(realk),intent(in)::LP1(nContC*nContD,nContA*nContB,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+real(realk),intent(inout)::LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!local variables
+integer :: iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB
+integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   DO iContD = 1,nContD
+    DO iContC = 1,nContC
+     DO iAngD = 1,nOrbCompD
+      DO iAngC = 1,nOrbCompC
+       IatomB = IatomBPass(IPass)
+       IatomA = IatomAPass(IPass)
+       iContQ = iContC + (iContD-1)*nContC
+       I4 = iAngD + (iContD-1)*nOrbCompD
+       I3 = iAngC + (iContC-1)*nOrbCompC
+       DO iContB = 1,nContB
+        offsetB = (iContB-1)*nOrbCompB
+        DO iContA = 1,nContA
+         iContP = iContA+(iContB-1)*nContA
+         offsetA = (iContA-1)*nOrbCompA
+         DO iAngB = 1,nOrbCompB
+          DO iAngA = 1,nOrbCompA
+           LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomB,I3,I4) =&
+                & LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          ENDDO
+         ENDDO
+        ENDDO
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine DistributeGPUToLocalIntPass
+
+subroutine TriDistributeGPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+implicit none 
+integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
+integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+real(realk),intent(in)   :: LP1(nContC*nContD,nContA*nContB,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+real(realk),intent(inout):: LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!local variables
+integer :: iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,iContA,iContB
+integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
+
+  DO IPass = 1,nPasses
+   DO iContP = 1,nContA*nContA
+    DO iContQ = 1,nContC*nContD
+     DO iAngD = 1,nOrbCompD
+      DO iAngC = 1,nOrbCompC
+       IatomB = IatomBPass(IPass)
+       IatomA = IatomAPass(IPass)
+       IF(IatomA.NE.IatomB)THEN
+        !Ordering of Ipass is 
+        !iPass = 0 
+        !DO IatomA = 1,natomsA
+        ! DO IatomB = 1,IatomBend
+        !   iPass = iPass + 1
+        ! ENDDO
+        !ENDDO
+        !Where IatomBend=IatomA for triangularLHSatomLoop
+        !   or IatomBend=natomsB 
+        
+        iContA = iContP - ((iContP-1)/nContA)*nContA
+        iContB = (iContP-1)/nContA+1
+        iContC = iContQ - ((iContQ-1)/nContC)*nContC
+        iContD = (iContQ-1)/nContC+1
+        I4 = iAngD + (iContD-1)*nOrbCompD
+        I3 = iAngC + (iContC-1)*nOrbCompC
+        offsetB = (iContB-1)*nOrbCompA
+        offsetA = (iContA-1)*nOrbCompA
+        DO iAngB = 1,nOrbCompA
+         DO iAngA = 1,nOrbCompA
+          LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomB,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          LP2(iAngB + offsetB,iatomB,iAngA + offsetA,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+         ENDDO
+        ENDDO
+       ELSE
+        iContA = iContP - ((iContP-1)/nContA)*nContA
+        iContB = (iContP-1)/nContA+1
+        iContC = iContQ - ((iContQ-1)/nContC)*nContC
+        iContD = (iContQ-1)/nContC+1
+        I4 = iAngD + (iContD-1)*nOrbCompD
+        I3 = iAngC + (iContC-1)*nOrbCompC
+        offsetB = (iContB-1)*nOrbCompA
+        offsetA = (iContA-1)*nOrbCompA
+        DO iAngB = 1,nOrbCompA
+         DO iAngA = 1,nOrbCompA
+          LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          LP2(iAngB + offsetB,iatomA,iAngA + offsetA,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+         ENDDO
+        ENDDO
+       ENDIF
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPass
+
+subroutine TriDistributeGPUToLocalIntPassSeg0000(LP1,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(MaxPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: iPass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+    IatomB = IatomBPass(IPass)
+    IatomA = IatomAPass(IPass)    
+    IF(IatomA.NE.IatomB)THEN
+       LP2(iatomA,iatomB) = LP1(IPass)
+       LP2(iatomB,iatomA) = LP1(IPass)
+    ELSE
+       LP2(iatomA,iatomA) = LP1(IPass)
+    ENDIF
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPassSeg0000
+
+subroutine TriDistributeGPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nPasses,nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD)
+  real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
+  !local variables
+  integer :: iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA
+
+  DO IPass = 1,nPasses
+   DO iAngQ = 1,nOrbCompD*nOrbCompC
+    IatomB = IatomBPass(IPass)
+    IatomA = IatomAPass(IPass)    
+    IF(IatomA.NE.IatomB)THEN
+     DO iAngB = 1,nOrbCompA
+      DO iAngA = 1,nOrbCompA
+       LP2(iAngA,iatomA,iAngB,iatomB,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+       LP2(iAngB,iatomB,iAngA,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+      ENDDO
+     ENDDO
+    ELSE
+     DO iAngB = 1,nOrbCompA
+      DO iAngA = 1,nOrbCompA
+       LP2(iAngA,iatomA,iAngB,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+       LP2(iAngB,iatomA,iAngA,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+      ENDDO
+     ENDDO
+    ENDIF
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPassSeg
+
+subroutine TriDistributeGPUToLocalIntPass0000(LP1,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB
+  integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
+  real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
+  !local variables
+  integer :: iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB
+  DO IPass = 1,nPasses
+   DO iContB = 1,nContA
+    DO iContA = 1,nContA
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)    
+     IF(IatomA.NE.IatomB)THEN
+      DO iContQ = 1,nContC*nContD
+       LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+       LP2(iContB,iatomB,iContA,iatomA,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+      ENDDO
+     ELSE
+      DO iContQ = 1,nContC*nContD
+       LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+       LP2(iContB,iatomB,iContA,iatomA,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+      ENDDO
+     ENDIF
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPass0000
+
+subroutine DistributeGPUToLocalIntPass0000(LP1,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
+  real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
+  !local variables
+  integer :: iContA,iContB,iContQ,ipass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   DO iContB = 1,nContB
+    DO iContA = 1,nContA
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)
+     DO iContQ = 1,nContD*nContC
+      LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine DistributeGPUToLocalIntPass0000
+
+subroutine DistributeGPUToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
+     & MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
+  real(realk),intent(in)    :: LP1(nPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: ipass,iAtomA,iAtomB
+
+  DO IPass = 1,nPasses
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)
+     LP2(iAtomA,iAtomB) = LP1(IPass)
+  ENDDO
+
+end subroutine DistributeGPUToLocalIntPassSeg0000
+
+subroutine DistributeGPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
+  real(realk),intent(in)    :: LP1(nPasses,nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD)
+  real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
+  !local variables
+  integer :: iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   IatomB = IatomBPass(IPass)
+   IatomA = IatomAPass(IPass)
+   DO iAngQ = 1,nOrbCompD*nOrbCompC
+    DO iAngB = 1,nOrbCompB
+     DO iAngA = 1,nOrbCompA
+      LP2(iAngA,iAtomA,iAngB,iAtomB,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+
+end subroutine DistributeGPUToLocalIntPassSeg
+!==============================================================================
+!
+!   Done with Distribution routines to LocalIntPass2()
+!
+!==============================================================================
 
 subroutine IchorPermuteLHS(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD,LocalIntPass5)
   implicit none
@@ -3115,10 +3457,17 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
     !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
     !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
     !this can be done on the accelerator.
-     call MainTriDistributetoLocalIntPass2(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
-     & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
-     & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
-     & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     IF(.TRUE.)THEN !nPrimLast
+        call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ELSE
+        call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ENDIF
     !TriangularLHSAtomLoop have ensured that LocalIntPass have full set of AtomA and AtomB
     !Contract LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD) With D(B,D) and D()
     !K(AC) = sum_{BD} (A,B|C,D) Dmat(B,D) = sum_{BD} (A,B|C,D) Dmat(B,D) 

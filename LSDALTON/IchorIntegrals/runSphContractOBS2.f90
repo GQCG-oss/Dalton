@@ -2,6 +2,7 @@ PROGRAM TUV
   use math
   use stringsMODULE
   implicit none
+  logical :: nPrimLast
   integer,pointer :: TUVINDEX(:,:,:),TUVINDEXP(:,:,:)
   integer :: JMAX,J,JMAX1,JMAXP
   logical,pointer :: Enoscreen(:,:),EnoscreenS(:,:),zero(:)
@@ -14,9 +15,9 @@ PROGRAM TUV
   integer :: ip1,jp1,kp1,p1,ip2,jp2,kp2,p2,ijkcartP
   real(realk),pointer :: uniqeparam(:)
   character(len=15),pointer :: uniqeparamNAME(:)
-    character(len=3) :: ARCSTRING
-    integer :: GPUrun,nstring
-    logical :: DoOpenMP,DoOpenACC,CPU
+  character(len=3) :: ARCSTRING
+  integer :: GPUrun,nstring
+  logical :: DoOpenMP,DoOpenACC,CPU
 
   !buildtuvindex
   sphericalGTO = .TRUE.
@@ -27,6 +28,8 @@ PROGRAM TUV
 DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
+    nPrimLAST = .FALSE.
+    IF(CPU)nPrimLAST = .TRUE.
     DoOpenMP = .FALSE.
     DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
@@ -106,9 +109,14 @@ DO GPUrun = 1,2
               ENDIF
               WRITE(LUMOD3,'(A)')'  implicit none'
               WRITE(LUMOD3,'(A)')'  integer,intent(in)        :: nlmP,nContPasses'
-              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(nlmP,',ijkcartP,',nContPasses)'
-              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(nlmP,',ijkP,',nContPasses)'
-              WRITE(LUMOD3,'(A)')'  integer :: iPass,ijkP'
+              IF(nPrimLast)THEN
+                 WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(nlmP,',ijkcartP,',nContPasses)'
+                 WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(nlmP,',ijkP,',nContPasses)'
+              ELSE
+                 WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(nContPasses*nlmP,',ijkcartP,')'
+                 WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(nContPasses*nlmP,',ijkP,')'                 
+              ENDIF
+              WRITE(LUMOD3,'(A)')'  integer :: iPass,ijkP,iP'
               iparam = 0
               do ijkP = 1,ijkcart
                  do ilmP=1,ijk
@@ -207,10 +215,19 @@ DO GPUrun = 1,2
               !              WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(',ijkP,',ijkQcart,nPasses)'
 
 !              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iPass,ijkP) SHARED(nlmP,nContPasses,IN,OUT)'
-              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iPass,ijkP)'
-              IF(DoOpenACC)WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPass,ijkP) PRESENT(nlmP,nContPasses,IN,OUT)'
-              WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
-              WRITE(LUMOD3,'(A)')'   DO ijkP=1,nlmP'
+              IF(nPrimLast)THEN
+                 IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iPass,ijkP)'
+                 IF(DoOpenACC)WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPass,ijkP) PRESENT(nlmP,nContPasses,IN,OUT)'
+              ELSE
+                 IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP)'
+                 IF(DoOpenACC)WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)'
+              ENDIF
+              IF(nPrimLast)THEN
+                 WRITE(LUMOD3,'(A)')'  DO iPass=1,nContPasses'
+                 WRITE(LUMOD3,'(A)')'   DO ijkP=1,nlmP'
+              ELSE
+                 WRITE(LUMOD3,'(A)')'  DO iP=1,nContPasses*nlmP'
+              ENDIF
               do ilmP=1,ijk
                  call initString(4)
                  nString = 0 
@@ -224,21 +241,37 @@ DO GPUrun = 1,2
                                    iparam = iparam2
                                 ENDIF
                              enddo
-                             call AddToString('OUT(ijkP,')
-                             call AddToString(ilmP)
-                             call AddToString(',iPass) = IN(ijkP,')
-                             call AddToString(ijkP)
-                             call AddToString(',iPass)*')
+                             IF(nPrimLast)THEN
+                                call AddToString('OUT(ijkP,')
+                                call AddToString(ilmP)
+                                call AddToString(',iPass) = IN(ijkP,')
+                                call AddToString(ijkP)
+                                call AddToString(',iPass)*')
+                             ELSE
+                                call AddToString('OUT(iP,')
+                                call AddToString(ilmP)
+                                call AddToString(') = IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(')*')
+                             ENDIF
                              call AddToString(TRIM(uniqeparamNAME(iparam)))
                              nString = 4 + 9 + 3 + 18 + 3 + 8 + 12 
 !                             WRITE(LUMOD3,'(A,i3,A,i3,A,A15)')&
 !                                  &'    OUT(ijkP,',ilmP,',iPass) = IN(ijkP,',ijkP,',iPass)*',uniqeparamNAME(iparam)
                           ELSE
-                             call AddToString('OUT(ijkP,')
-                             call AddToString(ilmP)
-                             call AddToString(',iPass) = IN(ijkP,')
-                             call AddToString(ijkP)
-                             call AddToString(',iPass)')
+                             IF(nPrimLast)THEN
+                                call AddToString('OUT(ijkP,')
+                                call AddToString(ilmP)
+                                call AddToString(',iPass) = IN(ijkP,')
+                                call AddToString(ijkP)
+                                call AddToString(',iPass)')
+                             ELSE
+                                call AddToString('OUT(iP,')
+                                call AddToString(ilmP)
+                                call AddToString(') = IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(')')
+                             ENDIF
                              nString = 4 + 9 + 3 + 18 + 3 + 8 
 !                             WRITE(LUMOD3,'(A,i3,A,i3,A)')&
 !                                  &'    OUT(ijkP,',ilmP,',iPass) = IN(ijkP,',ijkP,',iPass)'
@@ -260,9 +293,15 @@ DO GPUrun = 1,2
                                    iparam = iparam2
                                 ENDIF
                              enddo
-                             call AddToString(' + IN(ijkP,')
-                             call AddToString(ijkP)
-                             call AddToString(',iPass)*')
+                             IF(nPrimLast)THEN
+                                call AddToString(' + IN(ijkP,')
+                                call AddToString(ijkP)
+                                call AddToString(',iPass)*')
+                             ELSE
+                                call AddToString(' + IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(')*')
+                             ENDIF
                              call AddToString(TRIM(uniqeparamNAME(iparam)))
                              nString = nString + 11 + 3 + 8 + 12
 
@@ -276,9 +315,15 @@ DO GPUrun = 1,2
                                 call AddToString('&')
                                 nString = 16
                              ENDIF
-                             call AddToString(' + IN(ijkP,')
-                             call AddToString(ijkP)
-                             call AddToString(',iPass)')
+                             IF(nPrimLast)THEN
+                                call AddToString(' + IN(ijkP,')
+                                call AddToString(ijkP)
+                                call AddToString(',iPass)')
+                             ELSE
+                                call AddToString(' + IN(iP,')
+                                call AddToString(ijkP)
+                                call AddToString(')')
+                             ENDIF
                              nString = nString + 11 + 3 + 8 
 !                             WRITE(LUMOD3,'(A,i3,A,i3,A,i3,A)')&
 !                                  &'    OUT(ijkP,',ilmP,',iPass) = OUT(ijkP,',ilmP,',iPass) + IN(ijkP,',ijkP,',iPass)'
@@ -288,8 +333,12 @@ DO GPUrun = 1,2
                  enddo
                  call writeString(LUMOD3)
               enddo
-              WRITE(LUMOD3,'(A)')'   ENDDO'
-              WRITE(LUMOD3,'(A)')'  ENDDO'
+              IF(nPrimLast)THEN
+                 WRITE(LUMOD3,'(A)')'   ENDDO'
+                 WRITE(LUMOD3,'(A)')'  ENDDO'
+              ELSE
+                 WRITE(LUMOD3,'(A)')'  ENDDO'
+              ENDIF
 !              IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END PARALLEL DO'
               IF(DoOpenMP)WRITE(LUMOD3,'(A)')'!$OMP END DO'
               IF(l12.LT.10)THEN
