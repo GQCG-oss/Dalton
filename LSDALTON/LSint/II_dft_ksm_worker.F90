@@ -3,13 +3,23 @@ MODULE IIDFTKSMWORK
 use precision
 !use TYPEDEF
 use dft_type
+use LS_UTIL,only: DGEMM_TS
 use dft_memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 #ifdef VAR_XCFUN
 use xcfun_host
 #endif
+
+logical,save :: XCintNoOMP
+
 CONTAINS
+SUBROUTINE SetNoOMP(InputNoOMP)
+implicit none
+logical,intent(in) :: InputNoOMP
+XCintNoOMP = InputNoOMP
+END SUBROUTINE SetNoOMP
+
 SUBROUTINE DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 implicit none
 LOGICAL,intent(inout) :: DOGGA,DOMETA
@@ -879,8 +889,13 @@ IF (NRED.GT. 0) THEN
    ENDDO
    
    ! Density-matrix contraction
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   ENDIF
    DO IRED=1,NRED
       iatom = atom(IRED)
       KA = INXRED(IRED)  !KA is active index
@@ -1101,8 +1116,13 @@ IF (NRED.GT. 0) THEN
    ! \frac{\partial \chi_{\mu}}{\frac \partial y} D_{\mu \nu}
    ! \frac{\partial \chi_{\mu}}{\frac \partial z} D_{\mu \nu}
    DO J=1,4
-      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
-           &                  NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
+           &        NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,J),&
+              &        NBLEN,DRED,NRED,0.0E0_realk,GDRED(:,:,J),NBLEN )
+      ENDIF
    ENDDO
    DO IRED=1,NRED
       iatom = atom(IRED)
@@ -3559,9 +3579,15 @@ IF (NRED.GT. 0) THEN
 !   call mem_dft_alloc(EXCRED,NRED,NRED)
    !  Second half-contraction of GAO's with potential
 !   call mem_dft_alloc(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
+            &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+            &                EXCRED(1:NRED*NRED),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,&
+            &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+            &                EXCRED(1:NRED*NRED),NRED)
+    ENDIF
    !  Distribute contributions to KS-matrix
 
    DO JRED=1,NRED         !Jred is reduced index
@@ -3668,9 +3694,15 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !  Second half-contraction of GAO's with potential
 !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ENDIF
 !  Distribute contributions to KS-matrix
    DO JRED=1,NRED         !Jred is reduced index
       J = INXRED(JRED)    !J is orbital index
@@ -3763,9 +3795,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
       !  Second half-contraction of GAO's with potential
       !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-           &                EXCRED(1:NRED*NRED),NRED)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+              & GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,EXCRED(1:NRED*NRED),NRED)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+              & GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,EXCRED(1:NRED*NRED),NRED)
+      ENDIF
       !  Distribute contributions to KS-matrix
       DO JRED=1,NRED          !Jred is reduced index
          J = INXRED(JRED)     !J is orbital index
@@ -3871,9 +3907,15 @@ DO IDMAT = 1,NDMAT
    ENDDO
 !  Second half-contraction of GAO's with potential
 !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+   ENDIF
 !  Distribute contributions to KS-matrix
    DO JRED=1,NRED          !Jred is reduced index
       J = INXRED(JRED)     !J is orbital index
@@ -4048,8 +4090,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
     ENDDO
     ! First half-contraction of Gaussian AO with density-matrix
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
-         &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED(K,1)*TMP(K,1)
@@ -4169,8 +4216,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
     ENDDO
     ! First half-contraction of Gaussian AO with density-matrix
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
-         &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1.0E0_realk,GAORED1,NBLEN,&
+            &     BRED,NRED,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED1(K,1)*TMP(K,1)
@@ -4292,8 +4344,13 @@ IF (NRED.GT. 0) THEN
  !  Second half-contraction of GAO's
  call mem_dft_alloc(EXCRED,NRED,NRED,3)
  DO ALPHA = 1,3
-  CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-       &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ENDIF
  ENDDO
  DO ALPHA=1,3
   DO JRED=1,NRED    !Jred is reduced index
@@ -4414,8 +4471,13 @@ IF (NRED.GT. 0) THEN
  ENDDO
  call mem_dft_alloc(EXCRED,NRED,NRED,3)
  DO ALPHA = 1,3
-    CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-         &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+    ENDIF
  ENDDO
  DO COORDINATE=2,4
     DO ALPHA = 1,3
@@ -4433,8 +4495,13 @@ IF (NRED.GT. 0) THEN
      ENDDO
     ENDDO
     DO ALPHA = 1,3
-       CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
-            &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
+               &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,COORDINATE),NBLEN,&
+               &     TMP(:,:,ALPHA),NBLEN,1.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+       ENDIF
     ENDDO
  ENDDO
  DO ALPHA=1,3
@@ -4567,8 +4634,13 @@ IF (NRED.GT. 0) THEN
 
    ! First half-contraction of Gaussian AO with density-matrix
  DO IBMAT=1,NBMAT
-    CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
-        &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NBLEN,&
+            &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,1),NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPVAL(K,IBMAT) = GAORED(K,1,1)*TMP(K,1,1)
@@ -4591,8 +4663,13 @@ IF (NRED.GT. 0) THEN
    ! First half-contraction of Gaussian AO with density-matrix
     !TMP(K,J,N) = GAORED(K,I,N)*BRED(I,J) - TMP(K,J,1) is already built
     DO N=2,4
-     CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
-          &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
+               &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS("N","N",NBLEN,NRED,NRED,1E0_realk,GAORED(:,:,N),NBLEN,&
+               &     BRED(:,:,IBMAT),NRED,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ENDIF
     ENDDO
    ! Second half-contraction of Gaussian AOs
     J=1
@@ -4754,8 +4831,13 @@ IF (NRED.GT. 0) THEN
   ENDDO
   !  Second half-contraction of GAO's
   DO ALPHA = 1,3
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-        &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     IF(XCintNoOMP)THEN
+        CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+             &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     ELSE !Use Thread Safe version 
+        CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+             &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+     ENDIF
   ENDDO
   DO ALPHA=1,3
    N = ALPHA+(IBMAT-1)*NBMAT
@@ -4779,8 +4861,13 @@ IF (NRED.GT. 0) THEN
    ENDDO
    !  Second half-contraction of GAO's
    DO ALPHA = 1,3
-     CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
-          &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+              &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NRED,NRED,NBLEN,1E0_realk,GAORED(:,:,1),NBLEN,&
+              &     TMP(:,:,ALPHA),NBLEN,0.0E0_realk,EXCRED(:,:,ALPHA),NRED)
+      ENDIF
    ENDDO
    DO ALPHA=1,3
     N = ALPHA+(IBMAT-1)*NBMAT
@@ -4879,8 +4966,13 @@ DO IBMAT = 1,NBMAT
          ENDDO
       ENDDO
       !  Second half-contraction of GAO's
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
            &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ENDIF
       N = ALPHA+(IBMAT-1)*3
       DO JRED=1,NACTBAST       !Jred is active index 
          J = INXACT(JRED)     !J is orbital index 
@@ -4903,8 +4995,13 @@ DO IBMAT = 1,NBMAT
             ENDDO
          ENDDO
       !  Second half-contraction of GAO's
-         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
-              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+                 &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+                 &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+         ENDIF
          N = ALPHA+(IBMAT-1)*NBMAT
          DO JRED=1,NACTBAST       !Jred is active index 
             J = INXACT(JRED)      !J is orbital index 
@@ -4941,8 +5038,13 @@ DO IBMAT = 1,NBMAT
                  &+D05*(GAOS(K,J,gab2Zgamma)*Rbeta-GAOS(K,J,gab2Zbeta)*Rgamma)*coef2(K,IBMAT,3)
          ENDDO
       ENDDO
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
-           &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS,NBLEN,&
+              &     TMP,NBLEN,0.0E0_realk,EXCRED,NACTBAST)
+      ENDIF
       DO COORDINATE=1,3
          beta = betaList(ALPHA)
          gamma= gammaList(ALPHA)
@@ -4956,8 +5058,15 @@ DO IBMAT = 1,NBMAT
                     &*coef2(K,IBMAT,COORDINATE)
             ENDDO
          ENDDO
-         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,GAOS(:,:,1+COORDINATE),NBLEN,&
-              &     TMP,NBLEN,1.0E0_realk,EXCRED,NACTBAST)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,&
+                 & GAOS(:,:,1+COORDINATE),NBLEN,TMP,NBLEN,1.0E0_realk,&
+                 & EXCRED,NACTBAST)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1E0_realk,&
+                 & GAOS(:,:,1+COORDINATE),NBLEN,TMP,NBLEN,1.0E0_realk,&
+                 & EXCRED,NACTBAST)
+         ENDIF
       ENDDO
       DO JRED=1,NACTBAST      !Jred is active index 
          J = INXACT(JRED)     !J is orbital index    
@@ -4981,9 +5090,15 @@ DO IBMAT = 1,NBMAT
          ENDDO
       ENDDO
       !  Second half-contraction of GAO's with potential
-      CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
-           &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
-           &                EXCRED,NACTBAST)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
+              &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
+              &                EXCRED,NACTBAST)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('T','N',NACTBAST,NACTBAST,NBLEN,1.0E0_realk,&
+              &                GAOS,NBLEN,TMP,NBLEN,0.0E0_realk,&
+              &                EXCRED,NACTBAST)
+      ENDIF
       !  Distribute contributions to KS-matrix
       DO JRED=1,NACTBAST      !Jred is active index   
          J = INXACT(JRED)     !J is orbital index   
@@ -5055,8 +5170,13 @@ call mem_dft_alloc(TMP,NBLEN,NACTBAST,4)
 !-------------------------------------------------------------
    ! First half-contraction of Gaussian AO with density-matrix
  DO IBMAT=1,NBMAT
-    CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
-        &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    IF(XCintNoOMP)THEN
+       CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
+            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    ELSE !Use Thread Safe version 
+       CALL DGEMM_TS("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS,NBLEN,&
+            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP,NBLEN)
+    ENDIF
     ! Second half-contraction 
     DO K = 1, NBLEN
        EXPGRAD(K,1,1,IBMAT) = GAOS(K,1,1)*TMP(K,1,1)
@@ -5086,8 +5206,13 @@ call mem_dft_alloc(TMP,NBLEN,NACTBAST,4)
     !TMP(K,J,N) = GAOS(K,I,N)*BMAT(I,J) - TMP(K,J,1) is already built
     DO N=2,4
        M=N+3
-       CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
-            &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       IF(XCintNoOMP)THEN
+          CALL DGEMM("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
+               &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ELSE !Use Thread Safe version 
+          CALL DGEMM_TS("N","N",NBLEN,NACTBAST,NACTBAST,1E0_realk,GAOS(:,:,M),NBLEN,&
+               &     BMAT(:,:,IBMAT),NACTBAST,0.0E0_realk,TMP(:,:,N),NBLEN)
+       ENDIF
     ENDDO
    ! Second half-contraction of Gaussian AOs
     J=1
@@ -5388,10 +5513,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
-!   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-!        &          NBLEN,BRED,NRED,0.0E0_realk,TMPB,NBLEN)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ENDIF
    DO JRED = 1,NRED
       IRED =1
       BT = D05*(BRED(IRED,JRED)+BRED(JRED,IRED))
@@ -5567,14 +5695,25 @@ IF (NRED.GT. 0) THEN
       atom(IRED) = orb2atom(I)
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
         &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ENDIF
    !TMPRED contain DRED
    DO COORDINATE = 1,3
     R=1+COORDINATE
@@ -5601,15 +5740,25 @@ IF (NRED.GT. 0) THEN
          TMPRED(IRED,JRED) = D05*(BMAT(IORB,JORB) + BMAT(JORB,IORB))
       ENDDO
    ENDDO
-
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
-        &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,1),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMP,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,2),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPX,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,3),&
+           &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPY,NBLEN)
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,4),&
         &          NBLEN,TMPRED,NRED,0.0E0_realk,TMPZ,NBLEN)
+   ENDIF
    !TMPRED CONTAINS BRED
    DO COORDINATE = 1,3
     R=1+COORDINATE
@@ -5772,8 +5921,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
 
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   IF(XCintNoOMP)THEN
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ELSE !Use Thread Safe version 
+      CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD,NBLEN)
+   ENDIF
    DO JRED = 1,NRED
       IRED =1
       AT = D05*(ARED(IRED,JRED)+ARED(JRED,IRED))
@@ -5972,8 +6126,13 @@ IF (NRED.GT. 0) THEN
       ENDDO
    ENDDO
    DO I=1,4
-      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
-           &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
+              &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(:,:,I),&
+              &          NBLEN,DRED,NRED,0.0E0_realk,TMPD(:,:,I),NBLEN)
+      ENDIF
    ENDDO
    DO JRED = 1,NRED
       IRED =1

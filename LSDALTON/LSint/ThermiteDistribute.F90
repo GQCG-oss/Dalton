@@ -402,7 +402,7 @@ ELSE
    atomB   = P%orb2atom(1)
    IA   = P%orb1batch(1)
    IB   = P%orb2batch(1)
-!$OMP CRITICAL 
+!$OMP CRITICAL (FullGab)
    IF (maxgabelm.GT.shortintCRIT) THEN
       RES%maxgab(IA,IB) = CEILING(LOG10(sqrt(maxgabelm)))
    ELSE
@@ -412,7 +412,7 @@ ELSE
    IF (dopermutation) THEN
       RES%maxgab(IB,IA) =  RES%maxgab(IA,IB)
    ENDIF
-!$OMP END CRITICAL 
+!$OMP END CRITICAL (FullGab)
 ENDIF
 CONTAINS
 SUBROUTINE findMaxAbsGabElm(Gabint,nP,maxgabelm,thresh,lupri)
@@ -690,11 +690,16 @@ DO iContB=1,nContB
     !problems with short integer overflow
     IF(PSGabint2(iA,iB,iA,iB).GT. shortintcrit)THEN
        PSgabIntTmp = CEILING(LOG10(sqrt(PSGabint2(iA,iB,iA,iB))))
-       PSGba(sB+iContB,sA+iContA) = MAX(PSGba(sB+iContB,sA+iContA),PSgabIntTmp)  
+!$OMP CRITICAL (PSGab)
+       PSGba(sB+iContB,sA+iContA) = MAX(PSGba(sB+iContB,sA+iContA),PSgabIntTmp)
+!$OMP END CRITICAL (PSGab)
     ELSE
        IF(ABS(PSGabint2(iA,iB,iA,iB)).GT.thresh)THEN
           PSgabIntTmp = CEILING(LOG10(sqrt(ABS(PSGabint2(iA,iB,iA,iB)))))
+!$OMP CRITICAL (PSGab)
           PSGba(sB+iContB,sA+iContA) = MAX(PSGba(sB+iContB,sA+iContA),PSgabIntTmp)
+!$OMP END CRITICAL (PSGab)
+
 !          write(lupri,*)'Error in addPSGba. Negative screening integral',PSGabint2(iA,iB,iA,iB)
 !          call lsquit('Error in addPSGba. Negative screening integral',lupri)
        ENDIF
