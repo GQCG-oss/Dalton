@@ -1308,7 +1308,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   logical,intent(in) :: noScreenAB(nAtomsA,nAtomsB)
   !Q
   integer,intent(in) :: nContQ,nPrimQ
-  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimP)
+  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimQ)
   !P
   integer,intent(in) :: nContP,nPrimP
   real(realk),intent(inout) :: PpreExpFac(nPrimP)
@@ -3328,7 +3328,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   logical,intent(in) :: noScreenAB(nAtomsA,nAtomsB)
   !Q
   integer,intent(in) :: nContQ,nPrimQ
-  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimP)
+  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimQ)
   !P
   integer,intent(in) :: nContP,nPrimP
   real(realk),intent(inout) :: PpreExpFac(nPrimP)
