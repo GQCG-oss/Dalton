@@ -2515,7 +2515,7 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    integer, intent(out) :: iter_start
    integer :: no,nv
    integer(8) :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
-   logical(8) :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
+   logical :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
    logical(8) :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
    logical(8) :: readfile1, readfile2
    integer(8) :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f
