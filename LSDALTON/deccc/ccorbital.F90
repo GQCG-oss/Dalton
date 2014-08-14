@@ -984,27 +984,49 @@ contains
              ! (ii) zero orbitals assigned
              keepon=.false.
              CheckAssignment: do i=1,natoms
-                if( (countocc(i)/=0 .and. countunocc(i)==0) .or. &
-                     & (countocc(i)==0 .and. countunocc(i)/=0) ) then
-                   ! Still not acceptable orbital distribution - keep on
-                   keepon=.true.
-                   exit CheckAssignment
-                end if
+
+                WhichScheme: if(DECinfo%onlyoccpart) then
+
+                   if( (countocc(i)/=0 .and. countunocc(i)==0) ) then
+                      ! Still not acceptable orbital distribution - keep on
+                      keepon=.true.
+                      exit CheckAssignment
+                   end if
+
+                elseif(DECinfo%onlyvirtpart) then
+
+                   if( (countocc(i)==0 .and. countunocc(i)/=0) ) then
+                      ! Still not acceptable orbital distribution - keep on
+                      keepon=.true.
+                      exit CheckAssignment
+                   end if
+
+                else
+
+                   if( (countocc(i)/=0 .and. countunocc(i)==0) .or. &
+                        & (countocc(i)==0 .and. countunocc(i)/=0) ) then
+                      ! Still not acceptable orbital distribution - keep on
+                      keepon=.true.
+                      exit CheckAssignment
+                   end if
+
+                end if WhichScheme
+
              end do CheckAssignment
 
           end do ReassignAtomLoop
 
           ! Avoid infinite loop
-          if(nreass>5) then
+          if(keepon .and. nreass>5) then
              if(count(which_hydrogens)==natoms) then
                 print*,'Orbital assignment failed because there are only hydrogen atoms!'
                 print*,'For development & debug purposes the keyword PUREHYDROGENDEBUG can be used.'
                 call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
              else 
-                write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
-                write(DECinfo%output,*) 'Fallback solution: I now turn on .ABSORBH'
-                DECinfo%AbsorbHatoms=.true.
-                keepon=.false.
+                print *, 'Reassignment procedure failed!'
+                print *, 'Suggestion: Remove .NOTABSORBH keyword'
+                print *, 'If you are not using .NOTABSORBH - then DEC cannot be used for this system!'
+                call lsquit('Reassignment procedure failed!',DECinfo%output)
              end if
           end if
 
