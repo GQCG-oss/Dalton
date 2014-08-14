@@ -2117,47 +2117,6 @@ contains
      logical :: BruteForce,FockMatrixOrdering
 
 
-     !! HACK for testing purposes, F12 code, Do not remove 
-     !! ****
-     !! All virtual, change occupied
-     !do i=1,natoms
-       !Occ_Atoms(i) = .False.
-       !Virt_Atoms(i) = .True.
-     !enddo
-     
-     !do i=1,natoms
-        !Occ_Atoms(1:i) = .True.
-       !print *, "-------------------------------------------------"
-       !print *, "     All virtual", "Number of Occupied Orbitals", i
-       !print *, "-------------------------------------------------"
-
-        !call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             !& MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-             !& AtomicFragment)
-        !call atomic_fragment_free(AtomicFragment)
-     !end do
-
-    !! All occupied, change virtual
-     !do i=1,natoms
-       !Occ_Atoms(i) = .True.
-       !Virt_Atoms(i) = .False.
-     !enddo
-
-     !do i=1,natoms
-        !Virt_Atoms(1:i) = .True.
-       !print *, "-------------------------------------------------"
-       !print *, "     All occ", "Number of Virtual Orbitals", i
-       !print *, "-------------------------------------------------"
-
-        !call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             !& MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-             !& AtomicFragment)
-        !call atomic_fragment_free(AtomicFragment)
-     !end do
-
-     !stop 'KK/Wangy HACK'
-
-
      if (DECinfo%orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
@@ -4931,34 +4890,32 @@ contains
       call mem_alloc(red_list_occ,no)
       call mem_alloc(red_list_vir,nv)
 
-      ! Get information on how the reduction should be performed:
-      call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
-         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
-
       ! Overwrite ccmodel for myatom with the reduction required ccmodel
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
+      AtomicFragment%ccmodel = DECinfo%fragopt_red_model
 
       ! if expansion and reduction ccmodels are different, we need to calculate
       ! the energy of the expanded fragment using the new model:
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
-         write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
+         write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
            & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
          call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
       end if
+
+      ! Get information on how the reduction should be performed:
+      call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
+         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
       call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
             & VirOrbitals,mylsitem,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
 
-
       !==================================================================================!
       !                              Finalize subroutine                                 !
       !==================================================================================!
 
-      ! Define Atomic fragment model to be the model used in the reduction part:
-      AtomicFragment%ccmodel = DECinfo%fragopt_red_model
 
       ! Deallocation:
       call mem_dealloc(red_list_occ)

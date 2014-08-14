@@ -651,7 +651,7 @@ contains
           ! Initialize fragment base on orbital lists Occ_AOS/Vir_AOS:
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,Vir_AOS, &
              & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
-             & .true.,.false.) 
+             & DoBasis,.false.) 
           call mem_dealloc(esti_list_occ)
           call mem_dealloc(esti_list_vir)
           call mem_dealloc(Occ_AOS)

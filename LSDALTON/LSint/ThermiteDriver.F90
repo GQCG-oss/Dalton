@@ -614,7 +614,7 @@ REAL(REALK)          :: CPU1,CPU2,WALL1,WALL2
 
 Integer             :: JmaxA,JmaxB,JmaxP,JMAXAP,JMAXBP,JMAXTP,JMAXD,JMAXM,JMAXT
 Integer             :: ITEX,iPrimP,iAngmomP,nPrimP,proptype,ijkP,ijk1,ijk2,lmP
-integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX
+integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX,QnPasses
 integer             :: iprimA,iprimB,offsetTUV,offsetTUV2,iPassQ,offset
 REAL(REALK)         :: SAAB13,FAC,TEXPB1,FACB,TMPB
 REAL(REALK)         :: ORIGIN(3),Apreexpfac
@@ -678,6 +678,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
        ENDDO
     ENDIF
     IF(Input%addtointegral.AND.Q%orbital1%TYPE_Nucleus)THEN
+       QnPasses = Q%nPasses 
        ! We sum all the charges in Overlap PassQ (all same charge)
        call mem_alloc(ptemp,nPrimPQ*Integral%nTUV )
        Z = -Q%orbital1%CC(1)%p%elms(1) !Charge
@@ -693,7 +694,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
              iPassQ=1
              offsetTUV2=(I-1)*Q%nPasses + (TUV-1)*nPrimPQ
              INTEGRAL%Rtuv(I+offsetTUV)= ptemp(iPassQ + offsetTUV2) 
-             DO iPassQ=2,Q%nPasses
+             DO iPassQ=2,QnPasses
                 INTEGRAL%Rtuv(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)+ptemp(iPassQ + offsetTUV2) 
              ENDDO
           ENDDO

@@ -1,4 +1,6 @@
 MODULE TESTMODULE
+  use stringsMODULE
+  logical,save :: nPrimLast
 CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
@@ -31,6 +33,8 @@ CONTAINS
 DO GPUrun = 1,2
     CPU = .TRUE.
     IF(GPUrun.EQ.2)CPU = .FALSE.
+    nPrimLAST = .FALSE.
+    IF(CPU)nPrimLAST = .TRUE.
     DoOpenMP = .FALSE.
     DoOpenACC = .FALSE.
     IF(CPU)DoOpenMP = .TRUE.
@@ -134,11 +138,23 @@ DO GPUrun = 1,2
           WRITE(LUFILE,'(A)')'  implicit none'
           WRITE(LUFILE,'(A)')'  integer,intent(in) :: nContPQ,nPasses,nlmP,lupri'
           WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Qdistance12(3)'
-          WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nlmP,',nTUVP,',nContPQ*nPasses)'
-          IF((nTUVAstart+1.EQ.1).AND.(nTUVA.EQ.1))THEN
-             WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,1,',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'
+          IF(nPrimLAST)THEN
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nlmP,',nTUVP,',nContPQ*nPasses)'
           ELSE
-             WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'             
+             WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(in) :: ThetaP2(nContPQ*nPasses,nlmP,',nTUVP,')'
+          ENDIF
+          IF(nPrimLAST)THEN
+             IF((nTUVAstart+1.EQ.1).AND.(nTUVA.EQ.1))THEN
+                WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,1,',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'
+             ELSE
+                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,',nContPQ*nPasses)'             
+             ENDIF
+          ELSE
+             IF((nTUVAstart+1.EQ.1).AND.(nTUVA.EQ.1))THEN
+                WRITE(LUFILE,'(A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,1,',nTUVBstart+1,':',nTUVB,')'
+             ELSE
+                WRITE(LUFILE,'(A,I5,A1,I5,A,I5,A,I5,A)')'  real(realk),intent(inout) :: ThetaP(nContPQ*nPasses,nlmP,',NTUVAstart+1,':',nTUVA,',',nTUVBstart+1,':',nTUVB,')'             
+             ENDIF
           ENDIF
           WRITE(LUFILE,'(A)')'  !Local variables'
           IF(ANGMOMA.NE.0)THEN
@@ -213,7 +229,11 @@ DO GPUrun = 1,2
                 IF(nTUVAstart+1.EQ.1)THEN
                    WRITE(LUFILE,'(A,I3,A,I3)')'    DO iTUVD=',NTUVBstart+1,',',nTUVB
                    WRITE(LUFILE,'(A)')'     DO ilmP = 1,nlmP'
-                   WRITE(LUFILE,'(A)')   '        ThetaP(ilmP,1,iTUVD,IP) = ThetaP2(ilmP,iTUVD,IP)'
+                   IF(nPrimLAST)THEN
+                      WRITE(LUFILE,'(A)')   '        ThetaP(ilmP,1,iTUVD,IP) = ThetaP2(ilmP,iTUVD,IP)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')   '        ThetaP(IP,ilmP,1,iTUVD) = ThetaP2(IP,ilmP,iTUVD)'
+                   ENDIF
                    WRITE(LUFILE,'(A)')   '     ENDDO'
                    WRITE(LUFILE,'(A)')   '    ENDDO'
                    IF(JA.GT.0)THEN
@@ -411,6 +431,7 @@ DO GPUrun = 1,2
     character(len=132) :: STRING 
     character(len=3) :: DIRSTRING
     integer :: iString,LUFILE
+    call initString(5)          
     !Q = C so C first C have the 
     !iTUVQ
     !iTUVQminus1x
@@ -418,161 +439,113 @@ DO GPUrun = 1,2
     !iTUVP
     !iTUVPplus1x
     !step 1 add blanks
-    STRING(1:5) = '     '
-    iSTRING = 6
     !step 2 determine where to put the 
     IF(iTUVP.LE.nTUVP.AND.((iTUVQ.GE.nTUVQstart+1).AND.(iTUVQ.LE.nTUVQ)))THEN
-       WRITE(STRING(iSTRING:iSTRING+11),'(A12)') 'ThetaP(ilmP,'
-       iString = iSTRING+12
-    ELSE
-       IF(JTMP.LT.10)THEN
-          WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP,'('
-          iString = iSTRING+5
+       IF(nPrimLAST)THEN
+          call AddToString('ThetaP(ilmP,')
        ELSE
-          WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A)') 'Tmp',JTMP,'('
-          iString = iSTRING+6
+          call AddToString('ThetaP(iP,ilmP,')
        ENDIF
-    ENDIF
-    IF(iTUVQ.LT.100)THEN
-       WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVQ,','
-       iString = iSTRING+3
-    ELSEIF(iTUVQ.LT.1000)THEN
-       WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVQ,','
-       iString = iSTRING+4
-    ELSEIF(iTUVQ.LT.10000)THEN
-       WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVQ,','
-       iString = iSTRING+5
     ELSE
-       STOP 'Recurrent iTUVQ corresponds to A'
+       call AddToString('Tmp')
+       call AddToString(JTMP)
+       call AddToString('(')
     ENDIF
-    IF(iTUVP.LT.100)THEN
-       WRITE(STRING(iSTRING:iSTRING+2),'(I2)') iTUVP
-       iString = iSTRING+2
-    ELSEIF(iTUVP.LT.1000)THEN
-       WRITE(STRING(iSTRING:iSTRING+3),'(I3)') iTUVP
-       iString = iSTRING+3
-    ELSEIF(iTUVP.LT.10000)THEN
-       WRITE(STRING(iSTRING:iSTRING+4),'(I4)') iTUVP
-       iString = iSTRING+4
-    ELSE
-       STOP 'Recurrent iTUVQ'
-    ENDIF
+    call AddToString(iTUVQ)
+    call AddToString(',')
+    call AddToString(iTUVP)
     IF(iTUVP.LE.nTUVP.AND.((iTUVQ.GE.nTUVQstart+1).AND.(iTUVQ.LE.nTUVQ)))THEN
-!    IF(iTUVP.LE.nTUVP.AND.(iTUVQ.LE.nTUVQ))THEN
-       WRITE(STRING(iSTRING:iSTRING+6),'(A7)') ',IP) = '
-       iString = iSTRING+7
+       IF(nPrimLAST)THEN
+          call AddToString(',IP) = ')
+       ELSE
+          call AddToString(') = ')
+       ENDIF
     ELSE
-       WRITE(STRING(iSTRING:iSTRING+3),'(A4)') ') = '
-       iString = iSTRING+4
+       call AddToString(') = ')
     ENDIF
     !step 3.  the first term: i+1 (q-1,p+1)    
     IF(iTUVQminus1x.EQ.1)THEN
-       !Aux(',iTUVp,',IP)
-       WRITE(STRING(iSTRING:iSTRING+12),'(A13)') 'ThetaP2(ilmP,'
-       iString = iSTRING+13
+       IF(nPrimLAST)THEN
+          call AddToString('ThetaP2(ilmP,')
+       ELSE
+          call AddToString('ThetaP2(iP,ilmP,')
+       ENDIF
     ELSE
        !          IF(iTUVplus1x.LE.nTUVP)THEN
        IF(iTUVPplus1x.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQstart+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-       !IF(iTUVPplus1x.LE.nTUVP.AND.(iTUVQminus1x.LE.nTUVQ))THEN
-          WRITE(STRING(iSTRING:iSTRING+11),'(A12)') 'ThetaP(ilmP,'
-          iString = iSTRING+12
-       ELSE
-          IF(JTMP-1.LT.10)THEN
-             WRITE(STRING(iSTRING:iSTRING+4),'(A3,I1,A1)') 'Tmp',JTMP-1,'('
-             iString = iSTRING+5
+          IF(nPrimLAST)THEN
+             call AddToString('ThetaP(ilmP,')
           ELSE
-             WRITE(STRING(iSTRING:iSTRING+5),'(A3,I2,A1)') 'Tmp',JTMP-1,'('
-             iString = iSTRING+6
+             call AddToString('ThetaP(iP,ilmP,')
           ENDIF
+       ELSE
+          call AddToString('Tmp')
+          call AddToString(JTMP-1)
+          call AddToString('(')
        ENDIF
     ENDIF
     IF(iTUVQminus1x.NE.1)THEN
-       IF(iTUVQminus1x.LT.100)THEN
-          WRITE(STRING(iSTRING:iSTRING+2),'(I2,A1)') iTUVQminus1x,','
-          iString = iSTRING+3
-       ELSEIF(iTUVQminus1x.LT.1000)THEN
-          WRITE(STRING(iSTRING:iSTRING+3),'(I3,A1)') iTUVQminus1x,','
-          iString = iSTRING+4
-       ELSEIF(iTUVQminus1x.LT.10000)THEN
-          WRITE(STRING(iSTRING:iSTRING+4),'(I4,A1)') iTUVQminus1x,','
-          iString = iSTRING+5
-       ELSE
-          STOP 'Recurrent iTUVQplus1x'
-       ENDIF
+       call AddToString(iTUVQminus1x)
+       call AddToString(',')
     ENDIF
     IF(iTUVQminus1x.EQ.1)THEN
-       WRITE(STRING(iSTRING:iSTRING+6),'(I2,A5)') iTUVPplus1x,',IP) '
-       iString = iSTRING+7
-    ELSE
-       IF(iTUVPplus1x.LT.100)THEN
-          WRITE(STRING(iSTRING:iSTRING+3),'(I2,A2)') iTUVPplus1x,') '
-          iString = iSTRING+4
-       ELSEIF(iTUVPplus1x.LT.1000)THEN
-          WRITE(STRING(iSTRING:iSTRING+4),'(I3,A2)') iTUVPplus1x,') '
-          iString = iSTRING+5
+       call AddToString(iTUVPplus1x)
+       IF(nPrimLAST)THEN
+          call AddToString(',IP) ')
        ELSE
-          STOP 'Recurrent iTUVPplus'
+          call AddToString(') ')
        ENDIF
+    ELSE
+       call AddToString(iTUVPplus1x)
+       call AddToString(') ')
     ENDIF
     !step 4: the second term: X*Theta(i,j,k,l)  (q-1,p)
     IF(iTUVQminus1x.EQ.1)THEN
-       WRITE(STRING(iSTRING:iSTRING+18),'(A2,A3,A14)') '+ ',DIRSTRING,'*ThetaP2(ilmP,'
-       iString = iSTRING+19
-       IF(iTUVP.LT.100)THEN
-          WRITE(STRING(iSTRING:iSTRING+3),'(I2,A2)') iTUVP,', '
-          iString = iSTRING+4
-       ELSEIF(iTUVP.LT.1000)THEN
-          WRITE(STRING(iSTRING:iSTRING+4),'(I3,A2)') iTUVP,', '
-          iString = iSTRING+5
+       call AddToString('+ ')
+       call AddToString(DIRSTRING)
+       IF(nPrimLAST)THEN
+          call AddToString('*ThetaP2(ilmP,')
+          call AddToString(iTUVP)
+          call AddToString(', ')
+          call AddToString('IP) ')
        ELSE
-          STOP 'Recurrent iTUVPd'
+          call AddToString('*ThetaP2(iP,ilmP,')
+          call AddToString(iTUVP)
+          call AddToString(') ')
        ENDIF
-       WRITE(STRING(iSTRING:iSTRING+3),'(A4)') 'IP) '
-       iString = iSTRING+4
     ELSE
        IF(iTUVP.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQstart+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-!       IF(iTUVP.LE.nTUVP.AND.(iTUVQminus1x.LE.nTUVQ))THEN
-          WRITE(STRING(iSTRING:iSTRING+17),'(A2,A3,A13)') '+ ',DIRSTRING,'*ThetaP(ilmP,'
-          iString = iSTRING+18
-       ELSE
-          IF(JTMP-1.LT.10)THEN
-             WRITE(STRING(iSTRING:iSTRING+10),'(A2,A3,A4,I1,A1)') '+ ',DIRSTRING,'*Tmp',JTMP-1,'('
-             iString = iSTRING+11
+          call AddToString('+ ')
+          call AddToString(DIRSTRING)
+          IF(nPrimLAST)THEN
+             call AddToString('*ThetaP(ilmP,')
           ELSE
-             WRITE(STRING(iSTRING:iSTRING+11),'(A2,A3,A4,I2,A1)') '+ ',DIRSTRING,'*Tmp',JTMP-1,'('
-             iString = iSTRING+12
+             call AddToString('*ThetaP(iP,ilmP,')
           ENDIF
-       ENDIF
-       IF(iTUVQminus1x.LT.100)THEN
-          WRITE(STRING(iSTRING:iSTRING+2),'(I2,A)') iTUVQminus1x,','
-          iString = iSTRING+3
-       ELSEIF(iTUVQ.LT.1000)THEN
-          WRITE(STRING(iSTRING:iSTRING+3),'(I3,A)') iTUVQminus1x,','
-          iString = iSTRING+4
-       ELSEIF(iTUVQ.LT.10000)THEN
-          WRITE(STRING(iSTRING:iSTRING+4),'(I4,A)') iTUVQminus1x,','
-          iString = iSTRING+5
        ELSE
-          STOP 'Recurrent B iTUVP'
+          call AddToString('+ ')
+          call AddToString(DIRSTRING)
+          call AddToString('*Tmp')
+          call AddToString(JTMP-1)
+          call AddToString('(')
        ENDIF
+       call AddToString(iTUVQminus1x)
+       call AddToString(',')
        IF(iTUVP.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQstart+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-!       IF(iTUVP.LE.nTUVP.AND.((iTUVQminus1x.GE.nTUVQSTART+1).AND.(iTUVQminus1x.LE.nTUVQ)))THEN
-          WRITE(STRING(iSTRING:iSTRING+6),'(I2,A5)') iTUVP,',IP) '
-          iString = iSTRING+7
-       ELSE
-          IF(iTUVP.LT.100)THEN
-             WRITE(STRING(iSTRING:iSTRING+3),'(I2,A2)') iTUVP,') '
-             iString = iSTRING+4
-          ELSEIF(iTUVP.LT.1000)THEN
-             WRITE(STRING(iSTRING:iSTRING+4),'(I3,A2)') iTUVP,') '
-             iString = iSTRING+5
+          call AddToString(iTUVP)
+          IF(nPrimLAST)THEN
+             call AddToString(',IP) ')
           ELSE
-             STOP 'Recurrent iTUVPminus'
+             call AddToString(') ')
           ENDIF
+       ELSE
+          call AddToString(iTUVP)
+          call AddToString(') ')
        ENDIF
     ENDIF
     !Final step write the string
-    WRITE(LUFILE,'(A)') STRING(1:iSTRING-1)
+    call writeString(LUFILE)
+    
   end subroutine XYZRECURRENCE
 
 
