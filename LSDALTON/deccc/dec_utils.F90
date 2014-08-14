@@ -1227,7 +1227,8 @@ end function max_batch_dimension
     integer, intent(in) :: dim2
     !> Output matrix
     real(realk), intent(inout), dimension(dim1,dim2) :: mat
-    real(realk), dimension(dim1,dim2) :: tmp
+    !real(realk), dimension(dim1,dim2) :: tmp
+    real(realk),pointer :: tmp(:,:)
     logical :: file_exist
     integer :: funit, i,j
     integer(kind=8) :: i64,j64
@@ -1237,6 +1238,7 @@ end function max_batch_dimension
     file_exist=.false.
     inquire(file=filename,exist=file_exist)
     if(file_exist) then
+      call mem_alloc(tmp,dim1,dim2)
 
        funit=-1
        call lsopen(funit,filename,'OLD','UNFORMATTED')
@@ -1275,6 +1277,7 @@ end function max_batch_dimension
        write(DECinfo%output,*) 'File does not exist: ', filename
        call lsquit('dec_read_mat_from_file: File does not exist',DECinfo%output)
     end if
+    call mem_dealloc(tmp)
 
   end subroutine dec_read_mat_from_file
 
