@@ -25,7 +25,7 @@ f.add(string = 'Allocated memory (TOTAL)')
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
 
-test.run(['decccsd_mo.dal'], ['B3H3.mol'], {'out': f})
+test.run(['decccsd_orb_fragopt.dal'], ['B3H3.mol'], {'out': f})
 
 sys.exit(test.return_code)
 
