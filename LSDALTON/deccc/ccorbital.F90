@@ -882,8 +882,7 @@ contains
     ! * Reassign: Ensure that all atoms have both occupied and unoccupied orbitals assigned  *
     ! ****************************************************************************************
 
-    REASSIGNING: if((.not. (DECinfo%onlyoccpart.or.DECinfo%OnlyVirtPart)).and.&
-         & (.not. decinfo%PureHydrogendebug) ) then
+    REASSIGNING: if( .not. decinfo%PureHydrogendebug ) then
 
        ! Count # orbitals assigned to each atom
        call mem_alloc(countOcc,natoms)
@@ -914,7 +913,9 @@ contains
           ReassignAtomLoop: do atom=1,natoms
 
              ! Reassign occupied orbitals          
-             OccReassign: if(dofrag(atom) .and. countocc(atom)==0) then
+             ! Never reassign occupied orbitals for only occupied partitioning
+             OccReassign: if(dofrag(atom) .and. countocc(atom)==0 &
+                  & .and. (.not. DECinfo%onlyoccpart) ) then
 
                 ! Atom is supposed to be central in an atomic fragment but
                 ! it has no occupied orbitals assigned:
@@ -950,7 +951,9 @@ contains
 
 
              ! Reassign unoccupied orbitals (same procedure as for occ space)
-             UnoccReassign: If(dofrag(atom) .and. countunocc(atom)==0) then
+             ! Never reassign virtual orbitals for only virtual partitioning
+             UnoccReassign: If(dofrag(atom) .and. countunocc(atom)==0 &
+                  & .and. (.not. DECinfo%onlyvirtpart) ) then
 
                 maxlowdin = 0.0_realk
                 maxidx = 0
