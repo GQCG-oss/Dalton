@@ -370,9 +370,10 @@ Chjaaj:     FBYTES is calculed in four lines, to avoid integer overflows.
             PERCNT = N2WRIT
             PERCNT = 100.0D0*PERCNT / FNALL
             WRITE (LUPRI,'(A,I12,A,F5.1,A,/A,F12.3/)')
-     &         ' Number of two-electron integrals written:',N2WRIT,
-     &         ' (',PERCNT,'% )',
-     &         ' Megabytes written:                       ',FBYTES
+     &         ' HERMIT - Number of two-electron integrals written:',
+     &         N2WRIT,' (',PERCNT,'% )',
+     &         ' HERMIT - Megabytes written:                       ',
+     &         FBYTES
          END IF
       END IF
       RETURN
