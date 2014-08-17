@@ -312,6 +312,8 @@ C
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
       INTEGER*4 IBUF4(LBUF*NIBUF,NBUFS), IBIN4(NIBUF*LBIN)
       INTEGER*4 LBUF4, ICOUNT4
+      INTEGER*8 N2WRIT
+      SAVE      N2WRIT
 #include "cbieri.h"
 #include "chrnos.h"
 #include "symmet.h"
@@ -361,6 +363,7 @@ C
          END IF
          CALL IZERO(NCOUNT(1,0),NDISTR*NCORS)
          CALL IZERO(NBUFX(0),NCORS)
+         N2WRIT = 0
          FIRST = .FALSE.
       END IF
 C
@@ -391,6 +394,7 @@ C
                KSTR4 = NIBUF*(KSTR-1) + 1
                KEND4 = NIBUF*(KEND-1) + 1
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + LBUF
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR 
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
@@ -453,6 +457,7 @@ C
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
                NBUF = NBUFX(ISCOOR)
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + LBUF
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR), REC=NBUF)
@@ -504,6 +509,7 @@ C
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
                NBUF = NBUFX(ISCOOR)
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + ICOUNT
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
@@ -532,6 +538,17 @@ C
                CALL GPCLOSE (LUINTX,'KEEP')
             ELSE IF (.NOT.BDER) THEN
                CALL GPCLOSE (LUINTA,'KEEP') ! do not use LUINTX, else LUINTA is not reset to negative value
+               FNALL  = (NBASIS*(NBASIS + 1))/2
+               FNALL  = (FNALL*(FNALL + 1))/2
+               PERCNT = N2WRIT
+               PERCNT = 100.0D0 * PERCNT / FNALL
+               FMBYTES = N2WRIT
+               FMBYTES =  (8 + NIBUF*4) * FMBYTES / (1024.D0**2)
+               WRITE (LUPRI,'(/A,I10,A,F4.1,A/A,F10.3//)')
+     &            ' ERI - Number of two-electron integrals written:',
+     &            N2WRIT,' (',PERCNT,'%)',
+     &            ' ERI - Megabytes written:                       ',
+     %            FMBYTES
             END IF
          END IF
 C

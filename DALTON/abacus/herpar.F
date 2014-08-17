@@ -2108,7 +2108,7 @@ C
         ICSMAX = MAXSHL
         IDSMAX = MAXSHL
       ELSE
-        WRITE(LUPRI,'(A,I5)') 'TWOLOP: Unknown I2TYP =' ,I2TYP
+        WRITE(LUPRI,'(A,I5)') 'PARLOP: Unknown I2TYP =' ,I2TYP
         CALL QUIT('Unknown I2TYP !!!')
       ENDIF
 C

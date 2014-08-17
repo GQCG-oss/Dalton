@@ -315,7 +315,6 @@ C  /* Deck er2ini */
 C
 C     Initialize /CBIERI/
 C
-      IF (PARCAL) RUNERI = .FALSE.
       IPRERI = IPRDEF
       IPRNT1 = 0
       IPRNT2 = 0
