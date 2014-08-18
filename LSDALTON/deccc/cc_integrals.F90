@@ -1048,17 +1048,10 @@ contains
     call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting, &
          & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
-    if (mylsitem%setting%scheme%cs_screen .or. &
-         & mylsitem%setting%scheme%ps_screen) then
-
+    if (mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen) then
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nb,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
-
-       call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
-            & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
-            & batchindexAlpha,batchindexGamma,&
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     end if
     ! *******************************************************
@@ -1121,7 +1114,6 @@ contains
             & Mylsitem%setting,gao,batchindexAlpha(alphaB),batchindexGamma(gammaB), &
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha, &
             & dimGamma,fullRHS,INTSPEC)
-       call lsmpi_poke()
 
        if (ccmodel == MODEL_RPA) then
          
@@ -1542,7 +1534,7 @@ contains
 
     ! Working arrays:
     MemNeed = MemNeed + max(O**4, V*O**3, V*V*O*O, X*X*M*M, X*O*O*V, X*O*V*V)
-    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M)
+    MemNeed = MemNeed + max(X*X*M*M, O*O*V*M, O*O*X*M, O**4)
     MemNeed = MemNeed + max(X*O*V*M, O*O*V*V, X*X*M*M, X*O*O*M)
 
     ! T1-Transfo. matrices:
@@ -1804,22 +1796,18 @@ contains
     ! transfo Beta to j => [delta alphaB gammaB, j]
     call dgemm('t','n',nb*dimAlpha*dimGamma,no,nb,1.0E0_realk, &
          & gao,nb,Co,nb,0.0E0_realk,tmp1,nb*dimAlpha*dimGamma)
-    call lsmpi_poke() 
 
     ! transfo delta to b => [alphaB gammaB j, b]
     call dgemm('t','n',dimAlpha*dimGamma*no,nv,nb,1.0E0_realk, &
          & tmp1,nb,Cv,nb,0.0E0_realk,tmp2,dimAlpha*dimGamma*no)
-    call lsmpi_poke() 
 
     ! transfo alphaB to i => [gammaB j b, i]
     call dgemm('t','n',dimGamma*no*nv,no,dimAlpha,1.0E0_realk,tmp2,dimAlpha, &
          & Co(A_sta:A_end,:),dimAlpha,0.0E0_realk,tmp1,dimGamma*no*nv)
-    call lsmpi_poke() 
 
     ! transfo gammaB to a => [j b i, a]
     call dgemm('t','n',no*nv*no,nv,dimGamma,1.0E0_realk,tmp1,dimGamma, &
          & Cv(G_sta:G_end,:),dimGamma,1.0E0_realk,govov,no*nv*no)
-    call lsmpi_poke() 
    
 
   end subroutine gao_to_govov

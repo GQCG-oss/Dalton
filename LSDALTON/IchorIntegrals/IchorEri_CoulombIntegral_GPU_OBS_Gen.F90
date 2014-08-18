@@ -18,12 +18,12 @@ use AGC_GPU_OBS_TRMODCtoAGen
 use AGC_GPU_OBS_TRMODDtoAGen
 use AGC_GPU_OBS_TRMODCtoBGen
 use AGC_GPU_OBS_TRMODDtoBGen
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_GPU_OBS_Sphcontract1Mod
+use AGC_GPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorCoulombIntegral_GPU_OBS_Gen,IchorCoulombIntegral_GPU_OBS_general_sizeGen  
@@ -4665,88 +4665,88 @@ CONTAINS
     BasisCont3maxsize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
-    BasisCont1maxsize =     1*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =     1*nPrimA*nPrimB
-    BasisCont3maxsize =     1*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,1*nPrimQP)
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
-    BasisCont1maxsize =     4*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =     4*nPrimA*nPrimB
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContQP)
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContQP)
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
-    BasisCont1maxsize =     4*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =     4*nPrimA*nPrimB
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContQP)
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
-    BasisCont1maxsize =    20*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    20*nPrimA*nPrimB
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContQP)
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
-    BasisCont1maxsize =    20*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    20*nPrimA*nPrimB
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
-    BasisCont1maxsize =    35*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    35*nPrimA*nPrimB
-    BasisCont3maxsize =    35*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,35*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,36*nContQP)
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
-    BasisCont1maxsize =     4*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =     4*nPrimA*nPrimB
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContQP)
     CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
-    BasisCont1maxsize =    16*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    16*nPrimA*nPrimB
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContQP)
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4754,27 +4754,27 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
-    BasisCont1maxsize =    16*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    16*nPrimA*nPrimB
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContQP)
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -4782,9 +4782,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4792,9 +4792,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -4802,9 +4802,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
-    BasisCont1maxsize =   140*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   140*nPrimA*nPrimB
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
@@ -4812,17 +4812,17 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,105*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,108*nContQP)
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContQP)
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4830,9 +4830,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContQP)
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -4841,9 +4841,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4851,9 +4851,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContQP)
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -4861,9 +4861,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -4872,9 +4872,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -4883,9 +4883,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -4894,9 +4894,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -4905,24 +4905,24 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,175*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
-    BasisCont1maxsize =     4*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =     4*nPrimA*nPrimB
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContQP)
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
-    BasisCont1maxsize =    16*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    16*nPrimA*nPrimB
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContQP)
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4930,27 +4930,27 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
-    BasisCont1maxsize =    16*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    16*nPrimA*nPrimB
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContQP)
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -4958,9 +4958,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -4968,9 +4968,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -4978,9 +4978,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
-    BasisCont1maxsize =   140*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   140*nPrimA*nPrimB
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
@@ -4988,25 +4988,25 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,105*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,108*nContQP)
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,36*nContQP)
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -5014,27 +5014,27 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,36*nContQP)
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5042,9 +5042,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,162*nContQP)
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -5052,9 +5052,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContQP)
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5062,9 +5062,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,162*nContQP)
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -5072,17 +5072,17 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,315*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,324*nContQP)
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
-    BasisCont1maxsize =    20*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    20*nPrimA*nPrimB
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -5090,9 +5090,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5101,9 +5101,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -5111,9 +5111,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5121,9 +5121,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
-    BasisCont1maxsize =   400*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   400*nPrimA*nPrimB
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
@@ -5132,9 +5132,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContQP)
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5143,9 +5143,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
-    BasisCont1maxsize =   400*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   400*nPrimA*nPrimB
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
@@ -5154,9 +5154,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContQP)
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
-    BasisCont1maxsize =   700*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   700*nPrimA*nPrimB
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
@@ -5165,17 +5165,17 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,525*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,540*nContQP)
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
-    BasisCont1maxsize =    10*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    10*nPrimA*nPrimB
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContQP)
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -5183,9 +5183,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContQP)
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -5194,9 +5194,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
-    BasisCont1maxsize =    40*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    40*nPrimA*nPrimB
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
@@ -5204,9 +5204,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContQP)
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -5214,9 +5214,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5225,9 +5225,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
-    BasisCont1maxsize =   100*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   100*nPrimA*nPrimB
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
@@ -5236,9 +5236,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContQP)
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5247,9 +5247,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -5258,17 +5258,17 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,175*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
-    BasisCont1maxsize =    20*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    20*nPrimA*nPrimB
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContQP)
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -5276,9 +5276,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5287,9 +5287,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
-    BasisCont1maxsize =    80*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    80*nPrimA*nPrimB
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
@@ -5297,9 +5297,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5307,9 +5307,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
-    BasisCont1maxsize =   400*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   400*nPrimA*nPrimB
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
@@ -5318,9 +5318,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContQP)
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
-    BasisCont1maxsize =   200*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   200*nPrimA*nPrimB
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
@@ -5329,9 +5329,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContQP)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
-    BasisCont1maxsize =   400*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   400*nPrimA*nPrimB
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
@@ -5340,9 +5340,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContQP)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
-    BasisCont1maxsize =   700*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   700*nPrimA*nPrimB
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
@@ -5351,17 +5351,17 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,525*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,540*nContQP)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
-    BasisCont1maxsize =    35*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =    35*nPrimA*nPrimB
-    BasisCont3maxsize =    35*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,35*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,36*nContQP)
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
-    BasisCont1maxsize =   140*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   140*nPrimA*nPrimB
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
@@ -5369,9 +5369,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,144*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -5380,9 +5380,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
-    BasisCont1maxsize =   140*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   140*nPrimA*nPrimB
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
@@ -5390,9 +5390,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,144*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContQP)
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -5400,9 +5400,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,360*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContQP)
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
-    BasisCont1maxsize =   700*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   700*nPrimA*nPrimB
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
@@ -5411,9 +5411,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,500*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,450*nContQP)
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
-    BasisCont1maxsize =   350*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   350*nPrimA*nPrimB
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
@@ -5422,9 +5422,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
-    BasisCont1maxsize =   700*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =   700*nPrimA*nPrimB
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
@@ -5433,9 +5433,9 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,500*nContQP)
        TMParray2maxSize = MAX(TMParray2maxSize,450*nContQP)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
-    BasisCont1maxsize =  1225*nPrimD*nPrimA*nPrimB
-    BasisCont2maxsize =  1225*nPrimA*nPrimB
-    BasisCont3maxsize =  1225*nPrimB
+    BasisCont1maxsize = nPrimD*nPrimA*nPrimB
+    BasisCont2maxsize = nPrimA*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,9*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,165*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,1225*nPrimQP)
@@ -5539,86 +5539,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(    4,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(    4,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,    4)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,    4)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(    4,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(    4,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(    4,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,    4
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,    4
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,    4
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,    4
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,    4
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen4
 
@@ -5631,86 +5610,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   10,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   10,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   10)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   10)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   10,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   10,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   10,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   10
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   10
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   10
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   10
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   10
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen10
 
@@ -5723,86 +5681,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   20,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   20,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   20)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   20)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   20,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   20,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   20,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   20
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   20
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   20
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   20
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   20
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen20
 
@@ -5815,86 +5752,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   35,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   35,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   35)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   35)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   35,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   35,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   35,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   35
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   35
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   35
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   35
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   35
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen35
 
@@ -5907,86 +5823,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   16,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   16,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   16)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   16)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   16,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   16,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   16,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   16
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   16
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   16
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   16
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   16
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen16
 
@@ -5999,86 +5894,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   40,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   40,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   40)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   40)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   40,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   40,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   40,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   40
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   40
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   40
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   40
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   40
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen40
 
@@ -6091,86 +5965,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(   80,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   80,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,   80)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,   80)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(   80,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(   80,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(   80,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,   80
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,   80
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,   80
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,   80
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,   80
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen80
 
@@ -6183,86 +6036,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  140,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  140,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  140)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  140)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  140,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  140,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  140,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  140
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  140
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  140
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  140
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  140
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen140
 
@@ -6275,86 +6107,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  100,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  100,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  100)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  100)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  100,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  100,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  100,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  100
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  100
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  100
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  100
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  100
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen100
 
@@ -6367,86 +6178,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  200,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  200,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  200)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  200)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  200,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  200,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  200,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  200
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  200
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  200
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  200
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  200
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen200
 
@@ -6459,86 +6249,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  350,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  350,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  350)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  350)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  350,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  350,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  350,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  350
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  350
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  350
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  350
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  350
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen350
 
@@ -6551,86 +6320,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  400,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  400,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  400)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  400)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  400,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  400,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  400,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  400
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  400
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  400
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  400
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  400
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen400
 
@@ -6643,86 +6391,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(  700,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  700,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,  700)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,  700)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1(  700,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2(  700,nPrimA,nPrimB)
-    real(realk) :: BasisCont3(  700,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1,  700
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1,  700
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1,  700
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1,  700
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1,  700
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen700
 
@@ -6735,86 +6462,65 @@ CONTAINS
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
     real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2( 1225,nPrimC,nPrimD,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont( 1225,nContC,nContD,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses, 1225)
+    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses, 1225)
     !
     integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD
     integer :: iTUV,iContQP,iPrimQP
     real(realk) :: TMP
-    real(realk) :: BasisCont1( 1225,nPrimD,nPrimA,nPrimB)
-    real(realk) :: BasisCont2( 1225,nPrimA,nPrimB)
-    real(realk) :: BasisCont3( 1225,nPrimB)
+    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)
+    real(realk) :: BasisCont2(nPrimA,nPrimB)
+    real(realk) :: BasisCont3(nPrimB)
     real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&
-!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &
-!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContC=1,nContC
-!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)
-      do iPrimB=1,nPrimB
-       do iPrimA=1,nPrimA
-        do iPrimD=1,nPrimD
-         do iTUV=1, 1225
-          TMP = 0.0E0_realk
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-          do iPrimC=1,nPrimC
-           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)
-          enddo
-          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP
-         enddo
-        enddo
-       enddo
-      enddo
-!!$OMP END DO
-      do iContD=1,nContD
-!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)
+    do iTUV=1, 1225
+     do iPassP = 1,nPasses
+      
+      do iContC=1,nContC
        do iPrimB=1,nPrimB
         do iPrimA=1,nPrimA
-         do iTUV=1, 1225
+         do iPrimD=1,nPrimD
           TMP = 0.0E0_realk
-!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-          do iPrimD=1,nPrimD
-           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)
+!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses
+          do iPrimC=1,nPrimC
+           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)
           enddo
-          BasisCont2(iTUV,iPrimA,iPrimB) = TMP
+          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP
          enddo
         enddo
        enddo
-!!$OMP END DO
-       do iContA=1,nContA
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)
+       do iContD=1,nContD
         do iPrimB=1,nPrimB
-         do iTUV=1, 1225
+         do iPrimA=1,nPrimA
           TMP = 0.0E0_realk
-!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ
+          do iPrimD=1,nPrimD
+           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)
+          enddo
+          BasisCont2(iPrimA,iPrimB) = TMP
+         enddo
+        enddo
+        do iContA=1,nContA
+         do iPrimB=1,nPrimB
+          TMP = 0.0E0_realk
           do iPrimA=1,nPrimA
-           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)
+           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)
           enddo
-          BasisCont3(iTUV,iPrimB) = TMP
+          BasisCont3(iPrimB) = TMP
          enddo
-        enddo
-!!$OMP END DO
-!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)
-        do iContB=1,nContB
-         do iTUV=1, 1225
+         do iContB=1,nContB
           TMP = 0.0E0_realk
-!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ
+!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses
           do iPrimB=1,nPrimB
-           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
           enddo
-          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP
+          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP
          enddo
         enddo
-!!$OMP END DO
-       enddo
-      enddo
-     enddo
-    enddo
-!!$OMP END PARALLEL DO
-!$OMP END SINGLE
+       enddo !iContD
+      enddo !iContC
+      
+     enddo  !iPassP
+    enddo !iTUV
 !$OMP BARRIER
    end subroutine PrimitiveContractionGPUGen1225
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModGen

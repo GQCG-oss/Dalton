@@ -2,6 +2,7 @@ PROGRAM TUV
   use math
   use stringsMODULE
   implicit none
+  logical :: nPrimLast
   integer,pointer :: TUVINDEX(:,:,:),TUVINDEXP(:,:,:)
   integer :: JMAX,J,JMAX1,JMAXP
   logical,pointer :: Enoscreen(:,:),EnoscreenS(:,:),zero(:)
@@ -32,6 +33,8 @@ PROGRAM TUV
 DO GPUrun=1,2
    CPU = .TRUE.
    IF(GPUrun.EQ.2)CPU = .FALSE.
+   nPrimLAST = .FALSE.
+   IF(CPU)nPrimLAST = .TRUE.
    IF(CPU)THEN
       ARCSTRING = 'CPU'
    ELSE
@@ -156,12 +159,12 @@ DO GPUrun=1,2
   WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODCtoBSeg1Prim'
   WRITE(LUMOD7,'(A)')'use AGC_'//ARCSTRING//'_OBS_TRMODDtoBSeg1Prim'
   DO ILUMOD=3,7
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModAtoB'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceLHSModBtoA'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModCtoD'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_HorizontalRecurrenceRHSModDtoC'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_Sphcontract1Mod'
-     WRITE(ILUMOD,'(A)')'use AGC_OBS_Sphcontract2Mod'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModAtoB'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceRHSModCtoD'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceRHSModDtoC'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_Sphcontract1Mod'
+     WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_Sphcontract2Mod'
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'private   '
   ENDDO
@@ -764,14 +767,26 @@ DO GPUrun=1,2
                  nTUVC = (AngmomC+1)*(AngmomC+2)*(AngmomC+3)/6
                  nTUVD = (AngmomD+1)*(AngmomD+2)*(AngmomD+3)/6
 
-                 IF(Gen)THEN
-                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont1maxsize = ',nTUVQ*nTUVP,'*nPrimD*nPrimA*nPrimB'
-                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont2maxsize = ',nTUVQ*nTUVP,'*nPrimA*nPrimB'
-                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
-                 ELSEIF(SegQ)THEN
-                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
-                 ELSEIF(SegP)THEN
-                    WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimD'
+                 IF(nPrimLast)THEN
+                    IF(Gen)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont1maxsize = ',nTUVQ*nTUVP,'*nPrimD*nPrimA*nPrimB'
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont2maxsize = ',nTUVQ*nTUVP,'*nPrimA*nPrimB'
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
+                    ELSEIF(SegQ)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimB'
+                    ELSEIF(SegP)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = ',nTUVQ*nTUVP,'*nPrimD'
+                    ENDIF
+                 ELSE
+                    IF(Gen)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont1maxsize = nPrimD*nPrimA*nPrimB'
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont2maxsize = nPrimA*nPrimB'
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = nPrimB'
+                    ELSEIF(SegQ)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = nPrimB'
+                    ELSEIF(SegP)THEN
+                       WRITE(ILUMOD,'(A,I5,A)')'    BasisCont3maxsize = nPrimD'
+                    ENDIF
                  ENDIF
 
                  spherical = .TRUE.
@@ -1035,56 +1050,58 @@ DO GPUrun=1,2
          nUniquenTUVs = nUniquenTUVs + 1
          UniquenTUVs(nUniquenTUVs) = nTUVP*nTUVQ
 !GENERAL 
-         WRITE(LUMOD3,'(A)')''
-         call initString(1)
-         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'Gen')
-         call AddToString(nTUVP*nTUVQ)
-         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
-         call writeString(LUMOD3)
-         WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
-         WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
-         WRITE(LUMOD3,'(A)')'    implicit none'
-         WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
-         WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ'
-         WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD'
-         WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
-         WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPrimA,nPrimB,nPasses)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nContA,nContB,nPasses)'
-         WRITE(LUMOD3,'(A)')'    !'
-         WRITE(LUMOD3,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
-         WRITE(LUMOD3,'(A)')'    integer :: iTUV,iContQP,iPrimQP'
-!         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont1(',nTUVP*nTUVQ,',nPrimD,nPrimA,nPrimB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont2(',nTUVP*nTUVQ,',nPrimA,nPrimB)'
-         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
-         WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP'
-!         WRITE(LUMOD3,'(A)')'    !all passes have same ACCs,BCCs,...'
-!         WRITE(LUMOD3,'(A)')'    !maybe construct big CC(nPrimQP,nContQP) matrix and call dgemm nPass times'
-!         WRITE(LUMOD3,'(A)')'    !the construction of CC should scale as c**4*p**4 and the '
-!         WRITE(LUMOD3,'(A)')'    !dgemm should scale as c**4*p**4*L**6 but hopefully with efficient FLOP count, although not quadratic matrices....'
-!         WRITE(LUMOD3,'(A)')'    !special for nContPQ = 1 '
-!         WRITE(LUMOD3,'(A)')'    !special for nContP = 1'
-!         WRITE(LUMOD3,'(A)')'    !special for nContQ = 1'
-!         WRITE(LUMOD3,'(A)')'    !special for nContA = 1 ...'
-!         WRITE(LUMOD3,'(A)')'    !memory should be c**4*p**4 + p**4*L**6 which is fine'
-!         WRITE(LUMOD3,'(A)')'    !this would be a simple sum for segmentet! or maybe the sum can be moved into the previous electron transfer reccurence'
-!         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
 
-         WRITE(LUMOD3,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD3,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
-         WRITE(LUMOD3,'(A)')'!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
-         WRITE(LUMOD3,'(A)')'!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-         WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
-         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
-!         WRITE(LUMOD3,'(A)')'     iContQP = 0'
-         WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
-         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)'
-         WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'       do iPrimA=1,nPrimA'
-         WRITE(LUMOD3,'(A)')'        do iPrimD=1,nPrimD'
+         IF(nPrimLast)THEN
+            WRITE(LUMOD3,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'Gen')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD3)
+            WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
+            WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
+            WRITE(LUMOD3,'(A)')'    implicit none'
+            WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ'
+            WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD'
+            WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
+            WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPrimA,nPrimB,nPasses)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nContA,nContB,nPasses)'
+            WRITE(LUMOD3,'(A)')'    !'
+            WRITE(LUMOD3,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+            WRITE(LUMOD3,'(A)')'    integer :: iTUV,iContQP,iPrimQP'
+            !         WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMPArray(',nTUVP*nTUVQ,')'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont1(',nTUVP*nTUVQ,',nPrimD,nPrimA,nPrimB)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont2(',nTUVP*nTUVQ,',nPrimA,nPrimB)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
+            WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP'
+            !         WRITE(LUMOD3,'(A)')'    !all passes have same ACCs,BCCs,...'
+            !         WRITE(LUMOD3,'(A)')'    !maybe construct big CC(nPrimQP,nContQP) matrix and call dgemm nPass times'
+            !         WRITE(LUMOD3,'(A)')'    !the construction of CC should scale as c**4*p**4 and the '
+            !         WRITE(LUMOD3,'(A)')'    !dgemm should scale as c**4*p**4*L**6 but hopefully with efficient FLOP count, although not quadratic matrices....'
+            !         WRITE(LUMOD3,'(A)')'    !special for nContPQ = 1 '
+            !         WRITE(LUMOD3,'(A)')'    !special for nContP = 1'
+            !         WRITE(LUMOD3,'(A)')'    !special for nContQ = 1'
+            !         WRITE(LUMOD3,'(A)')'    !special for nContA = 1 ...'
+            !         WRITE(LUMOD3,'(A)')'    !memory should be c**4*p**4 + p**4*L**6 which is fine'
+            !         WRITE(LUMOD3,'(A)')'    !this would be a simple sum for segmentet! or maybe the sum can be moved into the previous electron transfer reccurence'
+            !         WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
+            
+            WRITE(LUMOD3,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+            WRITE(LUMOD3,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iContA,iContB,iPrimC,iPrimD,iPrimA,iPrimB,&'
+            WRITE(LUMOD3,'(A)')'!!$OMP         BasisCont1,BasisCont2,BasisCont3,TMP) &'
+            WRITE(LUMOD3,'(A)')'!!$OMP SHARED(nContC,nContD,nContA,nContB,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
+            WRITE(LUMOD3,'(A)')'!!$OMP        ACC,BCC,CCC,DCC,AUXarrayCont,AUXarray2)'
+            WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD3,'(A)')'    do iPassP = 1,nPasses'
+            !         WRITE(LUMOD3,'(A)')'     iContQP = 0'
+            WRITE(LUMOD3,'(A)')'     do iContC=1,nContC'
+            WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(4) PRIVATE(iPrimB,iPrimA,iPrimD,iTUV,iPrimC,TMP,iPassP,iContC)'
+            WRITE(LUMOD3,'(A)')'      do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'       do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A)')'        do iPrimD=1,nPrimD'
 !!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
 !!$         WRITE(LUMOD3,'(A)')'          TMPArray(iTUV) = 0.0E0_realk'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
@@ -1098,181 +1115,364 @@ DO GPUrun=1,2
 !!$      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
 !!$         WRITE(LUMOD3,'(A)')'          tmpArray1(iTUV,iPrimD,iPrimA,iPrimB) = TMPArray(iTUV)'
 !!$         WRITE(LUMOD3,'(A)')'         enddo'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ'
-         WRITE(LUMOD3,'(A)')'          do iPrimC=1,nPrimC'
-         WRITE(LUMOD3,'(A)')'           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)'
-         WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'       enddo'
-         WRITE(LUMOD3,'(A)')'      enddo'
-         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'      do iContD=1,nContD'
-         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)'
-         WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ'
-         WRITE(LUMOD3,'(A)')'          do iPrimD=1,nPrimD'
-         WRITE(LUMOD3,'(A)')'           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)'
-         WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'          BasisCont2(iTUV,iPrimA,iPrimB) = TMP'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'       enddo'
-         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'       do iContA=1,nContA'
-         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)'
-         WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ'
-         WRITE(LUMOD3,'(A)')'          do iPrimA=1,nPrimA'
-         WRITE(LUMOD3,'(A)')'           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)'
-         WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'          BasisCont3(iTUV,iPrimB) = TMP'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)'
-         WRITE(LUMOD3,'(A)')'        do iContB=1,nContB'
-      WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
-         WRITE(LUMOD3,'(A)')'!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ'
-         WRITE(LUMOD3,'(A)')'          do iPrimB=1,nPrimB'
-         WRITE(LUMOD3,'(A)')'           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
-         WRITE(LUMOD3,'(A)')'          enddo'
-         WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP'
-         WRITE(LUMOD3,'(A)')'         enddo'
-         WRITE(LUMOD3,'(A)')'        enddo'
-         WRITE(LUMOD3,'(A)')'!!$OMP END DO'
-         WRITE(LUMOD3,'(A)')'       enddo'
-         WRITE(LUMOD3,'(A)')'      enddo'
-         WRITE(LUMOD3,'(A)')'     enddo'
-         WRITE(LUMOD3,'(A)')'    enddo'
-         WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
-  WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
-  WRITE(LUMOD3,'(A)')'!$OMP BARRIER'
-         call initString(1)
-         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'Gen')
-         call AddToString(nTUVP*nTUVQ)
-         call writeString(LUMOD3)
+            WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ'
+            WRITE(LUMOD3,'(A)')'          do iPrimC=1,nPrimC'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPrimA,iPrimB,iPassP)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont1(iTUV,iPrimD,iPrimA,iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'       enddo'
+            WRITE(LUMOD3,'(A)')'      enddo'
+            WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+            WRITE(LUMOD3,'(A)')'      do iContD=1,nContD'
+            WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(3) PRIVATE(iPrimB,iPrimA,iTUV,iPrimD,TMP,iPassP,iContC,iContD)'
+            WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'!Scaling  p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ'
+            WRITE(LUMOD3,'(A)')'          do iPrimD=1,nPrimD'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iTUV,iPrimD,iPrimA,iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont2(iTUV,iPrimA,iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'       enddo'
+            WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+            WRITE(LUMOD3,'(A)')'       do iContA=1,nContA'
+            WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iPrimA,iTUV,TMP,iPassP,iContC,iContD,iContA)'
+            WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'!Scaling  p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContA*nContC*nContD*nTUV*nPassQ'
+            WRITE(LUMOD3,'(A)')'          do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iTUV,iPrimA,iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont3(iTUV,iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+            WRITE(LUMOD3,'(A)')'!!$OMP DO COLLAPSE(2) PRIVATE(iPrimB,iTUV,TMP,iPassP,iContC,iContD,iContA,iContB)'
+            WRITE(LUMOD3,'(A)')'        do iContB=1,nContB'
+            WRITE(LUMOD3,'(A,I5)')'         do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'!Scaling  p*c**4*nTUV*nPassQ: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPassQ'
+            WRITE(LUMOD3,'(A)')'          do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          AUXarrayCont(iTUV,iContC,iContD,iContA,iContB,iPassP) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'!!$OMP END DO'
+            WRITE(LUMOD3,'(A)')'       enddo'
+            WRITE(LUMOD3,'(A)')'      enddo'
+            WRITE(LUMOD3,'(A)')'     enddo'
+            WRITE(LUMOD3,'(A)')'    enddo'
+            WRITE(LUMOD3,'(A)')'!!$OMP END PARALLEL DO'
+            WRITE(LUMOD3,'(A)')'!$OMP END SINGLE'
+            WRITE(LUMOD3,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'Gen')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD3)
+         ELSE
+            WRITE(LUMOD3,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'Gen')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD3)
+            WRITE(LUMOD3,'(A)')'       & nContP,nContQ,ACC,BCC,CCC,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&'
+            WRITE(LUMOD3,'(A)')'       & nPrimD,nContD,BasisCont1,BasisCont2,BasisCont3)'
+            WRITE(LUMOD3,'(A)')'    implicit none'
+            WRITE(LUMOD3,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ'
+            WRITE(LUMOD3,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD'
+            WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
+            WRITE(LUMOD3,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPrimA,nPrimB,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nContA,nContB,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD3,'(A)')'    !'
+            WRITE(LUMOD3,'(A)')'    integer :: iPassP,iContA,iContB,iContC,iContD,iPrimA,iPrimB,iPrimC,iPrimD'
+            WRITE(LUMOD3,'(A)')'    integer :: iTUV,iContQP,iPrimQP'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont1(nPrimD,nPrimA,nPrimB)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont2(nPrimA,nPrimB)'
+            WRITE(LUMOD3,'(A,I5,A)')'    real(realk) :: BasisCont3(nPrimB)'
+            WRITE(LUMOD3,'(A)')'    real(realk) :: ACCTMP,BCCTMP,CCCTMP,DCCTMP'
+            WRITE(LUMOD3,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD3,'(A,I5)')'    do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD3,'(A)')'     do iPassP = 1,nPasses'
+            WRITE(LUMOD3,'(A)')'      '
+            WRITE(LUMOD3,'(A)')'      do iContC=1,nContC'
+            WRITE(LUMOD3,'(A)')'       do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'        do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A)')'         do iPrimD=1,nPrimD'
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk' 
+            WRITE(LUMOD3,'(A)')'!Scaling p**4*c*nTUV*nPasses: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPasses'
+            WRITE(LUMOD3,'(A)')'          do iPrimC=1,nPrimC'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPrimA,iPrimB,iPassP,iTUV)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont1(iPrimD,iPrimA,iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'       enddo'
+            WRITE(LUMOD3,'(A)')'       do iContD=1,nContD'
+            WRITE(LUMOD3,'(A)')'        do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'         do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'          do iPrimD=1,nPrimD'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + DCC(iPrimD,iContD)*BasisCont1(iPrimD,iPrimA,iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont2(iPrimA,iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'        do iContA=1,nContA'
+            WRITE(LUMOD3,'(A)')'         do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'          do iPrimA=1,nPrimA'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + ACC(iPrimA,iContA)*BasisCont2(iPrimA,iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          BasisCont3(iPrimB) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'         do iContB=1,nContB'
+            WRITE(LUMOD3,'(A)')'          TMP = 0.0E0_realk'
+            WRITE(LUMOD3,'(A)')'!Scaling  p*c**4*nTUV*nPasses: nPrimB*nContA*nContB*nContC*nContD*nTUV*nPasses'
+            WRITE(LUMOD3,'(A)')'          do iPrimB=1,nPrimB'
+            WRITE(LUMOD3,'(A)')'           TMP = TMP + BCC(iPrimB,iContB)*BasisCont3(iPrimB)'
+            WRITE(LUMOD3,'(A)')'          enddo'
+            WRITE(LUMOD3,'(A)')'          AUXarrayCont(iContC,iContD,iContA,iContB,iPassP,iTUV) = TMP'
+            WRITE(LUMOD3,'(A)')'         enddo'
+            WRITE(LUMOD3,'(A)')'        enddo'
+            WRITE(LUMOD3,'(A)')'       enddo !iContD'
+            WRITE(LUMOD3,'(A)')'      enddo !iContC'
+            WRITE(LUMOD3,'(A)')'      '
+            WRITE(LUMOD3,'(A)')'     enddo  !iPassP'
+            WRITE(LUMOD3,'(A)')'    enddo !iTUV'
+            WRITE(LUMOD3,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'Gen')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD3)
+         ENDIF
+
 ! PSEGMENTED
-         WRITE(LUMOD5,'(A)')''
-         call initString(1)
-         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegP')
-         call AddToString(nTUVP*nTUVQ)
-         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
-         call writeString(LUMOD5)
-         WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
-         WRITE(LUMOD5,'(A)')'    implicit none'
-         WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
-         WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
-         WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
-         WRITE(LUMOD5,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPasses)'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nPasses)'
-         WRITE(LUMOD5,'(A)')'    !'
-         WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContC,iContD,iPrimC,iPrimD,iTUV'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMP'
-         WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimD)'
-!         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD5,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD5,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iPrimC,iPrimD,&'
-         WRITE(LUMOD5,'(A)')'!!$OMP         BasisCont3,TMP) &'
-         WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
-         WRITE(LUMOD5,'(A)')'!!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
-         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
-         WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
-         WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
-      WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
-         WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
-         WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPassP)'
-         WRITE(LUMOD5,'(A)')'        enddo'
-         WRITE(LUMOD5,'(A)')'        BasisCont3(iTUV,iPrimD) = tmp'  
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A)')'      enddo'
-         WRITE(LUMOD5,'(A)')'      do iContD=1,nContD'
-      WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
-         WRITE(LUMOD5,'(A)')'        do iPrimD=1,nPrimD'
-         WRITE(LUMOD5,'(A)')'         tmp = tmp + DCC(iPrimD,iContD)*BasisCont3(iTUV,iPrimD)'
-         WRITE(LUMOD5,'(A)')'        enddo'
-         WRITE(LUMOD5,'(A)')'        AUXarrayCont(iTUV,iContC,iContD,iPassP) = tmp'
-         WRITE(LUMOD5,'(A)')'       enddo'
-         WRITE(LUMOD5,'(A)')'      enddo'
-         WRITE(LUMOD5,'(A)')'     enddo'
-         WRITE(LUMOD5,'(A)')'    enddo'
-         WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
-         WRITE(LUMOD5,'(A)')'!$OMP END SINGLE'
-         WRITE(LUMOD5,'(A)')'!$OMP BARRIER'
-         call initString(1)
-         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegP')
-         call AddToString(nTUVP*nTUVQ)
-         call writeString(LUMOD5)
-! QSEGMENTED
-         WRITE(LUMOD4,'(A)')''
-         call initString(1)
-         call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
-         call AddToString(nTUVP*nTUVQ)
-         call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
-         call writeString(LUMOD4)
-         WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
-         WRITE(LUMOD4,'(A)')'    implicit none'
-         WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
-         WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP'
-         WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
-         WRITE(LUMOD4,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
-         WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimA,nPrimB,nPasses)'
-         WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContA,nContB,nPasses)'
-         WRITE(LUMOD4,'(A)')'    !'
-         WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iPrimA,iPrimB'
-         WRITE(LUMOD4,'(A)')'    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP'
-    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMP'
-    WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
-         WRITE(LUMOD4,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
-         WRITE(LUMOD4,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&'
-         WRITE(LUMOD4,'(A)')'!!$OMP         BasisCont3,TMP) &'
-         WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
-         WRITE(LUMOD4,'(A)')'!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
-!         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
-         WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
-         WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
-         WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
-      WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
-         WRITE(LUMOD4,'(A)')'        do iPrimA=1,nPrimA'
-         WRITE(LUMOD4,'(A)')'         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)'
-         WRITE(LUMOD4,'(A)')'        enddo'
-         WRITE(LUMOD4,'(A)')'        BasisCont3(iTUV,iPrimB) = tmp'
-         WRITE(LUMOD4,'(A)')'       enddo'
-         WRITE(LUMOD4,'(A)')'      enddo'
-         WRITE(LUMOD4,'(A)')'      do iContB=1,nContB'
-      WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
-         WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
-         WRITE(LUMOD4,'(A)')'        do iPrimB=1,nPrimB'
-         WRITE(LUMOD4,'(A)')'         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
-         WRITE(LUMOD4,'(A)')'        enddo'
-         WRITE(LUMOD4,'(A)')'        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp'
-         WRITE(LUMOD4,'(A)')'       enddo'
-         WRITE(LUMOD4,'(A)')'      enddo'
-         WRITE(LUMOD4,'(A)')'     enddo'
-         WRITE(LUMOD4,'(A)')'    enddo'
-         WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
-         WRITE(LUMOD4,'(A)')'!$OMP END SINGLE'
-         WRITE(LUMOD4,'(A)')'!$OMP BARRIER'
-         call initString(1)
-         call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
-         call AddToString(nTUVP*nTUVQ)
-         call writeString(LUMOD4)
-         WRITE(LUMOD4,'(A)')''
+         IF(nPrimLast)THEN
+            WRITE(LUMOD5,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegP')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD5)
+            WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
+            WRITE(LUMOD5,'(A)')'    implicit none'
+            WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
+            WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
+            WRITE(LUMOD5,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimC,nPrimD,nPasses)'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContC,nContD,nPasses)'
+            WRITE(LUMOD5,'(A)')'    !'
+            WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContC,iContD,iPrimC,iPrimD,iTUV'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimD)'
+            !         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD5,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+            WRITE(LUMOD5,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContC,iContD,iPrimC,iPrimD,&'
+            WRITE(LUMOD5,'(A)')'!!$OMP         BasisCont3,TMP) &'
+            WRITE(LUMOD5,'(A)')'!!$OMP SHARED(nContC,nContD,nPasses,nPrimC,nPrimD,&'
+            WRITE(LUMOD5,'(A)')'!!$OMP        CCC,DCC,AUXarrayCont,AUXarray2)'
+            WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD5,'(A)')'    do iPassP = 1,nPasses'
+            WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
+            WRITE(LUMOD5,'(A)')'      do iPrimD=1,nPrimD'
+            WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+            WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
+            WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iTUV,iPrimC,iPrimD,iPassP)'
+            WRITE(LUMOD5,'(A)')'        enddo'
+            WRITE(LUMOD5,'(A)')'        BasisCont3(iTUV,iPrimD) = tmp'  
+            WRITE(LUMOD5,'(A)')'       enddo'
+            WRITE(LUMOD5,'(A)')'      enddo'
+            WRITE(LUMOD5,'(A)')'      do iContD=1,nContD'
+            WRITE(LUMOD5,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+            WRITE(LUMOD5,'(A)')'        do iPrimD=1,nPrimD'
+            WRITE(LUMOD5,'(A)')'         tmp = tmp + DCC(iPrimD,iContD)*BasisCont3(iTUV,iPrimD)'
+            WRITE(LUMOD5,'(A)')'        enddo'
+            WRITE(LUMOD5,'(A)')'        AUXarrayCont(iTUV,iContC,iContD,iPassP) = tmp'
+            WRITE(LUMOD5,'(A)')'       enddo'
+            WRITE(LUMOD5,'(A)')'      enddo'
+            WRITE(LUMOD5,'(A)')'     enddo'
+            WRITE(LUMOD5,'(A)')'    enddo'
+            WRITE(LUMOD5,'(A)')'!!$OMP END PARALLEL DO'
+            WRITE(LUMOD5,'(A)')'!$OMP END SINGLE'
+            WRITE(LUMOD5,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegP')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD5)
+         ELSE
+            WRITE(LUMOD5,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegP')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD5)
+            WRITE(LUMOD5,'(A)')'       & nContQ,CCC,DCC,nPrimC,nContC,nPrimD,nContD,BasisCont3)'
+            WRITE(LUMOD5,'(A)')'    implicit none'
+            WRITE(LUMOD5,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContQ'
+            WRITE(LUMOD5,'(A)')'    integer,intent(in) :: nPrimC,nContC,nPrimD,nContD'
+            WRITE(LUMOD5,'(A)')'    real(realk),intent(in) :: CCC(nPrimC,nContC),DCC(nPrimD,nContD)'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD5,'(A)')'    !'
+            WRITE(LUMOD5,'(A)')'    integer :: iPassP,iContC,iContD,iPrimC,iPrimD,iTUV'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD5,'(A,I5,A)')'    real(realk) :: BasisCont3(nPrimD)'
+            !         WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD5,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD5,'(A,I5)')'    do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD5,'(A)')'     do iPassP = 1,nPasses'
+            WRITE(LUMOD5,'(A)')'        '
+            WRITE(LUMOD5,'(A)')'      do iContC=1,nContC'
+            WRITE(LUMOD5,'(A)')'       do iPrimD=1,nPrimD'
+            WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+            WRITE(LUMOD5,'(A)')'        do iPrimC=1,nPrimC'
+            WRITE(LUMOD5,'(A)')'         tmp = tmp + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iPrimD,iPassP,iTUV)'
+            WRITE(LUMOD5,'(A)')'        enddo'
+            WRITE(LUMOD5,'(A)')'        BasisCont3(iPrimD) = tmp'  
+            WRITE(LUMOD5,'(A)')'       enddo'
+            WRITE(LUMOD5,'(A)')'       do iContD=1,nContD'
+            WRITE(LUMOD5,'(A)')'        tmp = 0.0E0_realk'
+            WRITE(LUMOD5,'(A)')'        do iPrimD=1,nPrimD'
+            WRITE(LUMOD5,'(A)')'         tmp = tmp + DCC(iPrimD,iContD)*BasisCont3(iPrimD)'
+            WRITE(LUMOD5,'(A)')'        enddo'
+            WRITE(LUMOD5,'(A)')'        AUXarrayCont(iContC,iContD,iPassP,iTUV) = tmp'
+            WRITE(LUMOD5,'(A)')'       enddo'
+            WRITE(LUMOD5,'(A)')'      enddo'
+            WRITE(LUMOD5,'(A)')'     enddo'
+            WRITE(LUMOD5,'(A)')'    enddo'
+            WRITE(LUMOD5,'(A)')'!$OMP END SINGLE'
+            WRITE(LUMOD5,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegP')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD5)
+         ENDIF
+
+         ! QSEGMENTED
+         IF(nPrimLast)THEN
+            WRITE(LUMOD4,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD4)
+            WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
+            WRITE(LUMOD4,'(A)')'    implicit none'
+            WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP'
+            WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+            WRITE(LUMOD4,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(',nTUVP*nTUVQ,',nPrimA,nPrimB,nPasses)'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(',nTUVP*nTUVQ,',nContA,nContB,nPasses)'
+            WRITE(LUMOD4,'(A)')'    !'
+            WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iPrimA,iPrimB'
+            WRITE(LUMOD4,'(A)')'    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: BasisCont3(',nTUVP*nTUVQ,',nPrimB)'
+            WRITE(LUMOD4,'(A)')'!!$OMP PARALLEL DO DEFAULT(none) &'
+            WRITE(LUMOD4,'(A)')'!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&'
+            WRITE(LUMOD4,'(A)')'!!$OMP         BasisCont3,TMP) &'
+            WRITE(LUMOD4,'(A)')'!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&'
+            WRITE(LUMOD4,'(A)')'!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)'
+            !         WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
+            WRITE(LUMOD4,'(A)')'    do iPassP = 1,nPasses'
+            WRITE(LUMOD4,'(A)')'     do iContA=1,nContA'
+            WRITE(LUMOD4,'(A)')'      do iPrimB=1,nPrimB'
+            WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+            WRITE(LUMOD4,'(A)')'        do iPrimA=1,nPrimA'
+            WRITE(LUMOD4,'(A)')'         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)'
+            WRITE(LUMOD4,'(A)')'        enddo'
+            WRITE(LUMOD4,'(A)')'        BasisCont3(iTUV,iPrimB) = tmp'
+            WRITE(LUMOD4,'(A)')'       enddo'
+            WRITE(LUMOD4,'(A)')'      enddo'
+            WRITE(LUMOD4,'(A)')'      do iContB=1,nContB'
+            WRITE(LUMOD4,'(A,I5)')'       do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+            WRITE(LUMOD4,'(A)')'        do iPrimB=1,nPrimB'
+            WRITE(LUMOD4,'(A)')'         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)'
+            WRITE(LUMOD4,'(A)')'        enddo'
+            WRITE(LUMOD4,'(A)')'        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp'
+            WRITE(LUMOD4,'(A)')'       enddo'
+            WRITE(LUMOD4,'(A)')'      enddo'
+            WRITE(LUMOD4,'(A)')'     enddo'
+            WRITE(LUMOD4,'(A)')'    enddo'
+            WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
+            WRITE(LUMOD4,'(A)')'!$OMP END SINGLE'
+            WRITE(LUMOD4,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD4)
+            WRITE(LUMOD4,'(A)')''
+         ELSE
+            WRITE(LUMOD4,'(A)')''
+            call initString(1)
+            call AddToString('  subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
+            call AddToString(nTUVP*nTUVQ)
+            call AddToString('(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&')
+            call writeString(LUMOD4)
+            WRITE(LUMOD4,'(A)')'       & nContP,ACC,BCC,nPrimA,nContA,nPrimB,nContB,BasisCont3)'
+            WRITE(LUMOD4,'(A)')'    implicit none'
+            WRITE(LUMOD4,'(A)')'    !Warning Primitive screening modifies this!!! '
+            WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP'
+            WRITE(LUMOD4,'(A)')'    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB'
+            WRITE(LUMOD4,'(A)')'    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,',nTUVP*nTUVQ,')'
+            WRITE(LUMOD4,'(A)')'    !'
+            WRITE(LUMOD4,'(A)')'    integer :: iPassP,iContA,iContB,iPrimA,iPrimB'
+            WRITE(LUMOD4,'(A)')'    integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: TMP'
+            WRITE(LUMOD4,'(A,I5,A)')'    real(realk) :: BasisCont3(nPrimB)'
+            WRITE(LUMOD4,'(A)')'!$OMP SINGLE'
+         WRITE(LUMOD4,'(A,I5)')'    do iTUV=1,',nTUVP*nTUVQ
+            WRITE(LUMOD4,'(A)')'     do iPassP = 1,nPasses'
+            WRITE(LUMOD4,'(A)')'      do iContA=1,nContA'
+            WRITE(LUMOD4,'(A)')'       do iPrimB=1,nPrimB'
+            WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+            WRITE(LUMOD4,'(A)')'        do iPrimA=1,nPrimA'
+            WRITE(LUMOD4,'(A)')'         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)'
+            WRITE(LUMOD4,'(A)')'        enddo'
+            WRITE(LUMOD4,'(A)')'        BasisCont3(iPrimB) = tmp'
+            WRITE(LUMOD4,'(A)')'       enddo'
+            WRITE(LUMOD4,'(A)')'       do iContB=1,nContB'
+            WRITE(LUMOD4,'(A)')'        TMP = 0.0E0_realk'
+            WRITE(LUMOD4,'(A)')'        do iPrimB=1,nPrimB'
+            WRITE(LUMOD4,'(A)')'         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)'
+            WRITE(LUMOD4,'(A)')'        enddo'
+            WRITE(LUMOD4,'(A)')'        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp'
+            WRITE(LUMOD4,'(A)')'       enddo'
+            WRITE(LUMOD4,'(A)')'      enddo'
+            WRITE(LUMOD4,'(A)')'     enddo'
+            WRITE(LUMOD4,'(A)')'    enddo'
+            WRITE(LUMOD4,'(A)')'!!$OMP END PARALLEL DO'
+            WRITE(LUMOD4,'(A)')'!$OMP END SINGLE'
+            WRITE(LUMOD4,'(A)')'!$OMP BARRIER'
+            call initString(1)
+            call AddToString('  end subroutine PrimitiveContraction'//ARCSTRING//'SegQ')
+            call AddToString(nTUVP*nTUVQ)
+            call writeString(LUMOD4)
+            WRITE(LUMOD4,'(A)')''
+         ENDIF
       ENDIF
      ENDDO
     ENDDO

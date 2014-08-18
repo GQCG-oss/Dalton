@@ -265,14 +265,26 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! Orbital assignment
    call mem_alloc(orbitals_assigned,natoms)
    orbitals_assigned=.false.
-   do p=1,nocc_tot
-      pdx = occ_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
-   do p=1,nvirt
-      pdx = unocc_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
+   if (DECinfo%onlyoccpart) then
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else if (DECinfo%onlyvirtpart) then
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   end if
 
    ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
    call array_reorder(VOVO,[1,3,2,4])
@@ -1833,7 +1845,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    If_not_converged: if(.not.restart_from_converged)then
 
       mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(nb>400).or.use_pnos.or.(ccmodel==MODEL_MP2)) mo_ccsd = .false.
+      if (DECinfo%NO_MO_CCSD.or.(nb>400).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+       & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
        
       if (DECinfo%force_scheme) then
         if (DECinfo%en_mem<5) then
@@ -2001,7 +2014,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          case( MODEL_RPA )
            
 #ifdef VAR_MPI
-           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
 #else
            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif

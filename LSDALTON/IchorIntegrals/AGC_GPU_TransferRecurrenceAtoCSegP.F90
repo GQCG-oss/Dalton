@@ -11,9 +11,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   10,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(    4,    4,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   10)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,    4,    4)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0(  4,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -27,7 +27,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1,  4
     DO iTUVP=1,  4
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -68,36 +68,36 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1,  4
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1,  4
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1,  4
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1,  4
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(2,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(5,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(3,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(8,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(4,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(10,iPrimQ,iPrimP,iPassP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,2)
+     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,5)
+     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,3)
+     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,8)
+     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,4)
+     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,10)
      DO iTUVQ=1,  4
       DO iTUVP=1,  4
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -112,9 +112,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   20,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   10,    4,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   20)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   10,    4)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 10,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -128,7 +128,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1,  4
     DO iTUVP=1, 10
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -169,63 +169,63 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 10
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 10
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(2,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(5,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(11,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(3,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(8,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(17,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(4,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(10,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(20,iPrimQ,iPrimP,iPassP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,2)
+     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,5)
+     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,11)
+     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,3)
+     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,8)
+     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,17)
+     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,4)
+     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,10)
+     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,20)
      DO iTUVQ=1,  4
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -240,9 +240,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   35,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   10,   10,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   35)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   10,   10)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 10, 10)
   real(realk) :: Tmp1( 11: 20,  2:  4)
@@ -257,7 +257,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 10
     DO iTUVP=1, 10
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -299,120 +299,120 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 10
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 10
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  11, 20
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  11, 20
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  11, 20
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp1(11,2) = Tmp1(11,2) + 3*inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp1(12,2) = Tmp1(12,2) + 2*inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp1(13,2) = Tmp1(13,2) + 2*inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp1(14,2) = Tmp1(14,2) + inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp1(15,2) = Tmp1(15,2) + inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp1(16,2) = Tmp1(16,2) + inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp1(12,3) = Tmp1(12,3) + inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp1(14,3) = Tmp1(14,3) + 2*inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp1(15,3) = Tmp1(15,3) + inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp1(17,3) = Tmp1(17,3) + 3*inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp1(18,3) = Tmp1(18,3) + 2*inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp1(19,3) = Tmp1(19,3) + inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp1(13,4) = Tmp1(13,4) + inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp1(15,4) = Tmp1(15,4) + inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp1(16,4) = Tmp1(16,4) + 2*inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp1(18,4) = Tmp1(18,4) + inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp1(19,4) = Tmp1(19,4) + 2*inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp1(20,4) = Tmp1(20,4) + 3*inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(2,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(5,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(11,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp1(11,2) = Tmp1(11,2) + pinvq*Aux(21,iPrimQ,iPrimP,iPassP)
-     Tmp1(12,2) = Tmp1(12,2) + pinvq*Aux(22,iPrimQ,iPrimP,iPassP)
-     Tmp1(13,2) = Tmp1(13,2) + pinvq*Aux(23,iPrimQ,iPrimP,iPassP)
-     Tmp1(14,2) = Tmp1(14,2) + pinvq*Aux(24,iPrimQ,iPrimP,iPassP)
-     Tmp1(15,2) = Tmp1(15,2) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp1(16,2) = Tmp1(16,2) + pinvq*Aux(26,iPrimQ,iPrimP,iPassP)
-     Tmp1(17,2) = Tmp1(17,2) + pinvq*Aux(27,iPrimQ,iPrimP,iPassP)
-     Tmp1(18,2) = Tmp1(18,2) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp1(19,2) = Tmp1(19,2) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp1(20,2) = Tmp1(20,2) + pinvq*Aux(30,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(3,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(8,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(17,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp1(11,3) = Tmp1(11,3) + pinvq*Aux(22,iPrimQ,iPrimP,iPassP)
-     Tmp1(12,3) = Tmp1(12,3) + pinvq*Aux(24,iPrimQ,iPrimP,iPassP)
-     Tmp1(13,3) = Tmp1(13,3) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp1(14,3) = Tmp1(14,3) + pinvq*Aux(27,iPrimQ,iPrimP,iPassP)
-     Tmp1(15,3) = Tmp1(15,3) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp1(16,3) = Tmp1(16,3) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp1(17,3) = Tmp1(17,3) + pinvq*Aux(31,iPrimQ,iPrimP,iPassP)
-     Tmp1(18,3) = Tmp1(18,3) + pinvq*Aux(32,iPrimQ,iPrimP,iPassP)
-     Tmp1(19,3) = Tmp1(19,3) + pinvq*Aux(33,iPrimQ,iPrimP,iPassP)
-     Tmp1(20,3) = Tmp1(20,3) + pinvq*Aux(34,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(4,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(10,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(20,iPrimQ,iPrimP,iPassP)
-     Tmp1(11,4) = Tmp1(11,4) + pinvq*Aux(23,iPrimQ,iPrimP,iPassP)
-     Tmp1(12,4) = Tmp1(12,4) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp1(13,4) = Tmp1(13,4) + pinvq*Aux(26,iPrimQ,iPrimP,iPassP)
-     Tmp1(14,4) = Tmp1(14,4) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp1(15,4) = Tmp1(15,4) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp1(16,4) = Tmp1(16,4) + pinvq*Aux(30,iPrimQ,iPrimP,iPassP)
-     Tmp1(17,4) = Tmp1(17,4) + pinvq*Aux(32,iPrimQ,iPrimP,iPassP)
-     Tmp1(18,4) = Tmp1(18,4) + pinvq*Aux(33,iPrimQ,iPrimP,iPassP)
-     Tmp1(19,4) = Tmp1(19,4) + pinvq*Aux(34,iPrimQ,iPrimP,iPassP)
-     Tmp1(20,4) = Tmp1(20,4) + pinvq*Aux(35,iPrimQ,iPrimP,iPassP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp1(11,2) = Tmp1(11,2) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp1(12,2) = Tmp1(12,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp1(13,2) = Tmp1(13,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp1(14,2) = Tmp1(14,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp1(15,2) = Tmp1(15,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp1(16,2) = Tmp1(16,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp1(12,3) = Tmp1(12,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp1(14,3) = Tmp1(14,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp1(15,3) = Tmp1(15,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp1(17,3) = Tmp1(17,3) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp1(18,3) = Tmp1(18,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp1(19,3) = Tmp1(19,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp1(13,4) = Tmp1(13,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp1(15,4) = Tmp1(15,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp1(16,4) = Tmp1(16,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp1(18,4) = Tmp1(18,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp1(19,4) = Tmp1(19,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp1(20,4) = Tmp1(20,4) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,2)
+     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,5)
+     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,11)
+     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp1(11,2) = Tmp1(11,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,21)
+     Tmp1(12,2) = Tmp1(12,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,22)
+     Tmp1(13,2) = Tmp1(13,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,23)
+     Tmp1(14,2) = Tmp1(14,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,24)
+     Tmp1(15,2) = Tmp1(15,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp1(16,2) = Tmp1(16,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,26)
+     Tmp1(17,2) = Tmp1(17,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,27)
+     Tmp1(18,2) = Tmp1(18,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp1(19,2) = Tmp1(19,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp1(20,2) = Tmp1(20,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,30)
+     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,3)
+     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,8)
+     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,17)
+     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp1(11,3) = Tmp1(11,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,22)
+     Tmp1(12,3) = Tmp1(12,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,24)
+     Tmp1(13,3) = Tmp1(13,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp1(14,3) = Tmp1(14,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,27)
+     Tmp1(15,3) = Tmp1(15,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp1(16,3) = Tmp1(16,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp1(17,3) = Tmp1(17,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,31)
+     Tmp1(18,3) = Tmp1(18,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,32)
+     Tmp1(19,3) = Tmp1(19,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,33)
+     Tmp1(20,3) = Tmp1(20,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,34)
+     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,4)
+     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,10)
+     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,20)
+     Tmp1(11,4) = Tmp1(11,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,23)
+     Tmp1(12,4) = Tmp1(12,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp1(13,4) = Tmp1(13,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,26)
+     Tmp1(14,4) = Tmp1(14,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp1(15,4) = Tmp1(15,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp1(16,4) = Tmp1(16,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,30)
+     Tmp1(17,4) = Tmp1(17,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,32)
+     Tmp1(18,4) = Tmp1(18,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,33)
+     Tmp1(19,4) = Tmp1(19,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,34)
+     Tmp1(20,4) = Tmp1(20,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,35)
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 10
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -421,13 +421,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 10
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 10
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      Tmp0(2,5) = Tmp0(2,5) + inv2expQ*Tmp0(1,2) 
      Tmp0(5,5) = Tmp0(5,5) + 2*inv2expQ*Tmp0(2,2) 
@@ -515,7 +515,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      Tmp0(10,10) = Tmp0(10,10) + pinvq*Tmp1(20,4)
      DO iTUVQ=1, 10
       DO iTUVP=1, 10
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -530,9 +530,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   35,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   20,    4,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   35)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   20,    4)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 20,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -546,7 +546,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1,  4
     DO iTUVP=1, 20
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -587,111 +587,111 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 20
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 20
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
-     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(11,2) = Tmp0(11,2) + 3*inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp0(12,2) = Tmp0(12,2) + 2*inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp0(13,2) = Tmp0(13,2) + 2*inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp0(14,2) = Tmp0(14,2) + inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp0(15,2) = Tmp0(15,2) + inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp0(16,2) = Tmp0(16,2) + inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(12,3) = Tmp0(12,3) + inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp0(14,3) = Tmp0(14,3) + 2*inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp0(15,3) = Tmp0(15,3) + inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp0(17,3) = Tmp0(17,3) + 3*inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp0(18,3) = Tmp0(18,3) + 2*inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp0(19,3) = Tmp0(19,3) + inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(1,iPrimQ,iPrimP,iPassP) 
-     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(2,iPrimQ,iPrimP,iPassP) 
-     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(3,iPrimQ,iPrimP,iPassP) 
-     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(4,iPrimQ,iPrimP,iPassP) 
-     Tmp0(13,4) = Tmp0(13,4) + inv2expQ*Aux(5,iPrimQ,iPrimP,iPassP) 
-     Tmp0(15,4) = Tmp0(15,4) + inv2expQ*Aux(6,iPrimQ,iPrimP,iPassP) 
-     Tmp0(16,4) = Tmp0(16,4) + 2*inv2expQ*Aux(7,iPrimQ,iPrimP,iPassP) 
-     Tmp0(18,4) = Tmp0(18,4) + inv2expQ*Aux(8,iPrimQ,iPrimP,iPassP) 
-     Tmp0(19,4) = Tmp0(19,4) + 2*inv2expQ*Aux(9,iPrimQ,iPrimP,iPassP) 
-     Tmp0(20,4) = Tmp0(20,4) + 3*inv2expQ*Aux(10,iPrimQ,iPrimP,iPassP) 
-     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(2,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(5,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(11,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp0(11,2) = Tmp0(11,2) + pinvq*Aux(21,iPrimQ,iPrimP,iPassP)
-     Tmp0(12,2) = Tmp0(12,2) + pinvq*Aux(22,iPrimQ,iPrimP,iPassP)
-     Tmp0(13,2) = Tmp0(13,2) + pinvq*Aux(23,iPrimQ,iPrimP,iPassP)
-     Tmp0(14,2) = Tmp0(14,2) + pinvq*Aux(24,iPrimQ,iPrimP,iPassP)
-     Tmp0(15,2) = Tmp0(15,2) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp0(16,2) = Tmp0(16,2) + pinvq*Aux(26,iPrimQ,iPrimP,iPassP)
-     Tmp0(17,2) = Tmp0(17,2) + pinvq*Aux(27,iPrimQ,iPrimP,iPassP)
-     Tmp0(18,2) = Tmp0(18,2) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp0(19,2) = Tmp0(19,2) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp0(20,2) = Tmp0(20,2) + pinvq*Aux(30,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(3,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(6,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(8,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(12,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(14,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(17,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp0(11,3) = Tmp0(11,3) + pinvq*Aux(22,iPrimQ,iPrimP,iPassP)
-     Tmp0(12,3) = Tmp0(12,3) + pinvq*Aux(24,iPrimQ,iPrimP,iPassP)
-     Tmp0(13,3) = Tmp0(13,3) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp0(14,3) = Tmp0(14,3) + pinvq*Aux(27,iPrimQ,iPrimP,iPassP)
-     Tmp0(15,3) = Tmp0(15,3) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp0(16,3) = Tmp0(16,3) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp0(17,3) = Tmp0(17,3) + pinvq*Aux(31,iPrimQ,iPrimP,iPassP)
-     Tmp0(18,3) = Tmp0(18,3) + pinvq*Aux(32,iPrimQ,iPrimP,iPassP)
-     Tmp0(19,3) = Tmp0(19,3) + pinvq*Aux(33,iPrimQ,iPrimP,iPassP)
-     Tmp0(20,3) = Tmp0(20,3) + pinvq*Aux(34,iPrimQ,iPrimP,iPassP)
-     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(4,iPrimQ,iPrimP,iPassP)
-     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(7,iPrimQ,iPrimP,iPassP)
-     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(9,iPrimQ,iPrimP,iPassP)
-     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(10,iPrimQ,iPrimP,iPassP)
-     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(13,iPrimQ,iPrimP,iPassP)
-     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(15,iPrimQ,iPrimP,iPassP)
-     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(16,iPrimQ,iPrimP,iPassP)
-     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(18,iPrimQ,iPrimP,iPassP)
-     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(19,iPrimQ,iPrimP,iPassP)
-     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(20,iPrimQ,iPrimP,iPassP)
-     Tmp0(11,4) = Tmp0(11,4) + pinvq*Aux(23,iPrimQ,iPrimP,iPassP)
-     Tmp0(12,4) = Tmp0(12,4) + pinvq*Aux(25,iPrimQ,iPrimP,iPassP)
-     Tmp0(13,4) = Tmp0(13,4) + pinvq*Aux(26,iPrimQ,iPrimP,iPassP)
-     Tmp0(14,4) = Tmp0(14,4) + pinvq*Aux(28,iPrimQ,iPrimP,iPassP)
-     Tmp0(15,4) = Tmp0(15,4) + pinvq*Aux(29,iPrimQ,iPrimP,iPassP)
-     Tmp0(16,4) = Tmp0(16,4) + pinvq*Aux(30,iPrimQ,iPrimP,iPassP)
-     Tmp0(17,4) = Tmp0(17,4) + pinvq*Aux(32,iPrimQ,iPrimP,iPassP)
-     Tmp0(18,4) = Tmp0(18,4) + pinvq*Aux(33,iPrimQ,iPrimP,iPassP)
-     Tmp0(19,4) = Tmp0(19,4) + pinvq*Aux(34,iPrimQ,iPrimP,iPassP)
-     Tmp0(20,4) = Tmp0(20,4) + pinvq*Aux(35,iPrimQ,iPrimP,iPassP)
+     Tmp0(2,2) = Tmp0(2,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(5,2) = Tmp0(5,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(6,2) = Tmp0(6,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(7,2) = Tmp0(7,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(11,2) = Tmp0(11,2) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp0(12,2) = Tmp0(12,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp0(13,2) = Tmp0(13,2) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp0(14,2) = Tmp0(14,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp0(15,2) = Tmp0(15,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp0(16,2) = Tmp0(16,2) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp0(3,3) = Tmp0(3,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(6,3) = Tmp0(6,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(8,3) = Tmp0(8,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(9,3) = Tmp0(9,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(12,3) = Tmp0(12,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp0(14,3) = Tmp0(14,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp0(15,3) = Tmp0(15,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp0(17,3) = Tmp0(17,3) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp0(18,3) = Tmp0(18,3) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp0(19,3) = Tmp0(19,3) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp0(4,4) = Tmp0(4,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,1) 
+     Tmp0(7,4) = Tmp0(7,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,2) 
+     Tmp0(9,4) = Tmp0(9,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,3) 
+     Tmp0(10,4) = Tmp0(10,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,4) 
+     Tmp0(13,4) = Tmp0(13,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,5) 
+     Tmp0(15,4) = Tmp0(15,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,6) 
+     Tmp0(16,4) = Tmp0(16,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,7) 
+     Tmp0(18,4) = Tmp0(18,4) + inv2expQ*Aux(iPrimQ,iPrimP,iPassP,8) 
+     Tmp0(19,4) = Tmp0(19,4) + 2*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,9) 
+     Tmp0(20,4) = Tmp0(20,4) + 3*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,10) 
+     Tmp0(1,2) = Tmp0(1,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,2)
+     Tmp0(2,2) = Tmp0(2,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,5)
+     Tmp0(3,2) = Tmp0(3,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(4,2) = Tmp0(4,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(5,2) = Tmp0(5,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,11)
+     Tmp0(6,2) = Tmp0(6,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(7,2) = Tmp0(7,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(8,2) = Tmp0(8,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(9,2) = Tmp0(9,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(10,2) = Tmp0(10,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp0(11,2) = Tmp0(11,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,21)
+     Tmp0(12,2) = Tmp0(12,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,22)
+     Tmp0(13,2) = Tmp0(13,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,23)
+     Tmp0(14,2) = Tmp0(14,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,24)
+     Tmp0(15,2) = Tmp0(15,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp0(16,2) = Tmp0(16,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,26)
+     Tmp0(17,2) = Tmp0(17,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,27)
+     Tmp0(18,2) = Tmp0(18,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp0(19,2) = Tmp0(19,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp0(20,2) = Tmp0(20,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,30)
+     Tmp0(1,3) = Tmp0(1,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,3)
+     Tmp0(2,3) = Tmp0(2,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,6)
+     Tmp0(3,3) = Tmp0(3,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,8)
+     Tmp0(4,3) = Tmp0(4,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(5,3) = Tmp0(5,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,12)
+     Tmp0(6,3) = Tmp0(6,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,14)
+     Tmp0(7,3) = Tmp0(7,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(8,3) = Tmp0(8,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,17)
+     Tmp0(9,3) = Tmp0(9,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(10,3) = Tmp0(10,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp0(11,3) = Tmp0(11,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,22)
+     Tmp0(12,3) = Tmp0(12,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,24)
+     Tmp0(13,3) = Tmp0(13,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp0(14,3) = Tmp0(14,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,27)
+     Tmp0(15,3) = Tmp0(15,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp0(16,3) = Tmp0(16,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp0(17,3) = Tmp0(17,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,31)
+     Tmp0(18,3) = Tmp0(18,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,32)
+     Tmp0(19,3) = Tmp0(19,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,33)
+     Tmp0(20,3) = Tmp0(20,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,34)
+     Tmp0(1,4) = Tmp0(1,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,4)
+     Tmp0(2,4) = Tmp0(2,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,7)
+     Tmp0(3,4) = Tmp0(3,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,9)
+     Tmp0(4,4) = Tmp0(4,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,10)
+     Tmp0(5,4) = Tmp0(5,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,13)
+     Tmp0(6,4) = Tmp0(6,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,15)
+     Tmp0(7,4) = Tmp0(7,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,16)
+     Tmp0(8,4) = Tmp0(8,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,18)
+     Tmp0(9,4) = Tmp0(9,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,19)
+     Tmp0(10,4) = Tmp0(10,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,20)
+     Tmp0(11,4) = Tmp0(11,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,23)
+     Tmp0(12,4) = Tmp0(12,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,25)
+     Tmp0(13,4) = Tmp0(13,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,26)
+     Tmp0(14,4) = Tmp0(14,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,28)
+     Tmp0(15,4) = Tmp0(15,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,29)
+     Tmp0(16,4) = Tmp0(16,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,30)
+     Tmp0(17,4) = Tmp0(17,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,32)
+     Tmp0(18,4) = Tmp0(18,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,33)
+     Tmp0(19,4) = Tmp0(19,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,34)
+     Tmp0(20,4) = Tmp0(20,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,35)
      DO iTUVQ=1,  4
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -706,9 +706,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   56,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   20,   10,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   56)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   20,   10)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 20, 10)
   real(realk) :: Tmp1( 21: 35,  2:  4)
@@ -744,7 +744,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 10
     DO iTUVP=1, 20
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -786,78 +786,78 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 20
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 20
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,20
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,20
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,20
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,35
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,35
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,35
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 20
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -866,13 +866,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX1(ituvpminus1)
@@ -948,7 +948,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      enddo
      DO iTUVQ=1, 10
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -963,9 +963,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   56,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   35,    4,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   56)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   35,    4)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 35,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -1000,7 +1000,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1,  4
     DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -1041,45 +1041,45 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 35
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 35
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      DO iTUVQ=1,  4
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -1094,9 +1094,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   84,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   20,   20,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   84)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   20,   20)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 20, 20)
   real(realk) :: Tmp1( 21: 56,  2:  4)
@@ -1139,7 +1139,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 20
     DO iTUVP=1, 20
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -1182,78 +1182,78 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 20
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 20
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 56
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 56
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 56
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,35
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,35
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 11,35
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,56
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,56
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,20
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 21,56
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 20
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -1262,16 +1262,16 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 20
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 20
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
-      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
       Tmp2(iTUVP,6) = facX*Tmp1(iTUVP,3)
@@ -1280,13 +1280,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp2(iTUVP,7) = facX*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  21, 35
-      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  21, 35
       Tmp2(iTUVP,9) = facY*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  21, 35
-      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,10
       iTUVP = TUVindexX1(ituvpminus1)
@@ -1561,7 +1561,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      enddo
      DO iTUVQ=1, 20
       DO iTUVP=1, 20
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -1576,9 +1576,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(   84,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   35,   10,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   84)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   35,   10)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 35, 10)
   real(realk) :: Tmp1( 36: 56,  2:  4)
@@ -1620,7 +1620,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 10
     DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -1662,78 +1662,78 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 35
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 35
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,35
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,35
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,35
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,56
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,56
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,56
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 35
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -1742,13 +1742,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
@@ -1824,7 +1824,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      enddo
      DO iTUVQ=1, 10
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -1839,9 +1839,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(  120,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   35,   20,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,  120)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   35,   20)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 35, 20)
   real(realk) :: Tmp1( 36: 84,  2:  4)
@@ -1893,7 +1893,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 20
     DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -1936,78 +1936,78 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 35
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 35
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,56
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,56
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,56
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,84
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,84
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,84
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 35
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -2016,16 +2016,16 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
-      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
       Tmp2(iTUVP,6) = facX*Tmp1(iTUVP,3)
@@ -2034,13 +2034,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp2(iTUVP,7) = facX*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  36, 56
-      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 56
       Tmp2(iTUVP,9) = facY*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  36, 56
-      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
@@ -2315,7 +2315,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      enddo
      DO iTUVQ=1, 20
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ
@@ -2330,9 +2330,9 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   real(realk),intent(in) :: Pdistance12(3,nAtomsA,nAtomsB),Qdistance12(3)
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Bexp(nPrimB),Dexp(nPrimD)
-  real(realk),intent(in) :: Aux(  165,nPrimQ,nPrimP,nPasses)
-  real(realk),intent(inout) :: Aux2(   35,   35,nPrimQ*nPasses)
-!  real(realk),intent(inout) :: Aux2(nTUVP,nTUVQ,nPrimQ,nPrimP,nPasses)
+  real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,  165)
+  real(realk),intent(inout) :: Aux2(nPrimQ*nPasses,   35,   35)
+!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
   !Local variables
   real(realk) :: Tmp0( 35, 35)
   real(realk) :: Tmp1( 36:120,  2:  4)
@@ -2397,7 +2397,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
   DO iP = 1,nPrimQ*nPasses
    DO iTUVQ=1, 35
     DO iTUVP=1, 35
-     Aux2(iTUVP,iTUVQ,iP) = 0.0E0_realk
+     Aux2(iP,iTUVP,iTUVQ) = 0.0E0_realk
     ENDDO
    ENDDO
   ENDDO
@@ -2441,78 +2441,78 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      pinvq = -expP*invexpQ
  ! Building for Angular momentum Jq = 0
      DO iTUVP=1, 35
-      Tmp0(iTUVP,1) = Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      ENDDO
  ! Building for Angular momentum Jq = 1
      do iTUVP = 1, 35
-      Tmp0(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36,120
-      Tmp1(iTUVP,2) = facX*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36,120
-      Tmp1(iTUVP,3) = facY*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36,120
-      Tmp1(iTUVP,4) = facZ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,84
       iTUVP = TUVindexX1(ituvpminus1)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + IfacX1(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,84
       iTUVP = TUVindexX2(ituvpminus1)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + IfacX2(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do ituvpminus1 = 21,84
       iTUVP = TUVindexX3(ituvpminus1)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(ituvpminus1,iPrimQ,iPrimP,iPassP) 
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + IfacX3(ituvpminus1)*inv2expQ*Aux(iPrimQ,iPrimP,iPassP,ituvpminus1) 
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,2) = Tmp0(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,120
       iTUVplus1 = TUVindexX1(iTUVP)
-      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,2) = Tmp1(iTUVP,2) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,3) = Tmp0(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,120
       iTUVplus1 = TUVindexX2(iTUVP)
-      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,3) = Tmp1(iTUVP,3) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 1,35
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,4) = Tmp0(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
      do iTUVP = 36,120
       iTUVplus1 = TUVindexX3(iTUVP)
-      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iTUVplus1,iPrimQ,iPrimP,iPassP)
+      Tmp1(iTUVP,4) = Tmp1(iTUVP,4) + pinvq*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jq = 2
      do iTUVP = 1, 35
-      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,5) = facX*Tmp0(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,6) = facX*Tmp0(iTUVP,3)
@@ -2521,16 +2521,16 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp0(iTUVP,7) = facX*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,8) = facY*Tmp0(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP = 1, 35
       Tmp0(iTUVP,9) = facY*Tmp0(iTUVP,4)
      enddo
      do iTUVP = 1, 35
-      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp0(iTUVP,10) = facZ*Tmp0(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
-      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,5) = facX*Tmp1(iTUVP,2)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
       Tmp2(iTUVP,6) = facX*Tmp1(iTUVP,3)
@@ -2539,13 +2539,13 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
       Tmp2(iTUVP,7) = facX*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  36, 84
-      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,8) = facY*Tmp1(iTUVP,3)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do iTUVP =  36, 84
       Tmp2(iTUVP,9) = facY*Tmp1(iTUVP,4)
      enddo
      do iTUVP =  36, 84
-      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iTUVP,iPrimQ,iPrimP,iPassP)
+      Tmp2(iTUVP,10) = facZ*Tmp1(iTUVP,4)+ inv2expQ*Aux(iPrimQ,iPrimP,iPassP,iTUVP)
      enddo
      do ituvpminus1 = 1,20
       iTUVP = TUVindexX1(ituvpminus1)
@@ -3180,7 +3180,7 @@ MODULE AGC_GPU_OBS_TRMODAtoCSegP
      enddo
      DO iTUVQ=1, 35
       DO iTUVP=1, 35
-        Aux2(iTUVP,iTUVQ,IP) = Aux2(iTUVP,iTUVQ,IP) + Tmp0(iTUVP,iTUVQ)
+        Aux2(IP,iTUVP,iTUVQ) = Aux2(IP,iTUVP,iTUVQ) + Tmp0(iTUVP,iTUVQ)
       ENDDO
      ENDDO
    ENDDO !iPrimQ=1, nPrimQ

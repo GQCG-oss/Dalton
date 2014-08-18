@@ -22,12 +22,12 @@ use AGC_GPU_OBS_TRMODCtoASegQ
 use AGC_GPU_OBS_TRMODDtoASegQ
 use AGC_GPU_OBS_TRMODCtoBSegQ
 use AGC_GPU_OBS_TRMODDtoBSegQ
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_GPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_GPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_GPU_OBS_Sphcontract1Mod
+use AGC_GPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorCoulombIntegral_GPU_OBS_SegQ,IchorCoulombIntegral_GPU_OBS_general_sizeSegQ  
@@ -4507,64 +4507,64 @@ CONTAINS
     BasisCont3maxsize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
-    BasisCont3maxsize =     1*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,1*nPrimP)
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContP)
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContP)
     CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContP)
     CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
     CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContP)
     CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
-    BasisCont3maxsize =    35*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,35*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,36*nContP)
     CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContP)
     CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContP)
     CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4572,21 +4572,21 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContP)
     CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4594,7 +4594,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4602,7 +4602,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4610,7 +4610,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimP)
@@ -4618,13 +4618,13 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,105*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,108*nContP)
     CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContP)
     CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4632,7 +4632,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContP)
     CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4641,7 +4641,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4649,7 +4649,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContP)
     CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4657,7 +4657,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
     CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4666,7 +4666,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4675,7 +4675,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4684,7 +4684,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -4693,18 +4693,18 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,175*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
-    BasisCont3maxsize =     4*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,4*nContP)
     CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContP)
     CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4712,21 +4712,21 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
-    BasisCont3maxsize =    16*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,16*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,12*nContP)
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4734,7 +4734,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4742,7 +4742,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4750,7 +4750,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimP)
@@ -4758,19 +4758,19 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,105*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,108*nContP)
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
     CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,36*nContP)
     CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4778,21 +4778,21 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,40*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,36*nContP)
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4800,7 +4800,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,162*nContP)
     CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4808,7 +4808,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,54*nContP)
     CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4816,7 +4816,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,162*nContP)
     CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -4824,13 +4824,13 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,315*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,324*nContP)
     CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4838,7 +4838,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContP)
     CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4847,7 +4847,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4855,7 +4855,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContP)
     CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4863,7 +4863,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
     CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimP)
@@ -4872,7 +4872,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContP)
     CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4881,7 +4881,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimP)
@@ -4890,7 +4890,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContP)
     CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimP)
@@ -4899,13 +4899,13 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,525*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,540*nContP)
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
-    BasisCont3maxsize =    10*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,10*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,6*nContP)
     CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4913,7 +4913,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContP)
     CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4922,7 +4922,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
-    BasisCont3maxsize =    40*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimP)
@@ -4930,7 +4930,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,24*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nContP)
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4938,7 +4938,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,60*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
     CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4947,7 +4947,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
-    BasisCont3maxsize =   100*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimP)
@@ -4956,7 +4956,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,50*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,30*nContP)
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4965,7 +4965,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -4974,13 +4974,13 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,175*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
-    BasisCont3maxsize =    20*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,20*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,18*nContP)
     CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -4988,7 +4988,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContP)
     CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -4997,7 +4997,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
-    BasisCont3maxsize =    80*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimP)
@@ -5005,7 +5005,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,72*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,60*nContP)
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -5013,7 +5013,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,180*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
     CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimP)
@@ -5022,7 +5022,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContP)
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
-    BasisCont3maxsize =   200*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimP)
@@ -5031,7 +5031,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,150*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,90*nContP)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
-    BasisCont3maxsize =   400*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimP)
@@ -5040,7 +5040,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,300*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,270*nContP)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimP)
@@ -5049,13 +5049,13 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,525*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,540*nContP)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
-    BasisCont3maxsize =    35*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimP)
        TMParray2maxSize = MAX(TMParray2maxSize,35*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,36*nContP)
     CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimP)
@@ -5063,7 +5063,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,144*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
     CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -5072,7 +5072,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,150*nContP)
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
-    BasisCont3maxsize =   140*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimP)
@@ -5080,7 +5080,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,144*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,100*nContP)
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -5088,7 +5088,7 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,360*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContP)
     CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimP)
@@ -5097,7 +5097,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,500*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,450*nContP)
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
-    BasisCont3maxsize =   350*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimP)
@@ -5106,7 +5106,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,250*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,150*nContP)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
-    BasisCont3maxsize =   700*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimP)
@@ -5115,7 +5115,7 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,500*nContP)
        TMParray2maxSize = MAX(TMParray2maxSize,450*nContP)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
-    BasisCont3maxsize =  1225*nPrimB
+    BasisCont3maxsize = nPrimB
        TMParray2maxSize = MAX(TMParray2maxSize,9*nPrimQP)
        TMParray1maxSize = MAX(TMParray1maxSize,165*nPrimQP)
        TMParray2maxSize = MAX(TMParray2maxSize,1225*nPrimP)
@@ -5177,37 +5177,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(    4,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(    4,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,    4)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,    4)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(    4,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,    4
+    do iTUV=1,    4
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,    4
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5225,37 +5218,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   10,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   10,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   10)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   10)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   10,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   10
+    do iTUV=1,   10
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   10
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5273,37 +5259,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   20,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   20,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   20)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   20)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   20,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   20
+    do iTUV=1,   20
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   20
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5321,37 +5300,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   35,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   35,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   35)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   35)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   35,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   35
+    do iTUV=1,   35
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   35
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5369,37 +5341,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   16,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   16,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   16)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   16)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   16,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   16
+    do iTUV=1,   16
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   16
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5417,37 +5382,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   40,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   40,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   40)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   40)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   40,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   40
+    do iTUV=1,   40
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   40
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5465,37 +5423,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(   80,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(   80,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,   80)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,   80)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(   80,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,   80
+    do iTUV=1,   80
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,   80
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5513,37 +5464,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  140,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  140,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  140)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  140)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  140,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  140
+    do iTUV=1,  140
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  140
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5561,37 +5505,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  100,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  100,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  100)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  100)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  100,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  100
+    do iTUV=1,  100
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  100
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5609,37 +5546,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  200,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  200,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  200)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  200)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  200,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  200
+    do iTUV=1,  200
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  200
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5657,37 +5587,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  350,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  350,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  350)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  350)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  350,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  350
+    do iTUV=1,  350
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  350
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5705,37 +5628,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  400,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  400,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  400)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  400)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  400,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  400
+    do iTUV=1,  400
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  400
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5753,37 +5669,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(  700,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont(  700,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses,  700)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses,  700)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3(  700,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1,  700
+    do iTUV=1,  700
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1,  700
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo
@@ -5801,37 +5710,30 @@ CONTAINS
     integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP
     integer,intent(in) :: nPrimA,nContA,nPrimB,nContB
     real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2( 1225,nPrimA,nPrimB,nPasses)
-    real(realk),intent(inout) :: AUXarrayCont( 1225,nContA,nContB,nPasses)
+    real(realk),intent(in) :: AUXarray2(nPrimA,nPrimB,nPasses, 1225)
+    real(realk),intent(inout) :: AUXarrayCont(nContA,nContB,nPasses, 1225)
     !
     integer :: iPassP,iContA,iContB,iPrimA,iPrimB
     integer :: iTUV,iPrimQ,iPrimP,iContQ,iContP
     real(realk) :: TMP
-    real(realk) :: BasisCont3( 1225,nPrimB)
-!!$OMP PARALLEL DO DEFAULT(none) &
-!!$OMP PRIVATE(iTUV,iPassP,iContA,iContB,iPrimA,iPrimB,&
-!!$OMP         BasisCont3,TMP) &
-!!$OMP SHARED(nContA,nContB,nPasses,nPrimA,nPrimB,&
-!!$OMP        ACC,BCC,AUXarrayCont,AUXarray2)
+    real(realk) :: BasisCont3(nPrimB)
 !$OMP SINGLE
-    do iPassP = 1,nPasses
-     do iContA=1,nContA
-      do iPrimB=1,nPrimB
-       do iTUV=1, 1225
+    do iTUV=1, 1225
+     do iPassP = 1,nPasses
+      do iContA=1,nContA
+       do iPrimB=1,nPrimB
         TMP = 0.0E0_realk
         do iPrimA=1,nPrimA
-         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iTUV,iPrimA,iPrimB,iPassP)
+         tmp = tmp + ACC(iPrimA,iContA)*AUXarray2(iPrimA,iPrimB,iPassP,iTUV)
         enddo
-        BasisCont3(iTUV,iPrimB) = tmp
+        BasisCont3(iPrimB) = tmp
        enddo
-      enddo
-      do iContB=1,nContB
-       do iTUV=1, 1225
+       do iContB=1,nContB
         TMP = 0.0E0_realk
         do iPrimB=1,nPrimB
-         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iTUV,iPrimB)
+         tmp = tmp + BCC(iPrimB,iContB)*BasisCont3(iPrimB)
         enddo
-        AUXarrayCont(iTUV,iContA,iContB,iPassP) = tmp
+        AUXarrayCont(iContA,iContB,iPassP,iTUV) = tmp
        enddo
       enddo
      enddo

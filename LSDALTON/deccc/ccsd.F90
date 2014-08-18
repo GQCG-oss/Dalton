@@ -4376,7 +4376,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp0, tmp_size)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N)
+    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
 
@@ -4640,41 +4640,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     !                       GET SINGLES CCSD RESIDUAL
     !
-    ! Get A1 term:
-    ! Omega_ai = xvir_aP * G_Pi 
-    call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
-              & 0.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1:
-    if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
-
-    ! Calculate B1 term:
-    ! Omega_ai += - H_aQ * yocc_iQ 
-    call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
-              & 1.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1 + B1:
-    if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
-
-    ! Calculate C1 term:
-    ! Reorder u2[ac, ik] -> u2[ai, kc]
-    call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
-              & 0.0E0_realk,tmp0)
-
-    ! Omega_ai += u2[ai, kc] * F_kc 
-    call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
-              & 1.0E0_realk,omega1%elm1,1)
-    ! Calculate norm of A1 + B1 + C1:
-    if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
-
-    ! Calculate D1 term:
-    ! Omega_ai += F_ai
-    call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
-
-    ! Calculate norm of full single residual:
-    if (print_debug) then
-      call print_norm(omega1,'debug: residual D1 norm:                 ')
-      call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+    !CCD can be achieved by not using singles residual updates here
+    if(.not. DECinfo%CCDhack)then
+      ! Get A1 term:
+      ! Omega_ai = xvir_aP * G_Pi 
+      call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
+                & 0.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1:
+      if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
+       
+      ! Calculate B1 term:
+      ! Omega_ai += - H_aQ * yocc_iQ 
+      call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
+                & 1.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1 + B1:
+      if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
+       
+      ! Calculate C1 term:
+      ! Reorder u2[ac, ik] -> u2[ai, kc]
+      call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
+                & 0.0E0_realk,tmp0)
+       
+      ! Omega_ai += u2[ai, kc] * F_kc 
+      call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
+                & 1.0E0_realk,omega1%elm1,1)
+      ! Calculate norm of A1 + B1 + C1:
+      if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
+       
+      ! Calculate D1 term:
+      ! Omega_ai += F_ai
+      call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
+       
+      ! Calculate norm of full single residual:
+      if (print_debug) then
+        call print_norm(omega1,'debug: residual D1 norm:                 ')
+        call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+      end if
     end if
-
 
     !===========================================================================
     !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
@@ -5275,11 +5277,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! 2) transform s to k g[PQjs]
     call dgemm('n','t',dimP*dimQ*nocc,nocc,ntot,1.0E0_realk,tmp0,dimP*dimQ*nocc, &
               & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*nocc)
-    call lsmpi_poke() 
 
     ! 3) transpose and get g[Qjk,P]
     call mat_transpose(dimP,dimQ*nocc*nocc,1.0E0_realk,tmp1,0.0E0_realk,tmp0)
-    call lsmpi_poke() 
 
     ! 4) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc
@@ -5305,7 +5305,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     
     ! 2) transpose and get g[QjbP]:
     call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
-    call lsmpi_poke() 
   
     ! 3) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc

@@ -117,6 +117,7 @@ contains
     call write_DECorbitals_to_file(nocc,nunocc,&
             &OccOrbitals,UnoccOrbitals)
 
+
   end subroutine GenerateOrbitals_driver
 
 
@@ -1126,13 +1127,25 @@ contains
     !> S^{1/2} C matrix
     real(realk), dimension(MyMolecule%nbasis,MyMolecule%nbasis) :: ShalfC
     real(realk), pointer :: Shalf(:,:)
-    integer :: nbasis
+    integer :: nbasis,i,j,k
     real(realk),pointer :: basis(:,:)
 
     nbasis = MyMolecule%nbasis
     call mem_alloc(basis,nbasis,nbasis)
-    basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
-    basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    !basis(1:nbasis,1:MyMolecule%nocc) = MyMolecule%Co(1:nbasis,1:MyMolecule%nocc)
+    !basis(1:nbasis,MyMolecule%nocc+1:nbasis) = MyMolecule%Cv(1:nbasis,1:MyMolecule%nunocc)
+    do j=1,MyMolecule%nocc
+    do i =1,nbasis
+    basis(i,j) =MyMolecule%Co(i,j)
+    enddo
+    enddo
+    k = MyMolecule%nocc+1
+    do j = 1,MyMolecule%nunocc
+    do i =1,nbasis
+    basis(i,k) = MyMolecule%Cv(i,j)
+    enddo
+    k=k+1
+    enddo
 
     ! Get S^{1/2} matrix
     ! ******************
@@ -2082,7 +2095,8 @@ contains
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> LS item info
     type(lsitem), intent(inout) :: mylsitem
-    real(realk), dimension(natoms,natoms) :: SortedDistTable
+    !real(realk), dimension(natoms,natoms) :: SortedDistTable
+    real(realk), pointer :: SortedDistTable(:,:)
     integer, dimension(nAtoms,nAtoms) :: TrackMatrix
     integer :: i,j,centralatom,neighbor,atomnumber,neighbor_atomnumber
     logical :: included, reassign
@@ -2094,7 +2108,13 @@ contains
     maxdist = 1.5E0_realk/bohr
 
     ! Sort atoms according to distance, and keep track of original indices in TrackMatrix
-    SortedDistTable(:,:)=DistanceTable(:,:)
+    call mem_alloc(SortedDistTable,natoms,natoms)
+    do i = 1,natoms
+     do j=1,natoms
+     SortedDistTable(i,j)=DistanceTable(i,j)
+     enddo
+    enddo
+    !SortedDistTable(:,:)=DistanceTable(:,:)
     call sort_track(SortedDistTable,TrackMatrix,nAtoms)
 
 
@@ -2180,6 +2200,7 @@ contains
        end if Hatom
 
     end do OrbitalLoop
+    call mem_dealloc(SortedDistTable)
 
   end subroutine reassign_orbitals
 
@@ -2517,14 +2538,15 @@ contains
     type(decorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Number of of core orbitals. If present only the assigning of valence orbitals will be printed
+    !> Number of of core orbitals. If present and frozen core approx is used,
+    !> the first ncore orbitals will not be printed.
     integer,intent(in),optional :: ncore
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
     integer :: SECnocc_per_atom(natoms), SECnunocc_per_atom(natoms)
     integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j,offset
     real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
 
-    if(present(ncore)) then
+    if(present(ncore) .and. DECinfo%frozencore) then
        offset=ncore
     else
        offset=0
@@ -2659,16 +2681,22 @@ contains
     !> Full molecule info
     type(fullmolecule),intent(in) :: MyMolecule
     integer :: nocc_per_atom(natoms), nunocc_per_atom(natoms)
-    integer :: i,nfrags
+    integer :: i,nfrags,offset
     logical :: something_wrong
 
+
+    if(DECinfo%frozencore) then
+       offset=MyMolecule%ncore
+    else
+       offset=0
+    end if
 
     ! Number of orbitals per atom
     ! ***************************
 
     ! Occupied
     nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.true.,&
-         & offset=MyMolecule%ncore)
+         & offset=offset)
 
     ! Unoccupied
     nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.true.)
@@ -2703,7 +2731,7 @@ contains
     ! Secondary assignment check
     ! **************************
     nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,.false.,&
-         & offset=MyMolecule%ncore)
+         & offset=offset)
     nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms,.false.)
     something_wrong=.false.
     do i=1,natoms
