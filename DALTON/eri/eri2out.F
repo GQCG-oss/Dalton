@@ -428,7 +428,7 @@ C
                ELSE
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
+                     BUF  (  ICOUNT,  IDIST) =  BIN(I)
                      IBUF4(2*ICOUNT-1,IDIST) = IBIN4(2*I-1)
                      IBUF4(2*ICOUNT  ,IDIST) = IBIN4(2*I  )
                   END DO
@@ -748,7 +748,7 @@ C
                                     IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IABCD
 C                                      CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     END IF
@@ -759,9 +759,9 @@ C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
-                                       BIN (INT  ) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IAB
-                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
+                                       BIN  (  INT) = SOABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IAB
+                                       IBIN4(2,INT) = INDORB(I,2)+IABCD
                                     END IF
                                  END DO
                               END IF
@@ -930,7 +930,7 @@ C
                                     IF (NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IABCD
                                     END IF
                                     END IF
                                  END DO
@@ -940,8 +940,8 @@ C
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IAB
-                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IAB
+                                       IBIN4(2,INT) = INDORB(I,2)+IABCD
                                     END IF
                                  END DO
                               END IF
@@ -2096,8 +2096,7 @@ C  /* Deck erican */
 #include "ibtfun.h"
 C
       IBIT1 = 2**   NBITS  - 1
-      IBIT2 = 0
-      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IF (NIBUF .EQ. 1) THEN
          DO INT = 1, INTS
@@ -2107,7 +2106,7 @@ C
             L = IBTAND(       IBIN4(1,INT),         IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
-            IBIN4(INT,1) = MAX(IJ,KL)*IBIT2 + IJ + KL
+            IBIN4(1,INT) = MAX(IJ,KL)*IBIT2 + IJ + KL
          END DO
       ELSE
          DO INT = 1, INTS
@@ -2187,7 +2186,7 @@ C
 #include "eridst.h"
 C
 #include "ibtfun.h"
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISOR',-1)
 C
       IF(.NOT.COMPRS)CALL QUIT('ERITRX not implemented for .NOT.COMPRS')
       IBIT1 = 2**NBITS - 1
@@ -2206,7 +2205,7 @@ C
                   IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN  (INT)   = SOINT
+                     BIN  (  INT) = SOINT
                      IBIN4(1,INT) = LABEL
                   END IF  
                END DO   
@@ -2218,7 +2217,7 @@ C
                   IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN  (INT)   = SOINT
+                     BIN  (  INT) = SOINT
                      IBIN4(1,INT) = LABEL1
                      IBIN4(2,INT) = LABEL2
                   END IF
@@ -2232,3 +2231,4 @@ C
 C
       RETURN
       END
+! -- end of eri/eri2out.F --
