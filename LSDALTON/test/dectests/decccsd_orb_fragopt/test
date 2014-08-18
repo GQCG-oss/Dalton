@@ -14,8 +14,16 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
+f.add(from_string = 'CCSD occupied single energies',
+      to_string   = 'DEC ENERGY SUMMARY',
+      abs_tolerance = 1.0e-6)
+
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
+
+f.add(string = 'I: Interaction Correlation energy  :',
+      abs_tolerance = 1.0e-8)
+
 
 # to ignore sign set                      ignore_sign = True   
 # to ignore numbers below 1.0e-4 set      ignore_below = 1.0e-4
@@ -25,7 +33,7 @@ f.add(string = 'Allocated memory (TOTAL)')
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
 
-test.run(['decccsd_mo.dal'], ['B3H3.mol'], {'out': f})
+test.run(['decccsd_orb_fragopt.dal'], ['B3H3.mol'], {'out': f})
 
 sys.exit(test.return_code)
 

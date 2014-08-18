@@ -312,6 +312,8 @@ C
      &          NINTS(NDISTR), NCOUNT(NDISTR,0:NCORS)
       INTEGER*4 IBUF4(LBUF*NIBUF,NBUFS), IBIN4(NIBUF*LBIN)
       INTEGER*4 LBUF4, ICOUNT4
+      INTEGER*8 N2WRIT
+      SAVE      N2WRIT
 #include "cbieri.h"
 #include "chrnos.h"
 #include "symmet.h"
@@ -361,6 +363,7 @@ C
          END IF
          CALL IZERO(NCOUNT(1,0),NDISTR*NCORS)
          CALL IZERO(NBUFX(0),NCORS)
+         N2WRIT = 0
          FIRST = .FALSE.
       END IF
 C
@@ -391,6 +394,7 @@ C
                KSTR4 = NIBUF*(KSTR-1) + 1
                KEND4 = NIBUF*(KEND-1) + 1
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + LBUF
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR 
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
@@ -424,7 +428,7 @@ C
                ELSE
                   DO I = IOFF + ISTR, IOFF + NTOT
                      ICOUNT = ICOUNT + 1
-                     BUF (ICOUNT,  IDIST) =  BIN(I)
+                     BUF  (  ICOUNT,  IDIST) =  BIN(I)
                      IBUF4(2*ICOUNT-1,IDIST) = IBIN4(2*I-1)
                      IBUF4(2*ICOUNT  ,IDIST) = IBIN4(2*I  )
                   END DO
@@ -453,6 +457,7 @@ C
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
                NBUF = NBUFX(ISCOOR)
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + LBUF
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR), REC=NBUF)
@@ -504,6 +509,7 @@ C
                NBUFX(ISCOOR) = NBUFX(ISCOOR) + 1
                NBUF = NBUFX(ISCOOR)
                IF (.NOT.NOWRIT) THEN
+                  N2WRIT = N2WRIT + ICOUNT
                   IF (DODIST) THEN
                      WRITE (LUINTR) INDDST(IDIST), ISCOOR
                      WRITE (LUAORC(ISCOOR),REC=NBUF)
@@ -532,6 +538,17 @@ C
                CALL GPCLOSE (LUINTX,'KEEP')
             ELSE IF (.NOT.BDER) THEN
                CALL GPCLOSE (LUINTA,'KEEP') ! do not use LUINTX, else LUINTA is not reset to negative value
+               FNALL  = (NBASIS*(NBASIS + 1))/2
+               FNALL  = (FNALL*(FNALL + 1))/2
+               PERCNT = N2WRIT
+               PERCNT = 100.0D0 * PERCNT / FNALL
+               FMBYTES = N2WRIT
+               FMBYTES =  (8 + NIBUF*4) * FMBYTES / (1024.D0**2)
+               WRITE (LUPRI,'(/A,I10,A,F4.1,A/A,F10.3//)')
+     &            ' ERI - Number of two-electron integrals written:',
+     &            N2WRIT,' (',PERCNT,'%)',
+     &            ' ERI - Megabytes written:                       ',
+     %            FMBYTES
             END IF
          END IF
 C
@@ -731,7 +748,7 @@ C
                                     IF(NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IABCD
 C                                      CALL ERIPRI(BIN(INT),IBIN4(1,INT),
 C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     END IF
@@ -742,9 +759,9 @@ C    &                                         LBIN,NIBUF,1,NBITS,0,0,0)
                                     SOABCD = SO(I,R,S,T,ICMPAB,ICMPCD,1)
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
-                                       BIN (INT  ) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IAB
-                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
+                                       BIN  (  INT) = SOABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IAB
+                                       IBIN4(2,INT) = INDORB(I,2)+IABCD
                                     END IF
                                  END DO
                               END IF
@@ -913,7 +930,7 @@ C
                                     IF (NRDINT(KABCD,DAB,DCD,DPQ)) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IABCD
                                     END IF
                                     END IF
                                  END DO
@@ -923,8 +940,8 @@ C
                                     IF (ABS(SOABCD) .GT. THRSH) THEN
                                        INT = INT + 1
                                        BIN  (  INT) = SOABCD
-                                       IBIN4(1,INT) = INDORB(I,1) + IAB
-                                       IBIN4(2,INT) = INDORB(I,2) + IABCD
+                                       IBIN4(1,INT) = INDORB(I,1)+IAB
+                                       IBIN4(2,INT) = INDORB(I,2)+IABCD
                                     END IF
                                  END DO
                               END IF
@@ -2079,8 +2096,7 @@ C  /* Deck erican */
 #include "ibtfun.h"
 C
       IBIT1 = 2**   NBITS  - 1
-      IBIT2 = 0
-      IF (NIBUF .EQ. 2) IBIT2 = 2**(2*NBITS) - 1
+      IBIT2 = 2**(2*NBITS) - 1
 C
       IF (NIBUF .EQ. 1) THEN
          DO INT = 1, INTS
@@ -2090,7 +2106,7 @@ C
             L = IBTAND(       IBIN4(1,INT),         IBIT1)
             IJ = MAX(I,J)*IBIT1 + I + J
             KL = MAX(K,L)*IBIT1 + K + L
-            IBIN4(INT,1) = MAX(IJ,KL)*IBIT2 + IJ + KL
+            IBIN4(1,INT) = MAX(IJ,KL)*IBIT2 + IJ + KL
          END DO
       ELSE
          DO INT = 1, INTS
@@ -2170,7 +2186,7 @@ C
 #include "eridst.h"
 C
 #include "ibtfun.h"
-      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISRT',-1)
+      IF (IPRINT .GT. 6) CALL HEADER('Subroutine ERISOR',-1)
 C
       IF(.NOT.COMPRS)CALL QUIT('ERITRX not implemented for .NOT.COMPRS')
       IBIT1 = 2**NBITS - 1
@@ -2189,7 +2205,7 @@ C
                   IDSTR = INDXDS(IBTAND(IBTSHR(LABEL,3*NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN  (INT)   = SOINT
+                     BIN  (  INT) = SOINT
                      IBIN4(1,INT) = LABEL
                   END IF  
                END DO   
@@ -2201,7 +2217,7 @@ C
                   IDSTR  = INDXDS(IBTAND(IBTSHR(LABEL1,NBITS),IBIT1))
                   IF (IDSTR.EQ.IDIST.AND.ABS(SOINT).GT.THRSH) THEN
                      INT = INT + 1
-                     BIN  (INT)   = SOINT
+                     BIN  (  INT) = SOINT
                      IBIN4(1,INT) = LABEL1
                      IBIN4(2,INT) = LABEL2
                   END IF
@@ -2215,3 +2231,4 @@ C
 C
       RETURN
       END
+! -- end of eri/eri2out.F --

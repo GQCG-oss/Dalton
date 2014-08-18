@@ -158,11 +158,14 @@ contains
     real(realk),dimension(natoms,natoms),intent(inout) :: FragEnergiesOcc
     logical :: esti
     ! Fragment energies
-    real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
+    !real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
+    real(realk),pointer :: FragEnergies(:,:,:) !(natoms,natoms,ndecenergies)
     type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
-    real(realk) :: energies(ndecenergies)
-    real(realk) :: Interactionenergies(ndecenergies)
+    !real(realk) :: energies(ndecenergies)
+    !real(realk) :: Interactionenergies(ndecenergies)
+    real(realk),pointer :: energies(:)!(ndecenergies)
+    real(realk),pointer :: Interactionenergies(:)!(ndecenergies)
     real(realk) :: InteractionEcorr
     real(realk) :: InteractionEerr
     logical :: dens_save ! Internal control of MP2 density keyword
@@ -203,6 +206,7 @@ contains
     do i=1,natoms
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
+    call mem_alloc(FragEnergies,natoms,natoms,ndecenergies)
     FragEnergies=0E0_realk
 
     ! Find out which atoms have one or more orbitals assigned
@@ -484,6 +488,7 @@ contains
     end if
 #endif
 
+    call mem_alloc(energies,ndecenergies)
     IF(DECinfo%InteractionEnergy)THEN
        ! Interaction correlation energy 
        do j=1,ndecenergies
@@ -496,6 +501,7 @@ contains
           call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
        end do
        if(DECinfo%PrintInteractionEnergy)then
+         call mem_alloc(Interactionenergies,ndecenergies)
           do j=1,ndecenergies
              call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
                   & Interactionenergies(j),mymolecule%SubSystemIndex)
@@ -506,6 +512,7 @@ contains
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
+     call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
     InteractionEcorr = 0.0E0_realk
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
@@ -554,12 +561,14 @@ contains
 
     ! Estimate energy error
     call get_estimated_energy_error(natoms,energies,Eerr)
+    call mem_dealloc(energies)
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
     IF(DECinfo%PrintInteractionEnergy)THEN
        call get_estimated_energy_error(natoms,Interactionenergies,InteractionEerr)
        call print_Interaction_energy(InteractionEcorr,InteractionEerr)   
+       call mem_dealloc(Interactionenergies)
     ENDIF
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -651,7 +660,7 @@ subroutine print_dec_info()
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
         if (DECinfo%orb_based_fragopt) then 
-           write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom        = ',&
+           write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom     = ',&
              & DECinfo%estimateInitAtom
         else
            write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&

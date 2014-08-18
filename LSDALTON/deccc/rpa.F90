@@ -866,7 +866,7 @@ contains
     type(array2), intent(inout) :: pfock,qfock
     !type(array) :: foo,fvv
     integer, intent(in) :: nocc,nvirt
-    real(realk),pointer :: foo(:,:),fvv(:,:)
+    !real(realk),pointer :: foo(:,:),fvv(:,:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
     !type(array4) :: tmp
     real(realk),pointer :: w2(:)!,foo(:,:),fvv(:,:)
@@ -891,10 +891,10 @@ contains
     !fvv = array_minit([nvirt,nvirt],2,atype='TDAR',local=.false.)
     !call array_convert(pfock%val,foo)
     !call array_convert(qfock%val,fvv)
-    call mem_alloc(foo,nocc,nocc)
-    call mem_alloc(fvv,nvirt,nvirt)
-    foo(:,:)=pfock%val(:,:)
-    fvv(:,:)=qfock%val(:,:)
+    !call mem_alloc(foo,nocc,nocc)
+    !call mem_alloc(fvv,nvirt,nvirt)
+    !foo(:,:)=pfock%val(:,:)
+    !fvv(:,:)=qfock%val(:,:)
 
 
     call cpu_time(starttime)

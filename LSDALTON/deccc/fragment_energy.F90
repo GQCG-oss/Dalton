@@ -310,26 +310,29 @@ contains
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices.
-       if(DECinfo%first_order) then  ! calculate also MP2 density integrals
+       ! calculate also MP2 density integrals
+#ifdef MOD_UNRELEASED
+       if(DECinfo%first_order) then  
           call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
        else
+#endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
+#ifdef MOD_UNRELEASED
        endif
-
+#endif
 
        ! Extract EOS indices for integrals
        ! *********************************
        call array_extract_eos_indices(VOVO,MyFragment,Arr_occEOS=VOVOocc,Arr_virtEOS=VOVOvirt)
        call array_free(VOVO)
 
+#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
-          print *,"DIMA: We should extract the necessary multipliers here, and&
-          & actually change to type(array) and do everything in parallel"
+!          call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
           call array_free(m2)
           call array_free(m1)
-
        endif
-
+#endif
 
        ! Calculate combined single+doubles amplitudes
        ! ********************************************
@@ -432,13 +435,16 @@ contains
     ! First order properties
     ! **********************
     if(DECinfo%first_order) then
+#ifdef MOD_UNRELEASED
        if(DECinfo%ccmodel == MODEL_CCSD)then
-          print *,"DIMA, time to work!!!"
-          stop 0
+       !first order properties
        endif
-       call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-       call array_free(VOOO)
-       call array_free(VOVV)
+#endif
+       if(DECinfo%ccmodel == MODEL_MP2)then
+          call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
+          call array_free(VOOO)
+          call array_free(VOVV)
+       end if
     end if
 
     if(MyFragment%ccmodel /= MODEL_MP2)then
@@ -954,24 +960,28 @@ contains
        ! Solve CC equation to calculate amplitudes and integrals 
        ! *******************************************************
        ! Here all output indices in t1,t2, and VOVO are AOS indices. 
+#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then 
           call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
        else
+#endif
           call fragment_ccsolver(PairFragment,t1,t2,VOVO)
+#ifdef MOD_UNRELEASED
        endif
-
+#endif
 
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
        call array_free(VOVO)
 
+#ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
-          print *,"DIMA: same for pair fragments"
+          !construct RHS for pairs
           call array_free(m2)
           call array_free(m1)
        endif
-
+#endif
 
        ! Calculate combined single+doubles amplitudes
        ! ********************************************
@@ -4890,34 +4900,32 @@ contains
       call mem_alloc(red_list_occ,no)
       call mem_alloc(red_list_vir,nv)
 
-      ! Get information on how the reduction should be performed:
-      call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
-         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
-
       ! Overwrite ccmodel for myatom with the reduction required ccmodel
       MyMolecule%ccmodel(MyAtom,Myatom) = DECinfo%fragopt_red_model
+      AtomicFragment%ccmodel = DECinfo%fragopt_red_model
 
       ! if expansion and reduction ccmodels are different, we need to calculate
       ! the energy of the expanded fragment using the new model:
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
-         write(DECinfo%output,'(2a)') 'FOP Calculated ref atomic fragment energy for relevant CC model: ', &
+         write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
            & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
          call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
       end if
+
+      ! Get information on how the reduction should be performed:
+      call define_frag_reduction(no,nv,natoms,MyAtom,MyMolecule,AtomicFragment, &
+         & red_list_occ,red_list_vir,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
 
       ! Perform reduction:
       call fragment_reduction_procedure(AtomicFragment,no,nv,red_list_occ, &
             & red_list_vir,Occ_AOS,Vir_AOS,MyAtom,MyMolecule,OccOrbitals, &
             & VirOrbitals,mylsitem,dE_red_occ,dE_red_vir,nred_occ,nred_vir)
 
-
       !==================================================================================!
       !                              Finalize subroutine                                 !
       !==================================================================================!
 
-      ! Define Atomic fragment model to be the model used in the reduction part:
-      AtomicFragment%ccmodel = DECinfo%fragopt_red_model
 
       ! Deallocation:
       call mem_dealloc(red_list_occ)

@@ -494,6 +494,7 @@ C
       DO I = 1, NDMT
          USEERI = USEERI .AND. ((IFCTYP(I).EQ.13).OR.(IFCTYP(I).EQ.3))
       END DO
+      USEERI = USEERI .AND. .NOT.PARCAL
       IF (RUNERI .AND. .NOT.USEERI) WRITE(LUPRI,'(/A/A)')
      &   'INFO HERFCK: Using Hermit instead of ERI for 2-el. ints.',
      &   'because requested calculation is not implemented in ERI.'
