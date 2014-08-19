@@ -47,6 +47,7 @@ H_b  -1.45235 0.899623 0.0
 cat > energy_symm.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
+.RUNERI
 **WAVE FUNCTIONS
 .HF
 .MP2

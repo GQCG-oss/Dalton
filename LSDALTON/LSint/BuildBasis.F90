@@ -1185,7 +1185,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
   INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers
-  CHARACTER(len=200)    :: STRING
+  CHARACTER(len=280)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
   CHARACTER(len=1)      :: SPDFGH(10)=(/'S','P','D','F','G','H','I','J','K','L'/) 
@@ -1196,9 +1196,12 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   J = 0
   DO WHILE( J .LT. nprim) 
      ! Reading the primitive and contracted coeffecients
-     READ(LUBAS, '(A200)', IOSTAT = IOS) STRING
+     READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
      IF(ios /= 0)THEN
-        WRITE (LUPRI,'(2A)') ' Error in basisset file'
+        WRITE (LUPRI,'(A)') ' Error in basisset file'
+        WRITE(lupri,'(A)')'This could mean that the line containing exponents'
+        WRITE(lupri,'(A)')'and contraction coefficients fill more than 280 characters'
+        WRITE(lupri,'(A)')'Which means you need to manually split the line'
         CALL LSQUIT('Error in basisset file',lupri)
      ELSE
         READ (STRING, '(A1)') SIGN
@@ -1275,7 +1278,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !Getting the format for the read-stat right.
                     !Making the usual safety-precautions before we read the 
                     !contraction-coeffecients.
-                    READ(LUBAS, '(A200)', IOSTAT = IOS) STRING
+                    READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
                     IF(ios /= 0)THEN
                        WRITE (LUPRI,'(2A)') ' Error in basisset file'
                        CALL LSQUIT('Error in basisset file',lupri)
@@ -1389,7 +1392,7 @@ END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
 subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   implicit none
-  CHARACTER(len=200)    :: STRING
+  CHARACTER(len=280)    :: STRING
   integer :: nNUMBERS
   !
   logical :: INSIDENUMBER,SCIENTIFIC

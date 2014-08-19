@@ -22,12 +22,12 @@ use AGC_CPU_OBS_TRMODCtoASeg
 use AGC_CPU_OBS_TRMODDtoASeg
 use AGC_CPU_OBS_TRMODCtoBSeg
 use AGC_CPU_OBS_TRMODDtoBSeg
-use AGC_OBS_HorizontalRecurrenceLHSModAtoB
-use AGC_OBS_HorizontalRecurrenceLHSModBtoA
-use AGC_OBS_HorizontalRecurrenceRHSModCtoD
-use AGC_OBS_HorizontalRecurrenceRHSModDtoC
-use AGC_OBS_Sphcontract1Mod
-use AGC_OBS_Sphcontract2Mod
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModAtoB
+use AGC_CPU_OBS_HorizontalRecurrenceLHSModBtoA
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModCtoD
+use AGC_CPU_OBS_HorizontalRecurrenceRHSModDtoC
+use AGC_CPU_OBS_Sphcontract1Mod
+use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
 public :: IchorCoulombIntegral_CPU_OBS_Seg,IchorCoulombIntegral_CPU_OBS_general_sizeSeg  
@@ -44,8 +44,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-       & BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
@@ -79,10 +78,6 @@ CONTAINS
     integer,intent(in) :: TMParray1maxsize,TMParray2maxsize
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
-    integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
-    real(realk) :: BasisCont1(BasisCont1maxsize) 
-    real(realk) :: BasisCont2(BasisCont2maxsize) 
-    real(realk) :: BasisCont3(BasisCont3maxsize) 
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
 !   Local variables 
     integer :: AngmomPQ,AngmomP,AngmomQ,I,J,nContQP,la,lb,lc,ld,nsize,angmomid
@@ -115,6 +110,7 @@ CONTAINS
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
+        LOCALINTS = TMParray2
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
@@ -4000,14 +3996,13 @@ CONTAINS
   end subroutine IchorCoulombIntegral_CPU_OBS_Seg
   
   subroutine IchorCoulombIntegral_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
-         & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,&
-         & AngmomA,AngmomB,AngmomC,AngmomD,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
+         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
-    integer,intent(inout) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
     integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
+    integer,intent(in) :: nContA,nContB,nContC,nContD
     integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     ! local variables
     integer :: AngmomID
@@ -4015,11 +4010,9 @@ CONTAINS
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
     TMParray2maxSize = 1
     TMParray1maxSize = 1
-    BasisCont1maxsize = 1
-    BasisCont2maxsize = 1
-    BasisCont3maxsize = 1
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
+    TMParray2maxSize = MAX(TMParray2maxSize,1)
     CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
        TMParray2maxSize = MAX(TMParray2maxSize,4)
     CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi

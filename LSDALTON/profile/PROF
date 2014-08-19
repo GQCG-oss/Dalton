@@ -12,7 +12,7 @@ if [ -x '/usr/bin/time' ]; then
 else
  TIMING_OF=" "
 fi
-
+export BASDIR=/home/tkjaer/DaltonDevelopment2014/DebugMaster/basis
 #########################################################################
 # define all the different prof suites
 #########################################################################
@@ -482,8 +482,8 @@ do
       if [ `$GREP "CPU Time used in OMPPROF" $logfile | wc -l` = 1 ]; then
           CPU_usage=`$GREP "CPU Time used in OMPPROF" $logfile | sed s/">>>  CPU Time used in OMPPROF * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
       else
-	  if [ `$GREP "CPU Time used in LSDALTON  " $logfile | wc -l` = 1 ]; then
-	      CPU_usage=`$GREP "CPU Time used in LSDALTON  " $logfile | sed s/">>>  CPU Time used in LSDALTON * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
+	  if [ `$GREP "CPU Time used in LSDALTON " $logfile | wc -l` = 1 ]; then
+	      CPU_usage=`$GREP "CPU Time used in LSDALTON " $logfile | sed s/">>>  CPU Time used in LSDALTON * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
 	  else
 	      CPU_usage="N/A"
 	  fi
@@ -491,8 +491,8 @@ do
       if [ `$GREP "wall Time used in OMPPROF" $logfile | wc -l` = 1 ]; then
           WALL_usage=`$GREP "wall Time used in OMPPROF" $logfile | sed s/">>> wall Time used in OMPPROF * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
       else
-	  if [ `$GREP "wall Time used in LSDALTON  " $logfile | wc -l` = 1 ]; then
-	      WALL_usage=`$GREP "wall Time used in LSDALTON  " $logfile | sed s/">>> wall Time used in LSDALTON * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
+	  if [ `$GREP "wall Time used in LSDALTON " $logfile | wc -l` = 1 ]; then
+	      WALL_usage=`$GREP "wall Time used in LSDALTON " $logfile | sed s/">>> wall Time used in LSDALTON * is"/""/ | awk '{if ($2 == "second" ||$2 == "seconds") print $1; else if ($2 == "minute" || $2 == "minutes") print $1*60+$3; else if ($2 == "hour" || $2 == "hours") print $1*3600+$3*60+$5}'`
 	  else
 	      WALL_usage="N/A"
 	  fi

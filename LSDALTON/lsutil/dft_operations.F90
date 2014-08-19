@@ -162,19 +162,16 @@ IF (associated(DFTdata%FKSM))THEN
    nullify(DFTdata%FKSM)
 endif
 
-! BROADCAST DFTdata%FKSMS
 IF (associated(DFTdata%FKSMS))THEN
    call mem_dft_dealloc(DFTDATA%FKSMS)
    nullify(DFTdata%FKSMS)
 endif
 
-! BROADCAST DFTdata%orb2atom
 IF(associated(DFTdata%orb2atom))THEN
    call mem_dft_dealloc(DFTDATA%orb2atom)
    nullify(DFTDATA%orb2atom)   
 ENDIF
 
-! BROADCAST DFTdata%grad
 IF (associated(DFTdata%grad))THEN
    call mem_dft_dealloc(DFTDATA%grad)
    nullify(DFTDATA%grad)   
@@ -315,24 +312,28 @@ if(associated(DFTdata%Energy))then
 else
    nullify(newDFTdata%energy)
 endif
-if(associated(DFTdata%BMAT))then
-   call mem_dft_alloc(newDFTDATA%BMAT,nbast,nbast,nbmat)
-   CALL DCOPY(nbast*nbast*nbmat,DFTDATA%BMAT,1,newDFTDATA%BMAT,1)
-else
+
+!THE BMAT, FKSM and FKSMS are NOT copied because this routine
+!is used to distribute data to a private variable and these should be SHARED 
+
+!if(associated(DFTdata%BMAT))then
+!   call mem_dft_alloc(newDFTDATA%BMAT,nbast,nbast,nbmat)
+!   CALL DCOPY(nbast*nbast*nbmat,DFTDATA%BMAT,1,newDFTDATA%BMAT,1)
+!else
    nullify(newDFTdata%BMAT)
-endif
-if(associated(DFTdata%FKSM))then
-   call mem_dft_alloc(newDFTDATA%FKSM,nbast,nbast,nfmat)
-   CALL LS_DZERO(newDFTDATA%FKSM,nbast*nbast*nfmat)
-else
+!endif
+!if(associated(DFTdata%FKSM))then
+!   call mem_dft_alloc(newDFTDATA%FKSM,nbast,nbast,nfmat)
+!   CALL LS_DZERO(newDFTDATA%FKSM,nbast*nbast*nfmat)
+!else
    nullify(newDFTdata%FKSM)
-endif
-if(associated(DFTdata%FKSMS))then
-   call mem_dft_alloc(newDFTDATA%FKSMS,nbast,nbast,nfmat)
-   CALL LS_DZERO(newDFTDATA%FKSMS,nbast*nbast*nfmat)
-else
+!endif
+!if(associated(DFTdata%FKSMS))then
+!   call mem_dft_alloc(newDFTDATA%FKSMS,nbast,nbast,nfmat)
+!   CALL LS_DZERO(newDFTDATA%FKSMS,nbast*nbast*nfmat)
+!else
    nullify(newDFTdata%FKSMS)
-endif
+!endif
 newDFTdata%dosympart = DFTdata%dosympart
 newDFTdata%natoms = natoms
 

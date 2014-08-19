@@ -25,8 +25,11 @@ MODULE IchorErimodule
   use IchorParametersModule
   use IchorSaveGabModule
 
-public:: IchorEri
-private
+  public:: IchorEri
+  private
+
+logical,parameter :: UseCPU = .TRUE.
+
 CONTAINS
 subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
@@ -200,7 +203,6 @@ integer,allocatable :: startOrbitalA(:),startOrbitalB(:)
 integer,allocatable :: startOrbitalC(:),startOrbitalD(:)
 !Tmporary array used in the innermost routines 
 integer :: TMParray1maxsize,TMParray2maxsize
-integer :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
 !real(realk),allocatable :: TmpArray1(:)
 !real(realk),allocatable :: TmpArray2(:)
 !Batch info
@@ -226,8 +228,25 @@ integer :: MaxTotalAngmom,IAngmomTypes
 real(realk) :: ExtentOfTypeA(ntypesA),ExtentOfTypeB(ntypesB),extentA,extentB,extentC,extentD
 real(realk) :: ExtentOfTypeC(ntypesC),ExtentOfTypeD(ntypesD)
 real(realk) :: sumExtent2AB,sumExtent2CD,Tstart,Tend
-logical :: ODscreen,QQRscreen
+logical :: ODscreen,QQRscreen,dolink
 character(len=16)  :: TYPESTRING
+!Link specific stuff
+real(realk) :: MaxGabLHS,MaxGabRHS !MaximumAllover
+real(realk) :: MaxAtomGabelmLHS,MaxAtomGabelmRHS !MaximumAllover
+real(realk),allocatable :: AtomGCD(:,:),MaxGCDvec(:),AtomGAB(:,:),MaxGABvec(:)
+real(realk),allocatable :: ReducedDmatBD(:,:),ReducedDmatBC(:,:)
+real(realk),allocatable :: DmatBD(:,:,:),DmatAD(:,:,:),DmatBC(:,:,:),DmatAC(:,:,:)
+real(realk),allocatable :: KmatBD(:,:,:),KmatAD(:,:,:),KmatBC(:,:,:),KmatAC(:,:,:)
+integer,allocatable :: nKetList(:),KetList(:,:),nBraList(:),BraList(:,:)
+integer,allocatable :: nBraketList(:),BraketList(:,:)
+
+! FIXME 
+! LinK requires GAB - if not CSscreen fix
+doLink = IchorJobSpec.EQ.IchorJobLink
+IF(doLink)Then
+   IF(OutputDim5.NE.IchorInputDim3)call ichorQuit('Link Dim Mismatch5',-1)
+ENDIF
+
 ! POSSIBLE IMPROVEMENTS / TO DO / TODO LIST:
 ! FFFF
 ! FUSE LOOPS IN TRANSFER
@@ -291,11 +310,12 @@ IF(CSScreen)THEN
       call RetrieveGabFromIchorSaveGabModule(nBatchA,nBatchB,IchorGabID1,BATCHGAB)
    ENDIF
 
-   allocate(MaxGabForTypeAB(nTypesB,nTypesA))
+   allocate(MaxGabForTypeAB(nTypesA,nTypesB))
    call mem_ichor_alloc(MaxGabForTypeAB)
    call ObtainMaxGabForType(MaxGabForTypeAB,nTypesA,nTypesB,nAtomsOfTypeA,&
         & nAtomsOfTypeB,BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,&
         & nBatchA,nBatchB)
+   MaxGabLHS = MAXVAL(MaxGabForTypeAB)
 
    allocate(BatchIndexOfTypeC(nTypesC))
    call mem_ichor_alloc(BatchIndexOfTypeC)
@@ -306,6 +326,7 @@ IF(CSScreen)THEN
    IF(IchorGabID1.EQ.IchorGabID2)THEN
       BATCHGCD => BATCHGAB
       MaxGabForTypeCD = MaxGabForTypeAB
+      MaxGabRHS = MaxGabLHS
       BatchIndexOfTypeC = BatchIndexOfTypeA
       BatchIndexOfTypeD = BatchIndexOfTypeB
       nBatchC = nBatchA
@@ -333,6 +354,7 @@ IF(CSScreen)THEN
       call ObtainMaxGabForType(MaxGabForTypeCD,nTypesC,nTypesD,nAtomsOfTypeC,&
            & nAtomsOfTypeD,BatchIndexOfTypeC,BatchIndexOfTypeD,BATCHGCD,&
            & nBatchC,nBatchD)
+      MaxGabRHS = MAXVAL(MaxGabForTypeCD)
    ENDIF
 ELSE
    nBatchA = 1
@@ -354,6 +376,9 @@ ENDIF
 
 call determinePermuteSym(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 IF(INTPRINT.GT.50)write(lupri,*)'SameLHSaos,SameRHSaos,SameODs',SameLHSaos,SameRHSaos,SameODs
+IF(DoLink)THEN
+   IF((SameLHSaos.OR.SameRHSaos).OR.SameODs)call ichorQuit('Ichor Link Symmetry not enabled yet',-1)
+ENDIF
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25
 
@@ -453,8 +478,28 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    ELSE
       call build_EmptynoScreen1(nAtomsC,nAtomsD,noScreenCD)
    ENDIF
-   
+   !LinK: 
+   IF(DoLink)THEN !Make Atomic Screening matric AtomGCD
+      !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
+      allocate(AtomGCD(nAtomsC,nAtomsD))
+      call mem_ichor_alloc(AtomGCD)
+      allocate(MaxGCDVec(nAtomsD))
+      call mem_ichor_alloc(MaxGCDVec)
+      call Build_AtomGAB(nAtomsC,nAtomsD,nBatchC,nBatchD,ntypesC,ntypesD,&
+           & ItypeC,ItypeD,BatchIndexOfTypeC,BatchIndexOfTypeD,BATCHGCD,&
+           & AtomGCD,MaxGCDVec,MaxAtomGabelmRHS)
+      !Make from Screening CD (GCD) a list of contributing C atoms for given D atom)
+      !no restriction on atom C for given atom D (unlike A,B)
+      allocate(nKetList(nAtomsD))
+      allocate(KetList(nAtomsC,nAtomsD))
+      call mem_ichor_alloc(nKetList)
+      call mem_ichor_alloc(KetList)
+      call ConstructBraList(nKetList,KetList,nAtomsC,nAtomsD,THRESHOLD_CS,MaxGabLHS,.FALSE.,&
+           & atomGCD)
+   ENDIF
+
    ! DONE TYPE Q CALC ===========================
+
    DO ItypeBnon=1,nTypesB
     ! TYPE B CALC ================================
     ItypeB = OrderdListB(ItypeBnon)
@@ -537,6 +582,18 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       allocate(inversexpP(nPrimP))
       call mem_ichor_alloc(inversexpP)
       call build_expQ_inverseexpQ(nPrimA,nPrimB,expA,expB,expP,inversexpP)
+
+      !LinK: 
+      IF(DoLink)THEN !Make Atomic Screening matric AtomGAB
+         !maybe this should be used in general - smaller than BATCHGCD ad more straightforward 
+         allocate(AtomGAB(nAtomsA,nAtomsB))
+         call mem_ichor_alloc(AtomGAB)
+         allocate(MaxGABVec(nAtomsB))
+         call mem_ichor_alloc(MaxGABVec)
+         call Build_AtomGAB(nAtomsA,nAtomsB,nBatchA,nBatchB,ntypesA,ntypesB,&
+              & ItypeA,ItypeB,BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,&
+              & AtomGAB,MaxGABVec,MaxAtomGabelmLHS)
+      ENDIF
       ! DONE TYPE P CALC ===========================
       
       ! TYPE PQ CALC ================================
@@ -565,13 +622,22 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       ! DONE TYPE PQ CALC ===========================
       
       NOTDoSSSS = .NOT.(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))
+      IF(DoLink) NOTDoSSSS=.TRUE.
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
-         call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
-              & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-              & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
-              & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
-              & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         IF(UseCPU)THEN
+            call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
+                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nContA,nContB,nContC,nContD,&
+                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         ELSE !use GPU code
+            call IchorCoulombIntegral_GPU_OBS_general_size(TMParray1maxsize,&
+                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nContA,nContB,nContC,nContD,&
+                 & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
+                 & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
+         ENDIF
          nLocalInt = nOrbA*nOrbB*nOrbC*nOrbD
       ENDIF
       allocate(QpreExpFac(nPrimQ))
@@ -620,7 +686,63 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       !R000(alpha*R_pq^2) > sqrt(pi/(4*x)) ;x=alpha*R_pq^2
       !look at possible things for SSSP type things.... 
       
-      !LinK: Form active Dmat 1,2 or 4 matrices (D_BD(nDimB,nDimD),D_AD(nDimA,nDimD),D_BC(nDimB,nDimC),D_AC(nDimA,nDimC))
+      !LinK: 
+      IF(DoLink)THEN !Form active Dmat: DmatBD,DmatAD,DmatBC,DmatAC
+         allocate(DmatBD(nDimB,nDimD,IchorInputDim3))
+         allocate(DmatAD(nDimA,nDimD,IchorInputDim3))
+         allocate(DmatBC(nDimB,nDimC,IchorInputDim3))
+         allocate(DmatAC(nDimA,nDimC,IchorInputDim3))
+         call mem_ichor_alloc(DmatBD)
+         call mem_ichor_alloc(DmatAD)
+         call mem_ichor_alloc(DmatBC)
+         call mem_ichor_alloc(DmatAC)
+         Call FormActiveDmat(nDimB,nDimD,DmatBD,nAtomsB,nAtomsD,startOrbitalB,startOrbitalD,&
+              & nOrbB,nOrbD,InputStorage,IchorInputDim1,IchorInputDim2,IchorInputDim3)
+!         Call FormActiveDmat(nDimA,nDimD,DmatAD,nAtomsA,nAtomsD,startOrbitalA,startOrbitalD,&
+!              & nOrbA,nOrbD,InputStorage,IchorInputDim1,IchorInputDim2,IchorInputDim3)
+!         Call FormActiveDmat(nDimB,nDimC,DmatBC,nAtomsB,nAtomsC,startOrbitalB,startOrbitalC,&
+!              & nOrbB,nOrbC,InputStorage,IchorInputDim1,IchorInputDim2,IchorInputDim3)
+!         Call FormActiveDmat(nDimA,nDimC,DmatAC,nAtomsA,nAtomsC,startOrbitalA,startOrbitalC,&
+!              & nOrbA,nOrbC,InputStorage,IchorInputDim1,IchorInputDim2,IchorInputDim3)
+         allocate(KmatAC(nDimA,nDimC,IchorInputDim3))
+         allocate(KmatBC(nDimB,nDimC,IchorInputDim3))
+         allocate(KmatAD(nDimA,nDimD,IchorInputDim3))
+         allocate(KmatBD(nDimB,nDimD,IchorInputDim3))
+         call mem_ichor_alloc(KmatAC)
+         call mem_ichor_alloc(KmatBC)
+         call mem_ichor_alloc(KmatAD)
+         call mem_ichor_alloc(KmatBD)
+         call ichorzero(KmatAC,SIZE(KmatAC))
+         call ichorzero(KmatBC,SIZE(KmatBC))
+         call ichorzero(KmatAD,SIZE(KmatAD))
+         call ichorzero(KmatBD,SIZE(KmatBD))
+         allocate(ReducedDmatBD(nAtomsB,nAtomsD))
+         allocate(ReducedDmatBC(nAtomsB,nAtomsC))
+         call mem_ichor_alloc(ReducedDmatBD)
+         call mem_ichor_alloc(ReducedDmatBC)
+         call FormReducedDmat(DmatBD,ReducedDmatBD,nOrbB,nOrbD,nAtomsB,nAtomsD,IchorInputDim3)
+!         call FormReducedDmat(DmatBC,ReducedDmatBC,nOrbB,nOrbC,nAtomsB,nAtomsC,IchorInputDim3)
+
+         !Make from Screening AB (GAB) a list of contributing A atoms for given B atom)
+         !Including permutation/symmetry restrictions on atom A,B
+         allocate(nBraList(nAtomsB))
+         allocate(BraList(nAtomsA,nAtomsB))
+         call mem_ichor_alloc(nBraList)
+         call mem_ichor_alloc(BraList)
+         !note we here use MaxAtomGabelmRHS instead of MaxGabRHS because we are constructing
+         !this BraList for each type of CD - and can use the more accurate MaxAtomGabelmRHS
+         call ConstructBraList(nBraList,BraList,nAtomsA,nAtomsB,THRESHOLD_CS,MaxAtomGabelmRHS,&
+              & TriangularLHSAtomLoop,atomGAB)
+            
+         !Make from Screening info a list of contributing B atoms for given D atom)
+         allocate(nBraketList(nAtomsD))
+         allocate(BraketList(nAtomsB,nAtomsD))
+         call mem_ichor_alloc(nBraketList)
+         call mem_ichor_alloc(BraketList)
+         call ConstructBraketList(nAtomsB,nAtomsD,nBraketList,BraketList,TriangularODAtomLoop,&
+              & ReducedDmatBD,MaxGABVec,MaxGCDVec,THRESHOLD_CS)
+      ENDIF
+
       allocate(PpreExpFacPass(nPrimP,nAtomsA*nAtomsB))
       call mem_ichor_alloc(PpreExpFacPass)
       allocate(PcentPass(3*nPrimP,nAtomsA*nAtomsB))
@@ -638,32 +760,64 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & PcentPass,Pdistance12Pass,PpreExpFacPass,INTPRINT)
          allocate(PpreExpFac(nPrimP))
          call mem_ichor_alloc(PpreExpFac)
-!         allocate(Pcent(3*nPrimP))
-!         call mem_ichor_alloc(Pcent)
-!         WRITE(lupri,*)'CALC TYPE:',ItypeA,ItypeB,ItypeC,ItypeD
-!         WRITE(lupri,*)'CALC  Ang:',AngmomA,AngmomB,AngmomC,AngmomD
-         call IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
-              & iBatchIndexOfTypeA,expA,ContractCoeffA,AngmomA,Acenter,nBatchA,nOrbA,&
-              & nAtomsB,nPrimB,nContB,nOrbCompB,startOrbitalB,&
-              & iBatchIndexOfTypeB,expB,ContractCoeffB,AngmomB,Bcenter,nBatchB,nOrbB,&
-              & nAtomsC,nPrimC,nContC,nOrbCompC,startOrbitalC,&
-              & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
-              & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
-              & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
-              & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
-              & qcent,Ppreexpfac,Qpreexpfac,&
-              & Qiprim1,Qiprim2,&
-              & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
-              & CSscreen,noScreenCD2,noScreenAB,THRESHOLD_CS,&
-              & Qsegmented,Psegmented,TriangularRHSAtomLoop,TRIANGULARLHSATOMLOOP,&
-              & reducedExponents,integralPrefactor,&
-              & PcentPass,Pdistance12Pass,PpreExpFacPass,&
-              & Qdistance12,PQorder,&
-              & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
-              & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-              & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-              & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize)
 
+         IF(DoLink)THEN         
+            !Link type Loop over the atoms of this type 
+            !The integrals are contracted with densities to yield exchange matrices
+            call IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
+                 & expA,ContractCoeffA,AngmomA,Acenter,nOrbA,&
+                 & nAtomsB,nPrimB,nContB,nOrbCompB,&
+                 & expB,ContractCoeffB,AngmomB,Bcenter,nOrbB,&
+                 & nAtomsC,nPrimC,nContC,nOrbCompC,&
+                 & expC,ContractCoeffC,AngmomC,Ccenter,nOrbC,&
+                 & nAtomsD,nPrimD,nContD,nOrbCompD,&
+                 & expD,ContractCoeffD,AngmomD,Dcenter,nOrbD,&
+                 & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
+                 & qcent,Ppreexpfac,Qpreexpfac,&
+                 & Qiprim1,Qiprim2,&
+                 & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
+                 & CSscreen,noScreenCD2,noScreenAB,THRESHOLD_CS,&
+                 & Qsegmented,Psegmented,TriangularRHSAtomLoop,TRIANGULARLHSATOMLOOP,&
+                 & reducedExponents,integralPrefactor,&
+                 & PcentPass,Pdistance12Pass,PpreExpFacPass,&
+                 & Qdistance12,PQorder,Spherical,TMParray1maxsize,nLocalInt,&
+                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
+                 & DmatBD,DmatAD,DmatBC,&
+                 & DmatAC,KmatBD,KmatAD,KmatBC,KmatAC,nDimA,nDimB,nDimC,nDImD,IchorInputDim3,&
+                 & ReducedDmatBD,ReducedDmatBC,AtomGAB,AtomGCD,&
+                 & nKetList,KetList,nBraList,BraList,nBraketList,BraketList,&
+                 & SameRHSaos,SameLHSaos,SameODs)
+
+            Call addActiveKmatToOutput(nDimA,nDimB,nDimC,nDimD,nAtomsA,nAtomsB,nAtomsC,nAtomsD,&
+                 & nOrbA,nOrbB,nOrbC,nOrbD,startOrbitalA,startOrbitalB,startOrbitalC,startOrbitalD,&
+                 & OutputDim1,OutputDim2,OutputDim5,OutputStorage,KmatAC)
+           
+         ELSE
+            !         allocate(Pcent(3*nPrimP))
+            !         call mem_ichor_alloc(Pcent)
+            !         WRITE(lupri,*)'CALC TYPE:',ItypeA,ItypeB,ItypeC,ItypeD
+            !         WRITE(lupri,*)'CALC  Ang:',AngmomA,AngmomB,AngmomC,AngmomD
+            call IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
+                 & iBatchIndexOfTypeA,expA,ContractCoeffA,AngmomA,Acenter,nBatchA,nOrbA,&
+                 & nAtomsB,nPrimB,nContB,nOrbCompB,startOrbitalB,&
+                 & iBatchIndexOfTypeB,expB,ContractCoeffB,AngmomB,Bcenter,nBatchB,nOrbB,&
+                 & nAtomsC,nPrimC,nContC,nOrbCompC,startOrbitalC,&
+                 & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
+                 & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
+                 & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+                 & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
+                 & qcent,Ppreexpfac,Qpreexpfac,&
+                 & Qiprim1,Qiprim2,&
+                 & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
+                 & CSscreen,noScreenCD2,noScreenAB,THRESHOLD_CS,&
+                 & Qsegmented,Psegmented,TriangularRHSAtomLoop,TRIANGULARLHSATOMLOOP,&
+                 & reducedExponents,integralPrefactor,&
+                 & PcentPass,Pdistance12Pass,PpreExpFacPass,&
+                 & Qdistance12,PQorder,&
+                 & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
+                 & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
+                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
+         ENDIF
 !         call mem_ichor_dealloc(pcent)
 !         deallocate(pcent)
          call mem_ichor_dealloc(PpreExpFac)
@@ -713,6 +867,36 @@ DO IAngmomTypes = 0,MaxTotalAngmom
               & SameLHSaos,SameRHSaos,lupri)
       ENDIF
 
+      IF(DoLink)THEN         
+         call mem_ichor_dealloc(DmatBD)
+         call mem_ichor_dealloc(DmatAD)
+         call mem_ichor_dealloc(DmatBC)
+         call mem_ichor_dealloc(DmatAC)
+         call mem_ichor_dealloc(KmatBD)
+         call mem_ichor_dealloc(KmatAD)
+         call mem_ichor_dealloc(KmatBC)
+         call mem_ichor_dealloc(KmatAC)
+         call mem_ichor_dealloc(ReducedDmatBD)
+         call mem_ichor_dealloc(ReducedDmatBC)
+         call mem_ichor_dealloc(nBraList)
+         call mem_ichor_dealloc(nBraketList)
+         call mem_ichor_dealloc(BraketList)
+         call mem_ichor_dealloc(BraList)
+         deallocate(DmatBD)
+         deallocate(DmatAD)
+         deallocate(DmatBC)
+         deallocate(DmatAC)
+         deallocate(KmatBD)
+         deallocate(KmatAD)
+         deallocate(KmatBC)
+         deallocate(KmatAC)
+         deallocate(ReducedDmatBD)
+         deallocate(ReducedDmatBC)
+         deallocate(nBraList)
+         deallocate(BraList)
+         deallocate(nBraketList)
+         deallocate(BraketList)
+      ENDIF
       call mem_ichor_dealloc(reducedExponents)
       deallocate(reducedExponents)
       call mem_ichor_dealloc(integralPrefactor)
@@ -731,7 +915,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       deallocate(Acenter)
       call mem_ichor_dealloc(StartOrbitalA)
       deallocate(StartOrbitalA)
-     ENDIF
+
+      IF(DoLink)THEN
+         call mem_ichor_dealloc(AtomGAB)
+         deallocate(AtomGAB)
+         call mem_ichor_dealloc(MaxGABvec)
+         deallocate(MaxGABvec)
+      ENDIF
+     ENDIF !correct angmom type
     ENDDO !typeA
     call mem_ichor_dealloc(expB)
     deallocate(expB)
@@ -747,6 +938,16 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       Call PermuteRHStypesSub(OutputDim1*OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
            & nAtomsC,nAtomsD,startOrbitalC,startOrbitalD,nOrbC,nOrbD,&
            & TriangularRHSAtomLoop,lupri)
+   ENDIF
+   IF(DoLink)THEN
+      call mem_ichor_dealloc(AtomGCD)
+      deallocate(AtomGCD)
+      call mem_ichor_dealloc(MaxGCDvec)
+      deallocate(MaxGCDvec)
+      call mem_ichor_dealloc(nKetList)
+      deallocate(nKetList)
+      call mem_ichor_dealloc(KetList)
+      deallocate(KetList)
    ENDIF
    call mem_ichor_dealloc(noScreenCD)
    deallocate(noScreenCD)
@@ -821,6 +1022,205 @@ ENDIF
 
 end subroutine IchorEri
 
+!Make from Screening AB (GAB a list of A atoms for given B atom)
+!This list is restricted by symmetry to be AtomB =< AtomA
+subroutine ConstructBraList(nBraList,BraList,nAtomsA,nAtomsB,THRESHOLD_CS,maxGABRHS,&
+     & TriangularLHSAtomLoop,atomGAB)
+  implicit none
+  integer,intent(in) :: nAtomsA,nAtomsB
+  integer,intent(inout) :: nBraList(nAtomsB),BraList(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: THRESHOLD_CS,maxGABRHS,atomGAB(nAtomsA,nAtomsB)
+  logical,intent(in) :: TriangularLHSAtomLoop
+  !
+  integer :: IatomB,IatomA,I,IatomAstart
+  real(realk) :: CRITERIA,Sorting(nAtomsA)
+  CRITERIA = THRESHOLD_CS/maxGABRHS
+  DO IatomB = 1,nAtomsB
+     I = 0 
+     IatomAstart = 1
+     IF(TriangularLHSAtomLoop) IatomAstart = IatomB
+     DO IatomA = IatomAstart,nAtomsA
+        IF(atomGAB(IatomA,IatomB).GT.CRITERIA)THEN
+           I = I + 1
+           BraList(I,IatomB) = IatomA
+           Sorting(I) = atomGAB(IatomA,IatomB)
+        ENDIF
+     ENDDO
+     nBraList(IatomB) = I
+     call IchorDecreasingSortingWindex(Sorting(1:I),nBraList(IatomB),BraList(1:I,IatomB))
+  ENDDO
+end subroutine ConstructBraList
+
+!Make from Screening info a list of contributing B atoms for given D atom)
+subroutine ConstructBraketList(nAtomsB,nAtomsD,nBraketList,BraketList,TriangularODAtomLoop,&
+     & ReducedDmatBD,MaxGABVec,MaxGCDVec,THRESHOLD_CS)
+  implicit none
+  logical,intent(in) :: TriangularODAtomLoop
+  integer,intent(in) :: nAtomsB,nAtomsD
+  integer,intent(inout) :: nBraketList(nAtomsD),BraketList(nAtomsB,nAtomsD)
+  real(realk),intent(in) :: ReducedDmatBD(nAtomsB,nAtomsD),MaxGABVec(nAtomsB)
+  real(realk),intent(in) :: MaxGCDVec(nAtomsD),THRESHOLD_CS
+  !
+  integer :: iAtomD,startBatom,I,iAtomB
+  real(realk) :: SORTING(nAtomsB)
+  Do iAtomD=1,nAtomsD
+     IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
+        startBatom = iAtomD
+     ELSE
+        startBatom = 1
+     ENDIF
+     I=0 
+     Do iAtomB = startBatom,nAtomsB
+        IF(ReducedDmatBD(iAtomB,iAtomD)*MaxGABVec(iAtomB)*MaxGCDVec(iAtomD).GT.THRESHOLD_CS)THEN
+           I=I+1
+           BraketList(I,iAtomD) = iAtomB
+           SORTING(I) = ReducedDmatBD(iAtomB,iAtomD)*MaxGCDVec(iAtomD)
+        ENDIF
+     Enddo
+     nBraketList(iAtomD) = I
+     call IchorDecreasingSortingWindex(Sorting(1:I),I,BraketList(1:I,IatomD))
+  Enddo
+end subroutine ConstructBraketList
+
+subroutine FormActiveDmat(nDimB,nDimD,DmatBD,nAtomsB,nAtomsD,&
+     & startOrbitalB,startOrbitalD,nOrbB,nOrbD,Dfull,nd1,nd2,nd3)
+  implicit none
+  integer,intent(in) :: nDimB,nDimD,nAtomsB,nAtomsD,nOrbB,nOrbD,nd1,nd2,nd3
+  integer,intent(in) :: startOrbitalB(nAtomsB),startOrbitalD(nAtomsD)
+  real(realk),intent(in) :: Dfull(nd1,nd2,nd3)
+  real(realk),intent(inout) :: DmatBD(nDimB,nDimD,nd3)
+  !
+  integer :: iD3,IatomD,IatomB,IorbD,IorbB,startLocD,startLocB,startB,startD
+
+  do iD3 = 1,nd3
+   startLocD = 0
+   do IatomD = 1,nAtomsD              
+    startD = startOrbitalD(iAtomD)
+    startLocB = 0
+    do IatomB = 1,nAtomsB
+     startB = startOrbitalB(iAtomB)
+     DO IorbD = 1,nOrbD
+      DO IorbB = 1,nOrbB
+       DmatBD(startLocB + IorbB,startLocD + IorbD,iD3) = Dfull(startB+IorbB,startD+IorbD,iD3)
+      ENDDO
+     ENDDO
+     startLocB = startLocB + nOrbB          
+    enddo
+    startLocD = startLocD + nOrbD          
+   enddo
+  enddo
+end subroutine FormActiveDmat
+
+subroutine addActiveKmatToOutput(nDimA,nDimB,nDimC,nDimD,nAtomsA,nAtomsB,nAtomsC,nAtomsD,&
+     & nOrbA,nOrbB,nOrbC,nOrbD,startOrbitalA,startOrbitalB,startOrbitalC,startOrbitalD,&
+     & OutputDim1,OutputDim2,OutputDim5,OutputStorage,KmatAC)
+  implicit none
+  integer,intent(in) ::  nDimA,nDimB,nDimC,nDimD,nAtomsA,nAtomsB,nAtomsC,nAtomsD
+  integer,intent(in) ::  nOrbA,nOrbB,nOrbC,nOrbD
+  integer,intent(in) ::  startOrbitalA(nAtomsA),startOrbitalB(nAtomsB)
+  integer,intent(in) ::  startOrbitalC(nAtomsC),startOrbitalD(nAtomsD)
+  integer,intent(in) :: OutputDim1,OutputDim2,OutputDim5
+  real(realk) :: OutputStorage(OutputDim1,OutputDim2,OutputDim5)
+  real(realk) :: KmatAC(nDimA,nDimC,OutputDim5)
+  !
+  integer :: idim5,IatomC,IatomA,IorbC,IorbA,startLocC,startLocA,startA,startC
+  
+  do idim5 = 1, OutputDim5
+   startLocC = 0
+   do IatomC = 1,nAtomsC
+    startC = startOrbitalC(iAtomC)                 
+    startLocA = 0
+    do IatomA = 1,nAtomsA
+     startA = startOrbitalA(iAtomA)                 
+     DO IorbC = 1,nOrbC
+      DO IorbA = 1,nOrbA
+       OutputStorage(startA+IorbA,startC+IorbC,idim5) = KmatAC(startLocA+IorbA,startLocC+IorbC,idim5)
+      ENDDO
+     ENDDO
+     startLocA = startLocA + nOrbA
+    enddo
+    startLocC = startLocC + nOrbC
+   enddo
+  enddo
+end subroutine addActiveKmatToOutput
+
+subroutine FormReducedDmat(DmatBD,ReducedDmatBD,nOrbB,nOrbD,nAtomsB,nAtomsD,nDmat)
+  implicit none
+  integer,intent(in) :: nOrbB,nOrbD,nAtomsB,nAtomsD,nDmat
+  real(realk),intent(in) :: DmatBD(nOrbB,nAtomsB,nOrbD,nAtomsD,nDmat)
+  real(realk),intent(inout) :: ReducedDmatBD(nAtomsB,nAtomsD)
+  !
+  integer :: IatomD,IatomB,D,B,idmat
+  real(realk) :: TMP
+  do IatomD=1,nAtomsD
+     do IatomB=1,nAtomsB
+        TMP = 0.0E0_realk
+        do idmat = 1,nDmat
+           do D=1,nOrbD
+              do B=1,nOrbB
+                 TMP = MAX(TMP,ABS(DmatBD(B,IatomB,D,IatomD,idmat)))
+              enddo
+           enddo
+        enddo
+        ReducedDmatBD(IatomB,IatomD) = TMP
+     enddo
+  enddo
+end subroutine FormReducedDmat
+
+subroutine Build_AtomGAB(nAtomsA,nAtomsB,nBatchA,nBatchB,ntypesA,ntypesB,ItypeA,ItypeB,&
+     & BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,AtomGAB,MaxGABvec,MaxAtomGabelmLHS)
+  implicit none
+  integer,intent(in) :: nAtomsA,nAtomsB,ItypeA,ItypeB,ntypesA,ntypesB
+  integer,intent(in) :: nBatchA,nBatchB
+  real(realk),intent(in) :: BATCHGAB(nBatchA,nBatchB)
+  real(realk),intent(inout) :: AtomGAB(nAtomsA,nAtomsB)
+  integer,intent(in) :: BatchIndexOfTypeA(ntypesA),BatchIndexOfTypeB(ntypesB)
+  real(realk),intent(inout) :: maxGABvec(nAtomsB),MaxAtomGabelmLHS
+  !
+  integer :: IatomB,IatomA,iBatchA,iBatchB
+  real(realk) :: TMP
+  iBatchB = BatchIndexOfTypeB(ItypeB)
+  iBatchA = BatchIndexOfTypeA(ItypeA)
+  DO IatomB = 1,nAtomsB
+     DO IatomA = 1,nAtomsA
+        AtomGAB(IatomA,IatomB) = BATCHGAB(iBatchA+IatomA,iBatchB+IatomB)
+     ENDDO
+     maxGABvec(IAtomB) = MAXVAL(AtomGAB(:,IatomB))
+  ENDDO
+  MaxAtomGabelmLHS = MAXVAL(maxGABvec)
+end subroutine Build_AtomGAB
+
+!FIXME replace with improved sorting routine - bubble sort - bucket sort ,..
+!possible put into buckets with 10-0, 0-0.1, 0.1-0.01,..... and sort each bucket using this
+subroutine IchorDecreasingSortingWindex(Sorting,n,TrackIndex)
+  implicit none
+  integer :: n
+  real(realk),intent(inout) :: Sorting(n)
+  integer,intent(inout) :: TrackIndex(n)
+  !
+  real(realk) :: tmp
+  integer :: tmp1,i
+  logical :: swp
+  swp=.true.
+  do while (swp)
+     swp=.false.
+     do i=1,n-1
+        if(Sorting(i) < Sorting(i+1)) then ! reverse order
+           
+           tmp = Sorting(i+1)
+           Sorting(i+1) = Sorting(i)
+           Sorting(i) = tmp
+           
+           tmp1 = TrackIndex(i+1)
+           TrackIndex(i+1) = TrackIndex(i)
+           TrackIndex(i) = tmp1
+           
+           swp=.true.
+        end if
+     end do
+  end do
+end subroutine IchorDecreasingSortingWindex
+
 subroutine build_TYPESTRING(TYPESTRING,AngmomA,AngmomB,AngmomC,AngmomD,&
      & nTypesA,nTypesB,nTypesC,nTypesD,ItypeA,ItypeB,ItypeC,ItypeD)
   implicit none
@@ -882,14 +1282,12 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      & Qdistance12,PQorder,&
      & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-     & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize)
+     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
   implicit none
   logical,intent(in) :: TriangularRHSAtomLoop,TriangularLHSAtomLoop,PermuteLHSTypes
   logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
   logical,intent(in) :: TriangularODAtomLoop
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri
-  integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
   integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
   !D
@@ -906,7 +1304,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   logical,intent(in) :: noScreenAB(nAtomsA,nAtomsB)
   !Q
   integer,intent(in) :: nContQ,nPrimQ
-  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimP)
+  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimQ)
   !P
   integer,intent(in) :: nContP,nPrimP
   real(realk),intent(inout) :: PpreExpFac(nPrimP)
@@ -935,13 +1333,11 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   real(realk) :: DcenterSpec(3),CcenterSpec(3),AcenterSpec(3),BcenterSpec(3),GABELM
   logical :: PermuteRHS
   real(realk),allocatable :: TmpArray1(:),TmpArray2(:)
-  real(realk),allocatable :: BasisCont1(:),BasisCont2(:),BasisCont3(:)
   real(realk),allocatable :: LocalIntPass1(:),LocalIntPass2(:)
   integer,allocatable :: IatomAPass(:),IatomBPass(:)
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
-  integer :: BasisCont1maxsizePass,BasisCont2maxsizePass,BasisCont3maxsizePass
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -969,9 +1365,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   ENDDO
   TMParray1maxsizePass = TMParray1maxsize*MaxPasses
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
-  BasisCont1maxsizePass =  BasisCont1maxsize*MaxPasses
-  BasisCont2maxsizePass =  BasisCont2maxsize*MaxPasses
-  BasisCont3maxsizePass =  BasisCont3maxsize*MaxPasses
 
   ndim = nOrbA*nOrbB*nAtomsA*nAtomsB
   nOrbQ = nOrbC*nOrbD
@@ -979,12 +1372,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   call mem_ichor_alloc(TmpArray1)
   allocate(TmpArray2(TMParray2maxsize*MaxPasses))     
   call mem_ichor_alloc(TmpArray2)
-  allocate(BasisCont1(BasisCont1maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont1)
-  allocate(BasisCont2(BasisCont2maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont2)
-  allocate(BasisCont3(BasisCont3maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont3)
   allocate(IatomAPass(MaxPasses))
   call mem_ichor_alloc(IatomAPass)  
   allocate(IatomBPass(MaxPasses))
@@ -1014,8 +1401,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$OMP        integralPrefactor,AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,&
 !$OMP        Qdistance12,PQorder,LocalIntPass1,LocalIntPass2,nLocalIntPass,&
 !$OMP        Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,Bcenter,nOrbQ,&
-!$OMP        TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-!$OMP        BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,Acenter,&
+!$OMP        TMParray2maxsizePass,Acenter,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
 !$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage)
   DO IatomD = 1,nAtomsD
@@ -1067,63 +1453,61 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-             & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
-             & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
-             & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-             & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
-             & Qiprim1,Qiprim2,expA,expB,expC,expD,&
-             & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-             & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
-             & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
-             & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-             & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-             & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
-!     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=0
-     !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
-     !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
-     !this can be done on the accelerator
-     IF(TriangularLHSAtomLoop)THEN
-        IF(Qsegmented.AND.Psegmented)THEN
-           IF(TotalAngmom.NE.0)THEN
-            call TriDistributeToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
-              & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
-           ELSE !TotalAngmom=0
-              !use LocalIntPass (pure copy) but this should not be called
-              call ichorquit('DistributeToLocalIntPassSeg0000 not needed - use diff path',-1)
-           ENDIF
-        ELSE
-           IF(TotalAngmom.NE.0)THEN
-              call TriDistributeToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
-                   & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
-                   & MaxPasses,IatomAPass,iatomBPass,nPasses)
-           ELSE !TotalAngmom=0
-              call TriDistributeToLocalIntPass0000(LocalIntPass1,&
-                   & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
-                   & IatomAPass,iatomBPass,nPasses)
-           ENDIF
-        ENDIF
+
+     IF(UseCPU)THEN
+      call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+           & TMParray2maxsizePass,IatomAPass,iatomBPass)
+      !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+      !this can be done on the accelerator
+      call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+           & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+           & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+           & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
      ELSE
-        IF(Qsegmented.AND.Psegmented)THEN
-           IF(TotalAngmom.NE.0)THEN
-              call DistributeToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
-                   & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,&
-                   & nPasses)
-           ELSE !TotalAngmom=0
-              !use LocalIntPass (pure copy) but this should not be called
-              call ichorquit('DistributeToLocalIntPassSeg0000 not needed - use diff path',-1)
-           ENDIF
-        ELSE
-           IF(TotalAngmom.NE.0)THEN
-              call DistributeToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
-                   & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
-                   & MaxPasses,IatomAPass,iatomBPass,nPasses)
-           ELSE !TotalAngmom=0
-              call DistributeToLocalIntPass0000(LocalIntPass1,&
-                   & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
-                   & IatomAPass,iatomBPass,nPasses)
-           ENDIF
-        ENDIF
+
+
+!$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+!$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+!$ACC             ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+!$ACC             pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+!$ACC             Qiprim1,Qiprim2,expA,expB,expC,expD,&
+!$ACC             Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+!$ACC             AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+!$ACC             nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+!$ACC             nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+!$ACC             TMParray2maxsizePass,IatomAPass,iatomBPass) &
+!$ACC COPYOUT(LocalIntPass1)
+      call IchorCoulombIntegral_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+           & TMParray2maxsizePass,IatomAPass,iatomBPass)
+
+!$ACC END DATA
+
+      !output private LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+      !this can be done on the accelerator
+      call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+           & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+           & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+           & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
      ENDIF
 !================================================================================
      IF(PermuteLHSTypes)THEN
@@ -1233,12 +1617,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   deallocate(TmpArray1)
   call mem_ichor_dealloc(TmpArray2)
   deallocate(TmpArray2)    
-  call mem_ichor_dealloc(BasisCont1)
-  deallocate(BasisCont1)
-  call mem_ichor_dealloc(BasisCont2)
-  deallocate(BasisCont2)
-  call mem_ichor_dealloc(BasisCont3)
-  deallocate(BasisCont3)
   call mem_ichor_dealloc(IatomBPass) 
   deallocate(IatomBPass) 
   call mem_ichor_dealloc(IatomAPass) 
@@ -1248,6 +1626,124 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   CALL Mem_ichor_dealloc(LocalIntPass2)
   deallocate(LocalIntPass2)
 end subroutine IchorTypeIntegralLoop
+
+!Reorder LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+!(including LHS permute) to LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+!this can be done on the accelerator
+subroutine MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+     & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+     & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+     & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+  implicit none
+  integer,intent(in) :: TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,nContQ,nContP
+  integer,intent(in) :: nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD
+  integer,intent(in) :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  logical,intent(in) :: TriangularLHSAtomLoop,Qsegmented,Psegmented
+  real(realk),intent(in) :: LocalIntPass1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+  real(realk),intent(inout) :: LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+  integer,intent(in) :: IatomAPass(MaxPasses),iatomBPass(MaxPasses)
+  IF(TriangularLHSAtomLoop)THEN
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeCPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeCPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeCPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeCPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ELSE
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeCPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,&
+                & nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeCPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeCPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeCPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ENDIF
+end subroutine MainTriDistributetoLocalIntPass2CPU
+
+!Reorder LocalIntPass(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+!(including LHS permute) to LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+!this can be done on the accelerator
+subroutine MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+     & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+     & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+     & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+  implicit none
+  integer,intent(in) :: TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,nContQ,nContP
+  integer,intent(in) :: nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD
+  integer,intent(in) :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  logical,intent(in) :: TriangularLHSAtomLoop,Qsegmented,Psegmented
+  real(realk),intent(in) :: LocalIntPass1(nContQ,nContP,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+  real(realk),intent(inout) :: LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+  integer,intent(in) :: IatomAPass(MaxPasses),iatomBPass(MaxPasses)
+  IF(TriangularLHSAtomLoop)THEN
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeGPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeGPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call TriDistributeGPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call TriDistributeGPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ELSE
+     IF(Qsegmented.AND.Psegmented)THEN
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeGPUToLocalIntPassSeg(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,&
+                & nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeGPUToLocalIntPassSeg0000(LocalIntPass1,nAtomsA,nAtomsB,&
+                & LocalIntPass2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ELSE
+        IF(TotalAngmom.NE.0)THEN
+           call DistributeGPUToLocalIntPass(LocalIntPass1,nOrbCompA,nOrbCompB,nOrbCompC,&
+                & nOrbCompD,nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,&
+                & MaxPasses,IatomAPass,iatomBPass,nPasses)
+        ELSE !TotalAngmom=0
+           call DistributeGPUToLocalIntPass0000(LocalIntPass1,&
+                & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LocalIntPass2,MaxPasses,&
+                & IatomAPass,iatomBPass,nPasses)
+        ENDIF
+     ENDIF
+  ENDIF
+end subroutine MainTriDistributetoLocalIntPass2GPU
 
 SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
      & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,BATCHGAB,&
@@ -1991,13 +2487,24 @@ subroutine Distribute_seg_seg_SSSS(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
   ENDIF
 end subroutine Distribute_seg_seg_SSSS
 
-subroutine DistributeToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+!=====================================================================================================
+!
+!   Distribution routines to 
+! LocalIntPass2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!
+!=====================================================================================================
+!
+!      ======================
+!      First the CPU routines - OpenMP
+!      ======================
+!
+subroutine DistributeCPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
 implicit none 
 integer,intent(in)    :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
 integer,intent(in)    :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
 integer,intent(in)    :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-real(realk),intent(in)::LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,MaxPasses)
+real(realk),intent(in)::LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nPasses)
 real(realk),intent(inout)::LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
 !local variables
 integer :: iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB
@@ -2044,15 +2551,15 @@ integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine DistributeToLocalIntPass
+end subroutine DistributeCPUToLocalIntPass
 
-subroutine TriDistributeToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine TriDistributeCPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
 implicit none 
 integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
 integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
 integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-real(realk),intent(in)   :: LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,MaxPasses)
+real(realk),intent(in)   :: LP1(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContC*nContD,nContA*nContB,nPasses)
 real(realk),intent(inout):: LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
 !local variables
 integer :: iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,iContA,iContB
@@ -2125,14 +2632,37 @@ integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPass
+end subroutine TriDistributeCPUToLocalIntPass
 
-subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine TriDistributeCPUToLocalIntPassSeg0000(LP1,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(MaxPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: iPass,iAtomA,iAtomB
+!$OMP DO PRIVATE(iPass,iAtomA,iAtomB) 
+  DO IPass = 1,nPasses
+    IatomB = IatomBPass(IPass)
+    IatomA = IatomAPass(IPass)    
+    IF(IatomA.NE.IatomB)THEN
+       LP2(iatomA,iatomB) = LP1(IPass)
+       LP2(iatomB,iatomA) = LP1(IPass)
+    ELSE
+       LP2(iatomA,iatomA) = LP1(IPass)
+    ENDIF
+  ENDDO
+!$OMP END DO
+end subroutine TriDistributeCPUToLocalIntPassSeg0000
+
+subroutine TriDistributeCPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,MaxPasses)
+  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,nPasses)
   real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
   !local variables
   integer :: iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA
@@ -2170,15 +2700,15 @@ subroutine TriDistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrb
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPassSeg
+end subroutine TriDistributeCPUToLocalIntPassSeg
 
-subroutine TriDistributeToLocalIntPass0000(LP1,&
+subroutine TriDistributeCPUToLocalIntPass0000(LP1,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB
   integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
   real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
   !local variables
   integer :: iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB
@@ -2215,14 +2745,14 @@ subroutine TriDistributeToLocalIntPass0000(LP1,&
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine TriDistributeToLocalIntPass0000
+end subroutine TriDistributeCPUToLocalIntPass0000
 
-subroutine DistributeToLocalIntPass0000(LP1,&
+subroutine DistributeCPUToLocalIntPass0000(LP1,&
      & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,MaxPasses,nPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
-  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
   real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
   !local variables
   integer :: iContA,iContB,iContQ,ipass,iAtomA,iAtomB
@@ -2247,14 +2777,34 @@ subroutine DistributeToLocalIntPass0000(LP1,&
 !$OMP END DO
 
 !!$OMP END PARALLEL DO
-end subroutine DistributeToLocalIntPass0000
+end subroutine DistributeCPUToLocalIntPass0000
 
-subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+subroutine DistributeCPUToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
+     & MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
+  real(realk),intent(in)    :: LP1(MaxPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: ipass,iAtomA,iAtomB
+
+!$OMP DO PRIVATE(ipass,iAtomA,iAtomB) 
+  DO IPass = 1,nPasses
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)
+     LP2(iAtomA,iAtomB) = LP1(IPass)
+  ENDDO
+!$OMP END DO
+
+end subroutine DistributeCPUToLocalIntPassSeg0000
+
+subroutine DistributeCPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
      & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
   implicit none 
   integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses
   integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
-  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,MaxPasses)
+  real(realk),intent(in)    :: LP1(nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD,nPasses)
   real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
   !local variables
   integer :: iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB
@@ -2280,7 +2830,272 @@ subroutine DistributeToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCom
 
 !!$OMP END PARALLEL DO
 
-end subroutine DistributeToLocalIntPassSeg
+end subroutine DistributeCPUToLocalIntPassSeg
+!
+!      ====================
+!      Now the GPU routines - OpenACC 
+!      ====================
+!
+subroutine DistributeGPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+implicit none 
+integer,intent(in)    :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
+integer,intent(in)    :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+integer,intent(in)    :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+real(realk),intent(in)::LP1(nContC*nContD,nContA*nContB,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+real(realk),intent(inout)::LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!local variables
+integer :: iContQ,iContA,iContB,iContC,iContD,iContP,offsetA,iAngA,iAngB
+integer :: iAngC,iAngD,I3,I4,offsetB,iPass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   DO iContD = 1,nContD
+    DO iContC = 1,nContC
+     DO iAngD = 1,nOrbCompD
+      DO iAngC = 1,nOrbCompC
+       IatomB = IatomBPass(IPass)
+       IatomA = IatomAPass(IPass)
+       iContQ = iContC + (iContD-1)*nContC
+       I4 = iAngD + (iContD-1)*nOrbCompD
+       I3 = iAngC + (iContC-1)*nOrbCompC
+       DO iContB = 1,nContB
+        offsetB = (iContB-1)*nOrbCompB
+        DO iContA = 1,nContA
+         iContP = iContA+(iContB-1)*nContA
+         offsetA = (iContA-1)*nOrbCompA
+         DO iAngB = 1,nOrbCompB
+          DO iAngA = 1,nOrbCompA
+           LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomB,I3,I4) =&
+                & LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          ENDDO
+         ENDDO
+        ENDDO
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine DistributeGPUToLocalIntPass
+
+subroutine TriDistributeGPUToLocalIntPass(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+implicit none 
+integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB
+integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+real(realk),intent(in)   :: LP1(nContC*nContD,nContA*nContB,nPasses,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD)
+real(realk),intent(inout):: LP2(nOrbCompA*nContA,nAtomsA,nOrbCompB*nContB,nAtomsB,nOrbCompC*nContC,nOrbCompD*nContD)
+!local variables
+integer :: iPass,iContP,iContQ,iAngD,iAngC,iAtomA,iAtomB,iContA,iContB
+integer :: iContC,iContD,i4,i3,offsetA,offsetB,iAngB,iAngA
+
+  DO IPass = 1,nPasses
+   DO iContP = 1,nContA*nContA
+    DO iContQ = 1,nContC*nContD
+     DO iAngD = 1,nOrbCompD
+      DO iAngC = 1,nOrbCompC
+       IatomB = IatomBPass(IPass)
+       IatomA = IatomAPass(IPass)
+       IF(IatomA.NE.IatomB)THEN
+        !Ordering of Ipass is 
+        !iPass = 0 
+        !DO IatomA = 1,natomsA
+        ! DO IatomB = 1,IatomBend
+        !   iPass = iPass + 1
+        ! ENDDO
+        !ENDDO
+        !Where IatomBend=IatomA for triangularLHSatomLoop
+        !   or IatomBend=natomsB 
+        
+        iContA = iContP - ((iContP-1)/nContA)*nContA
+        iContB = (iContP-1)/nContA+1
+        iContC = iContQ - ((iContQ-1)/nContC)*nContC
+        iContD = (iContQ-1)/nContC+1
+        I4 = iAngD + (iContD-1)*nOrbCompD
+        I3 = iAngC + (iContC-1)*nOrbCompC
+        offsetB = (iContB-1)*nOrbCompA
+        offsetA = (iContA-1)*nOrbCompA
+        DO iAngB = 1,nOrbCompA
+         DO iAngA = 1,nOrbCompA
+          LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomB,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          LP2(iAngB + offsetB,iatomB,iAngA + offsetA,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+         ENDDO
+        ENDDO
+       ELSE
+        iContA = iContP - ((iContP-1)/nContA)*nContA
+        iContB = (iContP-1)/nContA+1
+        iContC = iContQ - ((iContQ-1)/nContC)*nContC
+        iContD = (iContQ-1)/nContC+1
+        I4 = iAngD + (iContD-1)*nOrbCompD
+        I3 = iAngC + (iContC-1)*nOrbCompC
+        offsetB = (iContB-1)*nOrbCompA
+        offsetA = (iContA-1)*nOrbCompA
+        DO iAngB = 1,nOrbCompA
+         DO iAngA = 1,nOrbCompA
+          LP2(iAngA + offsetA,iatomA,iAngB + offsetB,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+          LP2(iAngB + offsetB,iatomA,iAngA + offsetA,iatomA,I3,I4) = LP1(iContQ,iContP,IPass,iAngA,iAngB,iAngC,iAngD)
+         ENDDO
+        ENDDO
+       ENDIF
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPass
+
+subroutine TriDistributeGPUToLocalIntPassSeg0000(LP1,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(MaxPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: iPass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+    IatomB = IatomBPass(IPass)
+    IatomA = IatomAPass(IPass)    
+    IF(IatomA.NE.IatomB)THEN
+       LP2(iatomA,iatomB) = LP1(IPass)
+       LP2(iatomB,iatomA) = LP1(IPass)
+    ELSE
+       LP2(iatomA,iatomA) = LP1(IPass)
+    ENDIF
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPassSeg0000
+
+subroutine TriDistributeGPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nPasses,nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD)
+  real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
+  !local variables
+  integer :: iPass,iAngQ,iAtomA,iAtomB,i4,i3,offsetA,offsetB,iAngB,iAngA
+
+  DO IPass = 1,nPasses
+   DO iAngQ = 1,nOrbCompD*nOrbCompC
+    IatomB = IatomBPass(IPass)
+    IatomA = IatomAPass(IPass)    
+    IF(IatomA.NE.IatomB)THEN
+     DO iAngB = 1,nOrbCompA
+      DO iAngA = 1,nOrbCompA
+       LP2(iAngA,iatomA,iAngB,iatomB,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+       LP2(iAngB,iatomB,iAngA,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+      ENDDO
+     ENDDO
+    ELSE
+     DO iAngB = 1,nOrbCompA
+      DO iAngA = 1,nOrbCompA
+       LP2(iAngA,iatomA,iAngB,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+       LP2(iAngB,iatomA,iAngA,iatomA,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+      ENDDO
+     ENDDO
+    ENDIF
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPassSeg
+
+subroutine TriDistributeGPUToLocalIntPass0000(LP1,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB
+  integer,intent(in)        :: nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
+  real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
+  !local variables
+  integer :: iPass,iContP,iContQ,iAtomA,iAtomB,iContA,iContB,iContC,iContD,i4,i3,offsetA,offsetB
+  DO IPass = 1,nPasses
+   DO iContB = 1,nContA
+    DO iContA = 1,nContA
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)    
+     IF(IatomA.NE.IatomB)THEN
+      DO iContQ = 1,nContC*nContD
+       LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+       LP2(iContB,iatomB,iContA,iatomA,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+      ENDDO
+     ELSE
+      DO iContQ = 1,nContC*nContD
+       LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+       LP2(iContB,iatomB,iContA,iatomA,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+      ENDDO
+     ENDIF
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine TriDistributeGPUToLocalIntPass0000
+
+subroutine DistributeGPUToLocalIntPass0000(LP1,&
+     & nContA,nContB,nContC,nContD,nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,nContA,nContB,nContC,nContD,MaxPasses,nPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
+  real(realk),intent(in)    :: LP1(nContC*nContD,nContA,nContB,nPasses)
+  real(realk),intent(inout) :: LP2(nContA,nAtomsA,nContB,nAtomsB,nContC*nContD)
+  !local variables
+  integer :: iContA,iContB,iContQ,ipass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   DO iContB = 1,nContB
+    DO iContA = 1,nContA
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)
+     DO iContQ = 1,nContD*nContC
+      LP2(iContA,iatomA,iContB,iatomB,iContQ) = LP1(iContQ,iContA,iContB,IPass)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+end subroutine DistributeGPUToLocalIntPass0000
+
+subroutine DistributeGPUToLocalIntPassSeg0000(LP1,nAtomsA,nAtomsB,LP2,&
+     & MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nAtomsA,nAtomsB,MaxPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
+  real(realk),intent(in)    :: LP1(nPasses)
+  real(realk),intent(inout) :: LP2(nAtomsA,nAtomsB)
+  !local variables
+  integer :: ipass,iAtomA,iAtomB
+
+  DO IPass = 1,nPasses
+     IatomB = IatomBPass(IPass)
+     IatomA = IatomAPass(IPass)
+     LP2(iAtomA,iAtomB) = LP1(IPass)
+  ENDDO
+
+end subroutine DistributeGPUToLocalIntPassSeg0000
+
+subroutine DistributeGPUToLocalIntPassSeg(LP1,nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+     & nAtomsA,nAtomsB,LP2,MaxPasses,IatomAPass,iatomBPass,nPasses)
+  implicit none 
+  integer,intent(in)        :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nAtomsA,nAtomsB,MaxPasses
+  integer,intent(in)        :: IatomAPass(MaxPasses),IatomBPass(MaxPasses),nPasses
+  real(realk),intent(in)    :: LP1(nPasses,nOrbCompA,nOrbCompB,nOrbCompC*nOrbCompD)
+  real(realk),intent(inout) :: LP2(nOrbCompA,nAtomsA,nOrbCompB,nAtomsB,nOrbCompC*nOrbCompD)
+  !local variables
+  integer :: iAngA,iAngB,iAngQ,ipass,iAtomA,iAtomB
+  DO IPass = 1,nPasses
+   IatomB = IatomBPass(IPass)
+   IatomA = IatomAPass(IPass)
+   DO iAngQ = 1,nOrbCompD*nOrbCompC
+    DO iAngB = 1,nOrbCompB
+     DO iAngA = 1,nOrbCompA
+      LP2(iAngA,iAtomA,iAngB,iAtomB,iAngQ) = LP1(IPass,iAngA,iAngB,iAngQ)
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+
+end subroutine DistributeGPUToLocalIntPassSeg
+!==============================================================================
+!
+!   Done with Distribution routines to LocalIntPass2()
+!
+!==============================================================================
 
 subroutine IchorPermuteLHS(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD,LocalIntPass5)
   implicit none
@@ -2434,5 +3249,291 @@ subroutine IchorDistribute(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
   ENDIF
 !!$OMP END PARALLEL
  end subroutine IchorDistribute
+
+subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
+     & expA,ContractCoeffA,AngmomA,Acenter,nOrbA,&
+     & nAtomsB,nPrimB,nContB,nOrbCompB,&
+     & expB,ContractCoeffB,AngmomB,Bcenter,nOrbB,&
+     & nAtomsC,nPrimC,nContC,nOrbCompC,&
+     & expC,ContractCoeffC,AngmomC,Ccenter,nOrbC,&
+     & nAtomsD,nPrimD,nContD,nOrbCompD,&
+     & expD,ContractCoeffD,AngmomD,Dcenter,nOrbD,&
+     & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
+     & qcent,Ppreexpfac,Qpreexpfac,&
+     & Qiprim1,Qiprim2,&
+     & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
+     & CSscreen,noScreenCD2,noScreenAB,THRESHOLD_CS,&
+     & Qsegmented,Psegmented,TriangularRHSAtomLoop,TRIANGULARLHSATOMLOOP,&
+     & reducedExponents,integralPrefactor,&
+     & PcentPass,Pdistance12Pass,PpreExpFacPass,&
+     & Qdistance12,PQorder,&
+     & Spherical,TMParray1maxsize,nLocalInt,&
+     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
+     & DmatBD,DmatAD,DmatBC,&
+     & DmatAC,KmatBD,KmatAD,KmatBC,KmatAC,nDimA,nDimB,nDimC,nDimD,nDmat,&
+     & ReducedDmatBD,ReducedDmatBC,AtomGAB,AtomGCD,&
+     & nKetList,KetList,nBraList,BraList,nBraketList,BraketList,&
+     & SameRHSaos,SameLHSaos,SameODs)
+  implicit none
+  logical,intent(in) :: TriangularRHSAtomLoop,TriangularLHSAtomLoop,PermuteLHSTypes
+  logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
+  logical,intent(in) :: TriangularODAtomLoop
+  logical,intent(in) :: SameRHSaos,SameLHSaos,SameODs
+  integer,intent(in) :: nTABFJW1,nTABFJW2,lupri,nDimA,nDimB,nDimC,nDimD,nDmat
+  real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
+  integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
+  integer,intent(in) :: nKetList(nAtomsD),KetList(nAtomsC,nAtomsD)
+  integer,intent(in) :: nBraList(nAtomsB),BraList(nAtomsA,nAtomsB)
+  integer,intent(in) :: nBraketList(nAtomsD),BraketList(nAtomsB,nAtomsD)
+  real(realk),intent(in) :: DmatBD(ndimB,ndimD,nDmat),DmatAD(ndimA,ndimD,nDmat)
+  real(realk),intent(in) :: DmatBC(ndimB,ndimC,nDmat),DmatAC(ndimA,ndimC,nDmat)
+  real(realk),intent(inout) :: KmatBD(ndimB,ndimD,nDmat),KmatAD(ndimA,ndimD,nDmat)
+  real(realk),intent(inout) :: KmatBC(ndimB,ndimC,nDmat),KmatAC(ndimA,ndimC,nDmat)
+  real(realk),intent(in) :: ReducedDmatBD(nAtomsB,nAtomsD),ReducedDmatBC(nAtomsB,nAtomsC)
+  real(realk),intent(in) :: AtomGAB(nAtomsA,nAtomsB),AtomGCD(nAtomsC,nAtomsD)
+  !D
+  integer,intent(in) :: nAtomsD,nPrimD,nContD,nOrbCompD,AngmomD,nOrbD
+  real(realk),intent(in) :: Dcenter(3,nAtomsD),expD(nPrimD),ContractCoeffD(nPrimD,nContD)
+  !C
+  integer,intent(in) :: nAtomsC,nPrimC,nContC,nOrbCompC,AngmomC,nOrbC
+  real(realk),intent(in) :: Ccenter(3,nAtomsC),expC(nPrimC),ContractCoeffC(nPrimC,nContC)
+  logical,intent(in) :: noScreenCD2(nAtomsC,nAtomsD)
+  logical,intent(in) :: noScreenAB(nAtomsA,nAtomsB)
+  !Q
+  integer,intent(in) :: nContQ,nPrimQ
+  real(realk),intent(inout) :: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ),expQ(nPrimQ)
+  !P
+  integer,intent(in) :: nContP,nPrimP
+  real(realk),intent(inout) :: PpreExpFac(nPrimP)
+  real(realk),intent(in) :: PcentPass(3,nPrimP,natomsA*natomsB)
+  real(realk),intent(in) :: Pdistance12Pass(3,natomsA*natomsB)
+  real(realk),intent(in) :: PpreExpFacPass(nPrimP,natomsA*natomsB),expP(nPrimP)
+  !A & B
+  integer,intent(in) :: AngmomB,AngmomA,nOrbA,nOrbB
+  integer,intent(in) :: nAtomsA,nAtomsB,nOrbCompA,nOrbCompB,nContA,nContB
+  integer,intent(in) :: nPrimA,nPrimB
+  real(realk),intent(in) :: Acenter(3,nAtomsA),expA(nPrimA),ContractCoeffA(nPrimA,nContA)
+  real(realk),intent(in) :: Bcenter(3,nAtomsB),expB(nPrimB),ContractCoeffB(nPrimB,nContB)
+  !collected
+  integer,intent(in) :: TotalAngmom
+!  integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
+!  real(realk),intent(inout) :: OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4)
+  integer,intent(in) :: TMParray1maxsize,TMParray2maxsize,nLocalInt
+  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)
+  real(realk),intent(in) :: integralPrefactor(nPrimQ,nPrimP)
+  !local variables
+  integer :: A,B,C,D,iC,iB,iA,IatomA,IatomB,IatomC,IatomD
+  integer :: startC,nPasses,startD,intprint,iPass,IatomBend
+  real(realk) :: DcenterSpec(3),CcenterSpec(3),AcenterSpec(3),BcenterSpec(3),GABELM
+  logical :: PermuteRHS
+  real(realk),allocatable :: TmpArray1(:),TmpArray2(:)
+  real(realk),allocatable :: LocalIntPass1(:),LocalIntPass2(:)
+  integer,allocatable :: IatomAPass(:),IatomBPass(:)
+  logical,allocatable :: DoInt(:,:)
+  logical :: NOELEMENTSADDED
+  integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
+  integer :: startA,startB,ndim,nOrbQ,MaxPasses
+  integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
+#ifdef VAR_OMP
+  integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
+#endif
+
+  !FIXME: Determine MaxPasses 
+  MaxPasses = nAtomsA*nAtomsB
+
+  TMParray1maxsizePass = TMParray1maxsize*MaxPasses
+  TMParray2maxsizePass = TMParray2maxsize*MaxPasses
+  
+  ndim = nOrbA*nOrbB*nAtomsA*nAtomsB
+  nOrbQ = nOrbC*nOrbD
+  allocate(TmpArray1(TMParray1maxsize*MaxPasses))
+  call mem_ichor_alloc(TmpArray1)
+  allocate(TmpArray2(TMParray2maxsize*MaxPasses))     
+  call mem_ichor_alloc(TmpArray2)
+  allocate(IatomAPass(MaxPasses))
+  call mem_ichor_alloc(IatomAPass)  
+  allocate(IatomBPass(MaxPasses))
+  call mem_ichor_alloc(IatomBPass)
+    
+  nLocalIntPass = nLocalint*MaxPasses
+  allocate(LocalIntPass1(nLocalIntPass))
+  CALL Mem_ichor_alloc(LocalIntPass1)
+  allocate(LocalIntPass2(nLocalint*nAtomsA*nAtomsB))
+  CALL Mem_ichor_alloc(LocalIntPass2)
+
+  allocate(DoINT(nAtomsA,nAtomsB))
+  CALL Mem_ichor_alloc(DoINT)
+  !Link Procedure
+  DO iatomD = 1,natomsD
+   DcenterSpec(1) = Dcenter(1,IAtomD)
+   DcenterSpec(2) = Dcenter(2,IAtomD)
+   DcenterSpec(3) = Dcenter(3,IAtomD)
+   startD = (IatomD-1)*nOrbD 
+   DO iC = 1,nKetList(IatomD) !include IF(TriangularRHSAtomLoop.AND.IatomD.GT.IatomC)CYCLE
+    IatomC = KetList(iC,IatomD)
+
+    PermuteRHS = TriangularRHSAtomLoop.AND.IatomD.LT.IatomC
+    DoINT = .FALSE.
+    !making List of {AB} which contribute for CD: K(AC) = sum_{BD} (A,B|C,D) Dmat(B,D)
+    LOOPB: DO iB = 1,nBraketList(IatomD)
+     IatomB = BraKetList(iB,IatomD)
+     NOELEMENTSADDED = .TRUE.
+     LOOPA: DO iA = 1,nBraList(IatomB)
+      IatomA = BraList(iA,IatomB)
+      IF(ReducedDmatBD(IatomB,IatomD)*atomGAB(IatomA,IatomB)*atomGCD(IatomC,IatomD) .LE. THRESHOLD_CS) EXIT LOOPA
+      DoINT(IatomA,IatomB) = .TRUE. 
+      NOELEMENTSADDED = .FALSE.
+     ENDDO LOOPA
+     IF(NOELEMENTSADDED)EXIT LOOPB
+    ENDDO LOOPB
+    IF(SameRHSaos)THEN !permutational symmetry (A,B|D,C) = (A,B|C,D)
+     !making List of {AB} which contribute for CD: K(AD) = sum_{BC} (A,B|D,C) Dmat(B,C)
+     LOOPB2: DO iB = 1,nBraketList(IatomC) 
+      IatomB = BraKetList(iB,IatomC)
+      NOELEMENTSADDED = .TRUE.
+      LOOPA2: DO iA = 1,nBraList(IatomB)
+       IatomA = BraList(iA,IatomB)
+       IF( ReducedDmatBC(IatomB,IatomC)*AtomGAB(IatomA,IatomB)*AtomGCD(IatomC,IatomD) .LE. THRESHOLD_CS) EXIT LOOPA2
+       DoINT(IatomA,IatomB) = .TRUE. 
+       NOELEMENTSADDED = .FALSE.
+      ENDDO LOOPA2
+      IF(NOELEMENTSADDED)EXIT LOOPB2
+     ENDDO LOOPB2
+    ENDIF
+
+    !Make IatomAPass,IatomBPass,nPasses from  DoInt(IatomA,IatomB)
+    iPass=0
+    IatomBend = nAtomsB
+    DO IatomA = 1,nAtomsA
+       IF(TriangularLHSAtomLoop)IatomBend = IatomA !Restrict AtomB =< AtomA
+       DO IatomB = 1,IatomBend
+          IF(TriangularODAtomLoop)THEN !If AtomC=AtomA restrict AtomD =< AtomB
+             IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
+                IF(DoINT(IatomA,IatomB))THEN
+                   iPass = iPass + 1
+                   IatomAPass(iPass) = IatomA
+                   IatomBPass(iPass) = IatomB
+                ENDIF
+             ENDIF
+          ELSE
+             IF(DoINT(IatomA,IatomB))THEN
+                iPass = iPass + 1
+                IatomAPass(iPass) = IatomA
+                IatomBPass(iPass) = IatomB
+             ENDIF
+          ENDIF
+       ENDDO
+    ENDDO
+    nPasses = iPass
+
+    CcenterSpec(1) = Ccenter(1,IAtomC)
+    CcenterSpec(2) = Ccenter(2,IAtomC)
+    CcenterSpec(3) = Ccenter(3,IAtomC)
+
+    !FIXME SHOULD NOT BE NEEDED
+    IF(nPasses.NE.nAtomsA*nAtomsB)THEN
+       do I4 = 1,nLocalIntPass
+          LocalIntPass1(I4) = 0.0E0_realk
+       enddo
+       do I4 = 1,nLocalint*nAtomsA*nAtomsB
+          LocalIntPass2(I4) = 0.0E0_realk
+       enddo
+    ENDIF
+
+    !output: Qcent,Qdistance12,QpreExpFac
+    CALL Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
+         & expC,expD,CcenterSpec,DcenterSpec,ContractCoeffC,ContractCoeffD,&
+         & Qsegmented,Qcent,Qdistance12,QpreExpFac,INTPRINT)
+    !Unique for each iPassQ (iAtomC,iAtomD) iteration: qcent,qdistance12,qpreexpfac, Qiprim1(nPrimQ), output:
+    !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
+    !IatomAPass,iatomBPass changes and 
+    !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
+    call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+         & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
+         & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
+         & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+         & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+         & Qiprim1,Qiprim2,expA,expB,expC,expD,&
+         & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+         & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+         & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
+         & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
+         & TMParray2maxsizePass,IatomAPass,iatomBPass)
+    !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
+    !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
+    !this can be done on the accelerator.
+     IF(.TRUE.)THEN !nPrimLast
+        call MainTriDistributetoLocalIntPass2CPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ELSE
+        call MainTriDistributetoLocalIntPass2GPU(TotalAngmom,nOrbCompA,nOrbCompB,nOrbCompC,&
+             & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
+             & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
+             & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+     ENDIF
+    !TriangularLHSAtomLoop have ensured that LocalIntPass have full set of AtomA and AtomB
+    !Contract LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD) With D(B,D) and D()
+    !K(AC) = sum_{BD} (A,B|C,D) Dmat(B,D) = sum_{BD} (A,B|C,D) Dmat(B,D) 
+    !K(AD) = sum_{BC} (A,B|D,C) Dmat(B,C) = sum_{BC} (A,B|C,D) Dmat(B,C) if PermuteRHS
+    !K(BC) = sum_{AD} (B,A|C,D) Dmat(A,D) = sum_{AD} (A,B|C,D) Dmat(A,D) if PermuteLHSTypes
+    !K(BD) = sum_{AC} (B,A|D,C) Dmat(A,C) = sum_{AC} (A,B|C,D) Dmat(A,C) if PermuteLHSTypes and PermuteRHS
+    startC = (IatomC-1)*nOrbC 
+    call DistributeLink_KmatAC(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,nDmat,DmatBD,&
+         & LocalIntPass2,KmatAC,startC,startD,lupri)
+
+!     IF(PermuteLHSTypes)THEN
+!      IF(PermuteRHS)THEN
+
+!    CALL LinkDistribution()
+
+
+   ENDDO !IatomC
+  ENDDO !iAtomD
+
+  call mem_ichor_dealloc(TmpArray1)
+  deallocate(TmpArray1)
+  call mem_ichor_dealloc(TmpArray2)
+  deallocate(TmpArray2)    
+  call mem_ichor_dealloc(IatomBPass) 
+  deallocate(IatomBPass) 
+  call mem_ichor_dealloc(IatomAPass) 
+  deallocate(IatomAPass) 
+  CALL Mem_ichor_dealloc(LocalIntPass1)
+  deallocate(LocalIntPass1)
+  CALL Mem_ichor_dealloc(LocalIntPass2)
+  deallocate(LocalIntPass2)
+  CALL Mem_ichor_dealloc(DoINT)
+  deallocate(DoINT)
+
+end subroutine IchorTypeLinKLoop
+
+subroutine DistributeLink_KmatAC(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,nDmat,&
+     & DmatBD,LocalIntPass2,KmatAC,startC,startD,lupri)
+  implicit none
+  integer,intent(in) :: nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,nDmat
+  integer,intent(in) :: startC,startD,lupri
+  real(realk),intent(in) :: DmatBD(ndimB,ndimD,nDmat)
+  real(realk),intent(in) :: LocalIntPass2(ndimA,ndimB,nOrbC,nOrbD)
+  real(realk),intent(inout) :: KmatAC(ndimA,ndimC,nDmat)
+  !
+  integer :: iOrbD,iOrbC,B,A,idmat
+  real(realk) :: TMPD
+  WRITE(lupri,*)'Distribution '
+  DO idmat = 1,nDmat
+     DO iOrbD = 1,nOrbD
+        DO iOrbC = 1,nOrbC
+           DO B = 1,ndimB !nAtomsB*nOrbB
+              TMPD = DmatBD(B,startD + iOrbD,idmat)
+              DO A = 1,ndimA !nAtomsA*nOrbA
+                 KmatAC(A,startC+iOrbC,idmat) = KmatAC(A,startC+iOrbC,idmat) + &
+                      & LocalIntPass2(A,B,iOrbC,iOrbD)*TMPD
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ENDDO
+end subroutine DistributeLink_KmatAC
 
 END MODULE IchorErimodule

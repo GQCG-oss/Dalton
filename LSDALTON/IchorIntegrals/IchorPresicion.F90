@@ -4,6 +4,8 @@
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorPrecisionModule
+  INTEGER, PARAMETER :: reals = 4
+  INTEGER, PARAMETER :: reald = 4
 #ifdef SYS_REAL
   INTEGER, PARAMETER :: realk = 4
 #else

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck flshfo */
       SUBROUTINE FLSHFO (IUNIT)
@@ -1124,6 +1123,24 @@ C
 C (30-Jan-1984) hjaaj
 C
       INTEGER IT, N, INTX(N)
+      IF (N .GT. 0) THEN
+         READ (IT,END = 10) INTX
+      ELSE
+         READ (IT,END = 10)
+      END IF
+      RETURN
+   10 CONTINUE
+      INTX(N)=-1
+      RETURN
+      END
+C  /* Deck readi4 */
+      SUBROUTINE READI4(IT,N,INTX)
+C
+C (Jul-2014) hjaaj, based on READI
+C Purpose: when INTX is always INTEGER*4
+C
+      INTEGER   IT, N
+      INTEGER*4 INTX(N)
       IF (N .GT. 0) THEN
          READ (IT,END = 10) INTX
       ELSE

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C
 C FILE : sirius/sirdiis.F
@@ -742,7 +741,7 @@ C              ... save new "DVAO" in DAOSAV(,2)
 C              ... difden: "DVAO" = "DVAO" - DVOVLP*DVOSAV(,2)
             END IF
          END IF
-         CALL MEMREL('DIIS_CTL.DIFDEN',WRK,KFRSAV,KTMP1,KFREE,LFREE)
+         CALL MEMREL('DIIS_CTL.DIFDEN',WRK,1,KTMP1,KFREE,LFREE)
 C
 C  ***** Calculate 2-electron part of Fock matrix with differential density
 C
@@ -790,7 +789,7 @@ C
                CALL DGETSP(NBAST,FCAO(1+N2BASX),WRK(KTMP1))
                CALL PKSYM1(WRK(KTMP1),FAOSAV(1,INDEVC,2),NBAS,NSYM,1)
             END IF
-            CALL MEMREL('DIIS_CTL.FAOSAV',WRK,KFRSAV,KTMP1,KFREE,LFREE)
+            CALL MEMREL('DIIS_CTL.FAOSAV',WRK,1,KTMP1,KFREE,LFREE)
          ELSE
             CALL DGETSP(NBAST,FCAO,FAOSAV(1,INDEVC,1))
             IF (.NOT.ONLYFC) THEN
@@ -893,7 +892,7 @@ c        density
      &                   WRK(KFCSOL),ESOLT,ENSQM3,EPOQM3,EELEL,
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.QM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+             CALL MEMREL('DISCTL.QM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
            ELSE
              EELEL = 0.0D0
            END IF
@@ -906,7 +905,7 @@ c        density
      &                     WRK(KFCSOL),ESOLT,
      &                     WRK(KFREE),LFREE,IPQMMM)
               CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-              CALL MEMREL('DIIS_CTL.QMMMFCK',WRK,KFRSAV,
+              CALL MEMREL('DIIS_CTL.QMMMFCK',WRK,1,
      &                    KFCSOL,KFREE,LFREE)
               IF (MMTIME) THEN
                  DTIME = SECOND() - DTIME
@@ -920,7 +919,7 @@ c        density
              CALL QMNPMM_FOCK(DAOSAV(1,1),DAOSAV(1,2),RCPMAT,RMMMAT,  
      &                        WRK(KFCSOL),ESOLT,WRK(KFREE),LFREE)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DIIS_CTL.QMNPMM',WRK,KFRSAV,KFCSOL,KFREE,
+             CALL MEMREL('DIIS_CTL.QMNPMM',WRK,1,KFCSOL,KFREE,
      &                   LFREE)
            END IF
 
@@ -930,7 +929,7 @@ c        density
      &                   WRK(KFCSOL),DUMMY,TNLM,.FALSE.,ESOLT,
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-             CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+             CALL MEMREL('DISCTL.SOLFCK',WRK,1,KFCSOL,KFREE,LFREE)
 
            ELSE IF (PCM) THEN
              CALL MEMGET2('REAL','FCPCM',KFCSOL,NNBASX,WRK,KFREE,LFREE)
@@ -979,7 +978,7 @@ C            Now the PCM part ...
  998       CONTINUE
  999       CONTINUE
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
-           CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+           CALL MEMREL('DISCTL.PCMQM3FCK',WRK,1,KFCSOL,KFREE,LFREE)
          END IF
 C
          IF (PEQM) THEN
@@ -995,7 +994,7 @@ C
            ESOLT = WRK(KEPE)
            FAOSAV(:,INDEVC,1) = FAOSAV(:,INDEVC,1)
      &                          + WRK(KFPE:KFPE+NNBASX-1)
-           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, KFRSAV, KFPE,
+           CALL MEMREL('DIIS_CTL.PE_IFC_FOCK', WRK, 1, KFPE,
      &                 KFREE, LFREE)
 #endif
          END IF
@@ -1751,7 +1750,7 @@ C *** and now we are ready to call WR_SIRIFC to write SIRIFC
 C        CALL WR_SIRIFC(CMO,DV,PV,FC,FV,FQ,CREF,FCAC,H2AC,WRK,LFREE,
 C    &               GORB,ERLM,ORBHES,XINDX)
 C
-         CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,KFRSAV,KPV,KFREE,LFREE)
+         CALL MEMREL('DIIS_CTL.WR_SIRIFC',WRK,1,KPV,KFREE,LFREE)
       END IF
 C
 C        Transform integrals for abacus or response,

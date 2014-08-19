@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
@@ -539,17 +538,17 @@ C
          END IF
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
-     *      ' Second harmonic generation                     : SHG='
+     *      ' Second harmonic generation                     : SHG    ='
      *      ,QRSHG
          END IF
          IF (QRPOCK) THEN
             WRITE (LUPRI,'(/A,L2)')
-     *      ' Electro-optical Pockels effect                 : POCKEL='
+     *      ' Electro-optical Pockels effect                 : POCKEL ='
      &      ,QRPOCK
          END IF
          IF (QROPRF) THEN
             WRITE (LUPRI,'(A,L2)')
-     *      ' Optical refractivity calculation               : OPTREF='
+     *      ' Optical refractivity calculation               : OPTREF ='
      *      ,QROPRF
          END IF
          WRITE(LUPRI,'(/A,I4)')
@@ -565,7 +564,7 @@ C
      *      ' Maximum iterations in optimal orbital algorithm: MAXITO ='
      *      ,MAXITO
          IF (DIROIT) WRITE (LUPRI,'(A,L2)')
-     *      ' Direct one-index transformation                : DIROIT='
+     *      ' Direct one-index transformation                : DIROIT ='
      *      ,DIROIT
          IF (E3TEST) WRITE (LUPRI,'(/A)')
      *      ' Test of contributions from E3 and S3 terms.'

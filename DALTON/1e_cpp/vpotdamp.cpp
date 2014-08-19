@@ -1,3 +1,7 @@
+#if defined(VAR_MPI)
+#include "mpi.h"
+#endif
+
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -597,11 +601,6 @@ void LibAngularVPD::InitCartList () {
 /*
     Overloaded MPI short-hand
 */
-
-#if defined(VAR_MPI)
-  #include <cstdio>
-  #include "mpi.h"
-#endif
 
 inline void mpi_bcast(int & val) {
   #if defined(VAR_MPI)

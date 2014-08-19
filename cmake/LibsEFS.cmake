@@ -31,13 +31,6 @@ set(DALTON_LIBS
     ${DALTON_LIBS}
     )
 
-if(MPI_FOUND)
-    set(DALTON_LIBS
-        ${DALTON_LIBS}
-        mpi_cxx
-        )
-endif()
-
 add_definitions(-DENABLE_EFS)
 
 unset(OMP_LIB)

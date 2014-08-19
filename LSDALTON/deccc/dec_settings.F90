@@ -125,8 +125,8 @@ contains
     DECinfo%Frag_Red_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
     DECinfo%Frag_Exp_Size          = 10
-    DECinfo%frag_red_dE_occ        = 1.0  ! times FOT
-    DECinfo%frag_red_dE_virt       = 0.9  ! times FOT
+    DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
+    DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
@@ -151,6 +151,7 @@ contains
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
+    DECinfo%EstimateInitAtom        = 1
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory     = 0E0_realk
@@ -468,10 +469,8 @@ contains
           DECinfo%StressTest  = .true.
        case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
        case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
-       case('.FRAG_RED_GAP_OCC'); read(input,*) DECinfo%frag_red_gap_occ
-       case('.FRAG_RED_GAP_VIRT'); read(input,*) DECinfo%frag_red_gap_virt
-       case('.FRAG_RED_DE_OCC'); read(input,*) DECinfo%frag_red_dE_occ
-       case('.FRAG_RED_DE_VIRT'); read(input,*) DECinfo%frag_red_dE_virt
+       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
+       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
 
 
 #ifdef MOD_UNRELEASED
@@ -558,6 +557,8 @@ contains
        case('.ESTIMATEINITRADIUS')
           read(input,*) DECinfo%EstimateINITradius
           DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
+       case('.ESTIMATEINITATOM')
+          read(input,*) DECinfo%EstimateInitAtom
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -917,10 +918,8 @@ contains
     write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
-    write(lupri,*) 'Frag_Red_gap_occ ', DECinfo%frag_red_gap_occ
-    write(lupri,*) 'Frag_Red_gap_virt ', DECinfo%frag_red_gap_virt
-    write(lupri,*) 'Frag_Red_dE_occ ', DECinfo%frag_red_dE_occ
-    write(lupri,*) 'Frag_Red_dE_virt ', DECinfo%frag_red_dE_virt
+    write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
+    write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model

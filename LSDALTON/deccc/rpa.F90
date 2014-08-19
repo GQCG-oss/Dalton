@@ -452,10 +452,11 @@ contains
   !\brief Calculate fock matrix part of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_fock_para(omega2,t2,pfock,qfock,no,nv)
+  subroutine RPA_fock_para(omega2,t2,pfock,qfock,no,nv,local)
 
     implicit none
     type(array), intent(inout) :: t2,omega2
+    logical,intent(in) :: local
     !type(array4), intent(inout) :: omega2
     integer, intent(inout) :: no,nv
     !type(array2), intent(inout) :: pfock,qfock
@@ -495,6 +496,28 @@ contains
     v2o  = nv2*no 
     call mem_alloc(w_o2v2,t2%nelms)
 
+    if( local )then
+      !calculate first part of doubles E term and its permutation
+      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
+      call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,pfock%elm1,no,0.0E0_realk,omega2%elm1,v2o)
+
+      !calculate second part of doubles E term
+      ! F [a c] * t [c b i j] =+ Omega [a b i j]
+      call dgemm('n','n',nv,o2v,nv,1.0E0_realk,qfock%elm1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
+
+      !INTRODUCE PERMUTATION
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+      call assign_in_subblocks(w_o2v2,'=',omega2%elm1,o2v2)
+#else
+      !$OMP WORKSHARE
+      w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
+      !$OMP END WORKSHARE
+#endif
+
+      call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
+
+   else
+
 
 #ifdef VAR_MPI
      StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
@@ -520,9 +543,13 @@ contains
     call mo_work_dist(o2v,fai2,tl2,trafo2)
 
 
+
     w3size = max(tl1*no,tl2*nv)
     if(nnod>1)w3size = max(w3size,2*omega2%tsize)
     call mem_alloc(w3,w3size)
+
+
+
 
     ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
     !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
@@ -610,7 +637,9 @@ contains
     call mem_dealloc(w3)
 
 
+
 #endif
+  endif
 
 
     call mem_dealloc(w_o2v2)
@@ -837,7 +866,7 @@ contains
     type(array2), intent(inout) :: pfock,qfock
     !type(array) :: foo,fvv
     integer, intent(in) :: nocc,nvirt
-    real(realk),pointer :: foo(:,:),fvv(:,:)
+    !real(realk),pointer :: foo(:,:),fvv(:,:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
     !type(array4) :: tmp
     real(realk),pointer :: w2(:)!,foo(:,:),fvv(:,:)
@@ -862,10 +891,10 @@ contains
     !fvv = array_minit([nvirt,nvirt],2,atype='TDAR',local=.false.)
     !call array_convert(pfock%val,foo)
     !call array_convert(qfock%val,fvv)
-    call mem_alloc(foo,nocc,nocc)
-    call mem_alloc(fvv,nvirt,nvirt)
-    foo(:,:)=pfock%val(:,:)
-    fvv(:,:)=qfock%val(:,:)
+    !call mem_alloc(foo,nocc,nocc)
+    !call mem_alloc(fvv,nvirt,nvirt)
+    !foo(:,:)=pfock%val(:,:)
+    !fvv(:,:)=qfock%val(:,:)
 
 
     call cpu_time(starttime)
@@ -928,7 +957,7 @@ contains
 !\brief Calculate RPA residual for current doubles amplitudes
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_residual_par(omega2,t2,gmo,pfock,qfock,nocc,nvirt)
+  subroutine RPA_residual_par(omega2,t2,gmo,pfock,qfock,nocc,nvirt,local)
 
     implicit none
     !type(array4), intent(inout) :: omega2,t2
@@ -938,6 +967,7 @@ contains
     !real(realk),pointer, intent(inout) :: gmo(:)
     type(array), intent(inout) :: gmo
     type(array),intent(inout) :: pfock,qfock
+    logical,intent(in) :: local
     !type(array2), intent(inout) :: pfock,qfock
     !real(realk),pointer,intent(inout) :: pfock(:),qfock(:)
     !real(realk), intent(inout) :: pfock(nocc,nocc),qfock(nvirt,nvirt)
@@ -967,7 +997,7 @@ contains
 
 
     !call RPA_fock_para2(omega2,t2,pfock,qfock,noc,nvir)
-    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir)
+    call RPA_fock_para(omega2,t2,pfock,qfock,noc,nvir,local)
 
     !msg = 'Norm of omega2 after fock para'
     !call print_norm(omega!2,msg)
@@ -984,7 +1014,7 @@ contains
     enddo
 
     call array_cp_tiled2dense(gmo,.true.)
-    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir)
+    call RPA_residual_par_add(omega2,Sckdl,gmo,noc,nvir,local)
 
 
     call cpu_time(stoptime)
@@ -1072,19 +1102,20 @@ contains
   !\brief Calculate additional linear and quadratic terms of the RPA residual 
   !> \author Johannes Rekkedal and Thomas Bondo
   !> \date March 2013
-  subroutine RPA_residual_par_add(omega2,u2,gmo,nocc,nvirt)
+  subroutine RPA_residual_par_add(omega2,u2,gmo,nocc,nvirt,local)
 
     implicit none
     !type(array4), intent(inout) :: omega2!,u2
     type(array), intent(inout) :: u2 ,omega2
     !real(realk), intent(inout),pointer :: gmo(:)
     type(array), intent(inout):: gmo
+    logical,intent(in) :: local
     integer,intent(inout) :: nocc,nvirt
     !type(array4) :: Sckdl,Dckbj
     type(array) :: Sckdl
     type(array) :: t_par,omegaw1
     integer, dimension(4) :: tmp_dims
-    integer :: a,b,c,i,j,k,dim1
+    integer :: a,b,c,i,j,k,dim1,no,nv
     integer :: fai,tl,mynum,nnod
     real(realk) :: starttime,stoptime
     real(realk),pointer :: w2(:),w3(:),omegw(:),w4(:)
@@ -1099,8 +1130,39 @@ contains
     nnod          = infpar%lg_nodtot
 #endif
 
-
+   
     dim1=nocc*nvirt
+    no = nocc
+    nv = nvirt
+    
+    if(local) then
+
+    call mem_alloc(w3,dim1*dim1)
+    !call mem_alloc(w4,dim1*dim1)
+
+    !call array_reorder_4d(1.0E0_realk,u2%elm4,no,nv,no,nv,[4,2,3,1],1.0E0_realk,w2)
+   call array_reorder(u2,[4,2,3,1])
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+        & 1.0E0_realk,u2%elm4,dim1,gmo%elm1,dim1,0.0E0_realk,w3,dim1)
+
+    call array_reorder(omega2,[4,2,3,1])
+
+    call dgemm('n','n',dim1,dim1,dim1, &
+       &  2.0E0_realk,w3,dim1,u2%elm4,dim1,1.0E0_realk,omega2%elm1,dim1)
+
+    call array_reorder(omega2,[4,2,3,1])
+
+    !call array_reorder_4d(1.0E0_realk,w4,no,nv,no,nv,[4,2,3,1],1.0E0_realk,&
+    !   &  omega2%elm1)
+
+    call array_reorder(u2,[4,2,3,1])
+
+    call mem_dealloc(w3)
+    !call mem_dealloc(w4)
+    else
+
+
 #ifdef VAR_MPI
     StartUpSlaves: if(master .and. infpar%lg_nodtot>1) then
       call ls_mpibcast(RPAGETRESIDUAL,infpar%master,infpar%lg_comm)
@@ -1188,6 +1250,11 @@ contains
 
 #endif
 
+    call mem_dealloc(omegw)
+    call array_free(t_par)
+
+    endif
+
 !#ifdef VAR_MPI
 !    if(master) then
 
@@ -1202,9 +1269,7 @@ contains
 !    endif
 
 
-    call array_free(t_par)
     !call array_free(omegaw1)
-    call mem_dealloc(omegw)
 
 
   end subroutine RPA_residual_par_add
@@ -1666,6 +1731,7 @@ subroutine rpa_res_slave()
   !> number of orbitals:
   type(array) :: omega2,t2
   type(array) :: gmo
+  logical :: local
   !type(array4) :: omega2!,t2
   !real(realk),pointer :: gmo(:)!,t2(:,:,:,:)
   type(array2)  :: pfock,qfock
@@ -1674,7 +1740,8 @@ subroutine rpa_res_slave()
   
   !print*, infpar%lg_mynum,'rpa_res_slave'
   call rpa_res_communicate_data(gmo,t2,omega2,nvirt,nocc)
-  call RPA_residual_par_add(omega2,t2,gmo,nocc,nvirt)
+  local = .false.
+  call RPA_residual_par_add(omega2,t2,gmo,nocc,nvirt,local)
 
 end subroutine rpa_res_slave
 
@@ -1691,12 +1758,14 @@ subroutine rpa_fock_slave()
   type(array) :: omega2!,t2
   type(array)  :: pfock,qfock
   real(realk),pointer :: gmo(:)
+  logical :: local
   !real(realk),pointer  :: pfock(:),qfock(:)
   integer :: nbas, nocc, nvirt
   !> how to pack integrals:
   !print*, infpar%lg_mynum,'rpa_fock_slave'
   call rpa_fock_communicate_data(t2,omega2,pfock,qfock,nocc,nvirt)
-  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt)
+  local = .false.
+  call RPA_fock_para(omega2,t2,pfock,qfock,nocc,nvirt,local)
   !call RPA_fock_para2(omega2,t2,pfock,qfock,nocc,nvirt)
 
 end subroutine rpa_fock_slave

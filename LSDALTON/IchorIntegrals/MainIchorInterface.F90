@@ -356,18 +356,28 @@ subroutine GetIchorSphericalParamIdentifier(Identifier)
   Identifier = SphericalParam
 end subroutine GetIchorSphericalParamIdentifier
 
-subroutine GetIchorJobEriIdentifier(Identifier)
+subroutine GetIchorJobEriIdentifier(Identifier,doLink)
   use IchorParametersModule
   implicit none
   integer,intent(inout) :: Identifier
-  Identifier = IchorJobEri
+  logical,intent(in)    :: doLink
+  IF(doLink)THEN
+     Identifier = IchorJobLink
+  ELSE
+     Identifier = IchorJobEri
+  ENDIF
 end subroutine GetIchorJobEriIdentifier
 
-subroutine GetIchorInputIdentifier(Identifier)
+subroutine GetIchorInputIdentifier(Identifier,rhsDmat)
   use IchorParametersModule
   implicit none
   integer,intent(inout) :: Identifier
-  Identifier = IchorInputNoInput
+  logical,intent(in)    :: rhsDmat
+  IF(rhsDmat)THEN
+     Identifier = IchorInputDmat
+  ELSE
+     Identifier = IchorInputNoInput
+  ENDIF
 end subroutine GetIchorInputIdentifier
 
 subroutine GetIchorParallelSpecIdentifier(Identifier)

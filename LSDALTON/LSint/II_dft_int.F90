@@ -15,6 +15,7 @@ use TYPEDEF
 use dft_type
 use dft_typetype
 use IIDFTKSMWORK
+use LS_UTIL,only: DGEMM_TS
 private
 public :: II_DFTINT, TEST_NELECTRONS, II_DFTDISP, II_DFTsetFunc, II_DFTaddFunc
 ! Notes 
@@ -195,9 +196,8 @@ IPRUNE = 1
 IF (GridObject%NOPRUN) IPRUNE = 0
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-GridObject%NBUFLEN=1024
-BoxMemRequirement = NBAST*NBAST
-
+GridObject%NBUFLEN= 1024
+BoxMemRequirement = 160000
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
      & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
@@ -409,6 +409,7 @@ logical :: grid_exists
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 LUGRID=-1
+call setNoOMP(noOMP)
 call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
 IF(grid_exists)THEN 
@@ -571,7 +572,7 @@ DO XX=1+tid,IT,nthreads
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
            &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
-           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
+           &myDFTDATA,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
    ENDDO
 ENDDO
 
@@ -992,9 +993,13 @@ IF (NRED.GT. 0) THEN
          ENDDO
       ENDDO
       ! First half-contraction of Gaussian AO with density-matrix
-      CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
-      !           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      IF(XCintNoOMP)THEN
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ELSE !Use Thread Safe version 
+         CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+              &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
+      ENDIF
       ! Second half-contraction
       DO K = 1, NVCLEN
          RHO(K,IDMAT)= GAORED(K,1)*TMP(K,1)
@@ -1100,8 +1105,13 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1113,8 +1123,13 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP,NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
@@ -1239,14 +1254,25 @@ IF (NRED.GT. 0) THEN
       IF(NRED.EQ.NactBAS)THEN 
          !no screening
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ELSE
          !Set up reduced density-matrix
          DO JRED=1,NRED
@@ -1258,14 +1284,25 @@ IF (NRED.GT. 0) THEN
             ENDDO
          ENDDO
          !First half-contraction of Gaussian AO with density-matrix
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
-         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
-              &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         IF(XCintNoOMP)THEN
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ELSE !Use Thread Safe version 
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+            CALL DGEMM_TS("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+                 &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+         ENDIF
       ENDIF
       !Second half-contraction
       DO K = 1, NVCLEN
