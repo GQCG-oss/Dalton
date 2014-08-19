@@ -854,12 +854,12 @@ DO GPUrun=1,2
         WRITE(LUMOD3,'(A)')'!$OMP DO &'
         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iP,iContC,iContD,iPrimD,TMP) '
 !        WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-!        WRITE(LUMOD3,'(A)')'!$OMP        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+!        WRITE(LUMOD3,'(A)')'!$OMP        DCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
      ELSE
         WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD3,'(A)')'!$ACC PRIVATE(iP,iContC,iContD,iPrimD,TMP) &'
         WRITE(LUMOD3,'(A)')'!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-        WRITE(LUMOD3,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD3,'(A)')'!$ACC         DCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
      ENDIF
      call initString(3)
      WRITE(LUMOD3,'(A)')'   do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPasses'

@@ -7424,7 +7424,7 @@ CONTAINS
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iContC,iContD,iPrimD,TMP) &
 !$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)
+!$ACC         DCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)
    do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPasses
     do iContD=1,nContD
      do iContC=1,nContC
