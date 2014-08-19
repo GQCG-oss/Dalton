@@ -203,7 +203,6 @@ integer,allocatable :: startOrbitalA(:),startOrbitalB(:)
 integer,allocatable :: startOrbitalC(:),startOrbitalD(:)
 !Tmporary array used in the innermost routines 
 integer :: TMParray1maxsize,TMParray2maxsize
-integer :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
 !real(realk),allocatable :: TmpArray1(:)
 !real(realk),allocatable :: TmpArray2(:)
 !Batch info
@@ -628,14 +627,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
             call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
-                 & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-                 & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
                  & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
          ELSE !use GPU code
             call IchorCoulombIntegral_GPU_OBS_general_size(TMParray1maxsize,&
-                 & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
-                 & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+                 & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
                  & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
          ENDIF
@@ -783,7 +782,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & PcentPass,Pdistance12Pass,PpreExpFacPass,&
                  & Qdistance12,PQorder,Spherical,TMParray1maxsize,nLocalInt,&
                  & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-                 & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,DmatBD,DmatAD,DmatBC,&
+                 & DmatBD,DmatAD,DmatBC,&
                  & DmatAC,KmatBD,KmatAD,KmatBC,KmatAC,nDimA,nDimB,nDimC,nDImD,IchorInputDim3,&
                  & ReducedDmatBD,ReducedDmatBC,AtomGAB,AtomGCD,&
                  & nKetList,KetList,nBraList,BraList,nBraketList,BraketList,&
@@ -817,8 +816,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & Qdistance12,PQorder,&
                  & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
                  & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-                 & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize)
+                 & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
          ENDIF
 !         call mem_ichor_dealloc(pcent)
 !         deallocate(pcent)
@@ -1284,14 +1282,12 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      & Qdistance12,PQorder,&
      & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
-     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-     & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize)
+     & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri)
   implicit none
   logical,intent(in) :: TriangularRHSAtomLoop,TriangularLHSAtomLoop,PermuteLHSTypes
   logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
   logical,intent(in) :: TriangularODAtomLoop
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri
-  integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
   integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
   !D
@@ -1337,13 +1333,11 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   real(realk) :: DcenterSpec(3),CcenterSpec(3),AcenterSpec(3),BcenterSpec(3),GABELM
   logical :: PermuteRHS
   real(realk),allocatable :: TmpArray1(:),TmpArray2(:)
-  real(realk),allocatable :: BasisCont1(:),BasisCont2(:),BasisCont3(:)
   real(realk),allocatable :: LocalIntPass1(:),LocalIntPass2(:)
   integer,allocatable :: IatomAPass(:),IatomBPass(:)
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
-  integer :: BasisCont1maxsizePass,BasisCont2maxsizePass,BasisCont3maxsizePass
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1371,9 +1365,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   ENDDO
   TMParray1maxsizePass = TMParray1maxsize*MaxPasses
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
-  BasisCont1maxsizePass =  BasisCont1maxsize*MaxPasses
-  BasisCont2maxsizePass =  BasisCont2maxsize*MaxPasses
-  BasisCont3maxsizePass =  BasisCont3maxsize*MaxPasses
 
   ndim = nOrbA*nOrbB*nAtomsA*nAtomsB
   nOrbQ = nOrbC*nOrbD
@@ -1381,12 +1372,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   call mem_ichor_alloc(TmpArray1)
   allocate(TmpArray2(TMParray2maxsize*MaxPasses))     
   call mem_ichor_alloc(TmpArray2)
-  allocate(BasisCont1(BasisCont1maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont1)
-  allocate(BasisCont2(BasisCont2maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont2)
-  allocate(BasisCont3(BasisCont3maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont3)
   allocate(IatomAPass(MaxPasses))
   call mem_ichor_alloc(IatomAPass)  
   allocate(IatomBPass(MaxPasses))
@@ -1416,8 +1401,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$OMP        integralPrefactor,AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,&
 !$OMP        Qdistance12,PQorder,LocalIntPass1,LocalIntPass2,nLocalIntPass,&
 !$OMP        Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,Bcenter,nOrbQ,&
-!$OMP        TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-!$OMP        BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,Acenter,&
+!$OMP        TMParray2maxsizePass,Acenter,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
 !$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage)
   DO IatomD = 1,nAtomsD
@@ -1481,8 +1465,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
            & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
            & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
            & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-           & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-           & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+           & TMParray2maxsizePass,IatomAPass,iatomBPass)
       !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
       !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
       !this can be done on the accelerator
@@ -1502,9 +1485,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$ACC             AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
 !$ACC             nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
 !$ACC             nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-!$ACC             TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-!$ACC             BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,&
-!$ACC             IatomAPass,iatomBPass) &
+!$ACC             TMParray2maxsizePass,IatomAPass,iatomBPass) &
 !$ACC COPYOUT(LocalIntPass1)
       call IchorCoulombIntegral_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
            & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
@@ -1516,8 +1497,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
            & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
            & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
            & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-           & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-           & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+           & TMParray2maxsizePass,IatomAPass,iatomBPass)
 
 !$ACC END DATA
 
@@ -1637,12 +1617,6 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   deallocate(TmpArray1)
   call mem_ichor_dealloc(TmpArray2)
   deallocate(TmpArray2)    
-  call mem_ichor_dealloc(BasisCont1)
-  deallocate(BasisCont1)
-  call mem_ichor_dealloc(BasisCont2)
-  deallocate(BasisCont2)
-  call mem_ichor_dealloc(BasisCont3)
-  deallocate(BasisCont3)
   call mem_ichor_dealloc(IatomBPass) 
   deallocate(IatomBPass) 
   call mem_ichor_dealloc(IatomAPass) 
@@ -3295,7 +3269,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
      & Qdistance12,PQorder,&
      & Spherical,TMParray1maxsize,nLocalInt,&
      & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-     & BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize,DmatBD,DmatAD,DmatBC,&
+     & DmatBD,DmatAD,DmatBC,&
      & DmatAC,KmatBD,KmatAD,KmatBC,KmatAC,nDimA,nDimB,nDimC,nDimD,nDmat,&
      & ReducedDmatBD,ReducedDmatBC,AtomGAB,AtomGCD,&
      & nKetList,KetList,nBraList,BraList,nBraketList,BraketList,&
@@ -3306,7 +3280,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   logical,intent(in) :: TriangularODAtomLoop
   logical,intent(in) :: SameRHSaos,SameLHSaos,SameODs
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri,nDimA,nDimB,nDimC,nDimD,nDmat
-  integer,intent(in) :: BasisCont1maxsize,BasisCont2maxsize,BasisCont3maxsize
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
   integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
   integer,intent(in) :: nKetList(nAtomsD),KetList(nAtomsC,nAtomsD)
@@ -3354,7 +3327,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   real(realk) :: DcenterSpec(3),CcenterSpec(3),AcenterSpec(3),BcenterSpec(3),GABELM
   logical :: PermuteRHS
   real(realk),allocatable :: TmpArray1(:),TmpArray2(:)
-  real(realk),allocatable :: BasisCont1(:),BasisCont2(:),BasisCont3(:)
   real(realk),allocatable :: LocalIntPass1(:),LocalIntPass2(:)
   integer,allocatable :: IatomAPass(:),IatomBPass(:)
   logical,allocatable :: DoInt(:,:)
@@ -3362,7 +3334,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
-  integer :: BasisCont1maxsizePass,BasisCont2maxsizePass,BasisCont3maxsizePass
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -3372,9 +3343,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
 
   TMParray1maxsizePass = TMParray1maxsize*MaxPasses
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
-  BasisCont1maxsizePass =  BasisCont1maxsize*MaxPasses
-  BasisCont2maxsizePass =  BasisCont2maxsize*MaxPasses
-  BasisCont3maxsizePass =  BasisCont3maxsize*MaxPasses
   
   ndim = nOrbA*nOrbB*nAtomsA*nAtomsB
   nOrbQ = nOrbC*nOrbD
@@ -3382,12 +3350,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   call mem_ichor_alloc(TmpArray1)
   allocate(TmpArray2(TMParray2maxsize*MaxPasses))     
   call mem_ichor_alloc(TmpArray2)
-  allocate(BasisCont1(BasisCont1maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont1)
-  allocate(BasisCont2(BasisCont2maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont2)
-  allocate(BasisCont3(BasisCont3maxsize*MaxPasses))
-  call mem_ichor_alloc(BasisCont3)
   allocate(IatomAPass(MaxPasses))
   call mem_ichor_alloc(IatomAPass)  
   allocate(IatomBPass(MaxPasses))
@@ -3496,8 +3458,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
          & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
          & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
          & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-         & TMParray2maxsizePass,BasisCont1maxsizePass,BasisCont2maxsizePass,&
-         & BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,IatomAPass,iatomBPass)
+         & TMParray2maxsizePass,IatomAPass,iatomBPass)
     !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
     !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
     !this can be done on the accelerator.
@@ -3535,12 +3496,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   deallocate(TmpArray1)
   call mem_ichor_dealloc(TmpArray2)
   deallocate(TmpArray2)    
-  call mem_ichor_dealloc(BasisCont1)
-  deallocate(BasisCont1)
-  call mem_ichor_dealloc(BasisCont2)
-  deallocate(BasisCont2)
-  call mem_ichor_dealloc(BasisCont3)
-  deallocate(BasisCont3)
   call mem_ichor_dealloc(IatomBPass) 
   deallocate(IatomBPass) 
   call mem_ichor_dealloc(IatomAPass) 
