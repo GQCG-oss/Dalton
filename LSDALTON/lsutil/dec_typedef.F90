@@ -54,7 +54,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCCC2   = 7   ! CC2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTCC2  = 8   ! CC2 virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCCCSD  = 9   ! CCSD occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCCSD = 10   ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD = 10  ! CCSD virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT    = 11  ! (T) contribution, occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT   = 12  ! (T) contribution, virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT4   = 13  ! Fourth order (T) contribution, occ partitioning scheme
@@ -62,7 +62,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
-  integer,parameter :: FRAGMODEL_ccsdf12   = 18  ! CCSD-F12 energy correction
+  integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010

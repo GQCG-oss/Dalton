@@ -2154,47 +2154,6 @@ contains
      logical :: BruteForce,FockMatrixOrdering
 
 
-     !! HACK for testing purposes, F12 code, Do not remove 
-     !! ****
-     !! All virtual, change occupied
-     !do i=1,natoms
-       !Occ_Atoms(i) = .False.
-       !Virt_Atoms(i) = .True.
-     !enddo
-     
-     !do i=1,natoms
-        !Occ_Atoms(1:i) = .True.
-       !print *, "-------------------------------------------------"
-       !print *, "     All virtual", "Number of Occupied Orbitals", i
-       !print *, "-------------------------------------------------"
-
-        !call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             !& MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-             !& AtomicFragment)
-        !call atomic_fragment_free(AtomicFragment)
-     !end do
-
-    !! All occupied, change virtual
-     !do i=1,natoms
-       !Occ_Atoms(i) = .True.
-       !Virt_Atoms(i) = .False.
-     !enddo
-
-     !do i=1,natoms
-        !Virt_Atoms(1:i) = .True.
-       !print *, "-------------------------------------------------"
-       !print *, "     All occ", "Number of Virtual Orbitals", i
-       !print *, "-------------------------------------------------"
-
-        !call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-             !& MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-             !& AtomicFragment)
-        !call atomic_fragment_free(AtomicFragment)
-     !end do
-
-     !stop 'KK/Wangy HACK'
-
-
      if (DECinfo%orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
