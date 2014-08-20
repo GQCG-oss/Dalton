@@ -5696,7 +5696,7 @@ CONTAINS
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iContC,iPrimC,TMP) &
 !$ACC PRESENT(nContC,nPrimC,nPasses,nPrimD,nTUVP,nTUVQ,&
-!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)
+!$ACC        CCC,AUXarrayCont,AUXarray2)
     do iP = 1,nPasses*nTUVP*nTUVQ*nPrimD
      do iContC=1,nContC
       tmp = 0.0E0_realk
@@ -5722,7 +5722,7 @@ CONTAINS
     real(realk) :: TMP
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iContD,iPrimD,iContC,TMP) &
-!$ACC PRESENT(nContC,nPrimD,nPasses,nContD,nTUVP,nTUVQ,&
+!$ACC PRESENT(nContC,nPrimD,nPasses,nContD,&
 !$ACC         DCC,AUXarrayCont,AUXarray2)
     do iP = 1,nPasses*nTUVP*nTUVQ
      do iContD=1,nContD
