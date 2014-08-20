@@ -1579,7 +1579,7 @@ C ICESPH = 3 Spheres from mol file (Sphere=1,2...)
       ENDIF
       NESF = NESFP
 CLF   IF(IPRCAV.GE.5) THEN
-         WRITE(LUPRI,*) '********SPHERES IN PCMSPHGEN************'
+         WRITE(LUPRI,'(/A)') '********SPHERES IN PCMSPHGEN************'
          WRITE(LUPRI,*) 
      $        'INDEX        X        Y         Z        R'
          DO N=1,NESF
