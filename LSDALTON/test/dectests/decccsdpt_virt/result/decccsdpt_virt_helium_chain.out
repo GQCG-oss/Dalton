@@ -105,7 +105,7 @@
  Configuration time       | 2014-08-14 12:23:34.482001
 
 Start simulation
-     Date and time (Linux)  : Thu Aug 14 12:49:38 2014
+     Date and time (Linux)  : Thu Aug 14 12:31:33 2014
      Host name              : kaspers-mbp.chem.au.dk                  
                       
  -----------------------------------------
@@ -380,7 +380,7 @@ Matrix AO D  has nnz=        64 sparsity:    100.000 %
   SCF Convergence criteria for gradient norm:   1.0000000000000000E-004
 ** Get Fock matrix number   1
  The Coulomb energy contribution    72.847821391062482     
- The Exchange energy contribution    11.674977966925011     
+ The Exchange energy contribution    11.674977966925010     
  The Fock energy contribution   -61.172843424137426     
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
@@ -477,8 +477,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    0.68    1
   %LOC%   Min. sigma_4 and orb.number:    0.97    1
 
- >>>  CPU Time used in Orbital Localization is   0.23 seconds
- >>> wall Time used in Orbital Localization is   0.23 seconds
+ >>>  CPU Time used in Orbital Localization is   0.24 seconds
+ >>> wall Time used in Orbital Localization is   0.24 seconds
 
  Number of electrons  in molecule =           16
  Number of occ. orb.  in molecule =            8
@@ -1039,8 +1039,8 @@ Error went down by   63.33%
   Error of red space iteration 30:      0.0006849515 (mu =      -1.60, xmax = 0.108723E-01, xnorm = 0.666288E-01, THR = 0.926148E-03)
 Newton equations converged in 30 iterations!
 No. of matmuls in get_density:   325
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  10
  The Coulomb energy contribution    64.338830759408253     
  The Exchange energy contribution    10.124570057862687     
@@ -1192,7 +1192,7 @@ Error went down by   53.50%
 Newton equations converged in 24 iterations!
 No. of matmuls in get_density:   267
  >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  12
  The Coulomb energy contribution    64.053255411420892     
  The Exchange energy contribution    10.011052195614884     
@@ -1266,7 +1266,7 @@ Error went down by   78.63%
   Error of red space iteration 27:      0.0011258860 (mu =      -0.80, xmax = 0.407365E-01, xnorm = 0.229532E+00, THR = 0.166620E-02)
 Newton equations converged in 27 iterations!
 No. of matmuls in get_density:   297
- >>>  CPU Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
  >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  13
  The Coulomb energy contribution    63.779675901133636     
@@ -1730,8 +1730,8 @@ Error went down by   57.26%
   Error of red space iteration 42:      0.0000000199 (mu =      -0.40, xmax = 0.539565E-05, xnorm = 0.218397E-04, THR = 0.334528E-07)
 Newton equations converged in 42 iterations!
 No. of matmuls in get_density:   440
- >>>  CPU Time used in SCF iteration is   0.04 seconds
- >>> wall Time used in SCF iteration is   0.04 seconds
+ >>>  CPU Time used in SCF iteration is   0.05 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number  21
  The Coulomb energy contribution    62.557073844902106     
  The Exchange energy contribution    9.7421075046655918     
@@ -1932,8 +1932,8 @@ Linesearch done, we choose previous point
   %LOC%   Min. sigma_2 and orb.number:    1.36   16
   %LOC%   Min. sigma_4 and orb.number:    1.91   16
 
- >>>  CPU Time used in Orbital Localization is   0.26 seconds
- >>> wall Time used in Orbital Localization is   0.26 seconds
+ >>>  CPU Time used in Orbital Localization is   0.27 seconds
+ >>> wall Time used in Orbital Localization is   0.27 seconds
   %LOC%
   %LOC% Localized orbitals written to lcm_orbitals.u
   %LOC%
@@ -2146,10 +2146,10 @@ Use F12 correction           =           FALSE
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    54.104395702524869     
- The Exchange energy contribution    8.6387093685403116     
- The Fock energy contribution   -45.465686333984422     
- CCSOL: MAIN LOOP      :  1.92    s
+ The Coulomb energy contribution    54.104395702528734     
+ The Exchange energy contribution    8.6387093685581959     
+ The Fock energy contribution   -45.465686333971007     
+ CCSOL: MAIN LOOP      :  1.95    s
 
 
  **********************************************************************
@@ -2172,20 +2172,20 @@ Use F12 correction           =           FALSE
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690610415     
- The Exchange energy contribution    9.7421070752433536     
- The Fock energy contribution   -52.814944615367196     
- CCSOL: MAIN LOOP      :  2.17    s
+ The Coulomb energy contribution    62.557051690530159     
+ The Exchange energy contribution    9.7421070752542267     
+ The Fock energy contribution   -52.814944615275152     
+ CCSOL: MAIN LOOP      :  2.20    s
 
 
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single virtual  energy =    -0.1935266094E-01
+ Single virtual  energy =    -0.1935266095E-01
 
 
  >>>  CPU Time used in FRAG: L.ENERGY is   0.26 seconds
- >>> wall Time used in FRAG: L.ENERGY is   0.26 seconds
+ >>> wall Time used in FRAG: L.ENERGY is   0.25 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -2213,10 +2213,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    3
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    34.934758192320821     
- The Exchange energy contribution    6.2197368023268380     
- The Fock energy contribution   -28.715021389993424     
- CCSOL: MAIN LOOP      :  2.34    s
+ The Coulomb energy contribution    34.934758192315378     
+ The Exchange energy contribution    6.2197368023068584     
+ The Fock energy contribution   -28.715021390008253     
+ CCSOL: MAIN LOOP      :  2.37    s
 
 
  **********************************************************************
@@ -2264,10 +2264,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    62.557051690442762     
- The Exchange energy contribution    9.7421070752529886     
- The Fock energy contribution   -52.814944615189759     
- CCSOL: MAIN LOOP      :  2.48    s
+ The Coulomb energy contribution    62.557051690534507     
+ The Exchange energy contribution    9.7421070752668726     
+ The Fock energy contribution   -52.814944615267677     
+ CCSOL: MAIN LOOP      :  2.51    s
 
 
  **********************************************************************
@@ -2290,10 +2290,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690442762     
- The Exchange energy contribution    9.7421070752529886     
- The Fock energy contribution   -52.814944615189759     
- CCSOL: MAIN LOOP      :  2.75    s
+ The Coulomb energy contribution    62.557051690534507     
+ The Exchange energy contribution    9.7421070752668726     
+ The Fock energy contribution   -52.814944615267677     
+ CCSOL: MAIN LOOP      :  2.78    s
 
 
  **********************************************************************
@@ -2302,7 +2302,7 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.2103487213E-01
 
 
- >>>  CPU Time used in FRAG: L.ENERGY is   0.28 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY is   0.27 seconds
  >>> wall Time used in FRAG: L.ENERGY is   0.27 seconds
  FOP
  FOP=========================================================
@@ -2331,16 +2331,16 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    3
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    34.793965003926971     
- The Exchange energy contribution    6.4169503053869832     
- The Fock energy contribution   -28.377014698539895     
- CCSOL: MAIN LOOP      :  2.91    s
+ The Coulomb energy contribution    34.793965003857338     
+ The Exchange energy contribution    6.4169503054344865     
+ The Fock energy contribution   -28.377014698422798     
+ CCSOL: MAIN LOOP      :  2.94    s
 
 
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single virtual  energy =    -0.2028444680E-01
+ Single virtual  energy =    -0.2028444679E-01
 
 
  FOP
@@ -2382,10 +2382,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    62.557051690560897     
- The Exchange energy contribution    9.7421070753379375     
- The Fock energy contribution   -52.814944615222842     
- CCSOL: MAIN LOOP      :  3.10    s
+ The Coulomb energy contribution    62.557051690517483     
+ The Exchange energy contribution    9.7421070752665191     
+ The Fock energy contribution   -52.814944615250823     
+ CCSOL: MAIN LOOP      :  3.13    s
 
 
  **********************************************************************
@@ -2408,10 +2408,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690560897     
- The Exchange energy contribution    9.7421070753379375     
- The Fock energy contribution   -52.814944615222842     
- CCSOL: MAIN LOOP      :  3.36    s
+ The Coulomb energy contribution    62.557051690517483     
+ The Exchange energy contribution    9.7421070752665191     
+ The Fock energy contribution   -52.814944615250823     
+ CCSOL: MAIN LOOP      :  3.39    s
 
 
  **********************************************************************
@@ -2448,10 +2448,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    3
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    34.919007782313145     
- The Exchange energy contribution    6.2191400767565419     
- The Fock energy contribution   -28.699867705557139     
- CCSOL: MAIN LOOP      :  3.48    s
+ The Coulomb energy contribution    34.919007781927974     
+ The Exchange energy contribution    6.2191400766799170     
+ The Fock energy contribution   -28.699867705246604     
+ CCSOL: MAIN LOOP      :  3.51    s
 
 
  **********************************************************************
@@ -2499,16 +2499,16 @@ FOP Rejection threshold  :   1.00000E-03
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    62.557051690496905     
- The Exchange energy contribution    9.7421070753115941     
- The Fock energy contribution   -52.814944615186143     
- CCSOL: MAIN LOOP      :  3.62    s
+ The Coulomb energy contribution    62.557051690635184     
+ The Exchange energy contribution    9.7421070752634478     
+ The Fock energy contribution   -52.814944615371978     
+ CCSOL: MAIN LOOP      :  3.66    s
 
 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
- Single virtual  energy =    -0.7925034878E-02
+ Single virtual  energy =    -0.7925034876E-02
 
 
  >>>  CPU Time used in FRAG: L.ENERGY is   0.15 seconds
@@ -2525,20 +2525,20 @@ FOP Rejection threshold  :   1.00000E-03
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690496905     
- The Exchange energy contribution    9.7421070753115941     
- The Fock energy contribution   -52.814944615186143     
- CCSOL: MAIN LOOP      :  3.88    s
+ The Coulomb energy contribution    62.557051690635184     
+ The Exchange energy contribution    9.7421070752634478     
+ The Fock energy contribution   -52.814944615371978     
+ CCSOL: MAIN LOOP      :  3.91    s
 
 
  **********************************************************************
  Energy summary for fragment:       6
  **********************************************************************
- Single virtual  energy =    -0.8069891646E-02
+ Single virtual  energy =    -0.8069891643E-02
 
 
  >>>  CPU Time used in FRAG: L.ENERGY is   0.26 seconds
- >>> wall Time used in FRAG: L.ENERGY is   0.25 seconds
+ >>> wall Time used in FRAG: L.ENERGY is   0.26 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -2565,10 +2565,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    6
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    6.4770813412630694     
- The Exchange energy contribution    2.2541994131870480     
- The Fock energy contribution   -4.2228819280759922     
- CCSOL: MAIN LOOP      :  3.96    s
+ The Coulomb energy contribution    6.4770813412675228     
+ The Exchange energy contribution    2.2541994131886081     
+ The Fock energy contribution   -4.2228819280789347     
+ CCSOL: MAIN LOOP      :  4.00    s
 
 
  **********************************************************************
@@ -2597,10 +2597,10 @@ FOP Rejection threshold  :   2.00000E-04
  FOP Number of orbitals excluded:    5
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    13.081212158522794     
- The Exchange energy contribution    3.5632364402519339     
- The Fock energy contribution   -9.5179757182708524     
- CCSOL: MAIN LOOP      :  4.04    s
+ The Coulomb energy contribution    13.081212158517980     
+ The Exchange energy contribution    3.5632364402561296     
+ The Fock energy contribution   -9.5179757182618605     
+ CCSOL: MAIN LOOP      :  4.08    s
 
 
  **********************************************************************
@@ -2648,10 +2648,10 @@ FOP Rejection threshold  :   2.00000E-04
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    62.557051690456561     
- The Exchange energy contribution    9.7421070752784527     
- The Fock energy contribution   -52.814944615178320     
- CCSOL: MAIN LOOP      :  4.16    s
+ The Coulomb energy contribution    62.557051690355074     
+ The Exchange energy contribution    9.7421070752641690     
+ The Fock energy contribution   -52.814944615090070     
+ CCSOL: MAIN LOOP      :  4.20    s
 
 
  **********************************************************************
@@ -2674,10 +2674,10 @@ FOP Rejection threshold  :   2.00000E-04
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690456561     
- The Exchange energy contribution    9.7421070752784527     
- The Fock energy contribution   -52.814944615178320     
- CCSOL: MAIN LOOP      :  4.41    s
+ The Coulomb energy contribution    62.557051690355074     
+ The Exchange energy contribution    9.7421070752641690     
+ The Fock energy contribution   -52.814944615090070     
+ CCSOL: MAIN LOOP      :  4.46    s
 
 
  **********************************************************************
@@ -2714,10 +2714,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    7
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    2.1959747766151856     
- The Exchange energy contribution    1.0979873883077533     
- The Fock energy contribution   -1.0979873883074323     
- CCSOL: MAIN LOOP      :  4.44    s
+ The Coulomb energy contribution    2.1959747766151914     
+ The Exchange energy contribution    1.0979873883077567     
+ The Fock energy contribution   -1.0979873883074345     
+ CCSOL: MAIN LOOP      :  4.49    s
 
 
  **********************************************************************
@@ -2765,10 +2765,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP  Standard Fragment optimization scheme is used
  FOP Occ Radius for initial fragment:  5.67
  FOP Virt Radius for initial fragment:  1.89
- The Coulomb energy contribution    26.507018956366156     
- The Exchange energy contribution    5.5657523507515192     
- The Fock energy contribution   -20.941266605614590     
- CCSOL: MAIN LOOP      :  4.55    s
+ The Coulomb energy contribution    26.507018956370828     
+ The Exchange energy contribution    5.5657523507521178     
+ The Fock energy contribution   -20.941266605618718     
+ CCSOL: MAIN LOOP      :  4.59    s
 
 
  **********************************************************************
@@ -2777,7 +2777,7 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.1390072716E-01
 
 
- >>>  CPU Time used in FRAG: L.ENERGY is   0.10 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY is   0.11 seconds
  >>> wall Time used in FRAG: L.ENERGY is   0.11 seconds
  FOP
  FOP=========================================================
@@ -2791,10 +2791,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP=========================================================
 
  FOP
- The Coulomb energy contribution    62.557051690342796     
- The Exchange energy contribution    9.7421070753045349     
- The Fock energy contribution   -52.814944615037838     
- CCSOL: MAIN LOOP      :  4.81    s
+ The Coulomb energy contribution    62.557051690531317     
+ The Exchange energy contribution    9.7421070753050358     
+ The Fock energy contribution   -52.814944615225535     
+ CCSOL: MAIN LOOP      :  4.85    s
 
 
  **********************************************************************
@@ -2803,8 +2803,8 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.1389700480E-01
 
 
- >>>  CPU Time used in FRAG: L.ENERGY is   0.27 seconds
- >>> wall Time used in FRAG: L.ENERGY is   0.26 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY is   0.26 seconds
+ >>> wall Time used in FRAG: L.ENERGY is   0.25 seconds
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -2831,10 +2831,10 @@ FOP Rejection threshold  :   1.00000E-03
  FOP Number of orbitals excluded:    4
   FOP VIRT: 
  FOP Number of orbitals excluded:    0
- The Coulomb energy contribution    2.1213494515727445     
- The Exchange energy contribution    1.0606747257863356     
- The Fock energy contribution   -1.0606747257864093     
- CCSOL: MAIN LOOP      :  4.83    s
+ The Coulomb energy contribution    2.1213494515727462     
+ The Exchange energy contribution    1.0606747257863360     
+ The Fock energy contribution   -1.0606747257864102     
+ CCSOL: MAIN LOOP      :  4.88    s
 
 
  **********************************************************************
@@ -2978,7 +2978,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       2      7
  *****************************************************************************
- Distance(Ang), pair virt energy =       2.7500       -0.2088653522E-03
+ Distance(Ang), pair virt energy =       2.7500       -0.2088653521E-03
 
 
 #PAIRDIMS# basis,occ,virt       16       8       8
@@ -3032,7 +3032,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       2      8
  *****************************************************************************
- Distance(Ang), pair virt energy =       3.7500       -0.3067809452E-04
+ Distance(Ang), pair virt energy =       3.7500       -0.3067809453E-04
 
 
 #PAIRDIMS# basis,occ,virt       16       8       8
@@ -3086,7 +3086,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       4      6
  *****************************************************************************
- Distance(Ang), pair virt energy =       1.0000       -0.2005805992E-02
+ Distance(Ang), pair virt energy =       1.0000       -0.2005805991E-02
 
 
 #PAIRDIMS# basis,occ,virt       16       8       8
@@ -3194,7 +3194,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       4      8
  *****************************************************************************
- Distance(Ang), pair virt energy =       3.0000       -0.1785341550E-04
+ Distance(Ang), pair virt energy =       3.0000       -0.1785341552E-04
 
 
 #PAIRDIMS# basis,occ,virt       16       8       8
@@ -3248,7 +3248,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       5      6
  *****************************************************************************
- Distance(Ang), pair virt energy =      0.50000       -0.8453805865E-02
+ Distance(Ang), pair virt energy =      0.50000       -0.8453805866E-02
 
 
 #PAIRDIMS# basis,occ,virt       16       8       8
@@ -3518,7 +3518,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair virt energy =       1.2500       -0.7527058678E-02
+ Distance(Ang), pair virt energy =       1.2500       -0.7527058683E-02
 
 
 #PAIRDIMS# basis,occ,virt       16       7       7
@@ -3572,7 +3572,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       4      5
  *****************************************************************************
- Distance(Ang), pair virt energy =      0.50000       -0.1525307978E-01
+ Distance(Ang), pair virt energy =      0.50000       -0.1525307979E-01
 
 
 #PAIRDIMS# basis,occ,virt       14       6       6
@@ -3626,7 +3626,7 @@ FOP Rejection threshold  :   1.00000E-03
  *****************************************************************************
  Energy summary for pair fragment:       2      4
  *****************************************************************************
- Distance(Ang), pair virt energy =      0.75000       -0.1583763316E-01
+ Distance(Ang), pair virt energy =      0.75000       -0.1583763317E-01
 
 
 #PAIRDIMS# basis,occ,virt       16       4       5
@@ -3694,7 +3694,7 @@ FOP Rejection threshold  :   1.00000E-03
  Pairs to be treated at input CC level          6
  Pairs to be skipped from calculation           9
 
- Estimated pair correlation energy:            -0.5514890815E-01
+ Estimated pair correlation energy:            -0.5514890816E-01
  Estimated contribution from skipped pairs:    -0.3862306152E-02
 
 
@@ -3705,16 +3705,16 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
   Atom1  Atom2     Dist(Ang)        Energy
-     2       4     0.75000         -0.1583763316E-01    PF_ESTIMATE
-     2       5      1.2500         -0.7527058678E-02    PF_ESTIMATE
+     2       4     0.75000         -0.1583763317E-01    PF_ESTIMATE
+     2       5      1.2500         -0.7527058683E-02    PF_ESTIMATE
      2       6      1.7500         -0.1325762561E-02    PF_ESTIMATE
-     2       7      2.7500         -0.2088653522E-03    PF_ESTIMATE
-     2       8      3.7500         -0.3067809452E-04    PF_ESTIMATE
-     4       5     0.50000         -0.1525307978E-01    PF_ESTIMATE
-     4       6      1.0000         -0.2005805992E-02    PF_ESTIMATE
+     2       7      2.7500         -0.2088653521E-03    PF_ESTIMATE
+     2       8      3.7500         -0.3067809453E-04    PF_ESTIMATE
+     4       5     0.50000         -0.1525307979E-01    PF_ESTIMATE
+     4       6      1.0000         -0.2005805991E-02    PF_ESTIMATE
      4       7      2.0000         -0.1971830928E-03    PF_ESTIMATE
-     4       8      3.0000         -0.1785341550E-04    PF_ESTIMATE
-     5       6     0.50000         -0.8453805865E-02    PF_ESTIMATE
+     4       8      3.0000         -0.1785341552E-04    PF_ESTIMATE
+     5       6     0.50000         -0.8453805866E-02    PF_ESTIMATE
      5       7      1.5000         -0.9194649254E-03    PF_ESTIMATE
      5       8      2.5000         -0.1179234479E-03    PF_ESTIMATE
      6       7      1.0000         -0.2209218512E-02    PF_ESTIMATE
@@ -3722,8 +3722,8 @@ FOP Rejection threshold  :   1.00000E-03
      7       8      1.0000         -0.6437238511E-03    PF_ESTIMATE
 
 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   4.20 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   4.15 seconds
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   4.22 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   4.18 seconds
  Preparing job list...
 
 
@@ -3777,16 +3777,16 @@ FOP Rejection threshold  :   1.00000E-03
 
  *** Calculating single and pair interaction energies ***
 
- The Coulomb energy contribution    45.490180221850601     
- The Exchange energy contribution    7.5290264263717415     
- The Fock energy contribution   -37.961153795477969     
- CCSOL: MAIN LOOP      :  6.16    s
+ The Coulomb energy contribution    45.490180221661845     
+ The Exchange energy contribution    7.5290264264054851     
+ The Fock energy contribution   -37.961153795256735     
+ CCSOL: MAIN LOOP      :  6.22    s
 
 
  *****************************************************************************
  Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair virt energy =       1.2500       -0.8587837967E-02
+ Distance(Ang), pair virt energy =       1.2500       -0.8587837960E-02
 
 
 
@@ -3808,10 +3808,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.655E-04
  Size of tmp array 3                     =     0.328E-04
 
- The Coulomb energy contribution    45.490180221925883     
- The Exchange energy contribution    7.5290264263771602     
- The Fock energy contribution   -37.961153795549194     
- CCSOL: MAIN LOOP      :  6.45    s
+ The Coulomb energy contribution    45.490180221771034     
+ The Exchange energy contribution    7.5290264264289313     
+ The Fock energy contribution   -37.961153795342014     
+ CCSOL: MAIN LOOP      :  6.51    s
 
 
  *****************************************************************************
@@ -3839,10 +3839,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.655E-04
  Size of tmp array 3                     =     0.328E-04
 
- The Coulomb energy contribution    42.971522473917098     
- The Exchange energy contribution    7.5493851398635936     
- The Fock energy contribution   -35.422137334053133     
- CCSOL: MAIN LOOP      :  6.72    s
+ The Coulomb energy contribution    42.971522473887603     
+ The Exchange energy contribution    7.5493851398954055     
+ The Fock energy contribution   -35.422137333992261     
+ CCSOL: MAIN LOOP      :  6.78    s
 
 
  *****************************************************************************
@@ -3870,10 +3870,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.655E-04
  Size of tmp array 3                     =     0.328E-04
 
- The Coulomb energy contribution    34.934758192320821     
- The Exchange energy contribution    6.2197368023268380     
- The Fock energy contribution   -28.715021389993424     
- CCSOL: MAIN LOOP      :  6.97    s
+ The Coulomb energy contribution    34.934758192315378     
+ The Exchange energy contribution    6.2197368023068584     
+ The Fock energy contribution   -28.715021390008253     
+ CCSOL: MAIN LOOP      :  7.03    s
 
 
  =======================================================================
@@ -3901,10 +3901,10 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.1854099743E-01
 
 
- The Coulomb energy contribution    34.934758192496901     
- The Exchange energy contribution    6.2197368023152801     
- The Fock energy contribution   -28.715021390181541     
- CCSOL: MAIN LOOP      :  7.21    s
+ The Coulomb energy contribution    34.934758192381103     
+ The Exchange energy contribution    6.2197368022576542     
+ The Fock energy contribution   -28.715021390122971     
+ CCSOL: MAIN LOOP      :  7.28    s
 
 
  *****************************************************************************
@@ -3932,10 +3932,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.655E-04
  Size of tmp array 3                     =     0.328E-04
 
- The Coulomb energy contribution    34.793965003926971     
- The Exchange energy contribution    6.4169503053869832     
- The Fock energy contribution   -28.377014698539895     
- CCSOL: MAIN LOOP      :  7.45    s
+ The Coulomb energy contribution    34.793965003857338     
+ The Exchange energy contribution    6.4169503054344865     
+ The Fock energy contribution   -28.377014698422798     
+ CCSOL: MAIN LOOP      :  7.51    s
 
 
  =======================================================================
@@ -3960,13 +3960,13 @@ FOP Rejection threshold  :   1.00000E-03
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single virtual  energy =    -0.2028444680E-01
+ Single virtual  energy =    -0.2028444679E-01
 
 
- The Coulomb energy contribution    54.104395702353003     
- The Exchange energy contribution    8.6387093684991427     
- The Fock energy contribution   -45.465686333853881     
- CCSOL: MAIN LOOP      :  7.69    s
+ The Coulomb energy contribution    54.104395702454781     
+ The Exchange energy contribution    8.6387093685632195     
+ The Fock energy contribution   -45.465686333891824     
+ CCSOL: MAIN LOOP      :  7.76    s
 
 
  *****************************************************************************
@@ -3994,10 +3994,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.282E-04
  Size of tmp array 3                     =     0.121E-04
 
- The Coulomb energy contribution    34.919007782313145     
- The Exchange energy contribution    6.2191400767565419     
- The Fock energy contribution   -28.699867705557139     
- CCSOL: MAIN LOOP      :  7.88    s
+ The Coulomb energy contribution    34.919007781927974     
+ The Exchange energy contribution    6.2191400766799170     
+ The Fock energy contribution   -28.699867705246604     
+ CCSOL: MAIN LOOP      :  7.95    s
 
 
  =======================================================================
@@ -4025,10 +4025,10 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.1854127957E-01
 
 
- The Coulomb energy contribution    13.199283317989703     
- The Exchange energy contribution    3.5863990250354947     
- The Fock energy contribution   -9.6128842929542166     
- CCSOL: MAIN LOOP      :  8.05    s
+ The Coulomb energy contribution    13.199283317994578     
+ The Exchange energy contribution    3.5863990250356963     
+ The Fock energy contribution   -9.6128842929588885     
+ CCSOL: MAIN LOOP      :  8.12    s
 
 
  *****************************************************************************
@@ -4056,10 +4056,10 @@ FOP Rejection threshold  :   1.00000E-03
  Size of tmp array 2                     =     0.492E-04
  Size of tmp array 3                     =     0.184E-04
 
- The Coulomb energy contribution    13.081212158522794     
- The Exchange energy contribution    3.5632364402519339     
- The Fock energy contribution   -9.5179757182708524     
- CCSOL: MAIN LOOP      :  8.23    s
+ The Coulomb energy contribution    13.081212158517980     
+ The Exchange energy contribution    3.5632364402561296     
+ The Fock energy contribution   -9.5179757182618605     
+ CCSOL: MAIN LOOP      :  8.28    s
 
 
  =======================================================================
@@ -4087,10 +4087,10 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.7452769348E-02
 
 
- The Coulomb energy contribution    2.1959747766151856     
- The Exchange energy contribution    1.0979873883077533     
- The Fock energy contribution   -1.0979873883074323     
- CCSOL: MAIN LOOP      :  8.31    s
+ The Coulomb energy contribution    2.1959747766151914     
+ The Exchange energy contribution    1.0979873883077567     
+ The Fock energy contribution   -1.0979873883074345     
+ CCSOL: MAIN LOOP      :  8.36    s
 
 
  =======================================================================
@@ -4118,10 +4118,10 @@ FOP Rejection threshold  :   1.00000E-03
  Single virtual  energy =    -0.1034456148E-01
 
 
- The Coulomb energy contribution    2.1213494515727449     
- The Exchange energy contribution    1.0606747257863356     
- The Fock energy contribution   -1.0606747257864095     
- CCSOL: MAIN LOOP      :  8.35    s
+ The Coulomb energy contribution    2.1213494515727462     
+ The Exchange energy contribution    1.0606747257863360     
+ The Fock energy contribution   -1.0606747257864102     
+ CCSOL: MAIN LOOP      :  8.40    s
 
 
  =======================================================================
@@ -4163,7 +4163,7 @@ FOP Rejection threshold  :   1.00000E-03
  Fragment       Energy
      2      -0.1854099743E-01    AF_CCSD_VIR
      4      -0.1854127957E-01    AF_CCSD_VIR
-     5      -0.2028444680E-01    AF_CCSD_VIR
+     5      -0.2028444679E-01    AF_CCSD_VIR
      6      -0.7452769348E-02    AF_CCSD_VIR
      7      -0.1034456148E-01    AF_CCSD_VIR
      8      -0.1364025252E-01    AF_CCSD_VIR
@@ -4175,13 +4175,13 @@ FOP Rejection threshold  :   1.00000E-03
 
   Atom1  Atom2     Dist(Ang)        Energy
      2       4     0.75000         -0.1840101596E-01    PF_CCSD_VIR
-     2       5      1.2500         -0.8587837967E-02    PF_CCSD_VIR
+     2       5      1.2500         -0.8587837960E-02    PF_CCSD_VIR
      4       5     0.50000         -0.1636576976E-01    PF_CCSD_VIR
      4       6      1.0000         -0.2261166708E-02    PF_CCSD_VIR
      5       6     0.50000         -0.9029653723E-02    PF_CCSD_VIR
      6       7      1.0000         -0.2446187586E-02    PF_CCSD_VIR
 
- CCSD virtual  correlation energy :    -0.1458959389    
+ CCSD virtual  correlation energy :    -0.1458959388    
 
 
 
@@ -4190,8 +4190,8 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
  Fragment       Energy
-     2      -0.1258710937E-03    AF_ParT_VIR_BOTH
-     4      -0.1327959558E-03    AF_ParT_VIR_BOTH
+     2      -0.1258710939E-03    AF_ParT_VIR_BOTH
+     4      -0.1327959557E-03    AF_ParT_VIR_BOTH
      5      -0.1743630727E-03    AF_ParT_VIR_BOTH
      6      -0.1394022760E-05    AF_ParT_VIR_BOTH
      7        0.000000000        AF_ParT_VIR_BOTH
@@ -4203,10 +4203,10 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
  Fragment       Energy
-     2      -0.1266453150E-03    AF_ParT_VIR4
-     4      -0.1359133209E-03    AF_ParT_VIR4
+     2      -0.1266453152E-03    AF_ParT_VIR4
+     4      -0.1359133208E-03    AF_ParT_VIR4
      5      -0.1740429600E-03    AF_ParT_VIR4
-     6      -0.6465580402E-05    AF_ParT_VIR4
+     6      -0.6465580403E-05    AF_ParT_VIR4
      7        0.000000000        AF_ParT_VIR4
      8        0.000000000        AF_ParT_VIR4
 
@@ -4216,9 +4216,9 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
  Fragment       Energy
-     2       0.7742212544E-06    AF_ParT_VIR5
-     4       0.3117365076E-05    AF_ParT_VIR5
-     5      -0.3201126295E-06    AF_ParT_VIR5
+     2       0.7742212421E-06    AF_ParT_VIR5
+     4       0.3117365152E-05    AF_ParT_VIR5
+     5      -0.3201126207E-06    AF_ParT_VIR5
      6       0.5071557642E-05    AF_ParT_VIR5
      7        0.000000000        AF_ParT_VIR5
      8        0.000000000        AF_ParT_VIR5
@@ -4229,11 +4229,11 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
   Atom1  Atom2     Dist(Ang)        Energy
-     2       4     0.75000         -0.1915373510E-03    PF_ParT_VIR_BOTH
-     2       5      1.2500         -0.1396479613E-03    PF_ParT_VIR_BOTH
-     4       5     0.50000         -0.2892646874E-03    PF_ParT_VIR_BOTH
-     4       6      1.0000         -0.6128729308E-04    PF_ParT_VIR_BOTH
-     5       6     0.50000         -0.6594075171E-04    PF_ParT_VIR_BOTH
+     2       4     0.75000         -0.1915373506E-03    PF_ParT_VIR_BOTH
+     2       5      1.2500         -0.1396479605E-03    PF_ParT_VIR_BOTH
+     4       5     0.50000         -0.2892646875E-03    PF_ParT_VIR_BOTH
+     4       6      1.0000         -0.6128729312E-04    PF_ParT_VIR_BOTH
+     5       6     0.50000         -0.6594075169E-04    PF_ParT_VIR_BOTH
      6       7      1.0000         -0.2129903244E-05    PF_ParT_VIR_BOTH
 
 
@@ -4242,11 +4242,11 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
   Atom1  Atom2     Dist(Ang)        Energy
-     2       4     0.75000         -0.2109734046E-03    PF_ParT_VIR4
-     2       5      1.2500         -0.1664549580E-03    PF_ParT_VIR4
-     4       5     0.50000         -0.3027835809E-03    PF_ParT_VIR4
-     4       6      1.0000         -0.6460143919E-04    PF_ParT_VIR4
-     5       6     0.50000         -0.6665569737E-04    PF_ParT_VIR4
+     2       4     0.75000         -0.2109734043E-03    PF_ParT_VIR4
+     2       5      1.2500         -0.1664549575E-03    PF_ParT_VIR4
+     4       5     0.50000         -0.3027835808E-03    PF_ParT_VIR4
+     4       6      1.0000         -0.6460143923E-04    PF_ParT_VIR4
+     5       6     0.50000         -0.6665569735E-04    PF_ParT_VIR4
      6       7      1.0000         -0.2093850367E-05    PF_ParT_VIR4
 
 
@@ -4255,18 +4255,18 @@ FOP Rejection threshold  :   1.00000E-03
  =================================================================
 
   Atom1  Atom2     Dist(Ang)        Energy
-     2       4     0.75000          0.1943605358E-04    PF_ParT_VIR5
-     2       5      1.2500          0.2680699668E-04    PF_ParT_VIR5
-     4       5     0.50000          0.1351889353E-04    PF_ParT_VIR5
-     4       6      1.0000          0.3314146111E-05    PF_ParT_VIR5
-     5       6     0.50000          0.7149456615E-06    PF_ParT_VIR5
-     6       7      1.0000         -0.3605287637E-07    PF_ParT_VIR5
+     2       4     0.75000          0.1943605369E-04    PF_ParT_VIR5
+     2       5      1.2500          0.2680699697E-04    PF_ParT_VIR5
+     4       5     0.50000          0.1351889332E-04    PF_ParT_VIR5
+     4       6      1.0000          0.3314146104E-05    PF_ParT_VIR5
+     5       6     0.50000          0.7149456640E-06    PF_ParT_VIR5
+     6       7      1.0000         -0.3605287658E-07    PF_ParT_VIR5
 
- (T) virtual  correlation energy :    -0.1184232093E-02
- (T) virtual  4th order energy   :    -0.1256630107E-02
- (T) virtual  5th order energy   :     0.7239801403E-04
+ (T) virtual  correlation energy :    -0.1184232092E-02
+ (T) virtual  4th order energy   :    -0.1256630106E-02
+ (T) virtual  5th order energy   :     0.7239801429E-04
 
- Total CCSD(T) virtual  correlation energy :    -0.1470801710    
+ Total CCSD(T) virtual  correlation energy :    -0.1470801709    
 
 
 
@@ -4280,7 +4280,7 @@ FOP Rejection threshold  :   1.00000E-03
              **********************************************************
 
                E: Hartree-Fock energy :       -8.8728715621
-               E: Correlation energy  :       -0.1470801710
+               E: Correlation energy  :       -0.1470801709
                E: Total CCSD(T) energy:       -9.0199517331
 
 
@@ -4300,13 +4300,13 @@ FOP Rejection threshold  :   1.00000E-03
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         6.61842     s
-Total Wall time used in DEC          :         6.56200     s
+Total CPU  time used in DEC          :         6.64454     s
+Total Wall time used in DEC          :         6.58600     s
 ------------------------------------------------------
 
 
 Hostname       : kaspers-mbp.chem.au.dk                            
-Job finished   : Date: 14/08/2014   Time: 12:49:47
+Job finished   : Date: 14/08/2014   Time: 12:31:41
 
 
 
@@ -4316,8 +4316,8 @@ Job finished   : Date: 14/08/2014   Time: 12:49:47
 
 
 
- >>>  CPU Time used in *SCF is   7.99 seconds
- >>> wall Time used in *SCF is   7.93 seconds
+ >>>  CPU Time used in *SCF is   8.03 seconds
+ >>> wall Time used in *SCF is   7.98 seconds
 
 Total no. of matmuls used:                      6064
 Total no. of Fock/KS matrix evaluations:          23
@@ -4410,9 +4410,9 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- >>>  CPU Time used in LSDALTON is   8.41 seconds
- >>> wall Time used in LSDALTON is   8.36 seconds
+ >>>  CPU Time used in LSDALTON is   8.47 seconds
+ >>> wall Time used in LSDALTON is   8.41 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Aug 14 12:49:47 2014
+     Date and time (Linux)  : Thu Aug 14 12:31:41 2014
      Host name              : kaspers-mbp.chem.au.dk                  

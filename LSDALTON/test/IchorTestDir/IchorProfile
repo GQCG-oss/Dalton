@@ -81,7 +81,7 @@ else
    GREP="egrep"
 fi
 
-CRIT1=`$GREP "Norm of Ichor4Center: * 1671\.7296166564" $log | wc -l`
+CRIT1=`$GREP "Norm of Ichor4Center: * 1671\.729616656" $log | wc -l`
 TEST[ 1]=`expr  $CRIT1`
 CTRL[ 1]=1
 ERROR[ 1]=" Profile Run Ichor Integrals NOT CORRECT -"

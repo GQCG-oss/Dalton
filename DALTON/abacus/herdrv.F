@@ -3562,7 +3562,6 @@ C
 C     Integrals on LUINTA
 C
       IF (RUNTWO) THEN
-         IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT','*',126)
          I2TYP = 0
 C
 C        ********************************************
@@ -3571,15 +3570,19 @@ C        ********************************************
 C
          IF (HAMILT) THEN
             IF (RUNERI) THEN
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from ERI 2INT',
+     &            '*',126)
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
      &                     LFREE)
                CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
                CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
-               CALL TIMER('ERIDRV',TIMSTR,TIMEND)
+               CALL TIMER('ERI 2INT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             ELSE
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT',
+     &            '*',126)
                NPAO = MXSHEL*MXAOVC
                CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)

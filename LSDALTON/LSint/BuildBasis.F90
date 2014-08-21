@@ -1198,10 +1198,10 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
      ! Reading the primitive and contracted coeffecients
      READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
      IF(ios /= 0)THEN
-        WRITE (LUPRI,'(2A)') ' Error in basisset file'
-        WRITE(lupri,*)'This could mean that the line containing exponents &
-          &and contraction coefficients fill more than 280 characters'
-        WRITE(lupri,*)'Which means you need to manually split the line'
+        WRITE (LUPRI,'(A)') ' Error in basisset file'
+        WRITE(lupri,'(A)')'This could mean that the line containing exponents'
+        WRITE(lupri,'(A)')'and contraction coefficients fill more than 280 characters'
+        WRITE(lupri,'(A)')'Which means you need to manually split the line'
         CALL LSQUIT('Error in basisset file',lupri)
      ELSE
         READ (STRING, '(A1)') SIGN

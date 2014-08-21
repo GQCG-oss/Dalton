@@ -4125,6 +4125,10 @@ end function max_batch_dimension
        IF(.NOT.DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        ENDIF
+       IF(DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy :', Ehf
+       ENDIF
+       write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
@@ -4142,6 +4146,12 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_RPA) then
+         if(.not. DECinfo%SOS) then
+           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
+         else
+           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy:', Ehf+Ecorr
+         endif
        end if
     else
        IF(DECinfo%InteractionEnergy)THEN

@@ -12,31 +12,31 @@ subroutine VerticalRecurrenceGPUSeg1Prim0(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)
-  REAL(REALK),intent(in) :: reducedExponents(1)
-  REAL(REALK),intent(in) :: integralPrefactor(1)
-  REAL(REALK),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
-  REAL(REALK),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
+  real(realk),intent(in) :: TABFJW(0:3,0:1200)
+  real(realk),intent(in) :: reducedExponents(1)
+  real(realk),intent(in) :: integralPrefactor(1)
+  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
+  real(realk),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(inout) :: AUXarray(nPassP)
   !local variables
-  REAL(REALK),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
+  real(realk),PARAMETER :: D2JP36=  3.6000000000000000E+01_realk
   real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
-  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk),parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk
-  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL
-  Real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000
+  real(realk),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk
+  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
+  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  real(realk),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
+  real(realk),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  real(realk),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  real(realk),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  real(realk),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  real(realk),parameter :: PI=3.14159265358979323846E0_realk
+  real(realk),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  real(realk),PARAMETER :: SQRPIH = SQRTPI/D2
+  real(realk),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+!  real(realk),PARAMETER :: SMALL = 1E-15_realk
+  real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL
+  real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000
   Integer :: IPNT,iAtomA,iAtomB
   Integer :: iP,iPrimQ,iPrimP,iPassP
 !$ACC PARALLEL LOOP &
@@ -91,7 +91,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
+  real(realk),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -102,21 +102,21 @@ subroutine VerticalRecurrenceGPUSeg1Prim1A(nPassP,nPrimP,nPrimQ,&
   real(realk) :: mPX,mPY,mPZ,invexpP,alphaP,RJ000(0:1)
   real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
   real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
   real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
+  real(realk),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
   real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2
+  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
@@ -197,7 +197,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 2)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 2)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -281,7 +281,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 3)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 3)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -391,7 +391,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 4)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 4)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -545,7 +545,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 5)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 5)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -770,7 +770,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 6)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 6)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -1103,7 +1103,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim7A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 7)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 7)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
@@ -1593,7 +1593,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim8A(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 8)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 8)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA)
