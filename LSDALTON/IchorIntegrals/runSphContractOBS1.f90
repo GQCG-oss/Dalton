@@ -223,10 +223,10 @@ DO GPUrun = 1,2
 !              IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP PARALLEL DO DEFAULT(none) PRIVATE(iP) SHARED(nContPasses,ijkQcart,IN,OUT)'
               IF(nPrimLast)THEN
                  IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP)'
-                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,ijkQcart,IN,OUT)'
+                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)'
               ELSE
                  IF(DoOpenMP) WRITE(LUMOD3,'(A)')'!$OMP DO PRIVATE(iP,ijkQ)'
-                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(nContPasses,ijkQcart,IN,OUT)'
+                 IF(DoOpenACC) WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,ijkQ) PRESENT(nContPasses,IN,OUT)'
               ENDIF
               IF(nPrimLast)THEN
                  WRITE(LUMOD3,'(A)')'  DO iP=1,ijkQcart*nContPasses'

@@ -255,6 +255,7 @@ do i=1,size(DFT%GridObject)
    call LS_MPI_BUFFER(DFT%GridObject(i)%NBUFLEN,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%Id,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%NBAST,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%Numnodes,Master)
 enddo
 
 end subroutine mpicopy_DFTparam
