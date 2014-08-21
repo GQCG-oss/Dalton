@@ -93,14 +93,14 @@ IF(DOGGA) THEN
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)   
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)   
       DO IDMAT=1,ndmat
          valMPI(IDMAT)=DFTDATA%ENERGY(IDMAT) 
       ENDDO
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -138,14 +138,14 @@ ELSE
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          valMPI(IDMAT)=DFTDATA%ENERGY(IDMAT) 
       ENDDO
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -243,7 +243,7 @@ END SUBROUTINE II_DFT_KSM
 !!$!=================MPI Specific================================
 !!$IF(USE_MPI)THEN
 !!$   call lsmpi_barrier(setting%comm)    
-!!$   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,MPI_COMM_LSDALTON)
+!!$   CALL lsmpi_reduction(ABSVALOVERLAP,NMO,NMO,infpar%master,setting%comm)
 !!$ENDIF
 !!$!=============================================================
 !!$#endif
@@ -325,7 +325,7 @@ IF(DOGGA) THEN
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -357,7 +357,7 @@ ELSE
       DO IDMAT=1,ndmat
          valMPI(IDMAT+NDMAT)=ELECTRONS(IDMAT)
       ENDDO
-      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(valMPI,2*ndmat,infpar%master,setting%comm)
       DO IDMAT=1,ndmat
          DFTDATA%ENERGY(IDMAT) = valMPI(IDMAT)
       ENDDO
@@ -464,7 +464,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #else
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
@@ -545,7 +545,7 @@ IF(DOGGA) THEN
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,setting%comm)
    ENDIF
 #endif
    DO IBMAT = 1,DFTDATA%NBMAT
@@ -575,7 +575,7 @@ ELSE
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,setting%comm)
    ENDIF
 #endif
 ENDIF
@@ -644,7 +644,7 @@ IF(DOGGA) THEN
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
    ENDIF
 #endif
    DO IDMAT = 1,DFTDATA%NDMAT
@@ -672,7 +672,7 @@ ELSE
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,setting%comm)
    ENDIF
 #endif
 ENDIF
@@ -757,7 +757,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT*3,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT*3,infpar%master,setting%comm)
    ENDIF
 #endif
 !ANTISYMMETRIZE
@@ -845,8 +845,8 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NBMAT*3,infpar%master,MPI_COMM_LSDALTON)
-      CALL lsmpi_reduction(DFTDATA%FKSMS,NBAST,NBAST,NBMAT*3,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NBMAT*3,infpar%master,setting%comm)
+      CALL lsmpi_reduction(DFTDATA%FKSMS,NBAST,NBAST,NBMAT*3,infpar%master,setting%comm)
    ENDIF
 #endif
   !ANTISYMMETRIZE FKSM
@@ -952,7 +952,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #endif
 
@@ -1031,7 +1031,7 @@ ENDIF
 #ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
-      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
+      CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,setting%comm)
    ENDIF
 #endif
 

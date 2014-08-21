@@ -204,7 +204,12 @@ CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,&
      & GridObject%nbuflen,GridObject%RADIALGRID,GridObject%ZdependenMaxAng,&
      & GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
+     & IPRINT,USE_MPI,numnodes,node,GridObject%Id,GridObject%numnodes)
+IF(GridObject%numnodes.NE.numnodes)THEN
+   print*,'GridObject%numnodes',GridObject%numnodes
+   print*,'numnodes',numnodes
+   call lsquit('dim mismatch in Number of nodes used to construct/calc grid',-1)
+ENDIF
 IF(PRINTTIM)THEN
 #ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
