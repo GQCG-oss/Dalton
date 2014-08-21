@@ -2296,6 +2296,7 @@ contains
           !       call AddToString(')')                
        ELSEIF(Seg)THEN
           call AddToString('LOCALINTS')
+          OutputSet = .TRUE.
           !          call AddToString('(1:nPasses*')
           !       call AddToString(nTUV)
           !       call AddToString(')')                
@@ -2311,6 +2312,7 @@ contains
 !          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
           call AddToString('LOCALINTS')
+          OutputSet = .TRUE.
           Contracted = .TRUE.
        ENDIF
        call AddToString(')')                

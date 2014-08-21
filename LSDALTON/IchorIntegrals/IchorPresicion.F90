@@ -14,8 +14,8 @@ MODULE IchorPrecisionModule
 ! Long integer is equivalent to 64 bit integers (8 bytes) and ranges 
 ! from -9223372036854775808 to 9223372036854775807 (i.e., -2**63 to 2**63-1)
   integer, parameter :: long = 8
-!integer defining the size of the MPI input (depending on wheter the mpi library
-!is compiled with 64 or 32 bit integers)
+! maximum value of a 32 bit integer. 
+  INTEGER, PARAMETER :: MAXINT = 2147483640
 contains
 !Added to avoid "has no symbols" linking warning
 subroutine Ichorprecision_void()
