@@ -15,7 +15,7 @@ subroutine HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContPQ,nPasses,nlmP,&
   integer :: iP,ilmP,iTUVD
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVD,ilmP) &
-!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$ACC PRESENT(nContPQ,nPasses,ThetaP,ThetaP2)
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  2,  4
      DO ilmP = 1,nlmP
@@ -37,7 +37,7 @@ subroutine HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContPQ,nPasses,nlmP,&
   integer :: iP,ilmP,iTUVD
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVD,ilmP) &
-!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)
+!$ACC PRESENT(nContPQ,nPasses,ThetaP,ThetaP2)
   DO iP = 1,nContPQ*nPasses
     DO iTUVD=  5, 10
      DO ilmP = 1,nlmP
@@ -61,7 +61,7 @@ subroutine HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContPQ,nPasses,nlmP,&
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,&
 !$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &
-!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
+!$ACC PRESENT(nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)
   DO iP = 1,nContPQ*nPasses
    Xcd = -Qdistance12(1)
    Ycd = -Qdistance12(2)

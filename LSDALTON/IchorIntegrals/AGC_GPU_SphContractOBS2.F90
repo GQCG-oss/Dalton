@@ -15,7 +15,7 @@ subroutine SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(nlmP,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,2)
     OUT(iP,2) = IN(iP,5)
@@ -37,7 +37,7 @@ subroutine SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(nlmP,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,2)
     OUT(iP,2) = IN(iP,5)
@@ -59,7 +59,7 @@ subroutine SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(nlmP,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT2_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT4_5      =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT6_3      =    5.7735026918962584E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,2)
     OUT(iP,2) = IN(iP,5)
@@ -91,7 +91,7 @@ subroutine SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(nlmP,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT4_1      =    1.0000000000000000E+00_realk
   real(realk),parameter :: SPHMAT10_13    =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT16_7     =    5.7735026918962584E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,4)
     OUT(iP,2) = IN(iP,5)
@@ -131,7 +131,7 @@ subroutine SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(nlmP,nContPasses,IN,OUT)
   real(realk),parameter :: SPHMAT10_5     =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
   real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nlmP,nContPasses,IN,OUT)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(nContPasses,IN,OUT)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,8)
     OUT(iP,2) = IN(iP,11)

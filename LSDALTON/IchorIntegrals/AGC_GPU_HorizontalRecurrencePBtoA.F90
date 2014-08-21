@@ -16,7 +16,7 @@ subroutine HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,nTUVQ,&
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVQ,&
 !$ACC         iTUVB) &
-!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC PRESENT(nContQP,nPasses,&
 !$ACC         AuxCont,ThetaP)
   DO iP = 1,nContQP*nPasses
    DO iTUVQ = 1,nTUVQ
@@ -40,7 +40,7 @@ subroutine HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,nTUVQ,&
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVQ,&
 !$ACC         iTUVB) &
-!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC PRESENT(nContQP,nPasses,&
 !$ACC         AuxCont,ThetaP)
   DO iP = 1,nContQP*nPasses
    DO iTUVQ = 1,nTUVQ
@@ -65,7 +65,7 @@ subroutine HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,nTUVQ,&
 !$ACC PARALLEL LOOP &
 !$ACC PRIVATE(iP,iTUVQ,&
 !$ACC         iPassP,iTUVB,iAtomA,iAtomB,Xab,Yab,Zab) &
-!$ACC PRESENT(nTUVQ,nContQP,nPasses,&
+!$ACC PRESENT(nContQP,nPasses,&
 !$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)
   DO iP = 1,nContQP*nPasses
    DO iTUVQ = 1,nTUVQ
