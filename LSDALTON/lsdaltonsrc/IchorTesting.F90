@@ -1,5 +1,3 @@
-
-TESTING LINK 
 MODULE IntegralInterfaceIchorMod
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
