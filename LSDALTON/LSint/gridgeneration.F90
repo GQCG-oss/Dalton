@@ -129,7 +129,7 @@ INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> should we use MPI
 LOGICAL,intent(in)    :: USE_MPI
 integer(kind=ls_mpik),intent(in)    :: numnodes,node
-integer(kind=ls_mpik),intent(inout) :: Gridnumnodes
+integer,intent(inout) :: Gridnumnodes
 !> if the grid id
 INTEGER :: GRIDID
 !
