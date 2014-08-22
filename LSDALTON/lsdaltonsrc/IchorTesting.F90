@@ -1,3 +1,5 @@
+
+TESTING LINK 
 MODULE IntegralInterfaceIchorMod
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
@@ -18,15 +20,16 @@ MODULE IntegralInterfaceIchorMod
   use molecule_module, only: DETERMINE_NBAST2
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
-       & mat_scal, mat_mul, mat_assign, mat_trans
+       & mat_scal, mat_mul, mat_assign, mat_trans, mat_set_from_full
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
-  use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat
+  use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat,&
+       & II_get_exchange_mat
   use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
-  
-  public::  II_unittest_Ichor
+  use lstiming
+  public::  II_unittest_Ichor,II_Ichor_LinK_test
   private
 CONTAINS
 !> \brief Calculates overlap integral matrix
@@ -394,27 +397,27 @@ do Ipass = IpassStart,IpassEnd
              DO idmat=1,nDmat
               DO C=1,dim3
                DO A=1,dim1
-                IF(ABS(KmatII(A,C,idmat)).GT.1.0E-10_realk)THEN
+                IF(ABS(KmatII(A,C,idmat)).GT.1.0E-9_realk)THEN
                  IF(ABS(KmatII(A,C,idmat)-KmatIchor(A,C,idmat)).GT. &
-                      & 1.0E-10_realk/(ABS(KmatII(A,C,idmat))))THEN
+                      & 1.0E-9_realk/(ABS(KmatII(A,C,idmat))))THEN
                     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                    write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
                     write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)= ',A,C,iDmat
-                    write(lupri,'(A,ES16.8)')'Kmat(A,C,iDmat)     ',KmatII(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'KmatIchor(A,C,iDmat)',KmatIchor(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                    write(lupri,'(A,ES20.10)')'Kmat(A,C,iDmat)     ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
                          & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDMat))
                     call lsquit('ERROR',-1)
                  ENDIF
                 ELSE
                  IF(ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat)).GT. &
-                      & 1.0E-10_realk)THEN
+                      & 1.0E-9_realk)THEN
                     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                    write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
                     write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)=   ',A,C,iDmat
-                    write(lupri,'(A,ES16.8)')'KmatII(A,1,C,iDmat)   ',KmatII(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'KmatIchor(A,C,iDmat)  ',KmatIchor(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                    write(lupri,'(A,ES20.10)')'KmatII(A,1,C,iDmat)   ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)  ',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
                          & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat))
                     call lsquit('ERROR',-1)
                  ENDIF
@@ -664,6 +667,76 @@ WRITE(lupri,*)'done II_test_Ichor'
 
 #endif
 END SUBROUTINE II_unittest_Ichor
+
+SUBROUTINE II_Ichor_LinK_test(LUPRI,LUERR,SETTING,D)
+implicit none
+TYPE(LSSETTING),intent(in)       :: SETTING
+INTEGER,intent(in)               :: LUPRI,LUERR
+type(matrix),intent(in)          :: D(1)
+!
+real(realk),pointer :: Dmat(:,:,:)
+real(realk)  :: ts,te
+type(matrix) :: D2(1)
+Character    :: intSpec(5)
+logical :: SameMOL,Dsym
+integer :: nbast,nDmat
+nbast = D(1)%nrow
+nDmat = 1
+intSpec(1) = 'R'; intSpec(2) = 'R'; intSpec(3) = 'R'; intSpec(4) = 'R'
+intSpec(5) = 'C'
+SameMOL = .TRUE.
+Dsym = .TRUE.
+CALL II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+
+WRITE(lupri,*)'Non Symmetric Density Matrix'
+call mat_init(D2(1),nbast,nbast)
+call mem_alloc(Dmat,nbast,nbast,nDmat)
+call MakeRandomDmat(Dmat,nbast,nbast,nDmat)
+call mat_set_from_full(Dmat,1.d0,D2(1))
+call mem_dealloc(Dmat)
+
+Dsym = .FALSE.
+CALL II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D2,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+call mat_free(D2(1))
+END SUBROUTINE II_ICHOR_LINK_TEST
+
+Subroutine II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+implicit none
+TYPE(LSSETTING),intent(in)       :: SETTING
+INTEGER,intent(in)               :: LUPRI,LUERR,nbast,nDmat
+type(matrix),intent(in)          :: D(1)
+Character,intent(in)             :: intSpec(5)
+logical,intent(in)               :: SameMOL,Dsym
+!
+real(realk)           :: ts,te,IchorE1,ThermiteE1
+type(matrix)          :: K(1)
+integer :: iprint
+iprint = 0
+call mat_init(K(1),nbast,nbast)
+call mat_zero(K(1))
+CALL LSTIMER('START',ts,te,lupri)
+CALL II_get_exchange_mat(lupri,6,setting,D,ndmat,Dsym,K)
+CALL LSTIMER('ThermiteK',ts,te,lupri)
+WRITE(lupri,*)'K exchange Matrix Thermite'
+call mat_print(K(1),1,nbast,1,nbast,lupri)
+ThermiteE1 = mat_dotproduct(D(1),K(1))
+WRITE(lupri,*)'Thermite: Exchange energy, mat_dotproduct(D,K)=',ThermiteE1
+WRITE(6,*)'Thermite: Exchange energy, mat_dotproduct(D,K)=',ThermiteE1
+
+call mat_zero(K(1))
+CALL LSTIMER('START',ts,te,lupri)
+call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,nbast,nbast,nbast,nbast,&
+     & nDmat,K(1)%elms,D(1)%elms,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+call FREE_SCREEN_ICHORERI
+CALL LSTIMER('IchorK',ts,te,lupri)
+WRITE(lupri,*)'K exchange Matrix Ichor'
+call mat_print(K(1),1,nbast,1,nbast,lupri)
+IchorE1 = mat_dotproduct(D(1),K(1))
+WRITE(lupri,*)'Ichor: Exchange energy, mat_dotproduct(D,K)=',IchorE1
+WRITE(6,*)'Ichor: Exchange energy, mat_dotproduct(D,K)=',IchorE1
+call mat_free(K(1))
+end subroutine II_Ichor_LinK_test1
 
 subroutine MakeRandomDmat(Dmat,dim2,dim4,nDmat)
   implicit none

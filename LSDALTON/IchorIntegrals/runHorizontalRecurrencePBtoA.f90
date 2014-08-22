@@ -202,7 +202,7 @@ CONTAINS
              ELSE
                 WRITE(LUFILE,'(A)')'!$ACC         iTUVB) &'
              ENDIF
-             WRITE(LUFILE,'(A)')'!$ACC PRESENT(nContQP,nPasses,&'
+             WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,&'
              IF(JA.NE.0)THEN
                 WRITE(LUFILE,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
              ELSE

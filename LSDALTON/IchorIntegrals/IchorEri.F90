@@ -3945,6 +3945,8 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 
      !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
      ! + OutputC(nCMO1*nCMO2*nCMO3,nDimC) * CMO4C(nDimC,nCMO4)
+     !CALL DistributeLink_MOtransformD(ndimC,CMO4C,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !  OR 
      call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimC,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
           & CMO4C,nDimC,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
   ELSE
@@ -3960,9 +3962,12 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 
      !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
      ! + OutputC(nCMO1*nCMO2*nCMO3,nDimD) * CMO4(nDimD,nCMO4)
+     !CALL DistributeLink_MOtransformD(ndimD,CMO4D,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !  OR 
      call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimD,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
           & CMO4D,nDimD,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
   ENDIF
+
   CALL Mem_ichor_dealloc(OutputC)
   deallocate(OutputC)
 
