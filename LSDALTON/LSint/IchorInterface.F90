@@ -312,7 +312,7 @@ integer :: A,I,B,J
 !   ENDDO
 !ENDDO
 MoTrans = .TRUE.
-NoSymmetry = .TRUE.
+NoSymmetry = .FALSE.
 !all these subroutines are in the file IchorIntegrals/MainIchorInterface.F90
 call InitIchorInputInfo
 call IchorInputM2(Cvirt,dim1,nVirt,Cocc,dim2,nOcc)
