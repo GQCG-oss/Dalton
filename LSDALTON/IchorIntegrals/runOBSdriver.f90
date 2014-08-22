@@ -1005,7 +1005,7 @@ DO GPUrun=1,2
      ELSE
         WRITE(LUMOD5,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD5,'(A)')'!$ACC PRIVATE(iP,iContC,iPrimC,TMP) &'
-        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimC,nPasses,nPrimD,nTUVP,nTUVQ,&'
+        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimC,nPasses,nPrimD,&'
         WRITE(LUMOD5,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD5,'(A)')'    do iP = 1,nPasses*nTUVP*nTUVQ*nPrimD'

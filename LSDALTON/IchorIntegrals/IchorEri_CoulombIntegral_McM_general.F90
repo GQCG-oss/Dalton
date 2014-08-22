@@ -6,6 +6,7 @@
 !> \date 2013 
 MODULE IchorEriCoulombintegralGeneralMod
 use precision
+use IchorCommonModule
 use ThermiteMem_module
 use AGCContractEcoeffPSegSubsMod
 use AGCDirectContractEcoeffSegSubsMod1
@@ -67,7 +68,7 @@ CONTAINS
     !build from old IchorEri_CoulombIntegral_general.f90 in
     !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
     IF(PQorder)THEN
-       call lsquit('PQorder McM general expect to get QP ordering',-1)
+       call ichorquit('PQorder McM general expect to get QP ordering',-1)
     ENDIF
     !TODO ipassP!
     nPrimPassQ = nPrimQ*nPasses 
@@ -111,7 +112,7 @@ CONTAINS
        ENDIF
     ELSE
        !generate more using RECURRENCE.F90 in tools
-       call lsquit('AngmomPQ .GT. 4',-1)
+       call ichorquit('AngmomPQ .GT. 4',-1)
     ENDIF
     !builds WTUV(nTUV,nPrimP,nPrimQ,nPassesQ)
     IF (IntPrint .GE. 25) THEN
@@ -319,7 +320,7 @@ CONTAINS
         call DirectContractEcoeffN_seg_maxAngP4_maxAngQ4_maxAngC2(&
              & nPrimP,nPrimQ,nPasses,Ecoeffn,WTUV,RE)
      CASE DEFAULT        
-        call lsquit('DirectContractEcoeffN')
+        call ichorquit('DirectContractEcoeffN',-1)
      END SELECT
      !
      !RE(nTUVP,ijkQcart,nPrimP,nPasses)
@@ -375,7 +376,7 @@ CONTAINS
         call ContractPEcoeffN_seg_maxAngP4_maxAngA2(&
              & nPrimP,nPasses,ijkQcart,Ecoeffn,RE,ERE)
      CASE DEFAULT        
-        call lsquit('ContractPEcoeffN')
+        call ichorquit('ContractPEcoeffN',-1)
      END SELECT
      !builds ERE(ijkPcart,ijkQcart,nPasses)
 !IFDEF
@@ -419,7 +420,7 @@ CONTAINS
         CASE(42) 
            call SphericalContractP_maxAngP4_maxAngA2(ijkQcart,nPasses,ERE,SERE)
         CASE DEFAULT        
-           call lsquit('ContractSphP')
+           call ichorquit('ContractSphP',-1)
         END SELECT
         call mem_dealloc(ERE)        
      ELSE
@@ -454,7 +455,7 @@ CONTAINS
         CASE(42) 
            call SphericalContractQ_maxAngQ4_maxAngC2(ijkPsph,nPasses,SERE,SERES)
         CASE DEFAULT        
-           call lsquit('ContractSphQ')
+           call ichorquit('ContractSphQ',-1)
         END SELECT
         call mem_dealloc(ERE)        
      ELSE
@@ -485,7 +486,7 @@ CONTAINS
 !!$
 !!$       IF(.NOT.Qsegmented)THEN
 !!$          !ContInt(ijkQcart,nTUVP,nPrimP,nContQ,nPasses) = CC*PrimInt(ijkQcart,nTUVP,nPrimP,nPrimQ,nPasses)
-!!$          call lsquit('ContQ',-1)
+!!$          call ichorquit('ContQ',-1)
 !!$       ENDIF
 !!$
 !!$       !SphericalTransform
@@ -515,7 +516,7 @@ CONTAINS
 !!$          
 !!$       ELSE
 !!$          !ContInt(ijkQcart,nTUVP,nPrimP,nContQ,nPasses) = CC*PrimInt(ijkQcart,nTUVP,nPrimP,nPrimQ,nPasses)
-!!$          call lsquit('ContQ',-1)
+!!$          call ichorquit('ContQ',-1)
 !!$       ENDIF
     ENDIF
   end subroutine IchorCoulombIntegral_McM_general
@@ -2140,7 +2141,7 @@ ELSEIF(maxIJ.EQ.6 )THEN
       ENDDO
    ENDIF
 ELSE
-   CALL lsquit('EXTEND ICHOR_HERM_ECOEFFS (MAIN2 IN etij)',-1)
+   CALL ichorquit('EXTEND ICHOR_HERM_ECOEFFS (MAIN2 IN etij)',-1)
 ENDIF
 END SUBROUTINE ICHOR_HERM_ECOEFFS
 
