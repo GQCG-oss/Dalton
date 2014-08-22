@@ -110,7 +110,6 @@ CONTAINS
         !No reason for the Electron Transfer Recurrence Relation 
         !Primitive Contraction have already been done
         !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        LOCALINTS = TMParray2
         !no Spherical Transformation LHS needed
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
