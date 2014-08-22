@@ -207,7 +207,7 @@ DO GPUrun = 1,2
              ELSE
                 WRITE(LUFILE,'(A)')'!$ACC         iTUVA) &'
              ENDIF
-             WRITE(LUFILE,'(A)')'!$ACC PRESENT(nContQP,nPasses,&'
+             WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,&'
              IF(JB.NE.0)THEN
                 WRITE(LUFILE,'(A)')'!$ACC         iAtomApass,iAtomBpass,Pdistance12,AuxCont,ThetaP)'
              ELSE

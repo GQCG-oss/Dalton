@@ -146,6 +146,7 @@ F90_OBJS = \
         AGC_GPU_SphContractOBS2.o \
         IchorParameters.o \
         IchorCommon.o \
+        IchorInputInfo.o\
         IchorBatchTools.o \
         IchorMem.o \
 	IchorSaveGab.o \

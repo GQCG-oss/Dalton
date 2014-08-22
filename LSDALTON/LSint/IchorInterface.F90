@@ -19,7 +19,7 @@ public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
      & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
      & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab,&
-     & MAIN_LINK_ICHORERI_DRIVER 
+     & MAIN_LINK_ICHORERI_DRIVER, MAIN_ICHORERI_MOTRANS_DRIVER
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -284,15 +284,59 @@ MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 #endif
 end SUBROUTINE determine_Ichor_batchesofAOS
 
-SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
-     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend)
+!dim1,dim2,dim3,dim4 are the AO dimensions 
+SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
+     & Cocc,Cvirt,nOcc,nVirt)
 implicit none
 TYPE(lssetting),intent(in):: setting
-integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4
-logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
+integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4,nOcc,nVirt
+logical,intent(in)        :: FullBatch  !full batches are assumed and the nbatchXXX arguments are not used 
 integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
-real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
+real(realk),intent(in)    :: Cvirt(dim1,nVirt)
+real(realk),intent(in)    :: Cocc(dim2,nOcc)
+real(realk),intent(inout) :: integrals(nVirt,nOcc,nVirt,nOcc)
+Character,intent(IN)      :: intSpec(5)
+!
+#ifdef VAR_ICHOR
+logical :: MoTrans,NoSymmetry
+integer :: A,I,B,J
+!DO J=1,nOcc
+!   DO B=1,nVirt
+!      DO I=1,nOcc
+!         DO A=1,nVirt
+!            integrals(A,I,B,J) = 0.0E0_realk
+!         ENDDO
+!      ENDDO
+!   ENDDO
+!ENDDO
+MoTrans = .TRUE.
+NoSymmetry = .TRUE.
+!all these subroutines are in the file IchorIntegrals/MainIchorInterface.F90
+call InitIchorInputInfo
+call IchorInputM2(Cvirt,dim1,nVirt,Cocc,dim2,nOcc)
+call IchorInputSpec(1,2,1,2)
+CALL MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,&
+     & nbatchDend,MoTrans,nVirt,nOcc,nVirt,nOcc,NoSymmetry)
+call FreeIchorInputInfo()
+#endif
+END SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER
+
+SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
+     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+integer,intent(in)        :: dim1,dim2,dim3,dim4 !AO dim
+integer,intent(in)        :: OutDim1,OutDim2,OutDim3,OutDim4 !output dim
+logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
+logical,intent(in)        :: MoTrans,NoSymmetry
+integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
+integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
+real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
 Character,intent(IN)      :: intSpec(5)
 #ifdef VAR_ICHOR
 !
@@ -360,8 +404,12 @@ Call BuildCenterAndTypeInfo(4,intSpec(4),setting,ntypesD,nBatchesD,nAtomsOfTypeD
      & nbatchDstart,nbatchDend,spherical)
 
 call GetIchorSphericalParamIdentifier(SphericalSpec)
-doLink = .FALSE.
-call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
+IF(MoTrans)THEN
+   call GetIchorJobMOtransIdentifier(IchorJobSpec)   
+ELSE
+   doLink = .FALSE.
+   call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
+ENDIF
 rhsDmat = .FALSE. !no rhs density matrix supplied as input 
 call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
 IchorInputDim1=1                 !not used since   IcorInputNoInput
@@ -398,7 +446,11 @@ ELSE
    CRIT5 = Setting%sameBas(1,3).AND.Setting%sameBas(2,4)
    SameODs = ((CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)).AND.CRIT5
 ENDIF
-
+IF(NoSymmetry)THEN
+   SameLHSaos = .FALSE. 
+   SameRHSaos = .FALSE. 
+   SameODs = .FALSE. 
+ENDIF
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 call GetIchorFileStorageIdentifier(filestorageIdentifier)
 
@@ -418,10 +470,10 @@ ELSE
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
 
-OutputDim1=dim1
-OutputDim2=dim2
-OutputDim3=dim3
-OutputDim4=dim4
+OutputDim1=Outdim1
+OutputDim2=Outdim2
+OutputDim3=Outdim3
+OutputDim4=Outdim4
 OutputDim5=1
 THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
 THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR

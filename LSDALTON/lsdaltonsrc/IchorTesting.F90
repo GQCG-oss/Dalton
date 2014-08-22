@@ -61,6 +61,7 @@ real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical,SpecialPass,LHS
 logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL,TestScreening
+logical      :: MoTrans,NoSymmetry
 Character    :: intSpec(5)
 integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
 integer :: nBasisA,nBasisB,nBasisC,nBasisD,iPassStart,iPassEnd
@@ -69,6 +70,8 @@ real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
 integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat
 type(matrix) :: GAB
 
+NoSymmetry = .FALSE. !activate permutational symmetry
+MoTrans=.FALSE.
 intSpec(1) = 'R'
 intSpec(2) = 'R'
 intSpec(3) = 'R'
@@ -376,7 +379,7 @@ do Ipass = IpassStart,IpassEnd
              SameMOL = .FALSE.       
              call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
              call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
-                  & nDmat,KmatIchor,Dmat,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
+                  & nDmat,KmatIchor,Dmat,intspec,.TRUE.,1,1,1,1,1,1,1,1)
              call FREE_SCREEN_ICHORERI
 
 !             WRITE(lupri,*)'The Exchange Matrix: '
@@ -457,7 +460,8 @@ do Ipass = IpassStart,IpassEnd
              SameMOL = .FALSE.       
              call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
              call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
-                  & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
+                  & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,&
+                  & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry)
              call FREE_SCREEN_ICHORERI
              !       print*,'DONE call ICHOR WITH BASIS'
              !setting%scheme%intprint = 0
