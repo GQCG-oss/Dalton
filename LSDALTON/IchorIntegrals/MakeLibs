@@ -15,7 +15,6 @@ LIBS           = #-openmp
 AR             = ar
 ARFLAGS        =  rvs
 #
-default : linux.x
 
 .SUFFIXES : .F90 
 
@@ -209,4 +208,8 @@ include Makefile.depend
 #-include Makefile.depend
 ###################################################################### 
 
-#ifort -o Test.x IchorTestingMain.F90 libIchorIntegrals.a -openmp
+#the above code makes the libIchorIntegrals.a now you just have to link using
+
+test.x: 
+	@echo "---------------> Linking test.x ..."
+	$(F90) $(F90FLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a
