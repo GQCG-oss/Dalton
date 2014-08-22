@@ -160,8 +160,6 @@ add_library(
 
 target_link_libraries(pdpacklib matrixulib)
 
-
-
 add_library(
     lsutiltypelib_common
     ${LSUTIL_TYPE_SOURCES}
@@ -357,6 +355,19 @@ target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
+
+if(ENABLE_PCMSOLVER)
+    add_dependencies(lsdaltonmain pcmsolver)
+    add_definitions(-DPCM_MODULE)
+    set(EXTERNAL_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
+	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
+	stdc++
+        z
+	${EXTERNAL_LIBS}
+        )
+endif()
+
 
 if(NOT ENABLE_CHEMSHELL)
     add_executable(

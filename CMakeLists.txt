@@ -99,6 +99,10 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
 
+if(ENABLE_PCMSOLVER)
+	add_PCMSOLVER()
+endif()
+
 include_directories(
     ${CMAKE_SOURCE_DIR}/DALTON/include
     ${CMAKE_SOURCE_DIR}/DALTON/dft

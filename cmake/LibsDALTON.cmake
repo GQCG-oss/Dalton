@@ -79,30 +79,13 @@ if(ENABLE_PCMSOLVER)
     if(MPI_FOUND)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
     endif()
-    set(ExternalProjectCMakeArgs
-        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
-        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
-	-DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-	-DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
-        -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
-        -DENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE}
-        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
-        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
-        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
-	-DEIGEN3_ROOT=${EIGEN3_ROOT}
-	-DDISABLE_EIGEN_OWN=${DISABLE_EIGEN_OWN}
-	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
-        )
-    add_external(pcmsolver)
     add_dependencies(dalton pcmsolver)
     add_definitions(-DPCM_MODULE)
     set(DALTON_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
 	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
 	stdc++
-    z
+        z
         ${DALTON_LIBS}
         )
 endif()
