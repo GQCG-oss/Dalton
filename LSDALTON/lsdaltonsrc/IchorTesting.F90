@@ -1,3 +1,5 @@
+
+TESTING LINK 
 MODULE IntegralInterfaceIchorMod
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
@@ -395,27 +397,27 @@ do Ipass = IpassStart,IpassEnd
              DO idmat=1,nDmat
               DO C=1,dim3
                DO A=1,dim1
-                IF(ABS(KmatII(A,C,idmat)).GT.1.0E-10_realk)THEN
+                IF(ABS(KmatII(A,C,idmat)).GT.1.0E-9_realk)THEN
                  IF(ABS(KmatII(A,C,idmat)-KmatIchor(A,C,idmat)).GT. &
-                      & 1.0E-10_realk/(ABS(KmatII(A,C,idmat))))THEN
+                      & 1.0E-9_realk/(ABS(KmatII(A,C,idmat))))THEN
                     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                    write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
                     write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)= ',A,C,iDmat
-                    write(lupri,'(A,ES16.8)')'Kmat(A,C,iDmat)     ',KmatII(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'KmatIchor(A,C,iDmat)',KmatIchor(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                    write(lupri,'(A,ES20.10)')'Kmat(A,C,iDmat)     ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
                          & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDMat))
                     call lsquit('ERROR',-1)
                  ENDIF
                 ELSE
                  IF(ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat)).GT. &
-                      & 1.0E-10_realk)THEN
+                      & 1.0E-9_realk)THEN
                     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                    write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
                     write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)=   ',A,C,iDmat
-                    write(lupri,'(A,ES16.8)')'KmatII(A,1,C,iDmat)   ',KmatII(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'KmatIchor(A,C,iDmat)  ',KmatIchor(A,C,iDmat)
-                    write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                    write(lupri,'(A,ES20.10)')'KmatII(A,1,C,iDmat)   ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)  ',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
                          & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat))
                     call lsquit('ERROR',-1)
                  ENDIF
