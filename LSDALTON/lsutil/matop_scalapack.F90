@@ -575,8 +575,8 @@ module matrix_operations_scalapack
 !         & SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
      CALL lsmpi_reduction(A%addr_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
 #endif
-     nsizeFULL = A%nrow*A%ncol
-     nsizeLOCAL= A%localnrow*A%localncol
+     nsizeFULL = A%nrow*A%ncol*mem_realsize
+     nsizeLOCAL= A%localnrow*A%localncol*mem_realsize
      call mem_allocated_mem_type_matrix(nsizeLOCAL,nsizeFULL)
 #endif     
    end subroutine mat_scalapack_init
@@ -601,8 +601,8 @@ module matrix_operations_scalapack
      TYPE(Matrix) :: A
      integer(kind=long) :: nsizeFULL,nsizeLOCAL
 #ifdef VAR_SCALAPACK        
-     nsizeFULL = A%nrow*A%ncol
-     nsizeLOCAL= A%localnrow*A%localncol
+     nsizeFULL = A%nrow*A%ncol*mem_realsize
+     nsizeLOCAL= A%localnrow*A%localncol*mem_realsize
      call mem_deallocated_mem_type_matrix(nsizeLOCAL,nsizeFULL)
      CALL PDM_SYNC(Job_free,A)
      CALL FREE_IN_DARRAY(A)
@@ -3159,6 +3159,7 @@ module matrix_operations_scalapack
    type(lsmatrix) :: Abuffer(0:0)
    integer,pointer :: address_on_grid(:,:)
    integer :: m,n,k
+   integer(kind=long) :: nsize1,nsize2
    integer(kind=ls_mpik) :: tmpi(4),ierr,one=1,two=2,zero=0
    INTEGER :: LLD, INFO
    integer, external :: numroc
@@ -3184,7 +3185,9 @@ module matrix_operations_scalapack
       CALL lsmpi_reduction(address_on_grid,SLGrid%nprow,SLGrid%npcol,infpar%master,MPI_COMM_LSDALTON)
       call mem_dealloc(address_on_grid)
 #endif
-      call mem_allocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
+      nsize1=A%localnrow*A%localncol*mem_realsize
+      nsize2=A%nrow*A%ncol*mem_realsize
+      call mem_allocated_mem_type_matrix(nsize1,nsize2)
    CASE(Job_rand)
       CALL PDM_DSCINIT(DESC_A,A)
       do i=1,A%localnrow
@@ -3521,7 +3524,9 @@ module matrix_operations_scalapack
       call mem_dealloc(diag3)
    CASE(Job_free)
       CALL FREE_IN_DARRAY(A)      
-      call mem_deallocated_mem_type_matrix(A%localnrow*A%localncol,A%nrow*A%ncol)
+      nsize1=A%localnrow*A%localncol*mem_realsize
+      nsize2=A%nrow*A%ncol*mem_realsize
+      call mem_deallocated_mem_type_matrix(nsize1,nsize2)
    CASE DEFAULT
    END SELECT
    

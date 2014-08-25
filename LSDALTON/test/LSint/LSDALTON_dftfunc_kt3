@@ -49,6 +49,7 @@ cat > LSDALTON_dftfunc_kt3.dal <<'%EOF%'
 .DFT
  KT3
 *DFT INPUT
+.MEMORY
 .GRID TYPE
  SSF LMG
 .RADINT

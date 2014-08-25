@@ -1109,9 +1109,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
         !           treated in PDM, the strategy is to only use one V^2O^2 in 
         !           local mem
+        ! scheme 1: All 4 dimensional quantities are stored in PDM
 
 #ifndef VAR_MPI
-        if(scheme==3.or.scheme==2) call lsquit("ERROR(ccsd_residual_integral_driven):wrong choice of scheme",-1)
+        if(scheme==3.or.scheme==2.or.scheme==1) call lsquit("ERROR(ccsd_residual_integral_driven):wrong choice of scheme",-1)
 #endif
      endif
 
@@ -1234,7 +1235,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==4) write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
-        !if(scheme==1) write(DECinfo%output,'("Using memory saving scheme with direct updates")')
+        if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
         ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
         ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
@@ -1247,6 +1248,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !get the t+ and t- for the Kobayshi-like B2 term
      call mem_alloc( tpl, int(i8*nor*nvr,kind=long), simple = .true. )
      call mem_alloc( tmi, int(i8*nor*nvr,kind=long), simple = .true. )
+
+     if(scheme == 1) then
+        print *, "Dmitry, I stop the program here, if your scheme is called.&
+        & Here begins your work with distributing the tpl and tmi, also u2, &
+        & needs to be constructed correctly"
+        stop 0
+     endif
 
 #ifdef VAR_MPI
      call arr_unlock_wins(t2)
@@ -3122,18 +3130,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       scheme=DECinfo%en_mem
       print *,"!!FORCING CCSD!!"
       if(local)then
-        if(scheme==3.or.scheme==2)then
+        if(scheme==3.or.scheme==2.or.scheme==1)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
           & MORE THAN ONE NODE"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
       if(scheme==4)then
-        print *,"NON PDM-SCHEME WITH HIGH MEMORY REQUIREMENTS"
+        print *,"SCHEME 4: NON PDM-SCHEME WITH HIGH MEMORY REQUIREMENTS"
       else if(scheme==3)then
-        print *,"SCHEME WITH MEDIUM MEMORY REQUIREMENTS (PDM)"
+        print *,"SCHEME 3: WITH MEDIUM MEMORY REQUIREMENTS (PDM)"
       else if(scheme==2)then
-        print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM)"
+        print *,"SCHEME 2: WITH LOW MEMORY REQUIREMENTS (PDM)"
+      else if(scheme==1)then
+        print *,"SCHEME 1: DMITRY's SCHEME (PDM)"
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
@@ -3466,6 +3476,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
 
+    case(1)
+
+       print *,"Dmitry, please implement your memory requirements here, such&
+       & that a memory estimation can be made and the batch sizes adapted -- PE"
 
     case default
 
@@ -4376,7 +4390,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp0, tmp_size)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N)
+    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
 

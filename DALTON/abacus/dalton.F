@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -20,7 +20,6 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include "single.h"
 C
 C=========================================================================
 C old log:
@@ -33,7 +32,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2013_DALTON
+      PROGRAM DALTON2014_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -256,7 +255,7 @@ C
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2013.4 (2014), see http://daltonprogram.org'
+     &'   Release DALTON2014.alpha (2014), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -577,7 +576,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.4'
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2014.alpha'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN

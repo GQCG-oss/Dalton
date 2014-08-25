@@ -356,18 +356,35 @@ subroutine GetIchorSphericalParamIdentifier(Identifier)
   Identifier = SphericalParam
 end subroutine GetIchorSphericalParamIdentifier
 
-subroutine GetIchorJobEriIdentifier(Identifier)
+subroutine GetIchorJobEriIdentifier(Identifier,doLink)
   use IchorParametersModule
   implicit none
   integer,intent(inout) :: Identifier
-  Identifier = IchorJobEri
+  logical,intent(in)    :: doLink
+  IF(doLink)THEN
+     Identifier = IchorJobLink
+  ELSE
+     Identifier = IchorJobEri
+  ENDIF
 end subroutine GetIchorJobEriIdentifier
 
-subroutine GetIchorInputIdentifier(Identifier)
+subroutine GetIchorJobMOtransIdentifier(Identifier)
   use IchorParametersModule
   implicit none
   integer,intent(inout) :: Identifier
-  Identifier = IchorInputNoInput
+  Identifier = IchorJobMoTrans
+end subroutine GetIchorJobMOtransIdentifier
+
+subroutine GetIchorInputIdentifier(Identifier,rhsDmat)
+  use IchorParametersModule
+  implicit none
+  integer,intent(inout) :: Identifier
+  logical,intent(in)    :: rhsDmat
+  IF(rhsDmat)THEN
+     Identifier = IchorInputDmat
+  ELSE
+     Identifier = IchorInputNoInput
+  ENDIF
 end subroutine GetIchorInputIdentifier
 
 subroutine GetIchorParallelSpecIdentifier(Identifier)
@@ -434,3 +451,57 @@ integer :: nBatch1,nBatch2,GabIdentifier
 call RetrieveGabDimFromIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier)
 end subroutine RetrieveGabDimFromIchorSaveGabModuleInterface
 
+subroutine InitIchorInputInfo()
+  use IchorInputInfoModule
+  implicit none
+  call InitIchorInputInfoModule
+end subroutine InitIchorInputInfo
+
+subroutine FreeIchorInputInfo()
+  use IchorInputInfoModule
+  implicit none
+  call FreeIchorInputInfoModule()
+end subroutine FreeIchorInputInfo
+
+subroutine IchorInputM1(M,n1,n2)
+  use IchorInputInfoModule
+  use IchorPrecisionModule
+  implicit none
+  integer,intent(in) :: n1,n2
+  real(realk),intent(in) :: M(n1,n2)
+  call IchorInputInfoM1(M,n1,n2)
+end subroutine IchorInputM1
+
+subroutine IchorInputM2(M1,n11,n12,M2,n21,n22)
+  use IchorInputInfoModule
+  use IchorPrecisionModule
+  implicit none
+  integer,intent(in) :: n11,n12,n21,n22
+  real(realk),intent(in) :: M1(n11,n12),M2(n21,n22)
+  call IchorInputInfoM2(M1,n11,n12,M2,n21,n22)
+end subroutine IchorInputM2
+
+subroutine IchorInputM3(M1,n11,n12,M2,n21,n22,M3,n31,n32)
+  use IchorInputInfoModule
+  use IchorPrecisionModule
+  implicit none
+  integer,intent(in) :: n11,n12,n21,n22,n31,n32
+  real(realk),intent(in) :: M1(n11,n12),M2(n21,n22),M3(n31,n32)
+  call IchorInputInfoM3(M1,n11,n12,M2,n21,n22,M3,n31,n32)
+end subroutine IchorInputM3
+
+subroutine IchorInputM4(M1,n11,n12,M2,n21,n22,M3,n31,n32,M4,n41,n42)
+  use IchorInputInfoModule
+  use IchorPrecisionModule
+  implicit none
+  integer,intent(in) :: n11,n12,n21,n22,n31,n32,n41,n42
+  real(realk),intent(in) :: M1(n11,n12),M2(n21,n22),M3(n31,n32),M4(n41,n42)
+  call IchorInputInfoM4(M1,n11,n12,M2,n21,n22,M3,n31,n32,M4,n41,n42)
+end subroutine IchorInputM4
+
+subroutine IchorInputSpec(CenterA,CenterB,CenterC,CenterD)
+  use IchorInputInfoModule
+  implicit none
+  integer :: CenterA,CenterB,CenterC,CenterD
+  call IchorInputInfoSpec(CenterA,CenterB,CenterC,CenterD)
+end subroutine IchorInputSpec

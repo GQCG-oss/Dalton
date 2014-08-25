@@ -4,6 +4,9 @@
     Jaime Axel Rosal Sandberg, somewhere mid-2013
 */
 
+#if defined(VAR_MPI)
+  #include "mpi.h"
+#endif
 
 #include <iostream>
 #include <sstream>
@@ -448,11 +451,6 @@ void Error2Dalton(int ecode) {
     Overloaded MPI short-hand
 */
 
-#include <cstdio>
-#if defined(VAR_MPI)
-  #include "mpi.h"
-#endif
-
 inline void mpi_bcast(int & val) {
   #if defined(VAR_MPI)
     //const int one = 1;
@@ -852,7 +850,10 @@ void efs_init_2efock_slave_ () {
 
 void efs_init_2efock_(double * Xscaling) {
 
+#ifndef SYS_DARWIN
+    // radovan: not available on OS X
     feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);
+#endif
 
     if (ThisNode.IsMaster()) {
 

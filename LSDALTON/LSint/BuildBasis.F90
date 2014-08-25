@@ -1185,7 +1185,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
   INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers
-  CHARACTER(len=200)    :: STRING
+  CHARACTER(len=280)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
   CHARACTER(len=1)      :: SPDFGH(10)=(/'S','P','D','F','G','H','I','J','K','L'/) 
@@ -1196,9 +1196,12 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   J = 0
   DO WHILE( J .LT. nprim) 
      ! Reading the primitive and contracted coeffecients
-     READ(LUBAS, '(A200)', IOSTAT = IOS) STRING
+     READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
      IF(ios /= 0)THEN
-        WRITE (LUPRI,'(2A)') ' Error in basisset file'
+        WRITE (LUPRI,'(A)') ' Error in basisset file'
+        WRITE(lupri,'(A)')'This could mean that the line containing exponents'
+        WRITE(lupri,'(A)')'and contraction coefficients fill more than 280 characters'
+        WRITE(lupri,'(A)')'Which means you need to manually split the line'
         CALL LSQUIT('Error in basisset file',lupri)
      ELSE
         READ (STRING, '(A1)') SIGN
@@ -1275,7 +1278,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     !Getting the format for the read-stat right.
                     !Making the usual safety-precautions before we read the 
                     !contraction-coeffecients.
-                    READ(LUBAS, '(A200)', IOSTAT = IOS) STRING
+                    READ(LUBAS, '(A280)', IOSTAT = IOS) STRING
                     IF(ios /= 0)THEN
                        WRITE (LUPRI,'(2A)') ' Error in basisset file'
                        CALL LSQUIT('Error in basisset file',lupri)
@@ -1389,7 +1392,7 @@ END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
 subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   implicit none
-  CHARACTER(len=200)    :: STRING
+  CHARACTER(len=280)    :: STRING
   integer :: nNUMBERS
   !
   logical :: INSIDENUMBER,SCIENTIFIC
@@ -1455,7 +1458,7 @@ SUBROUTINE ANALYSE_CONTRACTIONMATRIX(LUPRI,IPRINT,BASINFO,at,&
 implicit none
 TYPE(BASISSETINFO),intent(inout)  :: BASINFO
 TYPE(lsmatrix),intent(in) :: Contractionmatrix,ContractionmatrixNORM
-TYPE(lsmatrix),intent(in) :: Exponents
+TYPE(lsmatrix),intent(inout) :: Exponents
 INTEGER,intent(in)      :: at,nAngmom,nprim,nOrbital
 !local variables
 INTEGER      :: ncol,nrow,K,L,LUPRI,J,IPRINT
@@ -1465,7 +1468,7 @@ INTEGER      :: nOrb(nprim),mPrim(nOrbital)
 LOGICAL      :: Segmented,Prim(nPrim,nOrbital),PerfomMerge
 LOGICAL      :: merged(nOrbital),MergedPrim(nPrim,nOrbital)
 LOGICAL      :: SEGMENTCOLID(nOrbital,nOrbital)
-real(realk),pointer  :: CCN(:,:),CC(:,:) ,EXPon(:)
+real(realk),pointer  :: CCN(:,:),CC(:,:) 
 real(realk)  :: newExponents,newCC,newCCN
 
 IF (IPRINT .GT. 200)THEN
@@ -1480,9 +1483,6 @@ call mem_alloc(CCN,nrow,ncol)
 call dcopy (nrow*ncol,ContractionmatrixNorm%elms,1,CCN,1)
 call mem_alloc(CC,nrow,ncol)
 call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
-call mem_alloc(EXPon,nrow)
-call dcopy (nrow,Exponents%elms,1,EXPon,1)
-
 IF (IPRINT .GT. 200)THEN
    WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
    WRITE(LUPRI,*)'CCN'
@@ -1493,10 +1493,10 @@ ENDIF
 !reorder primitives at this level using basic bubblesort
 DO K=1,nrow
    DO J=1,nrow-1
-      IF(Expon(J+1).GT. Expon(J))THEN
-         newExponents=Expon(J)
-         Expon(J)=Expon(J+1)
-         Expon(J+1)=newExponents
+      IF(Exponents%elms(J+1).GT. Exponents%elms(J))THEN
+         newExponents=Exponents%elms(J)
+         Exponents%elms(J)=Exponents%elms(J+1)
+         Exponents%elms(J+1)=newExponents
          do I=1,nOrbital
             newCC=CC(J,I)
             CC(J,I)=CC(J+1,I)
@@ -1552,7 +1552,7 @@ IF(Segmented)THEN
          K = K + 1
          BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms(K)=CCN(I,J)
          BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms(K)=CC(I,J)
-         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Expon(I)
+         BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(K)=Exponents%elms(I)
       ENDIF
    enddo
 
@@ -1629,7 +1629,7 @@ ELSE
       do i=1,nPrim
          IF(MergedPrim(i,J))THEN
             kk=kk+1           
-            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Expon(I)
+            BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents(kk)=Exponents%elms(I)
          ENDIF
       enddo
       icol = 0
@@ -1664,7 +1664,6 @@ ENDIF
 
 call mem_dealloc(CCN)
 call mem_dealloc(CC)
-call mem_dealloc(EXPON)
 
 END SUBROUTINE ANALYSE_CONTRACTIONMATRIX
 

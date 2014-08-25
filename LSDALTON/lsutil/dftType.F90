@@ -43,6 +43,7 @@ INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
 integer           :: Id !1,2 or 3 corresponds to (Grid_Default,Grid_ADMML2,..)
 integer           :: NBAST
+integer           :: Numnodes
 END TYPE GridItem
 
 !> Keywords and input to gridgeneration and exchange-correlation calculation
@@ -160,6 +161,7 @@ do iGrid=1,size(gridObject)
    GridObject(iGrid)%nbuflen = dft%nbuflen
    GridObject(iGrid)%Id = iGrid
    GridObject(iGrid)%NBAST = 0
+   GridObject(iGrid)%Numnodes = 1
    !module parameters
    DFT_GRIDITERATIONS(iGrid) = 0
    DFT_MaxNactBast(iGrid) = 0

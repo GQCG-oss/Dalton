@@ -234,6 +234,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/MainIchorInterface.F90
     LSDALTON/IchorIntegrals/IchorPresicion.F90
     LSDALTON/IchorIntegrals/IchorParameters.F90
+    LSDALTON/IchorIntegrals/IchorInputInfo.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
     LSDALTON/IchorIntegrals/IchorMem.F90
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
@@ -381,12 +382,18 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
-    LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90
-    LSDALTON/IchorIntegrals/AGC_SphContractOBS2.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrencePBtoA.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrenceQDtoC.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrencePBtoA.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrenceQDtoC.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_SphContractOBS2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_SphContractOBS2.F90
     )
 #    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_SSSS.F90
 set(LSINT_SOURCES

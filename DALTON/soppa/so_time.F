@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_time */
       SUBROUTINE SO_TIME(TIMTOT,TIMWTO,PARRAY,LPARRA)

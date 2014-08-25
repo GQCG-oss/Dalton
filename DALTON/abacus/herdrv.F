@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck herctl */
 #ifndef PRG_DIRAC
@@ -281,10 +280,10 @@ C     ***** End of Calculation *****
 C     ******************************
 C
       CALL GPCLOSE(LUONEL,'KEEP')
-      IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
-      IF (LUQM3E .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
-      IF (LUQM3P .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
-      IF (LUSOL  .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
+      IF (LUPROP  .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
+      IF (LUQM3E  .GT. 0) CALL GPCLOSE(LUQM3E,'KEEP')
+      IF (LUQM3P  .GT. 0) CALL GPCLOSE(LUQM3P,'KEEP')
+      IF (LUSOL   .GT. 0) CALL GPCLOSE(LUSOL ,'KEEP')
 C
       IF (LUINTA  .GT. 0) CALL GPCLOSE(LUINTA ,'KEEP')
       IF (LUSRINT .GT. 0) CALL GPCLOSE(LUSRINT,'KEEP')
@@ -2449,7 +2448,7 @@ C
             CALL FLSHFO(LUPRI)
 C
             IF (ONLYOV) THEN
-              CALL QUITMM('Overlap integrals calculated')
+              CALL QUIT('Overlap integrals calculated')
             END IF
 C
 C           ***** Modified overlap integrals *****
@@ -3565,7 +3564,6 @@ C
 C     Integrals on LUINTA
 C
       IF (RUNTWO) THEN
-         IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT','*',126)
          I2TYP = 0
 C
 C        ********************************************
@@ -3574,15 +3572,19 @@ C        ********************************************
 C
          IF (HAMILT) THEN
             IF (RUNERI) THEN
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from ERI 2INT',
+     &            '*',126)
                CALL TIMER('START ',TIMSTR,TIMEND)
                CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,
      &                     LFREE)
                CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
                CALL MEMREL('HERINT.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
-               CALL TIMER('ERIDRV',TIMSTR,TIMEND)
+               CALL TIMER('ERI 2INT',TIMSTR,TIMEND)
                CALL FLSHFO(LUPRI)
             ELSE
+               IF (IPRDEF .GT. 1) CALL TITLER('Output from TWOINT',
+     &            '*',126)
                NPAO = MXSHEL*MXAOVC
                CALL MEMGET('INTE',KJSTRS,NPAO*2,WORK,KFREE,LFREE)
                CALL MEMGET('INTE',KNPRIM,NPAO*2,WORK,KFREE,LFREE)

@@ -18,7 +18,7 @@ use matrix_operations_aux, only: mat_to_full2, mat_set_from_full2,mat_density_fr
 use files
 use memory_handling
 
-real(realk),parameter  :: matsymthresh = 1.0E-11_realk
+real(realk),parameter  :: matsymthresh = 1.0E-10_realk
 
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)

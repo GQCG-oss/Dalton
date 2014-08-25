@@ -214,6 +214,19 @@ class decinfo_class:
               self.sfrags[j].fragid       = int(filelines[i+skip+j].split()[elfragid])
               self.sfrags[j].ecorrvirt[k] = float(filelines[i+skip+j].split()[elensing])
               self.sfrags[j].ecorrtype[k] = self.ecorrtype[k]
+          # Specific reading for (T) numbers:
+          if(self.ecorrtype[k]+" occupied single energies (fourth order)" in filelines[i]):
+            foundoccs = True
+            for j in range(self.sfragjobs):
+              self.sfrags[j].fragid       = int(filelines[i+skip+j].split()[elfragid])
+              self.sfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elensing])
+              self.sfrags[j].ecorrtype[k] = self.ecorrtype[k]
+          if(self.ecorrtype[k]+" occupied single energies (fifth order)" in filelines[i]):
+            foundoccs = True
+            for j in range(self.sfragjobs):
+              self.sfrags[j].fragid       = int(filelines[i+skip+j].split()[elfragid])
+              self.sfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elensing]) + self.sfrags[j].ecorrocc[k]
+              self.sfrags[j].ecorrtype[k] = self.ecorrtype[k]
          
           if(self.ecorrtype[k]+" Lagrangian pair energies" in filelines[i] and not exclude):
             foundlagp = True
@@ -246,6 +259,23 @@ class decinfo_class:
               self.pfrags[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
               self.pfrags[j].dist      = float(filelines[i+skip+j].split()[2])
               self.pfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elenpair])
+              self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
+          # Specific reading for (T) numbers:
+          if(self.ecorrtype[k]+" occupied pair energies (fourth order)" in filelines[i]):
+            foundoccp = True
+            for j in range(self.pfragjobs):
+              self.pfrags[j].fragid    = int(filelines[i+skip+j].split()[elfragid])
+              self.pfrags[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
+              self.pfrags[j].dist      = float(filelines[i+skip+j].split()[2])
+              self.pfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elenpair])
+              self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
+          if(self.ecorrtype[k]+" occupied pair energies (fifth order)" in filelines[i]):
+            foundoccp = True
+            for j in range(self.pfragjobs):
+              self.pfrags[j].fragid    = int(filelines[i+skip+j].split()[elfragid])
+              self.pfrags[j].fragpid   = int(filelines[i+skip+j].split()[elfragpid])
+              self.pfrags[j].dist      = float(filelines[i+skip+j].split()[2])
+              self.pfrags[j].ecorrocc[k]  = float(filelines[i+skip+j].split()[elenpair]) + self.pfrags[j].ecorrocc[k]
               self.pfrags[j].ecorrtype[k] = self.ecorrtype[k]
 
 

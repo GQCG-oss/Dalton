@@ -198,7 +198,7 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
      nOrbCompB = (AngmomB+1)*(AngmomB+2)/2
   ENDIF
   nAtomsB = nAtomsOfTypeB(ItypeB) 
-  IF(nAtomsB.EQ.0)CALL LSQUIT('Gab cyle atomB',-1)!CYCLE
+  IF(nAtomsB.EQ.0)CALL ICHORQUIT('Gab cyle atomB',-1)!CYCLE
   iBatchIndexOfTypeB = BatchIndexOfTypeB(ItypeB)
   nOrbB = nContB*nOrbCompB
   nDimB = nOrbB*nAtomsB
@@ -230,7 +230,7 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
        nOrbCompA = (AngmomA+1)*(AngmomA+2)/2
     ENDIF
     nAtomsA = nAtomsOfTypeA(ItypeA)
-    IF(nAtomsA.EQ.0)CALL LSQUIT('Gab cyle atomA',-1)!CYCLE
+    IF(nAtomsA.EQ.0)CALL ICHORQUIT('Gab cyle atomA',-1)!CYCLE
     iBatchIndexOfTypeA = BatchIndexOfTypeA(ItypeA)
     nOrbA = nContA*nOrbCompA
     nDimA = nContA*nOrbCompA*nAtomsA

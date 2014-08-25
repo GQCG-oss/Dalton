@@ -36,7 +36,6 @@ subroutine optimloc(CMO,nocc,m,ls,CFG)
   type(matrix) :: SC,CSC,S
   logical :: ForcePrint
   
-
   ForcePrint =  .TRUE.
   CALL LSTIMER('START ',TIMSTR,TIMEND,ls%lupri)
   
@@ -137,9 +136,9 @@ type(lsitem)         :: ls
 if (m == 0) return
 
 
-if (norb < 6)  then
-   write(ls%lupri,'(a)') '  %LOC%  Too few orbitals to localize.  ' 
-   return 
+if (norb == 0 .or. norb ==1) then
+  write(ls%lupri,'(a)') '  %LOC% Too few orbitals to localize...' 
+  return
 endif
 
 call mem_alloc(tmp,nbas*norb)
@@ -150,12 +149,14 @@ call mat_retrieve_block(MO,tmp,nbas,norb,1,offset+1)
 call mat_set_from_full(tmp,1.0_realk,MOblock)
 call mem_dealloc(tmp)
 
+
 ! if core, make sure m = 1 for orbspread and fourthmoment
 if (core .and. (CFG%orbspread.or.CFG%PFM)) then
    call localize_davidson(MOblock,1,ls,CFG)
 else
    call localize_davidson(MOblock,m,ls,CFG)
 endif
+
 
 call mem_alloc(tmp,nbas*norb)
 call mat_to_full(MOblock,1.0_realk,tmp)

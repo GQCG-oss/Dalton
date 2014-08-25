@@ -199,13 +199,8 @@ module lsmpi_type
   integer,parameter     :: SPLIT_MPI_MSG      = 100000000
   !The recommended size of message chunks
   integer,parameter     :: SPLIT_MSG_REC      =  100000000
-  !split mpi one sided communication into 1GB msg, with CRAY workaround in 100MB
-  !chunks
-#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-  integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
-#else
+  !split mpi one sided communication into 100MB chunks
   integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
-#endif
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -4632,6 +4627,7 @@ contains
             call mem_dealloc(longintbufferInt)
             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
             call stats_mpi_mem(lupri)
+            call flush(lupri)
          ENDDO
       ENDIF
 

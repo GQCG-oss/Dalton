@@ -1,3 +1,5 @@
+
+!TESTING LINK 
 MODULE IntegralInterfaceIchorMod
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
@@ -18,15 +20,16 @@ MODULE IntegralInterfaceIchorMod
   use molecule_module, only: DETERMINE_NBAST2
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
-       & mat_scal, mat_mul, mat_assign, mat_trans
+       & mat_scal, mat_mul, mat_assign, mat_trans, mat_set_from_full
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
-  use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat
+  use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat,&
+       & II_get_exchange_mat
   use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
-  
-  public::  II_unittest_Ichor
+  use lstiming
+  public::  II_unittest_Ichor,II_Ichor_LinK_test
   private
 CONTAINS
 !> \brief Calculates overlap integral matrix
@@ -36,13 +39,15 @@ CONTAINS
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
 !> \param S the overlap matrix
-SUBROUTINE II_unittest_Ichor(LUPRI,LUERR,SETTING,DebugIchorOption)
+SUBROUTINE II_unittest_Ichor(LUPRI,LUERR,SETTING,DebugIchorOption,dolink)
 IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR,DebugIchorOption
+logical :: dolink
 !
 #ifdef VAR_ICHOR
 real(realk),pointer   :: integralsII(:,:,:,:),integralsIchor(:,:,:,:)
+real(realk),pointer   :: KmatII(:,:,:),KmatIchor(:,:,:)
 integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
 integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
 logical :: dirac,doprint,debug
@@ -58,14 +63,17 @@ real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical,SpecialPass,LHS
 logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL,TestScreening
+logical      :: MoTrans,NoSymmetry
 Character    :: intSpec(5)
 integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
 integer :: nBasisA,nBasisB,nBasisC,nBasisD,iPassStart,iPassEnd
 integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
-real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:)
-integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx
+real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
+integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat
 type(matrix) :: GAB
 
+NoSymmetry = .FALSE. !activate permutational symmetry
+MoTrans=.FALSE.
 intSpec(1) = 'R'
 intSpec(2) = 'R'
 intSpec(3) = 'R'
@@ -334,87 +342,178 @@ do Ipass = IpassStart,IpassEnd
           
           Setting%sameMol = .FALSE.
           Setting%sameFrag = .FALSE.
-          if(associated(integralsII))THEN
+
+          IF(doLink)THEN
+             nDmat = 2
+             call mem_alloc(Dmat,dim2,dim4,nDmat)
+             call mem_alloc(KmatII,dim1,dim3,nDmat)
+             KmatII = 0.0E0_realk
+             call mem_alloc(KmatIchor,dim1,dim3,nDmat)
+             KmatIchor = 0.0E0_realk
+             call MakeRandomDmat(Dmat,dim2,dim4,nDmat) !NON SYMMETRIC DMAT
+!             WRITE(lupri,*)'The Density Matrix: '
+!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+
+             if(associated(integralsII))THEN
+                call mem_dealloc(integralsII)
+             ENDIF
+             call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
+             integralsII = 0.0E0_realk
+             !       setting%scheme%intprint = 1000
+             savedospherical = setting%scheme%dospherical
+             setting%scheme%dospherical = spherical
+             setting%scheme%OD_SCREEN = .FALSE.
+             setting%scheme%CS_SCREEN = .FALSE.
+             setting%scheme%PS_SCREEN = .FALSE.
+             !       WRITE(lupri,*)'ThermiteDriver'
+             call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+             !   print*,'integralsII',integralsII
+             setting%scheme%dospherical = savedospherical
+             setting%scheme%OD_SCREEN = .TRUE.
+             setting%scheme%CS_SCREEN = .TRUE.
+             setting%scheme%PS_SCREEN = .TRUE.
+             setting%scheme%intprint = 0
+             Setting%sameFrag = .FALSE.
+             Setting%sameMol = .FALSE.
+             call BuildExchange(integralsII,dim1,dim2,dim3,dim4,nDmat,Dmat,KmatII)
              call mem_dealloc(integralsII)
-          ENDIF
-          call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
-          integralsII = 0.0E0_realk
-          !       setting%scheme%intprint = 1000
-          savedospherical = setting%scheme%dospherical
-          setting%scheme%dospherical = spherical
-          setting%scheme%OD_SCREEN = .FALSE.
-          setting%scheme%CS_SCREEN = .FALSE.
-          setting%scheme%PS_SCREEN = .FALSE.
-          !       WRITE(lupri,*)'ThermiteDriver'
-          call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
-          !   print*,'integralsII',integralsII
-          setting%scheme%dospherical = savedospherical
-          setting%scheme%OD_SCREEN = .TRUE.
-          setting%scheme%CS_SCREEN = .TRUE.
-          setting%scheme%PS_SCREEN = .TRUE.
-          setting%scheme%intprint = 0
-          Setting%sameFrag = .FALSE.
-          Setting%sameMol = .FALSE.
-          
-          !       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
-          call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
-          !       integralsIchor = 0.0E0_realk
-          !          setting%scheme%intprint = 1000
-          !       WRITE(lupri,*)'IchorDriver'
-          !       CALL FLUSH(LUPRI)
-          !       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
-          !            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
-          SameMOL = .FALSE.       
-          call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
-          call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1)!,spherical)
-          call FREE_SCREEN_ICHORERI
-          !       print*,'DONE call ICHOR WITH BASIS'
-          !setting%scheme%intprint = 0
-          write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
-               & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
-          FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
-          DO D=1,dim4
-             DO C=1,dim3
-                DO B=1,dim2
-                   DO A=1,dim1
-                      IF(ABS(integralsII(A,B,C,D)).GT.1.0E-10_realk)THEN
-                         IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
-                              & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
-                            FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                            write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
-                            write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
-                            write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
-                            write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
-                            write(lupri,'(A,ES16.8)')'DIFF                   ',&
-                                 & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-                            call lsquit('ERROR',-1)
+
+             SameMOL = .FALSE.       
+             call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+             call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
+                  & nDmat,KmatIchor,Dmat,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+             call FREE_SCREEN_ICHORERI
+
+!             WRITE(lupri,*)'The Exchange Matrix: '
+!             call output(KmatII(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             WRITE(lupri,*)'The Exchange Matrix: '
+!             call output(KmatIchor(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             WRITE(lupri,*)'The Density Matrix: '
+!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+
+             write(lupri,'(A,A,A,A,A,A,A,A,A)')'LINK BASIS(',BASISTYPE(iBasis1),',',&
+                  & BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
+             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
+             DO idmat=1,nDmat
+              DO C=1,dim3
+               DO A=1,dim1
+                IF(ABS(KmatII(A,C,idmat)).GT.1.0E-9_realk)THEN
+                 IF(ABS(KmatII(A,C,idmat)-KmatIchor(A,C,idmat)).GT. &
+                      & 1.0E-9_realk/(ABS(KmatII(A,C,idmat))))THEN
+                    FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)= ',A,C,iDmat
+                    write(lupri,'(A,ES20.10)')'Kmat(A,C,iDmat)     ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
+                         & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDMat))
+                    call lsquit('ERROR',-1)
+                 ENDIF
+                ELSE
+                 IF(ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat)).GT. &
+                      & 1.0E-9_realk)THEN
+                    FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                    write(lupri,'(A,ES20.10)')'THRESHOLD=',1.0E-9_realk/(ABS(KmatII(A,C,iDmat)))
+                    write(lupri,'(A,4I4)')'ELEMENTS: (A,C,iDmat)=   ',A,C,iDmat
+                    write(lupri,'(A,ES20.10)')'KmatII(A,1,C,iDmat)   ',KmatII(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'KmatIchor(A,C,iDmat)  ',KmatIchor(A,C,iDmat)
+                    write(lupri,'(A,ES20.10)')'DIFF                   ',&
+                         & ABS(KmatII(A,C,iDmat)-KmatIchor(A,C,iDmat))
+                    call lsquit('ERROR',-1)
+                 ENDIF
+                ENDIF
+               ENDDO
+              ENDDO
+             ENDDO
+             IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+                WRITE(lupri,'(A)')'LINK CALC FAILED'
+             ENDIF
+          ELSE
+             if(associated(integralsII))THEN
+                call mem_dealloc(integralsII)
+             ENDIF
+             call mem_alloc(integralsII,dim1,dim2,dim3,dim4)
+             integralsII = 0.0E0_realk
+             !       setting%scheme%intprint = 1000
+             savedospherical = setting%scheme%dospherical
+             setting%scheme%dospherical = spherical
+             setting%scheme%OD_SCREEN = .FALSE.
+             setting%scheme%CS_SCREEN = .FALSE.
+             setting%scheme%PS_SCREEN = .FALSE.
+             !       WRITE(lupri,*)'ThermiteDriver'
+             call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+             !   print*,'integralsII',integralsII
+             setting%scheme%dospherical = savedospherical
+             setting%scheme%OD_SCREEN = .TRUE.
+             setting%scheme%CS_SCREEN = .TRUE.
+             setting%scheme%PS_SCREEN = .TRUE.
+             setting%scheme%intprint = 0
+             Setting%sameFrag = .FALSE.
+             Setting%sameMol = .FALSE.
+             
+             !       print*,'dim1,dim2,dim3,dim4',dim1,dim2,dim3,dim4
+             call mem_alloc(integralsIchor,dim1,dim2,dim3,dim4)
+             !       integralsIchor = 0.0E0_realk
+             !          setting%scheme%intprint = 1000
+             !       WRITE(lupri,*)'IchorDriver'
+             !       CALL FLUSH(LUPRI)
+             !       print*,'call ICHOR WITH BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+             !            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+             SameMOL = .FALSE.       
+             call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+             call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
+                  & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,&
+                  & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry)
+             call FREE_SCREEN_ICHORERI
+             !       print*,'DONE call ICHOR WITH BASIS'
+             !setting%scheme%intprint = 0
+             write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+                  & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
+             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
+             DO D=1,dim4
+                DO C=1,dim3
+                   DO B=1,dim2
+                      DO A=1,dim1
+                         IF(ABS(integralsII(A,B,C,D)).GT.1.0E-10_realk)THEN
+                            IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+                                 & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
+                               FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                               write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
+                               write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
+                               write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
+                               write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
+                               write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                                    & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                               call lsquit('ERROR',-1)
+                            ENDIF
+                         ELSE
+                            IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+                                 & 1.0E-10_realk)THEN
+                               FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                               write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
+                               write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
+                               write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
+                               write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
+                               write(lupri,'(A,ES16.8)')'DIFF                   ',&
+                                    & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                               call lsquit('ERROR',-1)
+                               !                   ELSE
+                               !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+                               !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+                               !                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                            ENDIF
                          ENDIF
-                      ELSE
-                         IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
-                              & 1.0E-10_realk)THEN
-                            FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                            write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
-                            write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
-                            write(lupri,'(A,ES16.8)')'integralsII(A,B,C,D)   ',integralsII(A,B,C,D)
-                            write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
-                            write(lupri,'(A,ES16.8)')'DIFF                   ',&
-                                 & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-                            call lsquit('ERROR',-1)
-                            !                   ELSE
-                            !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
-                            !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-                            !                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-                         ENDIF
-                      ENDIF
+                      ENDDO
                    ENDDO
                 ENDDO
              ENDDO
-          ENDDO
-          IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
-             WRITE(lupri,'(A)')'CALC FAILED'
+             IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+                WRITE(lupri,'(A)')'CALC FAILED'
+             ENDIF
+             call mem_dealloc(integralsII)
+             call mem_dealloc(integralsIchor)
+
           ENDIF
-          call mem_dealloc(integralsII)
-          call mem_dealloc(integralsIchor)
        ELSE
           !test screening integrals
           call mat_init(GAB,dim1,dim2)
@@ -568,6 +667,105 @@ WRITE(lupri,*)'done II_test_Ichor'
 
 #endif
 END SUBROUTINE II_unittest_Ichor
+
+SUBROUTINE II_Ichor_LinK_test(LUPRI,LUERR,SETTING,D)
+implicit none
+TYPE(LSSETTING),intent(in)       :: SETTING
+INTEGER,intent(in)               :: LUPRI,LUERR
+type(matrix),intent(in)          :: D(1)
+!
+real(realk),pointer :: Dmat(:,:,:)
+real(realk)  :: ts,te
+type(matrix) :: D2(1)
+Character    :: intSpec(5)
+logical :: SameMOL,Dsym
+integer :: nbast,nDmat
+nbast = D(1)%nrow
+nDmat = 1
+intSpec(1) = 'R'; intSpec(2) = 'R'; intSpec(3) = 'R'; intSpec(4) = 'R'
+intSpec(5) = 'C'
+SameMOL = .TRUE.
+Dsym = .TRUE.
+CALL II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+
+WRITE(lupri,*)'Non Symmetric Density Matrix'
+call mat_init(D2(1),nbast,nbast)
+call mem_alloc(Dmat,nbast,nbast,nDmat)
+call MakeRandomDmat(Dmat,nbast,nbast,nDmat)
+call mat_set_from_full(Dmat,1.d0,D2(1))
+call mem_dealloc(Dmat)
+
+Dsym = .FALSE.
+CALL II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D2,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+call mat_free(D2(1))
+END SUBROUTINE II_ICHOR_LINK_TEST
+
+Subroutine II_Ichor_LinK_test1(LUPRI,LUERR,SETTING,D,INTSPEC,SameMOL,nbast,nDmat,Dsym)
+implicit none
+TYPE(LSSETTING),intent(in)       :: SETTING
+INTEGER,intent(in)               :: LUPRI,LUERR,nbast,nDmat
+type(matrix),intent(in)          :: D(1)
+Character,intent(in)             :: intSpec(5)
+logical,intent(in)               :: SameMOL,Dsym
+!
+real(realk)           :: ts,te,IchorE1,ThermiteE1
+type(matrix)          :: K(1)
+integer :: iprint
+iprint = 0
+call mat_init(K(1),nbast,nbast)
+call mat_zero(K(1))
+CALL LSTIMER('START',ts,te,lupri)
+CALL II_get_exchange_mat(lupri,6,setting,D,ndmat,Dsym,K)
+CALL LSTIMER('ThermiteK',ts,te,lupri)
+WRITE(lupri,*)'K exchange Matrix Thermite'
+call mat_print(K(1),1,nbast,1,nbast,lupri)
+ThermiteE1 = mat_dotproduct(D(1),K(1))
+WRITE(lupri,*)'Thermite: Exchange energy, mat_dotproduct(D,K)=',ThermiteE1
+WRITE(6,*)'Thermite: Exchange energy, mat_dotproduct(D,K)=',ThermiteE1
+
+call mat_zero(K(1))
+CALL LSTIMER('START',ts,te,lupri)
+call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+call MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,nbast,nbast,nbast,nbast,&
+     & nDmat,K(1)%elms,D(1)%elms,intspec,.TRUE.,1,1,1,1,1,1,1,1)
+call FREE_SCREEN_ICHORERI
+CALL LSTIMER('IchorK',ts,te,lupri)
+WRITE(lupri,*)'K exchange Matrix Ichor'
+call mat_print(K(1),1,nbast,1,nbast,lupri)
+IchorE1 = mat_dotproduct(D(1),K(1))
+WRITE(lupri,*)'Ichor: Exchange energy, mat_dotproduct(D,K)=',IchorE1
+WRITE(6,*)'Ichor: Exchange energy, mat_dotproduct(D,K)=',IchorE1
+call mat_free(K(1))
+end subroutine II_Ichor_LinK_test1
+
+subroutine MakeRandomDmat(Dmat,dim2,dim4,nDmat)
+  implicit none
+  integer :: dim2,dim4,nDmat
+  real(realk) :: Dmat(dim2*dim4*nDmat)
+  CALL RANDOM_SEED 
+  CALL RANDOM_NUMBER(Dmat)
+end subroutine MakeRandomDmat
+
+subroutine BuildExchange(integralsII,dim1,dim2,dim3,dim4,nDmat,Dmat,Kmat)
+  implicit none
+  integer :: dim1,dim2,dim3,dim4,nDmat
+  real(realk) :: integralsII(dim1,dim2,dim3,dim4)
+  real(realk) :: Dmat(dim2,dim4,nDmat)
+  real(realk) :: Kmat(dim1,dim3,nDmat)
+  !
+  integer :: A,B,C,D,iDmat
+  do iDmat = 1,nDmat
+     do D=1,dim4
+        do C=1,dim3
+           do B=1,dim2
+              do A=1,dim1
+                 Kmat(A,C,iDmat) = Kmat(A,C,iDmat) + integralsII(A,B,C,D)*Dmat(B,D,idmat)
+              enddo
+           enddo
+        enddo
+     enddo
+  enddo
+end subroutine BuildExchange
 
 subroutine build_unittest_atomicmolecule(atomicmolecule,ICHARGE,Rxyz,nAtoms,lupri)
 implicit none

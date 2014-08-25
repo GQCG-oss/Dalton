@@ -265,14 +265,26 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ! Orbital assignment
    call mem_alloc(orbitals_assigned,natoms)
    orbitals_assigned=.false.
-   do p=1,nocc_tot
-      pdx = occ_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
-   do p=1,nvirt
-      pdx = unocc_orbitals(p)%centralatom
-      orbitals_assigned(pdx) = .true.
-   end do
+   if (DECinfo%onlyoccpart) then
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else if (DECinfo%onlyvirtpart) then
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   else
+      do p=1,nocc_tot
+         pdx = occ_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+      do p=1,nvirt
+         pdx = unocc_orbitals(p)%centralatom
+         orbitals_assigned(pdx) = .true.
+      end do
+   end if
 
    ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
    call array_reorder(VOVO,[1,3,2,4])
@@ -1833,7 +1845,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    If_not_converged: if(.not.restart_from_converged)then
 
       mo_ccsd = .true.
-      if (DECinfo%NO_MO_CCSD.or.(nb>400).or.use_pnos.or.(ccmodel==MODEL_MP2)) mo_ccsd = .false.
+      if (DECinfo%NO_MO_CCSD.or.(nb>400).or.use_pnos.or.(ccmodel==MODEL_MP2) &
+       & .or. (ccmodel==MODEL_RPA)) mo_ccsd = .false.
        
       if (DECinfo%force_scheme) then
         if (DECinfo%en_mem<5) then
@@ -2001,7 +2014,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          case( MODEL_RPA )
            
 #ifdef VAR_MPI
-           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
 #else
            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif
@@ -2515,7 +2528,7 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    integer, intent(out) :: iter_start
    integer :: no,nv
    integer(8) :: fu_t11,fu_t12,fu_t21,fu_t22,fu_t1,fu_t2,fu_t2f,fu_t1f
-   logical(8) :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
+   logical :: file_exists11,file_exists12,file_exists1f,file_exists21,file_exists22,file_exists2f
    logical(8) :: file_status11,file_status12,file_status1f,file_status21,file_status22,file_status2f
    logical(8) :: readfile1, readfile2
    integer(8) :: saved_iter11,saved_iter12,saved_iter1f,saved_iter21,saved_iter22,saved_iter2f
