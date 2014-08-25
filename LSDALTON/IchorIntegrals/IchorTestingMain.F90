@@ -52,7 +52,7 @@ enddo
 LUPRI = 6
 IPRINT = 0
 spherical = .TRUE.
-FileName = 'IchorUnitTestUnitTest_segS1pUnitTest_segSUnitTest_genSUnitTest_segS1p'
+FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p'
 
 LUOUTPUT = 12
 print*,'FileName',FileName
@@ -202,13 +202,23 @@ call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      do d=1,OutputDim4
         do c=1,OutputDim3
            do b=1,OutputDim2
-              do a=1,OutputDim1            
-                 IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
-                    print*,'ERROR a,b,c,d = ',a,b,c,d
-                    print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
-                    print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
-                    print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
-                    FAIL = .TRUE.
+              do a=1,OutputDim1   
+                 IF(ABS(integrals(A,B,C,D)).GT.1.0E-10_8)THEN     
+                    IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8/ABS(ComparisonInt(a,b,c,d)))THEN
+                       print*,'ERROR a,b,c,d = ',a,b,c,d
+                       print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                       print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                       print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                       FAIL = .TRUE.
+                    ENDIF
+                 ELSE                    
+                    IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
+                       print*,'ERROR a,b,c,d = ',a,b,c,d
+                       print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                       print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                       print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                       FAIL = .TRUE.
+                    ENDIF
                  ENDIF
               enddo
            enddo
