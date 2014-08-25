@@ -188,7 +188,8 @@ F90_OBJS = \
 	IchorEri_GabIntegral_OBS_general.o \
         IchorEri.o \
         IchorGab.o \
-        MainIchorInterface.o
+        MainIchorInterface.o\
+        IchorTestingMain.o
 
 libIchorIntegrals.a: $(F90_OBJS) 
 	$(AR) $(ARFLAGS) $@ $?

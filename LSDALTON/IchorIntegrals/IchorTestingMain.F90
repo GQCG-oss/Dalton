@@ -39,33 +39,83 @@ Integer(kind=8) :: MaxMem,MaxMemAllocated,MemAllocated
 Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD,a,b,c,d
 logical :: spherical
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
-integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
-logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
-real(8),pointer :: integrals(:,:,:,:)
+integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2,LUOUTPUT
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5,FAIL
+real(8),pointer :: integrals(:,:,:,:),ComparisonInt(:,:,:,:)
+character(len=100) :: filename
+do A=1,100
+   filename(A:A) = ' '
+enddo
+
 !FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 
 LUPRI = 6
 IPRINT = 0
 spherical = .TRUE.
+FileName = 'IchorUnitTestUnitTest_segS1pUnitTest_segSUnitTest_genSUnitTest_segS1p'
+
+LUOUTPUT = 12
+print*,'FileName',FileName
+open(unit = LUOUTPUT, file=TRIM(FileName),status='OLD',FORM='FORMATTED')
+
 !A
-Call BuildCenterAndTypeInfo(1,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+call ReadCenterInfo1(luoutput,nTypesA,nBatchesA,MaxnAtomsA,MaxnPrimA,MaxnContA,spherical)
+allocate(nAtomsOfTypeA(ntypesA))
+allocate(AngmomOfTypeA(ntypesA))
+allocate(nPrimOfTypeA(ntypesA))
+allocate(nContOfTypeA(ntypesA))
+allocate(startOrbitalOfTypeA(MaxNatomsA,ntypesA))
+allocate(exponentsOfTypeA(MaxnPrimA,ntypesA))
+allocate(ContractCoeffOfTypeA(MaxnPrimA,MaxnContA,ntypesA))
+allocate(Acenters(3,MaxnAtomsA,nTypesA))
+Call ReadCenterInfo2(luoutput,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
      & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
      & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,&
-     & Acenters,spherical,Outdim1)
+     & Acenters,spherical)
 !B
-Call BuildCenterAndTypeInfo(2,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+call ReadCenterInfo1(luoutput,nTypesB,nBatchesB,MaxnAtomsB,MaxnPrimB,MaxnContB,spherical)
+allocate(nAtomsOfTypeB(ntypesB))
+allocate(AngmomOfTypeB(ntypesB))
+allocate(nPrimOfTypeB(ntypesB))
+allocate(nContOfTypeB(ntypesB))
+allocate(startOrbitalOfTypeB(MaxNatomsB,ntypesB))
+allocate(exponentsOfTypeB(MaxnPrimB,ntypesB))
+allocate(ContractCoeffOfTypeB(MaxnPrimB,MaxnContB,ntypesB))
+allocate(Bcenters(3,MaxnAtomsB,nTypesB))
+Call ReadCenterInfo2(luoutput,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
      & nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB,&
      & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & Bcenters,spherical,Outdim2)
+     & Bcenters,spherical)
 !C
-Call BuildCenterAndTypeInfo(3,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+call ReadCenterInfo1(luoutput,nTypesC,nBatchesC,MaxnAtomsC,MaxnPrimC,MaxnContC,spherical)
+allocate(nAtomsOfTypeC(ntypesC))
+allocate(AngmomOfTypeC(ntypesC))
+allocate(nPrimOfTypeC(ntypesC))
+allocate(nContOfTypeC(ntypesC))
+allocate(startOrbitalOfTypeC(MaxNatomsC,ntypesC))
+allocate(exponentsOfTypeC(MaxnPrimC,ntypesC))
+allocate(ContractCoeffOfTypeC(MaxnPrimC,MaxnContC,ntypesC))
+allocate(Ccenters(3,MaxnAtomsC,nTypesC))
+Call ReadCenterInfo2(luoutput,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
      & nPrimOfTypeC,nContOfTypeC,MaxnAtomsC,MaxnPrimC,MaxnContC,&
-     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,&
-     & spherical,Outdim3)
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & Ccenters,spherical)
 !D
-Call BuildCenterAndTypeInfo(4,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+call ReadCenterInfo1(luoutput,nTypesD,nBatchesD,MaxnAtomsD,MaxnPrimD,MaxnContD,spherical)
+allocate(nAtomsOfTypeD(ntypesD))
+allocate(AngmomOfTypeD(ntypesD))
+allocate(nPrimOfTypeD(ntypesD))
+allocate(nContOfTypeD(ntypesD))
+allocate(startOrbitalOfTypeD(MaxNatomsD,ntypesD))
+allocate(exponentsOfTypeD(MaxnPrimD,ntypesD))
+allocate(ContractCoeffOfTypeD(MaxnPrimD,MaxnContD,ntypesD))
+allocate(Dcenters(3,MaxnAtomsD,nTypesD))
+Call ReadCenterInfo2(luoutput,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
      & nPrimOfTypeD,nContOfTypeD,MaxnAtomsD,MaxnPrimD,MaxnContD,&
-     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,spherical,Outdim4)
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & Dcenters,spherical)
+
+READ(LUOUTPUT,*) Outdim1,Outdim2,Outdim3,Outdim4
 
 call GetIchorSphericalParamIdentifier(SphericalSpec)
 doLink = .FALSE.
@@ -134,144 +184,81 @@ call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & integrals,lupri)
 
-do d=1,OutputDim4
-   do c=1,OutputDim3
-      do b=1,OutputDim2
-         do a=1,OutputDim1            
-            write(lupri,*)'int',integrals(a,b,c,d)
-         enddo
-      enddo
-   enddo
-enddo
-!call Mem_Add_external_memory(MaxMemAllocated)
-!call mem_dealloc(InputStorage)
-!=====================================================================
+!     print*,'OutputDim1:',OutputDim1,OutputDim2,OutputDim3,OutputDim4
+!     do d=1,OutputDim4
+!        do c=1,OutputDim3
+!           do b=1,OutputDim2
+!              do a=1,OutputDim1            
+!                print*,'int',integrals(a,b,c,d)
+!             enddo
+!          enddo
+!       enddo
+!    enddo
+     
+     allocate(ComparisonInt(Outdim1,Outdim2,Outdim3,Outdim4))
+     READ(LUOUTPUT,*) ComparisonInt
+     
+     FAIL = .FALSE.
+     do d=1,OutputDim4
+        do c=1,OutputDim3
+           do b=1,OutputDim2
+              do a=1,OutputDim1            
+                 IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
+                    print*,'ERROR a,b,c,d = ',a,b,c,d
+                    print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                    print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                    print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                    FAIL = .TRUE.
+                 ENDIF
+              enddo
+           enddo
+        enddo
+     enddo
+     IF(FAIL)THEN
+        print*,'TEST FAILED '
+     ELSE
+        print*,'TEST SUCCEEDED '
+     ENDIF
+     deallocate(integrals)
+     deallocate(ComparisonInt)
 
+close(unit = LUOUTPUT)
 
-!=====================================================================
-!free space
-!call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
-!           & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
-!           & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
-!call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
-!           & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
-!           & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
-!call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
-!           & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
-!           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
-!call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
-!           & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
-!           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
-CONTAINS
-Subroutine BuildCenterAndTypeInfo(Center,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
-     & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
-     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,spherical,dim)
-implicit none
-integer,intent(IN)      :: Center
-logical,intent(in) :: spherical
-integer,intent(inout) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA,dim
-integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)      !intent(inout)
-integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:)      !intent(inout)
-integer,pointer     :: startOrbitalOfTypeA(:,:)              !intent(inout)
-real(8),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:)
-real(8),pointer :: ContractCoeffOfTypeA(:,:,:)
-!
-ntypesA = 1           !before(2 of S type 2 of P and 2 of D)
-nBatchesA = 2*ntypesA !2 atoms of each
-allocate(nAtomsOfTypeA(ntypesA))
-allocate(AngmomOfTypeA(ntypesA))
-allocate(nPrimOfTypeA(ntypesA))
-allocate(nContOfTypeA(ntypesA))
+deallocate(nAtomsOfTypeA)
+deallocate(AngmomOfTypeA)
+deallocate(nPrimOfTypeA)
+deallocate(nContOfTypeA)
+deallocate(startOrbitalOfTypeA)
+deallocate(exponentsOfTypeA)
+deallocate(ContractCoeffOfTypeA)
+deallocate(Acenters)
 
-call build_TypeInfo1(nTypesA,&
-     & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
-    & MaxnAtomsA,MaxnPrimA,MaxnContA,startOrbitalOfTypeA,&
-     & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,dim)
+deallocate(nAtomsOfTypeB)
+deallocate(AngmomOfTypeB)
+deallocate(nPrimOfTypeB)
+deallocate(nContOfTypeB)
+deallocate(startOrbitalOfTypeB)
+deallocate(exponentsOfTypeB)
+deallocate(ContractCoeffOfTypeB)
+deallocate(Bcenters)
 
-END Subroutine BUILDCENTERANDTYPEINFO
+deallocate(nAtomsOfTypeC)
+deallocate(AngmomOfTypeC)
+deallocate(nPrimOfTypeC)
+deallocate(nContOfTypeC)
+deallocate(startOrbitalOfTypeC)
+deallocate(exponentsOfTypeC)
+deallocate(ContractCoeffOfTypeC)
+deallocate(Ccenters)
 
-Subroutine build_TypeInfo1(nTypes,nAtomsOfType,&
-     & AngmomOfType,nPrimOfType,nContOfType,MaxnAtoms,&
-     & MaxnPrim,MaxnCont,startOrbitalOfTypeA,exponentsOfTypeA,&
-     & ContractCoeffOfTypeA,CentersOfTypeA,dim)
-implicit none
-!> the number of different types of batches
-INTEGER,intent(in)           :: ntypes
-!> the number of atoms for each type of batches
-integer,intent(inout)    :: nAtomsOfType(nTypes)
-!> the angmom for each type of batches (0 for S, 1 for P,...)
-integer,intent(inout)    :: AngmomOfType(nTypes)
-!> the number of primitive functions for each type of batches 
-integer,intent(inout)    :: nPrimOfType(nTypes)
-!> the number of contracted functions for each type of batches 
-integer,intent(inout)    :: nContOfType(nTypes)
-!> the maximum number of Atoms with a given shell type
-integer,intent(inout)    :: MaxnAtoms
-!> the maximum number of Primitive in a given shell type
-integer,intent(inout)    :: MaxnPrim
-!> the maximum number of Contracted functions in a given shell type
-integer,intent(inout)    :: MaxnCont,dim
-!> the start orbital of the atoms with this type
-integer,pointer :: startOrbitalOfTypeA(:,:)
-!> the exponents for each type of batches 
-real(8),pointer :: exponentsOfTypeA(:,:)
-!> the contraction coefficients for each type of batches 
-real(8),pointer :: ContractCoeffOfTypeA(:,:,:)
-!> the centers of the atoms with this type
-real(8),pointer :: CentersOfTypeA(:,:,:)
-!
-integer :: nBatchType,iBatchType,i,j,k,orbitalindex
-integer :: ncol,nOrbComp
-nBatchType = ntypes
-do iBatchType=1,ntypes 
-   nAtomsOfType(iBatchType) = 2 !2
-   nPrimOfType(iBatchType) = 2  
-   nContOfType(iBatchType) = 1
-   AngmomOfType(iBatchType) = 0 !Stype!(iBatchType-1)/2 !0,0,1,1,2,2
-enddo
-MaxNatoms = 0 
-do iBatchType=1,nBatchType
-   MaxNatoms = MAX(MaxNatoms,nAtomsOfType(iBatchType))
-enddo
-MaxnPrim = 0 
-do iBatchType=1,nBatchType
-   MaxnPrim = MAX(MaxnPrim,nPrimOfType(iBatchType))
-enddo
-MaxnCont = 0 
-do iBatchType=1,nBatchType
-   MaxnCont = MAX(MaxnCont,nContOfType(iBatchType))
-enddo
-
-allocate(exponentsOfTypeA(MaxnPrim,ntypes))
-allocate(startOrbitalOfTypeA(MaxNatoms,ntypes))
-allocate(ContractCoeffOfTypeA(MaxnPrim,MaxnCont,ntypes))
-allocate(centersOfTypeA(3,MaxnAtoms,nTypes))
-do J=1,ntypes
-   do I=1,MaxnPrim
-      exponentsOfTypeA(I,J) = 1.25d0*I+0.03333d0*J
-   enddo
-   do K=1,MaxnCont
-      do I=1,MaxnPrim
-         ContractCoeffOfTypeA(I,K,J) = 0.1d0*I+0.01d0*K+0.001d0*J
-      enddo
-   enddo
-enddo
-orbitalindex = 0
-do J=1,ntypes
-   K = AngmomOfType(J)+1
-   ncol = nContOfType(J)
-   nOrbComp = 2*K-1
-   do I=1,MaxNatoms
-      startOrbitalOfTypeA(I,J) = orbitalindex
-      orbitalindex = orbitalindex + nOrbComp*ncol
-      centersOfTypeA(1,I,J) = 2.25d0*I+0.03333d0*J
-      centersOfTypeA(2,I,J) = 0.00001d0*I+0.12345d0*J
-      centersOfTypeA(3,I,J) = 0.999d0+I-0.03333d0*J
-   enddo
-enddo
-dim = orbitalindex
-end Subroutine Build_TypeInfo1
-
+deallocate(nAtomsOfTypeD)
+deallocate(AngmomOfTypeD)
+deallocate(nPrimOfTypeD)
+deallocate(nContOfTypeD)
+deallocate(startOrbitalOfTypeD)
+deallocate(exponentsOfTypeD)
+deallocate(ContractCoeffOfTypeD)
+deallocate(Dcenters)
 
 END PROGRAM IchorErimoduleTEST
 

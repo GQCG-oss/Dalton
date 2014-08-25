@@ -1,4 +1,5 @@
 MODULE IntegralInterfaceIchorMod
+  use files
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig,&
        & BASISSETLIBRARYITEM
@@ -56,20 +57,25 @@ CHARACTER(len=9)     :: BASISLABEL
 TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
+CHARACTER(len=100)   :: filename
 CHARACTER(len=20)    :: BASISTYPE(10)
+integer              :: iBasisType(10)
 real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical,SpecialPass,LHS
 logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL,TestScreening
 logical      :: MoTrans,NoSymmetry
 Character    :: intSpec(5)
-integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
+integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q,luoutput
 integer :: nBasisA,nBasisB,nBasisC,nBasisD,iPassStart,iPassEnd
 integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
 real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
-integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat
+integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat,ifilename
 type(matrix) :: GAB
-
+logical:: generateFiles
+generateFiles = .FALSE.!.TRUE.
+filename(1:13) = 'IchorUnitTest'
+ifilename = 14
 NoSymmetry = .FALSE. !activate permutational symmetry
 MoTrans=.FALSE.
 intSpec(1) = 'R'
@@ -215,16 +221,16 @@ do A=1,80
    BASISSETNAME(A:A) = ' '
 enddo
 !
-BASISTYPE(1) = 'UnitTest_segS1p     '
-BASISTYPE(2) = 'UnitTest_segP1p     '
-BASISTYPE(3) = 'UnitTest_segD1p     '
-BASISTYPE(4) = 'UnitTest_segS       '
-BASISTYPE(5) = 'UnitTest_segP       '
-BASISTYPE(6) = 'UnitTest_segD       '
-BASISTYPE(7) = 'UnitTest_genS       '
-BASISTYPE(8) = 'UnitTest_genP       '
-BASISTYPE(9) = 'UnitTest_genD       '
-BASISTYPE(10) = 'UnitTest_segSP      '
+BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
+BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
+BASISTYPE(3) = 'UnitTest_segD1p     '; iBASISTYPE(3) = 15
+BASISTYPE(4) = 'UnitTest_segS       '; iBASISTYPE(4) = 13
+BASISTYPE(5) = 'UnitTest_segP       '; iBASISTYPE(5) = 13
+BASISTYPE(6) = 'UnitTest_segD       '; iBASISTYPE(6) = 13
+BASISTYPE(7) = 'UnitTest_genS       '; iBASISTYPE(7) = 13
+BASISTYPE(8) = 'UnitTest_genP       '; iBASISTYPE(8) = 13
+BASISTYPE(9) = 'UnitTest_genD       '; iBASISTYPE(9) = 13
+BASISTYPE(10) = 'UnitTest_segSP      '; iBASISTYPE(10) = 14
 !issues with SP in that 
 !       IF(dim2.GT.dim1)CYCLE
 !       IF(dim3.GT.dim1)CYCLE
@@ -317,8 +323,15 @@ do Ipass = IpassStart,IpassEnd
        ibasiselm(2) = iBasis2
        ibasiselm(3) = iBasis3
        ibasiselm(4) = iBasis4
+       ifilename = 14
        do A = 1,4       
           BASISSETNAME(1:20) = BASISTYPE(iBasiselm(A))
+          print*,'BASISSETNAME(1:20)',BASISSETNAME(1:20)
+          print*,'BASISTYPE(iBasiselm(A))',BASISTYPE(iBasiselm(A))
+          print*,'BASISTYPE(iBasiselm(A))(1:iBASISTYPE)',BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+          filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+          ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
+          print*,'filename(1:ifilename-1)',filename(1:ifilename-1)
           CALL Build_basis(LUPRI,IPRINT,&
                &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
                &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
@@ -462,6 +475,14 @@ do Ipass = IpassStart,IpassEnd
              call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
                   & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,&
                   & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry)
+
+             IF(generateFiles)THEN
+                luoutput = -1
+                call lsopen(luoutput,filename(1:ifilename-1),'UNKNOWN','FORMATTED')
+                call WRITE_ICHORERI_INFO(LUPRI,IPRINT,setting,&
+                     & dim1,dim2,dim3,dim4,integralsIchor,LUOUTPUT)
+                call lsclose(luoutput,'KEEP')
+             ENDIF
              call FREE_SCREEN_ICHORERI
              !       print*,'DONE call ICHOR WITH BASIS'
              !setting%scheme%intprint = 0
@@ -665,6 +686,323 @@ WRITE(lupri,*)'done II_test_Ichor'
 
 #endif
 END SUBROUTINE II_unittest_Ichor
+
+!!$!> \brief Calculates overlap integral matrix
+!!$!> \author T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param lupri Default print unit
+!!$!> \param luerr Default error print unit
+!!$!> \param setting Integral evalualtion settings
+!!$!> \param S the overlap matrix
+!!$SUBROUTINE II_unittest_Ichor2(LUPRI,LUERR,DebugIchorOption)
+!!$IMPLICIT NONE
+!!$TYPE(LSSETTING)       :: SETTING
+!!$INTEGER               :: LUPRI,LUERR,DebugIchorOption
+!!$!
+!!$#ifdef VAR_ICHOR
+!!$real(realk),pointer   :: integralsIchor(:,:,:,:),IntFromFile(:,:,:,:)
+!!$integer :: dim1,dim2,dim3,dim4,A,B,C,D,iprint,nbast(4),ibasiselm(4)
+!!$integer :: iBasis1,ibasis2,ibasis3,ibasis4,icharge,nbasis,nPass,ipass,itest
+!!$logical :: dirac,doprint,debug
+!!$TYPE(MOLECULEINFO),pointer :: Originalmolecule
+!!$TYPE(MOLECULEINFO),pointer :: atomicmolecule(:)
+!!$TYPE(BASISSETLIBRARYITEM) :: LIBRARY(nBasisBasParam)
+!!$CHARACTER(len=9)     :: BASISLABEL
+!!$TYPE(BASISINFO),pointer :: unittestBASIS(:)
+!!$TYPE(BASISINFO),pointer :: originalBASIS
+!!$CHARACTER(len=80)    :: BASISSETNAME,filename
+!!$CHARACTER(len=20)    :: BASISTYPE(10)
+!!$integer              :: iBASISTYPE(10)
+!!$real(realk)          :: Rxyz(3)
+!!$type(lsmatrix)       :: FINALVALUE(2)
+!!$logical      :: spherical,savedospherical,SpecialPass,LHS
+!!$logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL,TestScreening
+!!$logical      :: MoTrans,NoSymmetry
+!!$Character    :: intSpec(5)
+!!$integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q,ifilename
+!!$integer :: nBasisA,nBasisB,nBasisC,nBasisD,iPassStart,iPassEnd,luoutput
+!!$integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
+!!$real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
+!!$integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat
+!!$type(matrix) :: GAB
+!!$logical:: generateFiles,CS_SCREEN,OD_SCREEN
+!!$generateFiles = .TRUE.
+!!$filename(1:13) = 'IchorUnitTest'
+!!$ifilename = 14
+!!$NoSymmetry = .FALSE. !activate permutational symmetry
+!!$MoTrans=.FALSE.
+!!$intSpec(1) = 'R'
+!!$intSpec(2) = 'R'
+!!$intSpec(3) = 'R'
+!!$intSpec(4) = 'R'
+!!$intSpec(5) = 'C'
+!!$!WRITE(lupri,*)'Before IchorUnitTest'
+!!$!call debug_mem_stats(LUPRI)
+!!$
+!!$!Special types
+!!$!   A          B          C          D          OVERALL
+!!$!Seg1Prim     Seg        Gen      Seg1Prim      SegP      (Tested as Option 1)
+!!$!Seg1Prim   Seg1Prim   Seg1Prim   Seg1Prim      Seg       (Tested as Option 2)
+!!$!Seg1Prim   Seg1Prim   Seg1Prim   Seg1Prim      Seg1Prim  (Tested as Option 3)  
+!!$!Seg1Prim     Gen        Seg      Seg1Prim      SegQ      (Tested as Option 4)
+!!$!  Gen        Gen        Gen        Gen         Gen       (Tested as Option 5)
+!!$
+!!$SpecialPass = .FALSE.
+!!$TestScreening = .FALSE.
+!!$SELECT CASE(DebugIchorOption)
+!!$CASE(0)
+!!$   !all types and all passes
+!!$   nbasisA = 9; nbasisB = 9; nbasisC = 9; nbasisD = 9
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   do iBasis1Q=1,nbasisA
+!!$      iBasisA(iBasis1Q) = iBasis1Q
+!!$   enddo
+!!$   do iBasis2Q=1,nbasisB
+!!$      iBasisB(iBasis2Q) = iBasis2Q
+!!$   enddo
+!!$   do iBasis3Q=1,nbasisC
+!!$      iBasisC(iBasis3Q) = iBasis3Q
+!!$   enddo
+!!$   do iBasis4Q=1,nbasisD
+!!$      iBasisD(iBasis4Q) = iBasis4Q
+!!$   enddo
+!!$CASE(1)
+!!$   !Special types
+!!$   !   A          B          C          D          OVERALL
+!!$   !Seg1Prim     Seg        Gen      Seg1Prim      SegP
+!!$   nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   SpecialPass = .TRUE.
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   iBasisA(1) = 1; iBasisA(2) = 2; iBasisA(3) = 3  !Seg1Prim
+!!$   iBasisB(1) = 4; iBasisB(2) = 5; iBasisB(3) = 6  !Seg
+!!$   iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9  !Gen
+!!$   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3  !Seg1Prim
+!!$CASE(2)
+!!$   !Special types
+!!$   !   A          B          C           D          OVERALL
+!!$   !  Seg        Seg1Prim   Seg1Prim  Seg1Prim      Seg
+!!$   nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   !Pure Seg (S,P,D ; S,P,D | S,P,D ; S,P,D)
+!!$   iBasisA(1) = 4; iBasisA(2) = 5; iBasisA(3) = 6
+!!$   iBasisB(1) = 1; iBasisB(2) = 2; iBasisB(3) = 3
+!!$   iBasisC(1) = 1; iBasisC(2) = 2; iBasisC(3) = 3
+!!$   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3
+!!$CASE(3)
+!!$   !Special types
+!!$   !   A          B          C          D          OVERALL
+!!$   !Seg1Prim   Seg1Prim   Seg1Prim   Seg1Prim      Seg1Prim 
+!!$   nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   !Pure Seg1Prim (S,P,D ; S,P,D | S,P,D ; S,P,D)
+!!$   iBasisA(1) = 1; iBasisA(2) = 2; iBasisA(3) = 3
+!!$   iBasisB(1) = 1; iBasisB(2) = 2; iBasisB(3) = 3
+!!$   iBasisC(1) = 1; iBasisC(2) = 2; iBasisC(3) = 3
+!!$   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3
+!!$CASE(4)
+!!$   !Special types
+!!$   !   A          B          C          D          OVERALL
+!!$   !Seg1Prim     Gen        Seg      Seg1Prim      SegQ
+!!$   nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   SpecialPass = .TRUE.
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   iBasisA(1) = 1; iBasisA(2) = 2; iBasisA(3) = 3  !Seg1Prim
+!!$   iBasisB(1) = 7; iBasisB(2) = 8; iBasisB(3) = 9  !Gen
+!!$   iBasisC(1) = 4; iBasisC(2) = 5; iBasisC(3) = 6  !Seg
+!!$   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3  !Seg1Prim
+!!$CASE(5)
+!!$   !Gen1
+!!$   !Special types
+!!$   !   A          B          C          D          OVERALL
+!!$   !  Gen        Gen        Gen        Gen         Gen    
+!!$   !Pure Gen (S,P,D ; S,P,D | S,P,D ; S,P,D)
+!!$   nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   SpecialPass = .TRUE. !otherwise too expensive
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   iBasisA(1) = 7; iBasisA(2) = 8; iBasisA(3) = 9
+!!$   iBasisB(1) = 7; iBasisB(2) = 8; iBasisB(3) = 9
+!!$   iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9
+!!$   iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9
+!!$CASE(6)
+!!$   !all types and all passes - but only screening
+!!$   nbasisA = 9; nbasisB = 9; nbasisC = 1; nbasisD = 1
+!!$   IpassStart = 1; IpassEnd = 2
+!!$   call mem_alloc(iBasisA,nBasisA)
+!!$   call mem_alloc(iBasisB,nBasisB)
+!!$   call mem_alloc(iBasisC,nBasisC)
+!!$   call mem_alloc(iBasisD,nBasisD)
+!!$   do iBasis1Q=1,nbasisA
+!!$      iBasisA(iBasis1Q) = iBasis1Q
+!!$   enddo
+!!$   do iBasis2Q=1,nbasisB
+!!$      iBasisB(iBasis2Q) = iBasis2Q
+!!$   enddo
+!!$   iBasisC(1) = 1
+!!$   iBasisD(1) = 1
+!!$   TestScreening = .TRUE.
+!!$CASE DEFAULT
+!!$   CALL LSQUIT('unknown option in Debug Ichor.',-1)
+!!$END SELECT
+!!$
+!!$WRITE(lupri,*)'II_test_Ichor'
+!!$ALLPASS = .TRUE.
+!!$do A=1,80
+!!$   BASISSETNAME(A:A) = ' '
+!!$enddo
+!!$!
+!!$BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
+!!$BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
+!!$BASISTYPE(3) = 'UnitTest_segD1p     '; iBASISTYPE(3) = 15
+!!$BASISTYPE(4) = 'UnitTest_segS       '; iBASISTYPE(4) = 13
+!!$BASISTYPE(5) = 'UnitTest_segP       '; iBASISTYPE(5) = 13
+!!$BASISTYPE(6) = 'UnitTest_segD       '; iBASISTYPE(6) = 13
+!!$BASISTYPE(7) = 'UnitTest_genS       '; iBASISTYPE(7) = 13
+!!$BASISTYPE(8) = 'UnitTest_genP       '; iBASISTYPE(8) = 13
+!!$BASISTYPE(9) = 'UnitTest_genD       '; iBASISTYPE(9) = 13
+!!$BASISTYPE(10) = 'UnitTest_segSP      '; iBASISTYPE(10) = 14
+!!$
+!!$iprint=0
+!!$itest = 1
+!!$do Ipass = IpassStart,IpassEnd
+!!$ WRITE(lupri,*)'Number of Passes',Ipass
+!!$ !=========================================================================================================
+!!$ !                    Build Molecule
+!!$ !=========================================================================================================
+!!$ FAIL = .FALSE.
+!!$ spherical = .TRUE.!.FALSE.
+!!$ basisloop: do iBasis1Q = 1,nBasisA
+!!$  iBasis1 = iBasisA(iBasis1Q)
+!!$  do iBasis2Q = 1,nBasisB
+!!$   iBasis2 = iBasisB(iBasis2Q)
+!!$   do iBasis3Q = 1,nBasisC
+!!$    iBasis3 = iBasisC(iBasis3Q)
+!!$    do iBasis4Q = 1,nBasisD
+!!$     iBasis4 = iBasisD(iBasis4Q)
+!!$     ibasiselm(1) = iBasis1
+!!$     ibasiselm(2) = iBasis2
+!!$     ibasiselm(3) = iBasis3
+!!$     ibasiselm(4) = iBasis4
+!!$     ifilename = 14
+!!$     do A = 1,4       
+!!$        filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+!!$        ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
+!!$     enddo
+!!$     
+!!$     write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),&
+!!$          & ',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
+!!$     
+!!$     CS_SCREEN =.FALSE. !no READ SCREEN_ICHORERI_DRIVER
+!!$     OD_SCREEN =.FALSE. 
+!!$     luoutput = -1
+!!$     print*,'filename'
+!!$     call lsopen(luoutput,filename(1:ifilename-1),'OLD','FORMATTED')
+!!$     call MAIN_ICHORERI_READDRIVER(LUPRI,IPRINT,LUOUTPUT,CS_SCREEN,OD_SCREEN,&
+!!$          & integralsIchor,dim1,dim2,dim3,dim4)
+!!$     
+!!$     call mem_alloc(IntFromFile,dim1,dim2,dim3,dim4)
+!!$     READ(LUOUTPUT,*) IntFromFile
+!!$     call lsclose(luoutput,'KEEP')
+!!$     
+!!$     
+!!$     write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),',',&
+!!$          & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
+!!$     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
+!!$     DO D=1,dim4
+!!$        DO C=1,dim3
+!!$           DO B=1,dim2
+!!$              DO A=1,dim1
+!!$                 IF(ABS(IntFromFile(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
+!!$                      & 1.0E-10_realk)THEN
+!!$                    FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+!!$                    write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(IntFromFile(A,B,C,D)))
+!!$                    write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
+!!$                    write(lupri,'(A,ES16.8)')'IntFromFile(A,B,C,D)   ',IntFromFile(A,B,C,D)
+!!$                    write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
+!!$                    write(lupri,'(A,ES16.8)')'DIFF                   ',&
+!!$                         & ABS(IntFromFile(A,B,C,D)-integralsIchor(A,B,C,D))
+!!$                    call lsquit('ERROR',-1)
+!!$                    !                   ELSE
+!!$                    !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+!!$                    !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+!!$                    !                           & ABS(IntFromFile(A,B,C,D)-integralsIchor(A,B,C,D))
+!!$                 ENDIF
+!!$              ENDDO
+!!$           ENDDO
+!!$        ENDDO
+!!$     ENDDO
+!!$     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+!!$        WRITE(lupri,'(A)')'CALC FAILED'
+!!$     ENDIF
+!!$     call mem_dealloc(IntFromFile)
+!!$     call mem_dealloc(integralsIchor)
+!!$     
+!!$    ENDDO
+!!$   ENDDO
+!!$  ENDDO
+!!$ ENDDO basisloop
+!!$
+!!$ write(lupri,'(A,I4)')'Summary of Unit Test for nPasses=',ipass
+!!$ do iBasis1Q = 1,nBasisA
+!!$  iBasis1 = iBasisA(iBasis1Q)
+!!$  do iBasis2Q = 1,nBasisB
+!!$   iBasis2 = iBasisB(iBasis2Q)
+!!$   do iBasis3Q = 1,nBasisC
+!!$    iBasis3 = iBasisC(iBasis3Q)
+!!$    do iBasis4Q = 1,nBasisD
+!!$     iBasis4 = iBasisD(iBasis4Q)
+!!$     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4)) THEN
+!!$        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+!!$             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+!!$             & BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
+!!$        ALLPASS = .FALSE.
+!!$     ELSE
+!!$        write(lupri,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+!!$             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+!!$             & BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
+!!$     ENDIF
+!!$    enddo
+!!$   enddo
+!!$  enddo
+!!$ enddo
+!!$enddo !ipass 
+!!$
+!!$IF(ALLPASS)THEN
+!!$   WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: SUCCESSFUL'
+!!$   print*,'Ichor Integrals tested against Thermite: SUCCESSFUL'
+!!$ELSE
+!!$   WRITE(lupri,'(A)')'Ichor Integrals tested against Thermite: FAILED'
+!!$   print*,'Ichor Integrals tested against Thermite: FAILED'
+!!$ENDIF
+!!$
+!!$WRITE(lupri,*)'After IchorUnitTest2'
+!!$call debug_mem_stats(LUPRI)
+!!$
+!!$#endif
+!!$END SUBROUTINE II_unittest_Ichor2
 
 SUBROUTINE II_Ichor_LinK_test(LUPRI,LUERR,SETTING,D)
 implicit none
