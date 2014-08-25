@@ -1,20 +1,50 @@
 all: libIchorIntegrals.a
 
-ARCH        = linux
-FMMDIR      = mm
+#########################################################
 #
+# COMPILER SECTION 
 #
-CPPFLAGS      = -DVAR_ICHOR
-F90            = ifort
-FLNK           = ifort
-RM             = rm -f
-#F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
-F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
-INCLUDES       =  
-LIBS           = #-openmp
-AR             = ar
-ARFLAGS        =  rvs
+#########################################################
 #
+# CRAY ON TITAN EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = ftn
+#FLNK           = ftn
+#RM             = rm -f
+#F90OPTFLAGS    = -eZ -x omp -rm -hsystem_alloc
+#INCLUDES       =  
+#LIBS           =
+#AR             = ar
+#ARFLAGS        = rvs
+##
+#
+# CRAY USING IFORT EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = ifort
+#FLNK           = ifort
+#RM             = rm -f
+##F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
+#F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
+#INCLUDES       =  
+#LIBS           = #-openmp
+#AR             = ar
+#ARFLAGS        =  rvs
+##
+#########################################################
+#
+# END OF COMPILER SECTION 
+#
+#########################################################
 
 .SUFFIXES : .F90 
 
