@@ -200,6 +200,7 @@ subroutine VerticalRecurrenceGPUSegP2D(nPassP,nPrimP,nPrimQ,&
      tmpArray2(3,2) = Yqd*tmpArray1(1,2) + alphaYpq*TmpArray1(1,3)
      tmpArray2(4,2) = Zqd*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expQ*(TMPAuxArray(1) + alphaQ*TmpArray1(1,2))
+!$ACC LOOP SEQ
      do iTUV = 1,    4
       AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo
@@ -316,6 +317,7 @@ subroutine VerticalRecurrenceGPUSegP3D(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expQ*(TMPAuxArray(2) + alphaQ*TmpArray2(2,2))
      TwoTerms(2) = inv2expQ*(TMPAuxArray(3) + alphaQ*TmpArray2(3,2))
      TwoTerms(3) = inv2expQ*(TMPAuxArray(4) + alphaQ*TmpArray2(4,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   10
       AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo

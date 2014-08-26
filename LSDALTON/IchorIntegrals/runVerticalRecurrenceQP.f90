@@ -2,6 +2,7 @@ MODULE TESTMODULE
   use stringsMODULE
 
   logical,save :: nPrimLast
+  logical,save :: DoOpenACC
 CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
@@ -21,7 +22,7 @@ CONTAINS
     integer :: iseglabel,lufile,iseg,iPrim,nPrim
     integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K,center
     logical :: Gen,SegQ,SegP,Seg,Seg1Prim,nPrimnTUV,DoOpenMP
-    logical :: Collapse,segwtuv,DoOpenACC,CPU
+    logical :: Collapse,segwtuv,CPU
     Character(len=48) :: FileName    
     character(len=3) :: ARCSTRING,Xdir,Ydir,Zdir
     character(len=1) :: centerString
@@ -2428,6 +2429,7 @@ IF(J.EQ.1)THEN
       ELSE         
          !add loop
          IF(ituvP0.EQ.nTUVprev+1)THEN
+            IF(DoOpenACC)WRITE(lupri,'(A)')'!$ACC LOOP SEQ'
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
             IF(nPrimLast)THEN
                IF(Seg1Prim)THEN
