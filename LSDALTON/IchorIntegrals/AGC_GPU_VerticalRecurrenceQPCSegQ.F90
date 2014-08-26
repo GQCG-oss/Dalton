@@ -42,6 +42,7 @@ subroutine VerticalRecurrenceGPUSegQ1C(nPassP,nPrimP,nPrimQ,&
   !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     AUXarray(iP,1)=0.0E0_realk
     AUXarray(iP,2)=0.0E0_realk
@@ -145,6 +146,7 @@ subroutine VerticalRecurrenceGPUSegQ2C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   10
      AUXarray(iP,iTUV)=0.0E0_realk
@@ -239,6 +241,7 @@ subroutine VerticalRecurrenceGPUSegQ3C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   20
      AUXarray(iP,iTUV)=0.0E0_realk
@@ -359,6 +362,7 @@ subroutine VerticalRecurrenceGPUSegQ4C(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xqc*TUV(T-1,0,0,N)-(alpha/q)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2q)*(TUV(T-2,0,0,N)-(alpha/q)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   35
      AUXarray(iP,iTUV)=0.0E0_realk
