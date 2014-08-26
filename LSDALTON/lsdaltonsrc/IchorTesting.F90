@@ -326,12 +326,12 @@ do Ipass = IpassStart,IpassEnd
        ifilename = 14
        do A = 1,4       
           BASISSETNAME(1:20) = BASISTYPE(iBasiselm(A))
-          print*,'BASISSETNAME(1:20)',BASISSETNAME(1:20)
-          print*,'BASISTYPE(iBasiselm(A))',BASISTYPE(iBasiselm(A))
-          print*,'BASISTYPE(iBasiselm(A))(1:iBASISTYPE)',BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+!          print*,'BASISSETNAME(1:20)',BASISSETNAME(1:20)
+!          print*,'BASISTYPE(iBasiselm(A))',BASISTYPE(iBasiselm(A))
+!          print*,'BASISTYPE(iBasiselm(A))(1:iBASISTYPE)',BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
           filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
           ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
-          print*,'filename(1:ifilename-1)',filename(1:ifilename-1)
+!          print*,'filename(1:ifilename-1)',filename(1:ifilename-1)
           CALL Build_basis(LUPRI,IPRINT,&
                &SETTING%MOLECULE(A)%p,UNITTESTBASIS(A)%BINFO(RegBasParam),LIBRARY,&
                &BASISLABEL,.FALSE.,.FALSE.,doprint,spherical,RegBasParam,BASISSETNAME)
