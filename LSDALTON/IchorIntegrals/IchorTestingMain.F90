@@ -40,7 +40,7 @@ Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD,a,b,c,d
 logical :: spherical
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
 integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2,LUOUTPUT
-logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5,FAIL
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
 integer :: nBasisA,nBasisB,nBasisC,nBasisD,iPassStart,iPassEnd
 integer :: Ipass,iBasis1,iBasis2,iBasis3,iBasis4,ibasiselm(4)
 real(8),pointer :: integrals(:,:,:,:),ComparisonInt(:,:,:,:)
@@ -49,7 +49,7 @@ integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
 CHARACTER(len=20)    :: BASISTYPE(10)
 integer              :: iBASISTYPE(10),DebugIchorOption,ifilename
 character(len=100) :: filename
-logical      :: SpecialPass
+logical      :: SpecialPass,FAIL(10,10,10,10),ALLPASS
 do A=1,100
    filename(A:A) = ' '
 enddo
@@ -193,7 +193,7 @@ BASISTYPE(7) = 'UnitTest_genS       '; iBASISTYPE(7) = 13
 BASISTYPE(8) = 'UnitTest_genP       '; iBASISTYPE(8) = 13
 BASISTYPE(9) = 'UnitTest_genD       '; iBASISTYPE(9) = 13
 BASISTYPE(10) = 'UnitTest_segSP      '; iBASISTYPE(10) = 14
-
+FAIL = .FALSE.
 do Ipass = IpassStart,IpassEnd
  do iBasis1Q = 1,nBasisA
   iBasis1 = iBasisA(iBasis1Q)
@@ -357,14 +357,14 @@ do Ipass = IpassStart,IpassEnd
      
      allocate(ComparisonInt(Outdim1,Outdim2,Outdim3,Outdim4))
      READ(LUOUTPUT,*) ComparisonInt
-     
-     FAIL = .FALSE.
+     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
      do d=1,OutputDim4
         do c=1,OutputDim3
            do b=1,OutputDim2
               do a=1,OutputDim1   
                  IF(ABS(integrals(A,B,C,D)).GT.1.0E-10_8)THEN     
                     IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8/ABS(ComparisonInt(a,b,c,d)))THEN
+                       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
                        print*,'ERROR a,b,c,d = ',a,b,c,d
                        print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
                        print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
@@ -373,6 +373,7 @@ do Ipass = IpassStart,IpassEnd
                     ENDIF
                  ELSE                    
                     IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
+                       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
                        print*,'ERROR a,b,c,d = ',a,b,c,d
                        print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
                        print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
@@ -384,10 +385,10 @@ do Ipass = IpassStart,IpassEnd
            enddo
         enddo
      enddo
-     IF(FAIL)THEN
-        print*,'TEST FAILED '
+     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+        write(*,'(A)')'TEST FAILED '
      ELSE
-        print*,'TEST SUCCEEDED '
+        write(*,'(A)')'TEST SUCCEEDED '
      ENDIF
      deallocate(integrals)
      deallocate(ComparisonInt)
@@ -433,8 +434,38 @@ do Ipass = IpassStart,IpassEnd
    enddo
   enddo
  enddo
+ ALLPASS = .TRUE.
+ write(*,'(A,I5)')'Summary of Unit Test for nPasses=',ipass
+ do iBasis1Q = 1,nBasisA
+  iBasis1 = iBasisA(iBasis1Q)
+  do iBasis2Q = 1,nBasisB
+   iBasis2 = iBasisB(iBasis2Q)
+   do iBasis3Q = 1,nBasisC
+    iBasis3 = iBasisC(iBasis3Q)
+    do iBasis4Q = 1,nBasisD
+     iBasis4 = iBasisD(iBasis4Q)
+
+     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4)) THEN
+        write(*,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+             & BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
+        ALLPASS = .FALSE.
+     ELSE
+        write(*,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+             & BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
+     ENDIF     
+    enddo
+   enddo
+  enddo
+ enddo
 enddo
 
+IF(ALLPASS)THEN
+   WRITE(*,'(A)')'Ichor Integral UnitTest: SUCCESSFUL'
+ELSE
+   WRITE(*,'(A)')'Ichor Integrals UnitTest: FAILED'
+ENDIF
 
 END PROGRAM IchorErimoduleTEST
 

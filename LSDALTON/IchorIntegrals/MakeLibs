@@ -23,7 +23,7 @@ all: libIchorIntegrals.a
 #ARFLAGS        = rvs
 ##
 #
-# CRAY USING IFORT EXAMPLE
+# IFORT EXAMPLE
 #
 #ARCH        = linux
 #FMMDIR      = mm
@@ -39,7 +39,7 @@ all: libIchorIntegrals.a
 #LIBS           = #-openmp
 #AR             = ar
 #ARFLAGS        =  rvs
-##
+#
 # PGI SISYPHOS EXAMPLE
 #
 #ARCH        = linux
@@ -257,6 +257,6 @@ include Makefile.depend
 
 #the above code makes the libIchorIntegrals.a now you just have to link using
 
-test.x: 
+test.x: $(F90_OBJS) 
 	@echo "---------------> Linking test.x ..."
 	$(F90) $(F90FLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a
