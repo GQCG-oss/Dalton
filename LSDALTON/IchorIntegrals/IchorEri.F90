@@ -242,7 +242,10 @@ integer,allocatable :: nBraketList(:),BraketList(:,:)
 logical :: doMoTrans
 !MOtrans specific stuff
 integer :: nCMO1,nCMO2,nCMO3,nCMO4
-real(realk),allocatable :: CMO1(:,:),CMO2(:,:),CMO3(:,:),CMO4(:,:)
+real(realk),allocatable :: CMO1A(:,:),CMO2B(:,:)
+real(realk),allocatable :: CMO1B(:,:),CMO2A(:,:)
+real(realk),allocatable :: CMO3C(:,:),CMO4D(:,:)
+real(realk),allocatable :: CMO3D(:,:),CMO4C(:,:)
 
 doMOtrans = IchorJobSpec.EQ.IchorJobMOtrans
 IF(doMOtrans)Then
@@ -397,7 +400,8 @@ IF(DoLink)THEN
    IF((SameLHSaos.OR.SameRHSaos).OR.SameODs)call ichorQuit('Ichor Link Symmetry not enabled yet',-1)
 ENDIF
 IF(doMOtrans)THEN
-   IF(SameRHSaos.OR.SameODs)call ichorQuit('Ichor MoTrans Symmetry not enabled yet',-1)
+   !have to deactivate SameOD at least for now. 
+   SameODs = .FALSE.
 ENDIF
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25
@@ -439,10 +443,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
        & expD,ContractCoeffD,Dcenter,StartOrbitalD,MaxnAtomsD,MaxnprimD,MaxnContD,lupri)
 
   IF(doMOtrans)Then
-     allocate(CMO4(nDimD,nCMO4))
-     call mem_ichor_alloc(CMO4)
-     call FormActiveCmat(nDimD,nCMO4,CMO4,nAtomsD,startOrbitalD,nOrbD,&
+     allocate(CMO4D(nDimD,nCMO4))
+     call mem_ichor_alloc(CMO4D)
+     call FormActiveCmat(nDimD,nCMO4,CMO4D,nAtomsD,startOrbitalD,nOrbD,&
           & InputM(InputMspec(4))%M,InputM(InputMspec(4))%n1)
+     allocate(CMO3D(nDimD,nCMO3))
+     call mem_ichor_alloc(CMO3D)
+     call FormActiveCmat(nDimD,nCMO3,CMO3D,nAtomsD,startOrbitalD,nOrbD,&
+          & InputM(InputMspec(3))%M,InputM(InputMspec(3))%n1)
   ENDIF
   ! DONE TYPE D CALC ===========================
   DO ItypeCnon=1,nTypesC
@@ -476,10 +484,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
         & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,startOrbitalOfTypeC,&
         & expC,ContractCoeffC,Ccenter,StartOrbitalC,MaxnAtomsC,MaxnprimC,MaxnContC,lupri)
    IF(doMOtrans)Then
-      allocate(CMO3(nDimC,nCMO3))
-      call mem_ichor_alloc(CMO3)
-      call FormActiveCmat(nDimC,nCMO3,CMO3,nAtomsC,startOrbitalC,nOrbC,&
+      allocate(CMO3C(nDimC,nCMO3))
+      call mem_ichor_alloc(CMO3C)
+      call FormActiveCmat(nDimC,nCMO3,CMO3C,nAtomsC,startOrbitalC,nOrbC,&
            & InputM(InputMspec(3))%M,InputM(InputMspec(3))%n1)
+      allocate(CMO4C(nDimC,nCMO4))
+      call mem_ichor_alloc(CMO4C)
+      call FormActiveCmat(nDimC,nCMO4,CMO4C,nAtomsC,startOrbitalC,nOrbC,&
+           & InputM(InputMspec(4))%M,InputM(InputMspec(4))%n1)
    ENDIF
    ! DONE TYPE C CALC ===========================
    ! TYPE Q CALC ================================
@@ -561,10 +573,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,startOrbitalOfTypeB,&
          & expB,ContractCoeffB,Bcenter,StartOrbitalB,MaxnAtomsB,MaxnprimB,MaxnContB,lupri)
     IF(doMOtrans)Then
-       allocate(CMO2(nDimB,nCMO2))
-       call mem_ichor_alloc(CMO2)
-       call FormActiveCmat(nDimB,nCMO2,CMO2,nAtomsB,startOrbitalB,nOrbB,&
+       allocate(CMO2B(nDimB,nCMO2))
+       call mem_ichor_alloc(CMO2B)
+       call FormActiveCmat(nDimB,nCMO2,CMO2B,nAtomsB,startOrbitalB,nOrbB,&
             & InputM(InputMspec(2))%M,InputM(InputMspec(2))%n1)
+       allocate(CMO1B(nDimB,nCMO1))
+       call mem_ichor_alloc(CMO1B)
+       call FormActiveCmat(nDimB,nCMO1,CMO1B,nAtomsB,startOrbitalB,nOrbB,&
+            & InputM(InputMspec(1))%M,InputM(InputMspec(1))%n1)
     ENDIF
     ! DONE TYPE B CALC ===========================
     DO ItypeAnon=1,nTypesA             !Ordered according to Angmom (highest angular momentum first)
@@ -608,10 +624,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
            & expA,ContractCoeffA,Acenter,StartOrbitalA,MaxnAtomsA,MaxnprimA,MaxnContA,lupri)
 
       IF(doMOtrans)Then
-         allocate(CMO1(nDimA,nCMO1))
-         call mem_ichor_alloc(CMO1)
-         call FormActiveCmat(nDimA,nCMO1,CMO1,nAtomsA,startOrbitalA,nOrbA,&
+         allocate(CMO1A(nDimA,nCMO1))
+         call mem_ichor_alloc(CMO1A)
+         call FormActiveCmat(nDimA,nCMO1,CMO1A,nAtomsA,startOrbitalA,nOrbA,&
               & InputM(InputMspec(1))%M,InputM(InputMspec(1))%n1)
+         allocate(CMO2A(nDimA,nCMO2))
+         call mem_ichor_alloc(CMO2A)
+         call FormActiveCmat(nDimA,nCMO2,CMO2A,nAtomsA,startOrbitalA,nOrbA,&
+              & InputM(InputMspec(2))%M,InputM(InputMspec(2))%n1)
       ENDIF
 
       ! DONE TYPE A CALC ===========================
@@ -862,7 +882,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
                  & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
                  & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-                 & nCMO1,nCMO2,nCMO3,nCMO4,CMO1,CMO2,CMO3,CMO4)
+                 & nCMO1,nCMO2,nCMO3,nCMO4,CMO1A,CMO2B,CMO3C,CMO4D,&
+                 & CMO1B,CMO2A,CMO3D,CMO4C,PermuteRHSTypes)
          ELSE
             !         allocate(Pcent(3*nPrimP))
             !         call mem_ichor_alloc(Pcent)
@@ -987,8 +1008,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       deallocate(StartOrbitalA)
 
       IF(doMOtrans)Then
-         call mem_ichor_dealloc(CMO1)
-         deallocate(CMO1)
+         call mem_ichor_dealloc(CMO1A)
+         deallocate(CMO1A)
+         call mem_ichor_dealloc(CMO2A)
+         deallocate(CMO2A)
       ENDIF
 
       IF(DoLink)THEN
@@ -1008,15 +1031,18 @@ DO IAngmomTypes = 0,MaxTotalAngmom
     call mem_ichor_dealloc(StartOrbitalB)
     deallocate(StartOrbitalB)
     IF(doMOtrans)Then
-       call mem_ichor_dealloc(CMO2)
-       deallocate(CMO2)
+       call mem_ichor_dealloc(CMO2B)
+       deallocate(CMO2B)
+       call mem_ichor_dealloc(CMO1B)
+       deallocate(CMO1B)
     ENDIF
    ENDDO !typeB
-   IF(PermuteRHSTypes)THEN
+   IF(PermuteRHSTypes.AND.(.NOT.doMOtrans))THEN
       !place (ABCD) in (ABDC)
       Call PermuteRHStypesSub(OutputDim1*OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
            & nAtomsC,nAtomsD,startOrbitalC,startOrbitalD,nOrbC,nOrbD,&
            & TriangularRHSAtomLoop,lupri)
+      !In case of doMOtrans the PermuteRHSTypes have already been performed
    ENDIF
    IF(DoLink)THEN
       call mem_ichor_dealloc(AtomGCD)
@@ -1049,8 +1075,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    deallocate(StartOrbitalC)   
 
    IF(doMOtrans)Then
-      call mem_ichor_dealloc(CMO3)
-      deallocate(CMO3)
+      call mem_ichor_dealloc(CMO3C)
+      deallocate(CMO3C)
+      call mem_ichor_dealloc(CMO4C)
+      deallocate(CMO4C)
    ENDIF
   ENDDO !typeC
   call mem_ichor_dealloc(expD)
@@ -1062,8 +1090,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
   call mem_ichor_dealloc(StartOrbitalD)
   deallocate(StartOrbitalD)
   IF(doMOtrans)Then
-     call mem_ichor_dealloc(CMO4)
-     deallocate(CMO4)
+     call mem_ichor_dealloc(CMO4D)
+     deallocate(CMO4D)
+     call mem_ichor_dealloc(CMO3D)
+     deallocate(CMO3D)
   ENDIF
  ENDDO !typeD
 ENDDO 
@@ -1460,12 +1490,9 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   MaxPasses = 1
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
-   startD = startOrbitalD(iAtomD)
    iBatchD = iBatchIndexOfTypeD + IatomD
    DO IatomC = 1,nAtomsC
     IF(TriangularRHSAtomLoop.AND.IatomD.GT.IatomC)CYCLE
-    PermuteRHS = TriangularRHSAtomLoop.AND.IatomD.LT.IatomC
-    startC = startOrbitalC(iAtomC)
     IF(noScreenCD2(IatomC,IatomD))THEN
      nPasses = nAtomsA*nAtomsB
      IF(CSscreen)GABELM = BATCHGCD(iBatchIndexOfTypeC+IatomC,iBatchD)
@@ -3623,15 +3650,18 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      & BATCHGCD,BATCHGAB,Spherical,TMParray1maxsize,nLocalInt,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,OutputStorage,&
      & TMParray2maxsize,PermuteLHSTypes,TriangularODAtomLoop,intprint,lupri,&
-     & nCMO1,nCMO2,nCMO3,nCMO4,CMO1,CMO2,CMO3,CMO4)
+     & nCMO1,nCMO2,nCMO3,nCMO4,CMO1A,CMO2B,CMO3C,CMO4D,&
+     & CMO1B,CMO2A,CMO3D,CMO4C,PermuteRHSTypes)
   implicit none
   logical,intent(in) :: TriangularRHSAtomLoop,TriangularLHSAtomLoop,PermuteLHSTypes
   logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
-  logical,intent(in) :: TriangularODAtomLoop
+  logical,intent(in) :: TriangularODAtomLoop,PermuteRHSTypes
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri,nCMO1,nCMO2,nCMO3,nCMO4
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
-  real(realk),intent(in) :: CMO1(nOrbA*nAtomsA,nCMO1),CMO2(nOrbB*nAtomsB,nCMO2)
-  real(realk),intent(in) :: CMO3(nOrbC*nAtomsC,nCMO3),CMO4(nOrbD*nAtomsD,nCMO4)
+  real(realk),intent(in) :: CMO1A(nOrbA*nAtomsA,nCMO1),CMO2B(nOrbB*nAtomsB,nCMO2)
+  real(realk),intent(in) :: CMO3C(nOrbC*nAtomsC,nCMO3),CMO4D(nOrbD*nAtomsD,nCMO4)
+  real(realk),intent(in) :: CMO2A(nOrbA*nAtomsA,nCMO2),CMO1B(nOrbB*nAtomsB,nCMO1)
+  real(realk),intent(in) :: CMO4C(nOrbC*nAtomsC,nCMO4),CMO3D(nOrbD*nAtomsD,nCMO3)
 
   integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
   !D
@@ -3732,10 +3762,11 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   allocate(LocalIntPass2(nLocalint*nAtomsA*nAtomsB))
   CALL Mem_ichor_alloc(LocalIntPass2)
 
-  allocate(OutputA(nCMO1,ndimB,nOrbC*nOrbD))
+  allocate(OutputA(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD))
   CALL Mem_ichor_alloc(OutputA)
   allocate(OutputCD(nCMO1,nCMO2,ndimC*nDimD))
   CALL Mem_ichor_alloc(OutputCD)
+  !is this necessary
   call ichorzero2(OutputCD,nCMO1*nCMO2,ndimC*nDimD)
 
 !$OMP PARALLEL DEFAULT(none) &
@@ -3759,8 +3790,8 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$OMP        TMParray2maxsizePass,Acenter,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
 !$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
-!$OMP        nDimA,nDimB,nDimC,nDimD,CMO1,CMO2,nCMO1,nCMO2,OutputA,&
-!$OMP        OutputCD)
+!$OMP        nDimA,nDimB,nDimC,nDimD,CMO1A,CMO1B,CMO2A,CMO2B,nCMO1,nCMO2,&
+!$OMP        OutputA,OutputCD,PermuteRHSTypes)
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    iBatchD = iBatchIndexOfTypeD + IatomD
@@ -3828,27 +3859,53 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
           & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
           & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
 
-     !OutputA(nVirt,ndimB,nOrbC,nOrbD)
-     IF(nDimA.EQ.1)THEN
-        CALL DistributeLink_MOtransformA1(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,&
-             & CMO1,LocalIntPass2,OutputA,lupri,nCMO1)
-     ELSE
+     !OutputA(nCMO1,ndimB,nOrbC,nOrbD)=LocalIntPass2(ndimA,ndimB,nOrb,nOrbD)*CMO1A(ndimA,nCMO1)
+     IF(nDimA.NE.1)THEN
         CALL DistributeLink_MOtransformA(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,&
-             & CMO1,LocalIntPass2,OutputA,lupri,nCMO1)        
+             & CMO1A,LocalIntPass2,OutputA,lupri,nCMO1)        
+     ELSE
+        CALL DistributeLink_MOtransformA1(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,&
+             & CMO1A,LocalIntPass2,OutputA,lupri,nCMO1)
      ENDIF
-     !OutputCD(nVirt,nOcc,ndimC,ndimD)
+     !OutputCD1(nCMO1,nCMO2,ndimC,ndimD) = OutputCD1(nCMO1,nCMO2,ndimC,ndimD) 
+     !                                   + OutputA(nCMO1,ndimB,nOrbC,nOrbD)*CMO2B(ndimB,nCMO2)
      CALL DistributeLink_MOtransformB(nOrbD,nOrbC,ndimB,ndimC,ndimD,&
-          & CMO2,OutputA,OutputCD,lupri,nCMO1,nCMO2,iAtomC,iAtomD)
+          & CMO2B,OutputA,OutputCD,lupri,nCMO1,nCMO2,iAtomC,iAtomD,PermuteRHS)
 
-!     !OutputCD(nVirt,nOcc,ndimC,ndimD) - combine with DistributeLink_MOtransformB
-!     CALL CollectMOtransformCD(nOrbD,nOrbC,ndimC,ndimD,&
-!          & OutputB,OutputCD,iAtomC,iAtomD,lupri,nCMO1,nCMO2)
-    ELSE
-        !set OutputCD(nVirt,nOcc,ndimC,ndimD) to zero
+     IF(PermuteLHSTypes)THEN
+        !OutputA(nCMO1,ndimA,nOrbC,nOrbD) = LocalIntPass2(ndimA,ndimB,nOrb,nOrbD)*CMO1B(ndimB,nCMO1)
+        CALL DistributeLink_MOtransformA2(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,&
+             & CMO1B,LocalIntPass2,OutputA,lupri,nCMO1)        
+        !OutputCD(nCMO1,nCMO2,ndimC,ndimD) = OutputCD(nCMO1,nCMO2,ndimC,ndimD) 
+        !                                  + OutputA(nCMO1,ndimA,nOrbC,nOrbD)*CMO2A(ndimA,nCMO2)
+        CALL DistributeLink_MOtransformB2(nOrbD,nOrbC,ndimA,ndimC,ndimD,&
+             & CMO2A,OutputA,OutputCD,lupri,nCMO1,nCMO2,iAtomC,iAtomD,PermuteRHS)
+     ENDIF
     ENDIF !noscreenCD2
    ENDDO !IatomC
   ENDDO !iAtomD
 !$OMP END PARALLEL
+
+  !SYMMETRY 
+  !(ndimA,ndimB,ndimC,ndimD) = (ndimC,ndimD,ndimA,ndimB) =
+  !(ndimB,ndimA,ndimC,ndimD) = (ndimC,ndimD,ndimB,ndimA) = 
+  !(ndimA,ndimB,ndimD,ndimC) = (ndimD,ndimC,ndimA,ndimB) = 
+  !(ndimB,ndimA,ndimD,ndimC) = (ndimD,ndimC,ndimB,ndimA) =
+
+  !LHS                        1  LocalIntPass2           2 different OutputA          1 different OutputCD        1 different OutputC                            
+  !LHS,RHS                    1  LocalIntPass2           2 different OutputA          1 different OutputCD        2 different OutputC                            
+  !LHS and RHS                1  LocalIntPass2           2 different OutputA          1 different OutputCD        2 different OutputC                            
+  !                           1  LocalIntPass2           4 different OutputA          4 different OutputCD        4 different OutputC                            
+  !CMO1A*CMO2B*CMO3C*CMO4D*(ndimA,ndimB,nOrbC,nOrbD) - (nCMO1,ndimB,nOrbC,nOrbD) - (nCMO1,nCMO2,ndimC,ndimD) - (nCMO1,nCMO2,nCMO3,ndimD)    FULL
+  !CMO1B*CMO2A*CMO3C*CMO4D*(ndimB,ndimA,nOrbC,nOrbD) - (nCMO1,ndimA,nOrbC,nOrbD) - (nCMO1,nCMO2,ndimC,ndimD) - (nCMO1,nCMO2,nCMO3,ndimD)    SameLHS
+  !CMO1A*CMO2B*CMO3D*CMO4C*(ndimA,ndimB,nOrbD,nOrbC) - (nCMO1,ndimB,nOrbD,nOrbC) - (nCMO1,nCMO2,ndimD,ndimC) - (nCMO1,nCMO2,nCMO3,ndimC)    SameRHS
+  !CMO1B*CMO2A*CMO3D*CMO4C*(ndimB,ndimA,nOrbD,nOrbC) - (nCMO1,ndimA,nOrbD,nOrbC) - (nCMO1,nCMO2,ndimD,ndimC) - (nCMO1,nCMO2,nCMO3,ndimC)    SameLHS,SameRHS
+
+
+  !CMO1C*CMO2D*CMO3A*CMO4B*(nOrbC,nOrbD,ndimA,ndimB) - (nCMO1,nOrbD,ndimA,ndimB) - (nCMO1,nCMO2,ndimA,ndimB) - (nCMO1,nCMO2,nCMO3,ndimB)    SameODs
+  !CMO1D*CMO2C*CMO3A*CMO4B*(nOrbD,nOrbC,ndimA,ndimB) - (nCMO1,nOrbC,ndimA,ndimB) - (nCMO1,nCMO2,ndimA,ndimB) - (nCMO1,nCMO2,nCMO3,ndimB)    SameODs,SameRHS
+  !CMO1C*CMO2D*CMO3B*CMO4A*(nOrbC,nOrbD,ndimB,ndimA) - (nCMO1,nOrbD,ndimB,ndimA) - (nCMO1,nCMO2,ndimB,ndimA) - (nCMO1,nCMO2,nCMO3,ndimA)    SameODs,SameLHS
+  !CMO1D*CMO2C*CMO3B*CMO4A*(nOrbD,nOrbC,ndimB,ndimA) - (nCMO1,nOrbC,ndimB,ndimA) - (nCMO1,nCMO2,ndimB,ndimA) - (nCMO1,nCMO2,nCMO3,ndimA)    SameODs,SameLHS,SameRHS
 
   CALL Mem_ichor_dealloc(OutputA)
   deallocate(OutputA)
@@ -3866,32 +3923,56 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   CALL Mem_ichor_dealloc(LocalIntPass2)
   deallocate(LocalIntPass2)
 
-  allocate(OutputC(nCMO1,nCMO2,nCMO3*nDimD))
-  CALL Mem_ichor_alloc(OutputC)
-  
-  !OutputC(nVirt,nOcc,nVirt,ndimD)
-  CALL DistributeLink_MOtransformC(ndimC,ndimD,&
-       & CMO3,OutputCD,OutputC,lupri,nCMO1,nCMO2,nCMO3)
-  
-  CALL Mem_ichor_dealloc(OutputCD)
-  deallocate(OutputCD)
+  IF(PermuteRHSTypes)THEN
+     allocate(OutputC(nCMO1,nCMO2,nCMO3*MAX(nDimD,nDimC)))
+     CALL Mem_ichor_alloc(OutputC)
 
-!  IF(.FALSE.)THEN
+     !OutputC(nCMO1,nCMO2,nCMO3,ndimD)=OutputCD(nCMO1,nCMO2,ndimC,ndimD)*CMO3C(ndimC,nCMO3)
+     CALL DistributeLink_MOtransformC(ndimC,ndimD,&
+          & CMO3C,OutputCD,OutputC,lupri,nCMO1,nCMO2,nCMO3)
+     
+     !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
+     ! + OutputC(nCMO1*nCMO2*nCMO3,nDimD) * CMO4D(nDimD,nCMO4)
+     CALL DistributeLink_MOtransformD(ndimD,CMO4D,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !  OR
+     !call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimD,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
+     !     & CMO4D,nDimD,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
 
-!     CALL DistributeLink_MOtransformD(ndimD,&
-!          & CMO4,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !OutputC(nCMO1,nCMO2,nCMO3,ndimC)=OutputCD(nCMO1,nCMO2,ndimC,ndimD)*CMO3D(ndimD,nCMO3)
+     CALL DistributeLink_MOtransformC2(ndimC,ndimD,&
+          & CMO3D,OutputCD,OutputC,lupri,nCMO1,nCMO2,nCMO3)
+     
+     CALL Mem_ichor_dealloc(OutputCD)
+     deallocate(OutputCD)
 
-!  ELSE
+     !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
+     ! + OutputC(nCMO1*nCMO2*nCMO3,nDimC) * CMO4C(nDimC,nCMO4)
+     CALL DistributeLink_MOtransformD(ndimC,CMO4C,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !  OR 
+     !call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimC,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
+     !     & CMO4C,nDimC,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
+  ELSE
+     allocate(OutputC(nCMO1,nCMO2,nCMO3*nDimD))
+     CALL Mem_ichor_alloc(OutputC)
 
-  !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
-  ! + OutputC(nCMO1*nCMO2*nCMO3,nDimD) * CMO4(nDimD,nCMO4)
-  call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimD,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
-       & CMO4,nDimD,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
+     !OutputC(nCMO1,nCMO2,nCMO3,ndimD)=OutputCD(nCMO1,nCMO2,ndimC,ndimD)*CMO3C(ndimC,nVirt)
+     CALL DistributeLink_MOtransformC(ndimC,ndimD,&
+          & CMO3C,OutputCD,OutputC,lupri,nCMO1,nCMO2,nCMO3)
+     
+     CALL Mem_ichor_dealloc(OutputCD)
+     deallocate(OutputCD)
 
-!  ENDIF
+     !OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4) = OutputStorage(nCMO1*nCMO2*nCMO3,nCMO4)
+     ! + OutputC(nCMO1*nCMO2*nCMO3,nDimD) * CMO4(nDimD,nCMO4)
+     CALL DistributeLink_MOtransformD(ndimD,CMO4D,OutputC,OutputStorage,lupri,nCMO1,nCMO2,nCMO3,nCMO4)
+     !  OR 
+     !call dgemm('N','N',nCMO1*nCMO2*nCMO3,nCMO4,nDimD,1.0E0_realk,OutputC,nCMO1*nCMO2*nCMO3,&
+     !     & CMO4D,nDimD,1.0E0_realk,OutputStorage,nCMO1*nCMO2*nCMO3)
+  ENDIF
 
   CALL Mem_ichor_dealloc(OutputC)
   deallocate(OutputC)
+
 end subroutine IchorTypeMOtransLoop
 
 subroutine makeComCMO34(ComCMO34,nCMO3,nCMO4,nDimC,nDimD,&
@@ -3919,6 +4000,94 @@ subroutine makeComCMO34(ComCMO34,nCMO3,nCMO4,nDimC,nDimD,&
   ENDDO
   !$OMP END PARALLEL DO
 end subroutine makeComCMO34
+
+!scale ndimA*ndimB*nOrbD*nOrbC*nVirt
+!IF room on accelerator this can be done on accelerator
+subroutine DistributeLink_MOtransformA2(nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD,&
+     & CMO1B,LocalIntPass2,Output,lupri,nCMO1)
+  implicit none
+  integer,intent(in) :: nOrbD,nOrbC,ndimA,ndimB,ndimC,ndimD
+  integer,intent(in) :: lupri,nCMO1
+  real(realk),intent(in) :: CMO1B(ndimB,nCMO1)
+  real(realk),intent(in) :: LocalIntPass2(ndimA,ndimB,nOrbC*nOrbD)
+  real(realk),intent(inout) :: Output(nCMO1,ndimA,nOrbC*nOrbD)
+  !
+  integer :: iOrbCD,B,A,aVirt
+  real(realk) :: TMP
+!$OMP DO COLLAPSE(2) PRIVATE(iOrbCD,B,A,aVirt,TMP)
+  DO iOrbCD = 1,nOrbD*nOrbC
+     DO A = 1,ndimA !nAtomsB*nOrbB
+        DO aVirt = 1,nCMO1
+           TMP = 0.0E0_realk
+           DO B = 1,ndimB !nAtomsA*nOrbA
+              TMP = TMP + CMO1B(B,aVirt)*LocalIntPass2(A,B,iOrbCD)
+           ENDDO
+           Output(aVirt,A,iOrbCD) = TMP
+        ENDDO
+     ENDDO
+  ENDDO
+!$OMP END DO
+end subroutine DistributeLink_MOtransformA2
+
+!scale ndimB*nOrbD*nOrbC*nOcc*nVirt
+!IF room on accelerator this can be done on accelerator
+subroutine DistributeLink_MOtransformB2(nOrbD,nOrbC,ndimA,ndimC,ndimD,&
+     & CMO2A,Input,Output,lupri,nCMO1,nCMO2,iAtomC,iAtomD,PermuteRHS)
+  implicit none
+  integer,intent(in) :: nOrbD,nOrbC,ndimA,ndimC,ndimD
+  integer,intent(in) :: lupri,nCMO1,nCMO2,iAtomC,iAtomD
+  real(realk),intent(in) :: CMO2A(ndimA,nCMO2)
+  real(realk),intent(in) :: Input(nCMO1,ndimA,nOrbC,nOrbD)
+  real(realk),intent(inout) :: Output(nCMO1,nCMO2,nDimC,nDimD)
+  logical,intent(in) :: PermuteRHS
+  !
+  integer :: iOrbC,iOrbD,iOcc,aVirt,A,C,D
+  real(realk) :: TMP
+  IF(PermuteRHS)THEN
+     !$OMP DO COLLAPSE(3) PRIVATE(iOrbC,iOrbD,iOcc,aVirt,C,D,A,TMP)
+     DO iOrbD = 1,nOrbD
+        DO iOrbC = 1,nOrbC
+           DO iOcc = 1,nCMO2
+              D = iOrbD+(iAtomD-1)*nOrbD
+              C = iOrbC+(iAtomC-1)*nOrbC
+              !           already obtained a contribution DistributeLink_MOtransformB
+              !           DO aVirt = 1,nCMO1
+              !              Output(aVirt,iOcc,C,D) = 0.0E0_realk
+              !           ENDDO
+              DO A = 1,ndimA !nAtomsA*nOrbA
+                 TMP = CMO2A(A,iOcc)
+                 DO aVirt = 1,nCMO1
+                    Output(aVirt,iOcc,C,D) = Output(aVirt,iOcc,C,D) + TMP*Input(aVirt,A,iOrbC,iOrbD)
+                    Output(aVirt,iOcc,D,C) = Output(aVirt,iOcc,D,C) + TMP*Input(aVirt,A,iOrbC,iOrbD)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END DO
+  ELSE
+     !$OMP DO COLLAPSE(3) PRIVATE(iOrbC,iOrbD,iOcc,aVirt,C,D,A,TMP)
+     DO iOrbD = 1,nOrbD
+        DO iOrbC = 1,nOrbC
+           DO iOcc = 1,nCMO2
+              D = iOrbD+(iAtomD-1)*nOrbD
+              C = iOrbC+(iAtomC-1)*nOrbC
+              !           already obtained a contribution DistributeLink_MOtransformB
+              !           DO aVirt = 1,nCMO1
+              !              Output(aVirt,iOcc,C,D) = 0.0E0_realk
+              !           ENDDO
+              DO A = 1,ndimA !nAtomsA*nOrbA
+                 TMP = CMO2A(A,iOcc)
+                 DO aVirt = 1,nCMO1
+                    Output(aVirt,iOcc,C,D) = Output(aVirt,iOcc,C,D) + TMP*Input(aVirt,A,iOrbC,iOrbD)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END DO
+  ENDIF
+end subroutine DistributeLink_MOtransformB2
 
 !scale ndimA*ndimB*nOrbD*nOrbC*nVirt
 !IF room on accelerator this can be done on accelerator
@@ -3974,35 +4143,60 @@ end subroutine DistributeLink_MOtransformA1
 !scale ndimB*nOrbD*nOrbC*nOcc*nVirt
 !IF room on accelerator this can be done on accelerator
 subroutine DistributeLink_MOtransformB(nOrbD,nOrbC,ndimB,ndimC,ndimD,&
-     & CMO2,Input,Output,lupri,nCMO1,nCMO2,iAtomC,iAtomD)
+     & CMO2,Input,Output,lupri,nCMO1,nCMO2,iAtomC,iAtomD,PermuteRHS)
   implicit none
   integer,intent(in) :: nOrbD,nOrbC,ndimB,ndimC,ndimD
   integer,intent(in) :: lupri,nCMO1,nCMO2,iAtomC,iAtomD
   real(realk),intent(in) :: CMO2(ndimB,nCMO2)
   real(realk),intent(in) :: Input(nCMO1,ndimB,nOrbC,nOrbD)
   real(realk),intent(inout) :: Output(nCMO1,nCMO2,nDimC,nDimD)
+  logical,intent(in) :: PermuteRHS
   !
   integer :: iOrbC,iOrbD,iOcc,aVirt,B,C,D
   real(realk) :: TMP
+  IF(PermuteRHS)THEN
 !$OMP DO COLLAPSE(3) PRIVATE(iOrbC,iOrbD,iOcc,aVirt,C,D,B,TMP)
-  DO iOrbD = 1,nOrbD
-     DO iOrbC = 1,nOrbC
-        DO iOcc = 1,nCMO2
-           D = iOrbD+(iAtomD-1)*nOrbD
-           C = iOrbC+(iAtomC-1)*nOrbC
-           DO aVirt = 1,nCMO1
-              Output(aVirt,iOcc,C,D) = 0.0E0_realk
-           ENDDO
-           DO B = 1,ndimB !nAtomsB*nOrbB
-              TMP = CMO2(B,iOcc)
+     DO iOrbD = 1,nOrbD
+        DO iOrbC = 1,nOrbC
+           DO iOcc = 1,nCMO2
+              D = iOrbD+(iAtomD-1)*nOrbD
+              C = iOrbC+(iAtomC-1)*nOrbC
               DO aVirt = 1,nCMO1
-                 Output(aVirt,iOcc,C,D) = Output(aVirt,iOcc,C,D) + TMP*Input(aVirt,B,iOrbC,iOrbD)
+                 Output(aVirt,iOcc,C,D) = 0.0E0_realk
+                 Output(aVirt,iOcc,D,C) = 0.0E0_realk
+              ENDDO
+              DO B = 1,ndimB !nAtomsB*nOrbB
+                 TMP = CMO2(B,iOcc)
+                 DO aVirt = 1,nCMO1
+                    Output(aVirt,iOcc,C,D) = Output(aVirt,iOcc,C,D) + TMP*Input(aVirt,B,iOrbC,iOrbD)
+                    Output(aVirt,iOcc,D,C) = Output(aVirt,iOcc,D,C) + TMP*Input(aVirt,B,iOrbC,iOrbD)
+                 ENDDO
               ENDDO
            ENDDO
         ENDDO
      ENDDO
-  ENDDO
 !$OMP END DO
+  ELSE
+!$OMP DO COLLAPSE(3) PRIVATE(iOrbC,iOrbD,iOcc,aVirt,C,D,B,TMP)
+     DO iOrbD = 1,nOrbD
+        DO iOrbC = 1,nOrbC
+           DO iOcc = 1,nCMO2
+              D = iOrbD+(iAtomD-1)*nOrbD
+              C = iOrbC+(iAtomC-1)*nOrbC
+              DO aVirt = 1,nCMO1
+                 Output(aVirt,iOcc,C,D) = 0.0E0_realk
+              ENDDO
+              DO B = 1,ndimB !nAtomsB*nOrbB
+                 TMP = CMO2(B,iOcc)
+                 DO aVirt = 1,nCMO1
+                    Output(aVirt,iOcc,C,D) = Output(aVirt,iOcc,C,D) + TMP*Input(aVirt,B,iOrbC,iOrbD)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+!$OMP END DO
+  ENDIF
 end subroutine DistributeLink_MOtransformB
 
 !scale nOrbD*nOrbC*nOcc*nVirt
@@ -4086,6 +4280,62 @@ IF(MODAI)THEN
    !$OMP END PARALLEL DO
 ENDIF
 end subroutine DistributeLink_MOtransformC
+
+subroutine DistributeLink_MOtransformC2(ndimC,ndimD,&
+     & CMO3D,Input,Output,lupri,nCMO1,nCMO2,nCMO3)
+  implicit none
+  integer,intent(in) :: ndimC,ndimD,lupri,nCMO1,nCMO2,nCMO3
+  real(realk),intent(in) :: CMO3D(ndimD,nCMO3)
+  real(realk),intent(in) :: Input(nCMO1*nCMO2,ndimC,ndimD)
+  real(realk),intent(inout) :: Output(nCMO1*nCMO2,nCMO3,ndimC)
+  !
+  integer :: D,bVirt,AI,C,nAI,nAI2,AIb
+  real(realk) :: TMP
+  logical :: MODAI
+nAI = nCMO1*nCMO2
+nAI2 = (nAI/64)*64
+MODAI = (MOD(nAI,64).GT.0)
+IF(nAI2.GT.0)THEN
+   !$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) &   
+   !$OMP PRIVATE(D,bVirt,AI,C,AIb,TMP) &
+   !$OMP SHARED(ndimC,ndimD,nCMO1,nCMO2,nCMO3,Input,Output,nAI,nAI2,CMO3D) 
+   DO C = 1,ndimC
+      DO AI = 1,nAI2,64
+         DO bVirt = 1,nCMO3
+            DO AIb = 0,63
+               Output(AI+AIb,bVirt,C) = 0.0E0_realk
+            ENDDO
+            DO D = 1,ndimD
+               TMP = CMO3D(D,bVirt)
+               DO AIb = 0,63
+                  Output(AI+AIb,bVirt,C) = Output(AI+AIb,bVirt,C) + TMP*Input(AI+AIb,C,D)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+ENDIF
+IF(MODAI)THEN
+   !$OMP PARALLEL DO DEFAULT(none) COLLAPSE(2) &
+   !$OMP PRIVATE(D,bVirt,C,TMP,AIb) &
+   !$OMP SHARED(ndimC,ndimD,nCMO1,nCMO2,nCMO3,Input,Output,nAI,nAI2,CMO3D) 
+   DO C = 1,ndimC
+      DO bVirt = 1,nCMO3
+         DO AIb = nAI2+1,nAI
+            Output(AIb,bVirt,C) = 0.0E0_realk
+         ENDDO
+         DO D = 1,ndimD
+            TMP = CMO3D(D,bVirt)
+            DO AIb = nAI2+1,nAI
+               Output(AIb,bVirt,C) = Output(AIb,bVirt,C) + TMP*Input(AIb,C,D)
+            ENDDO
+         ENDDO
+      ENDDO
+   ENDDO
+   !$OMP END PARALLEL DO
+ENDIF
+end subroutine DistributeLink_MOtransformC2
 
 !scale nDimD*nOcc*nOcc*nVirt*nVirt called several times ntypes**4 times
 !Normally it scales as 

@@ -2,6 +2,7 @@ MODULE TESTMODULE
   use stringsMODULE
 
   logical,save :: nPrimLast
+  logical,save :: DoOpenACC
 CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
@@ -21,7 +22,7 @@ CONTAINS
     integer :: iseglabel,lufile,iseg,iPrim,nPrim
     integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K,center
     logical :: Gen,SegQ,SegP,Seg,Seg1Prim,nPrimnTUV,DoOpenMP
-    logical :: Collapse,segwtuv,DoOpenACC,CPU
+    logical :: Collapse,segwtuv,CPU
     Character(len=48) :: FileName    
     character(len=3) :: ARCSTRING,Xdir,Ydir,Zdir
     character(len=1) :: centerString
@@ -31,7 +32,7 @@ CONTAINS
 !=====================================================================================================0
 ! Vertical
 !=====================================================================================================
-    DO SPrun = 1,2
+!    DO SPrun = 1,2
      DO GPUrun = 1,2       
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
@@ -183,7 +184,7 @@ CONTAINS
                 ENDIF
                 WRITE(LUFILE,'(A)')'  Integer :: iP,iPrimQ,iPrimP,iPassP'
                 IF(COLLAPSE)THEN
-                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP)
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP,DoOpenACC)
                 ENDIF
                 IF(DoOpenMP.OR.DoOpenACC)THEN
                    call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -386,7 +387,7 @@ CONTAINS
              WRITE(LUFILE,'(A)')'  !i = 0 last 2 term vanish'
              WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
              IF(Collapse)THEN
-                call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+                call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
              ENDIF
              IF(DoOpenMP.OR.DoOpenACC)THEN
                 call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -884,7 +885,7 @@ CONTAINS
                 endif
                 WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
                 IF(Collapse)THEN
-                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
                 ENDIF
                 IF(DoOpenMP.OR.DoOpenACC)THEN
                    call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -1328,7 +1329,7 @@ CONTAINS
           END DO
        ENDDO
      ENDDO !GPUrun
-    ENDDO !SPrun
+!    ENDDO !SPrun
 
 !BUILDRJ000
     DO GPUrun = 1,2
@@ -1900,14 +1901,16 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
 !#endif
   end Subroutine PrintOpenMP
   
-  Subroutine PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+  Subroutine PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
     implicit none
-    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,DoOpenMP
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,DoOpenMP,DoOpenACC
     integer,intent(in) :: LUFILE,JMAX,nTUV
     IF(SegQ.OR.SegP)THEN
        IF(JMAX.LT.2)THEN
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP)'
        ELSE
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP,iTUV)'          
        ENDIF
        IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPassP'
@@ -1939,8 +1942,10 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
        IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
     ELSEIF(Seg)THEN
        IF(JMAX.LT.2)THEN
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPassP) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP)'
        ELSE
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPassP,iTUV) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP,iTUV)'
        ENDIF
        WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
@@ -2424,6 +2429,7 @@ IF(J.EQ.1)THEN
       ELSE         
          !add loop
          IF(ituvP0.EQ.nTUVprev+1)THEN
+            IF(DoOpenACC)WRITE(lupri,'(A)')'!$ACC LOOP SEQ'
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
             IF(nPrimLast)THEN
                IF(Seg1Prim)THEN

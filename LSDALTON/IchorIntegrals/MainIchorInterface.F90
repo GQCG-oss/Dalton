@@ -505,3 +505,142 @@ subroutine IchorInputSpec(CenterA,CenterB,CenterC,CenterD)
   integer :: CenterA,CenterB,CenterC,CenterD
   call IchorInputInfoSpec(CenterA,CenterB,CenterC,CenterD)
 end subroutine IchorInputSpec
+
+subroutine WriteCenterInfo1(luoutput,nTypesA,nBatchesA,&
+     & MaxnAtomsA,MaxnPrimA,MaxnContA,spherical)
+implicit none
+integer,intent(in) :: LUOUTPUT !logical unit number of file to write
+logical,intent(in) :: spherical
+integer,intent(in) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+
+WRITE(LUOUTPUT,'(I9)') nTypesA
+WRITE(LUOUTPUT,'(I9)') MaxnAtomsA
+WRITE(LUOUTPUT,'(I9)') MaxnPrimA
+WRITE(LUOUTPUT,'(I9)') MaxnContA
+WRITE(LUOUTPUT,'(I9)') nbatchesA
+WRITE(LUOUTPUT,'(L1)') spherical
+
+end subroutine WriteCenterInfo1
+
+subroutine WriteCenterInfo2(luoutput,nTypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,spherical)
+  use IchorPrecisionModule
+implicit none
+integer,intent(in) :: LUOUTPUT !logical unit number of file to write
+logical,intent(in) :: spherical
+integer,intent(in) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+integer,intent(in) :: nAtomsOfTypeA(ntypesA),nPrimOfTypeA(ntypesA) 
+integer,intent(in) :: nContOfTypeA(ntypesA),AngmomOfTypeA(ntypesA) 
+integer,intent(in) :: startOrbitalOfTypeA(MaxNatomsA,ntypesA)
+real(realk),intent(in) :: exponentsOfTypeA(MaxnPrimA,ntypesA),Acenters(3,MaxnAtomsA,nTypesA)
+real(realk),intent(in) :: ContractCoeffOfTypeA(MaxnPrimA,MaxnContA,ntypesA)
+!
+integer :: I,J,K
+DO I = 1, ntypesA
+   WRITE(LUOUTPUT,'(I9)') nAtomsOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   WRITE(LUOUTPUT,'(I9)') nPrimOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   WRITE(LUOUTPUT,'(I9)') nContOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   WRITE(LUOUTPUT,'(I9)') AngmomOfTypeA(I)
+ENDDO
+DO J = 1, ntypesA
+   DO I = 1, MaxNatomsA
+      WRITE(LUOUTPUT,'(I9)') startOrbitalOfTypeA(I,J)
+   ENDDO
+ENDDO
+DO J = 1, ntypesA
+   DO I = 1, MaxnPrimA
+      WRITE(LUOUTPUT,'(F20.10)') exponentsOfTypeA(I,J)
+   ENDDO
+ENDDO
+DO K = 1, ntypesA
+   DO J = 1, MaxnAtomsA
+      DO I = 1, 3
+         WRITE(LUOUTPUT,'(F20.10)') Acenters(I,J,K)
+      ENDDO
+   ENDDO
+ENDDO
+DO K = 1, ntypesA
+   DO J = 1, MaxnContA
+      DO I = 1, MaxnPrimA
+         WRITE(LUOUTPUT,'(F20.10)') ContractCoeffOfTypeA(I,J,K)
+      ENDDO
+   ENDDO
+ENDDO
+end subroutine WriteCenterInfo2
+
+subroutine ReadCenterInfo1(luoutput,nTypesA,nBatchesA,&
+     & MaxnAtomsA,MaxnPrimA,MaxnContA,spherical)
+implicit none
+integer,intent(in) :: LUOUTPUT !logical unit number of file to read from
+logical,intent(inout) :: spherical
+integer,intent(inout) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+
+READ(LUOUTPUT,'(I9)') nTypesA
+READ(LUOUTPUT,'(I9)') MaxnAtomsA
+READ(LUOUTPUT,'(I9)') MaxnPrimA
+READ(LUOUTPUT,'(I9)') MaxnContA
+READ(LUOUTPUT,'(I9)') nbatchesA
+READ(LUOUTPUT,'(L1)') spherical
+
+end subroutine ReadCenterInfo1
+
+subroutine ReadCenterInfo2(luoutput,nTypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,spherical)
+  use IchorPrecisionModule
+implicit none
+integer,intent(in) :: LUOUTPUT !logical unit number of file to read from
+logical,intent(in) :: spherical
+integer,intent(in) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+integer,intent(inout) :: nAtomsOfTypeA(ntypesA),nPrimOfTypeA(ntypesA) 
+integer,intent(inout) :: nContOfTypeA(ntypesA),AngmomOfTypeA(ntypesA) 
+integer,intent(inout) :: startOrbitalOfTypeA(MaxNatomsA,ntypesA)
+real(realk),intent(inout) :: exponentsOfTypeA(MaxnPrimA,ntypesA),Acenters(3,MaxnAtomsA,nTypesA)
+real(realk),intent(inout) :: ContractCoeffOfTypeA(MaxnPrimA,MaxnContA,ntypesA)
+
+integer :: I,J,K
+DO I = 1, ntypesA
+   READ(LUOUTPUT,'(I9)') nAtomsOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   READ(LUOUTPUT,'(I9)') nPrimOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   READ(LUOUTPUT,'(I9)') nContOfTypeA(I)
+ENDDO
+DO I = 1, ntypesA
+   READ(LUOUTPUT,'(I9)') AngmomOfTypeA(I)
+ENDDO
+DO J = 1, ntypesA
+   DO I = 1, MaxNatomsA
+      READ(LUOUTPUT,'(I9)') startOrbitalOfTypeA(I,J)
+   ENDDO
+ENDDO
+DO J = 1, ntypesA
+   DO I = 1, MaxnPrimA
+      READ(LUOUTPUT,'(F20.10)') exponentsOfTypeA(I,J)
+   ENDDO
+ENDDO
+DO K = 1, ntypesA
+   DO J = 1, MaxnAtomsA
+      DO I = 1, 3
+         READ(LUOUTPUT,'(F20.10)') Acenters(I,J,K)
+      ENDDO
+   ENDDO
+ENDDO
+DO K = 1, ntypesA
+   DO J = 1, MaxnContA
+      DO I = 1, MaxnPrimA
+         READ(LUOUTPUT,'(F20.10)') ContractCoeffOfTypeA(I,J,K)
+      ENDDO
+   ENDDO
+ENDDO
+
+end subroutine ReadCenterInfo2
