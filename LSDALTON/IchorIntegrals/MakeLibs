@@ -40,6 +40,22 @@ all: libIchorIntegrals.a
 #AR             = ar
 #ARFLAGS        =  rvs
 ##
+# PGI SISYPHOS EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = pgf90
+#FLNK           = pgf90
+#RM             = rm -f
+#F90OPTFLAGS    = -acc #-Minfo=accel
+#INCLUDES       =  
+#LIBS           = 
+#AR             = ar
+#ARFLAGS        =  rvs
+##
 #########################################################
 #
 # END OF COMPILER SECTION 
