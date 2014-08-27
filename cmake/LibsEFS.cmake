@@ -8,6 +8,7 @@ set(ExternalProjectCMakeArgs
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     -DPARENT_DEFINITIONS=${_efs_definitions}
+    -DENABLE_MPI=${ENABLE_MPI}
     )
 
 unset(_efs_definitions)

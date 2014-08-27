@@ -50,6 +50,7 @@ optD=1
 optf=
 optn=0
 opto=0
+opt_noappend=0
 #
 # Define usage message
 #
@@ -66,6 +67,9 @@ usage (){
       echo ' -restart  run the calc twice to test restart option'
       echo ' -lslib_test run lslib test'
       echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
+      echo ' -noappend do not append anything to the scratch directory; be careful'
+      echo '           with this option since by default scratch is wiped after'
+      echo '           calculation'
       echo ' -ext log  change output extension from ".out" to ".log"'
       echo ' -o FILE   redirect output from program to FILE in WRKDIR'
       echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
@@ -114,6 +118,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -b ) BASDIR="$2:$BASDIR"; shift;;
       -d ) optd=1;;
       -D ) optD=0;;
+      -noappend ) opt_noappend=1;;
       -pg ) optpg=1;;
       -lslib_test ) opt_lslib_test=1;;
       -restart ) opt_restart=1;;
@@ -176,7 +181,13 @@ else
 fi
 #
 export DALTON_TMPDIR
-#
+
+if [ $opt_noappend -eq 1 ]; then
+    DALTON_SCRATCH=$DALTON_TMPDIR
+else
+    DALTON_SCRATCH=$DALTON_TMPDIR/$outnam
+fi
+
 echo
 echo "   ******************************************* "
 echo "   **** OUTPUT FROM LSDALTON SHELL SCRIPT **** "
@@ -188,23 +199,21 @@ echo;
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $DALTON_TMPDIR/$outnam"
+echo "   Scratch dir: $DALTON_SCRATCH"
 echo;
 #
-if [ ! -d "$DALTON_TMPDIR" ]; then
-   mkdir -p $DALTON_TMPDIR
+if [ ! -d "$DALTON_SCRATCH" ]; then
+   mkdir -p $DALTON_SCRATCH
 fi
 
-SCRATCHDIR=$DALTON_TMPDIR/$2;
-
-if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
+if [ -d "$DALTON_SCRATCH" -a -w "$DALTON_SCRATCH" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $DALTON_TMPDIR/$outnam
+      rm -rf $DALTON_SCRATCH
    fi
-   if [ ! -d "$DALTON_TMPDIR/$outnam" ]; then
-      mkdir -p $DALTON_TMPDIR/$outnam
+   if [ ! -d "$DALTON_SCRATCH" ]; then
+      mkdir -p $DALTON_SCRATCH
    fi
-   cd $DALTON_TMPDIR/$outnam
+   cd $DALTON_SCRATCH
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
       cp $WRKDIR/$dalfil.$DALEXT LSDALTON.INP
    else
@@ -242,7 +251,7 @@ if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
     fi
    fi
 else
-   echo "$DALTON_TMPDIR does not exist or is not writeable"
+   echo "$DALTON_SCRATCH does not exist or is not writeable"
    exit 1
 fi
 
@@ -355,7 +364,7 @@ fi
       else
          echo "$WRKDIR/$OUTFIL has not been created from the present run"
          if [ $optD -eq 1 ] ; then
-            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_SCRATCH is therefore not deleted by this script."
          fi
          exit 2
       fi
@@ -367,16 +376,16 @@ fi
       else
          echo "LSDALTON.OUT has not been created from the present run."
          if [ $optD -eq 1 ] ; then
-            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_SCRATCH is therefore not deleted by this script."
          fi
-         echo "List of created files in $DALTON_TMPDIR/$outnam :"
+         echo "List of created files in $DALTON_SCRATCH :"
          ls -sltr
          exit 2
       fi
    fi
 cd $WRKDIR
 if [ $optD -eq 1 ] ; then
-   rm -rf $DALTON_TMPDIR/$outnam
+   rm -rf $DALTON_SCRATCH
 fi
 
 exit $lsdalton_exitcode
