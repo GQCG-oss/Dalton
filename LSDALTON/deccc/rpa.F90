@@ -982,6 +982,7 @@ contains
     logical :: master
     character(ARR_MSG_LEN) :: msg
     type(array) :: Sckdl
+
     
     nvir=nvirt
     noc=nocc
