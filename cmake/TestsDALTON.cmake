@@ -199,6 +199,7 @@ add_dalton_test(rsp_g_rohfx_direcths  "dalton;rsp;short;essential")
 add_dalton_runtest(rsp_g_ldax         "dalton;runtest;rsp;short;dft;multistep")
 add_dalton_runtest(rsp_g_b3lypx       "dalton;runtest;rsp;medium;dft;multistep")
 add_dalton_runtest(rsp_abslrs         "dalton;runtest;rsp;short;parallel")
+add_dalton_runtest(rsp_rohf_lr        "dalton;runtest;rsp;short;parallel")
 
 add_dalton_test(cc3r12_n2_sym_exc             "dalton;ccr12;cc3;longccr12")
 
