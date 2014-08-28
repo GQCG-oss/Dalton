@@ -2,6 +2,7 @@ MODULE TESTMODULE
   use stringsMODULE
 
   logical,save :: nPrimLast
+  logical,save :: DoOpenACC
 CONTAINS
   subroutine PASSsub
     IMPLICIT NONE
@@ -21,7 +22,7 @@ CONTAINS
     integer :: iseglabel,lufile,iseg,iPrim,nPrim
     integer :: non1Prim(16),pure1Prim(4),ia,ib,ic,id,GPUrun,K,center
     logical :: Gen,SegQ,SegP,Seg,Seg1Prim,nPrimnTUV,DoOpenMP
-    logical :: Collapse,segwtuv,DoOpenACC,CPU
+    logical :: Collapse,segwtuv,CPU
     Character(len=48) :: FileName    
     character(len=3) :: ARCSTRING,Xdir,Ydir,Zdir
     character(len=1) :: centerString
@@ -31,7 +32,8 @@ CONTAINS
 !=====================================================================================================0
 ! Vertical
 !=====================================================================================================
-    DO GPUrun = 1,2
+!    DO SPrun = 1,2
+     DO GPUrun = 1,2       
        CPU = .TRUE.
        IF(GPUrun.EQ.2)CPU = .FALSE.
        nPrimLAST = .FALSE.
@@ -144,45 +146,45 @@ CONTAINS
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:3,0:1200)'
+                WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: TABFJW(0:3,0:1200)'
                 IF(Seg1Prim)THEN
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(1)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(1)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: integralPrefactor(1)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)'
                 ELSE
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
                 ENDIF
                 WRITE(LUFILE,'(A,A,A)')'  real(realk),intent(inout) :: AUXarray(',nPrimLabel(1:nPrim),')'
                 WRITE(LUFILE,'(A)')'  !local variables'
-                WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',36.0d0,'_realk'
+                WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',36.0d0,'_realk'
                 WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-                WRITE(LUFILE,'(A)')'  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-                WRITE(LUFILE,'(A)')'  Real(realk),parameter :: PI=3.14159265358979323846E0_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SQRPIH = SQRTPI/D2'
-                WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
-                WRITE(LUFILE,'(A)')'!  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk'
-                WRITE(LUFILE,'(A)')'  Real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL'
-                WRITE(LUFILE,'(A)')'  Real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D05 =0.5E0_realk,D1=1E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),parameter :: PI=3.14159265358979323846E0_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SQRPIH = SQRTPI/D2'
+                WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                WRITE(LUFILE,'(A)')'!  real(realk),PARAMETER :: SMALL = 1E-15_realk'
+                WRITE(LUFILE,'(A)')'  real(realk) :: WDIFF,RWVAL,REXPW,GVAL,PREF,D2MALPHA,WVAL'
+                WRITE(LUFILE,'(A)')'  real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000'
                 WRITE(LUFILE,'(A)')'  Integer :: IPNT,iAtomA,iAtomB'
                 IF(COLLAPSE.AND.Seg)THEN
                    WRITE(LUFILE,'(A)')'  Integer :: iPrimQP'
                 ENDIF
                 WRITE(LUFILE,'(A)')'  Integer :: iP,iPrimQ,iPrimP,iPassP'
                 IF(COLLAPSE)THEN
-                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP)
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,nTUV,DoOpenMP,DoOpenACC)
                 ENDIF
                 IF(DoOpenMP.OR.DoOpenACC)THEN
                    call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,0,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -313,7 +315,7 @@ CONTAINS
              WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
              WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
              WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
-             WRITE(LUFILE,'(A)')'  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)'
+             WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: TABFJW(0:4,0:1200)'
              IF(.NOT.Seg1Prim)THEN
                 IF(center.LE.2)THEN
                    WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
@@ -363,21 +365,21 @@ CONTAINS
              endif
              WRITE(LUFILE,'(A)')'  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
              WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
-             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
              WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-             WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.0d0 + 36.0d0,'_realk'
+             WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',2.0d0 + 36.0d0,'_realk'
              WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-             WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2'
+             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
              IF(center.EQ.1)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
              IF(center.EQ.2)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xpb*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)'
              IF(center.EQ.3)WRITE(LUFILE,'(A)')'  !ThetaAux(n,1,0,0) = Xqc*ThetaAux(n,0,0,0) + (-alpha/q*Xpq)*ThetaAux(n+1,0,0,0)'
@@ -385,7 +387,7 @@ CONTAINS
              WRITE(LUFILE,'(A)')'  !i = 0 last 2 term vanish'
              WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
              IF(Collapse)THEN
-                call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+                call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
              ENDIF
              IF(DoOpenMP.OR.DoOpenACC)THEN
                 call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -759,9 +761,9 @@ CONTAINS
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
                 IF(.NOT.Seg1Prim)THEN
                    IF(nPrimLast)THEN
-                      WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX,',nPrimQ,nPrimP,nPassP)'
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(in) :: RJ000Array(0:',JMAX,',nPrimQ,nPrimP,nPassP)'
                    ELSE
-                      WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(nPrimQ,nPrimP,nPassP,0:',JMAX,')'                      
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(in) :: RJ000Array(nPrimQ,nPrimP,nPassP,0:',JMAX,')'                      
                    ENDIF
                    IF(center.LE.2)THEN
                       WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP)'
@@ -772,9 +774,9 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: integralPrefactor(nprimQ,nPrimP),QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
                 ELSE
                    IF(nPrimLast)THEN
-                      WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(0:',JMAX,',nPassP)'
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(in) :: RJ000Array(0:',JMAX,',nPassP)'
                    ELSE
-                      WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: RJ000Array(nPassP,0:',JMAX,')'
+                      WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(in) :: RJ000Array(nPassP,0:',JMAX,')'
                    ENDIF
                    IF(center.LE.2)THEN
                       WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1),Pexp(1)'
@@ -840,22 +842,22 @@ CONTAINS
                 WRITE(LUFILE,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
                 WRITE(LUFILE,'(A)')'  real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq'
                 !             WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: TENTH = 0.01E0_realk'
                 WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk,D05 =0.5E0_realk'
-                !             WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+                !             WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
                 WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk'
                 !             WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-                !             WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-                !             WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                !             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2'
+                !             WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
                 C = JMAX+2
                 DO JTMP=1,JMAX
                    C = C-1
@@ -883,7 +885,7 @@ CONTAINS
                 endif
                 WRITE(LUFILE,'(A)')'  !We include scaling of RJ000 '
                 IF(Collapse)THEN
-                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+                   call PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
                 ENDIF
                 IF(DoOpenMP.OR.DoOpenACC)THEN
                    call PrintOpenMP(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,Collapse,Center,centerstring,DoOpenMP,DoOpenACC)
@@ -1326,7 +1328,8 @@ CONTAINS
              close(unit = LUFILE)
           END DO
        ENDDO
-    ENDDO
+     ENDDO !GPUrun
+!    ENDDO !SPrun
 
 !BUILDRJ000
     DO GPUrun = 1,2
@@ -1437,7 +1440,7 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
                    WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
                    WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
-                   WRITE(LUFILE,'(A,I2,A)')'  REAL(REALK),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
+                   WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(in) :: TABFJW(0:',JMAX+3,',0:1200)'
                    IF(.NOT.Seg1Prim)THEN
                       WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
                       WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
@@ -1471,21 +1474,21 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq'
                    WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
                    WRITE(LUFILE,'(A,I2,A)')'  real(realk) :: RJ000(0:',JMAX,')'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
                    WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
-                   WRITE(LUFILE,'(A,ES24.16,A)')'  REAL(REALK),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+                   WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
                    WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
-                   WRITE(LUFILE,'(A)')'  Real(realk), parameter :: PI=3.14159265358979323846E0_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2'
-                   WRITE(LUFILE,'(A)')'  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2'
+                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
                    IF(DoOpenMP)THEN
                       !OPENMP
                       WRITE(LUFILE,'(A)')  '!$OMP DO &'
@@ -1898,14 +1901,16 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
 !#endif
   end Subroutine PrintOpenMP
   
-  Subroutine PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP)
+  Subroutine PrintCollapseInitLoop(Gen,SegQ,SegP,Seg,seg1prim,LUFILE,JMAX,nTUV,DoOpenMP,DoOpenACC)
     implicit none
-    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,DoOpenMP
+    logical,intent(in) :: Gen,SegQ,SegP,Seg,seg1prim,DoOpenMP,DoOpenACC
     integer,intent(in) :: LUFILE,JMAX,nTUV
     IF(SegQ.OR.SegP)THEN
        IF(JMAX.LT.2)THEN
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP)'
        ELSE
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iP,iTUV)'          
        ENDIF
        IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPassP'
@@ -1937,8 +1942,10 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
        IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
     ELSEIF(Seg)THEN
        IF(JMAX.LT.2)THEN
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPassP) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP)'
        ELSE
+          IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iPassP,iTUV) PRESENT(AUXarray)'
           IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO PRIVATE(iPassP,iTUV)'
        ENDIF
        WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
@@ -2422,6 +2429,7 @@ IF(J.EQ.1)THEN
       ELSE         
          !add loop
          IF(ituvP0.EQ.nTUVprev+1)THEN
+            IF(DoOpenACC)WRITE(lupri,'(A)')'!$ACC LOOP SEQ'
             WRITE(lupri,'(A,I5)')'     do iTUV = 1,',nTUVprev
             IF(nPrimLast)THEN
                IF(Seg1Prim)THEN

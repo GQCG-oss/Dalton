@@ -884,8 +884,8 @@ c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
 c        density
 
+         ESOLT = D0
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
-           ESOLT = D0
            IF (QM3 .AND. .NOT. DOCCSD) THEN
              CALL MEMGET2('REAL','FCQM3',KFCSOL,NNBAST,WRK,KFREE,LFREE)
              CALL DZERO(WRK(KFCSOL),NNBAST)

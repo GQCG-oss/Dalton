@@ -12,7 +12,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim1B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: TABFJW(0:4,0:1200)
+  real(realk),intent(in) :: TABFJW(0:4,0:1200)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -23,21 +23,21 @@ subroutine VerticalRecurrenceGPUSeg1Prim1B(nPassP,nPrimP,nPrimQ,&
   real(realk) :: mPX,mPY,mPZ,invexpP,alphaP,RJ000(0:1)
   real(realk) :: PREF,TMP1,TMP2,Xpq,Ypq,Zpq,alphaXpq,alphaYpq,alphaZpq
   real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL
-  REAL(REALK),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
+  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk
   real(realk),parameter :: D2=2.0E0_realk
-  REAL(REALK),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
+  real(realk),PARAMETER :: D2JP36=  3.8000000000000000E+01_realk
   real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk
-  REAL(REALK),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
-  REAL(REALK),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-  REAL(REALK),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
-  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk
+  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk
+  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2
+  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
   !ThetaAux(n,1,0,0) = Xpb*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
@@ -118,7 +118,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 2)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 2)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -183,6 +183,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2B(nPassP,nPrimP,nPrimQ,&
      tmpArray2(3,2) = Ypb*tmpArray1(1,2) + alphaYpq*TmpArray1(1,3)
      tmpArray2(4,2) = Zpb*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expP*(TMPAuxArray(1) + alphaP*TmpArray1(1,2))
+!$ACC LOOP SEQ
      do iTUV = 1,    4
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -202,7 +203,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 3)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 3)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -289,6 +290,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3B(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expP*(TMPAuxArray(2) + alphaP*TmpArray2(2,2))
      TwoTerms(2) = inv2expP*(TMPAuxArray(3) + alphaP*TmpArray2(3,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(4) + alphaP*TmpArray2(4,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   10
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -312,7 +314,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 4)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 4)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -438,6 +440,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4B(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expP*(TMPAuxArray(5) + alphaP*TmpArray3(5,2))
      TwoTerms(2) = inv2expP*(TMPAuxArray(8) + alphaP*TmpArray3(8,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(10) + alphaP*TmpArray3(10,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   20
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -466,7 +469,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 5)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 5)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -657,6 +660,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5B(nPassP,nPrimP,nPrimQ,&
      TwoTerms(4) = inv2expP*(TMPAuxArray(17) + alphaP*TmpArray4(17,2))
      TwoTerms(5) = inv2expP*(TMPAuxArray(19) + alphaP*TmpArray4(19,2))
      TwoTerms(6) = inv2expP*(TMPAuxArray(20) + alphaP*TmpArray4(20,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   35
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -691,7 +695,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6B(nPassP,nPrimP,nPrimQ,&
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
-  REAL(REALK),intent(in) :: RJ000Array(nPassP,0: 6)
+  real(realk),intent(in) :: RJ000Array(nPassP,0: 6)
   real(realk),intent(in) :: reducedExponents(1),Pexp(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3),integralPrefactor(1),QpreExpFac(1),PpreExpFac(nAtomsA,nAtomsB)
   real(realk),intent(in) :: Bcenter(3,nAtomsB)
@@ -983,6 +987,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6B(nPassP,nPrimP,nPrimQ,&
      TwoTerms(7) = inv2expP*(TMPAuxArray(33) + alphaP*TmpArray5(33,2))
      TwoTerms(8) = inv2expP*(TMPAuxArray(34) + alphaP*TmpArray5(34,2))
      TwoTerms(9) = inv2expP*(TMPAuxArray(35) + alphaP*TmpArray5(35,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   56
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo

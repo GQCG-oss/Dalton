@@ -441,24 +441,25 @@ contains
        !> Coupling with the C-matrix, only needs to be done once
        call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
-        
+!!$        
+!!$       print *, '----------------------------------------'
+!!$       print *, '           C - matrix terms             '
+!!$       print *, '----------------------------------------'
+!!$       print *, 'norm4D(Ciajb): ', norm4D(Ciajb)
+!!$       print *, 'norm4D(Giajc): ', norm4D(Giajc)
+!!$       print *, 'norm4D(Taibj): ', norm4D(Taibj)
+!!$       print *, '----------------------------------------'
+!!$       print *, '           V - matrix terms             '
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm4D(Fijkl): ', norm4D(Fijkl)
+!!$       print *,'norm4D(Ripjq): ', norm4D(Ripjq)
+!!$       print *,'norm4D(Gipjq): ', norm4D(Gipjq)
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm4D(Rimjc): ', norm4D(Rimjc)
+!!$       print *,'norm4D(Gimjc): ', norm4D(Gimjc)
+
        print *, '----------------------------------------'
-       print *, '           C - matrix terms             '
-       print *, '----------------------------------------'
-       print *, 'norm4D(Ciajb): ', norm4D(Ciajb)
-       print *, 'norm4D(Giajc): ', norm4D(Giajc)
-       print *, 'norm4D(Taibj): ', norm4D(Taibj)
-       print *, '----------------------------------------'
-       print *, '           V - matrix terms             '
-       print *, '----------------------------------------'
-       print *,'norm4D(Fijkl): ', norm4D(Fijkl)
-       print *,'norm4D(Ripjq): ', norm4D(Ripjq)
-       print *,'norm4D(Gipjq): ', norm4D(Gipjq)
-       print *, '----------------------------------------'
-       print *,'norm4D(Rimjc): ', norm4D(Rimjc)
-       print *,'norm4D(Gimjc): ', norm4D(Gimjc)
-       print *, '----------------------------------------'
-       print *, '           E21  V terms                 '
+       print *, '  E21  V terms                          '
        print *, '----------------------------------------'
        print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
        print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
@@ -472,7 +473,7 @@ contains
             & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
        print *, 'E21_Vsum: ', E21_debug
-       print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
     call mem_dealloc(Vijij)
@@ -541,14 +542,14 @@ contains
           call mp2f12_Xjiij_term3(Xjiij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xjiij_term4(Xjiij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-          print *,'-----------------------------------------'
-          print *,'          X - matrix terms               '
-          print *,'-----------------------------------------'
-          print *,'norm2D(Xijij_term1): ', norm2D(Xijij_term1)
-          print *,'norm2D(Xijij_term2): ', norm2D(Xijij_term2)
-          print *,'norm2D(Xijij_term3): ', norm2D(Xijij_term3)
-          print *,'norm2D(Xijij_term4): ', norm2D(Xijij_term4)
-          print *,'-----------------------------------------'
+!!$          print *,'-----------------------------------------'
+!!$          print *,'          X - matrix terms               '
+!!$          print *,'-----------------------------------------'
+!!$          print *,'norm2D(Xijij_term1): ', norm2D(Xijij_term1)
+!!$          print *,'norm2D(Xijij_term2): ', norm2D(Xijij_term2)
+!!$          print *,'norm2D(Xijij_term3): ', norm2D(Xijij_term3)
+!!$          print *,'norm2D(Xijij_term4): ', norm2D(Xijij_term4)
+!!$          print *,'-----------------------------------------'         
 
        else !> Non canonical
 
@@ -557,15 +558,15 @@ contains
           call mp2f12_Xijijfull_term3(Xijkl_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xijijfull_term4(Xijkl_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-          print *,'-----------------------------------------'
-          print *,'          X - matrix terms               '
-          print *,'-----------------------------------------'
-          print *,'norm4D(Xijkl_term1): ', norm4D(Xijkl_term1)
-          print *,'norm4D(Xijkl_term2): ', norm4D(Xijkl_term2)
-          print *,'norm4D(Xijkl_term3): ', norm4D(Xijkl_term3)
-          print *,'norm4D(Xijkl_term4): ', norm4D(Xijkl_term4)
-          print *,'-----------------------------------------'
-
+!!$          print *,'-----------------------------------------'
+!!$          print *,'          X - matrix terms               '
+!!$          print *,'-----------------------------------------'
+!!$          print *,'norm4D(Xijkl_term1): ', norm4D(Xijkl_term1)
+!!$          print *,'norm4D(Xijkl_term2): ', norm4D(Xijkl_term2)
+!!$          print *,'norm4D(Xijkl_term3): ', norm4D(Xijkl_term3)
+!!$          print *,'norm4D(Xijkl_term4): ', norm4D(Xijkl_term4)
+!!$          print *,'-----------------------------------------'
+          
        endif
 
        call mp2f12_Bijij_term1(Bijij_term1,Bjiij_term1,nocc,Dijkl)
@@ -579,69 +580,69 @@ contains
        call mp2f12_Bijij_term8(Bijij_term8,Bjiij_term8,nocc,noccfull,ncabsAO,ncabs,Gicjm,Gcirj,Frm%elms)
        call mp2f12_Bijij_term9(Bijij_term9,Bjiij_term9,nocc,noccfull,nvirt,ncabs,nbasis,Gipja,Gciaj,Fcp%elms)
 
-       print *,'-----------------------------------------'
-       print *,'         B - matrix terms                '
-       print *,'-----------------------------------------'
-       print *, '(B1 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Dijkl): ', norm4D(Dijkl)
-       print *,'-----------------------------------------'
-       print *, '(B2 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Tirjk): ', norm4D(Tirjk)
-       print *,'-----------------------------------------'
-       print *, '(B3 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Tijkr): ', norm4D(Tijkr)
-       print *,'-----------------------------------------'
-       print *, '(B4 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Girjs): ', norm4D(Girjs)
-       print *,'-----------------------------------------'
-       print *, '(B5 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Girjm): ', norm4D(Girjm)
-       print *,'norm4D(Grimj): ', norm4D(Grimj)
-       print *,'-----------------------------------------'
-       print *, '(B6 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Gipja): ', norm4D(Gipja)
-       print *,'norm4D(Gpiaj): ', norm4D(Gpiaj)
-       print *,'-----------------------------------------'
-       print *, '(B7 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Gicjm): ', norm4D(Gicjm)
-       print *,'-----------------------------------------'
-       print *, '(B8 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Gcirj): ', norm4D(Gcirj)
-       print *,'-----------------------------------------'
-       print *, '(B9 Term):'
-       print *,'-----------------------------------------'
-       print *,'norm4D(Gciaj): ', norm4D(Gciaj)
-       print *,'-----------------------------------------'
-       print *,'norm2D(Bijij_term1): ', norm2D(Bijij_term1)
-       print *,'norm2D(Bijij_term2): ', norm2D(Bijij_term2)
-       print *,'norm2D(Bijij_term3): ', norm2D(Bijij_term3)
-       print *,'norm2D(Bijij_term4): ', norm2D(Bijij_term4)
-       print *,'norm2D(Bijij_term5): ', norm2D(Bijij_term5)
-       print *,'norm2D(Bijij_term6): ', norm2D(Bijij_term6)
-       print *,'norm2D(Bijij_term7): ', norm2D(Bijij_term7)
-       print *,'norm2D(Bijij_term8): ', norm2D(Bijij_term8)
-       print *,'norm2D(Bijij_term9): ', norm2D(Bijij_term9)      
-       print *,'-----------------------------------------'
-       print *,'full_canonical_mp2_f12: Get all F12 Fock integrals'
-       print *,'-----------------------------------------'
-       print *, "norm2D(hJir)", norm1D(hJir%elms)
-       print *, "norm2D(Krr)", norm1D(Krr%elms)
-       print *, "norm2D(Frr)", norm1D(Frr%elms)
-       print *, "norm2D(Fac)", norm1D(Fac%elms)
-       print *, "norm2D(Fpp)", norm1D(Fpp%elms)
-       print *, "norm2D(Fii)", norm1D(Fii%elms)
-       print *, "norm2D(Fmm)", norm1D(Fmm%elms)
-       print *, "norm2D(Frm)", norm1D(Frm%elms)
-       print *, "norm2D(Fcp)", norm1D(Fcp%elms)
-       print *,'-----------------------------------------' 
+!!$       print *,'-----------------------------------------'
+!!$       print *,'         B - matrix terms                '
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B1 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Dijkl): ', norm4D(Dijkl)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B2 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Tirjk): ', norm4D(Tirjk)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B3 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Tijkr): ', norm4D(Tijkr)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B4 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Girjs): ', norm4D(Girjs)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B5 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Girjm): ', norm4D(Girjm)
+!!$       print *,'norm4D(Grimj): ', norm4D(Grimj)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B6 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Gipja): ', norm4D(Gipja)
+!!$       print *,'norm4D(Gpiaj): ', norm4D(Gpiaj)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B7 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Gicjm): ', norm4D(Gicjm)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B8 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Gcirj): ', norm4D(Gcirj)
+!!$       print *,'-----------------------------------------'
+!!$       print *, '(B9 Term):'
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm4D(Gciaj): ', norm4D(Gciaj)
+!!$       print *,'-----------------------------------------'
+!!$       print *,'norm2D(Bijij_term1): ', norm2D(Bijij_term1)
+!!$       print *,'norm2D(Bijij_term2): ', norm2D(Bijij_term2)
+!!$       print *,'norm2D(Bijij_term3): ', norm2D(Bijij_term3)
+!!$       print *,'norm2D(Bijij_term4): ', norm2D(Bijij_term4)
+!!$       print *,'norm2D(Bijij_term5): ', norm2D(Bijij_term5)
+!!$       print *,'norm2D(Bijij_term6): ', norm2D(Bijij_term6)
+!!$       print *,'norm2D(Bijij_term7): ', norm2D(Bijij_term7)
+!!$       print *,'norm2D(Bijij_term8): ', norm2D(Bijij_term8)
+!!$       print *,'norm2D(Bijij_term9): ', norm2D(Bijij_term9)      
+!!$       print *,'-----------------------------------------'
+!!$       print *,'full_canonical_mp2_f12: Get all F12 Fock integrals'
+!!$       print *,'-----------------------------------------'
+!!$       print *, "norm2D(hJir)", norm1D(hJir%elms)
+!!$       print *, "norm2D(Krr)", norm1D(Krr%elms)
+!!$       print *, "norm2D(Frr)", norm1D(Frr%elms)
+!!$       print *, "norm2D(Fac)", norm1D(Fac%elms)
+!!$       print *, "norm2D(Fpp)", norm1D(Fpp%elms)
+!!$       print *, "norm2D(Fii)", norm1D(Fii%elms)
+!!$       print *, "norm2D(Fmm)", norm1D(Fmm%elms)
+!!$       print *, "norm2D(Frm)", norm1D(Frm%elms)
+!!$       print *, "norm2D(Fcp)", norm1D(Fcp%elms)
+!!$       print *,'-----------------------------------------' 
 
     endif
 
@@ -693,7 +694,7 @@ contains
 
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
-          print *, '          E_22 X term                   '
+          print *, '  E_22 X term                           '
           print *, '----------------------------------------'
           print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
           print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
@@ -706,17 +707,17 @@ contains
           print *, 'E22_Xsum: ', E22_debug  
           print *, 'E22_debug: ',  mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, '          E_23 B term                   '
+          print *, '  E_23 B term                           '
           print *, '----------------------------------------'
-          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+!!$          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+!!$          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+!!$          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+!!$          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+!!$          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+!!$          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+!!$          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+!!$          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+!!$          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
@@ -1332,10 +1333,10 @@ contains
        print *, '----------------------------------------'
        print *, '           Vij_ab - matrix terms        '
        print *, '----------------------------------------'
-       print *,'norm4D(Viajb_t1): ', norm4D(Viajb_t1)
-       print *,'norm4D(Viajb_t2): ', norm4D(Viajb_t2)
-       print *,'norm4D(Viajb_t3): ', norm4D(Viajb_t3)
-       print *,'norm4D(Viajb_t4): ', norm4D(Viajb_t4)       
+!!$       print *,'norm4D(Viajb_t1): ', norm4D(Viajb_t1)
+!!$       print *,'norm4D(Viajb_t2): ', norm4D(Viajb_t2)
+!!$       print *,'norm4D(Viajb_t3): ', norm4D(Viajb_t3)
+!!$       print *,'norm4D(Viajb_t4): ', norm4D(Viajb_t4)       
        
     endif
 
