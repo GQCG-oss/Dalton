@@ -1421,6 +1421,249 @@ contains
  
   end subroutine get_EB9
 
+
+  !> CCSD Routines
+
+  !> Date: August 2014
+  subroutine ccsdf12_EV1(energy, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
+
+    real(realk), intent(inout) :: energy
+    real(realk) :: V1energy, tmp1, tmp2
+    real(realk) :: V2energy, V3energy, V4energy
+
+    type(decfrag),intent(inout) :: MyFragment
+    type(decfrag),intent(inout) :: Fragment1
+    type(decfrag),intent(inout) :: Fragment2
+
+    real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
+    real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CocvAOS(:,:)  !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
+    real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
+    real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+
+    logical, intent(in) :: dopair 
+
+    real(realk), intent(in), optional :: Taibj(:,:,:,:)  
+    real(realk), pointer :: Tabij(:,:,:,:) 
+    
+    real(realk), pointer :: Vijij(:,:,:,:)  
+    real(realk), pointer :: Vijab(:,:,:,:)  
+    real(realk), pointer :: Cijab(:,:,:,:)
+    real(realk), pointer :: Rijac(:,:,:,:)
+
+    integer :: noccEOS !number of occupied MO orbitals in EOS
+    integer :: noccAOS
+    integer :: nvirtAOS
+    integer :: ncabsMO
+    integer :: nocvAOS
+    integer :: i, j, m, k, n, a, b, c
+
+    noccEOS  = MyFragment%noccEOS
+    noccAOS  = MyFragment%noccAOS 
+    nvirtAOS = MyFragment%nunoccAOS
+    ncabsMO  = size(MyFragment%Ccabs,2)
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS
+
+    call mem_alloc(Vijij, noccEOS,  noccEOS,  noccEOS,  noccEOS) 
+    call mem_alloc(Vijab, noccEOS,  noccEOS,  nvirtAOS, nvirtAOS) 
+    call mem_alloc(Cijab, noccEOS,  noccEOS,  nvirtAOS, nvirtAOS) 
+    call mem_alloc(Rijac, noccEOS,  noccEOS,  nvirtAOS, ncabsMO)
+    call mem_alloc(Tabij, nvirtAOS, nvirtAOS, noccEOS,  noccEOS)
+
+    energy = 0.0E0_realk
+    tmp1 = 0.0E0_realk
+    tmp2 = 0.0E0_realk
+
+    ! **********************************************************
+    !   Creating the C matrix 
+    ! **********************************************************  
+    !> Rijac <ij|f12|ac> stored as (i,j,a,c)       r = RI MO
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiac','RCRRG',Rijac)
+    
+    call array_reorder_4d(1.0E0_realk,Taibj,nvirtAOS,noccEOS,nvirtAOS,noccEOS,[1,3,2,4],0.0E0_realk,Tabij)
+   
+    Cijab = 0.0E0_realk
+    do i=1, noccEOS
+       do j=1, noccEOS      
+          do a=1, nvirtAOS
+             do b=1, nvirtAOS      
+                ! tmp2 = 0.0E0_realk
+                tmp  = 0.0E0_realk
+                do c=1, ncabsMO
+                   tmp =  tmp  + Rijac(i,j,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(j,i,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
+                   !tmp2 = tmp2 + Rijac(j,i,a,c)*(Myfragment%Fcp(c,b+noccAOS)) + Rijac(i,j,b,c)*(Myfragment%Fcp(c,a+noccAOS)) 
+                enddo
+                Cijab(i,j,a,b) = tmp 
+                ! Cijab(j,i,a,b) = tmp2 
+             end do
+          end do
+       end do
+    end do
+    call mem_dealloc(Rijac)
+
+    !> Construction of Vijab
+    call ccsdf12_Vijab(Vijab, MyFragment,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+
+    !> Construction of the Vijij and Vjiij, matrix
+    do j=1,noccEOS
+       do i=1,noccEOS
+          tmp1 = 0E0_realk
+          tmp2 = 0E0_realk
+          do b=1,nvirtAOS
+             do a=1,nvirtAOS
+                tmp1 = tmp1 + (Cijab(i,j,a,b) + Vijab(i,j,a,b))*Tabij(a,b,i,j)
+                tmp1 = tmp1 + (Cijab(i,j,a,b) + Vijab(i,j,a,b))*Tabij(a,b,j,i)
+             enddo
+          enddo
+          Vijij(i,j,j,i) = tmp2
+          Vijij(i,j,i,j) = tmp1
+       enddo
+    enddo
+
+    call get_mp2f12_sf_E23(Vijij, noccEOS, V1energy, 1.0E0_realk)
+    print *,   '----------------------------------------------------------------'
+    print *,   '                    DEC-CCSD CALCULATION                        '
+    print *,   '----------------------------------------------------------------'
+    print *,   "ECCSD_Vijab+Cijab:", V1energy
+    print *,   '----------------------------------------------------------------'
+           
+
+    
+    call mem_dealloc(Tabij)
+    call mem_dealloc(Vijab)
+    call mem_dealloc(Vijij)
+    call mem_dealloc(Cijab)
+
+  end subroutine ccsdf12_EV1
+
+
+  subroutine ccsdf12_Vijab(Vijab,MyFragment,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    real(realk), target, intent(inout) :: Vijab(:,:,:,:) 
+    type(decfrag),intent(inout) :: MyFragment
+    real(realk), target, intent(in) :: CoccEOS(:,:)  !CoccEOS(nbasis,noccEOS)
+    real(realk), target, intent(in) :: CoccAOS(:,:)  !CoccEOS(nbasis,noccAOS)
+    real(realk), target, intent(in) :: CocvAOS(:,:)  !CocvAOS(nbasis, nocvAOS)
+    real(realk), target, intent(in) :: Ccabs(:,:)    !Ccabs(ncabsAO, ncabsMO)
+    real(realk), target, intent(in) :: Cri(:,:)      !Cri(ncabsAO,ncabsAO)
+    real(realk), target, intent(in) :: CvirtAOS(:,:) !CvritAOS(nbasis,nvirtAOS)
+
+    !> Term 1
+    real(realk), pointer :: Fijab(:,:,:,:) 
+ 
+    !> Term 2
+    real(realk), pointer :: Rijpq(:,:,:,:) 
+    real(realk), pointer :: Gpqab(:,:,:,:) 
+    
+    !> Term 3
+    real(realk), pointer :: Rijmc(:,:,:,:) 
+    real(realk), pointer :: Gmcab(:,:,:,:) 
+   
+    integer :: i, j, m, k, n, a, b, c, p, q
+   
+    integer :: noccEOS !number of occupied MO orbitals in EOS
+    integer :: noccAOS
+    integer :: nvirtAOS
+    integer :: ncabsMO
+    integer :: nocvAOS
+
+    real(realk) :: tmp 
+
+    noccEOS  = MyFragment%noccEOS
+    noccAOS  = MyFragment%noccAOS 
+    nvirtAOS = MyFragment%nunoccAOS
+    ncabsMO  = size(MyFragment%Ccabs,2)
+    nocvAOS  = MyFragment%noccAOS + MyFragment%nunoccAOS   
+
+    call mem_alloc(Fijab, noccEOS,  noccEOS,  nvirtAOS, nvirtAOS)
+
+    !> Get integrals <ij|f12*r^-1|kl> stored as (i,j,k,l)  (Note INTSPEC is always stored as (2,4,1,3))      
+    ! (beta,delta,alpha,gamma) (n2,n4,n1,n3)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iiaa','RRRRF',Fijab)
+
+    !Term 1
+    do b=1,nvirtAOS
+       do a=1,nvirtAOS
+          do j=1,noccEOS
+             do i=1,noccEOS
+                Vijab(i,j,a,b) = Fijab(i,j,a,b)
+             end do
+          end do
+       end do
+    end do
+    call mem_dealloc(Fijab)
+
+    !Term 2
+    call mem_alloc(Rijpq, noccEOS, noccEOS, nocvAOS, nocvAOS)
+    call mem_alloc(Gpqab, nocvAOS, nocvAOS, nvirtAOS, nvirtAOS)
+
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iipp','RRRRG',Rijpq)   
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'ppaa','RRRRC',Gpqab) 
+    
+    do b=1,nvirtAOS
+       do a=1,nvirtAOS
+          do j=1,noccEOS
+             do i=1,noccEOS
+                tmp = 0.0E0_realk
+                do p=1,nocvAOS
+                   do q=1,nocvAOS
+                      tmp = tmp - Rijpq(i,j,p,q)*Gpqab(p,q,a,b)
+                   end do
+                end do
+                Vijab(i,j,a,b) = tmp
+             end do
+          end do
+       end do
+    end do
+    call mem_dealloc(Rijpq)
+    call mem_dealloc(Gpqab)
+
+    !Term 3
+    call mem_alloc(Rijmc, noccEOS, noccEOS, noccAOS, ncabsMO)
+    call mem_alloc(Gmcab, noccAOS, ncabsMO, nvirtAOS, nvirtAOS)
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'iimc','RCRRG',Rijmc)   
+    call get_mp2f12_MO(MyFragment,MyFragment%MyLsitem%Setting,CoccEOS,CoccAOS,CocvAOS,Ccabs,Cri,CvirtAOS,'mcaa','CRRRC',Gmcab) 
+   
+    do b=1,nvirtAOS
+       do a=1,nvirtAOS
+          do j=1,noccEOS
+             do i=1,noccEOS
+                tmp = 0.0E0_realk
+                do m=1, noccAOS
+                   do c=1, ncabsMO
+                      tmp = tmp - Rijmc(i,j,m,c)*Gmcab(m,c,a,b)
+                   end do
+                end do
+                Vijab(i,j,a,b) = tmp
+             end do
+          end do
+       end do
+    end do
+    
+    !Term 4
+    do b=1,nvirtAOS
+       do a=1,nvirtAOS
+          do j=1,noccEOS
+             do i=1,noccEOS
+                tmp = 0.0E0_realk
+                do m=1, noccAOS
+                   do c=1, ncabsMO
+                      tmp = tmp - Rijmc(j,i,m,c)*Gmcab(m,c,b,a)
+                   end do
+                end do
+                Vijab(i,j,a,b) = tmp
+             end do
+          end do
+       end do
+    end do
+    call mem_dealloc(Rijmc)
+    call mem_dealloc(Gmcab)
+
+    
+  end subroutine ccsdf12_Vijab
+  
+
+
   !> Brief: Gives the single and pair fragment energy for MP2F12
   !> Author: Yang M. Wang
   !> Date: April 2013
@@ -1499,12 +1742,19 @@ contains
     real(realk) :: E_21, E_22, E_23, E_F12
     real(realk) :: tmp, energy, tmp2
     real(realk) :: temp
-    real(realk) :: MP2energy
+    real(realk) :: MP2energy, CCSDenergy
+    
+    real(realk) :: ECCSD_V1, ECCSD_V2
 
     real(realk), pointer :: Venergy(:)
     real(realk), pointer :: Xenergy(:)
     real(realk), pointer :: Benergy(:)
 
+    !> Timings
+    real(realk) :: tcpu,twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+    
     ! ***********************************************************
     !   Sanity Check if we do the pair calculation
     ! ***********************************************************
@@ -1596,10 +1846,17 @@ contains
     call mem_alloc(Venergy,5)
 
     call get_EV1(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
+    call LSTIMER('get_EV1_timing: ',tcpu,twall,DECinfo%output)
+   
     call get_EV2(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
+    call LSTIMER('get_EV2_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EV3(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
+    call LSTIMER('get_EV3_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EV4(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj) 
-
+    call LSTIMER('get_EV4_timing: ',tcpu,twall,DECinfo%output)
+        
     E_21 = 0.0E0_realk
     E_21 = Venergy(1) + Venergy(2) + Venergy(3) + Venergy(4) + Venergy(5)
 
@@ -1646,9 +1903,16 @@ contains
     call mem_alloc(Xenergy,4)
     
     call get_EX1(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    call LSTIMER('get_EX1_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EX2(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    call LSTIMER('get_EX2_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EX3(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    call LSTIMER('get_EX3_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EX4(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    call LSTIMER('get_EX4_timing: ',tcpu,twall,DECinfo%output)
 
     E_22 = 0.0E0_realk
     E_22 = Xenergy(1) + Xenergy(2) + Xenergy(3) + Xenergy(4) 
@@ -1674,14 +1938,31 @@ contains
     call mem_alloc(Benergy,9)
     
     call get_EB1(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
+    call LSTIMER('get_EB1_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EB2(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB2_timing: ',tcpu,twall,DECinfo%output)
+    
     call get_EB3(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB3_timing: ',tcpu,twall,DECinfo%output)
+   
     call get_EB4(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB4_timing: ',tcpu,twall,DECinfo%output)
+
     call get_EB5(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB5_timing: ',tcpu,twall,DECinfo%output)
+
     call get_EB6(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB6_timing: ',tcpu,twall,DECinfo%output)
+
     call get_EB7(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB7_timing: ',tcpu,twall,DECinfo%output)
+
     call get_EB8(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB8_timing: ',tcpu,twall,DECinfo%output)
+
     call get_EB9(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
+    call LSTIMER('get_EB9_timing: ',tcpu,twall,DECinfo%output)
     
     B1energy = Benergy(1)
     B2energy = Benergy(2)  
@@ -1721,9 +2002,6 @@ contains
 
     MP2energy = Myfragment%energies(FRAGMODEL_OCCMP2)
 
-    if(.not. DECinfo%onlyoccpart) then
-    end if
-
     if(DECinfo%F12debug) then
        print *,   '----------------------------------------------------------------'
        print *,   '                    DEC-MP2F12 CALCULATION                      '
@@ -1747,12 +2025,28 @@ contains
 
     !> Setting the MP2-F12 correction
     Myfragment%energies(FRAGMODEL_MP2f12) = E_F12
-
     !> Need to be set for the single_fragments
     Myfragment%EoccFOP_Corr = E_F12
 
     ! ***********************************************************
-    ! Free Memory
+    !   CCSD
+    ! ***********************************************************
+    
+    call ccsdf12_EV1(ECCSD_V1, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
+
+    
+
+
+
+
+
+
+
+  
+
+
+    ! ***********************************************************
+    !    Free Memory
     ! ***********************************************************
 
     !> Need to be free to avoid memory leak for the type(matrix) CMO_RI in CABS.F90
@@ -1793,7 +2087,7 @@ contains
     enddo
 
     energy = -1.0E0_realk*tmp ! The valeev factor
-    tmp = 0E0_realk         ! NB Important reset
+    tmp = 0E0_realk           ! NB Important reset
 
     do j=1, nocc
        do i=j+1, nocc 
@@ -1970,7 +2264,7 @@ contains
     type(decfrag),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(decfrag), intent(inout) :: PairFragment
-
+    
     real(realk),intent(in)  :: scalar
     real(realk),intent(out) :: energy
     real(realk),intent(in)  :: ijkl(nocc,nocc,nocc,nocc)
@@ -2002,6 +2296,9 @@ contains
 
 #else
 
+  subroutine wangy_dummy_sub12()
+    implicit none
+  end subroutine wangy_dummy_sub12
 
 #endif
 

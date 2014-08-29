@@ -4174,7 +4174,11 @@ end function max_batch_dimension
           elseif(DECinfo%ccmodel==MODEL_CC2) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
           elseif(DECinfo%ccmodel==MODEL_CCSD) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+             if (DECinfo%F12) then
+                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+             else          
+                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+             endif
           elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
           end if
@@ -4530,46 +4534,59 @@ end function max_batch_dimension
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-            & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+       select case(DECinfo%ccmodel)
+       case(MODEL_MP2)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-            & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2f12_OCC')
-       
+       case(MODEL_CCSD)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & 'MP2F12 occupied single energies','AF_CCSDf12_OCC')
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+       end select
+
+
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
        write(DECinfo%output,'(1X,a)') '**********************************************************'
 
-       if(DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_VIRTMP2)  
-       else
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
-       endif
-       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
-       if(DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-               & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-       else
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+       select case(DECinfo%ccmodel)
+       case(MODEL_MP2)
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:     ', energies(FRAGMODEL_OCCMP2)  
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_MP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY:   ', &
                & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-       endif
-       write(DECinfo%output,*)       
+          write(DECinfo%output,*)       
 
-       if(DECinfo%F12debug) then
-          write(*,'(1X,a)') '**********************************************************'
-          write(*,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
-          write(*,'(1X,a)') '**********************************************************'
-          write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
-          write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
-          if(DECinfo%onlyvirtpart) then  
-             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-                  & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-          else
-             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-                  & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-          endif
-       endif
+       case(MODEL_CCSD)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY: ', energies(FRAGMODEL_OCCCCSD)
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD ENERGY: ', energies(FRAGMODEL_MP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:    ', &
+               & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
+       end select
+
+!!$       if(DECinfo%F12debug) then
+!!$          write(*,'(1X,a)') '**********************************************************'
+!!$          write(*,'(1X,a)') '*                   DEC-F12 ENERGY SUMMARY               *'
+!!$          write(*,'(1X,a)') '**********************************************************'
+!!$        
+!!$          select case(DECinfo%ccmodel)
+!!$          case(MODEL_MP2)
+!!$             write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:         ', energies(FRAGMODEL_OCCMP2)  
+!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2  ENERGY:    ', energies(FRAGMODEL_MP2f12)
+!!$          case(MODEL_CCSD)
+!!$             write(*,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:        ', energies(FRAGMODEL_OCCCCSD)
+!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD  ENERGY:   ', energies(FRAGMODEL_MP2f12)
+!!$
+!!$             write(*,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:      ', &
+!!$                  & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
+!!$          end select
+!!$       endif
+       
     endif
 #endif
 
