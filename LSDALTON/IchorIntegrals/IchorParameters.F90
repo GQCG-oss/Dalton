@@ -4,6 +4,9 @@ Integer,parameter :: SphericalParam = 1 !spherical harmonic basis set
 !Job Specification
 integer,parameter :: IchorJobEri = 1     !4 center 2 electronic repulsion integrals
 integer,parameter :: IchorJobLink = 2    !Linear scaling exchange (LinK) 
+integer,parameter :: IchorJobMoTrans = 3 !Calc Mo Integrals directly
+                                         !MO transform the AO integral block 
+                                         !directly to MO (nMO1,nMO2,nMO3,nMO4)
 !Input Spec
 integer,parameter :: IchorInputNoInput = 1 !no input in inputstorage (no Density matrix)
 integer,parameter :: IchorInputDmat = 2    !RHS Density matrix stored in inputStorage

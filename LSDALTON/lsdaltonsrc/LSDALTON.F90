@@ -96,7 +96,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
        & II_get_Fock_mat
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
@@ -311,6 +311,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !debug integral routines
         call di_debug_general(lupri,luerr,ls,nbast,S,D(1),config%integral%debugProp)
+
+        IF(config%integral%debugIchorLinkFull)THEN
+           call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
+        ENDIF
+
         if (mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices

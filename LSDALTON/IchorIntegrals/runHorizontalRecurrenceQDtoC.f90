@@ -212,10 +212,10 @@ DO GPUrun = 1,2
                    endif
                 ENDDO
                 WRITE(LUFILE,'(A)')'!$ACC         iTUVD,ilmP,Xcd,Ycd,Zcd) &'
-                WRITE(LUFILE,'(A)')'!$ACC PRESENT(nlmP,nContPQ,nPasses,Qdistance12,ThetaP,ThetaP2)'
+                WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,Qdistance12,ThetaP,ThetaP2)'
              ELSE
                 WRITE(LUFILE,'(A)')'!$ACC PRIVATE(iP,iTUVD,ilmP) &'
-                WRITE(LUFILE,'(A)')'!$ACC PRESENT(nlmP,nContPQ,nPasses,ThetaP,ThetaP2)'
+                WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,ThetaP,ThetaP2)'
              ENDIF
           ENDIF
           WRITE(LUFILE,'(A)')'  DO iP = 1,nContPQ*nPasses'

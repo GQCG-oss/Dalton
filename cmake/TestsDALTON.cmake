@@ -541,7 +541,7 @@ add_dalton_runtest(shield_spin       "dalton;runtest;pcm")
 add_dalton_runtest(tpa_pcm_sym       "dalton;runtest;pcm")
 add_dalton_runtest(trp_qr_pcm        "dalton;runtest;pcm")
 add_dalton_runtest(rsp_zfs_mc2       "dalton;runtest;mcscf")
-add_dalton_runtest(mcscf             "dalton;runtest;mcscf;pcm")
+add_dalton_runtest(mcscf             "dalton;runtest;mcscf;pcm;essential")
 add_dalton_runtest(mcscf-nomp2       "dalton;runtest;mcscf;pcm")
 
 add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")

@@ -39,6 +39,7 @@ subroutine VerticalRecurrenceGPUSegQ0(nPassP,nPrimP,nPrimQ,&
   real(realk) :: W2,W3,PX,PY,PZ,XPQ,YPQ,ZPQ,squaredDistance,RJ000
   Integer :: IPNT,iAtomA,iAtomB
   Integer :: iP,iPrimQ,iPrimP,iPassP
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     AUXarray(iP)=0.0E0_realk
   ENDDO
@@ -131,6 +132,7 @@ subroutine VerticalRecurrenceGPUSegQ1A(nPassP,nPrimP,nPrimQ,&
   !ThetaAux(n,1,0,0) = Xpa*ThetaAux(n,0,0,0) + (-alpha/p*Xpq)*ThetaAux(n+1,0,0,0)
   !i = 0 last 2 term vanish
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     AUXarray(iP,1)=0.0E0_realk
     AUXarray(iP,2)=0.0E0_realk
@@ -237,6 +239,7 @@ subroutine VerticalRecurrenceGPUSegQ2A(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   10
      AUXarray(iP,iTUV)=0.0E0_realk
@@ -293,6 +296,7 @@ subroutine VerticalRecurrenceGPUSegQ2A(nPassP,nPrimP,nPrimQ,&
      tmpArray2(3,2) = Ypa*tmpArray1(1,2) + alphaYpq*TmpArray1(1,3)
      tmpArray2(4,2) = Zpa*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expP*(TMPAuxArray(1) + alphaP*TmpArray1(1,2))
+!$ACC LOOP SEQ
      do iTUV = 1,    4
       AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo
@@ -334,6 +338,7 @@ subroutine VerticalRecurrenceGPUSegQ3A(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   20
      AUXarray(iP,iTUV)=0.0E0_realk
@@ -411,6 +416,7 @@ subroutine VerticalRecurrenceGPUSegQ3A(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expP*(TMPAuxArray(2) + alphaP*TmpArray2(2,2))
      TwoTerms(2) = inv2expP*(TMPAuxArray(3) + alphaP*TmpArray2(3,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(4) + alphaP*TmpArray2(4,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   10
       AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo
@@ -457,6 +463,7 @@ subroutine VerticalRecurrenceGPUSegQ4A(nPassP,nPrimP,nPrimQ,&
   !TUV(T,0,0,N) = Xpa*TUV(T-1,0,0,N)-(alpha/p)*Xpq*TUV(T-1,0,0,N+1)
   !             + T/(2p)*(TUV(T-2,0,0,N)-(alpha/p)*TUV(T-2,0,0,N+1))
   !We include scaling of RJ000 
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUV) PRESENT(AUXarray)
   DO iP = 1,nPrimP*nPassP
     DO iTUV=1,   35
      AUXarray(iP,iTUV)=0.0E0_realk
@@ -572,6 +579,7 @@ subroutine VerticalRecurrenceGPUSegQ4A(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expP*(TMPAuxArray(5) + alphaP*TmpArray3(5,2))
      TwoTerms(2) = inv2expP*(TMPAuxArray(8) + alphaP*TmpArray3(8,2))
      TwoTerms(3) = inv2expP*(TMPAuxArray(10) + alphaP*TmpArray3(10,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   20
       AuxArray(iP,iTUV) = AuxArray(iP,iTUV) + TMPAuxarray(iTUV)
      enddo

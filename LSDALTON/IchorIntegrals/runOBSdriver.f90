@@ -813,7 +813,7 @@ DO GPUrun=1,2
         WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD3,'(A)')'!$ACC PRIVATE(iP,iContC,iPrimC,TMP) &'
         WRITE(LUMOD3,'(A)')'!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-        WRITE(LUMOD3,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD3,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD3,'(A)')'   do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPrimD*nPasses'
      WRITE(LUMOD3,'(A)')'    do iContC=1,nContC'               
@@ -854,12 +854,12 @@ DO GPUrun=1,2
         WRITE(LUMOD3,'(A)')'!$OMP DO &'
         WRITE(LUMOD3,'(A)')'!$OMP PRIVATE(iP,iContC,iContD,iPrimD,TMP) '
 !        WRITE(LUMOD3,'(A)')'!$OMP SHARED(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-!        WRITE(LUMOD3,'(A)')'!$OMP        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+!        WRITE(LUMOD3,'(A)')'!$OMP        DCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
      ELSE
         WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD3,'(A)')'!$ACC PRIVATE(iP,iContC,iContD,iPrimD,TMP) &'
         WRITE(LUMOD3,'(A)')'!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-        WRITE(LUMOD3,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD3,'(A)')'!$ACC         DCC,AUXarrayCont,AUXarray2)'
      ENDIF
      call initString(3)
      WRITE(LUMOD3,'(A)')'   do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPasses'
@@ -909,7 +909,7 @@ DO GPUrun=1,2
         WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD3,'(A)')'!$ACC PRIVATE(iP,iContA,iPrimA,TMP,iC) &'
         WRITE(LUMOD3,'(A)')'!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-        WRITE(LUMOD3,'(A)')'!$ACC         ACC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD3,'(A)')'!$ACC         ACC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD3,'(A)')'   do iP=1,nTUVP*nTUVQ*nPrimB*nPasses'
      WRITE(LUMOD3,'(A)')'    do iContA=1,nContA'
@@ -958,7 +958,7 @@ DO GPUrun=1,2
         WRITE(LUMOD3,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD3,'(A)')'!$ACC PRIVATE(iP,iContB,iPrimB,TMP,iC) &'
         WRITE(LUMOD3,'(A)')'!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&'
-        WRITE(LUMOD3,'(A)')'!$ACC        BCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD3,'(A)')'!$ACC        BCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD3,'(A)')'   do iP=1,nTUVP*nTUVQ*nPasses'
      WRITE(LUMOD3,'(A)')'    do iContB=1,nContB'
@@ -1005,8 +1005,8 @@ DO GPUrun=1,2
      ELSE
         WRITE(LUMOD5,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD5,'(A)')'!$ACC PRIVATE(iP,iContC,iPrimC,TMP) &'
-        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimC,nPasses,nPrimD,nTUVP,nTUVQ,&'
-        WRITE(LUMOD5,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimC,nPasses,nPrimD,&'
+        WRITE(LUMOD5,'(A)')'!$ACC        CCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD5,'(A)')'    do iP = 1,nPasses*nTUVP*nTUVQ*nPrimD'
      WRITE(LUMOD5,'(A)')'     do iContC=1,nContC'
@@ -1048,7 +1048,7 @@ DO GPUrun=1,2
      ELSE
         WRITE(LUMOD5,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD5,'(A)')'!$ACC PRIVATE(iP,iContD,iPrimD,iContC,TMP) &'
-        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimD,nPasses,nContD,nTUVP,nTUVQ,&'
+        WRITE(LUMOD5,'(A)')'!$ACC PRESENT(nContC,nPrimD,nPasses,nContD,&'
         WRITE(LUMOD5,'(A)')'!$ACC         DCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD5,'(A)')'    do iP = 1,nPasses*nTUVP*nTUVQ'
@@ -1097,7 +1097,7 @@ DO GPUrun=1,2
         WRITE(LUMOD4,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD4,'(A)')'!$ACC PRIVATE(iP,iContA,iPrimA,TMP) &'
         WRITE(LUMOD4,'(A)')'!$ACC PRESENT(nPasses,nPrimA,nContA,nPrimB,&'
-        WRITE(LUMOD4,'(A)')'!$ACC         ACC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD4,'(A)')'!$ACC         ACC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD4,'(A)')'    do iP=1,nPasses*nTUVP*nTUVQ*nPrimB'
      WRITE(LUMOD4,'(A)')'      do iContA=1,nContA'
@@ -1141,7 +1141,7 @@ DO GPUrun=1,2
         WRITE(LUMOD4,'(A)')'!$ACC PARALLEL LOOP &'
         WRITE(LUMOD4,'(A)')'!$ACC PRIVATE(iP,iContA,iContB,iPrimB,TMP) &'
         WRITE(LUMOD4,'(A)')'!$ACC PRESENT(nPasses,nPrimB,nContB,nContA,&'
-        WRITE(LUMOD4,'(A)')'!$ACC         BCC,AUXarrayCont,AUXarray2,nTUVP,nTUVQ)'
+        WRITE(LUMOD4,'(A)')'!$ACC         BCC,AUXarrayCont,AUXarray2)'
      ENDIF
      WRITE(LUMOD4,'(A)')'    do iP=1,nPasses*nTUVP*nTUVQ'
      WRITE(LUMOD4,'(A)')'     do iContB=1,nContB'
@@ -2296,6 +2296,7 @@ contains
           !       call AddToString(')')                
        ELSEIF(Seg)THEN
           call AddToString('LOCALINTS')
+          OutputSet = .TRUE.
           !          call AddToString('(1:nPasses*')
           !       call AddToString(nTUV)
           !       call AddToString(')')                
@@ -2311,6 +2312,7 @@ contains
 !          Contracted = .TRUE.
        ELSEIF(Seg1Prim)THEN
           call AddToString('LOCALINTS')
+          OutputSet = .TRUE.
           Contracted = .TRUE.
        ENDIF
        call AddToString(')')                
