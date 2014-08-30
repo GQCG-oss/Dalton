@@ -106,6 +106,18 @@ C     gives the number of functions in the small component for that type.
 C
       CALL QENTER('BASLIB')
 C
+C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
+C     from calling routine
+      IPRINT = IPRBAS
+      IF (BASNAM(1:1).eq.' ') IPRINT = 5
+      IF (IPRINT .GE. 5) THEN
+         WRITE (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
+         WRITE (lupri,*) 'BASLIB: BASNAM ',BASNAM
+      END IF
+      IF (BASNAM(1:1).eq.' ') THEN
+         CALL QUIT('BASLIB ERROR, basis set name starts with blank')
+      END IF
+      len_BASNAM = INDEX(BASNAM,' ') - 1
 
       BASTMP = ' '
       BASSAV = BASNAM
@@ -118,18 +130,6 @@ C
       NQVD   = .FALSE.
       POLFUN = .FALSE.
 
-C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
-C     from calling routine
-      IPRINT = IPRBAS
-      IF (BASNAM(1:1).eq.' ') IPRINT = 5
-      IF (IPRINT .GE. 5) THEN
-         WRITE (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
-         WRITE (lupri,*) 'BASLIB: BASNAM ',BASNAM
-      END IF
-      IF (BASNAM(1:1).eq.' ') THEN
-         CALL QUIT('ERROR, basis set name starts with blank')
-      END IF
-      len_BASNAM = INDEX(BASNAM,' ') - 1
 
       IF (BASNAM(1:6) .EQ. 'HUCKEL') THEN
 
@@ -252,14 +252,14 @@ C           ...  Lr
 C Manu end
 
          ELSE
-            CALL QUIT('BASLIB error: HUCKEL not defined for Z > 103')
+            CALL QUIT('BASLIB ERROR: HUCKEL not defined for Z > 103')
          END IF
 
       ELSE
 
 C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
          IF (BASNAM(3:10) .EQ. 'aug-cc-p') THEN
-             BASTMP(1:78) = BASNAM(3:80)
+            BASTMP(1:78) = BASNAM(3:80)
 
             IF (BASNAM(1:2) .EQ. 'd-' .OR.
      &          BASNAM(1:2) .eq. '2-') THEN
@@ -282,9 +282,9 @@ C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
                iaug = 6
 
             ELSE
-               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
-     &              'augmentation level'
-               CALL QUIT('Illegal augmentation level in HERBAS')
+               WRITE (LUPRI,'(/A2,2A)') BASNAM(1:2),' is an unknown'//
+     &              ' augmentation level for ',BASNAM(1:len_BASNAM)
+               CALL QUIT('BASLIB ERROR: too high augmentation level')
             END IF
          ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
             BASTMP(1:76) = BASNAM(5:80)
@@ -298,9 +298,9 @@ C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
             ELSE IF (BASNAM(1:2) .EQ. 'q-') THEN
                IAUG = 3
             ELSE
-               WRITE (LUPRI,'(/A2,A)') BASNAM(1:2),' is an unknown'//
-     &              'augmentation level'
-               CALL QUIT('Illegal augmentation level in HERBAS')
+               WRITE (LUPRI,'(/A2,2A)') BASNAM(1:2),' is an unknown'//
+     &              ' augmentation level for ',BASNAM(1:len_BASNAM)
+               CALL QUIT('BASLIB ERROR: Too high augmentation level')
             END IF
 C for backward compatibility the old notation is retained
          ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
@@ -312,9 +312,10 @@ C for backward compatibility the old notation is retained
             ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
                IAUG = 3
             ELSE
-               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
-     &              'augmentation level'
-               CALL QUIT('Illegal augmentation level in HERBAS')
+               WRITE (LUPRI,'(/A1,2A)')BASNAM(1:1),' is an unknown'//
+     &              ' augmentation level for ',BASNAM(1:len_BASNAM)
+               CALL QUIT('BASLIB ERROR: '//
+     &            'Too high augmentation level for aug-cc-pXXX')
             END IF
          ELSE IF (BASNAM(1:7) .EQ. 'aug-ecp') THEN
             BASTMP(1:76) = BASNAM(5:80)
@@ -328,9 +329,9 @@ C for backward compatibility the old notation is retained
             ELSE IF (BASNAM(1:1) .EQ. 'q') THEN
                IAUG = 3
             ELSE
-               WRITE (LUPRI,'(/A1,A)') BASNAM(1:1),' is an unknown'//
-     &              'augmentation level'
-               CALL QUIT('Illegal augmentation level in HERBAS')
+               WRITE (LUPRI,'(/A1,2A)') BASNAM(1:1),' is an unknown'//
+     &              ' augmentation level for ',BASNAM(1:len_BASNAM)
+               CALL QUIT('BASLIB ERROR: Too high augmentation level')
             END IF
 C
          ELSE IF (BASNAM(1:3) .EQ. 'ano') THEN
@@ -433,7 +434,7 @@ C
                   GOTO 10
                END IF
             ELSE
-Chj-aug99: if (UNCONT) force uncontracted
+Chj-aug99:     if (UNCONT) force uncontracted
                IF (UNCONT) INTORB = -INTORB
                CALL READNU(INTEXP, INTORB, NBLOCK, KAOVEC, CPRIMU,ALPHA,
      +                KPRIM,IAUG,DSM,BASNAM,POLFUN,IPOLST,LUBAS,IPRINT)
@@ -539,7 +540,7 @@ C
       IF (NBLOCK .EQ. 0) THEN
          WRITE (LUPRI,'(/A,I5,A/3X,A)')
      &   'ERROR No basis functions found for element',INTQ,' in basis:',
-     &   BASNAM
+     &   BASNAM(1:len_BASNAM)
          IF (ANO) WRITE(LUPRI,'(/A/A)')
      &   'ERROR NB! For ano basis sets, user must specify number of',
      &   'ERROR     AOs in each shell (example: "basis=ano-1 3 2 1")'
@@ -572,10 +573,10 @@ C
 C
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
-     &  ' >>> BASLIB error, number of primitives per block  ',INTEXP,
+     &  ' >>> BASLIB ERROR, number of primitives per block  ',INTEXP,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
-        CALL QUIT('Too many primitives')
+        CALL QUIT('BASLIB ERROR: Too many primitives')
 C
       END
 C
@@ -664,7 +665,8 @@ C
 C                 uncontracted basis set or
 C                 forced uncontracted with .UNCONT
                   READ (STRING, * ,IOSTAT=IOS) ALPHA(J,NBLOCK)
-                  IF (IOS.NE.0) CALL QUIT('Error in reading alpha')
+                  IF (IOS.NE.0)
+     &               CALL QUIT('BASLIB READNU: Error in reading alpha')
 
 C                 skip continuation lines for contraction coefficients
                   DO I = 2,NUMLIN
@@ -700,7 +702,7 @@ C
                     WRITE(LUPRI,*) 'ALPHA(J, NBLOCK)=',ALPHA(J, NBLOCK)
                     WRITE(LUPRI,*) 'CPRIMU(J,I,NBLOCK), I = 1, KNTORB:',
      &              ( CPRIMU(J,I,NBLOCK),I = 1, KNTORB )
-                    CALL QUIT('Error in reading basis set...')
+                    CALL QUIT('BASLIB:Error in reading basis set...')
                   ENDIF
 
                   IF (IPRINT.GE.6) THEN
@@ -739,8 +741,8 @@ C
                            READ (STRING,*,IOSTAT=IOS)
      &                          (CPRIMU(J,M,NBLOCK),
      +                          M = CONEOR + (I-2)*CONORB +1, KNTORB)
-                           IF (IOS.NE.0) CALL QUIT(
-     &                        'Error reading contraction coefficients')
+                           IF (IOS.NE.0) CALL QUIT('BASLIB: '//
+     &    'Error reading contraction coefficients in basis set file')
                            IF (IPRINT.GE.6) THEN
                               WRITE(LUPRI,*)
      &                        J,NBLOCK,' CPRIMU(J,M,NBLOCK):'
@@ -763,7 +765,7 @@ C blank line, read the next one.
 C
                GOTO 20
             END IF
-            CALL QUIT('REANU: this line should never be reached')
+            CALL QUIT('READNU: this line should never be reached')
          ELSE    ! IF (SIGN .EQ. ' ') THEN
 C
 C Found a line with nothing sensible in it
@@ -811,8 +813,8 @@ C
          IF (POLFUN) THEN
             ISTART = IPOLST
  33         CONTINUE
-            len_STRING = LNBLNK(STRING)
-            IF (len_STRING .GT. 0) THEN
+            len_BASNAM = LNBLNK(BASNAM(ISTART:))
+            IF (len_BASNAM .GT. 0) THEN
                CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT',IERR)
                IF (IERR .EQ. 0) THEN
                   CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA',IERR2)
@@ -823,7 +825,7 @@ C
                         ALPHA(INTEXP,NBLOCK) = EXPON
                         CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
                      END IF
-                     IF (IPRINT.GE.5) WRITE(lupri,*)
+                     IF (IPRINT.GE.5) WRITE(LUPRI,*)
      &                  'INTEXP,NBLOCK,ALPHA',
      &                   INTEXP,NBLOCK,ALPHA(INTEXP,NBLOCK)
                   END IF
@@ -876,7 +878,8 @@ C             in ano-* files (for this consistency check).
      &      'Fatal error in READ_ANO for basis ',BASNAM,
      &      '- max number of contracted functions',INTORBMAX,
      &      '- you asked for                     ',INTORB
-            CALL QUIT('You asked for too many contracted functions')
+            CALL QUIT('BASLIB: '//
+     &         'You asked for too many contracted functions')
          END IF
       END IF
 C
@@ -887,20 +890,11 @@ C
 C
 C Reading the primitive and contracted coefficients
 C
-c     MAXEXP = 8
-c     NUMEXP = (INTEXP - 1)/MAXEXP
-c     J = 1
       IF (INTORB .GT. 0) THEN
-c        DO I = 0, NUMEXP
-c           IF (I.LT.NUMEXP .OR. MOD(INTEXP,MAXEXP).EQ.0 ) THEN
-c              READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J,J - 1 + MAXEXP)
-c           ELSE
-c              READ (LUBAS,*) (ALPHA(K,NBLOCK), K = J,
-c    &              J - 1 + MOD(INTEXP,MAXEXP))
-c           END IF
-c           J = J + MAXEXP
-c        END DO
-         READ (LUBAS,*) (ALPHA(K,NBLOCK), K = 1, INTEXP)
+         READ (LUBAS,*,IOSTAT=IOS) (ALPHA(K,NBLOCK), K = 1, INTEXP)
+         IF (IOS.NE.0) CALL QUIT('BASLIB: '//
+     &      'Error in reading ANO exponents from basis set file')
+
          IF (UNCONT .AND. BASNAM(1:6) .NE. 'HUCKEL') THEN
 C        ... force uncontracted
             DO I = 1, INTEXP
@@ -912,12 +906,15 @@ C        ... force uncontracted
 C           skip core orbitals for Huckel guess for ECP
             INTORB = INTORB - ILOFF
             DO I = 1, INTEXP
-               READ (LUBAS,*) (XXX, J = 1,ILOFF),
-     &              (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+               READ (LUBAS,*,IOSTAT=IOS) (XXX, J = 1,ILOFF),
+     &          (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
             END DO
          ELSE
             DO I = 1, INTEXP
-               READ (LUBAS,*) (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+               READ (LUBAS,*,IOSTAT=IOS)
+     &          (CPRIMU(I,J,NBLOCK), J = 1, INTORB)
+               IF (IOS.NE.0) CALL QUIT('BASLIB: Error in reading '//
+     &          'ANO contraction coefficients from basis set file')
             END DO
          END IF
 
@@ -970,8 +967,8 @@ C
 C This is the parameters for the number of contraction coefficients
 C on 1. and 2. line.
 C
-      INTEGER CONEOR, CONORB
-      PARAMETER(CONEOR = 6, CONORB = 7)
+      INTEGER    CONORB
+      PARAMETER (CONORB = 7)
 
       LOGICAL ONE_LINE_PER_PRIMITIVE
       COMMON /CB_BASLIB/ ONE_LINE_PER_PRIMITIVE
@@ -979,18 +976,15 @@ C
       IF (ONE_LINE_PER_PRIMITIVE) THEN
          NUMLIN = 1
       ELSE
-         JNTORB = ABS(INTORB) - CONEOR
-         NUMLIN = 1
-   10    CONTINUE
-         IF (JNTORB .GT. 0) THEN
-            NUMLIN = NUMLIN + 1
-            JNTORB = JNTORB - CONORB
-            GO TO 10
-         END IF
+         JNTORB = ABS(INTORB)
+         NUMLIN = JNTORB/CONORB + 1
+!        truncation of: NUMLIN = ( (JNTORB + 1) - 1)/CONORB + 1
+!        as we have JNTORB + 1 numbers: exponent + JNTORB contraction
+!        coefficients.
       END IF
 
       IF (IPRINT.GE.10) THEN
-       WRITE(lupri,'(/A)') '*** CONLIN output ***'
+       WRITE(lupri,'(/A)') '*** BAS_CONLIN output ***'
        WRITE(lupri,*) 'input INTORB =',INTORB
        WRITE(lupri,*) 'output NUMLIN=',NUMLIN
       ENDIF
@@ -1040,15 +1034,17 @@ C
       INQUIRE (UNIT = LUBAS, NAME = STRING)
       IEND = INDEX(STRING(1:),' ') - 1
       WRITE (LUPRI,'(/2A/A,I5)')
-     &   'FIND_ELEMENT: Error when reading from basis file ',BASNAM,
-     &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FIND_ELEMENT in HERBAS')
+     &   'FIND_ELEMENT: Error when reading from basis file ',
+     &   STRING(1:IEND),' IOSTAT =',IOERR
+      CALL QUIT('I/O error in BASLIB(FIND_ELEMENT)')
  200  CONTINUE
+      len_BASNAM = LNBLNK(BASNAM)
       WRITE (LUPRI,'(//A,I5,2A/A//)')
-     &' ERROR: Nuclear charge',INTQ,
-     &   ' is an unsupported element for basis ',BASNAM,
+     &   ' ERROR: Nuclear charge',INTQ,
+     &   ' is an unsupported element for basis ',BASNAM(1:len_BASNAM),
      &' ERROR: You must choose another basis set, or enter it manually.'
-      CALL QUIT('Unsupported element in specified basis set file')
+      CALL QUIT('BASLIB: '//
+     &   'Unsupported element in specified basis set file')
       END
 C/* Deck finnqd */
       SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
@@ -1259,23 +1255,24 @@ C
      &   'FIND_NQD: Error when reading from basis file ',
      &   BASNAM,
      &   ' IOSTAT =',IOERR
-      CALL QUIT('I/O error in FIND_NQD in HERBAS')
+      CALL QUIT('BASLIB: I/O error in FIND_NQD')
  200  CONTINUE
       WRITE (LUPRI,'(/I3,2A)') INTQ,
      &     ' is an unsupported element for basis ',BASNAM
-      CALL QUIT('Unsupported element in specified basis set file')
+      CALL QUIT('BASLIB FIND_NQD: '//
+     /   'Unsupported element in specified basis set file')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
-        CALL QUIT('FIND_NQD: Too many primitives')
+        CALL QUIT('BASLIB FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
-        CALL QUIT('FIND_NQD: Too many contracted functions')
+        CALL QUIT('BASLIB FIND_NQD: Too many contracted functions')
       END
 C/* Deck find_ref */
       SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
@@ -1356,7 +1353,7 @@ CMI  &     'Basis set: ',BASNAM
      &     'has no documentation.',
      &     '  Basis set: ',BASNAM
 
-Chj   CALL QUIT('Incomplete basis set file in HERBAS')
+Chj   CALL QUIT('BASLIB: Incomplete basis set file')
       RETURN
       END
 C
@@ -1441,15 +1438,126 @@ C
  1000 CONTINUE
       WRITE (LUPRI,'(/A,I5)') 'ERROR in reading basis set file, '//
      &     'your basis is not complete. IOSTAT code:',IOERR
-      CALL QUIT('Incomplete basis set file in FIND_POS')
+      CALL QUIT('BASLIB FIND_POS: Incomplete basis set file')
  2000 CONTINUE
       WRITE (LUPRI,'(/A,I5//A/3A)')
      &     'ERROR in searching basis set file,'//
      &     ' your basis is not complete. IOSTAT code:',IOS,
      &     'Last line read: "',STRING(1:len_STRING),'"'
-      CALL QUIT('Error searching basis set file in FIND_POS')
+      CALL QUIT('BASLIB FIND_POS: Error searching basis set file')
       END
-C/* Deck FIND_BASFIL */
+
+      SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
+     &                              NRCI,SEG,KPRIM,DSM)
+#include "implicit.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "nuclei.h"
+      LOGICAL SEG
+      DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
+      character(1) :: ch
+      if (iqm == 1) then
+         icount = icount + 1
+         if (icount > 1) then
+            write(*, '(a)') '****'
+         end if
+         write(*, '(a2, i2)') namn(icount), 0
+      end if
+C
+C     *****************************
+C     *** Segmented contraction ***
+C     *****************************
+C
+      IDONE = 0
+      IF (SEG) THEN
+         DO 100 ICONTR = 1, NRCI
+            ISTART = IDONE + 1
+            NLEFT  = NPRI - IDONE
+C
+C           Find first primitive
+C           ====================
+C
+            IMXA = ISTART + IDAMAX(NLEFT,ALPHA(ISTART),1) - 1
+            CALL DSWAP(1,ALPHA(ISTART),1,ALPHA(IMXA),1)
+            CALL DSWAP(NRCI,CPRIMU(ISTART,1),KPRIM,CPRIMU(IMXA,1),
+     &                 KPRIM)
+C
+C           Find corresponding contracted function
+C           ======================================
+C
+            IMXC = IDAMAX(NRCI,CPRIMU(ISTART,1),KPRIM)
+            CALL DSWAP(NPRI,CPRIMU(1,ICONTR),1,CPRIMU(1,IMXC),1)
+C
+C           Collect other primitives contributing to same contracted
+C           ========================================================
+C
+            IPRI = 1
+            DO 200 I = ISTART + 1, NPRI
+               IF (ABS(CPRIMU(I,ICONTR)) .GT. DSM) THEN
+                  CALL DSWAP(1,ALPHA(I),1,ALPHA(ISTART+IPRI),1)
+                  CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,
+     &                            CPRIMU(ISTART+IPRI,1),KPRIM)
+                  IPRI = IPRI + 1
+               END IF
+  200       CONTINUE
+C
+C           Sort primitives
+C           ===============
+C
+            IF (IPRI .GT. 2) THEN
+               DO 300 I = ISTART + 1, ISTART + IPRI - 2
+                  DO 400 J = I + 1, ISTART + IPRI - 1
+                     IF (ALPHA(J) .GT. ALPHA(I)) THEN
+                        CALL DSWAP(1,ALPHA(I),1,ALPHA(J),1)
+                        CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,
+     &                                  CPRIMU(J,1),KPRIM)
+                     END IF
+  400             CONTINUE
+  300          CONTINUE
+            END IF
+C
+            IDONE = IDONE + IPRI
+  100    CONTINUE
+C
+C     ***************************
+C     *** General contraction ***
+C     ***************************
+C
+      ELSE
+         DO 500 I = 1, NPRI - 1
+            DO 600 J = I + 1, NPRI
+            IF(ALPHA(J) .GT. ALPHA(I)) THEN
+               CALL DSWAP(1,ALPHA(I),1,ALPHA(J),1)
+               CALL DSWAP(NRCI,CPRIMU(I,1),KPRIM,CPRIMU(J,1),KPRIM)
+           END IF
+  600      CONTINUE
+  500   CONTINUE
+      END IF
+
+      select case (iqm)
+         case (1)
+            ch = 'S'
+         case (2)
+            ch = 'P'
+         case (3)
+            ch = 'D'
+         case (4)
+            ch = 'F'
+         case (5)
+            ch = 'G'
+         case (6)
+            ch = 'H'
+         case default
+            call quit('print_gaussian_inp: too high iqm')
+      end select
+
+      do i = 1, npri
+         write(*, '(a2, a)') ch, '   1 1.00       0.000000000000'
+         write(*, '(e22.10, e18.10)') alpha(i), 1.0d0
+      end do
+
+      END
+
       SUBROUTINE FIND_BASFIL(BASNAM,LUBAS,IPRINT)
 C
 C     Joern Thyssen and Hans Joergen Aa. Jensen.
@@ -1568,8 +1676,9 @@ C
          WRITE (LUPRI,'(/A)')
      +   'NB! This basis must be available to use Huckel guess!'
       END IF
-      CALL QUIT('Basis set not found.')
+      CALL QUIT('BASLIB FIND_BASFIL: Basis set not found.')
       END
+
 C/* Deck ECP_LCORE */
       SUBROUTINE ECP_LCORE(IQCORE,IQM,ILOFF)
 C
@@ -1588,7 +1697,8 @@ C        only s, p. d, f (never g, h, ... core orbitals)
          IF (MOD(IQCORE,2) .NE. 0) THEN
             WRITE(LUPRI,'(/A,I5)')
      &      'ECP_LCORE ECP: odd number of core electrons',IQCORE
-            CALL QUIT('ECP_LCORE ECP: odd number of core electrons')
+            CALL QUIT('BASLIB ECP_LCORE ECP: '//
+     &         'odd number of core electrons')
          END IF
          DO I = 1, 4
             ILCORE(I) = 0
@@ -1634,7 +1744,7 @@ C           1s,2s,2p,3s,3p,3d,4s,4p,4d,4f,5s,5p,5d ECP
          ELSE
             WRITE(LUPRI,'(/A,I5)') 'READ_ANO FATAL ERROR: '//
      &         'ECP Huckel not implemented for this core charge:',IQCORE
-            CALL QUIT('READ_ANO: ECP not implemented for this charge')
+            CALL QUIT('READ_ANO ECP not implemented for this charge')
          END IF
          ILOFF = ILCORE(IQM)
       ELSE
