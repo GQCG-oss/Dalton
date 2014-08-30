@@ -476,10 +476,6 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          END IF
 #endif
 
-#if defined (VAR_MPI)
-         IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
-     &   " * Parallel with MPI: Using", NODTOT+1, " CPUs."
-#endif
 #ifdef VAR_OMP
          call getenv('OMP_NUM_THREADS', env_value)
          read(env_value, '(i6)') omp_num_threads

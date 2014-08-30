@@ -1,4 +1,4 @@
-!#define SIRGRAD_DEBUG
+!#define notSIRGRAD_DEBUG
 !
 !...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
@@ -388,10 +388,10 @@ C
       END IF
 C
 ! Manu debug
-!#ifdef SIRGRAD_DEBUG
+#ifdef SIRGRAD_DEBUG
       write(lupri,*) 'from FCKMAT: ONLYFC =', ONLYFC 
       write(lupri,*) 'from FCKMAT: NOFV =', NOFV 
-!#endif
+#endif
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
@@ -2908,7 +2908,7 @@ C
 #include "priunit.h"
 !
       EACT = D2 * DDOT(NNASHX,DV,1,FCAC,1)
-!#define LUCI_DEBUG
+!#define notLUCI_DEBUG
 #ifdef LUCI_DEBUG
       do i = 1, NNASHX
         write(lupri,*) ' element i, dv(i) and fcac(i) ==> ',

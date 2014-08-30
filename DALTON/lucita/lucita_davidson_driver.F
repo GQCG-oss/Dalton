@@ -448,14 +448,16 @@ C
             ELSE
               JPACK = 0
             END IF
+            IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-            CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
+               CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
      &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
      &                      IROOTSI,LU1LIST)
-#else
-            CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA,JPACK)
 #endif
+            ELSE
+               CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &                  LUDIA,JPACK)
+            END IF
 #endif
             do ii = 1,ndeg
               scr1(ii) = 0.0d0
