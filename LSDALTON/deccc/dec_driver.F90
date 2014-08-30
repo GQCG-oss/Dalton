@@ -620,6 +620,15 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCCCSD)
        ENDIF
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          IF(DECinfo%onlyVirtPart)THEN
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTMP2)
+          ELSE
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCMP2)
+          ENDIF
+       endif
+#endif 
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        IF(DECinfo%onlyVirtPart)THEN

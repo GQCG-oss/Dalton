@@ -6,138 +6,9 @@ contains
   !> \author Thomas Kjaergaard
 
 #ifdef MOD_UNRELEASED
-  subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    ! Setting Ciajb = 0 
-    ! Ciajb = 0.0E0_realk
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + Ciajb(i,a,j,b)*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine mp2f12_Vijij_coupling
-
-
-  subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    ! Setting Ciajb = 0
-    ! Ciajb = 0.0E0_realk
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + Ciajb(j,a,i,b)*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine mp2f12_Vjiij_coupling
-
-
-  subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
-    implicit none 
-    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Vijja(nocc,nocc,nvirt)
-    real(realk),intent(IN)    :: Viaji(nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Tai(nvirt,nocc)
-
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + (Ciajb(i,a,j,b)+Viajb(i,a,j,b))*Taibj(a,j,b,i)
-             enddo
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do a=1,nvirt
-             tmp = tmp + Viaji(i,a,j)*Tai(a,j) + Vijja(i,j,a)*Tai(a,i)
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine ccsdf12_Vjiij_coupling
-
-
-  subroutine ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj,Viajb,Viija,Viajj,Tai,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Viija(nocc,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajj(nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Tai(nvirt,nocc)
-
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + ( Ciajb(i,a,j,b) + Viajb(i,a,j,b) )*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do a=1,nvirt
-             tmp = tmp + Viija(i,j,a) * Tai(a,j) + Viajj(i,a,j) * Tai(a,i)
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine ccsdf12_Vijij_coupling
+  !> ***********************************************************************
+  !> ****************************  MP2-F12  ********************************
+  !> ***********************************************************************
 
   !> \brief Vijij contribution for MP2-f12
   !> \author Simen Reine
@@ -1061,35 +932,6 @@ contains
        ENDDO
     ENDDO
 
-!!$    do i=1, nocc
-!!$       do r=1, ncabsAO
-!!$          if(hJ(i,r) > 1E-10) then
-!!$             print *, "i r hJir", i, r, hJ(i,r)
-!!$          endif
-!!$       enddo
-!!$    enddo
-
-
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijij                        '   
-!!$    print *, '----------------------------------------'
-!!$    
-!!$    DO i=1,nocc
-!!$       DO j=1,nocc
-!!$          print *, i," ", j," ", Bijij(i,j)
-!!$       ENDDO
-!!$    ENDDO
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijji                        '   
-!!$    print *, '----------------------------------------'
-!!$
-!!$    DO i=1,nocc
-!!$       DO j=1,nocc
-!!$          print *, i," ", j," ", Bjiij(i,j)
-!!$       ENDDO
-!!$    ENDDO
-
   end subroutine mp2f12_Bijij_term2
 
   subroutine mp2f12_Bijij_term3(Bijij,Bjiij,nocc,ncabsAO,Tijkr,hJ)
@@ -1315,6 +1157,67 @@ contains
     ENDDO
 
   end subroutine mp2f12_Bijij_term9
+
+
+  subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0 
+    ! Ciajb = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(i,a,j,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine mp2f12_Vijij_coupling
+
+
+  subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0
+    ! Ciajb = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(j,a,i,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine mp2f12_Vjiij_coupling
+
+  
+  !> ***********************************************************************
+  !> ****************************  CCSD F12 ********************************
+  !> ***********************************************************************
 
   !maybe i and j is reverted
   !> \brief Viija contribution for CCSD-f12
@@ -1718,130 +1621,7 @@ contains
        ENDDO
     ENDDO
   end subroutine ccsdf12_Viajb
-
-  !> \brief Viajb term1 contribution for CCSD-f12
-  !> \author Yang Min Wang
-  !> \date June 2014
-  subroutine ccsdf12_Viajb_t1(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-    implicit none
-    Real(realk),intent(OUT) :: Viajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rapbq(nvirt,nbasis,nvirt,nbasis)
-    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-    Real(realk),intent(IN)  :: Fiajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rambc(nvirt,noccfull,nvirt,ncabs)
-    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs,nvirt
-    !
-    Integer :: i,j,p,q,a,b,m,c
-
-    Viajb = 0.0E0_realk
-    DO b=1,nvirt
-       DO j=1,nocc
-          DO a=1,nvirt
-             DO i=1,nocc
-                Viajb(i,a,j,b) = Fiajb(i,a,j,b)
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-  end subroutine ccsdf12_Viajb_t1
-
-  !> \brief Viajb term2 contribution for CCSD-f12
-  !> \author Yang Min Wang
-  !> \date Aug 2014
-  subroutine ccsdf12_Viajb_t2(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-    implicit none
-    Real(realk),intent(OUT) :: Viajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rapbq(nvirt,nbasis,nvirt,nbasis)
-    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-    Real(realk),intent(IN)  :: Fiajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rambc(nvirt,noccfull,nvirt,ncabs)
-    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs,nvirt
-    !
-    Integer :: i,j,p,q,a,b,m,c
-
-    Viajb = 0.0E0_realk
-    DO q=1,nbasis
-       DO b=1,nvirt
-          DO j=1,nocc
-             DO p=1,nbasis
-                DO a=1,nvirt
-                   DO i=1,nocc
-                      Viajb(i,a,j,b) = Viajb(i,a,j,b) - Rapbq(a,p,b,q)*Gipjq(i,p,j,q)
-                   ENDDO
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-  end subroutine ccsdf12_Viajb_t2
-
-  !> \brief Viajb term3 contribution for CCSD-f12
-  !> \author Yang Min Wang
-  !> \date Aug 2014
-  subroutine ccsdf12_Viajb_t3(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-    implicit none
-    Real(realk),intent(OUT) :: Viajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rapbq(nvirt,nbasis,nvirt,nbasis)
-    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-    Real(realk),intent(IN)  :: Fiajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rambc(nvirt,noccfull,nvirt,ncabs)
-    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs,nvirt
-    !
-    Integer :: i,j,p,q,a,b,m,c
-
-    Viajb = 0.0E0_realk
-    DO c=1,ncabs
-       DO b=1,nvirt
-          DO j=1,nocc
-             DO m=1,noccfull
-                DO a=1,nvirt
-                   DO i=1,nocc
-                      Viajb(i,a,j,b) = Viajb(i,a,j,b) - Rambc(a,m,b,c)*Gimjc(i,m,j,c)
-                   ENDDO
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-  end subroutine ccsdf12_Viajb_t3
-
-  !> \brief Viajb term4 contribution for CCSD-f12
-  !> \author Yang Min Wang
-  !> \date Aug 2014
-  subroutine ccsdf12_Viajb_t4(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-    implicit none
-    Real(realk),intent(OUT) :: Viajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rapbq(nvirt,nbasis,nvirt,nbasis)
-    Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-    Real(realk),intent(IN)  :: Fiajb(nocc,nvirt,nocc,nvirt)
-    Real(realk),intent(IN)  :: Rambc(nvirt,noccfull,nvirt,ncabs)
-    Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-    Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs,nvirt
-    !
-    Integer :: i,j,p,q,a,b,m,c
-
-    Viajb = 0.0E0_realk
-    DO c=1,ncabs
-       DO b=1,nvirt
-          DO j=1,nocc
-             DO m=1,noccfull
-                DO a=1,nvirt
-                   DO i=1,nocc
-                      Viajb(i,a,j,b) = Viajb(i,a,j,b) - Rambc(b,m,a,c)*Gimjc(j,m,i,c)
-                   ENDDO
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ENDDO
-  end subroutine ccsdf12_Viajb_t4
   
-
-
-
 
   subroutine mp2f12_Cjaib(Cjaib,Givic,Fvc,nocc,nvirt,ncabs)
     implicit none
@@ -2026,10 +1806,92 @@ contains
        ENDDO
     ENDDO
   end subroutine mp2f12_Bjiij
+
+  subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
+    implicit none 
+    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
+    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Vijja(nocc,nocc,nvirt)
+    real(realk),intent(IN)    :: Viaji(nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Tai(nvirt,nocc)
+
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + (Ciajb(i,a,j,b)+Viajb(i,a,j,b)) * Taibj(a,j,b,i)
+             enddo
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do a=1,nvirt
+             tmp = tmp + Viaji(i,a,j) * Tai(a,j) + Vijja(i,j,a) * Tai(a,i)
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine ccsdf12_Vjiij_coupling
+
+  subroutine ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj,Viajb,Viija,Viajj,Tai,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
+    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Viija(nocc,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajj(nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Tai(nvirt,nocc)
+
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + (Ciajb(i,a,j,b) + Viajb(i,a,j,b) )*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do a=1,nvirt
+             tmp = tmp + Viija(i,j,a) * Tai(a,j) + Viajj(i,a,j) * Tai(a,i)
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine ccsdf12_Vijij_coupling
+
 #else
+
   subroutine full_f12contractions_dummy_sub12()
     implicit none
   end subroutine full_f12contractions_dummy_sub12
+
 #endif
+
 end module full_f12contractions
 
