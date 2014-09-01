@@ -348,12 +348,8 @@ REAL(REALK),intent(in) ::  minR(3),maxR(3)
 INTEGER,intent(inout)  ::  NactBast
 INTEGER,intent(inout) ::  IBLCKS(2,MAXNSHELL)
 !
-INTEGER     ::  NBLCNT
-INTEGER     ::  ISHLEN,IPREV,ICENT,ISHELA,I,J
+INTEGER     ::  NBLCNT,IPREV,ICENT,ISHELA,I
 REAL(REALK) ::  RSHEL1,center(3),LengthX,LengthY,LengthZ,CELLDG,PX,PY,PZ,DST
-INTEGER     :: IBL,IORB
-LOGICAL     :: XVERIFY,YVERIFY,ZVERIFY
-real(realk),parameter :: D05=0.5E0_realk
 !each box can save which ISHELAs that contribute ... 
 !so that this does not need to be reevaluated.
 NBLCNT = 0
@@ -361,10 +357,10 @@ IPREV = -1111
 LengthX = maxR(1)-minR(1)
 LengthY = maxR(2)-minR(2)
 LengthZ = maxR(3)-minR(3)
-Center(1) = minR(1)+LengthX*d05
-Center(2) = minR(2)+LengthY*d05
-Center(3) = minR(3)+LengthZ*d05
-CELLDG = SQRT(LengthX*LengthX+LengthY*LengthY+LengthZ*LengthZ)*d05
+Center(1) = minR(1)+LengthX*0.5E0_realk
+Center(2) = minR(2)+LengthY*0.5E0_realk
+Center(3) = minR(3)+LengthZ*0.5E0_realk
+CELLDG = SQRT(LengthX*LengthX+LengthY*LengthY+LengthZ*LengthZ)*0.5E0_realk
 DO ISHELA=1,MAXNSHELL
    ICENT = SHELL2ATOM(ISHELA)
    PX = center(1)-X(ICENT)
@@ -381,7 +377,6 @@ DO ISHELA=1,MAXNSHELL
       IBLCKS(2,NBLCNT) = ISHELA
    END IF
 END DO 
-
 IF(NBLCNT.GT.0)THEN
 !!$   DO I = 1,NBLCNT
 !!$      ORBBLOCKS(1,I) = NSTART(IBLCKS(1,I))+1
@@ -430,7 +425,7 @@ INTEGER,intent(in)     :: NSTART(MAXNSHELL)
 INTEGER,intent(inout) :: IBLCKS(2,MAXNSHELL)
 integer,intent(inout) :: tmp(maxnBox)
 !
-real(realk) :: Lengthinv,center1(3),center2(3),length(3),split,minR(3),maxR(3)
+real(realk) :: Lengthinv,length(3),split,minR(3),maxR(3)
 integer :: maxDim,nBox1,nBox2,I,ix,NactBast,ip
 real(realk),parameter :: D05=0.5E0_realk,D8=8E0_realk
 real(realk) :: Volumen1,gridLengthX,gridLengthY,gridLengthZ
@@ -445,18 +440,18 @@ IF(GridBox%npoints.LT.maxnbuflen)THEN
    call BOX_NactOrbGETBLOCKS(RSHEL,MAXNSHELL,SHELL2ATOM,NBAST,NATOMS,&
         & atomcenterX,atomcenterY,atomcenterZ,NactBast,NSTART,&
         & GridBox%minR,GridBox%maxR,LUPRI,IBLCKS)
-   IF(NactBAST.EQ.0)THEN
-      RETURN
-   ENDIF
+   IF(NactBAST.EQ.0)RETURN
+   IF(GridBox%npoints.LE.MXBLLEN)RETURN
    IF(MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast.LT.BoxMemRequirement)THEN
-!      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST
+!      print*,'BoxMemRequirement',BoxMemRequirement
 !      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
 !      print*,'MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast',MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast
       RETURN
 !   ELSE
 !      continue to divide
-!      print*,'BoxMemRequirement',BoxMemRequirement,'NBAST',NBAST,100000000
-!      print*,'MXBLLEN*NactBast',MXBLLEN*NactBast,'NactBast',NactBast
+!      print*,'Continue to divide too big mem req'
+!      print*,'BoxMemRequirement',BoxMemRequirement
+!      print*,'MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast',MAX(MXBLLEN,GridBox%npoints,NactBast)*NactBast
    ENDIF
 ENDIF
 minR(1) = gridBox%minR(1)
