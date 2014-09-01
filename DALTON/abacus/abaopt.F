@@ -2827,7 +2827,7 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-
+C TEST
  
 #include "implicit.h"
 #include "priunit.h"
