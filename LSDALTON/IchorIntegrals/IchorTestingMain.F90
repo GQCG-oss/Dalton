@@ -159,7 +159,7 @@ CASE(5)
    iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9
    iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9
 CASE DEFAULT
-   FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p'
+   FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p1'
    nBasisA = 1
    nBasisB = 1
    nBasisC = 1
@@ -217,6 +217,8 @@ do Ipass = IpassStart,IpassEnd
            filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
            ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
         enddo
+        WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+        ifilename = ifilename + 1
      ENDIF
      LUOUTPUT = 12
      print*,'FileName',FileName

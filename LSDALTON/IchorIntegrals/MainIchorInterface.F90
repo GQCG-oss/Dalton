@@ -556,20 +556,20 @@ DO J = 1, ntypesA
 ENDDO
 DO J = 1, ntypesA
    DO I = 1, MaxnPrimA
-      WRITE(LUOUTPUT,'(F20.10)') exponentsOfTypeA(I,J)
+      WRITE(LUOUTPUT,'(F25.15)') exponentsOfTypeA(I,J)
    ENDDO
 ENDDO
 DO K = 1, ntypesA
    DO J = 1, MaxnAtomsA
       DO I = 1, 3
-         WRITE(LUOUTPUT,'(F20.10)') Acenters(I,J,K)
+         WRITE(LUOUTPUT,'(F25.15)') Acenters(I,J,K)
       ENDDO
    ENDDO
 ENDDO
 DO K = 1, ntypesA
    DO J = 1, MaxnContA
       DO I = 1, MaxnPrimA
-         WRITE(LUOUTPUT,'(F20.10)') ContractCoeffOfTypeA(I,J,K)
+         WRITE(LUOUTPUT,'(F25.15)') ContractCoeffOfTypeA(I,J,K)
       ENDDO
    ENDDO
 ENDDO
@@ -625,20 +625,20 @@ DO J = 1, ntypesA
 ENDDO
 DO J = 1, ntypesA
    DO I = 1, MaxnPrimA
-      READ(LUOUTPUT,'(F20.10)') exponentsOfTypeA(I,J)
+      READ(LUOUTPUT,'(F25.15)') exponentsOfTypeA(I,J)
    ENDDO
 ENDDO
 DO K = 1, ntypesA
    DO J = 1, MaxnAtomsA
       DO I = 1, 3
-         READ(LUOUTPUT,'(F20.10)') Acenters(I,J,K)
+         READ(LUOUTPUT,'(F25.15)') Acenters(I,J,K)
       ENDDO
    ENDDO
 ENDDO
 DO K = 1, ntypesA
    DO J = 1, MaxnContA
       DO I = 1, MaxnPrimA
-         READ(LUOUTPUT,'(F20.10)') ContractCoeffOfTypeA(I,J,K)
+         READ(LUOUTPUT,'(F25.15)') ContractCoeffOfTypeA(I,J,K)
       ENDDO
    ENDDO
 ENDDO

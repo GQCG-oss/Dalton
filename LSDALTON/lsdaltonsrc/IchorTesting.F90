@@ -73,7 +73,7 @@ real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
 integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat,ifilename
 type(matrix) :: GAB
 logical:: generateFiles
-generateFiles = .FALSE.!.TRUE.
+generateFiles = .TRUE.
 filename(1:13) = 'IchorUnitTest'
 ifilename = 14
 NoSymmetry = .FALSE. !activate permutational symmetry
@@ -338,6 +338,8 @@ do Ipass = IpassStart,IpassEnd
           SETTING%BASIS(A)%p => UNITTESTBASIS(A)
           call determine_nbast2(SETTING%MOLECULE(A)%p,SETTING%BASIS(A)%p%BINFO(RegBasParam),spherical,.FALSE.,nbast(A))
        enddo
+       WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+       ifilename = ifilename + 1
        dim1 = nbast(1); dim2 = nbast(2); dim3 = nbast(3); dim4 = nbast(4)
        !due to current code restrictions
 !       IF(dim2.GT.dim1)CYCLE
