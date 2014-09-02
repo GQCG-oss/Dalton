@@ -1147,7 +1147,11 @@ C added by Bin Gao, May 12, 2012
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+#ifdef ENABLE_VPOTDAMP
             CALL vpotdamped_slave()
+#else
+            call quit('VPOTDAMP not compiled in this version')
+#endif
 
 #if defined(ENABLE_EFS)
          else if (IPRTYP.eq.efs_add_atomtype_work) then
