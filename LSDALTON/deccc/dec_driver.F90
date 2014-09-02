@@ -284,18 +284,6 @@ contains
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
 
 
-    !Crash calculation on purpose to test restart option
-    IF(DECinfo%CRASHCALC)THEN
-       print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
-       print*,'This keyword is only used for debug and testing purposes'
-       print*,'We want to be able to test the .RESTART keyword'
-       WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
-       WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
-       WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
-       call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
-    ENDIF
-
-
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
 #ifdef VAR_MPI
@@ -355,6 +343,18 @@ contains
     calcAF = DECinfo%RepeatAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
+
+
+    !Crash calculation on purpose to test restart option
+    IF(DECinfo%CRASHCALC)THEN
+       print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       print*,'This keyword is only used for debug and testing purposes'
+       print*,'We want to be able to test the .RESTART keyword'
+       WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+       WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+       call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
+    ENDIF
 
     ! Zero fragment energies if they are recalculated
     if(calcAF) then
