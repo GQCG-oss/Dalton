@@ -219,8 +219,6 @@ contains
     real(realk),pointer :: Cjaib(:,:,:,:)
     real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
 
-    real(realk),pointer :: Vijkl_term3(:,:,:,:)
-
     real(realk),pointer :: Vijij(:,:)
     real(realk),pointer :: Vijij_term1(:,:)
     real(realk),pointer :: Vijij_term2(:,:)
@@ -441,22 +439,6 @@ contains
        !> Coupling with the C-matrix, only needs to be done once
        call mp2f12_Vijij_term5(Vijij_term5,Ciajb,Taibj,nocc,nvirt)
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
-!!$        
-!!$       print *, '----------------------------------------'
-!!$       print *, '           C - matrix terms             '
-!!$       print *, '----------------------------------------'
-!!$       print *, 'norm4D(Ciajb): ', norm4D(Ciajb)
-!!$       print *, 'norm4D(Giajc): ', norm4D(Giajc)
-!!$       print *, 'norm4D(Taibj): ', norm4D(Taibj)
-!!$       print *, '----------------------------------------'
-!!$       print *, '           V - matrix terms             '
-!!$       print *, '----------------------------------------'
-!!$       print *,'norm4D(Fijkl): ', norm4D(Fijkl)
-!!$       print *,'norm4D(Ripjq): ', norm4D(Ripjq)
-!!$       print *,'norm4D(Gipjq): ', norm4D(Gipjq)
-!!$       print *, '----------------------------------------'
-!!$       print *,'norm4D(Rimjc): ', norm4D(Rimjc)
-!!$       print *,'norm4D(Gimjc): ', norm4D(Gimjc)
 
        print *, '----------------------------------------'
        print *, '  E21  V terms                          '
@@ -496,20 +478,23 @@ contains
     endif
 
     if(DECinfo%F12DEBUG) then
-       call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
+ 
+      call mem_alloc(Xijkl_term1,nocc,nocc,nocc,nocc)
        call mem_alloc(Xijkl_term2,nocc,nocc,nocc,nocc)
        call mem_alloc(Xijkl_term3,nocc,nocc,nocc,nocc)
        call mem_alloc(Xijkl_term4,nocc,nocc,nocc,nocc) 
 
-       call mem_alloc(Xijij_term1,nocc,nocc)
-       call mem_alloc(Xijij_term2,nocc,nocc)
-       call mem_alloc(Xijij_term3,nocc,nocc)
-       call mem_alloc(Xijij_term4,nocc,nocc)      
+       if(DECinfo%use_canonical) then
+          call mem_alloc(Xijij_term1,nocc,nocc)
+          call mem_alloc(Xijij_term2,nocc,nocc)
+          call mem_alloc(Xijij_term3,nocc,nocc)
+          call mem_alloc(Xijij_term4,nocc,nocc)  
 
-       call mem_alloc(Xjiij_term1,nocc,nocc)
-       call mem_alloc(Xjiij_term2,nocc,nocc)
-       call mem_alloc(Xjiij_term3,nocc,nocc)
-       call mem_alloc(Xjiij_term4,nocc,nocc)
+          call mem_alloc(Xjiij_term1,nocc,nocc)
+          call mem_alloc(Xjiij_term2,nocc,nocc)
+          call mem_alloc(Xjiij_term3,nocc,nocc)
+          call mem_alloc(Xjiij_term4,nocc,nocc)
+       endif
 
        call mem_alloc(Bijij_term1,nocc,nocc)
        call mem_alloc(Bijij_term2,nocc,nocc)
@@ -540,16 +525,7 @@ contains
           call mp2f12_Xjiij_term1(Xjiij_term1,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xjiij_term2(Xjiij_term2,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xjiij_term3(Xjiij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
-          call mp2f12_Xjiij_term4(Xjiij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
-
-!!$          print *,'-----------------------------------------'
-!!$          print *,'          X - matrix terms               '
-!!$          print *,'-----------------------------------------'
-!!$          print *,'norm2D(Xijij_term1): ', norm2D(Xijij_term1)
-!!$          print *,'norm2D(Xijij_term2): ', norm2D(Xijij_term2)
-!!$          print *,'norm2D(Xijij_term3): ', norm2D(Xijij_term3)
-!!$          print *,'norm2D(Xijij_term4): ', norm2D(Xijij_term4)
-!!$          print *,'-----------------------------------------'         
+          call mp2f12_Xjiij_term4(Xjiij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)    
 
        else !> Non canonical
 
@@ -558,15 +534,6 @@ contains
           call mp2f12_Xijijfull_term3(Xijkl_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
           call mp2f12_Xijijfull_term4(Xijkl_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
 
-!!$          print *,'-----------------------------------------'
-!!$          print *,'          X - matrix terms               '
-!!$          print *,'-----------------------------------------'
-!!$          print *,'norm4D(Xijkl_term1): ', norm4D(Xijkl_term1)
-!!$          print *,'norm4D(Xijkl_term2): ', norm4D(Xijkl_term2)
-!!$          print *,'norm4D(Xijkl_term3): ', norm4D(Xijkl_term3)
-!!$          print *,'norm4D(Xijkl_term4): ', norm4D(Xijkl_term4)
-!!$          print *,'-----------------------------------------'
-          
        endif
 
        call mp2f12_Bijij_term1(Bijij_term1,Bjiij_term1,nocc,Dijkl)
@@ -579,70 +546,6 @@ contains
        call mp2f12_Bijij_term7(Bijij_term7,Bjiij_term7,nocc,noccfull,ncabs,Gicjm,Gcimj,Fmm%elms)
        call mp2f12_Bijij_term8(Bijij_term8,Bjiij_term8,nocc,noccfull,ncabsAO,ncabs,Gicjm,Gcirj,Frm%elms)
        call mp2f12_Bijij_term9(Bijij_term9,Bjiij_term9,nocc,noccfull,nvirt,ncabs,nbasis,Gipja,Gciaj,Fcp%elms)
-
-!!$       print *,'-----------------------------------------'
-!!$       print *,'         B - matrix terms                '
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B1 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Dijkl): ', norm4D(Dijkl)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B2 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Tirjk): ', norm4D(Tirjk)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B3 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Tijkr): ', norm4D(Tijkr)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B4 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Girjs): ', norm4D(Girjs)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B5 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Girjm): ', norm4D(Girjm)
-!!$       print *,'norm4D(Grimj): ', norm4D(Grimj)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B6 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Gipja): ', norm4D(Gipja)
-!!$       print *,'norm4D(Gpiaj): ', norm4D(Gpiaj)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B7 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Gicjm): ', norm4D(Gicjm)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B8 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Gcirj): ', norm4D(Gcirj)
-!!$       print *,'-----------------------------------------'
-!!$       print *, '(B9 Term):'
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm4D(Gciaj): ', norm4D(Gciaj)
-!!$       print *,'-----------------------------------------'
-!!$       print *,'norm2D(Bijij_term1): ', norm2D(Bijij_term1)
-!!$       print *,'norm2D(Bijij_term2): ', norm2D(Bijij_term2)
-!!$       print *,'norm2D(Bijij_term3): ', norm2D(Bijij_term3)
-!!$       print *,'norm2D(Bijij_term4): ', norm2D(Bijij_term4)
-!!$       print *,'norm2D(Bijij_term5): ', norm2D(Bijij_term5)
-!!$       print *,'norm2D(Bijij_term6): ', norm2D(Bijij_term6)
-!!$       print *,'norm2D(Bijij_term7): ', norm2D(Bijij_term7)
-!!$       print *,'norm2D(Bijij_term8): ', norm2D(Bijij_term8)
-!!$       print *,'norm2D(Bijij_term9): ', norm2D(Bijij_term9)      
-!!$       print *,'-----------------------------------------'
-!!$       print *,'full_canonical_mp2_f12: Get all F12 Fock integrals'
-!!$       print *,'-----------------------------------------'
-!!$       print *, "norm2D(hJir)", norm1D(hJir%elms)
-!!$       print *, "norm2D(Krr)", norm1D(Krr%elms)
-!!$       print *, "norm2D(Frr)", norm1D(Frr%elms)
-!!$       print *, "norm2D(Fac)", norm1D(Fac%elms)
-!!$       print *, "norm2D(Fpp)", norm1D(Fpp%elms)
-!!$       print *, "norm2D(Fii)", norm1D(Fii%elms)
-!!$       print *, "norm2D(Fmm)", norm1D(Fmm%elms)
-!!$       print *, "norm2D(Frm)", norm1D(Frm%elms)
-!!$       print *, "norm2D(Fcp)", norm1D(Fcp%elms)
-!!$       print *,'-----------------------------------------' 
 
     endif
 
@@ -672,7 +575,7 @@ contains
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
          & nocc,noccfull,nbasis,ncabsAO,nvirt,ncabs)
-
+    
     call mp2f12_Bjiij(Bjiij,Dijkl,Tirjk,Tijkr,Girjs,hJir%elms,Krr%elms,&
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
@@ -705,19 +608,19 @@ contains
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
           print *, 'E22_Xsum: ', E22_debug  
-          print *, 'E22_debug: ',  mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          print *, 'E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
           print *, '  E_23 B term                           '
           print *, '----------------------------------------'
-!!$          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-!!$          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-!!$          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-!!$          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-!!$          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-!!$          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-!!$          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-!!$          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-!!$          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
@@ -767,12 +670,12 @@ contains
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
           print *, 'E23_Bsum: ',  E23_debug
-          !print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
 
-       endif
-       
+       endif      
     endif
+
     call free_F12_mixed_MO_Matrices(HJir,Krr,Frr,Fac,Fpp,Fii,Fmm,Frm,Fcp)
 
     if(DECinfo%use_canonical) then
@@ -812,17 +715,38 @@ contains
        endif
 
     else
-  
+
        call mem_dealloc(Xijkl)
-       
+
        if(DECinfo%F12DEBUG) then
           call mem_dealloc(Xijkl_term1)
           call mem_dealloc(Xijkl_term2)
           call mem_dealloc(Xijkl_term3)
           call mem_dealloc(Xijkl_term4)   
+
+          call mem_dealloc(Bijij_term1)
+          call mem_dealloc(Bijij_term2)
+          call mem_dealloc(Bijij_term3)
+          call mem_dealloc(Bijij_term4)
+          call mem_dealloc(Bijij_term5)
+          call mem_dealloc(Bijij_term6)          
+          call mem_dealloc(Bijij_term7)
+          call mem_dealloc(Bijij_term8)
+          call mem_dealloc(Bijij_term9)
+
+          call mem_dealloc(Bjiij_term1)
+          call mem_dealloc(Bjiij_term2)
+          call mem_dealloc(Bjiij_term3)
+          call mem_dealloc(Bjiij_term4)
+          call mem_dealloc(Bjiij_term5)
+          call mem_dealloc(Bjiij_term6)
+          call mem_dealloc(Bjiij_term7)
+          call mem_dealloc(Bjiij_term8)
+          call mem_dealloc(Bjiij_term9)
        endif
+
     endif
-    
+
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
 
@@ -834,6 +758,7 @@ contains
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
+    
     call free_cabs()
 
     if(DECinfo%F12DEBUG) then
@@ -1126,6 +1051,9 @@ contains
 
 #endif
 
+  !> ***********************************************************************
+  !> ****************************  CCSD F12 ********************************
+  !> ***********************************************************************
 
 #ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
@@ -1185,7 +1113,11 @@ contains
 
     !   F12 specific
     real(realk),pointer :: Vijij(:,:)
+    !real(realk),pointer :: Vijij_term1(:,:)
+
     real(realk),pointer :: Vjiij(:,:)    
+    !real(realk),pointer :: Vjiij_term1(:,:)
+
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
@@ -1198,15 +1130,11 @@ contains
     real(realk),pointer :: Fiajb(:,:,:,:)
 
     real(realk),pointer :: Viajb(:,:,:,:)
-    real(realk),pointer :: Viajb_t1(:,:,:,:)
-    real(realk),pointer :: Viajb_t2(:,:,:,:)    
-    real(realk),pointer :: Viajb_t3(:,:,:,:)
-    real(realk),pointer :: Viajb_t4(:,:,:,:)
-
     real(realk),pointer :: Ripaq(:,:,:,:)
     real(realk),pointer :: Rimac(:,:,:,:)
     real(realk),pointer :: Ramic(:,:,:,:)
     real(realk),pointer :: Fijka(:,:,:,:)
+
     real(realk),pointer :: Viija(:,:,:)
     real(realk),pointer :: Vijja(:,:,:)
     real(realk),pointer :: Viaji(:,:,:)
@@ -1318,28 +1246,29 @@ contains
     !>---------------------------------------
     !V_ij^ab
     call mem_alloc(Viajb,nocc,nvirt,nocc,nvirt) 
+
     call ccsdf12_Viajb(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
    
     if(DECinfo%F12DEBUG) then
-       call mem_alloc(Viajb_t1,nocc,nvirt,nocc,nvirt) 
-       call mem_alloc(Viajb_t2,nocc,nvirt,nocc,nvirt) 
-       call mem_alloc(Viajb_t3,nocc,nvirt,nocc,nvirt) 
-       call mem_alloc(Viajb_t4,nocc,nvirt,nocc,nvirt) 
 
-       call ccsdf12_Viajb_t1(Viajb_t1,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-       call ccsdf12_Viajb_t2(Viajb_t2,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-       call ccsdf12_Viajb_t3(Viajb_t3,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-       call ccsdf12_Viajb_t4(Viajb_t4,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)       
-       print *, '----------------------------------------'
-       print *, '           Vij_ab - matrix terms        '
-       print *, '----------------------------------------'
-!!$       print *,'norm4D(Viajb_t1): ', norm4D(Viajb_t1)
-!!$       print *,'norm4D(Viajb_t2): ', norm4D(Viajb_t2)
-!!$       print *,'norm4D(Viajb_t3): ', norm4D(Viajb_t3)
-!!$       print *,'norm4D(Viajb_t4): ', norm4D(Viajb_t4)       
-       
+!!$       print *, '----------------------------------------'
+!!$       print *, '  E21  V terms                          '
+!!$       print *, '----------------------------------------'
+!!$       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1, Vjiij_term1,nocc)
+!!$       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2, Vjiij_term2,nocc)
+!!$       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3, Vjiij_term3,nocc)
+!!$       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4, Vjiij_term4,nocc)
+!!$       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5, Vjiij_term5,nocc)
+!!$       print *, '----------------------------------------'
+!!$
+!!$       E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
+!!$            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
+!!$            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
+!!$
+!!$       print *, 'E21_Vsum: ', E21_debug
+!!$      !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+
     endif
-
 
     !V_ij^ia
     call mem_alloc(Viija,nocc,nocc,nvirt)
@@ -1361,20 +1290,15 @@ contains
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
 
+    !call ccsdf12_Vijij_coupling_term1(Vijij_term1,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
+    !call ccsdf12_Vjiij_coupling_term1(Vjiij_term1,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
+    
     ! CCSD Specific
     call mem_dealloc(Viija)
     call mem_dealloc(Vijja)
     call mem_dealloc(Viajj)
     call mem_dealloc(Viaji)
-
     call mem_dealloc(Viajb)
-
-    if(DECinfo%F12DEBUG) then
-       call mem_dealloc(Viajb_t1)
-       call mem_dealloc(Viajb_t2)
-       call mem_dealloc(Viajb_t3)
-       call mem_dealloc(Viajb_t4)
-    endif
 
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
     
@@ -1391,6 +1315,7 @@ contains
        call mp2f12_Xjiij(Xjiij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
    
     else
+
        ! non-canonical
        call mem_alloc(Xijkl,nocc,nocc,nocc,nocc)
 
@@ -1402,15 +1327,18 @@ contains
        !          Xjiij(i,j) = Xijkl(i,j,j,i)          
        !       enddo
        !    enddo
+       
     endif
 
     call mem_alloc(Bijij,nocc,nocc)
+
     call mp2f12_Bijij(Bijij,Dijkl,Tirjk,Tijkr,Girjs,hJir%elms,Krr%elms,&
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
          & nocc,noccfull,nbasis,ncabsAO,nvirt,ncabs)
 
     call mem_alloc(Bjiij,nocc,nocc)
+
     call mp2f12_Bjiij(Bjiij,Dijkl,Tirjk,Tijkr,Girjs,hJir%elms,Krr%elms,&
          & Frr%elms,Fpp%elms,Fmm%elms,Frm%elms,Fcp%elms,&
          & Girjm,Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,&
@@ -1431,11 +1359,14 @@ contains
     call mem_dealloc(Ramic)
     call mem_dealloc(Fiajb)
     call mem_dealloc(Fijka)
+
     if(DECinfo%use_canonical) then
        call mem_dealloc(Xijij)
        call mem_dealloc(Xjiij)
     else
+       
        call mem_dealloc(Xijkl)
+    
     endif
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
@@ -1489,7 +1420,6 @@ contains
 #ifdef VAR_MPI
     local = .false.
 #endif
-
 
     ! Quick fix to always use CCSD model
     !    save_model=DECinfo%ccmodel

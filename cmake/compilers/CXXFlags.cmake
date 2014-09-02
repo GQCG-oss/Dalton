@@ -3,6 +3,10 @@ if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS         "-g -Wall -fno-rtti -fno-exceptions")
     set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        # radovan: vpotdamp code needs this
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+    endif()
     if (ENABLE_CODE_COVERAGE)
         set (CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")

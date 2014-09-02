@@ -1,5 +1,6 @@
 set(DALTON_LIBS)
 if(ENABLE_VPOTDAMP)
+    add_definitions(-DENABLE_VPOTDAMP)
     add_subdirectory(DALTON/1e_cpp ${CMAKE_BINARY_DIR}/vpotdamp)
     set(DALTON_LIBS
         vpotdamp

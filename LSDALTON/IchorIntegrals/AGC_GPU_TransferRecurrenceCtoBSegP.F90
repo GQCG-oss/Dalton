@@ -67,16 +67,20 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 10
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 10
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 10
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 10
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
@@ -124,7 +128,9 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      Tmp0(10,4) = Tmp0(10,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,20)
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 10
+!$ACC LOOP SEQ
       DO iTUVP=1,  4
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
@@ -197,16 +203,20 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 20
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
@@ -302,7 +312,9 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      Tmp0(20,4) = Tmp0(20,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,35)
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 20
+!$ACC LOOP SEQ
       DO iTUVP=1,  4
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
@@ -396,46 +408,58 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
+!$ACC LOOP SEQ
       DO iTUVP=1,  4
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
@@ -531,170 +555,215 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 20
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  21, 35
       Tmp1(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  21, 35
       Tmp1(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  21, 35
       Tmp1(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 11,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jp = 2
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 20
       Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,10
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,10
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 11,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 20
+!$ACC LOOP SEQ
       DO iTUVP=1, 10
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
@@ -796,170 +865,215 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp1(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp1(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp1(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jp = 2
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
+!$ACC LOOP SEQ
       DO iTUVP=1, 10
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
@@ -1072,387 +1186,490 @@ MODULE AGC_GPU_OBS_TRMODCtoBSegP
      facZ = -(expAZ+Dexp(iPrimD)*Zcd)*invexpP
      qinvp = -Qexp(iPrimQ)*invexpP
  ! Building for Angular momentum Jp = 0
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
       Tmp0(iTUVQ,1) = Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      ENDDO
  ! Building for Angular momentum Jp = 1
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 84
       Tmp1(iTUVQ,2) = facX*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 84
       Tmp1(iTUVQ,3) = facY*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 84
       Tmp1(iTUVQ,4) = facZ*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + IfacX1(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + IfacX2(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,56
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + IfacX3(ituvqminus1)*inv2expP*Aux(iPrimQ,iPrimP,iPassP,ituvqminus1) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,2) = Tmp0(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp1(iTUVQ,2) = Tmp1(iTUVQ,2) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,3) = Tmp0(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp1(iTUVQ,3) = Tmp1(iTUVQ,3) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,4) = Tmp0(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,84
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp1(iTUVQ,4) = Tmp1(iTUVQ,4) + qinvp*Aux(iPrimQ,iPrimP,iPassP,iTUVplus1)
      enddo
  ! Building for Angular momentum Jp = 2
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,5) = facX*Tmp0(iTUVQ,2)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,6) = facX*Tmp0(iTUVQ,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,7) = facX*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,8) = facY*Tmp0(iTUVQ,3)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,9) = facY*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,10) = facZ*Tmp0(iTUVQ,4)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,5) = facX*Tmp1(iTUVQ,2)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,6) = facX*Tmp1(iTUVQ,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,7) = facX*Tmp1(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,8) = facY*Tmp1(iTUVQ,3)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,9) = facY*Tmp1(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ =  36, 56
       Tmp2(iTUVQ,10) = facZ*Tmp1(iTUVQ,4)+ inv2expP*Aux(iPrimQ,iPrimP,iPassP,iTUVQ)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp2(iTUVQ,5) = Tmp2(iTUVQ,5) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,2) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp2(iTUVQ,6) = Tmp2(iTUVQ,6) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp2(iTUVQ,7) = Tmp2(iTUVQ,7) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp2(iTUVQ,8) = Tmp2(iTUVQ,8) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,3) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp2(iTUVQ,9) = Tmp2(iTUVQ,9) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 21,35
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp2(iTUVQ,10) = Tmp2(iTUVQ,10) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,4) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp0(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,5) = Tmp0(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp2(iTUVQ,5) = Tmp2(iTUVQ,5) + qinvp*Tmp1(iTUVplus1,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,6) = Tmp0(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp2(iTUVQ,6) = Tmp2(iTUVQ,6) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,7) = Tmp0(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp2(iTUVQ,7) = Tmp2(iTUVQ,7) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp0(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,8) = Tmp0(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp2(iTUVQ,8) = Tmp2(iTUVQ,8) + qinvp*Tmp1(iTUVplus1,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,9) = Tmp0(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp2(iTUVQ,9) = Tmp2(iTUVQ,9) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp0(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,10) = Tmp0(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 36,56
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp2(iTUVQ,10) = Tmp2(iTUVQ,10) + qinvp*Tmp1(iTUVplus1,4)
      enddo
  ! Building for Angular momentum Jp = 3
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,11) = facX*Tmp0(iTUVQ,5)+2*inv2expP*Tmp0(iTUVQ,2)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,12) = facY*Tmp0(iTUVQ,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,13) = facZ*Tmp0(iTUVQ,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,14) = facX*Tmp0(iTUVQ,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,15) = facX*Tmp0(iTUVQ,9)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,16) = facX*Tmp0(iTUVQ,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,17) = facY*Tmp0(iTUVQ,8)+2*inv2expP*Tmp0(iTUVQ,3)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,18) = facZ*Tmp0(iTUVQ,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,19) = facY*Tmp0(iTUVQ,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1, 35
       Tmp0(iTUVQ,20) = facZ*Tmp0(iTUVQ,10)+2*inv2expP*Tmp0(iTUVQ,4)
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,5) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,9) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX1(ituvqminus1)
       Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + IfacX1(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,8) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX2(ituvqminus1)
       Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + IfacX2(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
+!$ACC LOOP SEQ
      do ituvqminus1 = 1,20
       iTUVQ = TUVindexX3(ituvqminus1)
       Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + IfacX3(ituvqminus1)*inv2expP*Tmp0(ituvqminus1,10) 
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + qinvp*Tmp0(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,11) = Tmp0(iTUVQ,11) + qinvp*Tmp2(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + qinvp*Tmp0(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,12) = Tmp0(iTUVQ,12) + qinvp*Tmp2(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + qinvp*Tmp0(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,13) = Tmp0(iTUVQ,13) + qinvp*Tmp2(iTUVplus1,5)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + qinvp*Tmp0(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,14) = Tmp0(iTUVQ,14) + qinvp*Tmp2(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + qinvp*Tmp0(iTUVplus1,9)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,15) = Tmp0(iTUVQ,15) + qinvp*Tmp2(iTUVplus1,9)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + qinvp*Tmp0(iTUVplus1,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX1(iTUVQ)
       Tmp0(iTUVQ,16) = Tmp0(iTUVQ,16) + qinvp*Tmp2(iTUVplus1,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + qinvp*Tmp0(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,17) = Tmp0(iTUVQ,17) + qinvp*Tmp2(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + qinvp*Tmp0(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,18) = Tmp0(iTUVQ,18) + qinvp*Tmp2(iTUVplus1,8)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + qinvp*Tmp0(iTUVplus1,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX2(iTUVQ)
       Tmp0(iTUVQ,19) = Tmp0(iTUVQ,19) + qinvp*Tmp2(iTUVplus1,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 1,20
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + qinvp*Tmp0(iTUVplus1,10)
      enddo
+!$ACC LOOP SEQ
      do iTUVQ = 21,35
       iTUVplus1 = TUVindexX3(iTUVQ)
       Tmp0(iTUVQ,20) = Tmp0(iTUVQ,20) + qinvp*Tmp2(iTUVplus1,10)
      enddo
 !    Warning Note Tmp0 have the opposite ordering so this is not that efficient. 
 !    Hopefully Tmp0 is small enough that it can be in cache. 
+!$ACC LOOP SEQ
      DO iTUVQ=1, 35
+!$ACC LOOP SEQ
       DO iTUVP=1, 20
         Aux2(IP,iTUVP,iTUVQ) = Aux2(iP,iTUVP,iTUVQ) + Tmp0(iTUVQ,iTUVP)
       ENDDO
