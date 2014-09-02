@@ -11,6 +11,9 @@ MODULE READMOLEFILE
 #ifdef MOD_UNRELEASED
   use lattice_vectors
 #endif
+#ifdef PCM_MODULE
+  use pcm_write
+#endif
 contains
 !> \brief read the molecule file and build the molecule structure 
 !> \author T. Kjaergaard
@@ -51,6 +54,10 @@ logical            :: PRINTATOMCOORD,file_exist,Angstrom,Symmetry,dopbc
 logical            :: ATOMBASIS,Subsystems
 CHARACTER(len=80)  :: BASISSET(nBasisBasParam)
 integer            :: MolecularCharge,Atomtypes,Totalnatoms,I,IPOS
+#ifdef PCM_MODULE
+integer            :: a
+real(8)            :: b
+#endif
 
 IF (doprint) WRITE(LUPRI,'(2X,A18,2X,I6)')'MOLPRINT IS SET TO',IPRINT
 BASIS=.FALSE.
@@ -117,6 +124,13 @@ CALL READ_GEOMETRY(LUPRI,LUINFO,IPRINT,BASISSETLIBRARY,Atomtypes,dopbc,&
      &PRINTATOMCOORD,doprint,latt_config,Subsystems)
 
 CALL DETERMINE_NELECTRONS(Molecule,Molecule%charge,Molecule%nelectrons)
+
+#ifdef PCM_MODULE
+call report_after_pcm_input(lupri)
+a = 1
+b = 0.5
+call hello_pcm(a, b)
+#endif
 
 !CALL PRINT_MOLECULEINFO(LUPRI,MOLECULE,BASISSETLIBRARY,1)
 

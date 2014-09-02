@@ -135,6 +135,19 @@ add_library(
 
 target_link_libraries(matrixulib matrixolib)
 
+if(ENABLE_PCMSOLVER)
+    add_definitions(-DPCM_MODULE)
+    add_library(
+        lspcm
+        ${LSDALTON_PCM_SOURCES})
+    set(PCMSOLVER_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
+	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
+	stdc++
+        z)
+    set(EXTERNAL_LIBS ${PCMSOLVER_LIBS} ${EXTERNAL_LIBS})
+endif()
+
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -355,19 +368,11 @@ target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
+target_link_libraries(lsdaltonmain lspcm)
 
 if(ENABLE_PCMSOLVER)
     add_dependencies(lsdaltonmain pcmsolver)
-    add_definitions(-DPCM_MODULE)
-    set(EXTERNAL_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
-	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
-	stdc++
-        z
-	${EXTERNAL_LIBS}
-        )
 endif()
-
 
 if(NOT ENABLE_CHEMSHELL)
     add_executable(
@@ -437,6 +442,7 @@ set(LIBS_TO_MERGE
     linearslib
     geooptlib
     xcfun_interface
+    lspcm
     lsdaltonmain 
     )
 
@@ -461,10 +467,12 @@ if(NOT ENABLE_CHEMSHELL)
     target_link_libraries(
         lsdalton.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 
     target_link_libraries(
         lslib_tester.x
         lsdalton
+	${PCMSOLVER_LIBS}
         )
 endif()

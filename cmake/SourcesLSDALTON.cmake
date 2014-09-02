@@ -431,6 +431,13 @@ set(LSINT_SOURCES
     LSDALTON/LSint/lsmpi.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
+set(LSDALTON_PCM_SOURCES	
+	#LSDALTON/pcm/pcm_integrals.F90
+	#LSDALTON/pcm/pcm_scf.F90
+    LSDALTON/pcm/pcmmod_cfg.F90
+    LSDALTON/pcm/pcm_utils.F90
+    LSDALTON/pcm/pcm_write.F90
+    )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
 # lsutil is split into several bunches
