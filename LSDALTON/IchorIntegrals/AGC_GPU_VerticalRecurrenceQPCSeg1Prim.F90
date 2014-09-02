@@ -177,6 +177,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim2C(nPassP,nPrimP,nPrimQ,&
      tmpArray2(3,2) = Yqc*tmpArray1(1,2) + alphaYpq*TmpArray1(1,3)
      tmpArray2(4,2) = Zqc*tmpArray1(1,2) + alphaZpq*TmpArray1(1,3)
      TwoTerms(1) = inv2expQ*(TMPAuxArray(1) + alphaQ*TmpArray1(1,2))
+!$ACC LOOP SEQ
      do iTUV = 1,    4
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -280,6 +281,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim3C(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expQ*(TMPAuxArray(2) + alphaQ*TmpArray2(2,2))
      TwoTerms(2) = inv2expQ*(TMPAuxArray(3) + alphaQ*TmpArray2(3,2))
      TwoTerms(3) = inv2expQ*(TMPAuxArray(4) + alphaQ*TmpArray2(4,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   10
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -426,6 +428,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim4C(nPassP,nPrimP,nPrimQ,&
      TwoTerms(1) = inv2expQ*(TMPAuxArray(5) + alphaQ*TmpArray3(5,2))
      TwoTerms(2) = inv2expQ*(TMPAuxArray(8) + alphaQ*TmpArray3(8,2))
      TwoTerms(3) = inv2expQ*(TMPAuxArray(10) + alphaQ*TmpArray3(10,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   20
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -642,6 +645,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim5C(nPassP,nPrimP,nPrimQ,&
      TwoTerms(4) = inv2expQ*(TMPAuxArray(17) + alphaQ*TmpArray4(17,2))
      TwoTerms(5) = inv2expQ*(TMPAuxArray(19) + alphaQ*TmpArray4(19,2))
      TwoTerms(6) = inv2expQ*(TMPAuxArray(20) + alphaQ*TmpArray4(20,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   35
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -965,6 +969,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim6C(nPassP,nPrimP,nPrimQ,&
      TwoTerms(7) = inv2expQ*(TMPAuxArray(33) + alphaQ*TmpArray5(33,2))
      TwoTerms(8) = inv2expQ*(TMPAuxArray(34) + alphaQ*TmpArray5(34,2))
      TwoTerms(9) = inv2expQ*(TMPAuxArray(35) + alphaQ*TmpArray5(35,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   56
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo
@@ -1444,6 +1449,7 @@ subroutine VerticalRecurrenceGPUSeg1Prim7C(nPassP,nPrimP,nPrimQ,&
      TwoTerms(11) = inv2expQ*(TMPAuxArray(54) + alphaQ*TmpArray6(54,2))
      TwoTerms(12) = inv2expQ*(TMPAuxArray(55) + alphaQ*TmpArray6(55,2))
      TwoTerms(13) = inv2expQ*(TMPAuxArray(56) + alphaQ*TmpArray6(56,2))
+!$ACC LOOP SEQ
      do iTUV = 1,   84
       AuxArray(iP,iTUV) = TMPAuxarray(iTUV)
      enddo

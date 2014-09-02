@@ -1,20 +1,66 @@
 all: libIchorIntegrals.a
 
-ARCH        = linux
-FMMDIR      = mm
+#########################################################
 #
+# COMPILER SECTION 
 #
-CPPFLAGS      = -DVAR_ICHOR
-F90            = ifort
-FLNK           = ifort
-RM             = rm -f
-#F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
-F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
-INCLUDES       =  
-LIBS           = #-openmp
-AR             = ar
-ARFLAGS        =  rvs
+#########################################################
 #
+# CRAY ON TITAN EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = ftn
+#FLNK           = ftn
+#RM             = rm -f
+#F90OPTFLAGS    = -eZ -x omp -rm -hsystem_alloc
+#INCLUDES       =  
+#LIBS           =
+#AR             = ar
+#ARFLAGS        = rvs
+##
+#
+# IFORT EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = ifort
+#FLNK           = ifort
+#RM             = rm -f
+##F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
+#F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
+#INCLUDES       =  
+#LIBS           = #-openmp
+#AR             = ar
+#ARFLAGS        =  rvs
+#
+# PGI SISYPHOS EXAMPLE
+#
+#ARCH        = linux
+#FMMDIR      = mm
+##
+##
+#CPPFLAGS      = -DVAR_ICHOR
+#F90            = pgf90
+#FLNK           = pgf90
+#RM             = rm -f
+#F90OPTFLAGS    = -acc #-Minfo=accel
+#INCLUDES       =  
+#LIBS           = 
+#AR             = ar
+#ARFLAGS        =  rvs
+##
+#########################################################
+#
+# END OF COMPILER SECTION 
+#
+#########################################################
 
 .SUFFIXES : .F90 
 
@@ -188,7 +234,8 @@ F90_OBJS = \
 	IchorEri_GabIntegral_OBS_general.o \
         IchorEri.o \
         IchorGab.o \
-        MainIchorInterface.o
+        MainIchorInterface.o\
+        IchorTestingMain.o
 
 libIchorIntegrals.a: $(F90_OBJS) 
 	$(AR) $(ARFLAGS) $@ $?
@@ -210,6 +257,6 @@ include Makefile.depend
 
 #the above code makes the libIchorIntegrals.a now you just have to link using
 
-test.x: 
+test.x: $(F90_OBJS) 
 	@echo "---------------> Linking test.x ..."
 	$(F90) $(F90FLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a

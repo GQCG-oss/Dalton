@@ -4616,12 +4616,14 @@ contains
        fragment%energies(FRAGMODEL_LAGMP2) = fragment%LagFOP 
        fragment%energies(FRAGMODEL_OCCMP2) = fragment%EoccFOP
        fragment%energies(FRAGMODEL_VIRTMP2) = fragment%EvirtFOP 
+
 #ifdef MOD_UNRELEASED 
        if(DECinfo%F12) then
           ! F12: F12-correction or the Single Fragments
           fragment%energies(FRAGMODEL_MP2f12) = fragment%EoccFOP_Corr
        endif
 #endif
+
     case(MODEL_CC2)
        ! CC2
        fragment%energies(FRAGMODEL_OCCCC2) = fragment%EoccFOP
@@ -4634,6 +4636,14 @@ contains
        ! CCSD
        fragment%energies(FRAGMODEL_OCCCCSD) = fragment%EoccFOP 
        fragment%energies(FRAGMODEL_VIRTCCSD) = fragment%EvirtFOP
+
+#ifdef MOD_UNRELEASED 
+       if(DECinfo%F12) then
+          ! F12: F12-correction or the Single Fragments
+          fragment%energies(FRAGMODEL_CCSDf12) = fragment%EoccFOP_Corr
+       endif
+#endif
+
 #ifdef MOD_UNRELEASED 
     case(MODEL_CCSDpT)
        ! (T) contribution =  CCSD(T) contribution minus CCSD contribution

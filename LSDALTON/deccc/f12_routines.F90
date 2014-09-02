@@ -756,18 +756,6 @@ contains
     ! For simplicity we simply choose the gamma batch to contain all basis functions,
     ! while we make the alpha batch as small as possible
 
-    !> Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
-
-    !> Maximum AO batch size (all basis functions)
-    MaxAObatchSize = n31
-    !> Setting MinAO to AO batch size for debug purposes
-    MinAObatchSize = n11
-
-    !> Set alpha and gamma batch size as written above
-    GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
-    AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
-
     ! ***********************************
     ! Determine batch Types ('R' or 'C')
     ! ***********************************
@@ -786,6 +774,20 @@ contains
           BatchType(i) = 'C'
        endif
     enddo
+
+    !> Minimum AO batch size
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,GammaBatchSize,BatchType(3))
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,AlphaBatchSize,BatchType(1))
+ 
+    !> Maximum AO batch size (all basis functions)
+    !MaxAObatchSize = n31
+    !> Setting MinAO to AO batch size for debug purposes
+    !MinAObatchSize = n11
+
+    !> Set alpha and gamma batch size as written above
+    !GammaBatchSize = n31 ! Needs to be changed, For DEBUG purposes MaxAObatchSize
+    !AlphaBatchSize = n11 ! Needs to be changes, For DEBUG purposes MinAObatchSize
+
 
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
