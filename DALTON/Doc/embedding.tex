@@ -5,8 +5,8 @@ This chapter introduces the polarizable embedding (PE) model as implemented
 in the PE library~\cite{pelib2012} included in the \latestrelease\ release.
 Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
 PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
-and PE-CC\footnote{TODO: Currently, the PE-CC uses an older implementation
-and not the PE library. Note, that in the next release, the PE-CC
+and PE-CC\footnote{Currently, the PE-CC uses an older implementation
+and not the PE library. Note, that in a future release, the PE-CC
 implementation will use the new PE library (see Sec.~\ref{sec:pecc})}~\cite{pecc}.
 The implementation uses the Gen1Int library to calculate one-electron
 integrals~\cite{gen1int} which is also in the \latestrelease\ release. The
@@ -21,7 +21,6 @@ basic examples.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
-\item PE library: (TODO).
 \item PE model: J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011) and J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156852.
 \item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
 \item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
@@ -86,9 +85,9 @@ In the PE-MP2/SOPPA models, the environment response is
 taken into account at the HF/RPA level (see Ref.~\cite{pesoppa} for details).
 Note, that the current implementation does not support point-group symmetry
 or analytical molecular gradients and Hessians.
-(TODO: Furthermore, PE-CC uses
+Furthermore, PE-CC uses
 an older implementation with different input format which is briefly described
-in Sec.~\ref{sec:pecc}.  Note, that in the next release, PE-CC will use the
+in Sec.~\ref{sec:pecc}. Note, that in a future release, PE-CC will use the
 more general and efficient PE library implementation.)
 
 
@@ -211,8 +210,7 @@ EXCLISTS
 9  6  7  8 10
 10 6  7  8  9
 \end{verbatim}
-where the values have been truncated for readability. Note, that the
-input is actually not case-sensitive even though we have used
+Note, that the input is actually not case-sensitive even though we have used
 uppercase letters in the example. In the following we describe the
 contents of each section.\\
 
@@ -262,13 +260,12 @@ attached to each polarizable site that specifies which sites are not allowed
 to polarize it, e.g.\ \verb|1 2 3 4 5| means that site number 1 cannot be
 polarized by sites 2, 3, 4 and 5.\\
 
-\noindent (TODO: add @LJ section...)
 
 \subsection*{PE-CC example}\label{sec:pecc}
 The PE-CC calculations in the current release uses an older implementation and
-therefore requires different input. Note, that in the next release the current
+therefore requires different input. Note, that in a future release the current
 implementation will be replaced with newer code that takes advantage of the
-new PE library. To run a PE-CC calculation an input like the following can be
+PE library. To run a PE-CC calculation an input like the following can be
 used:
 \begin{verbatim}
 **DALTON
