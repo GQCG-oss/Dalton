@@ -891,6 +891,9 @@ C
                GO TO 100
     3          CONTINUE ! .SOPPA
                   SOPPA = .TRUE.
+                  IF (PARCAL) THEN
+                    CALL PARQUIT("SOPPA combined with linear response")
+                  END IF
                   IF (SOPPA .AND. EMBEDDING) THEN
 cjje: change this if full solvent soppa is ever implemented
                     GO TO 24 ! go to .SOPRPA option
