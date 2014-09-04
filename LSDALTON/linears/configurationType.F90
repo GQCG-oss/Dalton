@@ -23,6 +23,9 @@ use decompMod, only: DecompItem
 use lattice_type, only: lvec_list_t
 use davidson_settings, only: RedSpaceItem
 use arhDensity, only: solveritem
+#ifdef PCM_MODULE
+use ls_pcm_config, only: pcmtype
+#endif
 use precision
 
 private
@@ -109,6 +112,10 @@ type ConfigItem
    type(profileinput) :: prof
    !> Memory monitor for MPI calculations
    logical            :: mpi_mem_monitor
+#ifdef PCM_MODULE
+   !> Used to store info about Polarizable Continuum Model calculation
+   type(pcmtype)      :: pcm
+#endif
 #ifdef MOD_UNRELEASED
    !> Used to store info about geometrical Hessian
    type(geoHessianconfig) :: geoHessian

@@ -112,6 +112,11 @@ set(GEOOPT_SOURCES
     LSDALTON/geomopt/q_to_x.F90
     LSDALTON/geomopt/dqdx.cpp           
     )
+set(LSDALTON_PCM_SOURCES	
+    LSDALTON/pcm/ls_pcm_config.F90
+    LSDALTON/pcm/ls_pcm_utils.F90
+    LSDALTON/pcm/ls_pcm_write.F90
+    )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
     LSDALTON/linears/LocTypes.F90
@@ -431,13 +436,6 @@ set(LSINT_SOURCES
     LSDALTON/LSint/lsmpi.F90
     LSDALTON/LSint/II_dft_dftd.F90
     )
-set(LSDALTON_PCM_SOURCES	
-	#LSDALTON/pcm/pcm_integrals.F90
-	#LSDALTON/pcm/pcm_scf.F90
-    LSDALTON/pcm/pcmmod_cfg.F90
-    LSDALTON/pcm/pcm_utils.F90
-    LSDALTON/pcm/pcm_write.F90
-    )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
 # lsutil is split into several bunches
@@ -601,3 +599,8 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSLIB_SOURCES}
     ${ICHORLIB_SOURCES}
  )
+if(ENABLE_PCMSOLVER)
+    set(LSDALTON_FREE_FORTRAN_SOURCES
+        ${LSDALTON_FREE_FORTRAN_SOURCES} 
+        ${LSDALTON_PCM_SOURCES})
+endif()

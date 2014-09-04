@@ -67,6 +67,9 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+#ifdef PCM_MODULE
+use ls_pcm_config, only: pcmtype, ls_pcm_input
+#endif
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
      & config_free, set_final_config_and_print
@@ -737,6 +740,18 @@ DO
       CALL LS_dynamics_input(config%dynamics,readword,word,&
            & lucmd,lupri,config%molecule%NAtoms)
    ENDIF
+!
+
+!
+! Find PCM input section
+!
+#ifdef PCM_MODULE
+   IF (WORD(1:5) .EQ. '**PCM') THEN
+      config%pcm%do_pcm = .TRUE.
+      call ls_pcm_input(config%pcm,readword,word,&
+           & lucmd,lupri)
+   ENDIF
+#endif
 !
    
 #ifdef MOD_UNRELEASED

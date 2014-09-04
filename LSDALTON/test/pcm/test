@@ -13,6 +13,6 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-9)
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['energy.dal'], ['h2o.mol'], {'out': f})
+test.run(['energy.dal'], ['h2o.mol'], {'out': f}, args = 'pcmsolver.pcm')
 
 sys.exit(test.return_code)

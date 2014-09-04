@@ -114,7 +114,7 @@ module pcm_scf
       
       subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
   
-      use pcm_utils, only: getacord
+      use ls_pcm_utils, only: getacord
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -229,8 +229,8 @@ module pcm_scf
 !      charge attraction integrals evaluation subroutines.
 !
       use pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
-      use pcm_write, only: pcm_write_file, pcm_write_file_separate
-      use pcmmod_cfg
+      use ls_pcm_write, only: ls_pcm_write_file, ls_pcm_write_file_separate
+      use ls_pcm_config
 
       real(8), intent(in)    :: density_matrix(*)
       real(8), intent(inout) :: work(*)
@@ -276,7 +276,7 @@ module pcm_scf
          end if
 
 ! Write to file MEP and ASC
-         call pcm_write_file(nr_points, mep, asc)
+         call ls_pcm_write_file(nr_points, mep, asc)
       else
 ! Allocation
          allocate(nuc_pot(nr_points))
@@ -323,7 +323,7 @@ module pcm_scf
         call set_surface_function(nr_points, asc, chgName)
 
 ! Write to file MEP and ASC
-        call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
+        call ls_pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
  
         deallocate(nuc_pot)
         deallocate(nuc_pol_chg)

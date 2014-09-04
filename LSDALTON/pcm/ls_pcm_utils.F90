@@ -1,4 +1,4 @@
-module pcm_utils
+module ls_pcm_utils
 
       use iso_c_binding
 
@@ -167,4 +167,4 @@ module pcm_utils
 
       end subroutine set_point_group
  
-end module pcm_utils
+end module ls_pcm_utils

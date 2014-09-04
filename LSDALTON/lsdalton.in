@@ -37,6 +37,7 @@ paramlist="$*"
 OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
+PCMEXT="pcm"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_lslib_test=0
@@ -57,7 +58,7 @@ opt_noappend=0
 usage (){
       echo
       echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+      echo  "[-N cores] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT} pcm.{.$PCMEXT}"
       echo
       echo 'Options:'
       echo ' -b dir    change directory where basis sets are searched for to dir'
@@ -180,6 +181,19 @@ else
    fi
 fi
 #
+#  Added option for including a pcmsolver.pcm file for PCM calculations
+is_pcm=false
+if [ -n "$3" ]; then
+   filename=`echo $3`
+#  remove .pcm, if added by user
+   pcmfil=`echo $3 | sed "s/\.$PCMEXT//"`                                           
+   if [ "$pcmfil" = "$molfil" ] && [ "$pcmfil" = "$dalfil" ]; then
+      outnam=$pcmfil
+   else
+      outnam=${dalfil}_${molfil}_${pcmfil}
+   fi
+fi
+#
 export DALTON_TMPDIR
 
 if [ $opt_noappend -eq 1 ]; then
@@ -196,6 +210,9 @@ echo "   ******************************************* "
 echo; echo "   Invocation: $0 $paramlist"
 echo; echo "   `date`"
 echo;
+if [ "$is_pcm" = true ]; then
+echo "   Calculation: $outnam  (input files: $dalfil, $molfil and $pcmfil)"
+fi
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
@@ -226,6 +243,15 @@ if [ -d "$DALTON_SCRATCH" -a -w "$DALTON_SCRATCH" ]; then
       echo "$WRKDIR/$molfil.$MOLEXT does not exist or is not readable"
       echo "===> assuming single-input file calculation."
       cp $WRKDIR/$dalfil.$DALEXT MOLECULE.INP
+   fi
+   if [ "x$pcmfil" != "x" ]; then 
+     if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
+        cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+	python $PCMSOLVER_PARSE_DALTON
+     else
+        echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
+        ierr=1
+     fi
    fi
    if [ $optdens -eq 1 ] ; then
       echo "copy $WRKDIR/$molfil.dens.restart"
@@ -335,6 +361,7 @@ if [ $lsdalton_exitcode -ne 0 ] ; then
 fi
 
 filelist="LSDALTON.ERR SIRIUS.RST RESULTS.RSP RSPVEC SIRIFC DALTON.NCA UNIT1 UNIT2 DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.PHS DALTON.PHS DALTON.WLK molden.inp dens.restart fock.restart lcm_orbitals.u runopt.history"
+filelist="cavity.off PEDRA.OUT $filelist"
 
 for i in $filelist ; do
    if [ -s $i -a -r $i ] ; then

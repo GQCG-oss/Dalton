@@ -28,8 +28,8 @@
              
          subroutine get_nuclear_mep(nr_points, nr_points_irr, centers, mep)
 
-         use pcm_utils, only: getacord
-         use pcmmod_cfg, only: pcmmod_separate
+         use ls_pcm_utils, only: getacord
+         use ls_pcm_config, only: pcmmod_separate
                                                           
 #include "mxcent.h"
 #include "maxorb.h"
@@ -134,7 +134,7 @@
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
 !                           
-         use pcmmod_cfg                                     
+         use ls_pcm_config                                     
          
          integer, intent(in)  :: nr_points 
          integer, intent(in)  :: nr_points_irr                   
