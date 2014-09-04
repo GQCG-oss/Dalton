@@ -22,15 +22,15 @@ f.add(string = 'Final MCSCF',
 f.add(from_string = 'Dipole moment',
       num_lines = 5,
       mask = [1],
-      rel_tolerance = 1.0e-4)
+      rel_tolerance = 1.0e-5)
 
 # nuc
 f.add(string = 'Nuclear repulsion energy',
       rel_tolerance = 1.0e-10)
 
 # tes
-f.add(string = 'Total number of tesserae',
-      rel_tolerance = 1.0e-1)
+#f.add(string = 'Total number of tesserae',
+#      rel_tolerance = 1.0e-1)
 
 # sym
 f.add(string = 'Point group',
@@ -40,7 +40,7 @@ f.add(string = 'Point group',
 f.add(string = 'Center-of-mass',
       rel_tolerance = 1.0e-5)
 
-test.run(['mcscf.dal'], ['H2O_6-311Gs_sym.mol'], {'out': f},
+test.run(['pcm_mcscf_nomp2.dal'], ['H2O_6-311Gs_sym.mol'], {'out': f},
          accepted_errors=['not implemented for parallel calculations.'])
 
 sys.exit(test.return_code)
