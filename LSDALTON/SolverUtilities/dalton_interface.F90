@@ -2355,9 +2355,15 @@ ENDIF
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
         ENDIF
+
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
+#ifdef MOD_UNRELEASED
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
+#else
+            write(lupri,'(3X,A)') 'Warning: the linear-response part of the code does not apply ADMM for exchange'
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+#endif
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
