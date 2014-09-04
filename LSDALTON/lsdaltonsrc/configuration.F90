@@ -68,7 +68,7 @@ use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 #ifdef PCM_MODULE
-use ls_pcm_config, only: pcmtype, ls_pcm_input
+use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
 #endif
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
@@ -129,6 +129,10 @@ implicit none
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
   call LS_dynamics_init(config%dynamics)
+#ifdef PCM_MODULE
+  ! Polarizable Continuum Model
+  call ls_pcm_init(config%pcm)
+#endif
   !Only for testing new sparse matrix library, should be removed afterwards!
   config%sparsetest = .false.
   config%mpi_mem_monitor = .false.
@@ -747,7 +751,7 @@ DO
 !
 #ifdef PCM_MODULE
    IF (WORD(1:5) .EQ. '**PCM') THEN
-      config%pcm%do_pcm = .TRUE.
+      config%pcm%do_pcm = .true.
       call ls_pcm_input(config%pcm,readword,word,&
            & lucmd,lupri)
    ENDIF

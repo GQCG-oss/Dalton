@@ -5,7 +5,7 @@ module ls_pcm_config
   private
 
   public :: pcmtype
-  public :: LS_pcm_input
+  public :: LS_pcm_init, LS_pcm_input
 
   type pcmtype
        logical :: do_pcm
@@ -20,6 +20,19 @@ module ls_pcm_config
   integer                  :: global_print_unit = -1
 
 contains
+
+subroutine LS_pcm_init(pcm_input)
+  type(pcmtype)           :: pcm_input
+!
+! Initialization
+!
+  ! Polarizable continuum model calculation is turned off by default
+  pcm_input%do_pcm = .false.
+  ! Use of separate charges and potentials is turned off by default 
+  pcm_input%separate = .false.
+  ! Print level is set to 0 by default
+  pcm_input%print_level = 0
+end subroutine LS_pcm_init
 
 Subroutine LS_pcm_input(pcm_input, ReadWord, keyword, lucmd, lupri)
 !
@@ -89,11 +102,14 @@ subroutine report_after_pcm_input(print_unit, pcm_cfg)
 !
 ! A subroutine to print the relevant settings of both LSDALTON and PCMSolver.
 !
+   use ls_pcm_write, only: init_host_writer
    integer, optional, intent(in) :: print_unit
    type(pcmtype), intent(in)     :: pcm_cfg
 
    if (present(print_unit)) then
            global_print_unit = print_unit
+           ! Initialize host writer
+           call init_host_writer(global_print_unit)
            write(global_print_unit, *) ' ===== Polarizable Continuum Model calculation set-up ====='
            write(global_print_unit, *) '* Polarizable Continuum Model using PCMSolver external module:'                              
            write(global_print_unit, *) '  1: Converged potentials and charges at tesserae representative points written on file.'

@@ -18,7 +18,7 @@ subroutine init_host_writer(print_unit)
    if (global_print_unit .eq. -1) then
      global_print_unit = print_unit
    else
-     ! Should print an error message...      
+     write(*, *) "Printing to stdout"
    end if
 
 end subroutine init_host_writer                
@@ -34,8 +34,8 @@ subroutine host_writer(message, message_length) bind(c, name='host_writer')
      write(*, '(1000A)') message
    else
      write(global_print_unit, '(1000A)') message
+     flush(global_print_unit)
    end if
-   flush(global_print_unit)
 
 end subroutine host_writer
    
