@@ -12,6 +12,14 @@
 .HF
 !.DFT                                              
 ! CAMB3LYP                                         
+*SCF INPUT
+.AUTOCCUPATION
+.THRESHOLD
+ 3.D-10
+.MAX DIIS ITERATIONS
+ 200
+.MAX ERROR VECTORS
+ 100
 **RESPONSE INPUT                                  
 *ABSORP                                           
 .NSCD                                              
