@@ -77,18 +77,17 @@ at PE-HF and PE-DFT levels of theory for closed- and open-shell systems,
 and at PE-SOPPA, PE-MCSCF, PE-CC2 and PE-CCSD levels for closed-shell systems.
 Furthermore, the PE library has been coupled with the complex polarization
 propagator (CPP) module to allow damped linear response properties at
-PE-HF and PE-DFT levels of theory for closed- and open-shell systems. Triplet
-linear response and singlet quadratic and cubic response properties are available
-at the PE-HF and PE-DFT levels for closed-shell systems only. Magnetic linear
-response properties using London atomic orbitals (LAOs) are also available.
-In the PE-MP2/SOPPA models, the environment response is
-taken into account at the HF/RPA level (see Ref.~\cite{pesoppa} for details).
-Note, that the current implementation does not support point-group symmetry
-or analytical molecular gradients and Hessians.
-Furthermore, PE-CC uses
-an older implementation with different input format which is briefly described
-in Sec.~\ref{sec:pecc}. Note, that in a future release, PE-CC will use the
-more general and efficient PE library implementation.)
+PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
+Triplet linear response and singlet quadratic and cubic response properties are
+available at the PE-HF and PE-DFT levels for closed-shell systems
+only~\cite{pemodel}. Magnetic linear response properties using London atomic
+orbitals (LAOs) are also available~\cite{pelao}. In the PE-MP2/SOPPA models, the
+environment response is taken into account at the HF/RPA level
+(see Ref.~\cite{pesoppa} for details). Note, that the current implementation
+does not support point-group symmetry or analytical molecular gradients and Hessians.
+Furthermore, PE-CC uses an older implementation with different input format which
+is briefly described in Sec.~\ref{sec:pecc}. Note, that in a future release, PE-CC
+will use the more general and efficient PE library implementation.)
 
 
 \section{Input description}
