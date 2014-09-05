@@ -89,10 +89,7 @@ C
       CALL QENTER('HSOCTL')
 C
       IF (SOPPA) CALL QUIT('HSOCTL: SOPPA not implemented yet!')
-      write (lupri,*) 'Hello from HSOCTL',
-     & IPRHSO,IPRRSP,IPRPP,IPRLR,IPRESR
       IPRHSO = MAX(IPRHSO,IPRRSP,IPRPP,IPRLR,IPRESR)
-      write (lupri,*) 'Final IPRHSO:',IPRHSO
       KSYMSO=KSYMOP
       CALL DZERO(GP,KZYVAR)
       HSOFAC=ALPHAC**2/4
