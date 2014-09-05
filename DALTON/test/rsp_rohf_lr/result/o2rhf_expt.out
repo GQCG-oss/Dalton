@@ -1,0 +1,1837 @@
+
+
+ **************************************************************************************
+ ******************** DALTON2011 - An electronic structure program ********************
+ **************************************************************************************
+
+    This is output from DALTON Release 2011 (Rev. 0, Mar. 2011)
+
+ --------------------------------------------------------------------------------
+
+    NOTE:
+     
+    This is an experimental code for the evaluation of molecular
+    properties using (MC)SCF, DFT, CI, and CC wave functions.
+    The authors accept no responsibility for the performance of
+    the code or for the correctness of the results.
+     
+    The code (in whole or part) is provided under a licence and
+    is not to be reproduced for further distribution without
+    the written permission of the authors or their representatives.
+     
+    See the home page "http://daltonprogram.org" for further information.
+     
+    If results obtained with this code are published,
+    an appropriate citation would be:
+     
+    "Dalton, a molecular electronic structure program,
+    Release DALTON2011 (2011), see http://daltonprogram.org"
+
+ --------------------------------------------------------------------------------
+
+    Authors in alphabetical order (major contribution(s) in parenthesis):
+
+  Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
+  Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
+  Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
+  Ove Christiansen,         Aarhus University,            Denmark     (CC module)
+  Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
+  Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Paal Dahle,               University of Oslo,           Norway      (Parallelization)
+  Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
+  Thomas Enevoldsen,        SDU - Odense University,      Denmark     (SOPPA)
+  Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
+  Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
+  Luca Frediani,            University of Tromsoe,        Norway      (PCM)
+  Christof Haettig,         Ruhr University Bochum,       Germany     (CC module)
+  Kasper Hald,              Aarhus University,            Denmark     (CC module)
+  Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
+  Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
+  Hinne Hettema,            University of Auckland,       New Zealand (quadratic response in RESPONS; SIRIUS supersymmetry)
+  Brano Jansik              University of Aarhus          Denmark     (DFT cubic response)
+  Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
+  Dan Jonsson,              University of Tromsoe,        Norway      (cubic response in RESPONS module)
+  Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Sheela Kirpekar,          SDU - Odense University,      Denmark     (Mass-velocity & Darwin integrals)
+  Wim Klopper,              University of Karlsruhe,      Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
+  Stefan Knecht,            Univ. of Southern Denmark,    Denmark     (Parallel CI)
+  Rika Kobayashi,           ANU Supercomputer Facility,   Australia   (DIIS in CC, London in MCSCF)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (QM/MM code)
+  Henrik Koch,              University of Trondheim,      Norway      (CC module, Cholesky decomposition)
+  Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
+  Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM code)
+  Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
+  Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
+  Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
+  Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
+  Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
+  Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
+  Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
+  Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
+  Kenneth Ruud,             University of Tromsoe,        Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
+  Claire C.M. Samson        University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
+  Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
+  Trond Saue,               CNRS/ULP Toulouse,            France      (direct Fock matrix construction)
+  Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
+  Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
+  Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
+  K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
+  Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
+  David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
+  Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
+
+ --------------------------------------------------------------------------------
+
+
+     Date and time (Linux)  : Tue Aug 26 07:14:56 2014
+     Host name              : fish                                    
+
+ * Work memory size             :   100000000 =  762.94 megabytes.
+
+ * Directories for basis set searches:
+   1) /mnt/mermaid/users/rinkevic/dalton-2011/trunk
+   2) /mnt/mermaid/users/rinkevic/dalton-2011/trunk/basis/
+
+
+       *******************************************************************
+       *********** Output from DALTON general input processing ***********
+       *******************************************************************
+
+ --------------------------------------------------------------------------------
+   Overall default print level:    0
+   Print level for DALTON.ERR :    1
+
+    AO-direct calculation (in sections where implemented)
+    HERMIT 1- and 2-electron integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed (SIRIUS module)
+    Dynamic molecular response properties section will be executed (RESPONSE module)
+ --------------------------------------------------------------------------------
+
+
+   ****************************************************************************
+   *************** Output of molecule and basis set information ***************
+   ****************************************************************************
+
+
+    The two title cards from your ".mol" input:
+    ------------------------------------------------------------------------
+ 1: O2 for Nanodimaond with N-V centre test                                 
+ 2: Huber and Herzberg r_e                                                  
+    ------------------------------------------------------------------------
+
+  Atomic type no.    1
+  --------------------
+  Nuclear charge:   8.00000
+  Number of symmetry independent centers:    1
+  Number of basis sets to read;    2
+  Used basis set file for basis set for elements with Z =   8 :
+     "/mnt/mermaid/users/rinkevic/dalton-2011/trunk/basis/cc-pVDZ"
+
+
+                         SYMGRP: Point group information
+                         -------------------------------
+
+Point group: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O01 _1     15.994915
+                           O01 _2     15.994915
+
+                       Total mass:    31.989830 amu
+                       Natural abundance:  99.521 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    2
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim   cont     basis
+  ----------------------------------------------------------------------
+  O0          2    8.0000    26    14      [9s4p1d|3s2p1d]                                    
+  ----------------------------------------------------------------------
+  total:      2   16.0000    52    28
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates (a.u.)
+  ----------------------------
+
+  Total number of coordinates:    6
+  O01 / 1 :     1  x   0.0000000000    2  y   0.0000000000    3  z   1.1409000000
+  O01 / 2 :     4  x   0.0000000000    5  y   0.0000000000    6  z  -1.1409000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     1    1    1    0    1    1    1    0
+
+  Symmetry  Ag  ( 1)
+
+    1   O01   z    [  3  -    6 ]/2
+
+  Symmetry  B3u ( 2)
+
+    2   O01   x    [  1  +    4 ]/2
+
+  Symmetry  B2u ( 3)
+
+    3   O01   y    [  2  +    5 ]/2
+
+  Symmetry  B1u ( 5)
+
+    4   O01   z    [  3  +    6 ]/2
+
+  Symmetry  B2g ( 6)
+
+    5   O01   x    [  1  -    4 ]/2
+
+  Symmetry  B3g ( 7)
+
+    6   O01   y    [  2  -    5 ]/2
+
+
+   Interatomic separations (in Angstrom):
+   --------------------------------------
+
+            O01 _1      O01 _2
+            ------      ------
+ O01 _1:    0.000000
+ O01 _2:    1.207477    0.000000
+
+
+  Max interatomic separation is    1.2075 Angstrom (    2.2818 Bohr)
+  between atoms    2 and    1, "O01 _2" and "O01 _1".
+
+
+  Bond distances (Angstrom):
+  --------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O01 _2     O01 _1       1.207477
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA       0.000000          0.000000    0.000000    1.000000
+   IB      11.660290          0.000000    1.000000    0.000000
+   IC      11.660290          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =        43341.89 MHz     (    1.445730 cm-1)
+
+
+@  Nuclear repulsion energy :   28.048032255237
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           7    3    3    1    7    3    3    1
+
+
+  Symmetry  Ag ( 1)
+
+    1     O01      1s         1 +    2
+    2     O01      1s         3 +    4
+    3     O01      1s         5 +    6
+    4     O01      2pz       11 -   12
+    5     O01      2pz       17 -   18
+    6     O01      3d0       23 +   24
+    7     O01      3d2+      27 +   28
+
+
+  Symmetry  B3u( 2)
+
+    8     O01      2px        7 +    8
+    9     O01      2px       13 +   14
+   10     O01      3d1+      25 -   26
+
+
+  Symmetry  B2u( 3)
+
+   11     O01      2py        9 +   10
+   12     O01      2py       15 +   16
+   13     O01      3d1-      21 -   22
+
+
+  Symmetry  B1g( 4)
+
+   14     O01      3d2-      19 +   20
+
+
+  Symmetry  B1u( 5)
+
+   15     O01      1s         1 -    2
+   16     O01      1s         3 -    4
+   17     O01      1s         5 -    6
+   18     O01      2pz       11 +   12
+   19     O01      2pz       17 +   18
+   20     O01      3d0       23 -   24
+   21     O01      3d2+      27 -   28
+
+
+  Symmetry  B2g( 6)
+
+   22     O01      2px        7 -    8
+   23     O01      2px       13 -   14
+   24     O01      3d1+      25 +   26
+
+
+  Symmetry  B3g( 7)
+
+   25     O01      2py        9 -   10
+   26     O01      2py       15 -   16
+   27     O01      3d1-      21 +   22
+
+
+  Symmetry  Au ( 8)
+
+   28     O01      3d2-      19 -   20
+
+  Symmetries of electric field:  B3u(2)  B2u(3)  B1u(5)
+
+  Symmetries of magnetic field:  B3g(7)  B2g(6)  B1g(4)
+
+
+                     .---------------------------------------.
+                     | Starting in Integral Section (HERMIT) |
+                     `---------------------------------------'
+
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+     ************************************************************************
+     ************************** Output from HERINT **************************
+     ************************************************************************
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.00 seconds
+
+
+                        .----------------------------------.
+                        | End of Integral Section (HERMIT) |
+                        `----------------------------------'
+
+
+
+                   .--------------------------------------------.
+                   | Starting in Wave Function Section (SIRIUS) |
+                   `--------------------------------------------'
+
+
+ *** Output from Huckel module :
+
+     Using EWMO model:          F
+     Using EHT  model:          T
+     Number of Huckel orbitals each symmetry:    3    1    1    0    3    1    1    0
+
+ Huckel EHT eigenvalues for symmetry :  1
+          -20.692795      -1.610356      -0.632983
+
+ Huckel EHT eigenvalues for symmetry :  2
+           -0.728500
+
+ Huckel EHT eigenvalues for symmetry :  3
+           -0.728500
+
+ Huckel EHT eigenvalues for symmetry :  5
+          -20.693758      -1.090288      -0.374820
+
+ Huckel EHT eigenvalues for symmetry :  6
+           -0.503900
+
+ Huckel EHT eigenvalues for symmetry :  7
+           -0.503900
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug 26 07:14:56 2014
+     Host name              : fish                                    
+
+ Title lines from ".mol" input file:
+     O2 for Nanodimaond with N-V centre test                                 
+     Huber and Herzberg r_e                                                  
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, high spin open shell Hartree-Fock calculation.
+
+     Time-dependent Hartree-Fock calculation (random phase approximation).
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART EHT   " input option.
+
+     Wave function specification
+     ============================
+     For the wave function of type :      >>> HF       <<<
+     Number of closed shell electrons         14
+     Number of electrons in active shells      2
+     Total charge of the molecule              0
+
+     Spin multiplicity                         3
+     Total number of symmetries                8
+     Reference state symmetry                  4
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species          All |    1    2    3    4    5    6    7    8
+                                       --- |  ---  ---  ---  ---  ---  ---  ---  ---
+     Occupied SCF orbitals               7 |    3    1    1    0    2    0    0    0
+     Open shell SCF orbitals             2 |    0    0    0    0    0    1    1    0
+     Secondary orbitals                 19 |    4    2    2    1    5    2    2    1
+     Total number of orbitals           28 |    7    3    3    1    7    3    3    1
+     Number of basis functions          28 |    7    3    3    1    7    3    3    1
+
+     Optimization information
+     ========================
+     Number of configurations                 1
+     Number of orbital rotations             30
+     ------------------------------------------
+     Total number of variables               31
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     60
+     Threshold for SCF convergence     1.00D-05
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ SRDIIS test output of SAO:
+
+     *** Block  1 ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1       1.99982179
+       2       0.05341583     2.59792035
+       3       0.46868255     2.61340513     2.91043560
+       4      -0.11207834    -0.75096673    -0.81017200     2.53232816
+       5      -0.20896060    -1.10595921    -1.18177542     2.08753179
+       6       0.04847013     0.31738461     0.24256143    -0.35844958
+
+               Column   5     Column   6     Column   7
+       5       2.42329624
+       6      -0.05968353     2.49964257
+       7       0.00000000     0.00000000     2.09146764
+
+     *** Block  2 ***
+
+               Column   1     Column   2     Column   3
+       1       2.44432351
+       2       2.27520662     2.97673211
+       3      -0.28709650    -0.31679951     2.47287257
+
+     *** Block  3 ***
+
+               Column   1     Column   2     Column   3
+       1       2.44432351
+       2       2.27520662     2.97673211
+       3      -0.28709650    -0.31679951     2.47287257
+
+     *** Block  4 ***
+
+               Column   1
+       1       2.09146764
+
+     *** Block  5 ***
+
+               Column   1     Column   2     Column   3     Column   4
+       1       2.00017821
+       2      -0.05341128     1.40207965
+       3       0.29890226     1.11988975     1.08956440
+       4       0.11207834     0.75096673     0.81017200     1.46767184
+       5       0.20896060     1.10595921     1.18177542     1.13072332
+       6      -0.04847013    -0.31738461    -0.24256143     0.35844958
+
+               Column   5     Column   6     Column   7
+       5       1.57670376
+       6       0.05968353     1.50035743
+       7       0.00000000     0.00000000     1.90853236
+
+     *** Block  6 ***
+
+               Column   1     Column   2     Column   3
+       1       1.55567649
+       2       0.94304849     1.02326789
+       3       0.28709650     0.31679951     1.52712743
+
+     *** Block  7 ***
+
+               Column   1     Column   2     Column   3
+       1       1.55567649
+       2       0.94304849     1.02326789
+       3       0.28709650     0.31679951     1.52712743
+
+     *** Block  8 ***
+
+               Column   1
+       1       1.90853236
+
+ Iter      Total energy        Error norm    Delta(E)  DIIS dim.
+ -----------------------------------------------------------------------------
+   1  Screening settings (-IFTHRS, DIFDEN)   -6    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.04802276   -0.60575433    5.75796753   -1.48243041   -2.59920555
+       2     -0.60575433   23.32665262   21.99965137   -8.29179026  -10.95902077
+       3      5.75796753   21.99965137   23.70522380   -8.77890067  -11.61768017
+       4     -1.48243041   -8.29179026   -8.77890067   24.18279094   17.63688094
+       5     -2.59920555  -10.95902077  -11.61768017   17.63688094   18.66556128
+       6      0.59251253    3.92247738    3.24382783   -5.44972359   -2.32097540
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.59251253    0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.92247738    0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.24382783   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.44972359   -0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.32097540    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.02155088    0.00000000    0.00000000    0.00000000    0.00000000
+       7      0.00000000   19.34949493    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.36155628   16.71145017   -3.56514241
+       9      0.00000000    0.00000000   16.71145017   19.88907633   -3.63525732
+      10      0.00000000    0.00000000   -3.56514241   -3.63525732   23.72699372
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.36155628   16.71145017   -3.56514241    0.00000000    0.00000000
+      12     16.71145017   19.88907633   -3.63525732    0.00000000    0.00000000
+      13     -3.56514241   -3.63525732   23.72699372    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.34949493    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.05502913
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.89022434
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.68984494
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23632349
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.54139137
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56639536
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.89022434    3.68984494    1.23632349    2.54139137   -0.56639536
+      16     12.81827958    9.08729854    5.24378632    8.24732268   -3.01986996
+      17      9.08729854    8.34025007    5.61602945    8.28025078   -2.29443019
+      18      5.24378632    5.61602945   13.28077913    7.66168173    2.97857806
+      19      8.24732268    8.28025078    7.66168173   10.08220962    0.16998773
+      20     -3.01986996   -2.29443019    2.97857806    0.16998773   13.55473168
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.66925503    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.68401064    7.01051032    1.75918150    0.00000000
+      23      0.00000000    7.01051032    6.52016970    2.17151500    0.00000000
+      24      0.00000000    1.75918150    2.17151500   14.24281825    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.68401064
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.01051032
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.75918150
+
+              Column  26    Column  27    Column  28
+      25      7.01051032    1.75918150    0.00000000
+      26      6.52016970    2.17151500    0.00000000
+      27      2.17151500   14.24281825    0.00000000
+      28      0.00000000    0.00000000   17.66925503
+   1    -149.390642224        2.48090D+00   -1.49D+02    1
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   2  Screening settings (-IFTHRS, DIFDEN)   -6    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.55997548   -0.61334827    5.86232913   -1.53502320   -2.64702439
+       2     -0.61334827   23.66951924   22.33492092   -8.55349670  -11.23048028
+       3      5.86232913   22.33492092   24.07532103   -9.07624987  -11.93358881
+       4     -1.53502320   -8.55349670   -9.07624987   24.64031102   18.00717793
+       5     -2.64702439  -11.23048028  -11.93358881   18.00717793   19.02203773
+       6      0.60632585    4.00734458    3.32464535   -5.61895916   -2.42325226
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60632585   -0.00000000    0.00000000    0.00000000    0.00000000
+       2      4.00734458   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.32464535   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.61895916    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.42325226    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.42646631   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.60847301    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.65113870   16.93943323   -3.68529328
+       9      0.00000000    0.00000000   16.93943323   20.14277631   -3.74304610
+      10      0.00000000    0.00000000   -3.68529328   -3.74304610   24.09145277
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.65113870   16.93943323   -3.68529328    0.00000000    0.00000000
+      12     16.93943323   20.14277631   -3.74304610    0.00000000    0.00000000
+      13     -3.68529328   -3.74304610   24.09145277    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.60847301    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.56641553
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.92584039
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.75356929
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23795600
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.58703966
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56881534
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.92584039    3.75356929    1.23795600    2.58703966   -0.56881534
+      16     12.92703850    9.15390528    5.26390556    8.30792184   -3.03980942
+      17      9.15390528    8.40317609    5.65468955    8.33944135   -2.31326899
+      18      5.26390556    5.65468955   13.47626634    7.73045788    2.98193845
+      19      8.30792184    8.33944135    7.73045788   10.14480480    0.16651818
+      20     -3.03980942   -2.31326899    2.98193845    0.16651818   13.66047686
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.89140260    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.87139693    7.07533164    1.70671801    0.00000000
+      23      0.00000000    7.07533164    6.55890728    2.16131532    0.00000000
+      24      0.00000000    1.70671801    2.16131532   14.40404285    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.87139693
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.07533164
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70671801
+
+              Column  26    Column  27    Column  28
+      25      7.07533164    1.70671801    0.00000000
+      26      6.55890728    2.16131532    0.00000000
+      27      2.16131532   14.40404285    0.00000000
+      28      0.00000000    0.00000000   17.89140260
+   2    -149.597082518        4.35188D-01   -2.06D-01    2
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   3  Screening settings (-IFTHRS, DIFDEN)   -7    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.35987683   -0.60809920    5.82365235   -1.52330730   -2.62926290
+       2     -0.60809920   23.54953348   22.22493812   -8.48233059  -11.15927058
+       3      5.82365235   22.22493812   23.95949929   -9.00805201  -11.86047053
+       4     -1.52330730   -8.48233059   -9.00805201   24.50636915   17.91171405
+       5     -2.62926290  -11.15927058  -11.86047053   17.91171405   18.93499300
+       6      0.60197825    3.97524231    3.29709009   -5.56837802   -2.39220206
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60197825    0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.97524231   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.29709009   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.56837802    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39220206    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.29855820   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.52293433    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.55523230   16.86719222   -3.66479395
+       9      0.00000000    0.00000000   16.86719222   20.06519981   -3.72299464
+      10      0.00000000    0.00000000   -3.66479395   -3.72299464   23.98072621
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.55523230   16.86719222   -3.66479395    0.00000000    0.00000000
+      12     16.86719222   20.06519981   -3.72299464    0.00000000    0.00000000
+      13     -3.66479395   -3.72299464   23.98072621    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.52293433    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.36628680
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91179704
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.72888972
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23140100
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57019416
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56568484
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91179704    3.72888972    1.23140100    2.57019416   -0.56568484
+      16     12.86876618    9.11595975    5.25390890    8.27655714   -3.02243603
+      17      9.11595975    8.36950502    5.63963997    8.31017027   -2.29934603
+      18      5.25390890    5.63963997   13.41980456    7.70900972    2.97705920
+      19      8.27655714    8.31017027    7.70900972   10.11629464    0.17250067
+      20     -3.02243603   -2.29934603    2.97705920    0.17250067   13.60946426
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.81498559    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.80736241    7.04635060    1.70310715    0.00000000
+      23      0.00000000    7.04635060    6.53733830    2.15366796    0.00000000
+      24      0.00000000    1.70310715    2.15366796   14.34252015    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.80736241
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.04635060
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70310715
+
+              Column  26    Column  27    Column  28
+      25      7.04635060    1.70310715    0.00000000
+      26      6.53733830    2.15366796    0.00000000
+      27      2.15366796   14.34252015    0.00000000
+      28      0.00000000    0.00000000   17.81498559
+   3    -149.607372158        1.12397D-01   -1.03D-02    3
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   4  Screening settings (-IFTHRS, DIFDEN)   -8    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.40711565   -0.60904586    5.83303260   -1.52675197   -2.63361302
+       2     -0.60904586   23.57463402   22.24906897   -8.49505902  -11.17434604
+       3      5.83303260   22.24906897   23.98619469   -9.02310065  -11.87793884
+       4     -1.52675197   -8.49505902   -9.02310065   24.53816145   17.93592727
+       5     -2.63361302  -11.17434604  -11.87793884   17.93592727   18.95807535
+       6      0.60299911    3.98133056    3.30311808   -5.57710548   -2.39803834
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60299911   -0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.98133056   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.30311808   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.57710548    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39803834    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.32591360   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.54188864    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.57666492   16.88340782   -3.67276958
+       9      0.00000000    0.00000000   16.88340782   20.08274346   -3.73068973
+      10      0.00000000    0.00000000   -3.67276958   -3.73068973   24.00686285
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.57666492   16.88340782   -3.67276958    0.00000000    0.00000000
+      12     16.88340782   20.08274346   -3.73068973    0.00000000    0.00000000
+      13     -3.67276958   -3.73068973   24.00686285    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.54188864    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.41355917
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91484309
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.73484373
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23224248
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57423074
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56650342
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91484309    3.73484373    1.23224248    2.57423074   -0.56650342
+      16     12.87944815    9.12322332    5.25950011    8.28385482   -3.02343099
+      17      9.12322332    8.37656893    5.64564942    8.31740804   -2.30029331
+      18      5.25950011    5.64564942   13.43701634    7.71730423    2.97943809
+      19      8.28385482    8.31740804    7.71730423   10.12456485    0.17318031
+      20     -3.02343099   -2.30029331    2.97943809    0.17318031   13.62053343
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.83190258    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.82179637    7.05186091    1.70222866    0.00000000
+      23      0.00000000    7.05186091    6.54113824    2.15442824    0.00000000
+      24      0.00000000    1.70222866    2.15442824   14.35587863    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.82179637
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.05186091
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70222866
+
+              Column  26    Column  27    Column  28
+      25      7.05186091    1.70222866    0.00000000
+      26      6.54113824    2.15442824    0.00000000
+      27      2.15442824   14.35587863    0.00000000
+      28      0.00000000    0.00000000   17.83190258
+   4    -149.608056935        2.01704D-02   -6.85D-04    4
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   5  Screening settings (-IFTHRS, DIFDEN)   -8    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.40113173   -0.60876532    5.83198567   -1.52674057   -2.63317694
+       2     -0.60876532   23.57122147   22.24613209   -8.49349758  -11.17289264
+       3      5.83198567   22.24613209   23.98325063   -9.02204970  -11.87678833
+       4     -1.52674057   -8.49349758   -9.02204970   24.53545104   17.93433582
+       5     -2.63317694  -11.17289264  -11.87678833   17.93433582   18.95667061
+       6      0.60289167    3.98082663    3.30282162   -5.57608001   -2.39755189
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60289167   -0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.98082663   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.30282162   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.57608001    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39755189    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.32246448   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.53962536    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.57415005   16.88153466   -3.67337382
+       9      0.00000000    0.00000000   16.88153466   20.08073860   -3.73108208
+      10      0.00000000    0.00000000   -3.67337382   -3.73108208   24.00433226
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.57415005   16.88153466   -3.67337382    0.00000000    0.00000000
+      12     16.88153466   20.08073860   -3.73108208    0.00000000    0.00000000
+      13     -3.67337382   -3.73108208   24.00433226    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.53962536    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.40757720
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91435359
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.73413831
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23175451
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57373832
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56643423
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91435359    3.73413831    1.23175451    2.57373832   -0.56643423
+      16     12.87701936    9.12165291    5.25962017    8.28270722   -3.02235211
+      17      9.12165291    8.37527843    5.64554713    8.31639418   -2.29949430
+      18      5.25962017    5.64554713   13.43625909    7.71715024    2.97924375
+      19      8.28270722    8.31639418    7.71715024   10.12366779    0.17364119
+      20     -3.02235211   -2.29949430    2.97924375    0.17364119   13.61850007
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.82977414    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.81986839    7.05088279    1.70162729    0.00000000
+      23      0.00000000    7.05088279    6.54037194    2.15396328    0.00000000
+      24      0.00000000    1.70162729    2.15396328   14.35389638    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.81986839
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.05088279
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70162729
+
+              Column  26    Column  27    Column  28
+      25      7.05088279    1.70162729    0.00000000
+      26      6.54037194    2.15396328    0.00000000
+      27      2.15396328   14.35389638    0.00000000
+      28      0.00000000    0.00000000   17.82977414
+   5    -149.608088500        2.78835D-03   -3.16D-05    5
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   6  Screening settings (-IFTHRS, DIFDEN)   -9    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.40139293   -0.60875539    5.83205042   -1.52678583   -2.63320876
+       2     -0.60875539   23.57128454   22.24620961   -8.49347067  -11.17292147
+       3      5.83205042   22.24620961   23.98335765   -9.02207144  -11.87685270
+       4     -1.52678583   -8.49347067   -9.02207144   24.53567399   17.93448201
+       5     -2.63320876  -11.17292147  -11.87685270   17.93448201   18.95679481
+       6      0.60290158    3.98091152    3.30291145   -5.57613710   -2.39760658
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60290158    0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.98091152    0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.30291145   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.57613710    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39760658    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.32258060   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.53972330    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.57424813   16.88160140   -3.67357030
+       9      0.00000000    0.00000000   16.88160140   20.08080693   -3.73124610
+      10      0.00000000    0.00000000   -3.67357030   -3.73124610   24.00450911
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.57424813   16.88160140   -3.67357030    0.00000000    0.00000000
+      12     16.88160140   20.08080693   -3.73124610    0.00000000    0.00000000
+      13     -3.67357030   -3.73124610   24.00450911    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.53972330    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.40783918
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91436224
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.73417516
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23173465
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57376237
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56644107
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91436224    3.73417516    1.23173465    2.57376237   -0.56644107
+      16     12.87694416    9.12161895    5.25979206    8.28272540   -3.02224151
+      17      9.12161895    8.37528062    5.64569577    8.31643464   -2.29941531
+      18      5.25979206    5.64569577   13.43654723    7.71733256    2.97928482
+      19      8.28272540    8.31643464    7.71733256   10.12374589    0.17371565
+      20     -3.02224151   -2.29941531    2.97928482    0.17371565   13.61850234
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.82985728    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.81990201    7.05089295    1.70159316    0.00000000
+      23      0.00000000    7.05089295    6.54038448    2.15395307    0.00000000
+      24      0.00000000    1.70159316    2.15395307   14.35393371    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.81990201
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.05089295
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70159316
+
+              Column  26    Column  27    Column  28
+      25      7.05089295    1.70159316    0.00000000
+      26      6.54038448    2.15395307    0.00000000
+      27      2.15395307   14.35393371    0.00000000
+      28      0.00000000    0.00000000   17.82985728
+   6    -149.608089026        3.54064D-04   -5.26D-07    6
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   7  Screening settings (-IFTHRS, DIFDEN)  -10    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.40132721   -0.60875075    5.83204012   -1.52678582   -2.63320413
+       2     -0.60875075   23.57124762   22.24617640   -8.49345193  -11.17290320
+       3      5.83204012   22.24617640   23.98332296   -9.02205001  -11.87683233
+       4     -1.52678582   -8.49345193   -9.02205001   24.53565181   17.93445336
+       5     -2.63320413  -11.17290320  -11.87683233   17.93445336   18.95676116
+       6      0.60290216    3.98091382    3.30291260   -5.57614788   -2.39761236
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60290216   -0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.98091382   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.30291260   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.57614788    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39761236    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.32255625   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.53970309    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.57422099   16.88158262   -3.67357855
+       9      0.00000000    0.00000000   16.88158262   20.08078806   -3.73124989
+      10      0.00000000    0.00000000   -3.67357855   -3.73124989   24.00448328
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.57422099   16.88158262   -3.67357855    0.00000000    0.00000000
+      12     16.88158262   20.08078806   -3.73124989    0.00000000    0.00000000
+      13     -3.67357855   -3.73124989   24.00448328    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.53970309    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.40777340
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91435648
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.73416774
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23173028
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57375748
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56643944
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91435648    3.73416774    1.23173028    2.57375748   -0.56643944
+      16     12.87690784    9.12159709    5.25980374    8.28271053   -3.02222519
+      17      9.12159709    8.37526524    5.64570484    8.31642389   -2.29940372
+      18      5.25980374    5.64570484   13.43655713    7.71734155    2.97928129
+      19      8.28271053    8.31642389    7.71734155   10.12373735    0.17372227
+      20     -3.02222519   -2.29940372    2.97928129    0.17372227   13.61847681
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.82983800    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.81987804    7.05088459    1.70158802    0.00000000
+      23      0.00000000    7.05088459    6.54037982    2.15394953    0.00000000
+      24      0.00000000    1.70158802    2.15394953   14.35391282    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.81987804
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.05088459
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70158802
+
+              Column  26    Column  27    Column  28
+      25      7.05088459    1.70158802    0.00000000
+      26      6.54037982    2.15394953    0.00000000
+      27      2.15394953   14.35391282    0.00000000
+      28      0.00000000    0.00000000   17.82983800
+   7    -149.608089036        3.62431D-05   -9.84D-09    7
+
+
+ *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP
+
+ WARNING, occupation of active orbitals not available
+          population analysis aborted.
+          Use ".TRACI" option.
+
+ -----------------------------------------------------------------------------
+   8  Screening settings (-IFTHRS, DIFDEN)  -10    F
+ FCAO: 
+
+              Column   1    Column   2    Column   3    Column   4    Column   5
+       1     29.40133214   -0.60875054    5.83204134   -1.52678647   -2.63320469
+       2     -0.60875054   23.57124981   22.24617888   -8.49345276  -11.17290473
+       3      5.83204134   22.24617888   23.98332604   -9.02205082  -11.87683402
+       4     -1.52678647   -8.49345276   -9.02205082   24.53565674   17.93445475
+       5     -2.63320469  -11.17290473  -11.87683402   17.93445475   18.95676158
+       6      0.60290256    3.98091462    3.30291325   -5.57615241   -2.39761473
+
+              Column   6    Column   7    Column   8    Column   9    Column  10
+       1      0.60290256   -0.00000000    0.00000000    0.00000000    0.00000000
+       2      3.98091462   -0.00000000    0.00000000    0.00000000    0.00000000
+       3      3.30291325   -0.00000000    0.00000000    0.00000000    0.00000000
+       4     -5.57615241    0.00000000    0.00000000    0.00000000    0.00000000
+       5     -2.39761473    0.00000000    0.00000000    0.00000000    0.00000000
+       6     25.32256134   -0.00000000    0.00000000    0.00000000    0.00000000
+       7     -0.00000000   19.53970543    0.00000000    0.00000000    0.00000000
+       8      0.00000000    0.00000000   21.57422301   16.88158488   -3.67357896
+       9      0.00000000    0.00000000   16.88158488   20.08079107   -3.73125037
+      10      0.00000000    0.00000000   -3.67357896   -3.73125037   24.00448593
+
+              Column  11    Column  12    Column  13    Column  14    Column  15
+      11     21.57422301   16.88158488   -3.67357896    0.00000000    0.00000000
+      12     16.88158488   20.08079107   -3.73125037    0.00000000    0.00000000
+      13     -3.67357896   -3.73125037   24.00448593    0.00000000    0.00000000
+      14      0.00000000    0.00000000    0.00000000   19.53970543    0.00000000
+      15      0.00000000    0.00000000    0.00000000    0.00000000   29.40777834
+      16      0.00000000    0.00000000    0.00000000    0.00000000   -1.91435660
+      17      0.00000000    0.00000000    0.00000000    0.00000000    3.73416846
+      18      0.00000000    0.00000000    0.00000000    0.00000000    1.23173025
+      19      0.00000000    0.00000000    0.00000000    0.00000000    2.57375797
+      20      0.00000000    0.00000000    0.00000000    0.00000000   -0.56643945
+
+              Column  16    Column  17    Column  18    Column  19    Column  20
+      15     -1.91435660    3.73416846    1.23173025    2.57375797   -0.56643945
+      16     12.87690737    9.12159707    5.25980578    8.28271096   -3.02222460
+      17      9.12159707    8.37526570    5.64570681    8.31642467   -2.29940341
+      18      5.25980578    5.64570681   13.43656148    7.71734385    2.97928118
+      19      8.28271096    8.31642467    7.71734385   10.12373844    0.17372250
+      20     -3.02222460   -2.29940341    2.97928118    0.17372250   13.61847738
+
+              Column  21    Column  22    Column  23    Column  24    Column  25
+      21     17.82984008    0.00000000    0.00000000    0.00000000    0.00000000
+      22      0.00000000   14.81987937    7.05088517    1.70158784    0.00000000
+      23      0.00000000    7.05088517    6.54038028    2.15394961    0.00000000
+      24      0.00000000    1.70158784    2.15394961   14.35391427    0.00000000
+      25      0.00000000    0.00000000    0.00000000    0.00000000   14.81987937
+      26      0.00000000    0.00000000    0.00000000    0.00000000    7.05088517
+      27      0.00000000    0.00000000    0.00000000    0.00000000    1.70158784
+
+              Column  26    Column  27    Column  28
+      25      7.05088517    1.70158784    0.00000000
+      26      6.54038028    2.15394961    0.00000000
+      27      2.15394961   14.35391427    0.00000000
+      28      0.00000000    0.00000000   17.82984008
+   8    -149.608089036        2.46817D-06   -1.10D-10    8
+
+ *** DIIS converged in   8 iterations !
+   - total time used in SIRFCK :              0.20 seconds
+
+
+ *** SCF orbital energy analysis ***
+
+ Orbital energy analysis for an open-shell system.
+ Orbital energies are not well-defined for open-shell systems
+   here is used block diagonalization of the FD=FC+FV Fock matrix.
+ NOTE that Koopmans' theorem is not fulfilled for this case.
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   14
+ Orbital occupations :    3    1    1    0    2    0    0    0
+
+ Sym       Hartree-Fock orbital energies
+
+  1    -20.72773469    -1.65347134    -0.72943190     1.15410354     1.32911285
+         2.68369881     3.18002676
+
+  2     -0.70176839     1.11027708     2.40273380
+
+  3     -0.70176839     1.11027708     2.40273380
+
+  4      2.68369881
+
+  5    -20.72680517    -1.09775290     0.46409651     1.07958313     1.97400775
+         3.00926263     4.19266808
+
+  6     -0.20721143     1.21684736     3.67947075
+
+  7     -0.20721143     1.21684736     3.67947075
+
+  8      3.00926263
+
+    E(LUMO) :     0.46409651 au (symmetry 5)
+  - E(HOMO) :    -0.70176839 au (symmetry 2)
+  ------------------------------------------
+    gap     :     1.16586490 au
+
+and E(SOMO) :    -0.20721143 au (symmetry 6)
+
+ NOTE: MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS
+
+ Largest off-diagonal Fock matrix element is  6.96D-02
+
+ >>> Writing SIRIFC interface file <<<
+
+
+                       .-----------------------------------.
+                       | >>> Final results from SIRIUS <<< |
+                       `-----------------------------------'
+
+
+     Spin multiplicity:           3
+     Spatial symmetry:            4
+     Total charge of molecule:    0
+
+     Final HF energy:            -149.608089036059                 
+     Nuclear repulsion:            28.048032255237
+     Electronic energy:          -177.656121291296
+
+     Final gradient norm:           0.000002468171
+
+ 
+     Date and time (Linux)  : Tue Aug 26 07:14:56 2014
+     Host name              : fish                                    
+
+ (Only coefficients >0.0100 are printed.)
+
+ Molecular orbitals for symmetry species  1
+ ------------------------------------------
+
+    Orbital         1        2        3        4        5
+   1 O01 :1s     0.7072   0.0004  -0.0091  -0.0130   0.4490
+   2 O01 :1s     0.0007   0.6600   0.1947  -0.1660   2.1343
+   3 O01 :1s    -0.0002  -0.1091   0.1534   0.3975  -2.1396
+   4 O01 :2pz   -0.0018  -0.2311   0.6771  -0.8576  -0.0067
+   5 O01 :2pz    0.0014   0.0640  -0.0691   1.2138   0.0757
+   6 O01 :3d0   -0.0003   0.0260  -0.0318   0.1024   0.1250
+
+ Molecular orbitals for symmetry species  2
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O01 :2px    0.6490  -0.9889   0.1426
+   2 O01 :2px   -0.0152   1.0789  -0.0378
+   3 O01 :3d1+  -0.0331   0.0439   0.6383
+
+ Molecular orbitals for symmetry species  3
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O01 :2py    0.6490  -0.9889   0.1426
+   2 O01 :2py   -0.0152   1.0789  -0.0378
+   3 O01 :3d1-  -0.0331   0.0439   0.6383
+
+ Molecular orbitals for symmetry species  4
+ ------------------------------------------
+
+    Orbital         1
+   1 O01 :3d2-   0.6915
+
+ Molecular orbitals for symmetry species  5
+ ------------------------------------------
+
+    Orbital         1        2        3        4
+   1 O01 :1s     0.7074   0.0049   0.0148  -0.0056
+   2 O01 :1s     0.0012   0.7116  -0.3643   0.0669
+   3 O01 :1s    -0.0027   0.0466  -1.0298   0.9467
+   4 O01 :2pz   -0.0018   0.2041   0.5966   1.0227
+   5 O01 :2pz    0.0023  -0.0408   0.9244  -1.8027
+   6 O01 :3d0    0.0004  -0.0104   0.0143   0.0934
+
+ Molecular orbitals for symmetry species  6
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O01 :2px    0.7774  -0.9231   0.0112
+   2 O01 :2px    0.0382   1.4846  -0.2807
+   3 O01 :3d1+   0.0050   0.0090   0.8365
+
+ Molecular orbitals for symmetry species  7
+ ------------------------------------------
+
+    Orbital         1        2        3
+   1 O01 :2py    0.7774  -0.9231   0.0112
+   2 O01 :2py    0.0382   1.4846  -0.2807
+   3 O01 :3d1-   0.0050   0.0090   0.8365
+
+ Molecular orbitals for symmetry species  8
+ ------------------------------------------
+
+    Orbital         1
+   1 O01 :3d2-   0.7239
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      0.30 seconds
+ >>>> Total wall time used in SIRIUS :      0.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug 26 07:14:56 2014
+     Host name              : fish                                    
+
+ NOTE:    7 warnings have been issued.
+ Check output, result, and error files for "WARNING".
+
+
+                     .---------------------------------------.
+                     | End of Wave Function Section (SIRIUS) |
+                     `---------------------------------------'
+
+
+
+                 .------------------------------------------------.
+                 | Starting in Dynamic Property Section (RESPONS) |
+                 `------------------------------------------------'
+
+
+ ------------------------------------------------------------------------------
+  RESPONSE  -  an MCSCF, MC-srDFT, DFT, and SOPPA response property program
+ ------------------------------------------------------------------------------
+
+
+ <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>
+
+
+
+
+  Linear Response single residue calculation
+ -------------------------------------------
+
+ Print level                                    : IPRPP  =   4
+ Maximum number of iterations for eigenval.eqs. : MAXITP =  60
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-03
+ Maximum iterations in optimal orbital algorithm: MAXITO =   5
+
+      1 Excitation energies are calculated for symmetry no.    2
+
+      1 property residues are calculated with labels:
+
+               XDIPLEN 
+
+      1 Excitation energies are calculated for symmetry no.    3
+
+      1 property residues are calculated with labels:
+
+               YDIPLEN 
+
+      1 Excitation energies are calculated for symmetry no.    5
+
+      1 property residues are calculated with labels:
+
+               ZDIPLEN 
+
+      1 Excitation energies are calculated for symmetry no.    8
+
+
+ high-spin open-shell SCF energy:     -149.608089036059027
+ -- inactive part               :     -177.334803481169956
+ --   active part               :       -0.321317810126187
+ -- nuclear repulsion           :       28.048032255237093
+
+
+                   *******************************************
+                   *** High-spin ROHF response calculation ***
+                   *******************************************
+
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    2
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       2
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      23
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      23
+
+ >>> IN RSPPP:
+  THCPP,MAXRM   1.00000000000000002E-003         200
+  KSYMOP,NGPPP(KSYMOP)            2           1
+  LWRK ,LWRK1     99999502    99878902
+  KEXCNV,NSIM,LWRK2            1           1      122365
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  2; triplet =   F
+
+           0  START configuration VECTORS USING
+  LOWEST DIAGONAL HESSIAN ELEMENTS
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.55103D-01  0.00D+00  2.55D-01  1.00D+00    4.64380D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.03824D-01  0.00D+00  1.04D-01  1.00D+00    4.21177D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.03039D-02  0.00D+00  2.03D-02  1.00D+00    4.18389D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.38714D-02  0.00D+00  1.39D-02  1.00D+00    4.17900D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.26494D-03  0.00D+00  2.26D-03  1.00D+00    4.17794D-01
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.89764D-04  0.00D+00  2.90D-04  1.00D+00    4.17794D-01
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   12)
+ RSP solution vector no.    1; norm of residual   2.89D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ Transition operator type:    XDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT: -2.68711900E-02 *ENERGY(eV):   11.368743    
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 2 & ref. state sym 4 => excited state symmetry 3 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  3
+ ---------------------------------------
+
+@ Excitation energy :  0.41779362    au
+@                      11.368743     eV
+@                      91695.099     cm-1
+                       1096.9170     kJ / mol
+
+@ Total energy :      -149.19030     au
+
+@ Operator type:    XDIPLEN 
+@ Oscillator strength (LENGTH)   :  2.01114942E-04  (Transition moment : -2.68711900E-02 )
+
+ Eigenvector for state no.  1
+
+     Orbital operator symmetry = 2
+     (only elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator
+      ----------    -----  -----      --------------      --------------
+          13        16(5)  22(6)       -0.1354341116        0.0568665439
+          18        22(6)  17(5)       -0.9699662050        0.0144268330
+          19        22(6)  18(5)       -0.2067158137        0.0016755927
+
+       20 elements with absolute value less than 9.70D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 2
+     >> NO ELEMENTS <<
+
+
+ Time used in polarization propagator calculation is      0.12 CPU seconds for symmetry 2
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    3
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       3
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      23
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      23
+
+ >>> IN RSPPP:
+  THCPP,MAXRM   1.00000000000000002E-003         200
+  KSYMOP,NGPPP(KSYMOP)            3           1
+  LWRK ,LWRK1     99999502    99878902
+  KEXCNV,NSIM,LWRK2            1           1      122365
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  3; triplet =   F
+
+           0  START configuration VECTORS USING
+  LOWEST DIAGONAL HESSIAN ELEMENTS
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.55103D-01  0.00D+00  2.55D-01  1.00D+00    4.64380D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.03824D-01  0.00D+00  1.04D-01  1.00D+00    4.21177D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.03039D-02  0.00D+00  2.03D-02  1.00D+00    4.18389D-01
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.38714D-02  0.00D+00  1.39D-02  1.00D+00    4.17900D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.26494D-03  0.00D+00  2.26D-03  1.00D+00    4.17794D-01
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.89764D-04  0.00D+00  2.90D-04  1.00D+00    4.17794D-01
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   12)
+ RSP solution vector no.    1; norm of residual   2.89D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ Transition operator type:    YDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT: -2.68711900E-02 *ENERGY(eV):   11.368743    
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 3 & ref. state sym 4 => excited state symmetry 2 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  2
+ ---------------------------------------
+
+@ Excitation energy :  0.41779362    au
+@                      11.368743     eV
+@                      91695.099     cm-1
+                       1096.9170     kJ / mol
+
+@ Total energy :      -149.19030     au
+
+@ Operator type:    YDIPLEN 
+@ Oscillator strength (LENGTH)   :  2.01114942E-04  (Transition moment : -2.68711900E-02 )
+
+ Eigenvector for state no.  1
+
+     Orbital operator symmetry = 3
+     (only elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator
+      ----------    -----  -----      --------------      --------------
+          13        16(5)  25(7)       -0.1354341116        0.0568665439
+          19        25(7)  17(5)       -0.9699662050        0.0144268330
+          20        25(7)  18(5)       -0.2067158137        0.0016755927
+
+       20 elements with absolute value less than 9.70D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 3
+     >> NO ELEMENTS <<
+
+
+ Time used in polarization propagator calculation is      0.12 CPU seconds for symmetry 3
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    5
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       5
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      33
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      33
+
+ >>> IN RSPPP:
+  THCPP,MAXRM   1.00000000000000002E-003         200
+  KSYMOP,NGPPP(KSYMOP)            5           1
+  LWRK ,LWRK1     99999502    99878902
+  KEXCNV,NSIM,LWRK2            1           1      122405
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  5; triplet =   F
+
+           0  START configuration VECTORS USING
+  LOWEST DIAGONAL HESSIAN ELEMENTS
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    7.02957D-01  0.00D+00  7.03D-01  1.00D+00    3.13848D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.14934D-01  0.00D+00  2.15D-01  1.21D+00    1.27128D-01
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.48242D-01  0.00D+00  2.48D-01  1.58D+00    6.76195D-02
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        6-5.102276D-17 5.539853D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        7 3.410055D-17-5.539853D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.87728D-01  0.00D+00  1.88D-01  1.03D+00    2.57036D-01
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        8-1.583945D-16 5.871380D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        9-1.371209D-16-5.871380D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    4.06017D-02  0.00D+00  4.06D-02  1.03D+00    2.46044D-01
+
+ ** RSPCTL MICROITERATION NUMBER    6
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       10-2.438497D-16 5.871137D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       11-2.844687D-16-5.871137D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    6.66620D-03  0.00D+00  6.67D-03  1.03D+00    2.45715D-01
+
+ ** RSPCTL MICROITERATION NUMBER    7
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       12-1.281818D-16 5.872165D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       13-1.271265D-16-5.872165D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.06455D-03  0.00D+00  1.06D-03  1.03D+00    2.45708D-01
+
+ ** RSPCTL MICROITERATION NUMBER    8
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       11-4.165753D-16 5.873809D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :       12-4.340188D-16-5.873809D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.62808D-04  0.00D+00  2.63D-04  1.03D+00    2.45708D-01
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   16)
+ RSP solution vector no.    1; norm of residual   2.56D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+@ Transition operator type:    ZDIPLEN 
+@ STATE NO:    1 *TRANSITION MOMENT:  -1.0664789     *ENERGY(eV):   6.6860433    
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 5 & ref. state sym 4 => excited state symmetry 8 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  8
+ ---------------------------------------
+
+@ Excitation energy :  0.24570758    au
+@                      6.6860433     eV
+@                      53926.580     cm-1
+                       645.10515     kJ / mol
+
+@ Total energy :      -149.36238     au
+
+@ Operator type:    ZDIPLEN 
+@ Oscillator strength (LENGTH)   :  0.18630815      (Transition moment :  -1.0664789     )
+
+ Eigenvector for state no.  1
+
+     Orbital operator symmetry = 5
+     (only elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator
+      ----------    -----  -----      --------------      --------------
+          11         3(1)  17(5)        0.1820190499       -0.0938895476
+          12         3(1)  18(5)        0.0772119449       -0.0500584567
+          16         8(2)  22(6)       -0.6886815342        0.0785986835
+          19        11(3)  25(7)       -0.6886805412        0.0785990060
+          30        22(6)   9(2)       -0.0901983528        0.0828595347
+          32        25(7)  12(3)       -0.0902238010        0.0828694024
+
+       27 elements with absolute value less than 6.89D-02 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 5
+     >> NO ELEMENTS <<
+
+
+ Time used in polarization propagator calculation is      0.18 CPU seconds for symmetry 5
+
+
+ >>>>>>>>>> Linear response calculation
+ >>>>>>>>>> Symmetry of excitation/property operator(s)    8
+
+ Number of excitations of this symmetry            1
+ Number of response properties of this symmetry    0
+ Number of C6/C8 properties of this symmetry       0
+
+
+ Perturbation symmetry.     KSYMOP:       8
+ Perturbation spin symmetry.TRPLET:       F
+ Orbital variables.         KZWOPT:      15
+ Configuration variables.   KZCONF:       0
+ Total number of variables. KZVAR :      15
+
+ >>> IN RSPPP:
+  THCPP,MAXRM   1.00000000000000002E-003         200
+  KSYMOP,NGPPP(KSYMOP)            8           0
+  LWRK ,LWRK1     99999502    99878902
+  KEXCNV,NSIM,LWRK2            1           1      120761
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>
+
+ Operator symmetry =  8; triplet =   F
+
+           0  START configuration VECTORS USING
+  LOWEST DIAGONAL HESSIAN ELEMENTS
+
+ ** RSPCTL MICROITERATION NUMBER    1
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.91758D-01  0.00D+00  1.92D-01  1.00D+00    1.60384D-01
+
+ ** RSPCTL MICROITERATION NUMBER    2
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    2.58857D-01  0.00D+00  2.59D-01  1.45D+00    5.45886D-02
+
+ ** RSPCTL MICROITERATION NUMBER    3
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        5-4.770226D-17 5.827021D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        6-4.492158D-17-5.827021D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    1.11109D-01  0.00D+00  1.11D-01  3.48D+00    1.35773D-02
+
+ ** RSPCTL MICROITERATION NUMBER    4
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        5 2.546609D-17 5.876039D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        6 5.465808D-17-5.876039D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    3.60202D-02  0.00D+00  3.60D-02  5.39D+00    5.48626D-03
+
+ ** RSPCTL MICROITERATION NUMBER    5
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        7-4.227331D-17 5.873582D-02
+
+ *** COMPLEX EIGENVALUE IN REDUCED MCRSP :
+     REAL AND IMAGINARY PART :        8-7.739258D-18-5.873582D-02
+
+      Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
+      ----------------------------------------------------------------
+         1    3.36437D-03  0.00D+00  3.36D-03  5.54D+00    5.19305D-03
+
+ *** THE REQUESTED    1 SOLUTION VECTORS CONVERGED
+
+ Convergence of RSP solution vectors, threshold = 1.00D-03
+ ---------------------------------------------------------------
+ (dimension of paired reduced space:   10)
+ RSP solution vector no.    1; norm of residual   6.07D-04
+
+ *** RSPCTL MICROITERATIONS CONVERGED
+
+
+  ******************************************************************************
+  *** @ Excit. operator sym 8 & ref. state sym 4 => excited state symmetry 5 ***
+  ******************************************************************************
+
+
+
+ @ Excited state no:    1 in symmetry  5
+ ---------------------------------------
+
+@ Excitation energy : 5.19305081E-03 au
+@                     0.14131010     eV
+@                      1139.7429     cm-1
+                       13.634353     kJ / mol
+
+@ Total energy :      -149.60290     au
+
+ Eigenvector for state no.  1
+
+     Orbital operator symmetry = 8
+     (only elements abs greater than   10.00 % of max abs value)
+
+      Index(r,s)      r      s        (r s) operator      (s r) operator
+      ----------    -----  -----      --------------      --------------
+           4         8(2)  25(7)        2.8121073789        2.7215475874
+           7        11(3)  22(6)       -2.8121522850       -2.7215767363
+
+       13 elements with absolute value less than 2.81D-01 not printed.
+
+ The numbers in parenthesis give the orbital symmetry.
+
+     Configuration operator symmetry = 8
+     >> NO ELEMENTS <<
+
+
+ Time used in polarization propagator calculation is      0.09 CPU seconds for symmetry 8
+
+ >>>> Total CPU  time used in RESPONSE:   0.52 seconds
+ >>>> Total wall time used in RESPONSE:   1.00 seconds
+
+
+                   .-------------------------------------------.
+                   | End of Dynamic Property Section (RESPONS) |
+                   `-------------------------------------------'
+
+ >>>> Total CPU  time used in DALTON:   0.85 seconds
+ >>>> Total wall time used in DALTON:   1.00 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug 26 07:14:57 2014
+     Host name              : fish                                    
