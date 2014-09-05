@@ -2127,7 +2127,7 @@ contains
      logical :: BruteForce,FockMatrixOrdering
 
 
-     if (DECinfo%orb_based_fragopt) then
+     if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
             & MyMolecule,mylsitem,freebasisinfo)
