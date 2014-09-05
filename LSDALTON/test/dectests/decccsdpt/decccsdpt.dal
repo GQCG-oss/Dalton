@@ -1,0 +1,28 @@
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.ARH
+.START
+TRILEVEL
+.NOATOMSTART
+.CONVTHR
+1.0d-6
+**INFO
+.DEBUG_MPI_MEM
+**DEC
+.FOT
+4
+.No_orb_based_fragopt
+.FragmentAdapted
+.manual_batchsizes
+19 19
+.MPIsplit
+0
+.CCSD(T)
+.ccThr
+1.0d-6
+.MEMORY
+2.0
+*END OF INPUT
+%EOF%
+
