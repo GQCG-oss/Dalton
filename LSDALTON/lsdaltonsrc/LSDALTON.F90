@@ -99,6 +99,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
+#ifdef PCM_MODULE
+  use ls_pcm_utils, only: init_molecule
+  use ls_pcm_scf, only: ls_pcm_scf_initialize
+#endif
   implicit none
   logical, intent(in) :: OnMaster
   logical, intent(inout):: meminfo_slaves
@@ -559,6 +563,19 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
+
+#ifdef PCM_MODULE
+        !
+        ! Polarizable continuum model calculation
+        !
+        if (config%pcm%do_pcm) then
+           ! Set molecule object in ls_pcm_utils
+           call init_molecule(ls%input%Molecule)
+           ! Now initialize PCM
+           call ls_pcm_scf_initialize(lupri)
+           write (lupri,*) 'PCMSolver interface correctly initialized'
+        end if
+#endif        
 
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives

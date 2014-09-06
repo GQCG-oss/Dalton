@@ -55,17 +55,15 @@ Subroutine LS_pcm_input(pcm_input, ReadWord, keyword, lucmd, lupri)
   Logical :: file_exist,Const_TS
   Logical, intent(inout)   :: ReadWord
   Integer :: FileStatus
-!
-Call LSHeader(lupri, &
-'Input processing for the direct dynamics module')
-NError          = 0
-NWarning        = 0
-!
-! Read keywords
-!
-Write(*,*)'LS PCM INPUT'
-Do
-Write(*,*)'READWORD',ReadWord
+  !
+  Call LSHeader(lupri, &
+  'Input processing for the Polarizable Continuum Model module')
+  NError          = 0
+  NWarning        = 0
+  !
+  ! Read keywords
+  !
+  Do
       Read(lucmd,'(A70)', IOStat = FileStatus) Keyword
             WRITE(*,*)'READ KEYWORDS',Keyword(1:7)
       If (FileStatus > 0) Call LSQuit('Error reading lucmd',lupri)

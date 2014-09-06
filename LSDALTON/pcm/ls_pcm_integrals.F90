@@ -33,6 +33,8 @@ subroutine get_nuclear_mep(nr_points, centers, mep)
    real(8)              :: dist                          
    integer              :: i, ipoint
    
+   molecule = get_molecule()
+
    LoopOnAtoms: do i = 1, molecule%nAtoms
        LoopOnPoints: do ipoint = 1, nr_points 
           dist = (molecule%Atom(i)%Center(1) - centers(1, ipoint))**2 + &
