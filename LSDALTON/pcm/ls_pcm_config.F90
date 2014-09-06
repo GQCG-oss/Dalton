@@ -4,8 +4,11 @@ module ls_pcm_config
   
   private
 
-  public :: pcmtype
-  public :: LS_pcm_init, LS_pcm_input
+  public pcmtype
+  public LS_pcm_init
+  public LS_pcm_input
+  public ls_pcm_write_file
+  public ls_pcm_write_file_separate
 
   type pcmtype
        logical :: do_pcm
@@ -13,6 +16,7 @@ module ls_pcm_config
        integer :: print_level
   end type pcmtype
 
+  type(pcmtype), public    :: pcm_config
   character(11), parameter :: pcm_file_name = 'PCM_mep_asc'
   integer,       parameter :: pcm_file_unit = 800 
   logical                  :: pcm_file_exists = .false.
@@ -92,6 +96,7 @@ Write(*,*)'READWORD',ReadWord
         End If
       Endif
    Enddo
+   pcm_config = pcm_input
 !
 ! The chosen parameters are printed
 !
@@ -153,7 +158,7 @@ subroutine report_after_pcm_input(print_unit, pcm_cfg)
    end if
 end subroutine report_after_pcm_input
 
-subroutine pcm_write_file(nr_points, potentials, charges)
+subroutine ls_pcm_write_file(nr_points, potentials, charges)
 
 ! Passed variables
    integer, intent(in) :: nr_points
@@ -192,9 +197,9 @@ subroutine pcm_write_file(nr_points, potentials, charges)
    end do
    write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_chg
  
-end subroutine pcm_write_file
+end subroutine ls_pcm_write_file
    
-subroutine pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg)
+subroutine ls_pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg)
 
 ! Passed variables
    integer, intent(in) :: nr_points
@@ -237,6 +242,6 @@ subroutine pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_chg
    write(pcm_file_unit, '(A, F15.12)') 'Sum of electronic apparent charges ', tot_ele_chg
    write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
  
-end subroutine pcm_write_file_separate 
+end subroutine ls_pcm_write_file_separate 
 
 end module ls_pcm_config

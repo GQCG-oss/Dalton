@@ -7,8 +7,8 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint
 F90_OBJS = ls_pcm_config.o \
            ls_pcm_utils.o \
 	   ls_pcm_write.o
-	#pcm_integrals.o
-	#pcm_scf.o \
+	   ls_pcm_integrals.o \
+	   ls_pcm_scf.o
 
 #C_OBJS = memory.o
 

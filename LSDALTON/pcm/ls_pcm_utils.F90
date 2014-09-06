@@ -6,6 +6,8 @@ use molecule_typetype, only: moleculeinfo
 implicit none
 
 public init_molecule
+public get_molecule
+public get_coordinates
 
 private
 
@@ -21,19 +23,24 @@ subroutine init_molecule(molec)
 
 end subroutine init_molecule
 
-subroutine extract_coordinates(molec, coordinates)
+type(moleculeinfo) function get_molecule()
+
+   get_molecule = molecule
+
+end function get_molecule
+
+subroutine get_coordinates(coordinates)
 
    use molecule_typetype, only: atomitem
    
-   type(moleculeinfo), intent(in) :: molec
    real(c_double),    intent(out) :: coordinates(3, *)
    integer :: i
    
-   do i = 1, molec%nAtoms
-     coordinates(:, i) = molec%Atom(i)%Center(:)
+   do i = 1, molecule%nAtoms
+     coordinates(:, i) = molecule%Atom(i)%Center(:)
    enddo
 
-end subroutine extract_coordinates
+end subroutine get_coordinates
 
 subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot')
 
@@ -53,7 +60,7 @@ subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_a
    integer :: i, j, k 
    
    ! Get coordinates
-   call extract_coordinates(molecule, atomic_centers)
+   call get_coordinates(atomic_centers)
    ! Get charges      
    do i = 1, molecule%nAtoms
      atomic_charges(i) = molecule%Atom(i)%Charge

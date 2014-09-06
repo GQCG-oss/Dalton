@@ -116,6 +116,8 @@ set(LSDALTON_PCM_SOURCES
     LSDALTON/pcm/ls_pcm_config.F90
     LSDALTON/pcm/ls_pcm_utils.F90
     LSDALTON/pcm/ls_pcm_write.F90
+    LSDALTON/pcm/ls_pcm_integrals.F90
+    LSDALTON/pcm/ls_pcm_scf.F90
     )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
