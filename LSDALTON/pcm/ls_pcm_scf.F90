@@ -3,6 +3,7 @@
 module ls_pcm_scf
   
 use iso_c_binding
+use typedeftype, only: lssetting 
 
 implicit none 
 
@@ -20,8 +21,10 @@ logical :: is_initialized = .false.
 real(c_double), allocatable :: tess_cent(:, :)
 real(c_double)              :: pcm_energy
 integer(c_int)              :: nr_points
-! A (maybe clumsy) way of passing LUPRI without using common blocks   
+! A (maybe clumsy) way of passing LUPRI and LUERR  
 integer                     :: global_print_unit
+integer                     :: global_error_unit
+type(lssetting)             :: integral_settings
 ! A counter for the number of SCF iterations
 integer, save               :: scf_iteration_counter = 1
 
@@ -34,15 +37,19 @@ contains
 !>
 !> This subroutine initializes various global objects internal to this
 !> module.
-subroutine ls_pcm_scf_initialize(print_unit)                              
+subroutine ls_pcm_scf_initialize(setting, print_unit, err_unit)                              
 
-   integer, intent(in) :: print_unit
+   type(lssetting), intent(in) :: setting
+   integer,         intent(in) :: print_unit
+   integer,         intent(in) :: err_unit
    ! nr_points_irr contains the number of points that are irreducible
    ! by symmetry. We won't be using symmetry but we need to preserve
    ! consistency with the API!
    integer(c_int)      :: nr_points_irr
    
    global_print_unit = print_unit 
+   global_error_unit = err_unit
+   integral_settings = setting
    
    call set_up_pcm
    call print_pcm
@@ -97,8 +104,10 @@ end subroutine check_if_interface_is_initialized
 !> \param pol_ene the polarization energy
 subroutine ls_pcm_energy_driver(density_matrix, pol_ene)
 
-   real(8)        :: density_matrix(*)
-   real(c_double) :: pol_ene
+   use matrix_module
+
+   type(matrix),      intent(in) :: density_matrix
+   real(c_double), intent(inout) :: pol_ene
    
    ! Make sure that the interface is initialized first
    call check_if_interface_is_initialized
@@ -127,9 +136,10 @@ end subroutine ls_pcm_energy_driver
 subroutine ls_pcm_oper_ao_driver(oper, charge_name)
    
    use ls_pcm_integrals, only: get_electronic_mep
+   use matrix_module
    
-   real(8), intent(out)        :: oper(*)
-   character(*), intent(in)    :: charge_name
+   type(matrix)             :: oper
+   character(*), intent(in) :: charge_name
    
    real(c_double), allocatable :: asc(:)
    
@@ -138,7 +148,8 @@ subroutine ls_pcm_oper_ao_driver(oper, charge_name)
    allocate(asc(nr_points))
    asc = 0.0d0
    call get_surface_function(nr_points, asc, charge_name)
-   call get_electronic_mep(nr_points, tess_cent, asc, oper, .true.)
+   call get_electronic_mep(nr_points, tess_cent, asc, oper, .true., &
+                           integral_settings, global_print_unit, global_error_unit)
    deallocate(asc)
    
    scf_iteration_counter = scf_iteration_counter + 1
@@ -161,8 +172,9 @@ subroutine compute_mep_asc(density_matrix)
    use ls_pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
    use ls_pcm_config, only: pcm_config
    use ls_pcm_write, only: ls_pcm_write_file, ls_pcm_write_file_separate
+   use matrix_module
    
-   real(8), intent(in)    :: density_matrix(*)
+   type(matrix),    intent(in) :: density_matrix
    
    ! Local variables
    real(c_double), allocatable :: mep(:)
@@ -184,7 +196,8 @@ subroutine compute_mep_asc(density_matrix)
       potName = 'TotMEP'//char(0) 
       chgName = 'TotASC'//char(0)
       ! Calculate the (total) Molecular Electrostatic Potential
-      call get_mep(nr_points, tess_cent, mep, density_matrix)
+      call get_mep(nr_points, tess_cent, mep, density_matrix, &
+                   integral_settings, global_print_unit, global_error_unit)
       ! Set a cavity surface function with the MEP
       call set_surface_function(nr_points, mep, potName)
       ! Compute polarization charges and set the proper surface function
@@ -223,7 +236,8 @@ subroutine compute_mep_asc(density_matrix)
    
       potName2 = 'EleMEP'//char(0)
       chgName2 = 'EleASC'//char(0)
-      call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, .false.)
+      call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, .false., &
+                              integral_settings, global_print_unit, global_error_unit)
       call set_surface_function(nr_points, ele_pot, potName2)
       call compute_asc(potName2, chgName2, irrep)
       call get_surface_function(nr_points, ele_pol_chg, chgName2)

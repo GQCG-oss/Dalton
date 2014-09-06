@@ -101,7 +101,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use optimlocMOD, only: optimloc
 #ifdef PCM_MODULE
   use ls_pcm_utils, only: init_molecule
-  use ls_pcm_scf, only: ls_pcm_scf_initialize
+  use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
 #endif
   implicit none
   logical, intent(in) :: OnMaster
@@ -139,6 +139,18 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+#ifdef PCM_MODULE
+        !
+        ! Polarizable continuum model calculation
+        !
+        if (config%pcm%do_pcm) then
+           ! Set molecule object in ls_pcm_utils
+           call init_molecule(ls%input%Molecule)
+           ! Now initialize PCM
+           call ls_pcm_scf_initialize(ls%setting, lupri, luerr)
+           write (lupri,*) 'PCMSolver interface correctly initialized'
+        end if
+#endif        
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
@@ -564,19 +576,6 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
-#ifdef PCM_MODULE
-        !
-        ! Polarizable continuum model calculation
-        !
-        if (config%pcm%do_pcm) then
-           ! Set molecule object in ls_pcm_utils
-           call init_molecule(ls%input%Molecule)
-           ! Now initialize PCM
-           call ls_pcm_scf_initialize(lupri)
-           write (lupri,*) 'PCMSolver interface correctly initialized'
-        end if
-#endif        
-
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
@@ -711,6 +710,14 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
      call config_shutdown(config)
   end if
   call config_free(config)
+
+#ifdef PCM_MODULE
+  if (config%pcm%do_pcm) then
+     ! Now finalize PCM
+     call ls_pcm_scf_finalize
+     write (lupri,*) 'PCMSolver interface correctly finalized'
+  end if
+#endif
 
   call ls_free(ls)
   

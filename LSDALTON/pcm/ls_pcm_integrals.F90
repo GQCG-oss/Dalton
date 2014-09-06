@@ -2,6 +2,8 @@
 !> thin wrappers for integral evaluation routines needed fo PCM 
 module ls_pcm_integrals
 
+use typedeftype, only: lssetting
+
 implicit none
 
 public get_mep
@@ -20,14 +22,19 @@ contains
 !>
 !> Retrieves both electronic and nuclear MEP given an electronic density and a list
 !> of points.
-subroutine get_mep(nr_points, centers, mep, density)
+subroutine get_mep(nr_points, centers, mep, density, setting, lupri, luerr)
 
-   integer, intent(in)  :: nr_points
-   real(8), intent(in)  :: centers(3, nr_points)
-   real(8), intent(out) :: mep(nr_points)
-   real(8)              :: density(*)
+   use matrix_module
+   use matrix_operations
+
+   integer,         intent(in)  :: nr_points             
+   real(8),         intent(in)  :: centers(3, nr_points)
+   real(8),         intent(out) :: mep(nr_points)
+   type(matrix),    intent(in)  :: density
+   type(lssetting), intent(in)  :: setting
+   integer,         intent(in)  :: lupri, luerr
    
-   call get_electronic_mep(nr_points, centers, mep, density, .false.)
+   call get_electronic_mep(nr_points, centers, mep, density, .false., setting, lupri, luerr)
    call get_nuclear_mep(nr_points, centers, mep)
 
 end subroutine get_mep
@@ -78,7 +85,7 @@ end subroutine get_nuclear_mep
 !> \param nr_points the number of cavity points
 !> \param centers the cavity points
 !> \param vector MEP or apparent surface charge (ASC) vector
-!> \param matrix density or Fock matrix
+!> \param mat density or Fock matrix
 !> \param get_matrix whether to calculate a MEP or the PCM Fock matrix contribution 
 !>
 !> Driver routine for the calculation of the electronic part of the molecular               
@@ -98,13 +105,19 @@ end subroutine get_nuclear_mep
 !>            charges vector as input, Fock matrix contribution as output.
 !>            get_matrix logical is absent or is present and FALSE:
 !>            density matrix as input, potentials vector as output.                        
-subroutine get_electronic_mep(nr_points, centers, vector, matrix, get_matrix)
+subroutine get_electronic_mep(nr_points, centers, vector, mat, get_matrix, setting, lupri, luerr)
    
-   integer, intent(in)  :: nr_points 
-   real(8), intent(in)  :: centers(3, nr_points)
-   real(8), intent(out) :: vector(nr_points) 
-   real(8)              :: matrix(*)                           
-   logical, optional    :: get_matrix 
+   use integralinterfacemod, only: II_get_ep_integrals3 
+   use matrix_module
+   use matrix_operations
+
+   integer,         intent(in)    :: nr_points                            
+   real(8),         intent(in)    :: centers(3, nr_points)
+   real(8),         intent(out)   :: vector(nr_points) 
+   type(matrix)                   :: mat                           
+   logical, optional              :: get_matrix 
+   type(lssetting), intent(in)    :: setting
+   integer,         intent(in)    :: lupri, luerr
    ! Local variables
    logical              :: do_matrix
    integer              :: ipoint
@@ -116,6 +129,19 @@ subroutine get_electronic_mep(nr_points, centers, vector, matrix, get_matrix)
        do_matrix = .true.
      end if
    end if
+   
+   FockContribution: if (do_matrix) then
+      ! Calculate a Fock matrix contribution
+   else FockContribution
+      ! Just get the electronic MEP here
+      call II_get_ep_integrals3(lupri,     &
+                                luerr,     &
+                                setting,   &
+                                centers,   &
+                                nr_points, &
+                                mat,       &
+                                vector)
+   end if FockContribution
   
    !print *, "Debug print of v_ele at cavity points"
    !if (do_matrix) then
