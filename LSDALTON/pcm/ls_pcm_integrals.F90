@@ -1,3 +1,5 @@
+!> @file
+!> thin wrappers for integral evaluation routines needed fo PCM 
 module ls_pcm_integrals
 
 implicit none
@@ -8,6 +10,16 @@ public get_electronic_mep
 
 contains
 
+!> \brief calculates molecular electrostatic potential (MEP) at cavity points 
+!> \author R. Di Remigio
+!> \date 2014
+!> \param nr_points the number of cavity points
+!> \param centers the cavity points
+!> \param mep the molecular electrostatic potential vector
+!> \param density a density matrix
+!>
+!> Retrieves both electronic and nuclear MEP given an electronic density and a list
+!> of points.
 subroutine get_mep(nr_points, centers, mep, density)
 
    integer, intent(in)  :: nr_points
@@ -20,6 +32,14 @@ subroutine get_mep(nr_points, centers, mep, density)
 
 end subroutine get_mep
              
+!> \brief calculates nuclear molecular electrostatic potential (MEP) at cavity points 
+!> \author R. Di Remigio
+!> \date 2014
+!> \param nr_points the number of cavity points
+!> \param centers the cavity points
+!> \param mep the nuclear molecular electrostatic potential vector
+!>
+!> Retrieves the nuclear MEP given a list of points.
 subroutine get_nuclear_mep(nr_points, centers, mep)
 
    use molecule_typetype, only: moleculeinfo, atomitem
@@ -52,26 +72,34 @@ subroutine get_nuclear_mep(nr_points, centers, mep)
          
 end subroutine get_nuclear_mep
          
+!> \brief calculates molecular electrostatic potential (MEP) at cavity points 
+!> \author R. Di Remigio
+!> \date 2014
+!> \param nr_points the number of cavity points
+!> \param centers the cavity points
+!> \param vector MEP or apparent surface charge (ASC) vector
+!> \param matrix density or Fock matrix
+!> \param get_matrix whether to calculate a MEP or the PCM Fock matrix contribution 
+!>
+!> Driver routine for the calculation of the electronic part of the molecular               
+!> electrostatic potential on a certain grid of points {r_i}:
+!>     v_el(r_i) = tr(DV_i)
+!> tr is the trace operator, D is the density matrix, V^i is the matrix of the 
+!> "nuclear attraction" integrals calculated at point r_i of the grid:
+!>     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
+!> 
+!> Written, tested, debugged: R. Di Remigio
+!> 
+!> RDR 060914 This routine will be used to form both potentials and Fock
+!>            matrix contribution for PCM.
+!>            matrix is Fock or density matrix, vector is potentials 
+!>            or charges vector.
+!>            get_matrix logical is present and TRUE:
+!>            charges vector as input, Fock matrix contribution as output.
+!>            get_matrix logical is absent or is present and FALSE:
+!>            density matrix as input, potentials vector as output.                        
 subroutine get_electronic_mep(nr_points, centers, vector, matrix, get_matrix)
-!      
-! Driver routine for the calculation of the electronic part of the molecular 
-! electrostatic potential on a certain grid of points {r_i}:
-!     v_el(r_i) = tr(DV_i)
-! tr is the trace operator, D is the density matrix, V^i is the matrix of the 
-! "nuclear attraction" integrals calculated at point r_i of the grid:
-!     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
-! 
-! Written, tested, debugged: R. Di Remigio
-! 
-! RDR 060914 This routine will be used to form both potentials and Fock
-!            matrix contribution for PCM.
-!            matrix is Fock or density matrix, vector is potentials 
-!            or charges vector.
-!            get_matrix logical is present and TRUE:
-!            charges vector as input, Fock matrix contribution as output.
-!            get_matrix logical is absent or is present and FALSE:
-!            density matrix as input, potentials vector as output.                        
-!                           
+   
    integer, intent(in)  :: nr_points 
    real(8), intent(in)  :: centers(3, nr_points)
    real(8), intent(out) :: vector(nr_points) 

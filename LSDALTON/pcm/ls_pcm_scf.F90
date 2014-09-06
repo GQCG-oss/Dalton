@@ -1,9 +1,5 @@
-!
-! LSDALTON-side interface routines for the Polarizable Continuum Model
-! Roberto Di Remigio 2014
-!
-
-
+!> @file
+!> LSDALTON-side interface routines for the Polarizable Continuum Model
 module ls_pcm_scf
   
 use iso_c_binding
@@ -31,6 +27,13 @@ integer, save               :: scf_iteration_counter = 1
 
 contains 
       
+!> \brief initializes PCM-SCF interface  
+!> \author R. Di Remigio
+!> \date 2014
+!> \param print_unit the LSDALTON output print unit
+!>
+!> This subroutine initializes various global objects internal to this
+!> module.
 subroutine ls_pcm_scf_initialize(print_unit)                              
 
    integer, intent(in) :: print_unit
@@ -56,6 +59,12 @@ subroutine ls_pcm_scf_initialize(print_unit)
                                                            
 end subroutine ls_pcm_scf_initialize
                                                               
+!> \brief finalizes PCM-SCF interface  
+!> \author R. Di Remigio
+!> \date 2014
+!>
+!> This subroutine finalizes various global objects internal to this
+!> module.
 subroutine ls_pcm_scf_finalize()
 
    if (.not. is_initialized) then
@@ -70,6 +79,9 @@ subroutine ls_pcm_scf_finalize()
                                                               
 end subroutine ls_pcm_scf_finalize
                                                                     
+!> \brief checks if the PCM-SCF interface has been initialized
+!> \author R. Di Remigio
+!> \date 2014
 subroutine check_if_interface_is_initialized()
 
    if (.not. is_initialized) then
@@ -78,6 +90,11 @@ subroutine check_if_interface_is_initialized()
 
 end subroutine check_if_interface_is_initialized
 
+!> \brief driver for PCM energy contribution calculation  
+!> \author R. Di Remigio
+!> \date 2014
+!> \param density_matrix the current iteration density matrix
+!> \param pol_ene the polarization energy
 subroutine ls_pcm_energy_driver(density_matrix, pol_ene)
 
    real(8)        :: density_matrix(*)
@@ -98,13 +115,17 @@ subroutine ls_pcm_energy_driver(density_matrix, pol_ene)
 
 end subroutine ls_pcm_energy_driver
       
+!> \brief driver for PCM Fock matrix contribution calculation  
+!> \author R. Di Remigio
+!> \date 2014
+!> \param oper NxN matrix to allocate PCM Fock matrix contribution
+!> \param charge_name the apparent surface charge to be used for contracting the potentials
+!>
+!> This subroutine retrieves the uncontracted potentials at cavity points 
+!> \latexonly $V_{\mu\nu}^I$ \endlatexonly and contracts them with the
+!> apparent surface charge specified by the charge_name variable.
 subroutine ls_pcm_oper_ao_driver(oper, charge_name)
-!
-! Calculate exp values of potentials on tesserae
-! Input: symmetry packed Density matrix in AO basis
-!        cavity points
-! Output: expectation values of electrostatic potential on tesserae
-!
+   
    use ls_pcm_integrals, only: get_electronic_mep
    
    real(8), intent(out)        :: oper(*)
@@ -114,9 +135,6 @@ subroutine ls_pcm_oper_ao_driver(oper, charge_name)
    
    call check_if_interface_is_initialized
    
-   ! Here we need the ASC, we can either get it from C++ (as it 
-   ! has been saved as a surface function) or from Fortran asking
-   ! for the mep and asc to be recomputed.
    allocate(asc(nr_points))
    asc = 0.0d0
    call get_surface_function(nr_points, asc, charge_name)
@@ -127,17 +145,22 @@ subroutine ls_pcm_oper_ao_driver(oper, charge_name)
 
 end subroutine ls_pcm_oper_ao_driver
 
+!> \brief driver for PCM Fock matrix contribution calculation  
+!> \author R. Di Remigio
+!> \date 2014
+!> \param density_matrix the current iteration density matrix
+!>
+!> Calculate the molecular electrostatic potential and        
+!> the apparent surface charge at the cavity points.
+!>                                                            
+!> The user can control via the LSDALTON input the following:
+!>    * switch between separate and total evaluation of the
+!>      nuclear and electronic parts;
 subroutine compute_mep_asc(density_matrix)
-!
-! Calculate the molecular electrostatic potential and
-! the apparent surface charge at the cavity points.
-!
-! The user can control via the LSDALTON input the following:
-!    * switch between separate and total evaluation of the
-!      nuclear and electronic parts;
-!
+   
    use ls_pcm_integrals, only: get_nuclear_mep, get_electronic_mep, get_mep
-   use ls_pcm_config, only: pcm_config, ls_pcm_write_file, ls_pcm_write_file_separate
+   use ls_pcm_config, only: pcm_config
+   use ls_pcm_write, only: ls_pcm_write_file, ls_pcm_write_file_separate
    
    real(8), intent(in)    :: density_matrix(*)
    
