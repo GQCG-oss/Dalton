@@ -1,170 +1,76 @@
 module ls_pcm_utils
 
-      use iso_c_binding
+use iso_c_binding
+use molecule_typetype, only: moleculeinfo
 
-      implicit none
+implicit none
 
-      public ibtand
-      public ibtor
-      public ibtshl
-      public ibtshr
-      public ibtxor
-      public getacord
+public init_molecule
 
-      contains
+private
 
-      function ibtand(i, j)
-                
-        integer :: i, j
-        integer ibtand
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtand = and(i, j)
-#else
-        ibtand = iand(i, j)
-#endif
+type(moleculeinfo) :: molecule
 
-      end function
+contains
+
+subroutine init_molecule(molec)
+
+   type(moleculeinfo), intent(in) :: molec
+
+   molecule = molec
+
+end subroutine init_molecule
+
+subroutine extract_coordinates(molec, coordinates)
+
+   use molecule_typetype, only: atomitem
+   
+   type(moleculeinfo), intent(in) :: molec
+   real(c_double),    intent(out) :: coordinates(3, *)
+   integer :: i
+   
+   do i = 1, molec%nAtoms
+     coordinates(:, i) = molec%Atom(i)%Center(:)
+   enddo
+
+end subroutine extract_coordinates
+
+subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot')
+
+   integer(c_int), intent(out) :: nr_nuclei
+   
+   nr_nuclei = molecule%nAtoms 
+
+end subroutine collect_nctot
       
-      function ibtor(i, j)
-                
-        integer :: i, j
-        integer ibtor
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtor = or(i, j)
-#else
-        ibtor = ior(i, j)
-#endif
+subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
 
-      end function
-      
-      function ibtshl(i, j)
-                
-        integer :: i, j
-        integer ibtshl
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtshl = shiftl(i, j)
-#else
-        ibtshl = ishft(i, j)
-#endif
+   use molecule_typetype, only: atomitem
+   
+   real(c_double), intent(out) :: atomic_charges(*)
+   real(c_double), intent(out) :: atomic_centers(3, *)
+   
+   integer :: i, j, k 
+   
+   ! Get coordinates
+   call extract_coordinates(molecule, atomic_centers)
+   ! Get charges      
+   do i = 1, molecule%nAtoms
+     atomic_charges(i) = molecule%Atom(i)%Charge
+   enddo
 
-      end function
+end subroutine collect_atoms
 
-      function ibtshr(i, j)
-                
-        integer :: i, j
-        integer ibtshr
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtshr = shiftr(i, j)
-#else
-        ibtshr = ishft(i, -j)
-#endif
+subroutine set_point_group(nr_gen, gen1, gen2, gen3) bind(c, name='set_point_group')
 
-      end function
-      
-      function ibtxor(i, j)
-                
-        integer :: i, j
-        integer ibtxor
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtxor = xor(i, j)
-#else
-        ibtxor = ieor(i, j)
-#endif
+   integer(c_int), intent(inout) :: nr_gen 
+   integer(c_int), intent(inout) :: gen1, gen2, gen3
+   
+   nr_gen = 1 
+   gen1   = 0
+   gen2   = 0
+   gen3   = 0
 
-      end function
-      
-      subroutine getacord(coora)      
-!*****************************************************************************
-!
-!    getacord : Make list atomic coordinates
-!
-!               Written oct.2001 by Jesper Kielberg Pedersen
-!               Copied here from DIRAC by Roberto Di Remigio, February 2012
-!
-!*****************************************************************************
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "pgroup.h"
-      real(8), intent(out) :: coora(3,*)
-
-      integer              :: jatom, icent, mulcnt, isymop
-!
-!     Make the full matrix of cartesian coordinates from CORD(NUCIND)
-!
-      jatom = 0
-      do icent = 1, nucind
-         mulcnt = istbnu(icent)
-         if (mult(mulcnt) .eq. 1) then
-            jatom = jatom + 1
-            coora(1,jatom) = cord(1,icent)
-            coora(2,jatom) = cord(2,icent)
-            coora(3,jatom) = cord(3,icent)
-        else
-            do isymop = 0, maxopr
-            if (iand(isymop,mulcnt) .eq. 0) then
-                  jatom = jatom + 1
-                  coora(1,jatom) = pt(iand(isymax(1,1),isymop))*cord(1,icent)
-                  coora(2,jatom) = pt(iand(isymax(2,1),isymop))*cord(2,icent)
-                  coora(3,jatom) = pt(iand(isymax(3,1),isymop))*cord(3,icent)
-              end if
-            enddo
-        end if
-      enddo 
-
-      end subroutine
-      
-      subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot')
-
-#include "mxcent.h"
-#include "nuclei.h"
-
-      integer(c_int), intent(out) :: nr_nuclei
-
-      nr_nuclei = nucdep
-
-      end subroutine collect_nctot
-      
-      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms')
-  
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(c_double), intent(out) :: atomic_charges(*)
-      real(c_double), intent(out) :: atomic_centers(3,*)
-      
-      integer :: i, j, k 
-
-! Get coordinates
-      call getacord(atomic_centers)
-! Get charges      
-      i = 0
-      do j = 1, nucind
-         do k = 1, nucdeg(j)
-            i = i + 1
-            atomic_charges(i) = charge(j)
-         enddo
-      enddo
-      
-      end subroutine collect_atoms
-
-      subroutine set_point_group(nr_gen, gen1, gen2, gen3) bind(c, name='set_point_group')
-
-#include "mxcent.h"                     
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
-
-      integer(c_int), intent(inout) :: nr_gen 
-      integer(c_int), intent(inout) :: gen1, gen2, gen3
-
-      nr_gen = pcm_igen(1) 
-      gen1   = pcm_igen(2) 
-      gen2   = pcm_igen(3)
-      gen3   = pcm_igen(4)
-
-      end subroutine set_point_group
+end subroutine set_point_group
  
 end module ls_pcm_utils

@@ -3591,6 +3591,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       call scf_stats_arh_header(config%lupri)
    endif
 
+#ifdef PCM_MODULE
+! Cross-check for polarizable continuum model
+!=================================================
+   if (config%pcm%do_pcm .and. config%optinfo%optimize) then
+      call lsquit('Sorry, polarizable continuum model not available for geometry optimizations!',config%lupri)
+   endif
+   if (config%pcm%do_pcm .and. config%dynamics%do_dynamics) then
+      call lsquit('Sorry, polarizable continuum model not available for dynamics!',config%lupri)
+   endif
+#endif   
+
 !MKL sanity check:
 !==================
 
