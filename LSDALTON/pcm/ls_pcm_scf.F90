@@ -128,23 +128,23 @@ end subroutine ls_pcm_energy_driver
 !> \author R. Di Remigio
 !> \date 2014
 !> \param oper NxN matrix to allocate PCM Fock matrix contribution
-!> \param charge_name the apparent surface charge to be used for contracting the potentials
 !>
 !> This subroutine retrieves the uncontracted potentials at cavity points 
 !> \latexonly $V_{\mu\nu}^I$ \endlatexonly and contracts them with the
 !> apparent surface charge specified by the charge_name variable.
-subroutine ls_pcm_oper_ao_driver(oper, charge_name)
+subroutine ls_pcm_oper_ao_driver(oper)
    
    use ls_pcm_integrals, only: get_electronic_mep
    use matrix_module
    
-   type(matrix)             :: oper
-   character(*), intent(in) :: charge_name
+   type(matrix) :: oper
    
+   character(7) :: charge_name
    real(c_double), allocatable :: asc(:)
    
    call check_if_interface_is_initialized
    
+   charge_name = 'TotASC'//c_null_char
    allocate(asc(nr_points))
    asc = 0.0d0
    call get_surface_function(nr_points, asc, charge_name)
