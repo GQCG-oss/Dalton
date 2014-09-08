@@ -18,7 +18,7 @@ MODULE IntegralInterfaceMOD
        & retrieve_screen_output, ao2gcao_transform_matrixf, &
        & gcao2ao_transform_fulld, ao2gcao_transform_fullf, &
        & ao2gcao_half_transform_matrix,gcao2ao_half_transform_matrix,&
-       & GCAO2AO_transform_matrixD2
+       & GCAO2AO_transform_matrixD2,typedef_setMolecules
   use KS_settings, only: SaveF0andD0,incrD0,incrF0,incremental_scheme,&
        & incrDdiff,do_increment,activate_incremental
   use ls_Integral_Interface, only: ls_same_mats, ls_getintegrals, &
@@ -63,7 +63,7 @@ MODULE IntegralInterfaceMOD
        & II_get_nucel_mat_mixed,II_get_nucel_mat_mixed_full,&
        & II_get_magderivOverlap,II_get_maggradOverlap,II_get_magderivOverlapR,&
        & II_get_magderivOverlapL,II_get_ep_integrals,II_get_ep_integrals2,&
-       & II_get_ep_integrals3,II_GET_MOLECULAR_GRADIENT,&
+       & II_get_ep_integrals3,II_get_ep_ab,II_GET_MOLECULAR_GRADIENT,&
        & II_get_twoElectron_gradient,II_get_K_gradient,II_get_K_gradientfull,&
        & II_get_regular_K_gradient,II_get_J_gradient,&
        & II_get_J_gradient_regular,II_get_oneElectron_gradient,&
@@ -453,6 +453,46 @@ CALL LSTIMER('NucElec',TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_nucel_mat)
 
 END SUBROUTINE II_get_nucel_mat
+
+!> \brief Calculates the electrostatic potential integrals
+!> \author S. Reine
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param ep the electrostatic potential integrals v_ab = sum_C (ab|C) Z_C
+!> \param N the number of nuclei
+!> \param R the center of the nuclei
+!> \param charge the charge of the nuclei
+SUBROUTINE II_get_ep_ab(LUPRI,LUERR,SETTING,ep,N,R,charge)
+IMPLICIT NONE
+TYPE(MATRIX),target :: ep
+INTEGER             :: LUPRI,LUERR,N
+REAL(realk)         :: R(3,N) !vector R={x,y,z}
+REAL(realk)         :: charge(N)
+TYPE(LSSETTING)     :: SETTING
+!
+type(MOLECULEINFO),pointer :: molecule,Point
+
+!Build the point charges from the centers and charges
+allocate(Point)
+call build_pointMolecule(Point,R,N,lupri,charge)
+molecule => setting%MOLECULE(1)%p
+
+!Specify that we use the regular molecule for AO 1 and 2, and the point charges for AO 3
+call typedef_setMolecules(setting,molecule,1,2,point,3)
+
+!Calculate the integrals and contract with the charges: sum_N (ab|R(N)) charge(N)
+call II_get_nucel_mat(LUPRI,LUERR,SETTING,ep)
+
+!Free the point charges
+call free_Moleculeinfo(Point)
+deallocate(Point)
+
+!Reset molecule 
+call typedef_setMolecules(setting,molecule,1,2,3,4)
+
+END SUBROUTINE II_get_ep_ab
 
 !> \brief Calculates the nuclear attraction fock matrix contribution
 !> \author S. Reine
