@@ -1,27 +1,9 @@
 
 
-This will be the next patch
-===========================
+2014.0 (2014-09-08)
+===================
 
-Common
-------
-
-DALTON
-------
-
-- Memory bugfix for serial PCM calculations, causing a segmentation fault for large PCM cavities.  
-
-
-LSDALTON
---------
-
-- write me ...
-
-
-===========================
-DO NOT EDIT BELOW THIS LINE
-===========================
-
+See http://daltonprogram.org for the list of features.
 
 
 2013.3 (2014-06-11)
