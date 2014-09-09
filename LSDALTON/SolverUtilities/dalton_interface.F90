@@ -2148,7 +2148,7 @@ CONTAINS
       logical :: PRINT_EK3
 #ifdef PCM_MODULE
       type(matrix) :: fockPCM(ndmat)
-      real(realk)  :: Epol(ndmat)
+      real(realk)  :: Epol
 #endif      
       !
       PRINT_EK3 = ls%setting%scheme%PRINT_EK3
@@ -2236,20 +2236,20 @@ ENDIF
       ENDIF
 #ifdef PCM_MODULE
       if (pcm_config%do_pcm) then
+         ! ndmat is 1
          ! Calculate polarization energy and update Etotal
-         !call ls_pcm_energy_driver(D, Epol)
-         !do idmat=1,ndmat                                 
-         !   Etotal(idmat) = Etotal(idmat) + Epol(idmat)
-         !enddo
+         do idmat = 1, ndmat             
+            call ls_pcm_energy_driver(D(idmat), Epol)
+            Etotal(idmat) = Etotal(idmat) + Epol
+         enddo
          ! Update Fock matrix with PCM contribution
-         !do idmat = 1, ndmat
-         !   call mat_init(fockPCM(idmat), nbast, nbast)
-         !   call mat_zero(fockPCM(idmat))
-         !   call ls_pcm_oper_ao_driver(fockPCM(idmat))
-         !   call mat_daxpy(1.e0_realk, fockPCM(idmat), F(idmat))
-         !   call mat_free(fockPCM(idmat))
-         !   call mat_free(fockPCM(idmat))
-         !end do
+         do idmat = 1, ndmat
+            call mat_init(fockPCM(idmat), nbast, nbast)
+            call mat_zero(fockPCM(idmat))
+            call ls_pcm_oper_ao_driver(fockPCM(idmat))
+            call mat_daxpy(-1.e0_realk, fockPCM(idmat), F(idmat))
+            call mat_free(fockPCM(idmat))
+         end do
       end if
 #endif      
       !** F = h + G

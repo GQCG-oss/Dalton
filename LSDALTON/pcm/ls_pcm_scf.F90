@@ -13,6 +13,8 @@ public ls_pcm_scf_finalize
 public ls_pcm_energy_driver
 public ls_pcm_oper_ao_driver
 
+public get_pcm_energy
+
 private
 
 ! if false the interface will refuse to be accessed
@@ -134,7 +136,7 @@ end subroutine ls_pcm_energy_driver
 !> apparent surface charge specified by the charge_name variable.
 subroutine ls_pcm_oper_ao_driver(oper)
    
-   use ls_pcm_integrals, only: get_electronic_mep
+   use integralinterfacemod, only: II_get_ep_ab               
    use matrix_module
    
    type(matrix) :: oper
@@ -148,13 +150,30 @@ subroutine ls_pcm_oper_ao_driver(oper)
    allocate(asc(nr_points))
    asc = 0.0d0
    call get_surface_function(nr_points, asc, charge_name)
-   call get_electronic_mep(nr_points, tess_cent, asc, oper, .true., &
-                           integral_settings, global_print_unit, global_error_unit)
+   call II_get_ep_ab(global_print_unit, &
+                     global_error_unit, &
+                     integral_settings, &
+                     oper,              &
+                     nr_points,         &
+                     tess_cent,         &
+                     asc)
+
    deallocate(asc)
    
    scf_iteration_counter = scf_iteration_counter + 1
 
 end subroutine ls_pcm_oper_ao_driver
+
+!> \brief handle to the PCM polarization energy  
+!> \author R. Di Remigio
+!> \date 2014
+!>
+!> Retrieve the PCM polarization energy contribution. 
+real(c_double) function get_pcm_energy()
+   
+   get_pcm_energy = pcm_energy
+
+end function get_pcm_energy                
 
 !> \brief driver for PCM Fock matrix contribution calculation  
 !> \author R. Di Remigio
@@ -236,7 +255,7 @@ subroutine compute_mep_asc(density_matrix)
    
       potName2 = 'EleMEP'//char(0)
       chgName2 = 'EleASC'//char(0)
-      call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, .false., &
+      call get_electronic_mep(nr_points, tess_cent, ele_pot, density_matrix, &
                               integral_settings, global_print_unit, global_error_unit)
       call set_surface_function(nr_points, ele_pot, potName2)
       call compute_asc(potName2, chgName2, irrep)

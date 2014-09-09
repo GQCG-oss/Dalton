@@ -102,7 +102,7 @@ subroutine ls_pcm_write_file(nr_points, potentials, charges)
       tot_chg = tot_chg + charges(ipoint)
       write(pcm_file_unit, for_data) ipoint, potentials(ipoint), charges(ipoint)
    end do
-   write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_chg
+   write(pcm_file_unit, '(A, F20.12)') 'Sum of apparent surface charges ', tot_chg
  
 end subroutine ls_pcm_write_file
    
@@ -153,9 +153,9 @@ subroutine ls_pcm_write_file_separate(nr_points, nuc_pot, nuc_chg, ele_pot, ele_
       tot_ele_chg = tot_ele_chg + ele_chg(ipoint)
       write(pcm_file_unit, for_data) ipoint, nuc_pot(ipoint), nuc_chg(ipoint), ele_pot(ipoint), ele_chg(ipoint)
    end do
-   write(pcm_file_unit, '(A, F15.12)') 'Sum of nuclear apparent charges ', tot_nuc_chg
-   write(pcm_file_unit, '(A, F15.12)') 'Sum of electronic apparent charges ', tot_ele_chg
-   write(pcm_file_unit, '(A, F15.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
+   write(pcm_file_unit, '(A, F20.12)') 'Sum of nuclear apparent charges ', tot_nuc_chg
+   write(pcm_file_unit, '(A, F20.12)') 'Sum of electronic apparent charges ', tot_ele_chg
+   write(pcm_file_unit, '(A, F20.12)') 'Sum of apparent surface charges ', tot_nuc_chg + tot_ele_chg
  
 end subroutine ls_pcm_write_file_separate 
    

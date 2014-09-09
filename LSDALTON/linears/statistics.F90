@@ -7,6 +7,10 @@
 MODULE scf_stats
    !FIXME:       Without the stat_tab information, the computation crashes
    use opttype
+#ifdef PCM_MODULE
+   use ls_pcm_scf, only: get_pcm_energy
+   use ls_pcm_config
+#endif
    public
    private :: scf_stats_print_table_header,stat_ao_grad,stat_oao_grad!,scf_stats_print_table !Stinne comment
    ! we do not try to collect data from more than 100 iterations.
@@ -296,6 +300,11 @@ MODULE scf_stats
       else
          call lsquit('Calculation type has not been set',opt%lupri)
       endif
+#ifdef PCM_MODULE
+      if (pcm_config%do_pcm) then
+         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f20.12)') get_pcm_energy()
+      end if              
+#endif      
       WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc
       WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') stat_energy(stat_current_iteration)-opt%potnuc
       WRITE(opt%LUPRI,*)

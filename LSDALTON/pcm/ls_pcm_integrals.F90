@@ -34,7 +34,7 @@ subroutine get_mep(nr_points, centers, mep, density, setting, lupri, luerr)
    type(lssetting), intent(in)  :: setting
    integer,         intent(in)  :: lupri, luerr
    
-   call get_electronic_mep(nr_points, centers, mep, density, .false., setting, lupri, luerr)
+   call get_electronic_mep(nr_points, centers, mep, density, setting, lupri, luerr)
    call get_nuclear_mep(nr_points, centers, mep)
 
 end subroutine get_mep
@@ -84,9 +84,8 @@ end subroutine get_nuclear_mep
 !> \date 2014
 !> \param nr_points the number of cavity points
 !> \param centers the cavity points
-!> \param vector MEP or apparent surface charge (ASC) vector
-!> \param mat density or Fock matrix
-!> \param get_matrix whether to calculate a MEP or the PCM Fock matrix contribution 
+!> \param mep MEP vector
+!> \param density_matrix density matrix
 !>
 !> Driver routine for the calculation of the electronic part of the molecular               
 !> electrostatic potential on a certain grid of points {r_i}:
@@ -94,54 +93,28 @@ end subroutine get_nuclear_mep
 !> tr is the trace operator, D is the density matrix, V^i is the matrix of the 
 !> "nuclear attraction" integrals calculated at point r_i of the grid:
 !>     V_mu,nu,i =  - <mu|1/|r-r_i||nu>
-!> 
-!> Written, tested, debugged: R. Di Remigio
-!> 
-!> RDR 060914 This routine will be used to form both potentials and Fock
-!>            matrix contribution for PCM.
-!>            matrix is Fock or density matrix, vector is potentials 
-!>            or charges vector.
-!>            get_matrix logical is present and TRUE:
-!>            charges vector as input, Fock matrix contribution as output.
-!>            get_matrix logical is absent or is present and FALSE:
-!>            density matrix as input, potentials vector as output.                        
-subroutine get_electronic_mep(nr_points, centers, vector, mat, get_matrix, setting, lupri, luerr)
+subroutine get_electronic_mep(nr_points, centers, mep, density_matrix, setting, lupri, luerr)
    
-   use integralinterfacemod, only: II_get_ep_integrals3 
+   use integralinterfacemod, only: II_get_ep_integrals3, II_get_ep_ab 
    use matrix_module
-   use matrix_operations
 
-   integer,         intent(in)    :: nr_points                            
-   real(8),         intent(in)    :: centers(3, nr_points)
-   real(8),         intent(out)   :: vector(nr_points) 
-   type(matrix)                   :: mat                           
-   logical, optional              :: get_matrix 
-   type(lssetting), intent(in)    :: setting
-   integer,         intent(in)    :: lupri, luerr
-   ! Local variables
-   logical              :: do_matrix
-   integer              :: ipoint
+   integer,         intent(in)  :: nr_points                            
+   real(8),         intent(in)  :: centers(3, nr_points)
+   real(8),         intent(out) :: mep(nr_points) 
+   type(matrix)                 :: density_matrix                           
+   type(lssetting), intent(in)  :: setting
+   integer,         intent(in)  :: lupri, luerr
+   !integer              :: ipoint
             
-   ! Fock matrix contribution or potential calculation?      
-   do_matrix = .false. 
-   if (present(get_matrix)) then
-     if (get_matrix) then
-       do_matrix = .true.
-     end if
-   end if
-   
-   FockContribution: if (do_matrix) then
-      ! Calculate a Fock matrix contribution
-   else FockContribution
-      ! Just get the electronic MEP here
-      call II_get_ep_integrals3(lupri,     &
-                                luerr,     &
-                                setting,   &
-                                centers,   &
-                                nr_points, &
-                                mat,       &
-                                vector)
-   end if FockContribution
+   call II_get_ep_integrals3(lupri,          &
+                             luerr,          &
+                             setting,        &
+                             centers,        &
+                             nr_points,      &
+                             density_matrix, &
+                             mep)
+   ! Change the sign             
+   mep = -1.0 * mep
   
    !print *, "Debug print of v_ele at cavity points"
    !if (do_matrix) then
