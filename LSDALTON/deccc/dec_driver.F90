@@ -158,11 +158,14 @@ contains
     real(realk),dimension(natoms,natoms),intent(inout) :: FragEnergiesOcc
     logical :: esti
     ! Fragment energies
-    real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
+    !real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
+    real(realk),pointer :: FragEnergies(:,:,:) !(natoms,natoms,ndecenergies)
     type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
-    real(realk) :: energies(ndecenergies)
-    real(realk) :: Interactionenergies(ndecenergies)
+    !real(realk) :: energies(ndecenergies)
+    !real(realk) :: Interactionenergies(ndecenergies)
+    real(realk),pointer :: energies(:)!(ndecenergies)
+    real(realk),pointer :: Interactionenergies(:)!(ndecenergies)
     real(realk) :: InteractionEcorr
     real(realk) :: InteractionEerr
     logical :: dens_save ! Internal control of MP2 density keyword
@@ -203,6 +206,7 @@ contains
     do i=1,natoms
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
+    call mem_alloc(FragEnergies,natoms,natoms,ndecenergies)
     FragEnergies=0E0_realk
 
     ! Find out which atoms have one or more orbitals assigned
@@ -280,18 +284,6 @@ contains
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
 
 
-    !Crash calculation on purpose to test restart option
-    IF(DECinfo%CRASHCALC)THEN
-       print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
-       print*,'This keyword is only used for debug and testing purposes'
-       print*,'We want to be able to test the .RESTART keyword'
-       WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
-       WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
-       WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
-       call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
-    ENDIF
-
-
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
 #ifdef VAR_MPI
@@ -351,6 +343,18 @@ contains
     calcAF = DECinfo%RepeatAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
+
+
+    !Crash calculation on purpose to test restart option
+    IF(DECinfo%CRASHCALC)THEN
+       print*,'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       print*,'This keyword is only used for debug and testing purposes'
+       print*,'We want to be able to test the .RESTART keyword'
+       WRITE(DECinfo%output,*)'Calculation was intentionally crashed due to keyword .CRASHCALC'
+       WRITE(DECinfo%output,*)'This keyword is only used for debug and testing purposes'
+       WRITE(DECinfo%output,*)'We want to be able to test the .RESTART keyword'
+       call lsquit('Crashed Calculation due to .CRASHCALC keyword',DECinfo%output)
+    ENDIF
 
     ! Zero fragment energies if they are recalculated
     if(calcAF) then
@@ -484,6 +488,7 @@ contains
     end if
 #endif
 
+    call mem_alloc(energies,ndecenergies)
     IF(DECinfo%InteractionEnergy)THEN
        ! Interaction correlation energy 
        do j=1,ndecenergies
@@ -496,6 +501,7 @@ contains
           call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
        end do
        if(DECinfo%PrintInteractionEnergy)then
+         call mem_alloc(Interactionenergies,ndecenergies)
           do j=1,ndecenergies
              call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
                   & Interactionenergies(j),mymolecule%SubSystemIndex)
@@ -506,6 +512,7 @@ contains
     ! Print all fragment energies
     call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
+     call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
     InteractionEcorr = 0.0E0_realk
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
@@ -554,12 +561,14 @@ contains
 
     ! Estimate energy error
     call get_estimated_energy_error(natoms,energies,Eerr)
+    call mem_dealloc(energies)
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
     IF(DECinfo%PrintInteractionEnergy)THEN
        call get_estimated_energy_error(natoms,Interactionenergies,InteractionEerr)
        call print_Interaction_energy(InteractionEcorr,InteractionEerr)   
+       call mem_dealloc(Interactionenergies)
     ENDIF
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
@@ -611,6 +620,15 @@ contains
        ELSE
           Ecorr = energies(FRAGMODEL_OCCCCSD)
        ENDIF
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          IF(DECinfo%onlyVirtPart)THEN
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_VIRTMP2)
+          ELSE
+             Ecorr = energies(FRAGMODEL_CCSDf12) + energies(FRAGMODEL_OCCMP2)
+          ENDIF
+       endif
+#endif 
     case(MODEL_CCSDpT)
        ! CCSD(T), use occ energy - of course include both CCSD and (T) contributions
        IF(DECinfo%onlyVirtPart)THEN
@@ -650,14 +668,19 @@ subroutine print_dec_info()
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
-        write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
-          & DECinfo%estimateINITradius*bohr_to_angstrom
+        if (DECinfo%orb_based_fragopt) then 
+           write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom     = ',&
+             & DECinfo%estimateInitAtom
+        else
+           write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
+             & DECinfo%estimateINITradius*bohr_to_angstrom
+        end if
    endif
 
    write(LU,'(a,g15.3)') 'Simple orbital thr.                                 = ',&
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
-        & DECinfo%FragmentExpansionSize
+        & DECinfo%Frag_Exp_Size
    write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
         & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL

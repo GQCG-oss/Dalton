@@ -43,7 +43,7 @@ C
 	 ISDEL  = MULD2H(ISGAM,ISALBE)
          if (isdel .ne. isymdel) then
             print*,'Keld: Something is WRONG in SO_SIGDA'
-            stop
+            call quit('Keld: Something is WRONG in SO_SIGDA')
          end if
 C
          LSCR1  = N2BST(ISALBE)

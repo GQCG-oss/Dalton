@@ -475,7 +475,7 @@ INTERFACE mem_alloc
       TYPE(lattice_cell_info_t) :: lattice_cellitem
 #endif
       ! Size of buffer handling for long integer buffer
-      longintbuffersize = 78
+      longintbuffersize = 79
 
 #if defined (VAR_XLF) || defined (VAR_G95) || defined (VAR_CRAY)
 #ifdef VAR_LSDEBUG
@@ -7563,9 +7563,10 @@ subroutine copy_from_mem_stats(longintbufferInt)
    longintbufferInt(74) = max_mem_used_DECAOBATCHINFO
    longintbufferInt(75) = mem_allocated_PNOSpaceInfo
    longintbufferInt(76) = max_mem_used_PNOSpaceInfo
+   longintbufferInt(77) = max_mem_used_type_matrix_MPIFULL
 #ifdef MOD_UNRELEASED
-   longintbufferInt(77) = mem_allocated_lvec_data
-   longintbufferInt(78) = mem_allocated_lattice_cell
+   longintbufferInt(78) = mem_allocated_lvec_data
+   longintbufferInt(79) = mem_allocated_lattice_cell
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!
@@ -7648,9 +7649,10 @@ subroutine copy_to_mem_stats(longintbufferInt)
    max_mem_used_DECAOBATCHINFO = longintbufferInt(74)
    mem_allocated_PNOSpaceInfo = longintbufferInt(75)
    max_mem_used_PNOSpaceInfo = longintbufferInt(76)
+   max_mem_used_type_matrix_MPIFULL = longintbufferInt(77)
 #ifdef MOD_UNRELEASED
-   mem_allocated_lvec_data = longintbufferInt(77)
-   mem_allocated_lattice_cell = longintbufferInt(78)
+   mem_allocated_lvec_data = longintbufferInt(78)
+   mem_allocated_lattice_cell = longintbufferInt(79)
 #endif
    ! NOTE: If you add stuff here, remember to change
    ! longintbuffersize accordingly!

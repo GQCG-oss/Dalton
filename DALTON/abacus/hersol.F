@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck rlmset */
       SUBROUTINE RLMSET_CBISOL(LMAX)
@@ -990,9 +989,10 @@ C
       END
 #ifdef UNDEF
 /* Comdeck log */
-960417- kr
- TLMD is also needed for dipole gradient, thus TLMD for MAXDIF .ge. 2 or DIFDIP
-921209- get cavity center from CBISOL; only calc. TLMD for MAXDIF .ge. 2;
+960417- kr TLMD is also needed for dipole gradient,
+           thus TLMD for MAXDIF .ge. 2 or DIFDIP
+921209- get cavity center from CBISOL;
+        only calc. TLMD for MAXDIF .ge. 2;
         only calc. GSOLT for MAXDIF .ge. 1
 921013-kvm+hjaaj
  removed FAC, center C always different from center A

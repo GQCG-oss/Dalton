@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -25,7 +25,6 @@ C
 C FILE    : herrdn.F
 C
 C
-#include "single.h"
 C
 #ifdef OLD_REVISION_LOG
 c===========================================================================
@@ -470,6 +469,7 @@ C
 #include "aosotr.h"
 #include "infpar.h"
 #include "huckel.h"
+#include "optinf.h" ! ITRNMR and IPRE
 C
       CHARACTER*(len_MLINE) TMP_MLINE
 C
@@ -3283,13 +3283,29 @@ C
 C     Process basis data
 C
 C******************************************************************************
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
+
 #include "implicit.h"
+
+#ifdef ENABLE_EFS
+      type(atom_type) :: atype
+      real(8)         :: DMthresh
+#endif
+
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
+
+#ifdef VAR_MPI
+#include "mpif.h"
+#include "infpar.h"
+#endif
+
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -3409,6 +3425,92 @@ C
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE ! DO 10 I = 1,NONTYP
 C
+#ifdef ENABLE_EFS
+      call MPI_COMM_RANK(MPI_COMM_WORLD, irank, ierror)
+      if ((.not. efs_interface_is_initialized) 
+     &    .and. (irank.eq.MASTER)) then
+
+        jblock = 0
+        icent  = 0
+
+        do i = 1, nontyp
+
+          ! copy list of atomic centers for current element
+          atype%nr_centers = nont(i)
+          allocate( atype%centers( nont(i) ) )
+
+          do n = 1, nont(i)
+            icent  = icent + 1
+            atype%centers(n)%x = cord(1, icent)
+            atype%centers(n)%y = cord(2, icent)
+            atype%centers(n)%z = cord(3, icent)
+          end do
+
+          ! copy basis set definition
+          nr_gtos = 0
+          do j = 1, iqm(i)
+             do k = 1, jco(j,i)
+                nr_gtos = nr_gtos + 1
+             end do
+          end do
+
+          atype%nr_gtos = nr_gtos
+          allocate(atype%gtos(nr_gtos))
+
+          lb = jblock
+
+          igto = 0
+          do j = 1, iqm(i)
+            do k = 1, jco(j, i)
+              igto = igto + 1
+              lb = lb + 1
+              atype%gtos(igto)%angular_momentum = j-1
+              atype%gtos(igto)%nr_primitives    = nuc(lb)
+              atype%gtos(igto)%nr_contractions  = nrc(lb)
+              do l = 1, nuc(lb)
+                atype%gtos(igto)%primitive_exp(l)
+     &              = alpha(l, lb)
+                do m = 1, nrc(lb)
+                  atype%gtos(igto)%contract_coef(m, l)
+     &                = cprim(l, m, lb)
+                end do
+              end do
+
+            end do
+          end do
+
+          jblock = jblock + nblck(i)
+
+          !add the atom type to the list in k4m
+#ifdef VAR_MPI
+          call mpixbcast (const_add_atomtype, 1, 'INTEGER', MASTER)
+          iprint = 0
+          call mpixbcast (iprint,             1, 'INTEGER', MASTER)
+#endif
+
+          call efs_add_atomtype( atype%centers,
+     &        atype%gtos, atype%nr_centers, 
+     &        atype%nr_gtos )
+
+          !free memory
+          deallocate( atype%centers )
+          deallocate( atype%gtos )
+
+        end do
+
+        !print the atom types to check everything is ok
+        !call efs_print()
+#ifdef VAR_MPI
+        call mpixbcast (const_init, 1, 'INTEGER', MASTER)
+        iprint = 0
+        call mpixbcast (iprint,     1, 'INTEGER', MASTER)
+#endif
+        call efs_init ()
+
+        efs_interface_is_initialized = .true.
+      end if
+#endif
+
       !Add exp(0) function (needed in 2- and 3-index integrals)
       !as an extra "0" class for ATOMDF case
       IF (LCOMP .EQ. 3) THEN

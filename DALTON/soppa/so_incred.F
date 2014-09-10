@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_incred */
       SUBROUTINE SO_INCRED(NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,

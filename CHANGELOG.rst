@@ -1,27 +1,29 @@
 
 
-This will be the next patch
-===========================
+2014.0 (2014-09-08)
+===================
 
-Common
-------
+See the release notes at http://daltonprogram.org for a list of new features in
+Dalton and LSDalton.
+
+
+2013.4 (2014-07-10)
+===================
 
 DALTON
 ------
 
-- Memory bugfix for serial PCM calculations, causing a segmentation fault for large PCM cavities.  
+- Memory bugfix for serial PCM calculations (segmentation fault for large PCM cavities).
 
 
 LSDALTON
 --------
 
-- write me ...
-
-
-===========================
-DO NOT EDIT BELOW THIS LINE
-===========================
-
+- Fixed a bug in the basis set reading. This bugfix affects almost no basis sets,
+  and none of the standard basis sets, but a very few general contracted basis sets
+  where the first contracted function had much smaller number of
+  primitives compared to the last: Basis sets such as the pcS-1 basis set.
+- Reduced the memory requirements for internal MPI buffer handling.
 
 
 2013.3 (2014-06-11)

@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,10 +21,9 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef REV_LOG
-===========================================================================
+========================================================================
 Revision 1.2  2001/01/31 17:51:20  vebjornb
 Parallel modifications from pdahle, MPI and PVM
 
@@ -37,7 +36,7 @@ Revision 1.3  2000/05/04 12:26:07  hjj
 Revision 1.2  2000/05/04 10:19:53  hjj
 (1) LUPROP .eq. 0 tests changed to LUPROP .le. 0
 (2) open LUPROP as unknown in GABGEN
-===========================================================================
+========================================================================
 #endif
 C/* Deck gabdrv */
       SUBROUTINE GABDRV(GABM,WORK,LWORK,IJOB,ITYPE,IGTYP,

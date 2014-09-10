@@ -1422,25 +1422,25 @@ Contains
     write(lupri,*) 
     write(lupri,*) 
     write(lupri,*) 
-    write(lupri,'(2X,A)') '*************************************************************&
+    write(lupri,'(2X,A)') '********************************************************&
          &**********************'
-    write(lupri,'(2X,A)') '*                     ONE-PHOTON ABSORPTION RESULTS (in a.u.)&
-         &                     *'
-    write(lupri,'(2X,A)') '*************************************************************&
+    write(lupri,'(2X,A)') '*                   ONE-PHOTON ABSORPTION RESULTS (in a.u.)&
+         &                  *'
+    write(lupri,'(2X,A)') '********************************************************&
          &**********************'
     write(lupri,*)
     write(lupri,*) 
     write(lupri,*) 
-    write(lupri,*) '  Excitation                 Transition Dipole Moments         &
+    write(lupri,*) '     Excitation              Transition Dipole Moments      &
          &         Oscillator'
-    write(lupri,*) '   Energies              x                y                z   &
+    write(lupri,*) '      Energies            x               y               z  &
          &         Strengths'
-    write(lupri,*) '========================================================================&
+    write(lupri,*) '===================================================================&
          &============'
 
     PrintExcitationLoop: do i=1,nexci
 
-       write(lupri,'(5g17.8)') ExEnergies(i), trans_moments(i,1:3), OscillatorStrength(i)
+       write(lupri,'(5f16.8)') ExEnergies(i), trans_moments(i,1:3), OscillatorStrength(i)
 
     end do PrintExcitationLoop
 

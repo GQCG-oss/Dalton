@@ -522,7 +522,7 @@ module crop_tools_module
          write(DECinfo%output,'(/,a)') '-------------------------------'
          write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
          write(DECinfo%output,'(a,/)') '-------------------------------'
-         if(bi) then
+         if(bi.and.li<DECinfo%ccMaxIter) then
             if(gm)then
                write(DECinfo%output,'(a)')     'Yeeehaw! left-transformations converged!'
             else

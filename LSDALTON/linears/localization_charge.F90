@@ -104,7 +104,7 @@ integer     :: minel_pos(2)
  & ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region =', CFG%stepsize, ' step =',stepsize
 
 
-   if( nrmG .le. CFG%macro_thresh) exit
+   if( nrmG .le. CFG%macro_thresh .and. i.gt.1) exit
    
    call davidson_solver(CFG,G,X)
    if (CFG%PM_input%PipekMezeyMull) call mat_scal(-1d0,X)

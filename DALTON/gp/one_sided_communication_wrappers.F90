@@ -5,7 +5,7 @@
 
 ! this module contains macros for MPI-one-sided communication calls.
 !
-! re-written by sknecht for Dalton - linkoeping jan 2013
+! re-written by sknecht for Dalton - linkoeping jan 2014
 ! original collection in Dirac - sknecht October 2007
 !
 !
