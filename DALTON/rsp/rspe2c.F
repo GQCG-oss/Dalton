@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef OLD_LOG
 ===========================================================================
@@ -134,10 +133,6 @@ C
 C
       CALL REWSPL(LURSP3)
       CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-      JRSP3 = 0
-      JRSP5 = 0
-#endif
       JBOOFF = KBOVEC
       JBCOFF = KBCVEC
       JE2OFF = KE2LIN
@@ -147,25 +142,12 @@ C
       IF (SOPPA) THEN
          JDIAE = KDIAE
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-         CALL READST(LURSP4,LRSP4,WRK(JDIAE),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in E2SYM')
-#else
          CALL READT(LURSP4,KZCONF,WRK(JDIAE))
-#endif
       ENDIF
       CALL DZERO(WRK(KBCVEC),2*NCTOT*KZYCON)
       DO 15 J = 1,KZDIM
          IF (IBTYP(J).EQ.JBONDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK(JBOOFF),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in E2SYM')
-#else
             CALL READT(LURSP3,KZYWOP,WRK(JBOOFF))
-#endif
             CALL DCOPY(KZWOPT,WRK(JBOOFF),1,WRK(JBOOFF+JOTOT+KZWOPT),1)
             CALL DCOPY(KZWOPT,WRK(JBOOFF+KZWOPT),1,WRK(JBOOFF+JOTOT),1)
             CALL DZERO(WRK(JS2OFF),KZYVAR)
@@ -173,34 +155,16 @@ C
      *      CALL RSPSLI(0,1,WRK(JBOOFF),WRK(JBOOFF),UDV,WRK(JS2OFF),
      *                  XINDX,WRK(KWRK1),LWRK1)
             JBOOFF = JBOOFF + KZYWOP
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,WRK(JE2OFF),JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM')
-#else
             CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
-#endif
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK(JBCOFF),JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in E2SYM (2)')
-#else
             CALL READT(LURSP3,KZCONF,WRK(JBCOFF))
-#endif
             CALL DCOPY(KZCONF,WRK(JBCOFF),1,WRK(JBCOFF+JCTOT+KZCONF),1)
             CALL DZERO(WRK(JS2OFF),KZYVAR)
             IF (KZCONF.GT.0)
      *      CALL RSPSLI(1,0,WRK(JBCOFF),WRK(JBCOFF),UDV,WRK(JS2OFF),
      *                  XINDX,WRK(KWRK1),LWRK1)
             IF (SOPPA) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,WRK(JE2OFF+KZCONF),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM (2)')
-#else
                CALL READT(LURSP5,KZYWOP,WRK(JE2OFF+KZCONF))
-#endif
                CALL DCOPY(KZWOPT,WRK(JE2OFF+KZVAR),1,
      *                    WRK(JE2OFF+KZVAR+KZCONF),1)
                DO I=0,KZCONF-1
@@ -208,13 +172,7 @@ C
                END DO
                CALL DZERO(WRK(JE2OFF+KZVAR),KZCONF)
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,WRK(JE2OFF),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP5 in E2SYM (2)')
-#else
                CALL READT(LURSP5,KZYVAR,WRK(JE2OFF))
-#endif
             END IF
             CALL DCOPY(KZVAR,WRK(JE2OFF+KZVAR),1,
      *                 WRK(JE2OFF+KZDIM*KZYVAR),1)
@@ -1260,12 +1218,7 @@ C
          JRSP5 = 0
          JZDIM = 0
          DO 50 I = 1,KZDIM
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-            IF (LRSP5 .EQ. -1) GOTO 51
-#else
             READ (LURSP5,END=51,ERR=51) JUNK
-#endif
             JZDIM = I
   50     CONTINUE
   51     CONTINUE
@@ -1287,37 +1240,18 @@ C
          JLRSTV = KZDIM
          CALL REWSPL(LURSP3)
          CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-         JRSP3 = 0
-         JRSP5 = 0
-#endif
  200     CONTINUE
             NLOAD  = NLOAD +1
             IF ((NLOAD.EQ.1).AND.(KOFFTY.EQ.1)) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-               CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
                READ (LURSP3)
                READ (LURSP5)
-#endif
                JLRSTV = JLRSTV - 1
             ENDIF
             IF ( NLOAD .GT. 1) THEN
                CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
                IF ( KOFFTY.EQ.1)READ (LURSP3)
-#else
-               JRSP3 = 0
-               IF (KOFFTY.EQ.1)
-     &              CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
                DO 61 IVEC = 1,KZRED
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
                   READ (LURSP3)
-#endif
  61            CONTINUE
             END IF
             NSIM   = MIN(MAXSIM,JLRSTV)
@@ -1348,37 +1282,17 @@ C
             ISTEO  = KEOVEC
             IF (SOPPA) THEN
                CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-               JRSP4 = 0
-               CALL READST(LURSP4,LRSP4,WRK(KDIAE),JRSP4,.TRUE.)
-               IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP4 in LRST')
-#else
                CALL READT(LURSP4,KZCONF,WRK(KDIAE))
-#endif
             ENDIF
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KOFFTY+KZRED+ISIM).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in LRST')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
 C
 C   If SOPPA read in the p-h part of the transformed vector
 C   and construct the 2p-2h part and put everything as if read
 C
                   IF (SOPPA) THEN
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,
-     &                           WRK(ISTEC+KZCONF),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST')
-#else
                      CALL READT(LURSP5,KZYWOP,WRK(ISTEC+KZCONF))
-#endif
                      CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR),1,
      *                          WRK(ISTEC+KZVAR+KZCONF),1)
                      DO I=0,KZCONF-1
@@ -1386,28 +1300,13 @@ C
                      ENDDO
                      CALL DZERO(WRK(ISTEC+KZVAR),KZCONF)
                   ELSE
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,WRK(ISTEC),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST (2)')
-#else
                      CALL READT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                   ENDIF
                   ISTBC = ISTBC + KZCONF
                   ISTEC = ISTEC + KZYVAR
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in LRST')
-                  CALL READST(LURSP5,LRSP5,WRK(ISTEO),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in LRST (3)')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
                   CALL READT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                   ISTEO = ISTEO + KZYVAR
                ENDIF
@@ -1437,18 +1336,9 @@ C        ^--------------
          IF (KOFFTY.EQ.1) THEN
             CALL REWSPL(LURSP3)
             CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-            JRSP3 = 0
-            JRSP5 = 0
-#endif
             CALL GETREF(WRK,KZCONF)
-#if defined (VAR_SPLITFILES)
-            CALL WRITST(LURSP3,KZCONF,WRK,JRSP3)
-            CALL WRITST(LURSP5,1,DUMMY,JRSP5)
-#else
             CALL WRITT(LURSP3,KZCONF,WRK)
             WRITE (LURSP5) D0, D0, D0, D0
-#endif
 Chj         ... rec. 1 on LURSP5 should never be read when KOFFTY .eq. 1
             IBTYP(1) = JBCNDX
             IF (IPRRSP.GT.75) THEN
@@ -2857,39 +2747,17 @@ C
          IF (LWRK1.LT.0) CALL ERRWRK('RSPCTL 1',KWRK1-1,LWRK)
          IF (.NOT.BINMEM) THEN
             CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
             IF (KOFFTY.EQ.1) READ (LURSP3)
-#else
-            JRSP3 = 0
-            IF (KOFFTY.EQ.1)
-     &           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
             DO 210 I=1,KZRED
-#if defined (VAR_SPLITFILES)
- 210           CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
  210           READ (LURSP3)
-#endif
             ISTBC = KBCVEC
             ISTBO = KBOVEC
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KZRED+ISIM+KOFFTY).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
                   ISTBC = ISTBC + KZCONF
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in RSPCTL')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                ENDIF
  400        CONTINUE
@@ -2934,19 +2802,11 @@ C
          CALL REWSPL(LURSP5)
          JRSP5 = 0
          IF (KOFFTY.EQ.1) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
             READ (LURSP5)
-#endif
          ENDIF
-         DO 215 I=1,KZRED
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-#else
+         DO, I=1,KZRED
             READ (LURSP5)
-#endif
- 215     CONTINUE
+         END DO
          ISTEC = KEVECS
          ISTEO = ISTEC + NCSIM*KZYVAR
          DO 216 ISIM=1,NSIM
@@ -2960,23 +2820,13 @@ C
      *                       WRK(KSOP1),1)
                   CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR+KZCONF),1,
      *                       WRK(KSOP1+KZWOPT),1)
-#if defined (VAR_SPLITFILES)
-                  CALL WRITST(LURSP5,KZYWOP,WRK(KSOP1),JRSP5)
-               ELSE
-                  CALL WRITST(LURSP5,KZYVAR,WRK(ISTEC),JRSP5)
-#else
                   CALL WRITT(LURSP5,KZYWOP,WRK(KSOP1))
                ELSE
                   CALL WRITT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                ENDIF
                ISTEC = ISTEC + KZYVAR
             ELSE
-#if defined (VAR_SPLITFILES)
-               CALL WRITST(LURSP5,KZYVAR,WRK(ISTEO),JRSP5)
-#else
                CALL WRITT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                ISTEO = ISTEO + KZYVAR
             ENDIF
  216     CONTINUE
@@ -3127,29 +2977,14 @@ C
 #include "infpri.h"
 C
       CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-      JRSP4 = 0
-#endif
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPDIA')
-#else
          CALL READT (LURSP4,KZCONF,A)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1+KZCONF),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPDIA (2)')
-#else
          CALL READT (LURSP4,KZWOPT,A(1+KZCONF))
-#endif
       END IF
 C
 C A(1:KZVAR):         (E+SHIFT*S)
@@ -3165,13 +3000,7 @@ Chj            A(I+KZVAR) = A(I+KZVAR)*SHIFT
          END IF
          IF (KZWOPT .GT. 0) THEN
 C *** now READ orbital diagonal of S[2]-matrix
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP4,LRSP4,A(1+KZVAR+KZCONF),JRSP4,.TRUE.)
-            IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record'//
-     &           ' length on unit LURSP4 in RSPDIA (3)')
-#else
             CALL READT (LURSP4,KZWOPT,A(1+KZVAR+KZCONF))
-#endif
             CALL DSCAL(KZWOPT,SHIFT,A(1+KZVAR+KZCONF),1)
          END IF
          CALL DAXPY(KZVAR,D1,A(KZVAR+1),1,A,1)
@@ -3197,35 +3026,14 @@ C
 #include "infpri.h"
 C
       CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-      JRSP4 = 0
-#endif
 C
 C *** now READ diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A,JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) THEN
-            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZCONF',LRSP4,KZCONF
-            CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG - conf')
-         END IF
-#else
          CALL READT (LURSP4,KZCONF,A)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1+KZCONF),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) THEN
-            WRITE(LUPRI,*) 'ERROR, LRSP4 .ne. KZWOPT',LRSP4,KZWOPT
-            CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPEDG - orb')
-         END IF
-#else
          CALL READT (LURSP4,KZWOPT,A(1+KZCONF))
-#endif
       END IF
 C
 C *** END OF RSPEDG
@@ -3252,30 +3060,16 @@ C
 C *** now SKIP diagonals of E[2]-matrix needed for RSPLIN
 C
       IF (KZCONF .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ(LURSP4)
-#endif
       END IF
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,DUMMY,JRSP4,.FALSE.)
-#else
          READ(LURSP4)
-#endif
       END IF
 C
 C *** now READ orbital diagonal of S[2]-matrix needed for RSPTRN
 C
       IF (KZWOPT .GT. 0) THEN
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP4,LRSP4,A(1),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZWOPT) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPSOD')
-#else
          CALL READT (LURSP4,KZWOPT,A(1))
-#endif
       END IF
 C
 C *** END OF RSPSOD
@@ -3882,8 +3676,8 @@ C
 
             ELSE
 
-             WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)')
-     &         '@',LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
+               WRITE(LUPRI,'(A,9X,I5,F11.4,1X,A,F11.4,1X,A,F11.4)') '@',
+     &         LOCST,EXEV,' undefined',OSCLEN,' undefined',ROTLEN*ESUECD
 
                ROTVEL = 0.0D0
 
@@ -4582,14 +4376,7 @@ C
       IF (LWRK1.LT.0) CALL ERRWRK('RSPRES',KWRK1-1,LWRK)
       IF (SOPPA) THEN
          CALL REWSPL(LURSP4)
-#if defined (VAR_SPLITFILES)
-         JRSP4 = 0
-         CALL READST(LURSP4,LRSP4,RD(KDIAE),JRSP4,.TRUE.)
-         IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record length'//
-     &        ' on unit LURSP4 in RSPRES')
-#else
          CALL READT(LURSP4,KZCONF,RD(KDIAE))
-#endif
       ENDIF
       DO 50 IBX = 1,NBX
          IRDOFF = (IBX-1)*KZYVAR + 1
@@ -4639,38 +4426,16 @@ C
       KRD   = 1
       KWRK1 = KRD + NBX*KZYVAR
       CALL REWSPL(LURSP5)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ(LURSP5)
-#else
-      JRSP5 = 0
-      IF (KOFFTY .EQ. 1)
-     &     CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.FALSE.)
-#endif
       DO 600 K = 1,KZRED
          IF (SOPPA) THEN
             IF (IBTYP(KOFFTY+K) .EQ. JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES')
-            ELSE
-               CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-               IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES (2)')
-#else
                CALL READT(LURSP5,KZYWOP,RD(KWRK1))
             ELSE
                CALL READT(LURSP5,KZYVAR,RD(KWRK1))
-#endif
             ENDIF
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP5,LRSP5,RD(KWRK1),JRSP5,.TRUE.)
-            IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP5 in RSPRES (3)')
-#else
             CALL READT(LURSP5,KZYVAR,RD(KWRK1))
-#endif
          ENDIF
          DO 700 JR = 1,NBX
             JRDOFF  = (JR-1)*KZYVAR + 1
@@ -4736,22 +4501,11 @@ C
       NTOT= NBX*KZYVAR
       CALL DZERO(BVECS,NTOT)
       CALL REWSPL(LURSP3)
-#if !defined (VAR_SPLITFILES)
       IF (KOFFTY.EQ.1) READ(LURSP3)
-#else
-      JRSP3 = 0
-      IF (KOFFTY.EQ.1) CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#endif
       DO 200 K = 1,KZRED
          IBTYPK = IBTYP(K+KOFFTY)
          IF (IBTYPK.EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPEVE')
-#else
             CALL READT(LURSP3,KZCONF,WRK)
-#endif
             DO 300 JR = 1,NBX
                CALL DAXPY(KZCONF,EIVEC((2*K-1),IBOFF+JR),
      *                    WRK(1),1,BVECS(1,JR),1)
@@ -4760,13 +4514,7 @@ C
      *                 WRK(1),1,BVECS(JYOFF,JR),1)
  300        CONTINUE
          ELSE
-#if defined (VAR_SPLITFILES)
-            CALL READST(LURSP3,LRSP3,WRK,JRSP3,.TRUE.)
-            IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent record '//
-     &           'length on unit LURSP3 in RSPEVE')
-#else
             CALL READT(LURSP3,KZYWOP,WRK)
-#endif
             JZOFF = 1 + KZCONF
             JYOFF = 1 + KZVAR +  KZCONF
             DO 301 JR = 1,NBX
@@ -6144,6 +5892,7 @@ C
 C  /* Deck RSPMO2 */
       SUBROUTINE RSPMO2 (WOP,NDIM2,NDIM1,CMO,LUPRI,WRK,LWRK)
 C
+C     Author: Casper Steinmann            2014-04-16
 C
 C     NDIM2 = KZYVAR
 C     NDIM1 = KZVAR

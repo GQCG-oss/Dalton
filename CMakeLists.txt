@@ -3,6 +3,12 @@
 # exit if cmake version is below 2.8
 # we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+if("${CMAKE_MAJOR_VERSION}" GREATER 2)
+   cmake_policy(VERSION 3.0)
+#  allow add_executable in "tools/" subdirectory in cmake 3.?
+   cmake_policy(SET CMP0037 OLD)
+   MESSAGE(STATUS "Changed cmake policy to version 3.0, except for policy CMP037")
+endif("${CMAKE_MAJOR_VERSION}" GREATER 2)
 
 # set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
 # will do no harm if not CYGWIN
@@ -25,7 +31,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/mpi
-    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard/
+    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
@@ -53,16 +59,20 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_VPOTDAMP       "Enable VPOTDAMP library"                          ON)
 option(ENABLE_RSP            "Enable Response code in LSDALTON"                 ON)
 option(ENABLE_ICHOR          "Enable ichor integrals"                           OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP"                                   OFF)
 option(ENABLE_CHEMSHELL      "Compile for ChemShell"                            OFF)
+
+option(ENABLE_EFS            "Enable Echidna Fock Solver"                       ON)
 
 option(ENABLE_BUILTIN_BLAS   "Enable builtin BLAS implementation (slow)"        OFF)
 option(ENABLE_AUTO_BLAS      "Enable CMake to autodetect BLAS"                  ON)
 option(ENABLE_BUILTIN_LAPACK "Enable builtin LAPACK implementation (slow)"      OFF)
 option(ENABLE_AUTO_LAPACK    "Enable CMake to autodetect LAPACK"                ON)
 option(ENABLE_LSLIB          "Enable lslib functionality in dalton"             OFF)
+
 
 set(EXTERNAL_LIBS)
 

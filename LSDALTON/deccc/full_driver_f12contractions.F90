@@ -6,136 +6,9 @@ contains
   !> \author Thomas Kjaergaard
 
 #ifdef MOD_UNRELEASED
-  subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
-    implicit none 
-    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Vijja(nocc,nocc,nvirt)
-    real(realk),intent(IN)    :: Viaji(nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Tai(nvirt,nocc)
-
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + (Ciajb(i,a,j,b)+Viajb(i,a,j,b))*Taibj(a,j,b,i)
-             enddo
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do a=1,nvirt
-             tmp = tmp + Viaji(i,a,j)*Tai(a,j) + Vijja(i,j,a)*Tai(a,i)
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine ccsdf12_Vjiij_coupling
-
-  subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    ! Setting Ciajb = 0 
-    ! Ciajb = 0.0E0_realk
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + Ciajb(i,a,j,b)*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine mp2f12_Vijij_coupling
-
-
-  subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
-    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    ! Setting Ciajb = 0
-    ! Ciajb = 0.0E0_realk
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + Ciajb(j,a,i,b)*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vjiij(i,j) = Vjiij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine mp2f12_Vjiij_coupling
-
-  subroutine ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj,Viajb,Viija,Viajj,Tai,nocc,nvirt)
-    implicit none
-    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
-    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
-    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Viija(nocc,nocc,nvirt)
-    real(realk),intent(IN)    :: Viajj(nocc,nvirt,nocc)
-    real(realk),intent(IN)    :: Tai(nvirt,nocc)
-
-    integer,intent(IN)        :: nocc,nvirt
-    !
-    integer :: i,j,a,b
-    real(realk) :: tmp
-
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do b=1,nvirt
-             do a=1,nvirt
-                tmp = tmp + ( Ciajb(i,a,j,b) + Viajb(i,a,j,b) )*Taibj(a,i,b,j)
-             enddo
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-    do j=1,nocc
-       do i=1,nocc
-          tmp = 0E0_realk
-          do a=1,nvirt
-             tmp = tmp + Viija(i,j,a) * Tai(a,j) + Viajj(i,a,j) * Tai(a,i)
-          enddo
-          Vijij(i,j) = Vijij(i,j) + tmp
-       enddo
-    enddo
-
-  end subroutine ccsdf12_Vijij_coupling
+  !> ***********************************************************************
+  !> ****************************  MP2-F12  ********************************
+  !> ***********************************************************************
 
   !> \brief Vijij contribution for MP2-f12
   !> \author Simen Reine
@@ -1059,35 +932,6 @@ contains
        ENDDO
     ENDDO
 
-!!$    do i=1, nocc
-!!$       do r=1, ncabsAO
-!!$          if(hJ(i,r) > 1E-10) then
-!!$             print *, "i r hJir", i, r, hJ(i,r)
-!!$          endif
-!!$       enddo
-!!$    enddo
-
-
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijij                        '   
-!!$    print *, '----------------------------------------'
-!!$    
-!!$    DO i=1,nocc
-!!$       DO j=1,nocc
-!!$          print *, i," ", j," ", Bijij(i,j)
-!!$       ENDDO
-!!$    ENDDO
-!!$
-!!$    print *, '----------------------------------------'
-!!$    print *, '          B ijji                        '   
-!!$    print *, '----------------------------------------'
-!!$
-!!$    DO i=1,nocc
-!!$       DO j=1,nocc
-!!$          print *, i," ", j," ", Bjiij(i,j)
-!!$       ENDDO
-!!$    ENDDO
-
   end subroutine mp2f12_Bijij_term2
 
   subroutine mp2f12_Bijij_term3(Bijij,Bjiij,nocc,ncabsAO,Tijkr,hJ)
@@ -1313,6 +1157,67 @@ contains
     ENDDO
 
   end subroutine mp2f12_Bijij_term9
+
+
+  subroutine mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0 
+    ! Ciajb = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(i,a,j,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine mp2f12_Vijij_coupling
+
+
+  subroutine mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
+    real(realk),intent(INOUT)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    ! Setting Ciajb = 0
+    ! Ciajb = 0.0E0_realk
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + Ciajb(j,a,i,b)*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine mp2f12_Vjiij_coupling
+
+  
+  !> ***********************************************************************
+  !> ****************************  CCSD F12 ********************************
+  !> ***********************************************************************
 
   !maybe i and j is reverted
   !> \brief Viija contribution for CCSD-f12
@@ -1599,7 +1504,7 @@ contains
              DO p=1,nbasis
                 tmp2 = Ripaq(j,p,a,q)
                 DO i=1,nocc
-                   tmp(i) = tmp(i) + tmp2*Gipjq(i,p,j,q)
+                   tmp(i) = tmp(i) + tmp2*Gipjq(i,p,j,q) !
                 ENDDO
              ENDDO
           ENDDO
@@ -1617,8 +1522,8 @@ contains
              DO m=1,noccfull
                 tmp2 = Rimac(j,m,a,c)
                 DO i=1,nocc
-                   tmp(i) = tmp(i) + tmp2*Gimjc(i,m,j,c)
-                ENDDO
+                   tmp(i) = tmp(i) + tmp2*Gimjc(i,m,j,c) !
+                 ENDDO
              ENDDO
           ENDDO
           DO i=1,nocc
@@ -1634,7 +1539,7 @@ contains
           DO c=1,ncabs
              DO m=1,noccfull
                 DO j=1,nocc
-                   tmp(j) = tmp(j) + Ramic(a,m,j,c)*Gimjc(j,m,i,c)
+                   tmp(j) = tmp(j) + Ramic(a,m,j,c)*Gimjc(j,m,i,c) !
                 ENDDO
              ENDDO
           ENDDO
@@ -1660,6 +1565,7 @@ contains
     !
     Integer :: i,j,p,q,a,b,m,c
 
+    !Term 1
     DO b=1,nvirt
        DO j=1,nocc
           DO a=1,nvirt
@@ -1669,6 +1575,8 @@ contains
           ENDDO
        ENDDO
     ENDDO
+  
+    !Term 2
     DO q=1,nbasis
        DO b=1,nvirt
           DO j=1,nocc
@@ -1682,6 +1590,8 @@ contains
           ENDDO
        ENDDO
     ENDDO
+   
+    !Term 3
     DO c=1,ncabs
        DO b=1,nvirt
           DO j=1,nocc
@@ -1695,6 +1605,8 @@ contains
           ENDDO
        ENDDO
     ENDDO
+   
+    !Term 4
     DO c=1,ncabs
        DO b=1,nvirt
           DO j=1,nocc
@@ -1709,6 +1621,7 @@ contains
        ENDDO
     ENDDO
   end subroutine ccsdf12_Viajb
+  
 
   subroutine mp2f12_Cjaib(Cjaib,Givic,Fvc,nocc,nvirt,ncabs)
     implicit none
@@ -1893,10 +1806,92 @@ contains
        ENDDO
     ENDDO
   end subroutine mp2f12_Bjiij
+
+  subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
+    implicit none 
+    real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
+    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Vijja(nocc,nocc,nvirt)
+    real(realk),intent(IN)    :: Viaji(nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Tai(nvirt,nocc)
+
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + (Ciajb(i,a,j,b)+Viajb(i,a,j,b)) * Taibj(a,j,b,i)
+             enddo
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do a=1,nvirt
+             tmp = tmp + Viaji(i,a,j) * Tai(a,j) + Vijja(i,j,a) * Tai(a,i)
+          enddo
+          Vjiij(i,j) = Vjiij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine ccsdf12_Vjiij_coupling
+
+  subroutine ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj,Viajb,Viija,Viajj,Tai,nocc,nvirt)
+    implicit none
+    real(realk),intent(INOUT) :: Vijij(nocc,nocc)
+    real(realk),intent(IN)    :: Ciajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajb(nocc,nvirt,nocc,nvirt)
+    real(realk),intent(IN)    :: Taibj(nvirt,nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Viija(nocc,nocc,nvirt)
+    real(realk),intent(IN)    :: Viajj(nocc,nvirt,nocc)
+    real(realk),intent(IN)    :: Tai(nvirt,nocc)
+
+    integer,intent(IN)        :: nocc,nvirt
+    !
+    integer :: i,j,a,b
+    real(realk) :: tmp
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do b=1,nvirt
+             do a=1,nvirt
+                tmp = tmp + (Ciajb(i,a,j,b) + Viajb(i,a,j,b) )*Taibj(a,i,b,j)
+             enddo
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+    do j=1,nocc
+       do i=1,nocc
+          tmp = 0E0_realk
+          do a=1,nvirt
+             tmp = tmp + Viija(i,j,a) * Tai(a,j) + Viajj(i,a,j) * Tai(a,i)
+          enddo
+          Vijij(i,j) = Vijij(i,j) + tmp
+       enddo
+    enddo
+
+  end subroutine ccsdf12_Vijij_coupling
+
 #else
+
   subroutine full_f12contractions_dummy_sub12()
     implicit none
   end subroutine full_f12contractions_dummy_sub12
+
 #endif
+
 end module full_f12contractions
 

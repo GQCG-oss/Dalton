@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 c*DECK CC_EXCI
        SUBROUTINE CC_EXCI(WORK,LWORK,LIST,APROXR12)

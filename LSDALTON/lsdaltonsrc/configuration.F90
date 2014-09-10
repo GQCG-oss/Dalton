@@ -52,6 +52,7 @@ use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
+use dft_memory_handling
 use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
@@ -1126,6 +1127,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DEBUGICHOR')
            INTEGRAL%DEBUGICHOR = .TRUE.
            READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
+        CASE ('.DEBUGICHORLINK')
+           INTEGRAL%DEBUGICHORLINK = .TRUE.
+        CASE ('.DEBUGICHORLINKFULL')
+           INTEGRAL%DEBUGICHORLINKFULL = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -1466,6 +1471,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         ENDIF
      CASE('.DEBUG_SCF_MEM')
         call Set_PrintSCFmemory(.TRUE.)
+        call setPrintDFTmem(.TRUE.)
      CASE('.DEBUG_MPI_MEM')
         config%mpi_mem_monitor = .true.
      CASE('.DEBUG_ARH_LINTRA')
@@ -2517,6 +2523,7 @@ DO
          READ (LUCMD,*) DALTON%DFT%DFTIPT, DALTON%DFT%DFTBR1, DALTON%DFT%DFTBR2
       CASE ('.DFTELS'); READ(LUCMD,*) DALTON%DFT%DFTELS
       CASE ('.DFTTHR'); READ(LUCMD,*) DALTON%DFT%DFTHR0,DALTON%DFT%DFTHRL, DALTON%DFT%DFTHRI, DALTON%DFT%RHOTHR
+      CASE ('.MEMORY'); call setPrintDFTmem(.TRUE.)  
       CASE ('.LB94');
          DALTON%DFT%LB94=.TRUE.
       CASE ('.CS00');

@@ -18,7 +18,9 @@ public:: MAIN_ICHORERI_DRIVER, SCREEN_ICHORERI_DRIVER, &
      & determine_MinimumAllowedAObatchSize, &
      & determine_Ichor_nbatchesofAOS, determine_Ichor_batchesofAOS,&
      & determine_Ichor_nAObatches, FREE_SCREEN_ICHORERI,&
-     & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab
+     & screen_ichoreri_retrieve_gabdim,screen_ichoreri_retrieve_gab,&
+     & MAIN_LINK_ICHORERI_DRIVER, MAIN_ICHORERI_MOTRANS_DRIVER, &
+     & write_ichoreri_info, main_ichoreri_readdriver
 private
 CONTAINS
 SUBROUTINE determine_MinimumAllowedAObatchSize(setting,iAO,AOSPEC,MinimumAllowedAObatchSize)
@@ -283,15 +285,59 @@ MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
 #endif
 end SUBROUTINE determine_Ichor_batchesofAOS
 
-SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
-     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend)
+!dim1,dim2,dim3,dim4 are the AO dimensions 
+SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
+     & Cocc,Cvirt,nOcc,nVirt)
 implicit none
 TYPE(lssetting),intent(in):: setting
-integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4
-logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
+integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4,nOcc,nVirt
+logical,intent(in)        :: FullBatch  !full batches are assumed and the nbatchXXX arguments are not used 
 integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
 integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
-real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
+real(realk),intent(in)    :: Cvirt(dim1,nVirt)
+real(realk),intent(in)    :: Cocc(dim2,nOcc)
+real(realk),intent(inout) :: integrals(nVirt,nOcc,nVirt,nOcc)
+Character,intent(IN)      :: intSpec(5)
+!
+#ifdef VAR_ICHOR
+logical :: MoTrans,NoSymmetry
+integer :: A,I,B,J
+!DO J=1,nOcc
+!   DO B=1,nVirt
+!      DO I=1,nOcc
+!         DO A=1,nVirt
+!            integrals(A,I,B,J) = 0.0E0_realk
+!         ENDDO
+!      ENDDO
+!   ENDDO
+!ENDDO
+MoTrans = .TRUE.
+NoSymmetry = .FALSE.
+!all these subroutines are in the file IchorIntegrals/MainIchorInterface.F90
+call InitIchorInputInfo
+call IchorInputM2(Cvirt,dim1,nVirt,Cocc,dim2,nOcc)
+call IchorInputSpec(1,2,1,2)
+CALL MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,&
+     & nbatchDend,MoTrans,nVirt,nOcc,nVirt,nOcc,NoSymmetry)
+call FreeIchorInputInfo()
+#endif
+END SUBROUTINE MAIN_ICHORERI_MOTRANS_DRIVER
+
+SUBROUTINE MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
+     & MoTrans,OutDim1,OutDim2,OutDim3,OutDim4,NoSymmetry)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT
+integer,intent(in)        :: dim1,dim2,dim3,dim4 !AO dim
+integer,intent(in)        :: OutDim1,OutDim2,OutDim3,OutDim4 !output dim
+logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
+logical,intent(in)        :: MoTrans,NoSymmetry
+integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
+integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
+real(realk),intent(inout) :: integrals(OutDim1,OutDim2,OutDim3,OutDim4)
 Character,intent(IN)      :: intSpec(5)
 #ifdef VAR_ICHOR
 !
@@ -332,163 +378,41 @@ logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
 integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
-logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
 !FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 spherical = .TRUE.
 IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 
 !A
-IF (intSpec(1).EQ.'R') THEN
-   !   The regular AO-basis
-   AObasis => setting%basis(1)%p%BINFO(RegBasParam)
-ELSEIF(intspec(1).EQ.'C')THEN
-   !   The CABS AO-type basis
-   AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
-ELSE
-   call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-ENDIF
-call Determine_nTypesForBatch(AObasis,ntypesA)
-call Determine_nBatches(setting%MOLECULE(1)%p,AObasis,nBatchesA)
-call mem_alloc(nAtomsOfTypeA,ntypesA)
-call mem_alloc(AngmomOfTypeA,ntypesA)
-call mem_alloc(nPrimOfTypeA,ntypesA)
-call mem_alloc(nContOfTypeA,ntypesA)
-
-IF(FullBatch)THEN
-   nbatchAstart2 = 1
-   nbatchAend2 = nBatchesA
-ELSE
-   nbatchAstart2 = nbatchAstart
-   nbatchAend2 = nbatchAend
-ENDIF
-call build_TypeInfo1(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-     & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
-     & MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchAstart2,nbatchAend2)
-
-call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
-call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
-call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
-call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
-
-call build_TypeInfo2(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-     & spherical,MaxnAtomsA,MaxnPrimA,MaxnContA,startOrbitalOfTypeA,&
-     & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,nbatchAstart2,nbatchAend2)
-
+Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,FullBatch,&
+     & nbatchAstart,nbatchAend,spherical)
 !B
-IF (intSpec(2).EQ.'R') THEN
-   !   The regular AO-basis
-   AObasis => setting%basis(2)%p%BINFO(RegBasParam)
-ELSEIF(intspec(2).EQ.'C')THEN
-   !   The CABS AO-type basis
-   AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
-ELSE
-   call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-ENDIF
-call Determine_nTypesForBatch(AObasis,ntypesB)
-call Determine_nBatches(setting%MOLECULE(2)%p,AObasis,nBatchesB)
-call mem_alloc(nAtomsOfTypeB,ntypesB)
-call mem_alloc(AngmomOfTypeB,ntypesB)
-call mem_alloc(nPrimOfTypeB,ntypesB)
-call mem_alloc(nContOfTypeB,ntypesB)
-
-IF(FullBatch)THEN
-   nbatchBstart2 = 1
-   nbatchBend2 = nBatchesB
-ELSE
-   nbatchBstart2 = nbatchBstart
-   nbatchBend2 = nbatchBend
-ENDIF
-
-call build_TypeInfo1(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-     & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,&
-     & MaxnAtomsB,MaxnPrimB,MaxnContB,nbatchBstart2,nbatchBend2)
-
-call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
-call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
-call mem_alloc(ContractCoeffOfTypeB,MaxnPrimB,MaxnContB,ntypesB)
-call mem_alloc(Bcenters,3,MaxnAtomsB,nTypesB)
-
-call build_TypeInfo2(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-     & spherical,MaxnAtomsB,MaxnPrimB,MaxnContB,startOrbitalOfTypeB,&
-     & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,nbatchBstart2,nbatchBend2)
-
+Call BuildCenterAndTypeInfo(2,intSpec(2),setting,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,nbatchBstart2,nbatchBend2,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,FullBatch,&
+     & nbatchBstart,nbatchBend,spherical)
 !C
-IF (intSpec(3).EQ.'R') THEN
-   !   The regular AO-basis
-   AObasis => setting%basis(3)%p%BINFO(RegBasParam)
-ELSEIF(intspec(3).EQ.'C')THEN
-   !   The CABS AO-type basis
-   AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
-ELSE
-   call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-ENDIF
-call Determine_nTypesForBatch(AObasis,ntypesC)
-call Determine_nBatches(setting%MOLECULE(3)%p,AObasis,nBatchesC)
-call mem_alloc(nAtomsOfTypeC,ntypesC)
-call mem_alloc(AngmomOfTypeC,ntypesC)
-call mem_alloc(nPrimOfTypeC,ntypesC)
-call mem_alloc(nContOfTypeC,ntypesC)
-
-IF(FullBatch)THEN
-   nbatchCstart2 = 1
-   nbatchCend2 = nBatchesC
-ELSE
-   nbatchCstart2 = nbatchCstart
-   nbatchCend2 = nbatchCend
-ENDIF
-
-call build_TypeInfo1(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-     & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,&
-     & MaxnAtomsC,MaxnPrimC,MaxnContC,nbatchCstart2,nbatchCend2)
-
-call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
-call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
-call mem_alloc(ContractCoeffOfTypeC,MaxnPrimC,MaxnContC,ntypesC)
-call mem_alloc(Ccenters,3,MaxnAtomsC,nTypesC)
-
-call build_TypeInfo2(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-     & spherical,MaxnAtomsC,MaxnPrimC,MaxnContC,startOrbitalOfTypeC,&
-     & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,nbatchCstart2,nbatchCend2)
-
+Call BuildCenterAndTypeInfo(3,intSpec(3),setting,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,nbatchCstart2,nbatchCend2,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,FullBatch,&
+     & nbatchCstart,nbatchCend,spherical)
 !D
-IF (intSpec(4).EQ.'R') THEN
-   !   The regular AO-basis
-   AObasis => setting%basis(4)%p%BINFO(RegBasParam)
-ELSEIF(intspec(4).EQ.'C')THEN
-   !   The CABS AO-type basis
-   AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
-ELSE
-   call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-ENDIF
-call Determine_nTypesForBatch(AObasis,ntypesD)
-call Determine_nBatches(setting%MOLECULE(4)%p,AObasis,nBatchesD)
-call mem_alloc(nAtomsOfTypeD,ntypesD)
-call mem_alloc(AngmomOfTypeD,ntypesD)
-call mem_alloc(nPrimOfTypeD,ntypesD)
-call mem_alloc(nContOfTypeD,ntypesD)
-IF(FullBatch)THEN
-   nbatchDstart2 = 1
-   nbatchDend2 = nBatchesD
-ELSE
-   nbatchDstart2 = nbatchDstart
-   nbatchDend2 = nbatchDend
-ENDIF
-call build_TypeInfo1(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-     & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,&
-     & MaxnAtomsD,MaxnPrimD,MaxnContD,nbatchDstart2,nbatchDend2)
-
-call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
-call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
-call mem_alloc(ContractCoeffOfTypeD,MaxnPrimD,MaxnContD,ntypesD)
-call mem_alloc(Dcenters,3,MaxnAtomsD,nTypesD)
-
-call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-     & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
-     & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,nbatchDstart2,nbatchDend2)
+Call BuildCenterAndTypeInfo(4,intSpec(4),setting,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,nbatchDstart2,nbatchDend2,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,FullBatch,&
+     & nbatchDstart,nbatchDend,spherical)
 
 call GetIchorSphericalParamIdentifier(SphericalSpec)
-call GetIchorJobEriIdentifier(IchorJobSpec)
-call GetIchorInputIdentifier(IchorInputSpec)
+IF(MoTrans)THEN
+   call GetIchorJobMOtransIdentifier(IchorJobSpec)   
+ELSE
+   doLink = .FALSE.
+   call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
+ENDIF
+rhsDmat = .FALSE. !no rhs density matrix supplied as input 
+call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
 IchorInputDim1=1                 !not used since   IcorInputNoInput
 IchorInputDim2=1                 !not used since   IcorInputNoInput
 IchorInputDim3=1                 !not used since   IcorInputNoInput
@@ -497,9 +421,11 @@ call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 IF(FullBatch)THEN
-   SameLHSaos = intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
-   SameRHSaos = intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
-   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4)).AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4))
+   SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.Setting%sameBas(1,2)
+   SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.Setting%sameBas(3,4)
+   SameODs = ((intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))&
+        & .AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4)))&
+        &.AND.(Setting%sameBAS(1,3).AND.Setting%sameBAS(3,4))
 !   SameLHSaos = intSpec(1).EQ.intSpec(2)
 !   SameRHSaos = intSpec(3).EQ.intSpec(4)
 !   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
@@ -510,15 +436,22 @@ ELSE
 !   FULLDBATCH = nbatchDstart2.EQ.1.AND.nbatchDend2.EQ.nBatchesD
    SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.&
         & ((nbatchAstart2.EQ.nbatchBstart2).AND.(nbatchAend2.EQ.nbatchBend2))
+   SameLHSaos = SameLHSaos.AND.Setting%sameBas(1,2)
    SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.&
         & ((nbatchCstart2.EQ.nbatchDstart2).AND.(nbatchCend2.EQ.nbatchDend2))
+   SameRHSaos = SameRHSaos.AND.Setting%sameBas(3,4)
    CRIT1 = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
    CRIT2 = Setting%sameMol(1,3).AND.Setting%sameMol(2,4)
    CRIT3 = (nbatchAstart2.EQ.nbatchCstart2).AND.(nbatchAend2.EQ.nbatchCend2)
    CRIT4 = (nbatchBstart2.EQ.nbatchDstart2).AND.(nbatchBend2.EQ.nbatchDend2)
-   SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
+   CRIT5 = Setting%sameBas(1,3).AND.Setting%sameBas(2,4)
+   SameODs = ((CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)).AND.CRIT5
 ENDIF
-
+IF(NoSymmetry)THEN
+   SameLHSaos = .FALSE. 
+   SameRHSaos = .FALSE. 
+   SameODs = .FALSE. 
+ENDIF
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 call GetIchorFileStorageIdentifier(filestorageIdentifier)
 
@@ -538,10 +471,10 @@ ELSE
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
 
-OutputDim1=dim1
-OutputDim2=dim2
-OutputDim3=dim3
-OutputDim4=dim4
+OutputDim1=Outdim1
+OutputDim2=Outdim2
+OutputDim3=Outdim3
+OutputDim4=Outdim4
 OutputDim5=1
 THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
 THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -582,7 +515,90 @@ call mem_dealloc(InputStorage)
 
 !=====================================================================
 !free space
-!A
+call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+           & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+           & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
+           & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
+           & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
+           & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
+           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
+           & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
+           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+
+END SUBROUTINE MAIN_ICHORERI_DRIVER
+
+Subroutine BuildCenterAndTypeInfo(Center,intSpecA,setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,FullBatch,&
+     & nbatchAstart,nbatchAend,spherical)
+implicit none
+integer,intent(IN)      :: Center,nbatchAstart,nbatchAend
+Character,intent(IN)    :: intSpecA
+TYPE(lssetting),intent(in):: setting
+logical,intent(in) :: FullBatch,spherical
+integer,intent(inout) :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+integer,intent(inout) :: nbatchAstart2,nbatchAend2
+integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)      !intent(inout)
+integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:)      !intent(inout)
+integer,pointer     :: startOrbitalOfTypeA(:,:)              !intent(inout)
+real(realk),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:)
+real(realk),pointer :: ContractCoeffOfTypeA(:,:,:)
+!
+TYPE(BASISSETINFO),pointer :: AObasis
+
+IF (intSpecA.EQ.'R') THEN
+   !   The regular AO-basis
+   AObasis => setting%basis(Center)%p%BINFO(RegBasParam)
+ELSEIF(intspecA.EQ.'C')THEN
+   !   The CABS AO-type basis
+   AObasis => setting%basis(Center)%p%BINFO(CABBasParam)   
+ELSE
+   call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
+ENDIF
+call Determine_nTypesForBatch(AObasis,ntypesA)
+call Determine_nBatches(setting%MOLECULE(Center)%p,AObasis,nBatchesA)
+call mem_alloc(nAtomsOfTypeA,ntypesA)
+call mem_alloc(AngmomOfTypeA,ntypesA)
+call mem_alloc(nPrimOfTypeA,ntypesA)
+call mem_alloc(nContOfTypeA,ntypesA)
+
+IF(FullBatch)THEN
+   nbatchAstart2 = 1
+   nbatchAend2 = nBatchesA
+ELSE
+   nbatchAstart2 = nbatchAstart
+   nbatchAend2 = nbatchAend
+ENDIF
+call build_TypeInfo1(setting%MOLECULE(Center)%p,AObasis,nTypesA,&
+     & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchAstart2,nbatchAend2)
+
+call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
+call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
+call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
+call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
+
+call build_TypeInfo2(setting%MOLECULE(Center)%p,AObasis,nTypesA,&
+     & spherical,MaxnAtomsA,MaxnPrimA,MaxnContA,startOrbitalOfTypeA,&
+     & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,nbatchAstart2,nbatchAend2)
+
+END Subroutine BUILDCENTERANDTYPEINFO
+
+subroutine FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+           & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+           & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+implicit none
+integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)      !intent(inout)
+integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:)      !intent(inout)
+integer,pointer     :: startOrbitalOfTypeA(:,:)              !intent(inout)
+real(realk),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:)
+real(realk),pointer :: ContractCoeffOfTypeA(:,:,:)
 call mem_dealloc(nAtomsOfTypeA)
 call mem_dealloc(AngmomOfTypeA)
 call mem_dealloc(nPrimOfTypeA)
@@ -591,40 +607,8 @@ call mem_dealloc(startOrbitalOfTypeA)
 call mem_dealloc(exponentsOfTypeA)
 call mem_dealloc(ContractCoeffOfTypeA)
 call mem_dealloc(Acenters)
+end subroutine FreeCenterAndTypeInfo
 
-!B
-call mem_dealloc(nAtomsOfTypeB)
-call mem_dealloc(AngmomOfTypeB)
-call mem_dealloc(nPrimOfTypeB)
-call mem_dealloc(nContOfTypeB)
-call mem_dealloc(startOrbitalOfTypeB)
-call mem_dealloc(exponentsOfTypeB)
-call mem_dealloc(ContractCoeffOfTypeB)
-call mem_dealloc(Bcenters)
-!C
-call mem_dealloc(nAtomsOfTypeC)
-call mem_dealloc(AngmomOfTypeC)
-call mem_dealloc(nPrimOfTypeC)
-call mem_dealloc(nContOfTypeC)
-call mem_dealloc(startOrbitalOfTypeC)
-call mem_dealloc(exponentsOfTypeC)
-call mem_dealloc(ContractCoeffOfTypeC)
-call mem_dealloc(Ccenters)
-
-!D
-call mem_dealloc(nAtomsOfTypeD)
-call mem_dealloc(AngmomOfTypeD)
-call mem_dealloc(nPrimOfTypeD)
-call mem_dealloc(nContOfTypeD)
-call mem_dealloc(startOrbitalOfTypeD)
-call mem_dealloc(exponentsOfTypeD)
-call mem_dealloc(ContractCoeffOfTypeD)
-call mem_dealloc(Dcenters)
-#else
-call lsquit('IchorEri requires -DVAR_ICHOR',-1)
-#endif
-
-END SUBROUTINE MAIN_ICHORERI_DRIVER
 
 SUBROUTINE SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,intspec,SameMOL)
 implicit none
@@ -632,6 +616,210 @@ TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT
 Character,intent(IN)      :: intSpec(5)
 logical,intent(IN) :: SameMOL
+#ifdef VAR_ICHOR
+!
+integer                :: nTypes
+!A
+integer :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)
+integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:),startOrbitalOfTypeA(:,:)
+real(realk),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:),ContractCoeffOfTypeA(:,:,:)
+!B
+integer :: nTypesB,MaxnAtomsB,MaxnPrimB,MaxnContB,nbatchesB
+integer,pointer     :: nAtomsOfTypeB(:),nPrimOfTypeB(:)
+integer,pointer     :: nContOfTypeB(:),AngmomOfTypeB(:),startOrbitalOfTypeB(:,:)
+real(realk),pointer :: exponentsOfTypeB(:,:),Bcenters(:,:,:),ContractCoeffOfTypeB(:,:,:)
+!C
+integer :: nTypesC,MaxnAtomsC,MaxnPrimC,MaxnContC,nbatchesC
+integer,pointer     :: nAtomsOfTypeC(:),nPrimOfTypeC(:)
+integer,pointer     :: nContOfTypeC(:),AngmomOfTypeC(:),startOrbitalOfTypeC(:,:)
+real(realk),pointer :: exponentsOfTypeC(:,:),Ccenters(:,:,:),ContractCoeffOfTypeC(:,:,:)
+!D
+integer :: nTypesD,MaxnAtomsD,MaxnPrimD,MaxnContD,nbatchesD
+integer,pointer     :: nAtomsOfTypeD(:),nPrimOfTypeD(:)
+integer,pointer     :: nContOfTypeD(:),AngmomOfTypeD(:),startOrbitalOfTypeD(:,:)
+real(realk),pointer :: exponentsOfTypeD(:,:),Dcenters(:,:,:),ContractCoeffOfTypeD(:,:,:)
+!job specification
+integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpec
+Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
+integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
+Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
+Integer :: GabIdentifier, IchorGabID1, IchorGabID2
+logical :: SameLHSaos
+real(realk) :: THRESHOLD_CS,THRESHOLD_QQR
+real(realk),pointer :: InputStorage(:)
+real(realk),pointer :: BATCHGAB(:),BATCHGCD(:)
+Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
+!Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
+logical   :: spherical,doLink,rhsDmat,FullBatch
+TYPE(BASISSETINFO),pointer :: AObasis
+integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
+integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
+call FreeIchorSaveGabModuleInterface
+call InitIchorSaveGabModuleInterface
+
+FullBatch = .TRUE.
+
+spherical = .TRUE.
+IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+
+IF(SETTING%SCHEME%CS_SCREEN)THEN
+   !A
+   Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+        & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+        & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,FullBatch,&
+        & 1,nBatchesA,spherical)
+   !B
+   Call BuildCenterAndTypeInfo(2,intSpec(2),setting,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+        & nPrimOfTypeB,nContOfTypeB,nbatchBstart2,nbatchBend2,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+        & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,FullBatch,&
+        & 1,nBatchesB,spherical)
+   
+   call GetIchorSphericalParamIdentifier(SphericalSpec)
+   doLink = .FALSE.
+   call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
+   rhsDmat = .FALSE. !no rhs density matrix supplied as input 
+   call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
+   IchorInputDim1=1                 !not used since   IcorInputNoInput
+   IchorInputDim2=1                 !not used since   IcorInputNoInput
+   IchorInputDim3=1                 !not used since   IcorInputNoInput
+   call mem_alloc(InputStorage,1)
+   call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+   call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+   call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
+   !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
+   call GetIchorPermuteParameter(IchorPermuteSpec,.FALSE.,.FALSE.,.FALSE.)
+   call GetIchorFileStorageIdentifier(filestorageIdentifier)
+   MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
+   MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
+   MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
+   MemAllocated = 0                 !Memory allocated in the Ichor program
+   OutputDim1 = nBatchesA
+   OutputDim2 = nBatchesB
+   OutputDim3 = 1
+   OutputDim4 = 1
+   OutputDim5 = 1
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.TRUE.,.FALSE.)
+   !LHS
+   IF (intSpec(1).EQ.intSpec(2).AND.SAMEMOL)THEN
+      SameLHSaos = .TRUE.
+   ELSE
+      SameLHSaos = .FALSE.
+   ENDIF
+   call mem_alloc(BATCHGAB,nBatchesA*nBatchesB)
+   call IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+        & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+        & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+        & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+        & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+        & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+        & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
+        & IchorInputDim3,&
+        & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
+        & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
+        & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+        & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+        & BATCHGAB,lupri)
+   call Mem_Add_external_memory(MaxMemAllocated)
+
+   CALL GenerateIdentifier(INTSPEC,GabIdentifier)
+   call AddGabToIchorSaveGabModuleInterface(nBatchesA,nBatchesB,&
+        & GabIdentifier,BATCHGAB)
+   call mem_dealloc(BATCHGAB)   
+   IchorGabID1=GabIdentifier !screening Matrix Identifier
+   
+   !A
+   call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+        & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+        & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+   call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
+        & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
+        & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
+
+   IF(SameMOL.AND.(intSpec(1).EQ.intspec(3).AND.intSpec(2).EQ.intspec(4)))THEN
+      IchorGabID2=IchorGabID1
+   ELSE
+      !calc RHS
+      
+      !C
+      Call BuildCenterAndTypeInfo(3,intSpec(3),setting,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+           & nPrimOfTypeC,nContOfTypeC,nbatchCstart2,nbatchCend2,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+           & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,FullBatch,&
+           & 1,nBatchesC,spherical)
+      !D
+      Call BuildCenterAndTypeInfo(4,intSpec(4),setting,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+           & nPrimOfTypeD,nContOfTypeD,nbatchDstart2,nbatchDend2,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+           & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,FullBatch,&
+           & 1,nBatchesD,spherical)
+
+      !RHS
+      OutputDim1 = nBatchesC
+      OutputDim2 = nBatchesD
+      OutputDim3 = 1
+      OutputDim4 = 1
+      OutputDim5 = 1
+      IF (intSpec(3).EQ.intSpec(4).AND.SAMEMOL)THEN
+         SameLHSaos = .TRUE.
+      ELSE
+         SameLHSaos = .FALSE.
+      ENDIF
+      call mem_alloc(BATCHGCD,nBatchesC*nBatchesD)
+      call IchorGabInterface(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+           & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+           & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+           & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+           & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+           & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+           & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
+           & IchorInputDim3,&
+           & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
+           & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
+           & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+           & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+           & BATCHGCD,lupri)
+      call mem_Add_external_memory(MaxMemAllocated)
+
+      CALL GenerateIdentifier(INTSPEC,GabIdentifier)
+      IF(GabIdentifier.EQ.IchorGabID1)THEN
+         GabIdentifier = GabIdentifier + 53210
+      ENDIF
+      call AddGabToIchorSaveGabModuleInterface(nBatchesC,nBatchesD,GabIdentifier,BATCHGCD)
+      call mem_dealloc(BATCHGCD)
+      IchorGabID2=GabIdentifier !screening Matrix Identifier   
+
+      !free space
+      call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
+           & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
+           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
+      call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
+           & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
+           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
+   ENDIF
+   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.FALSE.,.FALSE.)
+ELSE   
+   call GetIchorScreeningParameter(IchorScreenSpec,.FALSE.,.FALSE.,.FALSE.)
+   IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
+   IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
+ENDIF
+CALL SET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+
+END SUBROUTINE SCREEN_ICHORERI_DRIVER
+
+!K_(A,C) = (AB|CD) D_(BD)
+SUBROUTINE MAIN_LINK_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,nDmat,Kmat,Dmat,intspec,FullBatch,&
+     & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT,dim1,dim2,dim3,dim4,nDmat
+logical,intent(in)        :: FullBatch!full batches are assumed and the nbatchXXX arguments are not used 
+integer,intent(in)        :: nbatchAstart,nbatchAend,nbatchBstart,nbatchBend
+integer,intent(in)        :: nbatchCstart,nbatchCend,nbatchDstart,nbatchDend
+real(realk),intent(in)    :: Dmat(dim2,dim4,nDmat)
+real(realk),intent(inout) :: Kmat(dim1,dim3,nDmat)
+Character,intent(IN)      :: intSpec(5)
 #ifdef VAR_ICHOR
 !
 integer                :: nTypes
@@ -662,284 +850,151 @@ integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
 Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
 Integer :: GabIdentifier, IchorGabID1, IchorGabID2
 logical :: SameLHSaos
-real(realk) :: THRESHOLD_CS,THRESHOLD_QQR
-real(realk),pointer :: InputStorage(:)
+real(realk) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
+!real(realk),pointer :: InputStorage(:)
 real(realk),pointer :: BATCHGAB(:),BATCHGCD(:)
 Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
-!Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
-logical   :: spherical
+Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
+logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
-
-call FreeIchorSaveGabModuleInterface
-call InitIchorSaveGabModuleInterface
+integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
+integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat
 
 spherical = .TRUE.
-IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_LINK_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+!A
+Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,FullBatch,&
+     & nbatchAstart,nbatchAend,spherical)
+!B
+Call BuildCenterAndTypeInfo(2,intSpec(2),setting,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,nbatchBstart2,nbatchBend2,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,FullBatch,&
+     & nbatchBstart,nbatchBend,spherical)
+!C
+Call BuildCenterAndTypeInfo(3,intSpec(3),setting,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,nbatchCstart2,nbatchCend2,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,FullBatch,&
+     & nbatchCstart,nbatchCend,spherical)
+!D
+Call BuildCenterAndTypeInfo(4,intSpec(4),setting,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,nbatchDstart2,nbatchDend2,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,FullBatch,&
+     & nbatchDstart,nbatchDend,spherical)
 
-IF(SETTING%SCHEME%CS_SCREEN)THEN
-   !A
-   IF (intSpec(1).EQ.'R') THEN
-      !   The regular AO-basis
-      AObasis => setting%basis(1)%p%BINFO(RegBasParam)
-   ELSEIF(intspec(1).EQ.'C')THEN
-      !   The CABS AO-type basis
-      AObasis => setting%basis(1)%p%BINFO(CABBasParam)   
-   ELSE
-      call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-   ENDIF
-   call Determine_nTypesForBatch(AObasis,ntypesA)
-   call Determine_nBatches(setting%MOLECULE(1)%p,AObasis,nBatchA)
-   call mem_alloc(nAtomsOfTypeA,ntypesA)
-   call mem_alloc(AngmomOfTypeA,ntypesA)
-   call mem_alloc(nPrimOfTypeA,ntypesA)
-   call mem_alloc(nContOfTypeA,ntypesA)
-   
-   call build_TypeInfo1(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-        & nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,nContOfTypeA,&
-        & MaxnAtomsA,MaxnPrimA,MaxnContA,1,nBatchA)
-   
-   call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
-   call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
-   call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
-   call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
-   
-   call build_TypeInfo2(setting%MOLECULE(1)%p,AObasis,nTypesA,&
-        & spherical,MaxnAtomsA,MaxnPrimA,MaxnContA,startOrbitalOfTypeA,&
-        & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,1,nBatchA)
-   
-   !B
-   IF (intSpec(2).EQ.'R') THEN
-      !   The regular AO-basis
-      AObasis => setting%basis(2)%p%BINFO(RegBasParam)
-   ELSEIF(intspec(2).EQ.'C')THEN
-      !   The CABS AO-type basis
-      AObasis => setting%basis(2)%p%BINFO(CABBasParam)   
-   ELSE
-      call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-   ENDIF
-   call Determine_nTypesForBatch(AObasis,ntypesB)
-   call Determine_nBatches(setting%MOLECULE(2)%p,AObasis,nBatchB)
-   call mem_alloc(nAtomsOfTypeB,ntypesB)
-   call mem_alloc(AngmomOfTypeB,ntypesB)
-   call mem_alloc(nPrimOfTypeB,ntypesB)
-   call mem_alloc(nContOfTypeB,ntypesB)
-   
-   call build_TypeInfo1(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-        & nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,nContOfTypeB,&
-        & MaxnAtomsB,MaxnPrimB,MaxnContB,1,nBatchB)
-   
-   call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
-   call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
-   call mem_alloc(ContractCoeffOfTypeB,MaxnPrimB,MaxnContB,ntypesB)
-   call mem_alloc(Bcenters,3,MaxnAtomsB,nTypesB)
-   
-   call build_TypeInfo2(setting%MOLECULE(2)%p,AObasis,nTypesB,&
-        & spherical,MaxnAtomsB,MaxnPrimB,MaxnContB,startOrbitalOfTypeB,&
-        & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,1,nBatchB)
-   
-   call GetIchorSphericalParamIdentifier(SphericalSpec)
-   call GetIchorJobEriIdentifier(IchorJobSpec)
-   call GetIchorInputIdentifier(IchorInputSpec)
-   IchorInputDim1=1                 !not used since   IcorInputNoInput
-   IchorInputDim2=1                 !not used since   IcorInputNoInput
-   IchorInputDim3=1                 !not used since   IcorInputNoInput
-   call mem_alloc(InputStorage,1)
-   call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
-   call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
-   call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-   !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
-   call GetIchorPermuteParameter(IchorPermuteSpec,.FALSE.,.FALSE.,.FALSE.)
-   call GetIchorFileStorageIdentifier(filestorageIdentifier)
-   MaxMem = 0                       !Maximum Memory Ichor is allowed to use. Zero means no restrictions
-   MaxFileStorage = 0               !Maximum File size, if zero - no file will be written or read. 
-   MaxMemAllocated = 0              !Maximum Memory used in the program. Ichor adds to this value
-   MemAllocated = 0                 !Memory allocated in the Ichor program
-   OutputDim1 = nBatchA
-   OutputDim2 = nBatchB
-   OutputDim3 = 1
-   OutputDim4 = 1
-   OutputDim5 = 1
-   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.TRUE.,.FALSE.)
-   !LHS
-   IF (intSpec(1).EQ.intSpec(2).AND.SAMEMOL)THEN
-      SameLHSaos = .TRUE.
-   ELSE
-      SameLHSaos = .FALSE.
-   ENDIF
-   call mem_alloc(BATCHGAB,nBatchA*nBatchB)
-   call IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
-        & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
-        & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
-        & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
-        & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
-        & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-        & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-        & IchorInputDim3,&
-        & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
-        & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
-        & MaxFileStorage,MaxMemAllocated,MemAllocated,&
-        & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-        & BATCHGAB,lupri)
-   call Mem_Add_external_memory(MaxMemAllocated)
+call GetIchorSphericalParamIdentifier(SphericalSpec)
+doLink = .TRUE.
+call GetIchorJobEriIdentifier(IchorJobSpec,DoLink)
+rhsDmat = .TRUE.
+call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
+IchorInputDim1=dim2
+IchorInputDim2=dim4        
+IchorInputDim3=nDmat       
+call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
 
-   CALL GenerateIdentifier(INTSPEC,GabIdentifier)
-   call AddGabToIchorSaveGabModuleInterface(nBatchA,nBatchB,&
-        & GabIdentifier,BATCHGAB)
-   call mem_dealloc(BATCHGAB)   
-   IchorGabID1=GabIdentifier !screening Matrix Identifier
-   
-   !A
-   call mem_dealloc(nAtomsOfTypeA)
-   call mem_dealloc(AngmomOfTypeA)
-   call mem_dealloc(nPrimOfTypeA)
-   call mem_dealloc(nContOfTypeA)
-   call mem_dealloc(startOrbitalOfTypeA)
-   call mem_dealloc(exponentsOfTypeA)
-   call mem_dealloc(ContractCoeffOfTypeA)
-   call mem_dealloc(Acenters)
-   
-   !B
-   call mem_dealloc(nAtomsOfTypeB)
-   call mem_dealloc(AngmomOfTypeB)
-   call mem_dealloc(nPrimOfTypeB)
-   call mem_dealloc(nContOfTypeB)
-   call mem_dealloc(startOrbitalOfTypeB)
-   call mem_dealloc(exponentsOfTypeB)
-   call mem_dealloc(ContractCoeffOfTypeB)
-   call mem_dealloc(Bcenters)
+SameLHSaos = .FALSE.!intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
+SameRHSaos = .FALSE.!intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
+SameODs = .FALSE.!(intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4)).AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4))
 
-   IF(SameMOL.AND.(intSpec(1).EQ.intspec(3).AND.intSpec(2).EQ.intspec(4)))THEN
-      IchorGabID2=IchorGabID1
-   ELSE
-      !calc RHS
-      
-      !C
-      IF (intSpec(3).EQ.'R') THEN
-         !   The regular AO-basis
-         AObasis => setting%basis(3)%p%BINFO(RegBasParam)
-      ELSEIF(intspec(3).EQ.'C')THEN
-         !   The CABS AO-type basis
-         AObasis => setting%basis(3)%p%BINFO(CABBasParam)   
-      ELSE
-         call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-      ENDIF
-      call Determine_nTypesForBatch(AObasis,ntypesC)
-      call Determine_nBatches(setting%MOLECULE(3)%p,AObasis,nBatchC)
-      call mem_alloc(nAtomsOfTypeC,ntypesC)
-      call mem_alloc(AngmomOfTypeC,ntypesC)
-      call mem_alloc(nPrimOfTypeC,ntypesC)
-      call mem_alloc(nContOfTypeC,ntypesC)
-      
-      call build_TypeInfo1(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-           & nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,nContOfTypeC,&
-           & MaxnAtomsC,MaxnPrimC,MaxnContC,1,nBatchC)
-      
-      call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
-      call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
-      call mem_alloc(ContractCoeffOfTypeC,MaxnPrimC,MaxnContC,ntypesC)
-      call mem_alloc(Ccenters,3,MaxnAtomsC,nTypesC)
-      
-      call build_TypeInfo2(setting%MOLECULE(3)%p,AObasis,nTypesC,&
-           & spherical,MaxnAtomsC,MaxnPrimC,MaxnContC,startOrbitalOfTypeC,&
-           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,1,nBatchC)
-      
-      !D
-      IF (intSpec(4).EQ.'R') THEN
-         !   The regular AO-basis
-         AObasis => setting%basis(4)%p%BINFO(RegBasParam)
-      ELSEIF(intspec(4).EQ.'C')THEN
-         !   The CABS AO-type basis
-         AObasis => setting%basis(4)%p%BINFO(CABBasParam)   
-      ELSE
-         call lsquit('Unknown specification in MAIN_ICHORERI_DRIVER',-1)
-      ENDIF
-      call Determine_nTypesForBatch(AObasis,ntypesD)
-      call Determine_nBatches(setting%MOLECULE(4)%p,AObasis,nBatchD)
-      call mem_alloc(nAtomsOfTypeD,ntypesD)
-      call mem_alloc(AngmomOfTypeD,ntypesD)
-      call mem_alloc(nPrimOfTypeD,ntypesD)
-      call mem_alloc(nContOfTypeD,ntypesD)
-      call build_TypeInfo1(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-           & nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,nContOfTypeD,&
-           & MaxnAtomsD,MaxnPrimD,MaxnContD,1,nBatchD)
-      
-      call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
-      call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
-      call mem_alloc(ContractCoeffOfTypeD,MaxnPrimD,MaxnContD,ntypesD)
-      call mem_alloc(Dcenters,3,MaxnAtomsD,nTypesD)
-      
-      call build_TypeInfo2(setting%MOLECULE(4)%p,AObasis,nTypesD,&
-           & spherical,MaxnAtomsD,MaxnPrimD,MaxnContD,startOrbitalOfTypeD,&
-           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,1,nBatchD)
+!!$IF(FullBatch)THEN
+!!$   SameLHSaos = intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
+!!$   SameRHSaos = intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
+!!$   SameODs = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4)).AND.(Setting%sameMol(1,3).AND.Setting%sameMol(3,4))
+!!$ELSE
+!!$   SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.&
+!!$        & ((nbatchAstart2.EQ.nbatchBstart2).AND.(nbatchAend2.EQ.nbatchBend2))
+!!$   SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.&
+!!$        & ((nbatchCstart2.EQ.nbatchDstart2).AND.(nbatchCend2.EQ.nbatchDend2))
+!!$   CRIT1 = (intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4))
+!!$   CRIT2 = Setting%sameMol(1,3).AND.Setting%sameMol(2,4)
+!!$   CRIT3 = (nbatchAstart2.EQ.nbatchCstart2).AND.(nbatchAend2.EQ.nbatchCend2)
+!!$   CRIT4 = (nbatchBstart2.EQ.nbatchDstart2).AND.(nbatchBend2.EQ.nbatchDend2)
+!!$   SameODs = (CRIT1.AND.CRIT2).AND.(CRIT3.AND.CRIT4)
+!!$ENDIF
 
-      !RHS
-      OutputDim1 = nBatchC
-      OutputDim2 = nBatchD
-      OutputDim3 = 1
-      OutputDim4 = 1
-      OutputDim5 = 1
-      IF (intSpec(3).EQ.intSpec(4).AND.SAMEMOL)THEN
-         SameLHSaos = .TRUE.
-      ELSE
-         SameLHSaos = .FALSE.
-      ENDIF
-      call mem_alloc(BATCHGCD,nBatchC*nBatchD)
-      call IchorGabInterface(nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
-           & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
-           & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
-           & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
-           & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
-           & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
-           & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-           & IchorInputDim3,&
-           & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
-           & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
-           & MaxFileStorage,MaxMemAllocated,MemAllocated,&
-           & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-           & BATCHGCD,lupri)
-      call mem_Add_external_memory(MaxMemAllocated)
+call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+call GetIchorFileStorageIdentifier(filestorageIdentifier)
 
-      CALL GenerateIdentifier(INTSPEC,GabIdentifier)
-      IF(GabIdentifier.EQ.IchorGabID1)THEN
-         GabIdentifier = GabIdentifier + 53210
-      ENDIF
-      call AddGabToIchorSaveGabModuleInterface(nBatchC,nBatchD,GabIdentifier,BATCHGCD)
-      call mem_dealloc(BATCHGCD)
-      IchorGabID2=GabIdentifier !screening Matrix Identifier   
+MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
+MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
+MaxMemAllocated=0!Maximum Memory used in the program. Ichor adds to this value
+MemAllocated = 0 !Memory allocated in the Ichor program
 
-      !free space
-      !C
-      call mem_dealloc(nAtomsOfTypeC)
-      call mem_dealloc(AngmomOfTypeC)
-      call mem_dealloc(nPrimOfTypeC)
-      call mem_dealloc(nContOfTypeC)
-      call mem_dealloc(startOrbitalOfTypeC)
-      call mem_dealloc(exponentsOfTypeC)
-      call mem_dealloc(ContractCoeffOfTypeC)
-      call mem_dealloc(Ccenters)
-      
-      !D
-      call mem_dealloc(nAtomsOfTypeD)
-      call mem_dealloc(AngmomOfTypeD)
-      call mem_dealloc(nPrimOfTypeD)
-      call mem_dealloc(nContOfTypeD)
-      call mem_dealloc(startOrbitalOfTypeD)
-      call mem_dealloc(exponentsOfTypeD)
-      call mem_dealloc(ContractCoeffOfTypeD)
-      call mem_dealloc(Dcenters)
-   ENDIF
-   call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.FALSE.,.FALSE.)
+call GetIchorScreeningParameter(IchorScreenSpec,SETTING%SCHEME%CS_SCREEN,&
+     & SETTING%SCHEME%OD_SCREEN,.FALSE.)
+IF(SETTING%SCHEME%CS_SCREEN.AND.SETTING%SCHEME%OD_SCREEN)THEN
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
+ELSEIF(SETTING%SCHEME%CS_SCREEN)THEN
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
 ELSE   
-   call GetIchorScreeningParameter(IchorScreenSpec,.FALSE.,.FALSE.,.FALSE.)
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
    IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
 ENDIF
-CALL SET_IchorGabIDinterface(IchorGabID1,IchorGabID2)
+
+OutputDim1=dim1
+OutputDim2=dim3
+OutputDim3=1
+OutputDim4=1
+OutputDim5=nDmat
+THRESHOLD_OD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%OD_THRESHOLD
+THRESHOLD_CS = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+THRESHOLD_QQR = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR*0.50E0_realk
+!print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
+!=====================================================================
+!  Main Call
+!=====================================================================
+call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+     & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+     & nbatchAstart2,nbatchAend2,&
+     & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+     & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+     & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & nbatchBstart2,nbatchBend2,&
+     & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+     & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+     & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & nbatchCstart2,nbatchCend2,&
+     & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+     & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+     & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & nbatchDstart2,nbatchDend2,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
+     & IchorInputDim3,&
+     & Dmat,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
+     & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+     & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+     & Kmat,lupri)
+
+call Mem_Add_external_memory(MaxMemAllocated)
+!=====================================================================
+
+
+!=====================================================================
+!free space
+call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+           & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+           & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
+           & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
+           & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
+           & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
+           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
+           & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
+           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
 
-END SUBROUTINE SCREEN_ICHORERI_DRIVER
+END SUBROUTINE MAIN_LINK_ICHORERI_DRIVER
 
 SUBROUTINE SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
 implicit none
@@ -1351,5 +1406,315 @@ call mem_dealloc(MODELBATCHTYPES)
 
 #endif
 end Subroutine Build_TypeInfo2
+
+SUBROUTINE WRITE_ICHORERI_INFO(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,LUOUTPUT)
+implicit none
+TYPE(lssetting),intent(in):: setting
+integer,intent(in)        :: LUPRI,IPRINT,LUOUTPUT
+integer,intent(in)        :: dim1,dim2,dim3,dim4 
+real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
+#ifdef VAR_ICHOR
+!
+integer                :: nTypes
+!A
+integer :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchesA
+integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)
+integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:),startOrbitalOfTypeA(:,:)
+real(realk),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:),ContractCoeffOfTypeA(:,:,:)
+!B
+integer :: nTypesB,MaxnAtomsB,MaxnPrimB,MaxnContB,nbatchesB
+integer,pointer     :: nAtomsOfTypeB(:),nPrimOfTypeB(:)
+integer,pointer     :: nContOfTypeB(:),AngmomOfTypeB(:),startOrbitalOfTypeB(:,:)
+real(realk),pointer :: exponentsOfTypeB(:,:),Bcenters(:,:,:),ContractCoeffOfTypeB(:,:,:)
+!C
+integer :: nTypesC,MaxnAtomsC,MaxnPrimC,MaxnContC,nbatchesC
+integer,pointer     :: nAtomsOfTypeC(:),nPrimOfTypeC(:)
+integer,pointer     :: nContOfTypeC(:),AngmomOfTypeC(:),startOrbitalOfTypeC(:,:)
+real(realk),pointer :: exponentsOfTypeC(:,:),Ccenters(:,:,:),ContractCoeffOfTypeC(:,:,:)
+!D
+integer :: nTypesD,MaxnAtomsD,MaxnPrimD,MaxnContD,nbatchesD
+integer,pointer     :: nAtomsOfTypeD(:),nPrimOfTypeD(:)
+integer,pointer     :: nContOfTypeD(:),AngmomOfTypeD(:),startOrbitalOfTypeD(:,:)
+real(realk),pointer :: exponentsOfTypeD(:,:),Dcenters(:,:,:),ContractCoeffOfTypeD(:,:,:)
+logical :: spherical,FullBatch
+integer :: nbatchAstart2,nbatchAend2,nbatchAstart,nbatchAend
+integer :: nbatchBstart2,nbatchBend2,nbatchBstart,nbatchBend
+integer :: nbatchCstart2,nbatchCend2,nbatchCstart,nbatchCend
+integer :: nbatchDstart2,nbatchDend2,nbatchDstart,nbatchDend
+FullBatch = .TRUE.
+nbatchAstart2=1; nbatchAend2=1; nbatchBstart2=1; nbatchBend2=1
+nbatchCstart2=1; nbatchCend2=1; nbatchDstart2=1; nbatchDend2=1
+spherical = .TRUE.
+!A
+Call BuildCenterAndTypeInfo(1,'R',setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,FullBatch,&
+     & nbatchAstart,nbatchAend,spherical)
+Call WriteCenterInfo1(luoutput,ntypesA,nBatchesA,MaxnAtomsA,MaxnPrimA,MaxnContA,spherical)
+Call WriteCenterInfo2(luoutput,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
+     & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,&
+     & Acenters,spherical)
+call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+     & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+     & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+
+!B
+Call BuildCenterAndTypeInfo(2,'R',setting,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,nbatchBstart2,nbatchBend2,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters,FullBatch,&
+     & nbatchBstart,nbatchBend,spherical)
+Call WriteCenterInfo1(luoutput,ntypesB,nBatchesB,MaxnAtomsB,MaxnPrimB,MaxnContB,spherical)
+Call WriteCenterInfo2(luoutput,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & Bcenters,spherical)
+call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
+     & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
+
+!C
+Call BuildCenterAndTypeInfo(3,'R',setting,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,nbatchCstart2,nbatchCend2,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters,FullBatch,&
+     & nbatchCstart,nbatchCend,spherical)
+Call WriteCenterInfo1(luoutput,ntypesC,nBatchesC,MaxnAtomsC,MaxnPrimC,MaxnContC,spherical)
+Call WriteCenterInfo2(luoutput,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & Ccenters,spherical)
+call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
+     & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
+!D
+Call BuildCenterAndTypeInfo(4,'R',setting,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,nbatchDstart2,nbatchDend2,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters,FullBatch,&
+     & nbatchDstart,nbatchDend,spherical)
+Call WriteCenterInfo1(luoutput,ntypesD,nBatchesD,MaxnAtomsD,MaxnPrimD,MaxnContD,spherical)
+Call WriteCenterInfo2(luoutput,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & Dcenters,spherical)
+call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
+     & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
+
+WRITE(LUOUTPUT,*) dim1,dim2,dim3,dim4 
+WRITE(LUOUTPUT,*) integrals
+
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+
+END SUBROUTINE WRITE_ICHORERI_INFO
+
+SUBROUTINE MAIN_ICHORERI_READDRIVER(LUPRI,IPRINT,LUOUTPUT,CS_SCREEN,OD_SCREEN,integrals,&
+           & dim1,dim2,dim3,dim4)
+implicit none
+integer,intent(in)        :: LUPRI,IPRINT,LUOUTPUT
+logical,intent(in)        :: CS_SCREEN,OD_SCREEN
+real(realk),pointer       :: integrals(:,:,:,:)
+integer,intent(inout)     :: dim1,dim2,dim3,dim4
+#ifdef VAR_ICHOR
+!
+integer                :: nTypes
+!A
+integer :: nTypesA,MaxnAtomsA,MaxnPrimA,MaxnContA,nbatchA
+integer,pointer     :: nAtomsOfTypeA(:),nPrimOfTypeA(:)
+integer,pointer     :: nContOfTypeA(:),AngmomOfTypeA(:),startOrbitalOfTypeA(:,:)
+real(realk),pointer :: exponentsOfTypeA(:,:),Acenters(:,:,:),ContractCoeffOfTypeA(:,:,:)
+!B
+integer :: nTypesB,MaxnAtomsB,MaxnPrimB,MaxnContB,nbatchB
+integer,pointer     :: nAtomsOfTypeB(:),nPrimOfTypeB(:)
+integer,pointer     :: nContOfTypeB(:),AngmomOfTypeB(:),startOrbitalOfTypeB(:,:)
+real(realk),pointer :: exponentsOfTypeB(:,:),Bcenters(:,:,:),ContractCoeffOfTypeB(:,:,:)
+!C
+integer :: nTypesC,MaxnAtomsC,MaxnPrimC,MaxnContC,nbatchC
+integer,pointer     :: nAtomsOfTypeC(:),nPrimOfTypeC(:)
+integer,pointer     :: nContOfTypeC(:),AngmomOfTypeC(:),startOrbitalOfTypeC(:,:)
+real(realk),pointer :: exponentsOfTypeC(:,:),Ccenters(:,:,:),ContractCoeffOfTypeC(:,:,:)
+!D
+integer :: nTypesD,MaxnAtomsD,MaxnPrimD,MaxnContD,nbatchD
+integer,pointer     :: nAtomsOfTypeD(:),nPrimOfTypeD(:)
+integer,pointer     :: nContOfTypeD(:),AngmomOfTypeD(:),startOrbitalOfTypeD(:,:)
+real(realk),pointer :: exponentsOfTypeD(:,:),Dcenters(:,:,:),ContractCoeffOfTypeD(:,:,:)
+!job specification
+integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpec
+Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
+integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
+Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
+Integer :: GabIdentifier, IchorGabID1, IchorGabID2
+logical :: SameLHSaos
+real(realk) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
+real(realk),pointer :: InputStorage(:)
+real(realk),pointer :: BATCHGAB(:),BATCHGCD(:)
+Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
+Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
+logical :: spherical
+TYPE(BASISSETINFO),pointer :: AObasis
+logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
+integer :: nbatchAstart2,nbatchAend2
+integer :: nbatchBstart2,nbatchBend2
+integer :: nbatchCstart2,nbatchCend2
+integer :: nbatchDstart2,nbatchDend2
+nbatchAstart2=1; nbatchAend2=1; nbatchBstart2=1; nbatchBend2=1
+nbatchCstart2=1; nbatchCend2=1; nbatchDstart2=1; nbatchDend2=1
+Call ReadCenterInfo1(luoutput,ntypesB,nBatchesB,MaxnAtomsB,MaxnPrimB,MaxnContB,spherical)
+call mem_alloc(nAtomsOfTypeA,ntypesA)
+call mem_alloc(AngmomOfTypeA,ntypesA)
+call mem_alloc(nPrimOfTypeA,ntypesA)
+call mem_alloc(nContOfTypeA,ntypesA)
+call mem_alloc(startOrbitalOfTypeA,MaxNatomsA,ntypesA)
+call mem_alloc(exponentsOfTypeA,MaxnPrimA,ntypesA)
+call mem_alloc(ContractCoeffOfTypeA,MaxnPrimA,MaxnContA,ntypesA)
+call mem_alloc(Acenters,3,MaxnAtomsA,nTypesA)
+Call ReadCenterInfo2(luoutput,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & Bcenters,spherical)
+
+Call ReadCenterInfo1(luoutput,ntypesB,nBatchesB,MaxnAtomsB,MaxnPrimB,MaxnContB,spherical)
+call mem_alloc(nAtomsOfTypeB,ntypesB)
+call mem_alloc(AngmomOfTypeB,ntypesB)
+call mem_alloc(nPrimOfTypeB,ntypesB)
+call mem_alloc(nContOfTypeB,ntypesB)
+call mem_alloc(startOrbitalOfTypeB,MaxNatomsB,ntypesB)
+call mem_alloc(exponentsOfTypeB,MaxnPrimB,ntypesB)
+call mem_alloc(ContractCoeffOfTypeB,MaxnPrimB,MaxnContB,ntypesB)
+call mem_alloc(Bcenters,3,MaxnAtomsB,nTypesB)
+Call ReadCenterInfo2(luoutput,ntypesB,nBatchesB,nAtomsOfTypeB,AngmomOfTypeB,&
+     & nPrimOfTypeB,nContOfTypeB,MaxnAtomsB,MaxnPrimB,MaxnContB,&
+     & startOrbitalOfTypeB,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & Bcenters,spherical)
+
+!C
+Call ReadCenterInfo1(luoutput,ntypesC,nBatchesC,MaxnAtomsC,MaxnPrimC,MaxnContC,spherical)
+call mem_alloc(nAtomsOfTypeC,ntypesC)
+call mem_alloc(AngmomOfTypeC,ntypesC)
+call mem_alloc(nPrimOfTypeC,ntypesC)
+call mem_alloc(nContOfTypeC,ntypesC)
+call mem_alloc(startOrbitalOfTypeC,MaxNatomsC,ntypesC)
+call mem_alloc(exponentsOfTypeC,MaxnPrimC,ntypesC)
+call mem_alloc(ContractCoeffOfTypeC,MaxnPrimC,MaxnContC,ntypesC)
+call mem_alloc(Ccenters,3,MaxnAtomsC,nTypesC)
+Call ReadCenterInfo2(luoutput,ntypesC,nBatchesC,nAtomsOfTypeC,AngmomOfTypeC,&
+     & nPrimOfTypeC,nContOfTypeC,MaxnAtomsC,MaxnPrimC,MaxnContC,&
+     & startOrbitalOfTypeC,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & Ccenters,spherical)
+
+!D
+Call ReadCenterInfo1(luoutput,ntypesD,nBatchesD,MaxnAtomsD,MaxnPrimD,MaxnContD,spherical)
+call mem_alloc(nAtomsOfTypeD,ntypesD)
+call mem_alloc(AngmomOfTypeD,ntypesD)
+call mem_alloc(nPrimOfTypeD,ntypesD)
+call mem_alloc(nContOfTypeD,ntypesD)
+call mem_alloc(startOrbitalOfTypeD,MaxNatomsD,ntypesD)
+call mem_alloc(exponentsOfTypeD,MaxnPrimD,ntypesD)
+call mem_alloc(ContractCoeffOfTypeD,MaxnPrimD,MaxnContD,ntypesD)
+call mem_alloc(Dcenters,3,MaxnAtomsD,nTypesD)
+Call ReadCenterInfo2(luoutput,ntypesD,nBatchesD,nAtomsOfTypeD,AngmomOfTypeD,&
+     & nPrimOfTypeD,nContOfTypeD,MaxnAtomsD,MaxnPrimD,MaxnContD,&
+     & startOrbitalOfTypeD,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & Dcenters,spherical)
+
+
+READ(LUOUTPUT,*) dim1,dim2,dim3,dim4 
+call mem_alloc(integrals,dim1,dim2,dim3,dim4)
+
+
+!===================================================================0
+
+call GetIchorSphericalParamIdentifier(SphericalSpec)
+doLink = .FALSE.
+call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
+rhsDmat = .FALSE. !no rhs density matrix supplied as input 
+call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
+IchorInputDim1=1                 !not used since   IcorInputNoInput
+IchorInputDim2=1                 !not used since   IcorInputNoInput
+IchorInputDim3=1                 !not used since   IcorInputNoInput
+call mem_alloc(InputStorage,1)
+call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
+call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
+call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
+SameLHSaos = .FALSE. 
+SameRHSaos = .FALSE. 
+SameODs = .FALSE. 
+call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
+call GetIchorFileStorageIdentifier(filestorageIdentifier)
+MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
+MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
+MaxMemAllocated=0!Maximum Memory used in the program. Ichor adds to this value
+MemAllocated = 0 !Memory allocated in the Ichor program
+call GetIchorScreeningParameter(IchorScreenSpec,CS_SCREEN,OD_SCREEN,.FALSE.)
+IF(CS_SCREEN.AND.OD_SCREEN)THEN
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
+ELSEIF(CS_SCREEN)THEN
+   CALL GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
+ELSE   
+   IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
+   IchorGabID2=0 !screening Matrix Identifier, not used if IchorScreenNone
+ENDIF
+OutputDim1=dim1
+OutputDim2=dim2
+OutputDim3=dim3
+OutputDim4=dim4
+OutputDim5=1
+THRESHOLD_OD = 1.0E-8_realk*1.0E-1_realk
+THRESHOLD_CS = 1.0E-8_realk*1.0E-2_realk
+THRESHOLD_QQR = 1.0E-8_realk*1.0E+0_realk*0.50E0_realk
+!print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
+!=====================================================================
+!  Main Call
+!=====================================================================
+call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+     & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+     & nbatchAstart2,nbatchAend2,&
+     & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+     & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+     & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & nbatchBstart2,nbatchBend2,&
+     & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+     & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+     & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & nbatchCstart2,nbatchCend2,&
+     & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+     & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+     & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & nbatchDstart2,nbatchDend2,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
+     & IchorInputDim3,&
+     & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
+     & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+     & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+     & integrals,lupri)
+
+call Mem_Add_external_memory(MaxMemAllocated)
+call mem_dealloc(InputStorage)
+!=====================================================================
+
+
+!=====================================================================
+!free space
+call FreeCenterAndTypeInfo(nAtomsOfTypeA,AngmomOfTypeA,&
+           & nPrimOfTypeA,nContOfTypeA,startOrbitalOfTypeA,&
+           & exponentsOfTypeA,ContractCoeffOfTypeA,Acenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeB,AngmomOfTypeB,&
+           & nPrimOfTypeB,nContOfTypeB,startOrbitalOfTypeB,&
+           & exponentsOfTypeB,ContractCoeffOfTypeB,Bcenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeC,AngmomOfTypeC,&
+           & nPrimOfTypeC,nContOfTypeC,startOrbitalOfTypeC,&
+           & exponentsOfTypeC,ContractCoeffOfTypeC,Ccenters)
+call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
+           & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
+           & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
+#else
+call lsquit('IchorEri requires -DVAR_ICHOR',-1)
+#endif
+
+END SUBROUTINE MAIN_ICHORERI_READDRIVER
 
 END MODULE IchorErimoduleHost

@@ -101,12 +101,12 @@
  BLAS                     | /usr/lib/libblas.dylib
  LAPACK                   | /usr/lib/libatlas.dylib;/usr/lib/liblapack.dylib
  Static linking           | OFF
- Last Git revision        | ed1303c69333988d046214b74f8b1ffb811232ba
- Configuration time       | 2014-06-30 15:09:32.100443
+ Last Git revision        | e30d0f9a269072dc0adb4ee842923746f320ca69
+ Configuration time       | 2014-07-02 10:07:24.054371
  Ground state molecular gradient calculations are carried out.
 
 Start simulation
-     Date and time (Linux)  : Mon Jun 30 15:19:36 2014
+     Date and time (Linux)  : Wed Jul  2 10:44:25 2014
      Host name              : kjmac10-reine.local                     
                       
  -----------------------------------------
@@ -356,7 +356,7 @@ Total Number of grid points:       18050
 
   Max allocated memory, Grid                    1.247 MB
 
-  KS electrons/energy:    1.00000000000000   -0.22355801382064 rel.err: 0.49E-14
+  KS electrons/energy:    1.00000000000000   -0.22355801382064 rel.err: 0.42E-14
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -364,48 +364,48 @@ Total Number of grid points:       18050
  The Coulomb energy contribution   0.29994973903199562     
  The Exchange energy contribution   2.99949739031995580E-002
  The Fock energy contribution  -0.26995476512879607     
-  KS electrons/energy:    1.00000000000001   -0.21356084580467 rel.err: 0.11E-13
+  KS electrons/energy:    1.00000000000001   -0.21356084580468 rel.err: 0.11E-13
   2     -0.4403059204   -0.00143523997    0.00      0.00000    0.00    0.0000000    7.00E-03  ###
- The Coulomb energy contribution   0.30102731127038229     
- The Exchange energy contribution   3.01027311270382208E-002
- The Fock energy contribution  -0.27092458014334408     
+ The Coulomb energy contribution   0.30102731127038218     
+ The Exchange energy contribution   3.01027311270382104E-002
+ The Fock energy contribution  -0.27092458014334403     
   KS electrons/energy:    1.00000000000000   -0.21431327596395 rel.err: 0.33E-14
   3     -0.4403161194   -0.00001019894   -1.00      0.00000    0.00    0.0000000    3.23E-05  ###
 
  Level 1 atomic calculation on 6-31G* Charge   7
  ================================================
  The Coulomb energy contribution    32.444688265465764     
- The Exchange energy contribution    1.3662540947987716     
- The Fock energy contribution   -31.078434170667016     
+ The Exchange energy contribution    1.3662540947987718     
+ The Fock energy contribution   -31.078434170667009     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       30120
 
   Max allocated memory, Grid                    1.994 MB
 
-  KS electrons/energy:    7.00000000002481   -6.17351663672327 rel.err: 0.35E-11
+  KS electrons/energy:    7.00000000002480   -6.17351663672330 rel.err: 0.35E-11
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
   1    -52.6551835695    0.00000000000    0.00      0.00000    0.00    0.0000000    2.92E+00  ###
- The Coulomb energy contribution    21.731335978063118     
- The Exchange energy contribution    1.1057563153659844     
- The Fock energy contribution   -20.625579662697135     
-  KS electrons/energy:    7.00000000002346   -4.84265083305835 rel.err: 0.34E-11
+ The Coulomb energy contribution    21.731335978063122     
+ The Exchange energy contribution    1.1057563153659846     
+ The Fock energy contribution   -20.625579662697138     
+  KS electrons/energy:    7.00000000002347   -4.84265083305835 rel.err: 0.34E-11
   2    -53.6963024617   -1.04111889221    0.00      0.00000    0.00    0.0000000    2.49E+00  ###
- The Coulomb energy contribution    25.565964171257324     
- The Exchange energy contribution    1.1903116863356265     
- The Fock energy contribution   -24.375652484921712     
-  KS electrons/energy:    7.00000000002392   -5.29887141439194 rel.err: 0.34E-11
+ The Coulomb energy contribution    25.565964171257331     
+ The Exchange energy contribution    1.1903116863356269     
+ The Fock energy contribution   -24.375652484921723     
+  KS electrons/energy:    7.00000000002389   -5.29887141439195 rel.err: 0.34E-11
   3    -54.3574335979   -0.66113113617   -1.00      0.00000    0.00    0.0000000    1.83E-01  ###
- The Coulomb energy contribution    25.879586711432527     
- The Exchange energy contribution    1.1974835261521131     
- The Fock energy contribution   -24.682103185280429     
-  KS electrons/energy:    7.00000000002389   -5.33728678518781 rel.err: 0.34E-11
+ The Coulomb energy contribution    25.879586711432530     
+ The Exchange energy contribution    1.1974835261521128     
+ The Fock energy contribution   -24.682103185280422     
+  KS electrons/energy:    7.00000000002389   -5.33728678518780 rel.err: 0.34E-11
   4    -54.3607811558   -0.00334755791   -1.00      0.00000    0.00    0.0000000    1.17E-03  ###
- The Coulomb energy contribution    25.881413950203449     
+ The Coulomb energy contribution    25.881413950203441     
  The Exchange energy contribution    1.1975075485466915     
- The Fock energy contribution   -24.683906401656753     
-  KS electrons/energy:    7.00000000002385   -5.33748600181605 rel.err: 0.34E-11
+ The Fock energy contribution   -24.683906401656760     
+  KS electrons/energy:    7.00000000002385   -5.33748600181604 rel.err: 0.34E-11
   5    -54.3607813348   -0.00000017901   -1.00      0.00000    0.00    0.0000000    5.45E-04  ###
 
  Level 1 atomic calculation on 6-31G* Charge   6
@@ -418,7 +418,7 @@ Total Number of grid points:       30564
 
   Max allocated memory, Grid                    2.021 MB
 
-  KS electrons/energy:    5.99999999976347   -4.68756611666641 rel.err:-0.39E-10
+  KS electrons/energy:    5.99999999976348   -4.68756611666641 rel.err:-0.39E-10
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -426,42 +426,42 @@ Total Number of grid points:       30564
  The Coulomb energy contribution    15.852756224983358     
  The Exchange energy contribution   0.89063042631771749     
  The Fock energy contribution   -14.962125798665641     
-  KS electrons/energy:    5.99999999976739   -3.89553404856137 rel.err:-0.39E-10
+  KS electrons/energy:    5.99999999976738   -3.89553404856140 rel.err:-0.39E-10
   2    -37.4900117302   -0.82217388823    0.00      0.00000    0.00    0.0000000    1.04E+00  ###
  The Coulomb energy contribution    17.703863969028557     
- The Exchange energy contribution   0.93249332395707629     
+ The Exchange energy contribution   0.93249332395707640     
  The Fock energy contribution   -16.771370645071482     
   KS electrons/energy:    5.99999999976555   -4.13413708342500 rel.err:-0.39E-10
   3    -37.7109169421   -0.22090521189   -1.00      0.00000    0.00    0.0000000    2.47E-02  ###
- The Coulomb energy contribution    17.755125634717604     
- The Exchange energy contribution   0.93358699619536234     
- The Fock energy contribution   -16.821538638522238     
+ The Coulomb energy contribution    17.755125634717608     
+ The Exchange energy contribution   0.93358699619536245     
+ The Fock energy contribution   -16.821538638522242     
   KS electrons/energy:    5.99999999976553   -4.14087163910346 rel.err:-0.39E-10
   4    -37.7110510530   -0.00013411090   -1.00      0.00000    0.00    0.0000000    2.65E-03  ###
- The Coulomb energy contribution    17.750625342204820     
- The Exchange energy contribution   0.93347520338641155     
- The Fock energy contribution   -16.817150138818395     
+ The Coulomb energy contribution    17.750625342204803     
+ The Exchange energy contribution   0.93347520338641132     
+ The Fock energy contribution   -16.817150138818398     
   KS electrons/energy:    5.99999999976554   -4.14026877572044 rel.err:-0.39E-10
   5    -37.7110523122   -0.00000125920   -1.00      0.00000    0.00    0.0000000    1.34E-04  ###
 Matrix type: mtype_dense
 
  First density: Atoms in molecule guess
 
- The Coulomb energy contribution    73.080916668753019     
+ The Coulomb energy contribution    73.080916668753034     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       78734
 
   Max allocated memory, Grid                    5.366 MB
 
-  KS electrons/energy:   13.98204822803642   -2.44932678549172 rel.err:-0.13E-02
- ADMM exchange energy contribution:   -2.6229476679560975     
+  KS electrons/energy:   13.98204822803631   -2.44932678549173 rel.err:-0.13E-02
+ ADMM exchange energy contribution:   -2.6229476679560833     
     This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       78734
 
   Max allocated memory, Grid                    5.366 MB
 
-  KS electrons/energy:   14.00000016376076  -12.73490203263516 rel.err: 0.12E-07
-  Iteration 0 energy:  -93.607307386171925     
+  KS electrons/energy:   14.00000016376076  -12.73490203263519 rel.err: 0.12E-07
+  Iteration 0 energy:  -93.607307386171883     
  Preparing to do S^1/2 decomposition...
  smallest accepted overlap:  0.97499999999999998     
  maximum accepted ratio in dorth:  2.99999999999999989E-002
@@ -470,10 +470,10 @@ Matrix AO D  has nnz=       268 sparsity:     29.778 %
   Relative convergence threshold for solver:  1.00000000000000002E-002
   SCF Convergence criteria for gradient norm:  9.99999974737875164E-005
 ** Get Fock matrix number   1
- The Coulomb energy contribution    82.783692688374799     
-  KS electrons/energy:   13.95766024361046   -2.66179797773304 rel.err:-0.30E-02
- ADMM exchange energy contribution:   -2.6576270565128937     
-  KS electrons/energy:   14.00000018068359  -13.83551418143340 rel.err: 0.13E-07
+ The Coulomb energy contribution    82.783692688374671     
+  KS electrons/energy:   13.95766024361039   -2.66179797773303 rel.err:-0.30E-02
+ ADMM exchange energy contribution:   -2.6576270565129221     
+  KS electrons/energy:   14.00000018068358  -13.83551418143331 rel.err: 0.13E-07
 *******************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###
 *******************************************************************************************###
@@ -484,93 +484,93 @@ Matrix AO D  has nnz=       268 sparsity:     29.778 %
  diag%cfg_lshift:           5
 No. of matmuls in get_density:     3
  >>>  CPU Time used in SCF iteration is   1.32 seconds
- >>> wall Time used in SCF iteration is   0.36 seconds
+ >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   2
  The Coulomb energy contribution    79.714053771902158     
-  KS electrons/energy:   13.97482938540135   -2.59653730537651 rel.err:-0.18E-02
- ADMM exchange energy contribution:   -2.5949882575619370     
-  KS electrons/energy:   14.00000018133817  -13.48854004495500 rel.err: 0.13E-07
+  KS electrons/energy:   13.97482938540125   -2.59653730537649 rel.err:-0.18E-02
+ ADMM exchange energy contribution:   -2.5949882575620222     
+  KS electrons/energy:   14.00000018133821  -13.48854004495499 rel.err: 0.13E-07
   2    -91.8820808501   -0.14912693814    0.00      0.00000    1.00    0.0000000    6.16E-01  ###
 ** Make average of the last F and D matrices
  config%decomp%nocc, nbast:           7          30
- Fov maxelm  5.90225165497669860E-002
+ Fov maxelm  5.90225165497452950E-002
  Queue flushed!
  Used simple averaging
 ** Get new density 
  diag%cfg_lshift:           5
 No. of matmuls in get_density:     3
- >>>  CPU Time used in SCF iteration is   1.32 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>>  CPU Time used in SCF iteration is   1.31 seconds
+ >>> wall Time used in SCF iteration is   0.39 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    79.534669265518076     
-  KS electrons/energy:   13.97465763154487   -2.59214687380295 rel.err:-0.18E-02
- ADMM exchange energy contribution:   -2.5906822671106795     
-  KS electrons/energy:   14.00000018095414  -13.46856379359494 rel.err: 0.13E-07
+ The Coulomb energy contribution    79.534669265518033     
+  KS electrons/energy:   13.97465763154476   -2.59214687380295 rel.err:-0.18E-02
+ ADMM exchange energy contribution:   -2.5906822671106937     
+  KS electrons/energy:   14.00000018095418  -13.46856379359497 rel.err: 0.13E-07
   3    -91.8859711479   -0.00389029780    0.00      0.00000    1.00    0.0000000    3.75E-01  ###
 ** Make average of the last F and D matrices
  Used simple averaging
 ** Get new density 
  diag%cfg_lshift:           5
 No. of matmuls in get_density:     3
- >>>  CPU Time used in SCF iteration is   1.31 seconds
+ >>>  CPU Time used in SCF iteration is   1.34 seconds
  >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    79.417611702864320     
-  KS electrons/energy:   13.97447242943822   -2.58929180603088 rel.err:-0.18E-02
+ The Coulomb energy contribution    79.417611702864548     
+  KS electrons/energy:   13.97447242943811   -2.58929180603089 rel.err:-0.18E-02
  ADMM exchange energy contribution:   -2.5878770381143852     
-  KS electrons/energy:   14.00000018068360  -13.45549642220239 rel.err: 0.13E-07
+  KS electrons/energy:   14.00000018068357  -13.45549642220241 rel.err: 0.13E-07
   4    -91.8874850569   -0.00151390898    0.00      0.00000    1.00    0.0000000    2.37E-01  ###
 ** Make average of the last F and D matrices
  Used DIIS averaging
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   1.32 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    79.199889401403979     
-  KS electrons/energy:   13.97386005778030   -2.58403343228710 rel.err:-0.19E-02
- ADMM exchange energy contribution:   -2.5826480467073338     
-  KS electrons/energy:   14.00000018016380  -13.43131383846438 rel.err: 0.13E-07
+ The Coulomb energy contribution    79.199889401404235     
+  KS electrons/energy:   13.97386005778016   -2.58403343228710 rel.err:-0.19E-02
+ ADMM exchange energy contribution:   -2.5826480467074333     
+  KS electrons/energy:   14.00000018016373  -13.43131383846445 rel.err: 0.13E-07
   5    -91.8886937837   -0.00120872682   -1.00      0.00000    0.00    0.0000000    4.26E-03  ###
 ** Make average of the last F and D matrices
  Used DIIS averaging
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   1.33 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>>  CPU Time used in SCF iteration is   1.31 seconds
+ >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    79.195778421883944     
-  KS electrons/energy:   13.97388654552994   -2.58395893079762 rel.err:-0.19E-02
- ADMM exchange energy contribution:   -2.5825785237020540     
-  KS electrons/energy:   14.00000018016024  -13.43087779671032 rel.err: 0.13E-07
+ The Coulomb energy contribution    79.195778421884356     
+  KS electrons/energy:   13.97388654552981   -2.58395893079762 rel.err:-0.19E-02
+ ADMM exchange energy contribution:   -2.5825785237019829     
+  KS electrons/energy:   14.00000018016028  -13.43087779671037 rel.err: 0.13E-07
   6    -91.8886941717   -0.00000038794   -1.00      0.00000    0.00    0.0000000    1.44E-03  ###
 ** Make average of the last F and D matrices
  Used DIIS averaging
 ** Get new density 
 No. of matmuls in get_density:     1
  >>>  CPU Time used in SCF iteration is   1.33 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   7
- The Coulomb energy contribution    79.197056089318323     
-  KS electrons/energy:   13.97387846759789   -2.58398281607915 rel.err:-0.19E-02
- ADMM exchange energy contribution:   -2.5826009327672352     
-  KS electrons/energy:   14.00000018015948  -13.43101116434735 rel.err: 0.13E-07
+ The Coulomb energy contribution    79.197056089318252     
+  KS electrons/energy:   13.97387846759779   -2.58398281607914 rel.err:-0.19E-02
+ ADMM exchange energy contribution:   -2.5826009327673631     
+  KS electrons/energy:   14.00000018015948  -13.43101116434732 rel.err: 0.13E-07
   7    -91.8886941954   -0.00000002369   -1.00      0.00000    0.00    0.0000000    1.42E-04  ###
 ** Make average of the last F and D matrices
  Used DIIS averaging
 ** Get new density 
 No. of matmuls in get_density:     1
- >>>  CPU Time used in SCF iteration is   1.32 seconds
- >>> wall Time used in SCF iteration is   0.37 seconds
+ >>>  CPU Time used in SCF iteration is   1.33 seconds
+ >>> wall Time used in SCF iteration is   0.38 seconds
 ** Get Fock matrix number   8
- The Coulomb energy contribution    79.196977022894686     
-  KS electrons/energy:   13.97387931059756   -2.58398167670114 rel.err:-0.19E-02
- ADMM exchange energy contribution:   -2.5825998842407216     
-  KS electrons/energy:   14.00000018015992  -13.43100422145518 rel.err: 0.13E-07
-  8    -91.8886941956   -0.00000000023   -1.00      0.00000    0.00    0.0000000    4.25E-06  ###
+ The Coulomb energy contribution    79.196977022894842     
+  KS electrons/energy:   13.97387931059741   -2.58398167670114 rel.err:-0.19E-02
+ ADMM exchange energy contribution:   -2.5825998842408353     
+  KS electrons/energy:   14.00000018015992  -13.43100422145517 rel.err: 0.13E-07
+  8    -91.8886941956   -0.00000000024   -1.00      0.00000    0.00    0.0000000    4.25E-06  ###
 SCF converged in      8 iterations
- >>>  CPU Time used in **ITER is  10.57 seconds
- >>> wall Time used in **ITER is   2.97 seconds
+ >>>  CPU Time used in **ITER is  10.58 seconds
+ >>> wall Time used in **ITER is   3.08 seconds
 
 Total no. of matmuls in SCF optimization:        217
  Postponing calculation of HOMO-LUMO gap to response part...
@@ -585,20 +585,20 @@ Total no. of matmuls in SCF optimization:        217
   5   -0.00120872682   -1.0000    0.0000    0.0000000
   6   -0.00000038794   -1.0000    0.0000    0.0000000
   7   -0.00000002369   -1.0000    0.0000    0.0000000
-  8   -0.00000000023   -1.0000    0.0000    0.0000000
+  8   -0.00000000024   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 AO Gradient norm
 ======================================================================
-    1           -91.73295391200356618810      0.339633172686964D+01
-    2           -91.88208085014032633353      0.615596072163084D+00
-    3           -91.88597114793982711944      0.375320003944983D+00
-    4           -91.88748505692022661151      0.236786896441971D+00
-    5           -91.88869378373553331585      0.426393907982371D-02
-    6           -91.88869417167290976067      0.144275895875904D-02
-    7           -91.88869419535822657963      0.142298506427159D-03
-    8           -91.88869419559317464063      0.424870305629328D-05
+    1           -91.73295391200348092298      0.339633172686954D+01
+    2           -91.88208085014044002037      0.615596072163210D+00
+    3           -91.88597114793996922799      0.375320003944956D+00
+    4           -91.88748505692059609373      0.236786896442013D+00
+    5           -91.88869378373564700269      0.426393907929058D-02
+    6           -91.88869417167298081495      0.144275895833858D-02
+    7           -91.88869419535808447108      0.142298505912816D-03
+    8           -91.88869419559330253833      0.424870297991138D-05
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -631,7 +631,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H       -0.0000000000           -0.0000000000           -0.0643086561
    N        0.0000000000            0.0000000000          -16.0791527903
-   C       -0.0000000000           -0.0000000000           16.1434614464
+   C        0.0000000000           -0.0000000000           16.1434614464
 
 
                      grad_k2 contribution to gradient
@@ -639,8 +639,8 @@ Total no. of matmuls in SCF optimization:        217
 
    H        0.0000000000            0.0000000000           -0.0124186829
    N       -0.0000000000           -0.0000000000            0.2722659936
-   C        0.0000000000            0.0000000000           -0.2598473106
-  KS electrons/energy:   13.97387931059754   -2.58398167670114 rel.err:-0.19E-02
+   C       -0.0000000000            0.0000000000           -0.2598473106
+  KS electrons/energy:   13.97387931059741   -2.58398167670114 rel.err:-0.19E-02
 
 
                     grad_xc2 contribution to gradient
@@ -656,7 +656,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H        0.0000000000            0.0000000000            0.0064668477
    N       -0.0000000000           -0.0000000000            0.1304565190
-   C        0.0000000000            0.0000000000           -0.1369223475
+   C       -0.0000000000            0.0000000000           -0.1369223475
 
 
                     ADMM_proj contribution to gradient
@@ -672,7 +672,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H        0.0000000000            0.0000000000            0.0275551127
    N       -0.0000000000           -0.0000000000            0.1779773054
-   C        0.0000000000            0.0000000000           -0.2055343422
+   C       -0.0000000000            0.0000000000           -0.2055343422
 
 
                    twoElectron contribution to gradient
@@ -680,7 +680,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H       -0.0000000000           -0.0000000000           -0.0367535434
    N        0.0000000000            0.0000000000          -15.9011754849
-   C       -0.0000000000           -0.0000000000           15.9379271042
+   C        0.0000000000           -0.0000000000           15.9379271042
 
 
                    nuc-el attr contribution to gradient
@@ -688,7 +688,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H        0.0000000000            0.0000000000           -4.5446122223
    N       -0.0000000000           -0.0000000000           34.1127814235
-   C        0.0000000000            0.0000000000          -29.5681692013
+   C       -0.0000000000            0.0000000000          -29.5681692012
 
 
                   exchange-corr contribution to gradient
@@ -696,7 +696,7 @@ Total no. of matmuls in SCF optimization:        217
 
    H        0.0000000000            0.0000000000            0.0262222263
    N       -0.0000000000           -0.0000000000            0.5791096186
-   C        0.0000000000            0.0000000000           -0.6053269589
+   C       -0.0000000000            0.0000000000           -0.6053269589
 
 
                      kinetic contribution to gradient
@@ -712,18 +712,18 @@ Total no. of matmuls in SCF optimization:        217
 
    H       -0.0000000000           -0.0000000000           -0.0951011066
    N        0.0000000000            0.0000000000           -0.3860221847
-   C       -0.0000000000           -0.0000000000            0.4811232912
+   C        0.0000000000           -0.0000000000            0.4811232912
 
 
                          Molecular gradient (au)
                          -----------------------
 
    H       -0.0000000000           -0.0000000000            2.6582290568
-   N       -0.0000000000            0.0000000000           -3.1134471383
-   C        0.0000000000            0.0000000000            0.4552210435
+   N       -0.0000000000           -0.0000000000           -3.1134471383
+   C       -0.0000000000           -0.0000000000            0.4552210435
 
 
- RMS gradient norm (au):      1.3730323699177862
+ RMS gradient norm (au):      1.3730323699177838
 
 
 
@@ -772,46 +772,46 @@ Residual norm for vector   2 is:   0.342693E-02    and eigenvalue =   0.45862364
   ** RSP_SOLVER MICROITERATION NUMBER           8
 Residual norm for vector   1 is:   0.158087E-02    and eigenvalue =   0.45753528   It =   8 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.142443E-02    and eigenvalue =   0.45862057   It =   8 CONV = F
+Residual norm for vector   2 is:   0.142439E-02    and eigenvalue =   0.45862057   It =   8 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           9
-Residual norm for vector   1 is:   0.924164E-03    and eigenvalue =   0.45753476   It =   9 CONV = F
+Residual norm for vector   1 is:   0.924108E-03    and eigenvalue =   0.45753476   It =   9 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.776508E-03    and eigenvalue =   0.45862018   It =   9 CONV = F
+Residual norm for vector   2 is:   0.774106E-03    and eigenvalue =   0.45862017   It =   9 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          10
-Residual norm for vector   1 is:   0.578128E-03    and eigenvalue =   0.45753436   It =  10 CONV = F
+Residual norm for vector   1 is:   0.577430E-03    and eigenvalue =   0.45753455   It =  10 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.628154E-03    and eigenvalue =   0.45862071   It =  10 CONV = F
+Residual norm for vector   2 is:   0.621007E-03    and eigenvalue =   0.45862023   It =  10 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          11
-Residual norm for vector   1 is:   0.206642E-03    and eigenvalue =   0.45753408   It =  11 CONV = F
+Residual norm for vector   1 is:   0.207532E-03    and eigenvalue =   0.45753442   It =  11 CONV = F
  MO preconditioning
-Residual norm for vector   2 is:   0.374902E-03    and eigenvalue =   0.45862066   It =  11 CONV = F
+Residual norm for vector   2 is:   0.369499E-03    and eigenvalue =   0.45862017   It =  11 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          12
-Residual norm for vector   1 is:   0.601395E-04    and eigenvalue =   0.45753386   It =  12 CONV = T
-Residual norm for vector   2 is:   0.261127E-03    and eigenvalue =   0.45862057   It =  12 CONV = F
+Residual norm for vector   1 is:   0.571652E-04    and eigenvalue =   0.45753436   It =  12 CONV = T
+Residual norm for vector   2 is:   0.237726E-03    and eigenvalue =   0.45862013   It =  12 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          13
-Residual norm for vector   1 is:   0.569736E-04    and eigenvalue =   0.45753380   It =  13 CONV = T
-Residual norm for vector   2 is:   0.166162E-03    and eigenvalue =   0.45862069   It =  13 CONV = F
+Residual norm for vector   1 is:   0.566514E-04    and eigenvalue =   0.45753435   It =  13 CONV = T
+Residual norm for vector   2 is:   0.162389E-03    and eigenvalue =   0.45862032   It =  13 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          14
-Residual norm for vector   1 is:   0.558210E-04    and eigenvalue =   0.45753378   It =  14 CONV = T
-Residual norm for vector   2 is:   0.113467E-03    and eigenvalue =   0.45862067   It =  14 CONV = F
+Residual norm for vector   1 is:   0.564954E-04    and eigenvalue =   0.45753434   It =  14 CONV = T
+Residual norm for vector   2 is:   0.103554E-03    and eigenvalue =   0.45862020   It =  14 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER          15
-Residual norm for vector   1 is:   0.552509E-04    and eigenvalue =   0.45753376   It =  15 CONV = T
-Residual norm for vector   2 is:   0.541740E-04    and eigenvalue =   0.45862061   It =  15 CONV = T
+Residual norm for vector   1 is:   0.564556E-04    and eigenvalue =   0.45753434   It =  15 CONV = T
+Residual norm for vector   2 is:   0.518299E-04    and eigenvalue =   0.45862024   It =  15 CONV = T
 
  *** THE REQUESTED              2 SOLUTION VECTORS CONVERGED
  Write            2  excitation vectors to disk
 
  The following excitation energies are used for the response calculation:
 
-           1  0.45753375671401936     
-           2  0.45862061203443150     
+           1  0.45753433890761691     
+           2  0.45862024097138571     
  Starting linear response function calculation for: << EL  ; EXCI>>
 
  Starting linear response function calculation for: << EL  ; EXCI>>
@@ -820,28 +820,28 @@ Residual norm for vector   2 is:   0.541740E-04    and eigenvalue =   0.45862061
 
 
 
-  ***********************************************************************************
-  *                     ONE-PHOTON ABSORPTION RESULTS (in a.u.)                     *
-  ***********************************************************************************
+  ******************************************************************************
+  *                   ONE-PHOTON ABSORPTION RESULTS (in a.u.)                  *
+  ******************************************************************************
 
 
 
-   Excitation                 Transition Dipole Moments                  Oscillator
-    Energies              x                y                z            Strengths
- ====================================================================================
-   0.45753376       0.43392208       0.16545051E-01  -0.96732032E-06   0.57515687E-01
-   0.45862061       0.16271859E-01  -0.43658451       0.65589865E-06   0.58358191E-01
+      Excitation              Transition Dipole Moments               Oscillator
+       Energies            x               y               z           Strengths
+ ===============================================================================
+      0.45753434     -0.43355700     -0.02434472      0.00000058      0.05751644
+      0.45862024     -0.02427299      0.43621418     -0.00000757      0.05835851
 
 
 
 
- >>>  CPU Time used in LSDALTON RSP is  2 minutes 45 seconds
- >>> wall Time used in LSDALTON RSP is  60.44 seconds
+ >>>  CPU Time used in LSDALTON RSP is  2 minutes 43 seconds
+ >>> wall Time used in LSDALTON RSP is  55.69 seconds
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    164.93848399999999         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    163.24419200000000         **
  *****************************************************
- >>>  CPU Time used in *SCF is  2 minutes 56 seconds
- >>> wall Time used in *SCF is  1 minute   3 seconds
+ >>>  CPU Time used in *SCF is  2 minutes 54 seconds
+ >>> wall Time used in *SCF is  58.77 seconds
 
 Total no. of matmuls used:                      1625
 Total no. of Fock/KS matrix evaluations:           9
@@ -893,7 +893,7 @@ Total no. of Fock/KS matrix evaluations:           9
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                         71.950 MB
   Max allocated memory, type(matrix)                 717.248 kB
-  Max allocated memory, real(realk)                   40.724 MB
+  Max allocated memory, real(realk)                   40.735 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      428.460 kB
@@ -933,9 +933,9 @@ Total no. of Fock/KS matrix evaluations:           9
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- >>>  CPU Time used in LSDALTON is  2 minutes 59 seconds
- >>> wall Time used in LSDALTON is  1 minute   5 seconds
+ >>>  CPU Time used in LSDALTON is  2 minutes 58 seconds
+ >>> wall Time used in LSDALTON is  60.13 seconds
 
 End simulation
-     Date and time (Linux)  : Mon Jun 30 15:20:40 2014
+     Date and time (Linux)  : Wed Jul  2 10:45:25 2014
      Host name              : kjmac10-reine.local                     

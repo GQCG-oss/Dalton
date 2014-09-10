@@ -57,8 +57,8 @@ f.add(from_string = 'Vibrational Frequencies and IR Intensities',
        abs_tolerance = 1.0e-2,
        mask = [5])
 
-test.run(['prop_vibana.dal'], ['C4H4N2_cc-pVDZ_sym.mol'], {'out': f},
+test.run(['prop_vibana.dal'], ['C4H4N2_cc-pVDZ_sym.mol'], {'out': f})
          # dirty fix
-         accepted_errors=['MAXRED too small in ANRCTL'])
+#         accepted_errors=['MAXRED too small in ANRCTL'])
 
 sys.exit(test.return_code)

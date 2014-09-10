@@ -1111,9 +1111,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
         !           treated in PDM, the strategy is to only use one V^2O^2 in 
         !           local mem
+        ! scheme 1: All 4 dimensional quantities are stored in PDM
 
 #ifndef VAR_MPI
-        if(scheme==3.or.scheme==2) call lsquit("ERROR(ccsd_residual_integral_driven):wrong choice of scheme",-1)
+        if(scheme==3.or.scheme==2.or.scheme==1) call lsquit("ERROR(ccsd_residual_integral_driven):wrong choice of scheme",-1)
 #endif
      endif
 
@@ -1235,7 +1236,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==4) write(DECinfo%output,'("Using memory intensive scheme (NON-PDM)")')
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
-        !if(scheme==1) write(DECinfo%output,'("Using memory saving scheme with direct updates")')
+        if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
         ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
         ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
@@ -1252,6 +1253,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !#ifdef VAR_MPI
 !     call arr_unlock_wins(t2,.true.)
 !#endif
+     if(scheme == 1) then
+        print *, "Dmitry, I stop the program here, if your scheme is called.&
+        & Here begins your work with distributing the tpl and tmi, also u2, &
+        & needs to be constructed correctly"
+        stop 0
+     endif
+
 
      !if I am the working process, then
      call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
@@ -3220,18 +3228,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       scheme=DECinfo%en_mem
       print *,"!!FORCING CCSD!!"
       if(local)then
-        if(scheme==3.or.scheme==2)then
+        if(scheme==3.or.scheme==2.or.scheme==1)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
           & MORE THAN ONE NODE"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
       if(scheme==4)then
-        print *,"NON PDM-SCHEME WITH HIGH MEMORY REQUIREMENTS"
+        print *,"SCHEME 4: NON PDM-SCHEME WITH HIGH MEMORY REQUIREMENTS"
       else if(scheme==3)then
-        print *,"SCHEME WITH MEDIUM MEMORY REQUIREMENTS (PDM)"
+        print *,"SCHEME 3: WITH MEDIUM MEMORY REQUIREMENTS (PDM)"
       else if(scheme==2)then
-        print *,"SCHEME WITH LOW MEMORY REQUIREMENTS (PDM)"
+        print *,"SCHEME 2: WITH LOW MEMORY REQUIREMENTS (PDM)"
+      else if(scheme==1)then
+        print *,"SCHEME 1: DMITRY's SCHEME (PDM)"
       else
         print *,"SCHEME ",scheme," DOES NOT EXIST"
         call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme2",-1)
@@ -3564,6 +3574,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       memout = 1.0E0_realk*(max((i8*nv*nv)*no*no,(i8*nb*nb))+max(i8*nb*nb,i8*max(cd,e2)))
 
+    case(1)
+
+       print *,"Dmitry, please implement your memory requirements here, such&
+       & that a memory estimation can be made and the batch sizes adapted -- PE"
 
     case default
 
@@ -4474,7 +4488,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp0, tmp_size)
 
-    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N)
+    tmp_size = max(X*X*N*N, O*O*V*N, O*O*X*N, O**4)
     tmp_size = int(i8*tmp_size, kind=long)
     call mem_alloc(tmp1, tmp_size)
 
@@ -4738,41 +4752,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !===========================================================================
     !                       GET SINGLES CCSD RESIDUAL
     !
-    ! Get A1 term:
-    ! Omega_ai = xvir_aP * G_Pi 
-    call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
-              & 0.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1:
-    if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
-
-    ! Calculate B1 term:
-    ! Omega_ai += - H_aQ * yocc_iQ 
-    call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
-              & 1.0E0_realk,omega1%elm1,nvir)
-    ! Calculate norm of A1 + B1:
-    if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
-
-    ! Calculate C1 term:
-    ! Reorder u2[ac, ik] -> u2[ai, kc]
-    call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
-              & 0.0E0_realk,tmp0)
-
-    ! Omega_ai += u2[ai, kc] * F_kc 
-    call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
-              & 1.0E0_realk,omega1%elm1,1)
-    ! Calculate norm of A1 + B1 + C1:
-    if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
-
-    ! Calculate D1 term:
-    ! Omega_ai += F_ai
-    call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
-
-    ! Calculate norm of full single residual:
-    if (print_debug) then
-      call print_norm(omega1,'debug: residual D1 norm:                 ')
-      call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+    !CCD can be achieved by not using singles residual updates here
+    if(.not. DECinfo%CCDhack)then
+      ! Get A1 term:
+      ! Omega_ai = xvir_aP * G_Pi 
+      call dgemm('n','n',nvir,nocc,ntot,1.0E0_realk,xvir,nvir,G_Pi,ntot, &
+                & 0.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1:
+      if (print_debug) call print_norm(omega1,'debug: residual A1 norm:         ')
+       
+      ! Calculate B1 term:
+      ! Omega_ai += - H_aQ * yocc_iQ 
+      call dgemm('n','t',nvir,nocc,ntot,-1.0E0_realk,H_aQ,nvir,yocc,nocc, &
+                & 1.0E0_realk,omega1%elm1,nvir)
+      ! Calculate norm of A1 + B1:
+      if (print_debug) call print_norm(omega1,'debug: residual B1 norm:         ')
+       
+      ! Calculate C1 term:
+      ! Reorder u2[ac, ik] -> u2[ai, kc]
+      call array_reorder_4d(1.0E0_realk,u2,nvir,nvir,nocc,nocc,[1,3,4,2], & 
+                & 0.0E0_realk,tmp0)
+       
+      ! Omega_ai += u2[ai, kc] * F_kc 
+      call dgemv('n',nvir*nocc,nvir*nocc,1.0E0_realk,tmp0,nvir*nocc,pqfock%elm1,1, &
+                & 1.0E0_realk,omega1%elm1,1)
+      ! Calculate norm of A1 + B1 + C1:
+      if (print_debug) call print_norm(omega1,'debug: residual C1 norm:         ')
+       
+      ! Calculate D1 term:
+      ! Omega_ai += F_ai
+      call daxpy(nocc*nvir,1.0E0_realk,qpfock%elm1,1,omega1%elm1,1)
+       
+      ! Calculate norm of full single residual:
+      if (print_debug) then
+        call print_norm(omega1,'debug: residual D1 norm:                 ')
+        call LSTIMER('MO-CCSD singles',tcpu1,twall1,DECinfo%output)
+      end if
     end if
-
 
     !===========================================================================
     !                   GET DOUBLES CCSD RESIDUAL AND FINALIZE
@@ -5373,11 +5389,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! 2) transform s to k g[PQjs]
     call dgemm('n','t',dimP*dimQ*nocc,nocc,ntot,1.0E0_realk,tmp0,dimP*dimQ*nocc, &
               & yocc,nocc,0.0E0_realk,tmp1,dimP*dimQ*nocc)
-    call lsmpi_poke() 
 
     ! 3) transpose and get g[Qjk,P]
     call mat_transpose(dimP,dimQ*nocc*nocc,1.0E0_realk,tmp1,0.0E0_realk,tmp0)
-    call lsmpi_poke() 
 
     ! 4) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc
@@ -5403,7 +5417,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     
     ! 2) transpose and get g[QjbP]:
     call mat_transpose(dimP,dimQ*nocc*nvir,1.0E0_realk,tmp0,0.0E0_realk,tmp1)
-    call lsmpi_poke() 
   
     ! 3) transform Q to i:
     pos1 = 1 + (Q_sta-1)*nocc

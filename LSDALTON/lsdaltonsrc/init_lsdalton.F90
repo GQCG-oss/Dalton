@@ -239,13 +239,14 @@ SUBROUTINE print_intro(lupri)
        &  ' Trygve Helgaker,         University of Oslo,        Norway    (supervision)',&
        &  ' Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)',&
        &  ' Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)',&
+       &  ' Robert Izsak,            University of Oslo,        Norway    (ADMM)',&
        &  ' Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)',&
        &  ' Poul Joergensen,         Aarhus University,         Denmark   (supervision)', &
        &  ' Joanna Kauczor,          Aarhus University,         Denmark   (response solver)',&
        &  ' Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)',&
        &  ' Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)',&
        &  ' Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)',&
-       &  ' Patrick Merlot,          University of Oslo,        Norway    (PARI)',&
+       &  ' Patrick Merlot,          University of Oslo,        Norway    (ADMM)',&
        &  ' Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)',&
        &  ' Jeppe Olsen,             Aarhus University,         Denmark   (supervision)', &
        &  ' Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)',&

@@ -121,8 +121,12 @@ contains
     DECinfo%PL                     = 0
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
-    DECinfo%FragmentExpansionScheme= 1
-    DECinfo%FragmentExpansionSize  = 5
+    DECinfo%Frag_Exp_Scheme        = 1
+    DECinfo%Frag_Red_Scheme        = 1
+    DECinfo%Frag_Init_Size         = 4
+    DECinfo%Frag_Exp_Size          = 10
+    DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
+    DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
     DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
@@ -130,8 +134,9 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
+    DECinfo%orb_based_fragopt      = .false.
     DECinfo%OnlyOccPart            = .false.
-    DECinfo%OnlyVirtPart            = .false.
+    DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
     DECinfo%RepeatAF               = .true.
     ! Which scheme to used for generating correlation density defining fragment-adapted orbitals
@@ -146,6 +151,7 @@ contains
     DECinfo%PairEstimate            = .true.
     DECinfo%PairEstimateIgnore      = .false.
     DECinfo%EstimateINITradius      = 2.0E0_realk/bohr_to_angstrom
+    DECinfo%EstimateInitAtom        = 1
 
     ! Memory use for full molecule structure
     DECinfo%fullmolecule_memory     = 0E0_realk
@@ -461,7 +467,10 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAGMENTEXPANSIONSIZE'); read(input,*) DECinfo%FragmentExpansionSize
+       case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
+       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
+       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
+       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
 
 
 #ifdef MOD_UNRELEASED
@@ -548,6 +557,8 @@ contains
        case('.ESTIMATEINITRADIUS')
           read(input,*) DECinfo%EstimateINITradius
           DECinfo%EstimateINITradius = DECinfo%EstimateINITradius/bohr_to_angstrom
+       case('.ESTIMATEINITATOM')
+          read(input,*) DECinfo%EstimateInitAtom
        case('.PAIRMINDISTANGSTROM')
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
@@ -567,9 +578,11 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAGMENTEXPANSIONSCHEME'); read(input,*) DECinfo%FragmentExpansionScheme
+       case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
+       case('.ORB_BASED_FRAGOPT'); DECinfo%orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
@@ -756,7 +769,8 @@ contains
          &.CCSDforce_scheme in a DEC calculation",-1)
    endif
 
-   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==1.or.&
+      &DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
       call lsquit("ERROR(check_dec_input):You forced a scheme in &
       &the CCSD part which is dependent on running at least 2 &
       &MPI processes with only one process",-1)
@@ -901,11 +915,16 @@ contains
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
-    write(lupri,*) 'FragmentExpansionScheme ', DECitem%FragmentExpansionScheme
-    write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
+    write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
+    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
+    write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
+    write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
+    write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
+    write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
+    write(lupri,*) 'Orb_Based_FragOpt ', DECitem%orb_based_fragopt
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
