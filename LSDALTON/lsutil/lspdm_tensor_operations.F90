@@ -2251,7 +2251,6 @@ module lspdm_tensor_operations_module
         elms_sent = elms_sent + nelintile
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
-           print *,"gather flushing"
 
            do j=last_flush_i,i
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
@@ -2349,15 +2348,15 @@ module lspdm_tensor_operations_module
     integer,target :: fx(arr%mode)
     integer,target :: flx(arr%mode)
     integer :: oldidx(arr%mode)
-    integer :: i,lel
+    integer :: i,lel,nelintile
     integer,target :: ro(arr%mode)
     integer :: comb1,comb2,c1,c2,elms_sent,last_flush_i,j
     integer :: tidx(arr%mode),idxt(arr%mode)
     integer :: tlidx(arr%mode),lidxt(arr%mode)
-    integer :: ctidx, cidxt, cidxf, st_tiling
+    integer :: ctidx, cidxt, cidxf, st_tiling, last_ctidx,nbuffs
     integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
     integer,pointer ::for3,for4
-    real(realk), pointer :: p_fort3(:,:,:),p_fort2(:,:)
+    real(realk), pointer :: p_fort3(:,:,:),p_fort2(:,:),tile_buff(:,:), ti(:)
     integer :: tsze(arr%mode),mult1,mult2,dummy
     integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
     integer(kind=8) :: cons_el_rd
@@ -2803,30 +2802,83 @@ module lspdm_tensor_operations_module
           !CASE arr%mode==4,n2comb==2 and lock_outside = .false.
           if(cons_els==1)then
 
-             do c1 = 1, tl
-                call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
-                do for4 = 1, fordims(4)
-                   do for3 = 1, fordims(3)
+             nbuffs = 1
 
-                      do i = st_tiling, 4
-                         tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+             call mem_alloc(tile_buff,arr%tsize,nbuffs)
+
+             do j=1,nbuffs-1
+                call get_tile_dim(nelintile,j,arr%dims,arr%tdim,arr%mode)
+                call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
+                call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=arr%lock_set(j),flush_it=.true.)
+             enddo
+             
+             do j=1,arr%ntiles
+
+
+                if(j+nbuffs-1<=arr%ntiles)then
+                   ctidx = j+nbuffs-1
+                   call get_tile_dim(nelintile,ctidx,arr%dims,arr%tdim,arr%mode)
+                   call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                   call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                endif
+
+                call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
+                ti => tile_buff(:,mod(j-1,nbuffs)+1)
+
+
+                do c1 = 1, tl
+
+                   call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+
+                   do for4 = 1, fordims(4)
+                      do for3 = 1, fordims(3)
+
+                         do i = st_tiling, 4
+                            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                         enddo
+
+                         ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                            & mult1 + (tidx(4)-1) * mult2
+
+                         if( ctidx == j ) then
+                            do i = 1, 4
+                               idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                            enddo
+
+                            cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                               &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+
+                            p_fort3(c1,for3,for4) = ti(cidxt)
+
+                         endif
+
+                         !if(ctidx/=last_ctidx)then
+                         !   if(last_ctidx/=0)call lsmpi_win_unlock(int(tinfo(last_ctidx,1),kind=ls_mpik),arr%wi(last_ctidx))
+                         !   call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                         !   last_ctidx = ctidx
+                         !endif
+                         !if(arr%lock_set(ctidx))call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                         !if(.not.arr%lock_set(ctidx))call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                         !call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                         !elms_sent = elms_sent + 1
+
+                         !if(elms_sent > MAX_SIZE_ONE_SIDED)then
+
+                         !   do j=1,arr%ntiles
+                         !      call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
+                         !      call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
+                         !   enddo
+
+                         !   elms_sent    = 0
+
+                         !endif
+
                       enddo
-
-                      do i = 1, 4
-                         idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
-                      enddo
-
-                      ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
-                         & mult1 + (tidx(4)-1) * mult2
-                      cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
-                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
-
-                      call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                      call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                      call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                    enddo
                 enddo
              enddo
+
+             call mem_dealloc(tile_buff)
 
           else
 
@@ -4008,8 +4060,7 @@ module lspdm_tensor_operations_module
     integer :: i
 
     do i=1,arr%ntiles
-      node            = get_residence_of_tile(i,arr)
-      call lsmpi_win_lock(node,arr%wi(i),locktype,ass=assert)
+      call lsmpi_win_lock(int(get_residence_of_tile(i,arr),kind=ls_mpik),arr%wi(i),locktype,ass=assert)
       arr%lock_set(i) = .true.
     enddo
 

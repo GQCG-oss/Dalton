@@ -1267,15 +1267,9 @@ module cc_tools_module
 
          call time_start_phase(PHASE_COMM, at = tw )
 
-         print *,infpar%lg_mynum,"fai,tl!",fai,tl,nv*nv,traf
-         call lsmpi_barrier(infpar%lg_comm)
-
          !if(lock_outside)call arr_lock_wins(t2,'s',mode)
          call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,.false.)
          !if(lock_outside)call arr_unlock_wins(t2,.true.)
-
-         print *,infpar%lg_mynum,"getting done"
-         call lsmpi_barrier(infpar%lg_comm)
 
          call time_start_phase(PHASE_WORK, at = tc )
 
@@ -1342,9 +1336,6 @@ module cc_tools_module
 #endif
 
       endif
-
-      print *,infpar%lg_mynum,"freaking b term  done"
-      call lsmpi_barrier(infpar%lg_comm)
 
       call time_start_phase(PHASE_COMM, at = tw )
    end subroutine get_B22_contrib_mo
