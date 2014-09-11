@@ -1639,13 +1639,6 @@ DO I = 2,CC%nrow
    END DO
 END DO
 
-IF (Spherical) THEN
-   call mem_dft_alloc(CAO,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
-END IF
-
 !screening based on the maximum GA value for the batch of points: GMAX
 GMAX = D0
 DO K = 1, NVCLEN
@@ -1714,6 +1707,12 @@ ELSE IF (SHELLANGMOMA .EQ. 2) THEN
 ! d and higher orbitals
 ELSE
    IF (GMAX.GT.DFTHRI) THEN
+      IF (Spherical) THEN
+         call mem_dft_alloc(CAO,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
+      END IF
       call mem_dft_alloc(GAX,NVCLEN)
       call mem_dft_alloc(GAY,NVCLEN)
       call mem_dft_alloc(GAZ,NVCLEN)
@@ -1841,6 +1840,12 @@ ELSE
       call mem_dft_dealloc(FX)
       call mem_dft_dealloc(FY)
       call mem_dft_dealloc(FZ)
+      IF (Spherical) THEN
+         call mem_dft_dealloc(CAO)
+         call mem_dft_dealloc(CAOX)
+         call mem_dft_dealloc(CAOY)
+         call mem_dft_dealloc(CAOZ)
+      END IF
    ELSE
       IF (.NOT.Spherical) THEN
          DO I = 1, KCKTA
@@ -1885,12 +1890,6 @@ ELSE
    END IF
 END IF
 
-IF (Spherical) THEN
-   call mem_dft_dealloc(CAO)
-   call mem_dft_dealloc(CAOX)
-   call mem_dft_dealloc(CAOY)
-   call mem_dft_dealloc(CAOZ)
-END IF
 call mem_dft_dealloc(GA)
 call mem_dft_dealloc(GU)
 
