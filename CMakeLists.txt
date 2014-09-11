@@ -46,7 +46,7 @@ option(ENABLE_OMP            "Enable OpenMP parallelization"                    
 option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int library"                           OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
 option(ENABLE_PELIB          "Enable PE library"                                ON)
 option(ENABLE_QFITLIB        "Enable charge fittling library (QFITLIB)"         ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
