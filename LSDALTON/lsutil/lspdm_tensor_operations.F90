@@ -12,6 +12,7 @@ module lspdm_tensor_operations_module
   use ptr_assoc_module, only: ass_D1to4
   use dec_typedef_module
   use memory_handling
+  use dec_workarounds_module
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
@@ -2335,7 +2336,153 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine array_gather
 
-  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside,debug)
+  !gather as 2 coulomb minus exchange
+  subroutine array_gather_2cme(arr,fort,nelms,pos,oo,wrk,iwrk)
+    implicit none
+    type(array),intent(in)             :: arr
+    real(realk),intent(inout)          :: fort(*)
+    integer(kind=long), intent(in)     :: nelms
+    integer,intent(in)                 :: pos(2)
+    integer(kind=ls_mpik)              :: nod
+    integer, intent(in), optional             :: oo(arr%mode)
+    real(realk),intent(inout),target,optional :: wrk(*)
+    integer(kind=8),intent(in),optional,target:: iwrk
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer               :: i,ltidx,o(arr%mode),excho(arr%mode)
+    integer               :: nelintile,fullfortdim(arr%mode)
+    real(realk), pointer  :: tmp(:)
+    integer               :: tmps, elms_sent,last_flush_i,j
+    logical               :: internal_alloc,lock_outside,so
+    integer               :: maxintmp,b,e,minstart
+    real(realk)           :: pre1,pre2
+#ifdef VAR_MPI
+  
+    do i=1,arr%mode
+      o(i)=i
+    enddo
+    if(present(oo))o=oo
+    excho = o
+    excho(pos(2)) = o(pos(1))
+    excho(pos(1)) = o(pos(2))
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+     call assign_in_subblocks(fort(1:nelms),'=',fort(1:nelms),nelms,scal2=0.0E0_realk)
+#else
+    fort(1:nelms) = 0.0E0_realk
+#endif
+ 
+    do i=1,arr%mode
+      if(o(i)/=i)so = .false.
+    enddo
+
+#ifdef VAR_LSDEBUG
+    if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
+      call lsquit('ERROR(array_gather):both or neither wrk and iwrk have to &
+                  &be given',-1)
+    endif
+#endif
+
+
+    !CHECK IF INTERNAL MEMORY ALLOCATION IS NEEDED
+    internal_alloc = .true.
+    if(present(wrk).and.present(iwrk))then
+      if(iwrk>arr%tsize)then
+        internal_alloc=.false.
+#ifdef VAR_LSDEBUG
+      else
+        print *,'WARNING(array_gather):allocating internally, given buffer not large enough'
+#endif
+      endif
+    endif
+
+    me   = infpar%lg_mynum
+    nnod = infpar%lg_nodtot
+
+#ifdef VAR_LSDEBUG
+    if(nelms/=arr%nelms)call lsquit('ERROR(array_gather):array&
+       &dimensions are not the same',DECinfo%output)
+#endif
+
+    do i = 1, arr%mode
+       fullfortdim(i) = arr%dims(o(i))
+    enddo
+
+
+    elms_sent    = 0
+    last_flush_i = 1
+
+
+    if(internal_alloc)then
+#ifdef VAR_LSDEBUG
+       print *,'WARINING(array_gather):Allocating internally'
+#endif
+       tmps = arr%tsize
+       call mem_alloc(tmp,tmps)
+    else
+       tmps =  iwrk
+       tmp  => wrk(1:tmps)
+    endif
+
+    maxintmp = tmps / arr%tsize
+
+    do i=1,arr%ntiles
+
+       if(i>maxintmp)then
+          b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
+          e = b + arr%tsize -1
+          if(arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+          call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+       endif
+
+       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+
+       !ADDRESSING IN TMP BUFFER ALWAYS WITH FULL TILE SIZES
+       b = 1 + mod(i - 1, maxintmp) * arr%tsize
+       e = b + arr%tsize - 1
+
+       call array_get_tile(arr,i,tmp(b:e),nelintile,arr%lock_set(i),flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+
+       elms_sent = elms_sent + nelintile
+
+       if(elms_sent > MAX_SIZE_ONE_SIDED)then
+
+          do j=last_flush_i,i
+             call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
+          enddo
+
+          last_flush_i = i
+          elms_sent    = 0
+
+       endif
+    enddo
+
+    if(arr%ntiles - maxintmp >= 0)then
+       minstart = arr%ntiles - maxintmp + 1
+    else
+       minstart = 1
+    endif
+
+    do i=minstart, arr%ntiles
+       b = 1 + mod(i - 1, maxintmp) * arr%tsize
+       e = b + arr%tsize -1
+       if(arr%lock_set(i))call arr_unlock_win(arr,i)
+       call tile_in_fort(2.0E0_realk,tmp(b:e),i,arr%tdim,&
+          &1.0E0_realk,fort,fullfortdim,arr%mode,o)
+       call tile_in_fort(-1.0E0_realk,tmp(b:e),i,arr%tdim,&
+          &1.0E0_realk,fort,fullfortdim,arr%mode,excho)
+    enddo
+
+    if(internal_alloc)then
+       call mem_dealloc(tmp)
+    else
+       tmp  => null()
+    endif
+
+#else
+    call lsquit('ERROR(array_gather):this routine is MPI only',-1)
+#endif
+ end subroutine array_gather_2cme
+
+  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside,debug,mem,wrk,iwrk)
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
@@ -2344,6 +2491,9 @@ module lspdm_tensor_operations_module
     integer, intent(in) :: fel,tl,n2comb
     logical, intent(in) :: lock_outside
     logical, intent(in),optional :: debug
+    real(realk), intent(in), optional :: mem
+    integer, intent(in), optional :: iwrk
+    real(realk), intent(in), optional :: wrk(:)
     integer :: fordims(arr%mode)
     integer,target :: fx(arr%mode)
     integer,target :: flx(arr%mode)
@@ -2361,7 +2511,7 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
-    logical :: deb
+    logical :: deb,do_alloc
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(put_acc_el), pointer :: pga => null()
@@ -2802,29 +2952,111 @@ module lspdm_tensor_operations_module
           !CASE arr%mode==4,n2comb==2 and lock_outside = .false.
           if(cons_els==1)then
 
-             nbuffs = 1
+             if(present(mem).and.present(wrk).and.present(iwrk))then
 
-             call mem_alloc(tile_buff,arr%tsize,nbuffs)
-
-             do j=1,nbuffs-1
-                call get_tile_dim(nelintile,j,arr%dims,arr%tdim,arr%mode)
-                call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
-                call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=arr%lock_set(j),flush_it=.true.)
-             enddo
-             
-             do j=1,arr%ntiles
-
-
-                if(j+nbuffs-1<=arr%ntiles)then
-                   ctidx = j+nbuffs-1
-                   call get_tile_dim(nelintile,ctidx,arr%dims,arr%tdim,arr%mode)
-                   call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                   call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                if(max(int((mem*0.5_realk)/(arr%tsize*8.0E0_realk)),arr%ntiles)>max(iwrk/arr%tsize,arr%ntiles))then
+                   nbuffs   = min(max(int((mem*0.5_realk)/(arr%tsize*8.0E0_realk)),arr%ntiles),5)
+                   do_alloc = .true.
+                else if(max(int((mem*0.5_realk)/(arr%tsize*8.0E0_realk)),arr%ntiles)<max(iwrk/arr%tsize,arr%ntiles))then
+                   nbuffs   = min(max(iwrk/arr%tsize,arr%ntiles),5)
+                   do_alloc = .false.
+                else if(max(int((mem*0.5_realk)/(arr%tsize*8.0E0_realk)),arr%ntiles)==max(iwrk/arr%tsize,arr%ntiles))then
+                   nbuffs   = min(max(iwrk/arr%tsize,arr%ntiles),5)
+                   do_alloc = .false.
                 endif
 
-                call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
-                ti => tile_buff(:,mod(j-1,nbuffs)+1)
+             else if(present(wrk).and.present(iwrk))then
 
+                nbuffs   = min(max(iwrk/arr%tsize,arr%ntiles),5)
+                do_alloc = .false.
+
+             else if(present(mem))then
+
+                nbuffs   = min(max(int((mem*0.5_realk)/(arr%tsize*8.0E0_realk)),arr%ntiles),5)
+                do_alloc = .true.
+
+             else if(present(wrk).and.present(iwrk))then
+
+                nbuffs   = min(max(iwrk/arr%tsize,arr%ntiles),5)
+                do_alloc = .false.
+
+             else
+
+                nbuffs = 0
+                do_alloc = .false.
+
+             endif
+
+
+
+             if(nbuffs/=0) then
+
+                if(do_alloc)then
+                   call mem_alloc(tile_buff,arr%tsize,nbuffs)
+                else
+                   call ass_D1to2(wrk,tile_buff,[arr%tsize,nbuffs])
+                endif
+
+
+                do j=1,nbuffs-1
+                   call get_tile_dim(nelintile,j,arr%dims,arr%tdim,arr%mode)
+                   call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
+                   call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                enddo
+
+                do j=1,arr%ntiles
+
+
+                   if(j+nbuffs-1<=arr%ntiles)then
+                      ctidx = j+nbuffs-1
+                      call get_tile_dim(nelintile,ctidx,arr%dims,arr%tdim,arr%mode)
+                      call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                      call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                   endif
+
+                   call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
+                   ti => tile_buff(:,mod(j-1,nbuffs)+1)
+
+
+                   do c1 = 1, tl
+
+                      call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+
+                      do for4 = 1, fordims(4)
+                         do for3 = 1, fordims(3)
+
+                            do i = st_tiling, 4
+                               tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                            enddo
+
+                            ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                               & mult1 + (tidx(4)-1) * mult2
+
+                            if( ctidx == j ) then
+                               do i = 1, 4
+                                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                               enddo
+
+                               cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                                  &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+
+                               p_fort3(c1,for3,for4) = ti(cidxt)
+
+                            endif
+
+                         enddo
+                      enddo
+                   enddo
+                enddo
+
+                if(do_alloc)then
+                   call mem_dealloc(tile_buff)
+                else
+                   tile_buff => null()
+                endif
+
+             else
+                print *,"should not right now"
 
                 do c1 = 1, tl
 
@@ -2840,45 +3072,24 @@ module lspdm_tensor_operations_module
                          ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                             & mult1 + (tidx(4)-1) * mult2
 
-                         if( ctidx == j ) then
-                            do i = 1, 4
-                               idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
-                            enddo
+                         do i = 1, 4
+                            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                         enddo
 
-                            cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
-                               &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+                         cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
-                            p_fort3(c1,for3,for4) = ti(cidxt)
 
-                         endif
 
-                         !if(ctidx/=last_ctidx)then
-                         !   if(last_ctidx/=0)call lsmpi_win_unlock(int(tinfo(last_ctidx,1),kind=ls_mpik),arr%wi(last_ctidx))
-                         !   call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                         !   last_ctidx = ctidx
-                         !endif
-                         !if(arr%lock_set(ctidx))call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                         !if(.not.arr%lock_set(ctidx))call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                         !call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                         !elms_sent = elms_sent + 1
-
-                         !if(elms_sent > MAX_SIZE_ONE_SIDED)then
-
-                         !   do j=1,arr%ntiles
-                         !      call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
-                         !      call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
-                         !   enddo
-
-                         !   elms_sent    = 0
-
-                         !endif
+                         call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                         call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                         call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
 
                       enddo
                    enddo
                 enddo
-             enddo
 
-             call mem_dealloc(tile_buff)
+             endif
 
           else
 

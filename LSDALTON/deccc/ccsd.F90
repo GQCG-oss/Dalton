@@ -2977,6 +2977,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
            if(lock_outside)call arr_lock_wins(govov,'s',mode)
+           !call array_gather_2cme(govov,w1,o2v2,[2,4],wrk=w3,iwrk=w3size)
            call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
            if(lock_outside)call arr_unlock_wins(govov,.true.)
            if(lock_outside)call arr_lock_wins(govov,'s',mode)
@@ -3002,10 +3003,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            enddo
         else if(s==2)then
 #ifdef VAR_MPI
+           call get_currently_available_memory(MemFree)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
            !if(lock_outside)call arr_lock_wins(u2,'s',mode)
-           call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,.false.)
+           call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,.false.,&
+              &mem=MemFree)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
            !if(lock_outside)call arr_unlock_wins(u2,.true.)
 
            if(DECinfo%PL>3.and.master)then
