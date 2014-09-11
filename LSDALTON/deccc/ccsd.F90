@@ -2977,11 +2977,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
            if(lock_outside)call arr_lock_wins(govov,'s',mode)
-           !call array_gather_2cme(govov,w1,o2v2,[2,4],wrk=w3,iwrk=w3size)
-           call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
-           if(lock_outside)call arr_unlock_wins(govov,.true.)
-           if(lock_outside)call arr_lock_wins(govov,'s',mode)
-           call array_gather(-1.0E0_realk,govov,1.0E0_realk,w1,o2v2,oo=[1,4,3,2],wrk=w3,iwrk=w3size)
+           call array_gather_2cme(govov,w1,o2v2,[2,4],wrk=w3,iwrk=w3size)
+           !call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
+           !if(lock_outside)call arr_unlock_wins(govov,.true.)
+           !if(lock_outside)call arr_lock_wins(govov,'s',mode)
+           !call array_gather(-1.0E0_realk,govov,1.0E0_realk,w1,o2v2,oo=[1,4,3,2],wrk=w3,iwrk=w3size)
            if(lock_outside)call arr_unlock_wins(govov,.true.)
 
            if(DECinfo%PL>3.and.master)then

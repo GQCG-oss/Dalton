@@ -2352,7 +2352,7 @@ module lspdm_tensor_operations_module
     integer               :: nelintile,fullfortdim(arr%mode)
     real(realk), pointer  :: tmp(:)
     integer               :: tmps, elms_sent,last_flush_i,j
-    logical               :: internal_alloc,lock_outside,so
+    logical               :: internal_alloc,lock_outside
     integer               :: maxintmp,b,e,minstart
     real(realk)           :: pre1,pre2
 #ifdef VAR_MPI
@@ -2364,15 +2364,14 @@ module lspdm_tensor_operations_module
     excho = o
     excho(pos(2)) = o(pos(1))
     excho(pos(1)) = o(pos(2))
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
      call assign_in_subblocks(fort(1:nelms),'=',fort(1:nelms),nelms,scal2=0.0E0_realk)
 #else
     fort(1:nelms) = 0.0E0_realk
 #endif
  
-    do i=1,arr%mode
-      if(o(i)/=i)so = .false.
-    enddo
+    print *,excho,o,norm2(fort(1:nelms))
 
 #ifdef VAR_LSDEBUG
     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
@@ -2430,7 +2429,8 @@ module lspdm_tensor_operations_module
           b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
           e = b + arr%tsize -1
           if(arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
-          call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,pre2,fort,fullfortdim,arr%mode,o)
+          call tile_in_fort(2.0E0_realk,tmp(b:e),i-maxintmp,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,o)
+          call tile_in_fort(-1.0E0_realk,tmp(b:e),i-maxintmp,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,excho)
        endif
 
        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
@@ -2465,10 +2465,8 @@ module lspdm_tensor_operations_module
        b = 1 + mod(i - 1, maxintmp) * arr%tsize
        e = b + arr%tsize -1
        if(arr%lock_set(i))call arr_unlock_win(arr,i)
-       call tile_in_fort(2.0E0_realk,tmp(b:e),i,arr%tdim,&
-          &1.0E0_realk,fort,fullfortdim,arr%mode,o)
-       call tile_in_fort(-1.0E0_realk,tmp(b:e),i,arr%tdim,&
-          &1.0E0_realk,fort,fullfortdim,arr%mode,excho)
+       call tile_in_fort(2.0E0_realk,tmp(b:e),i,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,o)
+       call tile_in_fort(-1.0E0_realk,tmp(b:e),i,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,excho)
     enddo
 
     if(internal_alloc)then
