@@ -2371,8 +2371,6 @@ module lspdm_tensor_operations_module
     fort(1:nelms) = 0.0E0_realk
 #endif
  
-    print *,excho,o,norm2(fort(1:nelms))
-
 #ifdef VAR_LSDEBUG
     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
       call lsquit('ERROR(array_gather):both or neither wrk and iwrk have to &
