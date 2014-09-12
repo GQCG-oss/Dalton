@@ -165,7 +165,8 @@ add_library(
     lsutiltypelib_common
     ${LSUTIL_TYPE_SOURCES}
     )
-
+add_dependencies(lsutiltypelib_common lsutillib_common)
+add_dependencies(lsutiltypelib_common matrixulib)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
 
