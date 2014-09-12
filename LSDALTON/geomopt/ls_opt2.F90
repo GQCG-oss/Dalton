@@ -129,9 +129,9 @@ Implicit Real(realk) (A-H,O-Z)
          EMOD = (((CA*CRDC + CB)*CRDC + CC)*CRDC + CD)*CRDC + CE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Interpolated step')
-            call output(STEP,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,ICRD,1,MCRD,1,LUPRI)
             call lsheader(lupri,'Interpolated gradient')
-            call output(GRAD,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            call ls_output(GRAD,1,1,1,ICRD,1,MCRD,1,LUPRI)
             WRITE(LUPRI,*)
             WRITE(LUPRI,*) 'Interpolated energy: ',EMOD
          END IF
@@ -236,7 +236,7 @@ Implicit Real(realk) (A-H,O-Z)
       TMPMAT(IDIM,1) = D1
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'DIIS matrix')
-         call output(TMPMAT,1,IDIM,1,IDIM, &
+         call ls_output(TMPMAT,1,IDIM,1,IDIM, &
      &        MX2CRD,MX2CRD,1,LUPRI)
       END IF
  25   CONTINUE
@@ -267,7 +267,7 @@ Implicit Real(realk) (A-H,O-Z)
  35   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Initial eigenvalues of DIIS matrix')
-         call output(TMPMT4,1,1,1,IDIM,1,IDIM,1,LUPRI)
+         call ls_output(TMPMT4,1,1,1,IDIM,1,IDIM,1,LUPRI)
       END IF
       IF ((IZER .GT. 0) .AND. (IDIM .GT. 2)) THEN
 !
@@ -312,9 +312,9 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Eigenvalues of DIIS matrix')
-         call output(TMPMT4,1,1,1,IDIM,1,IDIM,1,LUPRI)
+         call ls_output(TMPMT4,1,1,1,IDIM,1,IDIM,1,LUPRI)
          call lsheader(lupri,'Eigenvectors of DIIS matrix')
-         call output(TMPMAT,1,IDIM,1,IDIM,MX2CRD,MX2CRD,1,LUPRI)
+         call ls_output(TMPMAT,1,IDIM,1,IDIM,MX2CRD,MX2CRD,1,LUPRI)
       END IF
 !
 !     We find the inverse of the DIIS matrix
@@ -351,9 +351,9 @@ Implicit Real(realk) (A-H,O-Z)
  70   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Inverse of DIIS matrix')
-         call output(TMPMAT,1,IDIM,1,IDIM,MX2CRD,MX2CRD,1,LUPRI)
+         call ls_output(TMPMAT,1,IDIM,1,IDIM,MX2CRD,MX2CRD,1,LUPRI)
          call lsheader(lupri,'DIIS coefficients')
-         call output(TMPMT4,1,1,1,IDIM-1,1,MX2CRD,1,LUPRI)
+         call ls_output(TMPMT4,1,1,1,IDIM-1,1,MX2CRD,1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Sum of coefficients: ',FAC
       END IF
@@ -397,11 +397,11 @@ Implicit Real(realk) (A-H,O-Z)
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Interpolated step')
-         call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          call lsheader(lupri,'Interpolated gradient')
-         call output(TMPMT3,1,1,1,ICRD,1,MX2CRD,1,LUPRI)
+         call ls_output(TMPMT3,1,1,1,ICRD,1,MX2CRD,1,LUPRI)
          call lsheader(lupri,'Inverse of Hessian')
-         call output(HESINV,1,ICRD,1,ICRD,ICRD,ICRD,1,LUPRI)
+         call ls_output(HESINV,1,ICRD,1,ICRD,ICRD,ICRD,1,LUPRI)
       END IF
       call ls_dzero(TMPMT2,ICRD)
       DO 100 I = 1, ICRD
@@ -412,9 +412,9 @@ Implicit Real(realk) (A-H,O-Z)
  100  CONTINUE
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Relaxation step')
-         call output(TMPMT2,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         call ls_output(TMPMT2,1,1,1,ICRD,1,NCRD,1,LUPRI)
          call lsheader(lupri,'Total DIIS step')
-         call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
       END IF
 !
 !     If the step is too large, we simply restrict each element
@@ -473,7 +473,7 @@ Implicit Real(realk) (A-H,O-Z)
             ELSE
                call lsheader(lupri,'DIIS-step')
             END IF
-            call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
          DO 230 I = 1, ICRD
             STEP(I) = -GRAD(I)
@@ -628,7 +628,7 @@ Implicit Real(realk) (A-H,O-Z)
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Image mode eigenvector')
-         call output(EVEC,1,ICRD,IMODE,IMODE,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(EVEC,1,ICRD,IMODE,IMODE,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1105,11 +1105,11 @@ Call mem_dealloc(Work_mem)
       ENDDO
       IF (IPrint .GT. 5) THEN
          CALL LSHEADER(lupri,'Eigenvalues in WLKEI1')
-         CALL OUTPUT(EVAL,1,1,1,NCR,1,NCR,1,LUPRI)
+         CALL LS_OUTPUT(EVAL,1,1,1,NCR,1,NCR,1,LUPRI)
          CALL LSHEADER(lupri,'Eigenvectors in WLKEI1')
-         CALL OUTPUT(EVEC,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         CALL LS_OUTPUT(EVEC,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
          CALL LSHEADER(lupri,'Gradient (diagonal rep.) in WLKEI1')
-         CALL OUTPUT(GRDDIA,1,1,1,NCR,1,NCR,1,LUPRI)
+         CALL LS_OUTPUT(GRDDIA,1,1,1,NCR,1,NCR,1,LUPRI)
       END IF
 !
 !     ***** Sort in order of increasing trarot component *****
@@ -1165,11 +1165,11 @@ Call mem_dealloc(Work_mem)
   500 CONTINUE
       IF (IPrint .GT. 5) THEN
          CALL LSHEADER(lupri,'Sorted eigenvalues in WLKEI1')
-         CALL OUTPUT(EVAL,1,1,1,NCR,1,NCR,1,LUPRI)
+         CALL LS_OUTPUT(EVAL,1,1,1,NCR,1,NCR,1,LUPRI)
          CALL LSHEADER(lupri,'Sorted eigenvectors in WLKEI1')
-         CALL OUTPUT(EVEC,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         CALL LS_OUTPUT(EVEC,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
          CALL LSHEADER(lupri,'Gradient (sorted) in WLKEI1')
-         CALL OUTPUT(GRDDIA,1,1,1,NCR,1,NCR,1,LUPRI)
+         CALL LS_OUTPUT(GRDDIA,1,1,1,NCR,1,NCR,1,LUPRI)
       END IF
       RETURN
       END

@@ -568,11 +568,11 @@ contains
          enddo
       enddo
       !write (arh%lupri,*) 'Metric, fifoqueue:'
-      !call OUTPUT(arh%fifometric, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
+      !call LS_OUTPUT(arh%fifometric, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
       arh%inv_fifometric = arh%fifometric
       call INVERT_BY_DIAG2(arh%inv_fifometric,scr1,scr2,vec,ndens)
       !write (arh%lupri,*) 'Inverse metric, fifoqueue:'
-      !call OUTPUT(arh%inv_fifometric, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
+      !call LS_OUTPUT(arh%inv_fifometric, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
 
       if (.false.) then
          write(arh%lupri,*) 'Debug: test for linear dependencies'
@@ -585,7 +585,7 @@ contains
          enddo
          k = ndens
          !write(arh%lupri,*) 'Scaled metric:'
-         !CALL OUTPUT(testmetric, 1, k-1, 1, k-1, k-1, k-1, 1,arh%lupri)
+         !CALL LS_OUTPUT(testmetric, 1, k-1, 1, k-1, k-1, k-1, 1,arh%lupri)
          call dsyevx_interface(testmetric,k,.false.,arh%lupri)
          call mem_dealloc(testmetric)
       endif
@@ -665,7 +665,7 @@ contains
             !T = queue%metric(1:ndens,1:ndens)
             T = arh%fifometric
 
-            call SQRTMT(T,ndens,2,Thalf,Tminushalf,scr)
+            call LS_SQRTMT(T,ndens,2,Thalf,Tminushalf,scr)
 
             vec = matmul(Thalf,weights)
             !write (arh%lupri,*) 'Weights using [D0,X] multiplied by T^1/2:'
@@ -771,7 +771,7 @@ contains
      arh%fifoM = 0.5E0_realk*arh%fifoM
 
      !write (lupri,*) 'FIFO M:'
-     !call OUTPUT(arh%fifoM, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
+     !call LS_OUTPUT(arh%fifoM, 1, ndens, 1, ndens, ndens, ndens, 1, arh%lupri)
 
       call mat_free(FiminusF0)
       call mat_free(FjminusF0)
@@ -1202,9 +1202,9 @@ contains
     if (arh%debug_arh_lintra) then
        if (ndens > 0) then 
           !write (lupri,*) 'V1:'
-          !call OUTPUT(V1, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
+          !call LS_OUTPUT(V1, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
           write (arh%lupri,*) 'V2:'
-          call OUTPUT(V2, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
+          call LS_OUTPUT(V2, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
        endif
     endif
 
@@ -1221,11 +1221,11 @@ contains
     if (arh%debug_arh_lintra) then
        if (ndens > 0) then 
           !write (arh%lupri,*) 'vec1 = [T]^-1 * V1'
-          !call OUTPUT(vec1, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
+          !call LS_OUTPUT(vec1, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
           write (arh%lupri,*) 'vec2 = [T]^-1 * V2'
-          call OUTPUT(vec2, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
+          call LS_OUTPUT(vec2, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
           !write (arh%lupri,*) 'vec3 = [T]^-1 * M * [T]^-1 * V2'
-          !call OUTPUT(vec3, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
+          !call LS_OUTPUT(vec3, 1, ndens, 1, 1, ndens, 1, 1, arh%lupri)
        endif
     endif
 
@@ -1442,7 +1442,7 @@ contains
 
    if (arh%info_crop) then
       write (arh%lupri,*) 'Intermediate subspace before augmentation:'
-      call OUTPUT(ResRed, 1, redsize, 1, redsize, redsize+2, redsize+2, 1, arh%lupri)
+      call LS_OUTPUT(ResRed, 1, redsize, 1, redsize, redsize+2, redsize+2, 1, arh%lupri)
       !call ls_flshfo(arh%lupri)
    endif
 
@@ -1495,7 +1495,7 @@ contains
 
    if (arh%info_crop) then
       write (arh%lupri,*) 'Intermediate subspace after augmentation:'
-      call OUTPUT(ResRed, 1, redsize+2, 1, redsize+2, redsize+2, redsize+2, 1, arh%lupri)
+      call LS_OUTPUT(ResRed, 1, redsize+2, 1, redsize+2, redsize+2, redsize+2, 1, arh%lupri)
       !call ls_flshfo(arh%lupri)
    endif
 
@@ -1516,7 +1516,7 @@ contains
 
    if (arh%info_crop) then
       write (arh%lupri,*) 'Solution vector:'
-      call OUTPUT(RHS, 1, redsize+2, 1, 1, redsize+2, 1, 1, arh%lupri) ; call ls_flshfo(arh%lupri)
+      call LS_OUTPUT(RHS, 1, redsize+2, 1, 1, redsize+2, 1, 1, arh%lupri) ; call ls_flshfo(arh%lupri)
    endif
 
    !Construct x_n+1 par and sigma_n+1 par:
@@ -1566,11 +1566,11 @@ contains
             !   printsize = redsize
             !endif
             write (arh%lupri,*) 'Ared subspace, get extra mats:'
-            call OUTPUT(arh%Ared, 1, newsize, 1, newsize, Asize, Asize, 1, arh%lupri)
+            call LS_OUTPUT(arh%Ared, 1, newsize, 1, newsize, Asize, Asize, 1, arh%lupri)
             write (arh%lupri,*) 'Sred subspace, get extra mats:'
-            call OUTPUT(arh%Sred, 1, newsize, 1, newsize, Asize, Asize, 1, arh%lupri)
+            call LS_OUTPUT(arh%Sred, 1, newsize, 1, newsize, Asize, Asize, 1, arh%lupri)
             write (arh%lupri,*) 'Gred subspace, get extra mats:'
-            call OUTPUT(arh%Gred, 1, newsize, 1, 1, Asize, 1, 1, arh%lupri)
+            call LS_OUTPUT(arh%Gred, 1, newsize, 1, 1, Asize, 1, 1, arh%lupri)
          endif
          ! if n = qsize-1, it is the first time that offset = qsize and we do not truncate yet
          !Determine xF and sigmaF by diagonalizing current
@@ -1665,13 +1665,13 @@ contains
             printsize = redsize
          endif
          write (arh%lupri,*) 'Residual subspace initial:'
-         call OUTPUT(arh%CROPmat, 1, printsize, 1, printsize, qsize, qsize, 1, arh%lupri)
+         call LS_OUTPUT(arh%CROPmat, 1, printsize, 1, printsize, qsize, qsize, 1, arh%lupri)
          write (arh%lupri,*) 'Ared subspace initial:'
-         call OUTPUT(arh%Ared, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
+         call LS_OUTPUT(arh%Ared, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
          write (arh%lupri,*) 'Sred subspace initial:'
-         call OUTPUT(arh%Sred, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
+         call LS_OUTPUT(arh%Sred, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
          write (arh%lupri,*) 'Gred subspace initial:'
-         call OUTPUT(arh%Gred, 1, printsize, 1, 1, Asize, 1, 1, arh%lupri)
+         call LS_OUTPUT(arh%Gred, 1, printsize, 1, 1, Asize, 1, 1, arh%lupri)
          !call ls_flshfo(arh%lupri)
       endif
       if (vectorsubspace%offset == qsize .and. n > qsize-1) then
@@ -1719,13 +1719,13 @@ contains
          if (arh%info_crop) then
             printsize = printsize+1
             write (arh%lupri,*) 'Residual subspace after truncate:'
-            call OUTPUT(arh%CROPmat, 1, qsize, 1, qsize, qsize, qsize, 1, arh%lupri)
+            call LS_OUTPUT(arh%CROPmat, 1, qsize, 1, qsize, qsize, qsize, 1, arh%lupri)
             write (arh%lupri,*) 'Ared after truncate:'
-            call OUTPUT(arh%Ared, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
+            call LS_OUTPUT(arh%Ared, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
             write (arh%lupri,*) 'Sred after truncate:'
-            call OUTPUT(arh%Sred, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
+            call LS_OUTPUT(arh%Sred, 1, printsize, 1, printsize, Asize, Asize, 1, arh%lupri)
             write (arh%lupri,*) 'Gred after truncate:'
-            call OUTPUT(arh%Gred, 1, printsize, 1, 1, Asize, 1, 1, arh%lupri)
+            call LS_OUTPUT(arh%Gred, 1, printsize, 1, 1, Asize, 1, 1, arh%lupri)
          endif
 
          call mem_dealloc(tempvec)
@@ -1736,13 +1736,13 @@ contains
    else
       if (arh%info_crop) then
          write (arh%lupri,*) 'Residual subspace before augmentation:'
-         call OUTPUT(arh%CROPmat, 1, n, 1, n, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%CROPmat, 1, n, 1, n, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Ared before augmentation:'
-         call OUTPUT(arh%Ared, 1, n, 1, n, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%Ared, 1, n, 1, n, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Sred before augmentation:'
-         call OUTPUT(arh%Sred, 1, n, 1, n, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%Sred, 1, n, 1, n, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Gred before augmentation:'
-         call OUTPUT(arh%Gred, 1, n, 1, 1, 200, 1, 1, arh%lupri)
+         call LS_OUTPUT(arh%Gred, 1, n, 1, 1, 200, 1, 1, arh%lupri)
       endif
 
       redsize = n
@@ -1811,24 +1811,24 @@ contains
    if (arh%cfg_arh_truncate) then
       if (arh%info_crop) then
          write (arh%lupri,*) 'Residual subspace after augmentation:'
-         call OUTPUT(arh%CROPmat, 1, redsize, 1, redsize, qsize, qsize, 1, arh%lupri)
+         call LS_OUTPUT(arh%CROPmat, 1, redsize, 1, redsize, qsize, qsize, 1, arh%lupri)
          write (arh%lupri,*) 'Ared after augmentation:'
-         call OUTPUT(arh%Ared, 1, redsize, 1, redsize, Asize, Asize, 1, arh%lupri)
+         call LS_OUTPUT(arh%Ared, 1, redsize, 1, redsize, Asize, Asize, 1, arh%lupri)
          write (arh%lupri,*) 'Sred after augmentation:'
-         call OUTPUT(arh%Sred, 1, redsize, 1, redsize, Asize, Asize, 1, arh%lupri)
+         call LS_OUTPUT(arh%Sred, 1, redsize, 1, redsize, Asize, Asize, 1, arh%lupri)
          write (arh%lupri,*) 'Gred after augmentation:'
-         call OUTPUT(arh%Gred, 1, redsize, 1, 1, Asize, 1, 1, arh%lupri)
+         call LS_OUTPUT(arh%Gred, 1, redsize, 1, 1, Asize, 1, 1, arh%lupri)
       endif
    else
       if (arh%info_crop) then
          write (arh%lupri,*) 'Residual subspace after augmentation:'
-         call OUTPUT(arh%CROPmat, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%CROPmat, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Ared after augmentation:'
-         call OUTPUT(arh%Ared, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%Ared, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Sred after augmentation:'
-         call OUTPUT(arh%Sred, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
+         call LS_OUTPUT(arh%Sred, 1, n+1, 1, n+1, 200, 200, 1, arh%lupri)
          write (arh%lupri,*) 'Gred after augmentation:'
-         call OUTPUT(arh%Gred, 1, n+1, 1, 1, 200, 1, 1, arh%lupri)
+         call LS_OUTPUT(arh%Gred, 1, n+1, 1, 1, 200, 1, 1, arh%lupri)
       endif
    endif
 
@@ -1922,14 +1922,14 @@ contains
    !1) Diagonalize reduced Hessian:
    call rgg_interface(A,S,reddim,lupri,eival,eivec)
    !write (arh%lupri,*) 'TEST!!! All eivecs:'
-   !call OUTPUT(eivec, 1, reddim, 1, reddim, reddim, reddim, 1, arh%lupri)
+   !call LS_OUTPUT(eivec, 1, reddim, 1, reddim, reddim, reddim, 1, arh%lupri)
 
    !Locate lowest eigenvalue:
    min_index = minloc(eival)
    !write(arh%lupri,*) 'Lowest eigenval is number', min_index(1)
 
    !write (arh%lupri,*) 'TEST!!! Lowest eivec:'
-   !call OUTPUT(eivec, 1, reddim, min_index(1), min_index(1), reddim, reddim, 1, arh%lupri)
+   !call LS_OUTPUT(eivec, 1, reddim, min_index(1), min_index(1), reddim, reddim, 1, arh%lupri)
 
    !3) Construct x and sigma corresponding to lowest eigenvalue in full space
    !   as      xF = sum_i c_i x_i
@@ -2002,11 +2002,11 @@ contains
 
    if (arh%info_crop) then
       write (arh%lupri,*) 'Ared subspace initial, extra_dim:'
-      call OUTPUT(arh%Ared, 1, Asize-1, 1, Asize-1, Asize, Asize, 1, arh%lupri)
+      call LS_OUTPUT(arh%Ared, 1, Asize-1, 1, Asize-1, Asize, Asize, 1, arh%lupri)
       write (arh%lupri,*) 'Sred subspace initial, extra_dim:'
-      call OUTPUT(arh%Sred, 1, Asize-1, 1, Asize-1, Asize, Asize, 1, arh%lupri)
+      call LS_OUTPUT(arh%Sred, 1, Asize-1, 1, Asize-1, Asize, Asize, 1, arh%lupri)
       write (arh%lupri,*) 'Gred subspace initial, extra_dim:'
-      call OUTPUT(arh%Gred, 1, Asize-1, 1, 1, Asize, 1, 1, arh%lupri)
+      call LS_OUTPUT(arh%Gred, 1, Asize-1, 1, 1, Asize, 1, 1, arh%lupri)
       !call ls_flshfo(arh%lupri)
    endif
 
@@ -2031,11 +2031,11 @@ contains
 
    if (arh%info_crop) then
       write (arh%lupri,*) 'Ared after augmentation, extra_dim:'
-      call OUTPUT(arh%Ared, 1, Asize, 1, Asize, Asize, Asize, 1, arh%lupri)
+      call LS_OUTPUT(arh%Ared, 1, Asize, 1, Asize, Asize, Asize, 1, arh%lupri)
       write (arh%lupri,*) 'Sred after augmentation, extra_dim:'
-      call OUTPUT(arh%Sred, 1, Asize, 1, Asize, Asize, Asize, 1, arh%lupri)
+      call LS_OUTPUT(arh%Sred, 1, Asize, 1, Asize, Asize, Asize, 1, arh%lupri)
       write (arh%lupri,*) 'Gred after augmentation, extra_dim:'
-      call OUTPUT(arh%Gred, 1, Asize, 1, 1, Asize, 1, 1, arh%lupri)
+      call LS_OUTPUT(arh%Gred, 1, Asize, 1, 1, Asize, 1, 1, arh%lupri)
    endif
 
    !Diagonalize Sred to test for linear dependencies:

@@ -2457,7 +2457,7 @@ nOperatorComp2 = nOperatorComp/nPass
 !WRITE(lupri,*)'DistributePropIntegrals (1,1) nOperatorComp',nOperatorComp
 !DO ipassQ=1,nOperatorComp
 !   WRITE(lupri,*)'DistributePropIntegrals (1,1) iOperatorComp',ipassQ
-!   call output(QPMAT2(:,:,ipassQ),1,nA,1,nB,nA,nB,1,lupri)
+!   call ls_output(QPMAT2(:,:,ipassQ),1,nA,1,nB,nA,nB,1,lupri)
 !ENDDO
 
 atomA  = P%orb1atom(1)

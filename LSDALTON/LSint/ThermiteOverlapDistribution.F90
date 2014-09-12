@@ -1830,7 +1830,7 @@ Logical :: printCenter
    ENDDO
 !   IF(Orb%angmom(K) .GE. 2)THEN
 !      WRITE(IUNIT,'(7X,A,I3)')'Spherical transformation matrix for angular momentum', Orb%angmom(K)
-!      CALL OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
+!      CALL LS_OUTPUT(orb%SPH_MAT(Orb%angmom(K)+1)%p%elms,1,2*Orb%angmom(K)+1,&
 !         &1,(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,2*Orb%angmom(K)+1,&
 !         &(Orb%angmom(K)+1)*(Orb%angmom(K)+2)/2,1,IUNIT)
 !   ENDIF
@@ -2308,7 +2308,7 @@ IF(IPRINT.GT.100)THEN
    do X=1,nOperatorComp
       WRITE(lupri,'(A,I3,A,I3,A,I3)')&
            &'The SphericalTransformed intermidiates lm=',lm,'dim1=',dim1,'X=',X
-      call output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
+      call ls_output(integralSpher(:,:,X),1,lm,1,dim1,lm,dim1,1,lupri)
    enddo
 ENDIF
 

@@ -1833,7 +1833,7 @@ ELSE !DEFAULT
          nprimLoc = BASISINFO%ATOMTYPE(type)%SHELL(B)%SEGMENT(J)%nrow
          ncontloc = BASISINFO%ATOMTYPE(type)%SHELL(B)%SEGMENT(J)%ncol
 !         WRITE(LUPRI,*)'THE J=',J,'CCelms',nprimloc,ncontloc
-!         call output(BASISINFO%ATOMTYPE(type)%SHELL(B)%SEGMENT(J)%elms,&
+!         call ls_output(BASISINFO%ATOMTYPE(type)%SHELL(B)%SEGMENT(J)%elms,&
 !              &1,nPrimloc,1,nContloc,nPrimloc,nContloc,1,lupri)
          IF(NORM)THEN
             DO iprimLoc=1,nPrimLoc

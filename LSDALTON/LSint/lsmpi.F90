@@ -1063,7 +1063,7 @@ ENDIF
         IF (min_dev.EQ.-1) THEN
           write(lupri,*) 'Error in ls_time_tasks. Deviation too large'
           write(lupri,*) 'timeMatrix',natoms_row,natoms_col,ntasks
-          call output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
+          call ls_output(timeMatrix,1,natoms_row,1,natoms_col,natoms_row,natoms_col,1,lupri)
           CALL LSQUIT('Error in ls_time_tasks. Deviation too large',lupri)
         ELSE
 IF (iprint.GT.10) THEN

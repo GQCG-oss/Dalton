@@ -66,8 +66,8 @@ C     END DO
        END IF
       END DO
 *. and obtain inverse matrix by transformation
-C     XDIAXT(XDX,X,DIA,NDIM,SCR)
-      CALL XDIAXT(A,B,VEC,NDIM,SCR)
+C     LS_XDIAXT(XDX,X,DIA,NDIM,SCR)
+      CALL LS_XDIAXT(A,B,VEC,NDIM,SCR)
 *
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Inverse matrix from INVERSE_BY_DIAG'
@@ -76,7 +76,7 @@ C     XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
       RETURN
       END 
-      SUBROUTINE XDIAXT(XDX,X,DIA,NDIM,SCR)
+      SUBROUTINE LS_XDIAXT(XDX,X,DIA,NDIM,SCR)
 *
 * Obtain XDX = X * DIA * X(Transposed)
 * where DIA is an diagonal matrix stored as a vector

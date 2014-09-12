@@ -520,15 +520,15 @@ call mat_init(x_jT,ndim,ndim)
     if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
 
        write (molcfg%lupri,*) 'Reduced E2, extend_red_matrices2:'
-       call OUTPUT(red_E_glob, 1, 2*n_red, 1, 2*n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
+       call LS_OUTPUT(red_E_glob, 1, 2*n_red, 1, 2*n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
 
        write (molcfg%lupri,*) 'Reduced S2, extend_red_matrices2:'
-       call OUTPUT(red_S_glob, 1, 2*n_red, 1, 2*n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
+       call LS_OUTPUT(red_S_glob, 1, 2*n_red, 1, 2*n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
     endif
 
     if (molcfg%solver%info_rsp) then
             write(molcfg%lupri,*) 'extend_gradients: after gradient extension'; 
-            call OUTPUT(red_gd_glob, 1, 2*n_red, 1, ngd, 2*max_red, 2*molcfg%solver%rsp_maxgd, 1, molcfg%lupri)
+            call LS_OUTPUT(red_gd_glob, 1, 2*n_red, 1, ngd, 2*max_red, 2*molcfg%solver%rsp_maxgd, 1, molcfg%lupri)
     endif
 
 call mat_free(xT)
@@ -856,9 +856,9 @@ subroutine solve_complex(molcfg,ndim,ndim_red,ngd,freq,red_X,red_Xi,gd_complex)
        endif
        if (molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) "E2, solve_red_lineq2:"
-          call OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
           write (molcfg%lupri,*) "S2, solve_red_lineq2:"
-          call OUTPUT(S2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
        endif
        E2 = E2 - freq(igd)*S2   
        S2 = -gammma*S2

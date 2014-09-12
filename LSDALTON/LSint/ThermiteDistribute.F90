@@ -424,7 +424,7 @@ Real(realk),intent(INOUT) :: maxgabelm
 real(realk) :: maxgabelm2
 Integer :: iP
 !write(lupri,*)'Gabint findMaxAbsGabElm'
-!call output(Gabint,1,nP,1,nP,nP,nP,1,lupri)
+!call ls_output(Gabint,1,nP,1,nP,nP,nP,1,lupri)
 maxgabelm = 0.0E0_realk
 DO iP=1,nP
 #ifdef VAR_LSDEBUGINT
@@ -452,7 +452,7 @@ Real(realk),intent(INOUT) :: OutputMatrix(n1,n2)
 !
 Integer :: iA,iB
 !write(lupri,*)'Gabint BuildGab'
-!call output(Gabint,1,nA*nB,1,nA*nB,nA*nB,nA*nB,1,lupri)
+!call ls_output(Gabint,1,nA*nB,1,nA*nB,nA*nB,nA*nB,1,lupri)
 DO iB=1,nB
    DO iA=1,nA
 #ifdef VAR_LSDEBUGINT
@@ -545,7 +545,7 @@ dopermutation = SameLHSaos .AND.((batchA.NE.batchB).OR.(atoma.NE.atomb))
 AB = RES3%INDEX(atomA,atomB,1,1)
 IF(AB.EQ.0)THEN
 !   print*,'ERROR atomA,ATomB',AtomA,ATomB
-!   call output(QPMAT2,1,dimQ,1,dimP,dimQ,dimP,1,6)
+!   call ls_output(QPMAT2,1,dimQ,1,dimP,dimQ,dimP,1,6)
 !   call lsquit('PS OD SCREEN something wrong?  input%od_screen',-1)
    RETURN
 ENDIF
