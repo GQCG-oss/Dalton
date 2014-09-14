@@ -37,6 +37,17 @@ module qmatrix_backend
         type(Matrix), pointer :: ls_mat  !matrix type implemented in LSDALTON
     end type real_mat_t
 
+    ! the following parameters should be consistent with QMatrix library,
+    ! see the files of QMatrix library:
+    ! # include/api/qmatrix_f_mat_duplicate.h90
+    ! # include/api/qmatrix_f_mat_operations.h90
+    ! # include/api/qmatrix_f_mat_view.h90
+    integer, parameter, private :: COPY_PATTERN_AND_VALUE = 1
+    integer, parameter, private :: MAT_NO_OPERATION = 0
+    integer, parameter, private :: MAT_TRANSPOSE = 1
+    integer, parameter, private :: BINARY_VIEW = 0
+    integer, parameter, private :: ASCII_VIEW = 1
+
     public :: Matrix_Create
     public :: Matrix_Destroy
     public :: Matrix_SetSymType
@@ -217,7 +228,6 @@ module qmatrix_backend
         type(real_mat_t), intent(in) :: A
         integer, intent(in) :: duplicate_option
         type(real_mat_t), intent(inout) :: B
-#include "api/qmatrix_f_mat_duplicate.h90"
         ! B has been assembled before
         if (B%assembled) then
             call mat_free(B%ls_mat)
@@ -262,7 +272,6 @@ module qmatrix_backend
         type(real_mat_t), intent(in) :: B
         integer, intent(in) :: op_B
         real(realk), intent(out) :: trace
-#include "api/qmatrix_f_mat_operations.h90"
         if (.not.A%assembled) then
             call lsquit("Matrix_GEMM>> A is not assembled", -1)
         end if
@@ -302,7 +311,6 @@ module qmatrix_backend
         type(real_mat_t), intent(in) :: A
         character*(*), intent(in) :: mat_label
         integer, intent(in) :: view_option
-#include "api/qmatrix_f_mat_view.h90"
         integer io_matrix
         if (A%assembled) then
             select case (view_option)
@@ -345,7 +353,6 @@ module qmatrix_backend
         type(real_mat_t), intent(inout) :: A
         character*(*), intent(in) :: mat_label
         integer, intent(in) :: view_option
-#include "api/qmatrix_f_mat_view.h90"
         integer io_matrix
         ! A has been assembled before
         if (A%assembled) then
@@ -407,8 +414,6 @@ module qmatrix_backend
         integer, intent(in) :: op_A
         type(real_mat_t), intent(inout) :: A
         type(real_mat_t), intent(inout) :: B
-#include "api/qmatrix_f_mat_operations.h90"
-#include "api/qmatrix_f_mat_duplicate.h90"
         type(real_mat_t) C
         if (.not.A%assembled) then
             call lsquit("Matrix_Transpose>> A is not assembled", -1)
@@ -466,7 +471,6 @@ module qmatrix_backend
         type(real_mat_t), intent(in) :: B
         real(realk), intent(in) :: beta
         type(real_mat_t), intent(inout) :: C
-#include "api/qmatrix_f_mat_operations.h90"
         character transa, transb
         if (.not.A%assembled) then
             call lsquit("Matrix_GEMM>> A is not assembled", -1)
