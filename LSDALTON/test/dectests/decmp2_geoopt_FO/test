@@ -18,18 +18,6 @@ f.add(string = 'Correlation energy',
 f.add(string = 'Total MP2 energy',
       rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'CORE LOCALITY',
-      to_string   = 'Min. sigma_4 and orb.number',
-      abs_tolerance = 1.0e-4)
-
-f.add(from_string = 'VALENCE LOCALITY',
-      to_string   = 'Min. sigma_4 and orb.number',
-      abs_tolerance = 1.0e-4)
-
-f.add(from_string = 'VIRTUAL LOCALITY',
-      to_string   = 'Min. sigma_4 and orb.number',
-      abs_tolerance = 1.0e-4)
-
 f.add(from_string = 'MP2 occupied single energies',
       to_string   = 'MP2 Lagrangian correlation energy',
       abs_tolerance = 1.0e-4)
