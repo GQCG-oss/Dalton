@@ -2213,7 +2213,7 @@ contains
     call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
-    call ls_mpi_buffer(DECitem%orb_based_fragopt,Master)
+    call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)

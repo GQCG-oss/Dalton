@@ -401,8 +401,10 @@ contains
        ! ********************************************************************************
        DoJob: IF(job==-1) then
           call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
-          print '(a,i6,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
+          if(t2wallacc-t1wallacc > 5.0E0_realk.or.DECinfo%PL>1)then
+             print '(X,a,i5,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
                & t2wallacc-t1wallacc
+          endif
           morejobs=.false.
        else
 
@@ -506,7 +508,7 @@ contains
                 call lsquit('fragments_slave: Fragment optimization requested for pair fragment!',-1)
              end if
 
-             write(*, '(1X,a,i4,a,i6,a,i15,a,i8)') 'Slave ',infpar%lg_mynum,' will do job: ', &
+             write(*, '(1X,a,i5,a,i6,a,i15,a,i8)') 'Slave ',infpar%mynum,' will do job: ', &
                 & job, ' of size ', jobs%jobsize(job),&
                 &  ' single fragment optimization: ', atomA
 
@@ -527,7 +529,7 @@ contains
 
 
              SingleOrPair: if( atomA == atomB ) then ! single  fragment
-                write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%lg_mynum,'will do job: ', &
+                write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6)') 'Slave ',infpar%mynum,'will do job: ', &
                    &job, ' of size ', jobs%jobsize(job),&
                    &  ' with #o',AtomicFragments(atomA)%noccAOS,' #v', AtomicFragments(atomA)%nunoccAOS,&
                    &' #b',AtomicFragments(atomA)%nbasis,' single fragment: ', atomA
@@ -552,7 +554,7 @@ contains
                       & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
                       & natoms,PairFragment,grad)
 
-                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                   write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
                       &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
                       &' #b',PairFragment%nbasis,' pair   estimate: ', atomA,atomB
@@ -562,7 +564,7 @@ contains
                       & AtomicFragments(atomA), AtomicFragments(atomB), &
                       & natoms,PairFragment,grad)
 
-                   write(*, '(1X,a,i4,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%lg_mynum, &
+                   write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
                       &  ' with #o',PairFragment%noccAOS,' #v', PairFragment%nunoccAOS,&
                       &' #b',PairFragment%nbasis,' pair   fragment: ', atomA,atomB
@@ -633,7 +635,7 @@ contains
           singlejob%esti(1)      = jobs%esti(job)
           singlejob%dofragopt(1) = jobs%dofragopt(job)
 
-          print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
+          print '(X,a,i5,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
                & job, singlejob%LMtime(1)
 
           call mem_dealloc(slave_times)

@@ -869,29 +869,29 @@ END DO
 !call mem_dft_dealloc(NVALUE)
 
 !write (lupri,*) 'integrals from II_BLGETSOS',nvclen,NactBAS
-!call output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'x integrals from II_BLGETSOS'
-!call output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'y integrals from II_BLGETSOS'
-!call output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'z integrals from II_BLGETSOS'
-!call output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !if (nder.eq. 2) then
 !   WRITE(lupri,*)'COOR(1,:)',(COOR(1,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(2,:)',(COOR(2,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(3,:)',(COOR(3,i),I=1,NVCLEN)
 !   write (lupri,*) ' xx integrals from II_BLGETSOS '
-!   call output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xy integrals from II_BLGETSOS '
-!   call output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xz integrals from II_BLGETSOS '
-!   call output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yy integrals from II_BLGETSOS '
-!   call output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yz integrals from II_BLGETSOS '
-!   call output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' zz integrals from II_BLGETSOS '
-!   call output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !end if
 call mem_dft_dealloc(PA)
 call mem_dft_dealloc(PA2)
@@ -1639,13 +1639,6 @@ DO I = 2,CC%nrow
    END DO
 END DO
 
-IF (Spherical) THEN
-   call mem_dft_alloc(CAO,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
-   call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
-END IF
-
 !screening based on the maximum GA value for the batch of points: GMAX
 GMAX = D0
 DO K = 1, NVCLEN
@@ -1714,6 +1707,12 @@ ELSE IF (SHELLANGMOMA .EQ. 2) THEN
 ! d and higher orbitals
 ELSE
    IF (GMAX.GT.DFTHRI) THEN
+      IF (Spherical) THEN
+         call mem_dft_alloc(CAO,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
+         call mem_dft_alloc(CAOZ,NVCLEN,KCKTA)
+      END IF
       call mem_dft_alloc(GAX,NVCLEN)
       call mem_dft_alloc(GAY,NVCLEN)
       call mem_dft_alloc(GAZ,NVCLEN)
@@ -1841,6 +1840,12 @@ ELSE
       call mem_dft_dealloc(FX)
       call mem_dft_dealloc(FY)
       call mem_dft_dealloc(FZ)
+      IF (Spherical) THEN
+         call mem_dft_dealloc(CAO)
+         call mem_dft_dealloc(CAOX)
+         call mem_dft_dealloc(CAOY)
+         call mem_dft_dealloc(CAOZ)
+      END IF
    ELSE
       IF (.NOT.Spherical) THEN
          DO I = 1, KCKTA
@@ -1885,12 +1890,6 @@ ELSE
    END IF
 END IF
 
-IF (Spherical) THEN
-   call mem_dft_dealloc(CAO)
-   call mem_dft_dealloc(CAOX)
-   call mem_dft_dealloc(CAOY)
-   call mem_dft_dealloc(CAOZ)
-END IF
 call mem_dft_dealloc(GA)
 call mem_dft_dealloc(GU)
 

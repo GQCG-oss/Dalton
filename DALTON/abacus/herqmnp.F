@@ -1309,17 +1309,17 @@ C
            call mpixbcast (iprint, 1, 'INTEGER', 0)
 #endif
 
+#ifdef ENABLE_VPOTDAMP
            call vpotdamped(kmax,nhkt,nuco,nrco,jstrt,cent,priccf,priexp,
      &                fcao,
      &                npcord,
      &                mqvec(3*tnpatm+1), work(krqvec),
      &                mqvec            , work(krdvec),
      &                tnpatm)
-C
+#else
+            call quit('VPOTDAMP not compiled in this version')
+#endif
 
-
-
-C
       CALL MEMREL('COMP_DAMPVMAT',WORK,1,1,KFREE,LFREE)
 C
       RETURN

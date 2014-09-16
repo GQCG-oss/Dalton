@@ -1517,7 +1517,14 @@ with symmetrized trial vectors \cite{kauczor:2011} is used.
 Calculate the linear polarizability.
 
 \item{\Key{MCD}} \\
-Calculate the magnetic circular dichroism (MCD).
+Calculate the magnetic circular dichroism (MCD) and the Magnetic Optical Rotation Dispersion.
+
+\item{\Key{NSCD}} \\
+Calculate the Nuclear Spin Circular Dichroism (NSCD) and the Nuclear Spin Optical Rotation~\cite{vaara2014}.
+It requires specification of the \verb|.PSO| integrals in 
+the \verb|*INTEGRALS| input section.
+Note that at present NSCD calculations only work {\bf{without symmetry}}.
+See \verb|rsp_cpp_nscd| for an example of NSCD calculations.
 
 \item{\Key{BETA}}\\
 Calculate the first-order hyperpolarizability.

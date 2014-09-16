@@ -134,7 +134,7 @@ module matrix_operations_dense
      TYPE(Matrix),intent(in) :: a
      integer, intent(in)     :: i_row1, i_rown, j_col1, j_coln, lu
      !to be found in pdpack/printpkg.F
-     call OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
+     call LS_OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
   end subroutine mat_dense_print
 
 !> \brief See mat_trans in mat-operations.f90
@@ -1189,13 +1189,13 @@ end subroutine mat_dense_insert_section
 !    
 !    !Convert framework:
 !    call mat_dense_to_full(hes, 1.0E0_realk, hes_full)
-!!call OUTPUT (hes_full,1,hesdim,1,hesdim,hesdim,hesdim,1,mat_lu)
+!!call LS_OUTPUT (hes_full,1,hesdim,1,hesdim,hesdim,hesdim,1,mat_lu)
 !!    write (mat_lu,*) 'Incoming residual:' 
 !!    call mat_dense_print(X_AO, 1, X_AO%nrow, 1, X_AO%ncol, mat_lu)
 !
 !    call mat_dense_to_full(X_AO, 1.0E0_realk, res)
 !!    write (mat_lu,*) 'Residual converted to full:'
-!!call OUTPUT (res,1,hesdim,1,1,hesdim,1,1,mat_lu)
+!!call LS_OUTPUT (res,1,hesdim,1,1,hesdim,1,1,mat_lu)
 !
 !    call LIN_EQ(hes_full,res,hesdim,x_full,INFO)
 !
@@ -1252,21 +1252,21 @@ end subroutine mat_dense_insert_section
 !   QR = matmul(Q,R)
 !!print *, 'test3'
 !write (mat_lu,*) 'Q*R:'
-!call OUTPUT (QR,1,n,1,n,n,n,1,mat_lu)
+!call LS_OUTPUT (QR,1,n,1,n,n,n,1,mat_lu)
 !write (mat_lu,*) 'Q:'
-!call OUTPUT (Q,1,n,1,n,n,n,1,mat_lu)
+!call LS_OUTPUT (Q,1,n,1,n,n,n,1,mat_lu)
 !write (mat_lu,*) 'R:'
-!call OUTPUT (R,1,n,1,n,n,n,1,mat_lu)
+!call LS_OUTPUT (R,1,n,1,n,n,n,1,mat_lu)
 !
 !!print *, 'test4'    
 !   CALL QR_BACK(Q, R, n, b, x)
 !write (mat_lu,*) 'Incoming b in lin_eq:'
-!call OUTPUT (b,1,n,1,1,n,1,1,mat_lu)
+!call LS_OUTPUT (b,1,n,1,1,n,1,1,mat_lu)
 !
 !   !Test if solution of linear equations went okay:
 !      test1 = matmul(A,x)
 !write (mat_lu,*) 'A*x:'
-!call OUTPUT (test1,1,n,1,1,n,1,1,mat_lu)
+!call LS_OUTPUT (test1,1,n,1,1,n,1,1,mat_lu)
 !
 !      test2 = b - test1
 !      val = 0.0E0_realk
@@ -1320,7 +1320,7 @@ end subroutine mat_dense_insert_section
 !   b_ny = MATMUL(Q_T, b)
 !
 !write (mat_lu,*) 'b_ny = Q_T*b:'
-!call OUTPUT (b_ny,1,n,1,1,n,1,1,mat_lu)
+!call LS_OUTPUT (b_ny,1,n,1,1,n,1,1,mat_lu)
 !   
 !   x = 0.0
 !   

@@ -259,4 +259,4 @@ include Makefile.depend
 
 test.x: $(F90_OBJS) 
 	@echo "---------------> Linking test.x ..."
-	$(F90) $(F90FLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a
+	$(F90) $(F90OPTFLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a

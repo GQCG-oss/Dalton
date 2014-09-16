@@ -192,9 +192,9 @@ contains
 
    if (lshift%info_levelshift) then
       write (lshift%lupri,*) 'A in levelshift:'
-      call OUTPUT(A, 1, reddim, 1, reddim, reddim, reddim, 1, lshift%lupri)
+      call LS_OUTPUT(A, 1, reddim, 1, reddim, reddim, reddim, 1, lshift%lupri)
       write (lshift%lupri,*) 'S in levelshift:'
-      call OUTPUT(S, 1, reddim, 1, reddim, reddim, reddim, 1, lshift%lupri)
+      call LS_OUTPUT(S, 1, reddim, 1, reddim, reddim, reddim, 1, lshift%lupri)
    endif
 
    !Determine lowest eigenval in reduced space:
@@ -342,9 +342,9 @@ contains
    & intervals(1),intervals(2),intervals(3),intervals(4),intervals(5)
 
    !write (lshift%lupri,*) 'A in levelshift:'
-   !call OUTPUT(A, 1, nsize, 1, nsize, reddim, reddim, 1, lshift%lupri)
+   !call LS_OUTPUT(A, 1, nsize, 1, nsize, reddim, reddim, 1, lshift%lupri)
    !write (lshift%lupri,*) 'S in levelshift:'
-   !call OUTPUT(S, 1, nsize, 1, nsize, reddim, reddim, 1, lshift%lupri)
+   !call LS_OUTPUT(S, 1, nsize, 1, nsize, reddim, reddim, 1, lshift%lupri)
 
    !Solve in reduced space for different values of mu:
    do i = 1, 5
@@ -352,13 +352,13 @@ contains
       mu = intervals(i)
       H(1:nsize,1:nsize) = A(1:nsize,1:nsize) - mu*S(1:nsize,1:nsize)
 !      write (lshift%lupri,*) 'H in levelshift, i =', i, ' and mu =', mu
-!      call OUTPUT(H, 1, nsize, 1, nsize, nsize, nsize, 1, lshift%lupri)
+!      call LS_OUTPUT(H, 1, nsize, 1, nsize, nsize, nsize, 1, lshift%lupri)
 !      write (lshift%lupri,*) 'RHS in levelshift:'
-!      call OUTPUT(RHS, 1, nsize, 1, 1, nsize, 1, 1, lshift%lupri)
+!      call LS_OUTPUT(RHS, 1, nsize, 1, 1, nsize, 1, 1, lshift%lupri)
       IERR = 0
       call DGESV(nsize, 1, H, nsize, IPIV, RHS, nsize, IERR) !Solution vector is found in RHS.
 !      write (lshift%lupri,*) 'RHS in levelshift:',IERR
-!      call OUTPUT(RHS, 1, nsize, 1, 1, nsize, 1, 1, lshift%lupri)
+!      call LS_OUTPUT(RHS, 1, nsize, 1, 1, nsize, 1, 1, lshift%lupri)
       !additional test of sigularity
       if (IERR .EQ. 0) then
          !norm of RHS should be smaller than 1.0E+10 

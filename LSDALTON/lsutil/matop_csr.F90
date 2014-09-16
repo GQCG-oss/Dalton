@@ -814,8 +814,8 @@ contains
     afull = 0.0E0_realk
     alpha = 1.0E0_realk
     call mat_csr_to_full(a, alpha, afull)
-    call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
-    !call OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
+    call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, lu)
+    !call LS_OUTPUT(afull, 1, a%nrow, 1, a%ncol, a%nrow, a%ncol, 1, 6)
     deallocate(afull)
 #endif
   end subroutine mat_csr_print

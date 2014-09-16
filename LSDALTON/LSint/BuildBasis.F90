@@ -1486,9 +1486,9 @@ call dcopy (nrow*ncol,Contractionmatrix%elms,1,CC,1)
 IF (IPRINT .GT. 200)THEN
    WRITE(LUPRI,*)'nrow,ncol,nOrbital,nprim',nrow,ncol,nOrbital,nprim
    WRITE(LUPRI,*)'CCN'
-   call output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   call ls_output(CCN,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    WRITE(LUPRI,*)'CC'
-   call output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+   call ls_output(CC,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
 ENDIF
 !reorder primitives at this level using basic bubblesort
 DO K=1,nrow
@@ -1559,15 +1559,15 @@ IF(Segmented)THEN
    !Print Stuff
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
    ENDIF
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    ENDIF
    IF(IPRINT .GT. 200)THEN
     WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow
-    call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+    call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
    ENDIF
  ENDDO
 ELSE
@@ -1649,15 +1649,15 @@ ELSE
       !Print Stuff
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Exponents nr.',J,'nrow',nrow
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%Exponents,1,nrow,1,1,nrow,1,1,LUPRI)
       ENDIF
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Coefficients nr.',J,'nrow',nrow,'ncol',ncol
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%elms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
       ENDIF
       IF(IPRINT .GT. 200)THEN
          WRITE(LUPRI,*)'Unnormalizes Coefficients nr.',J,'nrow',nrow,'ncol',ncol
-         call OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
+         call LS_OUTPUT(BASINFO%ATOMTYPE(at)%SHELL(nAngmom)%segment(J)%UCCelms,1,nrow,1,ncol,nrow,ncol,1,LUPRI)
       ENDIF
    enddo
 ENDIF

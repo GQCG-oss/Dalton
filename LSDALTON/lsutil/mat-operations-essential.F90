@@ -558,7 +558,7 @@ MODULE matrix_operations
             print*,'FALLBACK scalapack print'
             ALLOCATE (afull(a%nrow,a%ncol))
             call mat_scalapack_to_full(a, 1E0_realk,afull)
-            CALL OUTPUT(afull, i_row1, i_rown, j_col1, j_coln,A%nrow,A%ncol,1, lu)
+            CALL LS_OUTPUT(afull, i_row1, i_rown, j_col1, j_coln,A%nrow,A%ncol,1, lu)
             DEALLOCATE(afull)
 #endif
          case(mtype_unres_dense)
@@ -1908,7 +1908,7 @@ end subroutine mat_insert_section
       subroutine mat_add_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          implicit none
          integer, intent(in) :: fullrow,fullcol,insertrow,insertcol
-         real(Realk), intent(inout) :: fullmat(fullrow,fullcol)
+         real(Realk), intent(in) :: fullmat(fullrow,fullcol)
          type(Matrix), intent(inout) :: A
          call time_mat_operations1
 

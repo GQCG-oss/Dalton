@@ -420,14 +420,14 @@ contains
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Occ. orbitals:' !; call flshfo(lupri)
          write(decomp%lupri,*) '       =============='
-         CALL OUTPUT(DD%FUP_eival,1,DD%nocc,1,1,DD%nocc,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD%FUP_eivecs,1,matdim,1,DD_no_of_vecs,matdim,DD_no_of_vecs,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUP_eival,1,DD%nocc,1,1,DD%nocc,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD%FUP_eivecs,1,matdim,1,DD_no_of_vecs,matdim,DD_no_of_vecs,1,LUPRI)
 
          write(decomp%lupri,*)
          write(decomp%lupri,*) '       Virt. orbitals:' !; call flshfo(lupri)
          write(decomp%lupri,*) '       ==============='
-         CALL OUTPUT(DD%FUQ_eival,1,DD%nvirt,1,1,DD%nvirt,1,1,decomp%LUPRI)
-         !CALL OUTPUT(DD%FUQ_eivecs,1,matdim,1,DD_no_of_vecs,matdim,DD_no_of_vecs,1,LUPRI)
+         CALL LS_OUTPUT(DD%FUQ_eival,1,DD%nvirt,1,1,DD%nvirt,1,1,decomp%LUPRI)
+         !CALL LS_OUTPUT(DD%FUQ_eivecs,1,matdim,1,DD_no_of_vecs,matdim,DD_no_of_vecs,1,LUPRI)
       endif
 
       k = 0
@@ -482,7 +482,7 @@ contains
             enddo
          endif
          !write(lupri,*) 'full Hes starting guess no', i
-         !call OUTPUT(iniguess_full, 1, fulldim, 1, fulldim, fulldim, fulldim, 1, lupri)
+         !call LS_OUTPUT(iniguess_full, 1, fulldim, 1, fulldim, fulldim, fulldim, 1, lupri)
 
          orb_energy_diff(posmin(1)) = orb_energy_diff(posmax(1))
 
@@ -599,9 +599,9 @@ contains
       endif
 
       !WRITE(LUPRI,*)'M_full'
-      !CALL OUTPUT(M_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
+      !CALL LS_OUTPUT(M_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
       !WRITE(LUPRI,*)'P_full'
-      !CALL OUTPUT(P_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
+      !CALL LS_OUTPUT(P_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
 
       !Damp M:
       Mdamp = M_full
@@ -717,7 +717,7 @@ contains
       allocate(diag(ndim))
 
       !WRITE(LUPRI,*)'M_full'
-      !CALL OUTPUT(M_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
+      !CALL LS_OUTPUT(M_full,1,ndim,1,ndim,ndim,ndim,1,LUPRI)
 
       do i = 1, ndim
          diag(i) = M_full(i,i)
@@ -725,7 +725,7 @@ contains
       diag = abs(diag)
 
       !WRITE(LUPRI,*)'diag'
-      !CALL OUTPUT(diag,1,ndim,1,1,ndim,1,1,LUPRI)
+      !CALL LS_OUTPUT(diag,1,ndim,1,1,ndim,1,1,LUPRI)
 
       do i = 1, nroots
          pos = MAXLOC(diag)
@@ -739,7 +739,7 @@ contains
       do i = 1, nroots
          iniguess_full(positions(i),i) = 1.0E0_realk
          !WRITE(LUPRI,*)'iniguess no.', i 
-         !CALL OUTPUT(iniguess_full,1,ndim,i,i,ndim,nroots,1,LUPRI)
+         !CALL LS_OUTPUT(iniguess_full,1,ndim,i,i,ndim,nroots,1,LUPRI)
       enddo
 
       deallocate(positions)
@@ -1308,10 +1308,10 @@ contains
 
    if (decomp%INFO_stability_REDSPACE) then
       write (decomp%lupri,*) 'b vector overlaps, DD_fock solver:'
-      call OUTPUT(DD%boverlaps, 1, ndim_red, 1, ndim_red, decomp%cfg_check_maxit, decomp%cfg_check_maxit, 1, decomp%lupri)
+      call LS_OUTPUT(DD%boverlaps, 1, ndim_red, 1, ndim_red, decomp%cfg_check_maxit, decomp%cfg_check_maxit, 1, decomp%lupri)
 
       write (decomp%lupri,*) 'Reduced E2, DD_fock solver:'
-      call OUTPUT(DD%Ared, 1, ndim_red, 1, ndim_red, decomp%cfg_check_maxit, decomp%cfg_check_maxit, 1, decomp%lupri)
+      call LS_OUTPUT(DD%Ared, 1, ndim_red, 1, ndim_red, decomp%cfg_check_maxit, decomp%cfg_check_maxit, 1, decomp%lupri)
    endif
 
    !Setup reduced matrix with proper dimensionguess
@@ -1329,7 +1329,7 @@ contains
       xred(1:ndim_red, i) = eigenvec(1:ndim_red,i)
    enddo
    !write (lupri,*) 'Solution vector, DD solver:'
-   !call OUTPUT(xred, 1, iter, 1, 1, iter, 1, 1, lupri)
+   !call LS_OUTPUT(xred, 1, iter, 1, 1, iter, 1, 1, lupri)
 
    !Now obtain residual and x in real space by
    !res = Ax - mu*x = xred(1)*sigma1 + xred(2)*sigma2 + ...
@@ -1441,10 +1441,10 @@ contains
 
    if (decomp%INFO_stability_redspace) then
       write (decomp%lupri,*) 'b vector overlaps, DD_fock solver:'
-      call OUTPUT(DD%boverlaps, 1, ndim_red, 1, ndim_red, decomp%cfg_homolumo_maxit, decomp%cfg_homolumo_maxit, 1, decomp%lupri)
+      call LS_OUTPUT(DD%boverlaps, 1, ndim_red, 1, ndim_red, decomp%cfg_homolumo_maxit, decomp%cfg_homolumo_maxit, 1, decomp%lupri)
 
       write (decomp%lupri,*) 'Reduced E2, DD_fock solver:'
-      call OUTPUT(DD%Ared, 1, ndim_red, 1, ndim_red, decomp%cfg_homolumo_maxit, decomp%cfg_homolumo_maxit, 1, decomp%lupri)
+      call LS_OUTPUT(DD%Ared, 1, ndim_red, 1, ndim_red, decomp%cfg_homolumo_maxit, decomp%cfg_homolumo_maxit, 1, decomp%lupri)
    endif
 
    !Setup reduced matrix with proper dimensionguess

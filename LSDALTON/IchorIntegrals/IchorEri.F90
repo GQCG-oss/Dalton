@@ -1487,24 +1487,10 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
   nLocalIntPass = nOrbA*nAtomsA*nOrbB*nAtomsB*nOrbC*nOrbD
-  MaxPasses = 1
-  DO IatomD = 1,nAtomsD
-   GABELM = 0.0E0_realk 
-   iBatchD = iBatchIndexOfTypeD + IatomD
-   DO IatomC = 1,nAtomsC
-    IF(TriangularRHSAtomLoop.AND.IatomD.GT.IatomC)CYCLE
-    IF(noScreenCD2(IatomC,IatomD))THEN
-     nPasses = nAtomsA*nAtomsB
-     IF(CSscreen)GABELM = BATCHGCD(iBatchIndexOfTypeC+IatomC,iBatchD)
-     !output: IatomAPass,IatomBPass,nPasses
-     CALL BUILD_noScreenRed(CSscreen,nAtomsA,nAtomsB,&
-          & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,&
-          & BATCHGAB,THRESHOLD_CS,GABELM,nPasses,&
-          & TriangularLHSAtomLoop,TriangularODAtomLoop,iAtomC,IatomD,noScreenAB)
-     MaxPasses = MAX(MaxPasses,nPasses)
-    ENDIF
-   ENDDO
-  ENDDO
+  call DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
+       & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&
+       & TriangularRHSAtomLoop,CSscreen,TriangularLHSAtomLoop,TriangularODAtomLoop,&
+       & noScreenCD2,BATCHGAB,THRESHOLD_CS,noScreenAB,BATCHGCD,nBatchC,nBatchD,MaxPasses)
   TMParray1maxsizePass = TMParray1maxsize*MaxPasses
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
 
@@ -1615,8 +1601,8 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
            & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
            & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
            & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
-     ELSE
 
+     ELSE
 
 !$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nPasses,MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
@@ -1650,8 +1636,85 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
            & nOrbCompD,nAtomsA,nAtomsB,nOrbA,nOrbB,nOrbC,nOrbD,nContA,nContB,nContC,nContD,&
            & MaxPasses,nPasses,TriangularLHSAtomLoop,Qsegmented,Psegmented,LocalIntPass1,&
            & LocalIntPass2,IatomAPass,iatomBPass,nContQ,nContP)
+
      ENDIF
-!================================================================================
+
+     call TypeDistribution(PermuteLHSTypes,PermuteRHS,nOrbD,nOrbC,startC,startD,&
+          & nAtomsA,nAtomsB,nOrbA,nOrbB,startOrbitalA,startOrbitalB,OutputDim1,OutputDim2,&
+          & OutputDim3,OutputDim4,OutputStorage,LocalIntPass2,nOrbQ)
+
+    ENDIF !noscreenCD2
+   ENDDO !IatomC
+  ENDDO !iAtomD
+!$OMP END PARALLEL
+
+  call mem_ichor_dealloc(TmpArray1)
+  deallocate(TmpArray1)
+  call mem_ichor_dealloc(TmpArray2)
+  deallocate(TmpArray2)    
+  call mem_ichor_dealloc(IatomBPass) 
+  deallocate(IatomBPass) 
+  call mem_ichor_dealloc(IatomAPass) 
+  deallocate(IatomAPass) 
+  CALL Mem_ichor_dealloc(LocalIntPass1)
+  deallocate(LocalIntPass1)
+  CALL Mem_ichor_dealloc(LocalIntPass2)
+  deallocate(LocalIntPass2)
+end subroutine IchorTypeIntegralLoop
+
+subroutine DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
+     & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&
+     & TriangularRHSAtomLoop,CSscreen,TriangularLHSAtomLoop,TriangularODAtomLoop,&
+     & noScreenCD2,BATCHGAB,THRESHOLD_CS,noScreenAB,BATCHGCD,nBatchC,nBatchD,MaxPasses)
+  implicit none
+  integer,intent(in) :: nAtomsD,iBatchIndexOfTypeD,nAtomsC
+  integer,intent(in) :: nAtomsA,nAtomsB,iBatchIndexOfTypeC
+  integer,intent(in) :: iBatchIndexOfTypeA,nBatchB,nBatchA
+  integer,intent(in) :: iBatchIndexOfTypeB,nBatchC,nBatchD
+  logical,intent(in) :: TriangularRHSAtomLoop,CSscreen
+  logical,intent(in) :: TriangularLHSAtomLoop,TriangularODAtomLoop
+  logical,intent(in) :: noScreenCD2(nAtomsC,nAtomsD)
+  real(realk),intent(in) :: BATCHGAB(nBatchA,nBatchB),THRESHOLD_CS
+  real(realk),intent(in) :: BATCHGCD(nBatchC,nBatchD)
+  logical,intent(in) :: noScreenAB(natomsA,natomsB)
+  integer,intent(inout) :: MaxPasses
+  !
+  !local variables
+  integer :: iBatchD,IatomD,IatomC,nPasses
+  real(realk) :: GABELM
+  MaxPasses = 1
+  DO IatomD = 1,nAtomsD
+     GABELM = 0.0E0_realk
+     iBatchD = iBatchIndexOfTypeD + IatomD
+     DO IatomC = 1,nAtomsC
+        IF(TriangularRHSAtomLoop.AND.IatomD.GT.IatomC)CYCLE
+        IF(noScreenCD2(IatomC,IatomD))THEN
+           nPasses = nAtomsA*nAtomsB
+           IF(CSscreen)GABELM = BATCHGCD(iBatchIndexOfTypeC+IatomC,iBatchD)
+           !output: IatomAPass,IatomBPass,nPasses
+           CALL BUILD_noScreenRed(CSscreen,nAtomsA,nAtomsB,&
+                & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,&
+                & BATCHGAB,THRESHOLD_CS,GABELM,nPasses,&
+                & TriangularLHSAtomLoop,TriangularODAtomLoop,iAtomC,IatomD,noScreenAB)
+           MaxPasses = MAX(MaxPasses,nPasses)
+        ENDIF
+     ENDDO
+  ENDDO
+end subroutine DetermineMaxPasses
+
+subroutine TypeDistribution(PermuteLHSTypes,PermuteRHS,nOrbD,nOrbC,startC,startD,&
+     & nAtomsA,nAtomsB,nOrbA,nOrbB,startOrbitalA,startOrbitalB,OutputDim1,OutputDim2,&
+     & OutputDim3,OutputDim4,OutputStorage,LocalIntPass2,nOrbQ)
+  implicit none
+  logical,intent(in) :: PermuteLHSTypes,PermuteRHS
+  integer,intent(in) :: nOrbD,nOrbC,startC,startD,nAtomsA,nAtomsB,nOrbA,nOrbB
+  integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,nOrbQ        
+  integer,intent(in) :: startOrbitalA(nAtomsA),startOrbitalB(nAtomsB)
+  real(realk),intent(in) :: LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbQ)
+  real(realk),intent(inout) :: OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4)
+  !                                                                                                      
+  integer :: iOrbQ,iOrbC,iOrbD,IatomB,i4,i3,startB
+
      IF(PermuteLHSTypes)THEN
       IF(PermuteRHS)THEN
 !!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) &
@@ -1749,25 +1812,8 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !!$OMP END PARALLEL DO
       ENDIF
      ENDIF
-!=========================================================
-    ENDIF !noscreenCD2
-   ENDDO !IatomC
-  ENDDO !iAtomD
-!$OMP END PARALLEL
 
-  call mem_ichor_dealloc(TmpArray1)
-  deallocate(TmpArray1)
-  call mem_ichor_dealloc(TmpArray2)
-  deallocate(TmpArray2)    
-  call mem_ichor_dealloc(IatomBPass) 
-  deallocate(IatomBPass) 
-  call mem_ichor_dealloc(IatomAPass) 
-  deallocate(IatomAPass) 
-  CALL Mem_ichor_dealloc(LocalIntPass1)
-  deallocate(LocalIntPass1)
-  CALL Mem_ichor_dealloc(LocalIntPass2)
-  deallocate(LocalIntPass2)
-end subroutine IchorTypeIntegralLoop
+   end subroutine TypeDistribution
 
 !Reorder LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
 !(including LHS permute) to LocalIntPass2(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
@@ -3723,25 +3769,10 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   nDimB = nOrbB*nAtomsB
   nDimC = nOrbC*nAtomsC
   nDimD = nOrbD*nAtomsD
-  MaxPasses = 1
-  DO IatomD = 1,nAtomsD
-   GABELM = 0.0E0_realk 
-   iBatchD = iBatchIndexOfTypeD + IatomD
-   DO IatomC = 1,nAtomsC
-    IF(TriangularRHSAtomLoop.AND.IatomD.GT.IatomC)CYCLE
-    PermuteRHS = TriangularRHSAtomLoop.AND.IatomD.LT.IatomC
-    IF(noScreenCD2(IatomC,IatomD))THEN
-     nPasses = nAtomsA*nAtomsB
-     IF(CSscreen)GABELM = BATCHGCD(iBatchIndexOfTypeC+IatomC,iBatchD)
-     !output: IatomAPass,IatomBPass,nPasses
-     CALL BUILD_noScreenRed(CSscreen,nAtomsA,nAtomsB,&
-          & nBatchB,nBatchA,iBatchIndexOfTypeA,iBatchIndexOfTypeB,&
-          & BATCHGAB,THRESHOLD_CS,GABELM,nPasses,&
-          & TriangularLHSAtomLoop,TriangularODAtomLoop,iAtomC,IatomD,noScreenAB)
-     MaxPasses = MAX(MaxPasses,nPasses)
-    ENDIF
-   ENDDO
-  ENDDO
+  call DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
+       & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&
+       & TriangularRHSAtomLoop,CSscreen,TriangularLHSAtomLoop,TriangularODAtomLoop,&
+       & noScreenCD2,BATCHGAB,THRESHOLD_CS,noScreenAB,BATCHGCD,nBatchC,nBatchD,MaxPasses)
   TMParray1maxsizePass = TMParray1maxsize*MaxPasses
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
 

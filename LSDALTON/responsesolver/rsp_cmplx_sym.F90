@@ -1110,31 +1110,31 @@ endif
         !save on disk
     if (molcfg%solver%info_rsp_redspace) then
           write(molcfg%lupri,*) 'Reduced E1:'
-          call OUTPUT(E1, 1, n_red+nx_new, 1, n_red+nx_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E1, 1, n_red+nx_new, 1, n_red+nx_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced E2:'
-          call OUTPUT(E2, 1, nm_red+nm_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, nm_red+nm_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced E3:'
-          call OUTPUT(E3, 1, nmi_red+nmi_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E3, 1, nmi_red+nmi_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced E4:'
-          call OUTPUT(E4, 1, ni_red+nxi_new, 1, ni_red+nxi_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E4, 1, ni_red+nxi_new, 1, ni_red+nxi_new, max_red, max_red, 1, molcfg%lupri)
           
           write(molcfg%lupri,*) 'Reduced S1:'
-          call OUTPUT(S1, 1, n_red+nx_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S1, 1, n_red+nx_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced S2:'
-          call OUTPUT(S2, 1, n_red+nx_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S2, 1, n_red+nx_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced S7:'
-          call OUTPUT(S7, 1, ni_red+nxi_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S7, 1, ni_red+nxi_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced S8:'
-          call OUTPUT(S8, 1, ni_red+nxi_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S8, 1, ni_red+nxi_new, 1, nmi_red+nmi_new, max_red, max_red, 1, molcfg%lupri)
           
           write(molcfg%lupri,*) 'Reduced G1:'
-          call OUTPUT(G1, 1, n_red+nx_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(G1, 1, n_red+nx_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced G2:'
-          call OUTPUT(G2, 1, nm_red+nm_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(G2, 1, nm_red+nm_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced G3:'
-          call OUTPUT(G3, 1, nmi_red+nmi_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(G3, 1, nmi_red+nmi_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced G4:'
-          call OUTPUT(G4, 1, ni_red+nxi_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(G4, 1, ni_red+nxi_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
       endif
 
 call mat_free(scrT)      
@@ -1269,9 +1269,9 @@ subroutine solve_complex(molcfg,ndim,ndim_red,nm_red,ni_red,nmi_red,ngd,freq,red
 
        if (molcfg%solver%info_rsp_redspace) then
           write(molcfg%lupri,*) 'Reduced A:'
-          call OUTPUT(A, 1, n_red, 1, n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(A, 1, n_red, 1, n_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced RHS:'
-          call OUTPUT(KHS, 1, n_red, 1, 1, 2*max_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(KHS, 1, n_red, 1, 1, 2*max_red, 1, 1, molcfg%lupri)
        endif
          
        !Solve set of linear equations Ax = b:
