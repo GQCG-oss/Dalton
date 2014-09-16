@@ -1214,7 +1214,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
               !the contraction coeffecients written on.
               CALL determine_nNumbers_in_string(STRING,nNUMBERS)
               IF(nNUMBERS.GT.7)THEN
-                 WRITE(lupri,*)'WARNING This basis format violte the old dalton basis format'
+                 WRITE(lupri,*)'WARNING This basis format violate the old dalton basis format'
                  WRITE(lupri,*)'Which consist of 1 Exponent F16.9 and up to 6 contraction'
                  WRITE(lupri,*)'coefficients on the first line followed by a up to 7 contraction coefficients'
                  WRITE(lupri,*)'on the following lines until the full number of contraction coefficients are given'
@@ -1256,7 +1256,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     KNTORB = nOrbital
                  ELSE
                     KNTORB = nNUMBERS-1
-                 END IF
+                 END IF                 
                  READ (STRING,*) Exponents%elms(J),&
                       &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
                  !         Reading the first line with exponents and contractioncoeffecients
@@ -1402,7 +1402,7 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   SCIENTIFIC = .FALSE.
   DO I=1,LEN(STRING)
 !    The '-' allows fixed format type numbers with no space separation
-     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-').AND.INSIDENUMBER)THEN
+     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-'.OR.STRING(I:I).EQ.'+').AND.INSIDENUMBER)THEN
 !       In case of scientific number representation 1.2345678D-09 we do not 
 !       accept '-' to separate two nnumbers
         INSIDENUMBER=SCIENTIFIC
@@ -1416,7 +1416,7 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
            INSIDENUMBER=.TRUE.
         ENDIF
      ENDIF
-     SCIENTIFIC = STRING(I:I).EQ.'D'
+     SCIENTIFIC = STRING(I:I).EQ.'D' .OR. STRING(I:I).EQ.'E'
   ENDDO
 END subroutine DETERMINE_NNUMBERS_IN_STRING
 
