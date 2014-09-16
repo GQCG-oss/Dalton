@@ -1267,9 +1267,9 @@ module cc_tools_module
 
          call time_start_phase(PHASE_COMM, at = tw )
 
-         if(lock_outside)call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
-         if(lock_outside)call arr_unlock_wins(t2,.true.)
+         !if(lock_outside)call arr_lock_wins(t2,'s',mode)
+         call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,.false.)
+         !if(lock_outside)call arr_unlock_wins(t2,.true.)
 
          call time_start_phase(PHASE_WORK, at = tc )
 
