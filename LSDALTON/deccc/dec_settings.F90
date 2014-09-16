@@ -660,6 +660,11 @@ contains
           DECinfo%OnlyVirtPart=.false.
        end if
 
+       ! Not simulate full
+       if(DECinfo%simulate_full) then
+          call lsquit('DECCO not implemented for SIMULATEFULL',-1)
+       end if
+
        ! Not working for first-order properties
        if(DECinfo%first_order) then
           call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
@@ -672,7 +677,7 @@ contains
 
        ! Not for MPI at the moment
 #ifdef VAR_MPI
-       call lsquit('DECCO is not implemented for MPI!',DECinfo%output)
+       call lsquit('DECCO is not tested for MPI!',DECinfo%output)
 #endif
 
        ! No stress test implemented

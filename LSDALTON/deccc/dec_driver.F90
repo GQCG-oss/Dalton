@@ -82,7 +82,7 @@ contains
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals)
-
+stop 'KK HACK'
 
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs

@@ -144,7 +144,7 @@ contains
     !> Interatomic distances in atomic units
     call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
     call GetDistances(molecule,mylsitem,DECinfo%output) 
-       
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
@@ -562,7 +562,7 @@ contains
     type(matrix) :: XYZmat(4),Cocc,Cvirt,Xocc,Xvirt
     integer :: nbasis,nocc,nvirt,natoms,nmat,nderiv,XYZ,I
     real(realk) :: CenterX,CenterY,CenterZ
-    
+
     ! Init stuff
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -621,7 +621,7 @@ contains
              molecule%carmomvirt(XYZ,I) = Xvirt%elms(I+(I-1)*nvirt)
           enddo
        enddo
-       
+
        call mat_free(Cocc)
        call mat_free(Cvirt)
        call mat_free(Xocc)
@@ -639,6 +639,7 @@ contains
        call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
             & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
+
   end subroutine molecule_get_carmom
 
 

@@ -52,10 +52,9 @@ contains
        ! Orbital-based DEC
        call GenerateOrbitals_DECCO(nocc,nunocc,natoms, &
             & MyMolecule,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-       write(DECinfo%output,*) '----------------------------------'
-       write(DECinfo%output,*) 'DECCO orbital assignment: Summary'
-       write(DECinfo%output,*) '----------------------------------'
-       call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals,ncore=MyMolecule%ncore)
+       call print_orbital_info_DECCO(mylsitem,nocc,nunocc,OccOrbitals,&
+            & UnoccOrbitals,ncore=MyMolecule%ncore)
+       return
 
     else
 
@@ -1197,7 +1196,7 @@ contains
 
           ! Central orbital is nearest occupied orbital
           ! -------------------------------------------
-          call real_inv_sort_with_tracking(DistOccUnocc(:,i),sorted_orbitals,nocc)
+          call real_inv_sort_with_tracking(DistOccUnocc(:,i-nocc),sorted_orbitals,nocc)
           ! (for frozen core, ensure that we do not assign to core orbitals)
           Assigning: do n=1,nocc
              if(sorted_orbitals(n)>offset) then
@@ -1215,10 +1214,10 @@ contains
     end do OrbitalLoop
 
 
-
     call mem_dealloc(DistOccUnocc)
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
+
 
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
@@ -2859,6 +2858,145 @@ contains
   end subroutine print_orbital_info
 
 
+
+
+
+
+  !> \brief Print number of occupied and unoccupied orbitals assigned to each atom for
+  !> all atoms in the molecule.
+  !> \author Kasper Kristensen
+  subroutine print_orbital_info_DECCO(mylsitem,nocc,nunocc,OccOrbitals,&
+       & UnoccOrbitals,ncore)
+
+    implicit none
+    !> Dalton LSITEM (just for printing atom type)
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of occupied orbitals
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals
+    integer, intent(in) :: nunocc
+    !> Occupied orbitals
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> Number of of core orbitals. If present and frozen core approx is used,
+    !> the first ncore orbitals will not be printed.
+    integer,intent(in),optional :: ncore
+    integer :: nunocc_per_occ(nocc)
+    integer :: i, occ_max_orbital_extent, unocc_max_orbital_extent, occ_idx, unocc_idx,j,offset
+    real(realk) :: occ_av_orbital_extent, unocc_av_orbital_extent
+
+    if(present(ncore) .and. DECinfo%frozencore) then
+       offset=ncore
+    else
+       offset=0
+    end if
+
+    ! Find average and maximum orbital extent
+    ! ***************************************
+    ! Occupied
+    call get_orbital_extent_info(nocc,OccOrbitals,occ_max_orbital_extent,&
+         & occ_av_orbital_extent, occ_idx)
+
+    ! Unoccupied
+    call get_orbital_extent_info(nunocc,UnoccOrbitals,unocc_max_orbital_extent,&
+         & unocc_av_orbital_extent, unocc_idx)
+
+    ! Number of unoccupied orbitals assigned to each occupied orbital
+    call DECCO_get_nvirt_per_occ_orbital(nocc,nunocc,UnoccOrbitals,nunocc_per_occ)
+
+
+    ! Print out number of orbitals
+    ! ****************************
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '**************************************'
+    write(DECinfo%output,*) 'DECCO ORBITAL DISTRIBUTION INFORMATION'
+    write(DECinfo%output,*) '**************************************'
+    write(DECinfo%output,*)
+    if(DECinfo%frozencore) then
+       write(DECinfo%output,*) '--- using frozen core approximation, only valence orbitals are printed'
+       write(DECinfo%output,*)
+    end if
+    write(DECinfo%output,*) '   Occ index     #Unocc Orbitals'
+    do i=offset+1,nocc
+       write(DECinfo%output,'(1X,I5,12X,I10)') i,nunocc_per_occ(i)
+    end do
+    write(DECinfo%output,'(1X,A,11X,I6,11X,I6)') 'Total:', nocc-offset, nunocc
+    write(DECinfo%output,*)
+
+
+    ! Print out orbital extent summary
+    ! ********************************
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)'
+    write(DECinfo%output,*) '**********************************************************************'
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum occ orbital extent   = ', occ_max_orbital_extent, &
+         & '   -- Orbital index', occ_idx
+    write(DECinfo%output,'(1X,a,i6,a,i6)') 'Maximum unocc orbital extent = ', unocc_max_orbital_extent, &
+         & '   -- Orbital index', unocc_idx
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average occ orbital extent   = ', occ_av_orbital_extent
+    write(DECinfo%output,'(1X,a,f12.4)') 'Average unocc orbital extent = ', unocc_av_orbital_extent
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+
+
+    ! print specific info for each orbital
+    if(DECinfo%PL>0) then 
+       do i=1,nocc
+          write(DECinfo%output,*) 'Occupied orbital: ', i
+          write(DECinfo%output,*) '************************************************'
+          write(DECinfo%output,*) '# atoms in orbital extent: ', OccOrbitals(i)%numberofatoms
+          write(DECinfo%output,*) 'Atoms in orbital extent: '
+          do j=1,OccOrbitals(i)%numberofatoms
+             write(DECinfo%output,*) OccOrbitals(i)%atoms(j)
+          end do
+          write(DECinfo%output,*)
+       end do
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+
+       do i=1,nunocc
+          write(DECinfo%output,*) 'Virtual orbital: ', i
+          write(DECinfo%output,*) '************************************************'
+          write(DECinfo%output,*) '# atoms in orbital extent: ', UnOccOrbitals(i)%numberofatoms
+          write(DECinfo%output,*) 'Atoms in orbital extent: ' 
+          do j=1,UnOccOrbitals(i)%numberofatoms
+             write(DECinfo%output,*) UnOccOrbitals(i)%atoms(j)
+          end do
+          write(DECinfo%output,*)
+       end do
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+
+    end if
+
+
+  end subroutine print_orbital_info_DECCO
+
+
+  !> Get number of virtual orbital assigned to each occupied orbital
+  subroutine DECCO_get_nvirt_per_occ_orbital(nocc,nunocc,UnoccOrbitals,nunocc_per_occ)
+    implicit none
+    !> Number of occupied orbitals
+    integer, intent(in) :: nocc
+    !> Number of unoccupied orbitals
+    integer, intent(in) :: nunocc
+    !> Unoccupied orbitals
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> Number of unoccupied orbitals assigned to each occupied orbital
+    integer, intent(inout) :: nunocc_per_occ(nocc)
+    integer :: i
+
+    nunocc_per_occ=0
+    do i=1,nocc
+       nunocc_per_occ(UnoccOrbitals%centralatom) = nunocc_per_occ(UnoccOrbitals%centralatom) + 1
+    end do
+
+
+  end subroutine DECCO_get_nvirt_per_occ_orbital
 
   !> \brief The DEC scheme only works if for each atom either zero occupied AND zero virtual
   !> orbitals are assigned - or if nonzero occupied AND nonzero virtual orbitals are assigned.
