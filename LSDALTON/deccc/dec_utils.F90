@@ -788,34 +788,44 @@ end function max_batch_dimension
     ENDIF
   end subroutine GetSubSystemIndex
 
-  !> \brief Get a table with interatomic distances
-  subroutine GetDistances(DistanceTable,nAtoms,mylsitem,int_output)
+  !> \brief Get a table with interatomic distances (or interorbital for DECCO)
+  subroutine GetDistances(MyMolecule,mylsitem,int_output)
 
     implicit none
+    type(fullmolecule),intent(in) :: MyMolecule
     type(lsitem), intent(inout) :: mylsitem
-    integer, intent(in) :: nAtoms,int_output
-    real(realk), dimension(nAtoms,nAtoms), intent(inout) :: DistanceTable
+    integer, intent(in) :: int_output
     real(realk), pointer :: geometry(:,:)
     real(realk) :: dist
     integer :: i,j,k
 
-    DistanceTable=0.0E0_realk
+    MyMolecule%DistanceTable=0.0E0_realk
 
     ! get geometry
-    call mem_alloc(geometry,nAtoms,3)
+    call mem_alloc(geometry,MyMolecule%nfrags,3)
     geometry=0.0E0_realk
-    call get_geometry(int_output,0,mylsitem%input%molecule,nAtoms,geometry(:,1), &
-         geometry(:,2),geometry(:,3))
+    if(DECinfo%DECCO) then
+       ! Geometry corresponds to center of charge for occupied MOs.
+       do j=1,MyMolecule%nfrags
+          do i=1,3
+             geometry(j,i) = MyMolecule%carmomocc(i,j)
+          end do
+       end do
+    else
+       ! Atombased DEC (nfrags=natoms)
+       call get_geometry(int_output,0,mylsitem%input%molecule,MyMolecule%nfrags,geometry(:,1), &
+            geometry(:,2),geometry(:,3))
+    end if
 
-    do i=1,nAtoms
+    do i=1,MyMolecule%nfrags
        do j=1,i
           dist=0.0E0_realk
           do k=1,3
              dist=dist+(geometry(i,k)-geometry(j,k))**2
           end do
           dist=sqrt(dist)
-          DistanceTable(i,j)=dist
-          DistanceTable(j,i)=dist
+          MyMolecule%DistanceTable(i,j)=dist
+          MyMolecule%DistanceTable(j,i)=dist
        end do
     end do
 
@@ -5386,6 +5396,28 @@ end function max_batch_dimension
 
 
  end subroutine secondary_assigning
+
+
+
+ !> For two sets of points in space, make table with distances between the points of the two sets
+ subroutine general_distance_table(n1,n2,list1,list2,DistanceTable)
+   implicit none
+   !> Dimensions of the two lists
+   integer,intent(in) :: n1,n2
+   !> The two lists, e.g. list1(i,j) is the x (i=1), y (i=2), or z (i=3) coordinate
+   !> of the jth point in list1.
+   real(realk),intent(in) :: list1(3,n1), list2(3,n2)
+   !> Distance table described above
+   real(realk),intent(inout) :: DistanceTable(n1,n2)
+   integer :: i,j
+
+   do j=1,n2
+      do i=1,n1
+           DistanceTable(i,j) = get_distance_between_two_points( list1(1:3,i) , list2(1:3,j) )
+      end do
+   end do
+   
+ end subroutine general_distance_table
 
 
 

@@ -104,6 +104,9 @@ module dec_typedef_module
      logical :: use_singles
      !> is the density and other matrices in the grand-canonical basis?
      logical :: gcbasis
+     !> DEC-CC orbital-based (DECCO)
+     logical :: DECCO
+
 
 
      !> Restart options
@@ -553,6 +556,9 @@ module dec_typedef_module
      integer :: nCabsAO
      !> Number of cabs MO orbitals
      integer :: nCabsMO
+     !> Number of possible fragments
+     integer :: nfrags
+     
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()

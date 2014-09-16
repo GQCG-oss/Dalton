@@ -140,6 +140,10 @@ contains
     end if
      
     call molecule_get_carmom(molecule,mylsitem)
+
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
        
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
@@ -190,6 +194,15 @@ contains
     molecule%nCabsAO = 0
     molecule%nCabsMO = 0
 
+    ! Number of possible fragments:
+    ! natoms for atom-based approach
+    ! nocc for orbital-based approach
+    if(DECinfo%DECCO) then
+       molecule%nfrags=molecule%nocc
+    else
+       molecule%nfrags=molecule%natoms
+    end if
+
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
 
@@ -200,10 +213,6 @@ contains
     !> SubSystem index
     call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
     call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
-
-    !> Interatomic distances in atomic units
-    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
 
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
