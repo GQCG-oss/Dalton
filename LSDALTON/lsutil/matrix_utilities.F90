@@ -758,7 +758,7 @@ contains
    call mat_to_full(A,1.0E0_realk,Afull)
 
    !write (lupri,*) 'Afull (hessian):'
-   !call OUTPUT(Afull, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+   !call LS_OUTPUT(Afull, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
 
    call DSYEVX('V', 'A', 'U', ndim, Afull, ndim, VL, VU, IL, IU, &
      &  0.0E0_realk, neig, eigenval, eigenvec, ndim, temp, Ltemp, Itemp, &
@@ -782,7 +782,7 @@ contains
 
    if (print_eivecs) then
       write (lupri,*) 'Eigenvectors of A:'
-      call OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+      call LS_OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
    endif
 
    deallocate(Afull)

@@ -1,0 +1,12 @@
+ATOMBASIS
+Methane CH4
+NSCD test files
+Atomtypes=2 Angstrom NoSymmetry
+Charge=6.0 Atoms=1 Basis=cc-pVDZ
+C     0.000000      0.000000      0.000000
+Charge=1.0 Atoms=4 Basis=cc-pVDZ
+H1    0.626887      0.626887      0.626887
+H2   -0.626887     -0.626887      0.626887
+H3    0.626887     -0.626887     -0.626887
+H4   -0.626887      0.626887     -0.626887
+

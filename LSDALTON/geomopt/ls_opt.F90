@@ -271,16 +271,16 @@ Implicit Real(realk) (A-H,O-Z)
             optinfo%GradNorm = SQRT(DDOT(optinfo%ICartCoord,optinfo%GradMol,1,optinfo%GradMol,1))
             IF (optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'Cartesian gradient')
-               call output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
+               call ls_output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
                call lsheader(lupri,'Internal gradient')
-               call output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
             END IF
             call ls_HX2HQ(Molecule,MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4, &
      &          optinfo%HessMol,optinfo%GRDINT,HESINT,WILBMT,BMTINV,BMTRAN, &
      &           optinfo)
             IF (optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'Cartesian Hessian')
-               call output(optinfo%HessMol,1,optinfo%ICartCoord,1,optinfo%ICartCoord, &
+               call ls_output(optinfo%HessMol,1,optinfo%ICartCoord,1,optinfo%ICartCoord, &
      &                                   MXCOOR,MXCOOR,1,LUPRI)
             END IF
             DO 15 J = 1, optinfo%NIntCoord
@@ -316,11 +316,11 @@ Implicit Real(realk) (A-H,O-Z)
 !
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Cartesian gradient')
-            call output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
+            call ls_output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
          END IF
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Internal gradient')
-            call output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          END IF
 !
 !     The default is different values for bonds and other internal
@@ -370,7 +370,7 @@ Implicit Real(realk) (A-H,O-Z)
          END IF
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Internal Hessian')
-            call output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
+            call ls_output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
      &                                       MXRCRD,MXRCRD,1,LUPRI)
          END IF
 !
@@ -415,10 +415,10 @@ Implicit Real(realk) (A-H,O-Z)
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Initial Hessian')
          IF (optinfo%RedInt .OR. optinfo%DelInt) THEN
-            call output(HESOLD,1,optinfo%NIntCoord,1,optinfo%NIntCoord,MXRCRD,MXRCRD, &
+            call ls_output(HESOLD,1,optinfo%NIntCoord,1,optinfo%NIntCoord,MXRCRD,MXRCRD, &
      &                                                       1,LUPRI)
          ELSE
-            call output(HESOLD,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXRCRD,MXRCRD, &
+            call ls_output(HESOLD,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXRCRD,MXRCRD, &
      &                                                       1,LUPRI)
          END IF
       END IF
@@ -677,19 +677,19 @@ Implicit Real(realk) (A-H,O-Z)
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Step from last geometry')
          IF (optinfo%RedInt .OR. optinfo%DelInt) THEN
-            call output(optinfo%STPINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
          ELSE
-            call output(optinfo%STPSYM,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            call ls_output(optinfo%STPSYM,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
          END IF
          call lsheader(lupri,'Previous Hessian')
-         call output(HESOLD,1,NCOOR,1,NCOOR,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESOLD,1,NCOOR,1,NCOOR,MXRCRD,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Gradient at last geometry')
-         call output(GRDOLD,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         call ls_output(GRDOLD,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Gradient at current geometry')
          IF (optinfo%RedInt .OR. optinfo%DelInt) THEN
-            call output(optinfo%GRDINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%GRDINT,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
          ELSE
-            call output(optinfo%GradMol,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
+            call ls_output(optinfo%GradMol,1,1,1,NCOOR,1,MXCOOR,1,LUPRI)
          END IF
       END IF
 !
@@ -707,7 +707,7 @@ Implicit Real(realk) (A-H,O-Z)
  20   CONTINUE
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Scaled gradient difference')
-         call output(GAMMA,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
+         call ls_output(GAMMA,1,1,1,NCOOR,1,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -756,9 +756,9 @@ Implicit Real(realk) (A-H,O-Z)
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsquit('ICRD argument is not defined',-1)
 !            call lsheader(lupri,'Unchanged Hessian')
-!            call output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+!            call ls_output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
 !            call lsheader(lupri,'Gradient at current geometry')
-!            call output(GRDOLD,1,1,1,ICRD,1,MCRD,1,LUPRI)
+!            call ls_output(GRDOLD,1,1,1,ICRD,1,MCRD,1,LUPRI)
          ELSE
             WRITE(LUPRI,*) &
      &           'Hessian will not be updated in this iteration.'
@@ -825,7 +825,7 @@ Implicit Real(realk) (A-H,O-Z)
  20   CONTINUE
       IF (IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'(gamma*gamma^T)/(gamma^T*delta)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     The first two terms of the optinfo%BFGS formula are placed in TMPMT2.
@@ -838,7 +838,7 @@ Implicit Real(realk) (A-H,O-Z)
  30   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Sum of first two terms')
-         call output(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     We place (B*delta) in TMPVEC and calculate (delta^T*B*delta)
@@ -855,7 +855,7 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(H*delta)')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
          call lsheader(lupri,'(delta^T*B*delta)')
          WRITE(LUPRI,'(A,F16.6)') 'Value :    ', FAC
       END IF
@@ -873,7 +873,7 @@ Implicit Real(realk) (A-H,O-Z)
  50   CONTINUE
       IF (IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'(B*delta*delta^T*B)/(delta^T*B*delta)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Finally we obtain the updated Hessian
@@ -885,7 +885,7 @@ Implicit Real(realk) (A-H,O-Z)
  60   CONTINUE
       IF (IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -973,7 +973,7 @@ Implicit Real(realk) (A-H,O-Z)
  25   CONTINUE
       IF (IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'(gamma*gamma^T)/(gamma^T*delta)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     The first two terms of the optinfo%DFP formula is placed in TMPMT2.
@@ -986,7 +986,7 @@ Implicit Real(realk) (A-H,O-Z)
  30   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Sum of first two terms')
-         call output(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMT2,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Next is (delta^T*B)
@@ -999,7 +999,7 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(delta^T*B)')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
       END IF
 !
 !     Then (gamma*delta^T*B + B*delta*gamma^T)
@@ -1012,7 +1012,7 @@ Implicit Real(realk) (A-H,O-Z)
  45   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(gamma*delta^T*B + B*delta*gamma^T)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     And then (gamma*delta^T*B + B*delta*gamma^T)/(gamma^T*delta)
@@ -1024,7 +1024,7 @@ Implicit Real(realk) (A-H,O-Z)
  50   CONTINUE
       IF (IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'(gamma*delta^T*B + B*delta*gamma^T)/(gamma^T*delta)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Finally we obtain the updated Hessian
@@ -1036,7 +1036,7 @@ Implicit Real(realk) (A-H,O-Z)
  60   CONTINUE
       IF (IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1095,7 +1095,7 @@ Implicit Real(realk) (A-H,O-Z)
  10   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(T = gamma-B*delta)')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
       END IF
 !
 !     We calculate (delta^T*delta)
@@ -1140,7 +1140,7 @@ Implicit Real(realk) (A-H,O-Z)
  30   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Second term of formula')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Finally we obtain the updated Hessian
@@ -1152,7 +1152,7 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1203,17 +1203,17 @@ Implicit Real(realk) (A-H,O-Z)
       R1PHI = 1.0E0_realk-CPHI
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Old Hessian')
-         call output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'Rank one update')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'Powell update')
-         call output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'delta')
-         call output(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
          call lsheader(lupri,'gamma')
-         call output(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
          call lsheader(lupri,'ksi')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'phi:',CPHI
          WRITE(LUPRI,*)
@@ -1225,7 +1225,7 @@ Implicit Real(realk) (A-H,O-Z)
  20   CONTINUE
       IF (IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1278,17 +1278,17 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Old Hessian')
-         call output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'Rank one update')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'optinfo%BFGS update')
-         call output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'delta')
-         call output(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(DELTA,1,1,1,ICRD,1,MCRD,1,LUPRI)
          call lsheader(lupri,'gamma')
-         call output(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(GAMMA,1,1,1,ICRD,1,MCRD,1,LUPRI)
          call lsheader(lupri,'ksi')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'phi:',CPHI
          WRITE(LUPRI,*)
@@ -1300,7 +1300,7 @@ Implicit Real(realk) (A-H,O-Z)
  20   CONTINUE
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1354,7 +1354,7 @@ Implicit Real(realk) (A-H,O-Z)
  10   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(gamma-B*delta)')
-         call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
       END IF
 !
 !     (gamma-B*delta)(gamma-B*delta)^T is calculated
@@ -1367,7 +1367,7 @@ Implicit Real(realk) (A-H,O-Z)
  20   CONTINUE
       IF (IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'(gamma-B*delta)(gamma-B*delta)^T')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     ((gamma-B*delta)^T*delta) is calculated
@@ -1391,7 +1391,7 @@ Implicit Real(realk) (A-H,O-Z)
  30   CONTINUE
       IF (IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'((gamma-B*delta)(gamma-B*delta)^T)/((gamma-B*delta)^T*delta)')
-         call output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(TMPMAT,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Finally we obtain the updated Hessian
@@ -1404,7 +1404,7 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1540,7 +1540,7 @@ Implicit Real(realk) (A-H,O-Z)
  26      CONTINUE
          IF(optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'r(j)''')
-            call output(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            call ls_output(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
          END IF
          TMP = 0.0E0_realk
          DO 32 J = 1, ICRD
@@ -1567,9 +1567,9 @@ Implicit Real(realk) (A-H,O-Z)
  40      CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Original displacement vector')
-            call output(STPMAT,II,II,1,ICRD,25,MXRCRD,1,LUPRI)
+            call ls_output(STPMAT,II,II,1,ICRD,25,MXRCRD,1,LUPRI)
             call lsheader(lupri,'Orthonormalized vector')
-            call output(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            call ls_output(TMPVC2,1,1,1,ICRD,1,MCRD,1,LUPRI)
          END IF
  20   CONTINUE
 !
@@ -1589,7 +1589,7 @@ Implicit Real(realk) (A-H,O-Z)
  45   CONTINUE
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Matrix of orthonormalized vectors')
-         call output(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     Next task is to calculate the matrix elements b(jk)
@@ -1598,7 +1598,7 @@ Implicit Real(realk) (A-H,O-Z)
          DO 52 J = K, 1, -1
             IF(optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'g(j)-g(i)')
-               call output(GRDMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
+               call ls_output(GRDMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
             END IF
             BMAT(J,K) = 0.0E0_realk
             DO 58 I = 1, ICRD
@@ -1607,7 +1607,7 @@ Implicit Real(realk) (A-H,O-Z)
 !
             IF(optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'x(j)-x(i)')
-               call output(STPMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
+               call ls_output(STPMAT,J,J,1,ICRD,25,MCRD,1,LUPRI)
             END IF
 !
             DO 70 M = J+1, INUM
@@ -1627,7 +1627,7 @@ Implicit Real(realk) (A-H,O-Z)
  50   CONTINUE
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'B-matrix of coefficients')
-         call output(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
+         call ls_output(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     And finally we are ready to update the Hessian
@@ -1643,7 +1643,7 @@ Implicit Real(realk) (A-H,O-Z)
  82      CONTINUE
          IF(optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'B*r(k)^T')
-            call output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
+            call ls_output(TMPVEC,1,1,1,ICRD,1,MCRD,1,LUPRI)
          END IF
          DO 85 J = 1, INUM
             TMP = 0.0E0_realk
@@ -1655,7 +1655,7 @@ Implicit Real(realk) (A-H,O-Z)
  80   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'b(jk)-r(j)^T*B*r(k)')
-         call output(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
+         call ls_output(BMAT,1,INUM,1,INUM,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     The old Hessian is moved to HESNEW, so that HESOLD can be used for
@@ -1681,7 +1681,7 @@ Implicit Real(realk) (A-H,O-Z)
  114        CONTINUE
             IF (optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'r(j)*r(k)^T')
-               call output(HESOLD,1,ICRD,1,ICRD,MXRCRD,MXRCRD, &
+               call ls_output(HESOLD,1,ICRD,1,ICRD,MXRCRD,MXRCRD, &
      &              1,LUPRI)
             END IF
             DO 120 II = 1, ICRD
@@ -1693,7 +1693,7 @@ Implicit Real(realk) (A-H,O-Z)
  100  CONTINUE
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -1813,9 +1813,9 @@ Implicit Real(realk) (A-H,O-Z)
       STPMAT(INUM+1,1) = 1.1E10_realk
       RMAT(INUM+1,1) = 1.1E10_realk
       call lsheader(lupri,'Original displacements')
-      call output(STPMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+      call ls_output(STPMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
       call lsheader(lupri,'Original gradient vectors')
-      call output(GRDMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+      call ls_output(GRDMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
 !
 !     Displacements larger than 100 times the last step,
 !     and displacements with a gradient difference
@@ -1903,9 +1903,9 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Displacements')
-         call output(RMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+         call ls_output(RMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
          call lsheader(lupri,'Gradient vectors')
-         call output(GMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
+         call ls_output(GMAT,1,INUM,1,ICRD,25,MCRD,1,LUPRI)
       END IF
 !
 !     Finally we use do the updating, suppressing output.
@@ -1932,7 +1932,7 @@ Implicit Real(realk) (A-H,O-Z)
          END IF
          IF ((optinfo%IPrint .GE. IPRDBG) .AND. (K .LT. INUM)) THEN
             call lsheader(lupri,'Updating the Hessian')
-            call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+            call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
          END IF
 !
 !     The various contributions are collected in UPDHES.
@@ -1944,12 +1944,12 @@ Implicit Real(realk) (A-H,O-Z)
  65      CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Update')
-            call output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
          END IF
  60   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Total Update')
-         call output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       IF (INUM .GE. 1) THEN
          FAC = 1.0E0_realk/(1.0E0_realk*INUM)
@@ -1962,11 +1962,11 @@ Implicit Real(realk) (A-H,O-Z)
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Scaled Update')
-         call output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESUPD,1,ICRD,1,ICRD,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -2037,11 +2037,11 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Old Hessian')
-         call output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+         call ls_output(HESOLD,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
          call lsheader(lupri,'optinfo%BFGS-updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
          call lsheader(lupri,'Model Hessian')
-         call output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+         call ls_output(TMPMT4,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
       END IF
       IF (IFAC .GT. 20) THEN
          FAC  = 0.0E0_realk
@@ -2057,7 +2057,7 @@ Implicit Real(realk) (A-H,O-Z)
  310  CONTINUE
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       IFAC = MIN(IFAC*2,25)
       RETURN
@@ -2118,7 +2118,7 @@ Implicit Real(realk) (A-H,O-Z)
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Model Hessian')
-         call output(HESOLD,1,MXRCRD,1,MXRCRD,MCRD,MCRD,1,LUPRI)         
+         call ls_output(HESOLD,1,MXRCRD,1,MXRCRD,MCRD,MCRD,1,LUPRI)         
       END IF
 !
 !     Then we do the updating, suppressing output.
@@ -2129,7 +2129,7 @@ Implicit Real(realk) (A-H,O-Z)
      &     GNRM,ITYPE,.FALSE.,lupri,optinfo)
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,MXRCRD,1,MXRCRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,MXRCRD,1,MXRCRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -2347,13 +2347,13 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Original displacements')
-         call output(STPMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
+         call ls_output(STPMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Normalized displacements')
-         call output(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(RMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
          call lsheader(lupri,'Original gradient vectors')
-         call output(GRDMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
+         call ls_output(GRDMAT,1,INUM,1,ICRD,25,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Scaled gradient vectors')
-         call output(GMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(GMAT,1,INUM,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
 !
 !     A new model Hessian is always calculated as a start
@@ -2383,7 +2383,7 @@ Implicit Real(realk) (A-H,O-Z)
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Model Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
       END IF
 !
 !     Then we use the required subroutine to do the updating,
@@ -2411,7 +2411,7 @@ Implicit Real(realk) (A-H,O-Z)
          END IF
          IF ((optinfo%IPrint .GE. IPRDBG) .AND. (K .LT. INUM)) THEN
             call lsheader(lupri,'Updating the Hessian')
-            call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
+            call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)         
          END IF
          call ls_DZERO(HESOLD,MXRCRD*MXRCRD)
          DO 65 J = 1, ICRD
@@ -2422,7 +2422,7 @@ Implicit Real(realk) (A-H,O-Z)
  60   CONTINUE
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Updated Hessian')
-         call output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
+         call ls_output(HESNEW,1,ICRD,1,ICRD,MCRD,MCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -2452,13 +2452,13 @@ Implicit Real(realk) (A-H,O-Z)
       Call Calc_TMatrix(TMat,NCR,Coord)
       IF (optinfo%IPrint .GT. 5) THEN
          call lsheader(lupri,'T matrix in GTTMAT')
-         call output(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
+         call ls_output(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
       END IF
       NPR1 = NPR
       call ls_ORTVEC(0,NPR1,NCR,THRLDP,TMAT,lupri)
       IF (optinfo%IPrint .GT. 5) THEN
          call lsheader(lupri,'Orthogonalized T matrix in GTTMAT')
-         call output(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
+         call ls_output(TMAT,1,NCR,1,NPR,NCR,NPR,1,LUPRI)
       END IF
       IF (NPR1 .NE. NPR) THEN
          WRITE(LUPRI,'(//,2(A,I1),A,/A)')                               &
@@ -2537,11 +2537,11 @@ Implicit Real(realk) (A-H,O-Z)
      &           TMAT,NCR,1E0_realk,PROJOP,NCR)
       IF (optinfo%IPrint .GT. 5) THEN
          call lsheader(lupri,'Unprojected gradient in PROJGH')
-         call output(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
+         call ls_output(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
          call lsheader(lupri,'Unprojected Hessian in PROJGH')
-         call output(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         call ls_output(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
          call lsheader(lupri,'Projection operator in PROJGH')
-         call output(PROJOP,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         call ls_output(PROJOP,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
       END IF
 !
 !     Do projection.
@@ -2553,7 +2553,7 @@ Implicit Real(realk) (A-H,O-Z)
       call dcopy(NCR,TMPMAT,1,EGRAD,1)
       IF (optinfo%IPrint .GT. 5) THEN
          call lsheader(lupri,'Projected gradient in PROJGH')
-         call output(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
+         call ls_output(EGRAD,1,1,1,NCR,1,NCR,1,LUPRI)
       END IF
       call dgemm('N','N',NCR,NCR,NCR,1E0_realk, &
      &           PROJOP,NCR, &
@@ -2565,7 +2565,7 @@ Implicit Real(realk) (A-H,O-Z)
      &           ALLHES,NCR)
       IF (optinfo%IPrint .GT. 5) THEN
          call lsheader(lupri,'Projected Hessian in PROJGH')
-         call output(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
+         call ls_output(ALLHES,1,NCR,1,NCR,NCR,NCR,1,LUPRI)
       END IF
       RETURN
       END
@@ -2655,7 +2655,7 @@ Implicit Real(realk) (A-H,O-Z)
  80      CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Augmented Hessian')
-            call output(TMPHES,1,NCRDHS,1,NCRDHS,MX2CRD, &
+            call ls_output(TMPHES,1,NCRDHS,1,NCRDHS,MX2CRD, &
      &           MX2CRD,1,LUPRI)
          END IF
          TMPHES(NCRDHS,NCRDHS) = D0
@@ -2707,9 +2707,9 @@ Implicit Real(realk) (A-H,O-Z)
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             WRITE(LUPRI,*) 'Index of Hessian: ',optinfo%IndHes
             call lsheader(lupri,'RF-eigenvalues')
-            call output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
             call lsheader(lupri,'RF-eigenvectors')
-            call output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD, &
+            call ls_output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD, &
      &           MX2CRD,1,LUPRI)
          END IF
       END IF
@@ -2841,7 +2841,7 @@ Implicit Real(realk) (A-H,O-Z)
          WRITE(LUPRI,*) &
      &        'Lowest eigenvalue (level-shift parameter): ',optinfo%EVAL(1)
          call lsheader(lupri,'Corresponding eigenvector')
-         call output(EVEC,1,1,1,NCHESS,1,MX2CRD,1,LUPRI)
+         call ls_output(EVEC,1,1,1,NCHESS,1,MX2CRD,1,LUPRI)
          WRITE(LUPRI,*)
          WRITE(LUPRI,*) 'Scaling factor: ',EVEC(NCHESS,1)
       END IF
@@ -2875,7 +2875,7 @@ Implicit Real(realk) (A-H,O-Z)
          ELSE
             call lsheader(lupri,'RF-step')
          END IF
-         call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
       END IF
 !
 !     Alternatively we restrivt the step norm to be equal or less
@@ -2890,7 +2890,7 @@ Implicit Real(realk) (A-H,O-Z)
             WRITE(LUPRI,'(/A,1P,D10.2/)') &
      &           'Step too long, step scaled by factor:', FAC
             call lsheader(lupri,'Scaled RF-Step')
-            call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
          optinfo%StepNorm = SQRT(DDOT(ICRD,STEP,1,STEP,1))
       END IF
@@ -2923,7 +2923,7 @@ Implicit Real(realk) (A-H,O-Z)
             ELSE
                call lsheader(lupri,'RF-step')
             END IF
-            call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
          END IF
          DO 55 I = 1, ICRD
             STEP(I) = -GRAD(I)
@@ -2945,7 +2945,7 @@ Implicit Real(realk) (A-H,O-Z)
          ELSE
             call lsheader(lupri,'RF-step')
          END IF
-         call output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,ICRD,1,NCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -2994,7 +2994,7 @@ Implicit Real(realk) (A-H,O-Z)
      &           optinfo%EVAL(NCHESS)
          END IF
          call lsheader(lupri,'Corresponding eigenvector')
-         call output(EVEC,1,NCHESS,IMOD,IMOD,MX2CRD,MX2CRD,1,LUPRI)
+         call ls_output(EVEC,1,NCHESS,IMOD,IMOD,MX2CRD,MX2CRD,1,LUPRI)
       END IF
       FAC = EVEC(NCHESS,IMOD)
       IF (ABS(FAC) .GT. 1.0E-10_realk) THEN
@@ -3061,7 +3061,7 @@ Implicit Real(realk) (A-H,O-Z)
          ELSE
             call lsheader(lupri,'RF-step')
          END IF
-         call output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
       END IF
 !
 !     Alternatively we restrivt the step norm to be equal or less
@@ -3076,7 +3076,7 @@ Implicit Real(realk) (A-H,O-Z)
             WRITE(LUPRI,'(/A,1P,D10.2/)') &
      &           'Step too long, step scaled by factor:', FAC
             call lsheader(lupri,'Scaled RF-Step')
-            call output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
       END IF
       ICNT = 1
@@ -3100,7 +3100,7 @@ Implicit Real(realk) (A-H,O-Z)
             ELSE
                call lsheader(lupri,'RF-step')
             END IF
-            call output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+            call ls_output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
          END IF
          DO 55 I = 1, NCRD
             STEP(I) = -GRAD(I)
@@ -3122,7 +3122,7 @@ Implicit Real(realk) (A-H,O-Z)
          ELSE
             call lsheader(lupri,'RF-step')
          END IF
-         call output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
+         call ls_output(STEP,1,1,1,NCRD,1,NCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -3218,7 +3218,7 @@ Implicit Real(realk) (A-H,O-Z)
 !      EVCTMP(NCRDHS+(NCRDHS-1)*NCRDHS) = D0
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Augmented Hessian')
-!         call output(EVCTMP,1,NCRDHS,1,NCRDHS,NCRDHS, &
+!         call ls_output(EVCTMP,1,NCRDHS,1,NCRDHS,NCRDHS, &
 !     &        NCRDHS,1,LUPRI)
 !      END IF
 !      call ls_DZERO(TMPMT3,MX2CRD*MX2CRD)
@@ -3260,9 +3260,9 @@ Implicit Real(realk) (A-H,O-Z)
 ! 440  CONTINUE
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'RF-eigenvalues')
-!         call output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+!         call ls_output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
 !         call lsheader(lupri,'RF-eigenvectors')
-!         call output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+!         call ls_output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
 !      END IF
 !      call ls_PRFSTP(MX2CRD,NCRDHS,MXCOOR,EVEC,optinfo%STPDIA,EGRAD, &
 !     &     TMPMAT,EHESS,1,lupri,optinfo)
@@ -3287,7 +3287,7 @@ Implicit Real(realk) (A-H,O-Z)
 !      EVCTMP(4) = D0
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Augmented Hessian')
-!         call output(EVCTMP,1,2,1,2,2,2,1,LUPRI)
+!         call ls_output(EVCTMP,1,2,1,2,2,2,1,LUPRI)
 !      END IF
 !      call ls_DZERO(TMPMT3,MX2CRD*MX2CRD)
 !      call ls_DSITSP(2,EVCTMP,TMPMT3)
@@ -3326,7 +3326,7 @@ Implicit Real(realk) (A-H,O-Z)
 !      optinfo%STPSYM(NCRDHS-1) = TMPVAL
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Diagonal RF-step')
-!         call output(optinfo%STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
+!         call ls_output(optinfo%STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
 !      END IF
 !
 !     The symmetry step is constructed from the original eigenvectors
@@ -3396,7 +3396,7 @@ Implicit Real(realk) (A-H,O-Z)
          IF (.NOT. optinfo%RatFun) THEN
             IF (optinfo%IPrint .GT. 5) THEN
                call lsheader(lupri,'Diagonal interpolated gradient')
-               call output(optinfo%GRDDIA,1,1,1,optinfo%ICartCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%GRDDIA,1,1,1,optinfo%ICartCoord,1,MXRCRD,1,LUPRI)
             END IF
          END IF
       END IF
@@ -3478,10 +3478,10 @@ Implicit Real(realk) (A-H,O-Z)
             END IF
          END IF
          call lsheader(lupri,'Step in diagonal representation')
-         call output(optinfo%STPDIA,1,1,1,NVEC,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%STPDIA,1,1,1,NVEC,1,MXRCRD,1,LUPRI)
          IF (optinfo%IPrint .GT. 5) THEN
             call lsheader(lupri,'Eigenvector basis')
-            call output(EVCTMP,1,optinfo%ICartCoord,1,NVEC,optinfo%ICartCoord,optinfo%ICartCoord,1,LUPRI)
+            call ls_output(EVCTMP,1,optinfo%ICartCoord,1,NVEC,optinfo%ICartCoord,optinfo%ICartCoord,1,LUPRI)
          END IF
          DO 150 I = 1, NVEC
             call daxpy(optinfo%ICartCoord,optinfo%STPDIA(I),EVEC(1,I),1,optinfo%STPSYM,1)
@@ -3559,7 +3559,7 @@ Implicit Real(realk) (A-H,O-Z)
       optinfo%StepNorm = SQRT(DDOT(optinfo%ICartCoord,optinfo%STPSYM,1,optinfo%STPSYM,1))
       IF (optinfo%IPrint .GT. 2) THEN
          call lsheader(lupri,'Cartesian step vector')
-         call output(optinfo%STPSYM,1,1,1,optinfo%ICartCoord,1,optinfo%ICartCoord,1,LUPRI)
+         call ls_output(optinfo%STPSYM,1,1,1,optinfo%ICartCoord,1,optinfo%ICartCoord,1,LUPRI)
          WRITE(LUPRI,'(/A,F15.10/)') ' Norm of step:', optinfo%StepNorm
       END IF
 !
@@ -4231,7 +4231,7 @@ Do i = 1, optinfo%NIntCoord
 Enddo
 !
 call lsheader(lupri,'Internal Hessian: numerical reduced, combined with model')
-call output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
+call ls_output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
      & MaxCoord,MaxCoord,1,LUPRI)
 !
 End subroutine Add_Redspa

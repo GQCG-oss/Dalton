@@ -215,7 +215,7 @@ contains
       enddo
 
       !write (decomp%LUPRI,*) "Unrestricted Hessian:"
-      !call OUTPUT(fullhes, 1, 2*hesdim, 1, 2*hesdim, 2*hesdim, 2*hesdim, 1, decomp%lupri)
+      !call LS_OUTPUT(fullhes, 1, 2*hesdim, 1, 2*hesdim, 2*hesdim, 2*hesdim, 1, decomp%lupri)
 
       call dsyevx_interface(fullhes,2*hesdim,.false.,decomp%lupri,'HesA+B')
 

@@ -131,7 +131,7 @@ Implicit Real(realk) (A-H,O-Z)
       call Atom_Ini(ATMARR,Molecule,optinfo,IATOM,.FALSE.,lupri)
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Expanded array of atoms (Aangstrom)')
-         call output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+         call ls_output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       optinfo%ICartCoord = 3*IATOM
 !
@@ -396,7 +396,7 @@ Implicit Real(realk) (A-H,O-Z)
 !      call ls_GETWIL(MXRCRD,MX2CRD,ATMARR,WILBMT,BMTRAN,TMPMAT,lupri,optinfo)
 !      optinfo%IPrint = IP
 !      call lsheader(lupri,'Expanded array of atoms (Bohr)')
-!      call output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+!      call ls_output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
 !      call ls_PRNRED(IC,CRDRIN,lupri,optinfo)
 !
 !     The molecular coordinates are restored.
@@ -527,7 +527,7 @@ Implicit Real(realk) (A-H,O-Z)
  30   CONTINUE
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Assigning atoms to fragments')
-         call output(ATMARR,1,IATOM,6,6,MXCENT,8,1,LUPRI)
+         call ls_output(ATMARR,1,IATOM,6,6,MXCENT,8,1,LUPRI)
       END IF
       IF (ICHANG .GT. 0) GOTO 25
 !
@@ -1364,7 +1364,7 @@ Implicit Real(realk) (A-H,O-Z)
       call Atom_Ini(ATMARR,Molecule,optinfo,IATOM,.TRUE.,lupri)
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Expanded array of atoms (Bohr)')
-         call output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+         call ls_output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       optinfo%ICartCoord = 3*IATOM
 !
@@ -1661,7 +1661,7 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Wilson B matrix [B(ij) = dq(i)/dx(j)]')
-         call output(WILBMT,1,NRIC,1,optinfo%ICartCoord,MXRCRD,MXCOOR,1,LUPRI)
+         call ls_output(WILBMT,1,NRIC,1,optinfo%ICartCoord,MXRCRD,MXCOOR,1,LUPRI)
       END IF
 !
 !     If we're using delocalized internal coordinates, we make
@@ -1684,7 +1684,7 @@ Implicit Real(realk) (A-H,O-Z)
  120     CONTINUE
          IF (optinfo%IPrint .GE. IPRMIN) THEN
             call lsheader(lupri,'Active space B matrix')
-            call output(WILBMT,1,optinfo%NIntCoord,1,optinfo%ICartCoord, &
+            call ls_output(WILBMT,1,optinfo%NIntCoord,1,optinfo%ICartCoord, &
      &           MXRCRD,MXCOOR,1,LUPRI)
          END IF
       END IF
@@ -1725,7 +1725,7 @@ Implicit Real(realk) (A-H,O-Z)
       call Atom_Ini(ATMARR,Molecule,optinfo,IATOM,.TRUE.,lupri)
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Expanded array of atoms (Bohr)')
-         call output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+         call ls_output(ATMARR,1,IATOM,1,4,MXCENT,8,1,LUPRI)
       END IF
       optinfo%ICartCoord = 3*IATOM
 !
@@ -1785,7 +1785,7 @@ Implicit Real(realk) (A-H,O-Z)
  58               CONTINUE
  56            CONTINUE
                call lsheader(lupri,'Numerically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
 !
@@ -1794,7 +1794,7 @@ Implicit Real(realk) (A-H,O-Z)
             call ls_GTDWLM(Molecule,MXRCRD,IC,DWILBM,ATMARR,WILBMT,lupri,optinfo)
             IF (optinfo%IPrint .GE. IPRMAX) THEN
                call lsheader(lupri,'Analytically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
 !
@@ -1888,7 +1888,7 @@ Implicit Real(realk) (A-H,O-Z)
  98               CONTINUE
  96            CONTINUE
                call lsheader(lupri,'Numerically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
 !
@@ -1897,7 +1897,7 @@ Implicit Real(realk) (A-H,O-Z)
             call ls_GTDWLM(Molecule,MXRCRD,IC,DWILBM,ATMARR,WILBMT,lupri,optinfo)
             IF (optinfo%IPrint .GE. IPRMAX) THEN
                call lsheader(lupri,'Analytically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
 !
@@ -1992,7 +1992,7 @@ Implicit Real(realk) (A-H,O-Z)
  255              CONTINUE
  250           CONTINUE
                call lsheader(lupri,'Numerically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
 !
@@ -2001,7 +2001,7 @@ Implicit Real(realk) (A-H,O-Z)
             call ls_GTDWLM(Molecule,MXRCRD,IC,DWILBM,ATMARR,WILBMT,lupri,optinfo)
             IF (optinfo%IPrint .GE. IPRMAX) THEN
                call lsheader(lupri,'Analytically diff. Wilson B matrix')
-               call output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
+               call ls_output(DWILBM,1,optinfo%ICartCoord,1,optinfo%ICartCoord,MXCOOR, &
      &              MXCOOR,1,LUPRI)
             END IF
          END IF
@@ -2420,11 +2420,11 @@ Implicit Real(realk) (A-H,O-Z)
 !
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'U matrix in GTBINV')
-         call output(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
+         call ls_output(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
          call lsheader(lupri,'W matrix in GTBINV')
-         call output(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
          call lsheader(lupri,'V matrix in GTBINV')
-         call output(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
       END IF
 !
 !     Based on the singular value decomposition of the B matrix,
@@ -2475,11 +2475,11 @@ Implicit Real(realk) (A-H,O-Z)
          END IF
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Reduced U matrix')
-            call output(UMAT,1,IDIM1,1,IDIM3,MXCOOR,MXRCRD,1,LUPRI)
+            call ls_output(UMAT,1,IDIM1,1,IDIM3,MXCOOR,MXRCRD,1,LUPRI)
             call lsheader(lupri,'Reduced W matrix')
-            call output(WMAT,1,IDIM3,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(WMAT,1,IDIM3,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
             call lsheader(lupri,'Reduced V matrix (non-redund. eigenvectors)' )
-            call output(VMAT,1,IDIM2,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(VMAT,1,IDIM2,1,IDIM3,MXRCRD,MXRCRD,1,LUPRI)
          END IF
 !
 !     We calculate the weights of the different primitives
@@ -2508,7 +2508,7 @@ Implicit Real(realk) (A-H,O-Z)
  620     CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'B matrix of active space')
-            call output(WILBMT,1,IDIM3,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
+            call ls_output(WILBMT,1,IDIM3,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
          END IF
 !
 !     The eigenvectors (V matrix) is stored in BMTRAN
@@ -2530,11 +2530,11 @@ Implicit Real(realk) (A-H,O-Z)
      &        VMATRED,VAL,lupri)
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Non-redundant U matrix in GTBINV')
-            call output(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
+            call ls_output(UMAT,1,IDIM1,1,IDIM2,MXCOOR,MXRCRD,1,LUPRI)
             call lsheader(lupri,'Non-redundant W matrix in GTBINV')
-            call output(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(WMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
             call lsheader(lupri,'Non-redundant V matrix in GTBINV')
-            call output(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(VMAT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
          END IF
       END IF
 !
@@ -2575,7 +2575,7 @@ Implicit Real(realk) (A-H,O-Z)
 
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Projection matrix')
-         call output(PJINMT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(PJINMT,1,IDIM2,1,IDIM2,MXRCRD,MXRCRD,1,LUPRI)
       END IF
 !
 !     We construct (1/w_ii) U^t
@@ -2596,7 +2596,7 @@ Implicit Real(realk) (A-H,O-Z)
  180  CONTINUE
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Inverse of B^t')
-         call output(BMTINV,1,IDIM2,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
+         call ls_output(BMTINV,1,IDIM2,1,IDIM1,MXRCRD,MXCOOR,1,LUPRI)
       END IF
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          WRITE(LUPRI,*)
@@ -3149,21 +3149,21 @@ Implicit Real(realk) (A-H,O-Z)
       GRADNM = SQRT(DDOT(optinfo%ICartCoord,optinfo%GradMol,1,optinfo%GradMol,1))
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Cartesian gradient')
-         call output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
+         call ls_output(optinfo%GradMol,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
       END IF
       call ls_HX2HQ(Molecule,MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,TMPMT4,&
        optinfo%HessMol,optinfo%GRDINT,HESINT,WILBMT,BMTINV,BMTRAN,optinfo)
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Cartesian Hessian')
-         call output(optinfo%HessMol,1,optinfo%ICartCoord,1, &
+         call ls_output(optinfo%HessMol,1,optinfo%ICartCoord,1, &
   &      optinfo%ICartCoord,MXCOOR,MXCOOR,1,LUPRI)
       END IF
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Internal gradient')
-         call output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Internal Hessian')
          Write(*,*)'HESINT',HESINT
-         call output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -3237,11 +3237,11 @@ Implicit Real(realk) (A-H,O-Z)
          Call mem_dealloc(Work)
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Matrix of constraints')
-            call output(CONMAT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
+            call ls_output(CONMAT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
             call lsheader(lupri,'CP''C')
-            call output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
             call lsheader(lupri,'Inverse of CP''C')
-            call output(TMPMT2,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT2,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
          END IF
 !
 !     We find CP' and P'C
@@ -3261,9 +3261,9 @@ Implicit Real(realk) (A-H,O-Z)
 !
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'CP''')
-            call output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
             call lsheader(lupri,'P''C')
-            call output(TMPMT3,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT3,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
          END IF
 !
 !     We calculate (CP'C)^-1 CP'
@@ -3293,9 +3293,9 @@ Implicit Real(realk) (A-H,O-Z)
 !
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'TMPMT4')
-            call output(TMPMT4,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT4,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
             call lsheader(lupri,'TMPMT1')
-            call output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
+            call ls_output(TMPMT1,1,NDIM,1,NDIM,NDIM,NDIM,1,LUPRI)
          END IF
 !
 !     The projection matrix is then modified to include the constraints.
@@ -3313,13 +3313,13 @@ Implicit Real(realk) (A-H,O-Z)
          ELSE
             call lsheader(lupri,'Projection matrix')
          END IF
-         call output(PJINMT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(PJINMT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       IF (optinfo%IPrint .GE. IPRMAX) THEN
          call lsheader(lupri,'Unprojected gradient')
-         call output(optinfo%GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Unprojected Hessian')
-         call output(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
 !
 !     First we project the gradient
@@ -3330,7 +3330,7 @@ Implicit Real(realk) (A-H,O-Z)
 
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Projected gradient')
-         call output(optinfo%GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%GRDINT,1,1,1,NDIM,1,MXRCRD,1,LUPRI)
       END IF
 !
 !     Then the Hessian
@@ -3354,7 +3354,7 @@ Implicit Real(realk) (A-H,O-Z)
 ! 90   CONTINUE
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Projected Hessian')
-         call output(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
+         call ls_output(HESINT,1,NDIM,1,NDIM,MXRCRD,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -3402,17 +3402,17 @@ Implicit Real(realk) (A-H,O-Z)
          call lsheader(lupri,'Output from DIAINT')
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Internal gradient')
-            call output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%GRDINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
                call lsheader(lupri,'Internal Hessian')
-               call output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
+               call ls_output(HESINT,1,optinfo%NIntCoord,1,optinfo%NIntCoord, &
      &              MXRCRD,MXRCRD,1,LUPRI)
             IF (optinfo%RatFun .AND. (.NOT. optinfo%Saddle)) THEN
                call lsheader(lupri,'Augmented internal Hessian')
-               call output(TMPHES,1,NCRDHS,1,NCRDHS, &
+               call ls_output(TMPHES,1,NCRDHS,1,NCRDHS, &
      &              NCRDHS,NCRDHS,1,LUPRI)
             END IF
             !call lsheader(lupri,'Packed Hessian')
-            !call output(HESPCK,1,1,1,(NCRDHS*(NCRDHS+1))/2, &
+            !call ls_output(HESPCK,1,1,1,(NCRDHS*(NCRDHS+1))/2, &
             !     1,NCRDHS*NCRDHS,1,LUPRI)
          END IF
       END IF
@@ -3465,11 +3465,11 @@ Implicit Real(realk) (A-H,O-Z)
 !#endif
       IF (optinfo%IPrint .GE. IPRMED) THEN
          call lsheader(lupri,'Eigenvalues in DIAINT')
-         call output(optinfo%Eval,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%Eval,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Eigenvectors in DIAINT')
-         call output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+         call ls_output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
          call lsheader(lupri,'Gradient (diagonal rep.) in DIAINT')
-         call output(optinfo%GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
       END IF
 !
 
@@ -3499,11 +3499,11 @@ Implicit Real(realk) (A-H,O-Z)
  40   CONTINUE
       IF (optinfo%IPrint .GE. IPRMIN) THEN
          call lsheader(lupri,'Sorted eigenvalues in WLKEI1')
-         call output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
          call lsheader(lupri,'Sorted eigenvectors in WLKEI1')
-         call output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+         call ls_output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
          call lsheader(lupri,'Gradient (sorted) in WLKEI1')
-         call output(optinfo%GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%GRDDIA,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
       END IF
       RETURN
       END
@@ -3562,7 +3562,7 @@ Implicit Real(realk) (A-H,O-Z)
          IF (.NOT. optinfo%RatFun) THEN
             IF (optinfo%IPrint .GT. 5) THEN
                call lsheader(lupri,'Diagonal interpolated gradient')
-               call output(optinfo%GRDDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%GRDDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
             END IF
          END IF
       END IF
@@ -3624,7 +3624,7 @@ Implicit Real(realk) (A-H,O-Z)
          optinfo%stepNorm = SQRT(DDOT(optinfo%NIntCoord,optinfo%STPDIA,1,optinfo%STPDIA,1))
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Newton step')
-            call output(optinfo%STPDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          END IF
 !
 !     If Newton step is larger that trust radius, we take a step
@@ -3693,13 +3693,13 @@ Implicit Real(realk) (A-H,O-Z)
          IF (optinfo%IPrint .GE. IPRMIN) THEN
             IF (optinfo%IPrint .GE. IPRDBG) THEN
                call lsheader(lupri,'Internal diagonal gradient')
-               call output(optinfo%GRDDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%GRDDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
                call lsheader(lupri,'Eigenvalues')
-               call output(optinfo%EVAL,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%EVAL,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
             END IF
             IF (optinfo%IPrint .GE. IPRMED) THEN
                call lsheader(lupri,'Internal diagonal step')
-               call output(optinfo%STPDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+               call ls_output(optinfo%STPDIA,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
             END IF
             WRITE (LUPRI,'(/A,F25.15)') ' Predicted energy change', &
      &           optinfo%predictedChange
@@ -3723,7 +3723,7 @@ Implicit Real(realk) (A-H,O-Z)
  20      CONTINUE
          IF (optinfo%IPrint .GE. IPRMIN) THEN
             call lsheader(lupri,'Step in internal coordinates')
-            call output(optinfo%STPINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          END IF
 !
 !     The rational function method
@@ -3838,25 +3838,25 @@ Implicit Real(realk) (A-H,O-Z)
      &     CSTRA,.FALSE.,lupri,optinfo)
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Internal values before step')
-            call output(TMPMT2(1),1,1,1,optinfo%NIntCoord,1,MX2CRD,1,LUPRI)
+            call ls_output(TMPMT2(1),1,1,1,optinfo%NIntCoord,1,MX2CRD,1,LUPRI)
          END IF
          IF (optinfo%IPrint .GE. IPRMED) THEN
             call lsheader(lupri,'Internal values after step')
-            call output(TMPMT2(2*MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
+            call ls_output(TMPMT2(2*MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
      &           MX2CRD,1,LUPRI)
          END IF
       ELSE
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             NRIC = optinfo%NIntCoord
             call lsheader(lupri,'Internal values before step')
-            !call output(TMPMT2(MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
-            call output(VALOLD,1,1,1,optinfo%NIntCoord,1, &
+            !call ls_output(TMPMT2(MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
+            call ls_output(VALOLD,1,1,1,optinfo%NIntCoord,1, &
      &           MX2CRD,1,LUPRI)
          END IF
          IF (optinfo%IPrint .GE. IPRMED) THEN
             call lsheader(lupri,'Internal values after step')
-            !call output(TMPMT2(2*MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
-            call output(VALNEW,1,1,1,optinfo%NIntCoord,1, &
+            !call ls_output(TMPMT2(2*MX2CRD+1),1,1,1,optinfo%NIntCoord,1, &
+            call ls_output(VALNEW,1,1,1,optinfo%NIntCoord,1, &
      &           MX2CRD,1,LUPRI)
          END IF
       END IF
@@ -4146,19 +4146,19 @@ Else
       END IF
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Previous coordinates')
-         call output(CRDOLD,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+         call ls_output(CRDOLD,1,IATOM,1,4,MXCENT,8,1,LUPRI)
          IF (optinfo%DelInt) THEN
             call lsheader(lupri,'Previous primitive internal values')
          ELSE
             call lsheader(lupri,'Previous internal values')
          END IF
-         call output(VALOLD,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         call ls_output(VALOLD,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
          IF (optinfo%DelInt) THEN
             call lsheader(lupri,'Step to take (primitives)')
          ELSE
             call lsheader(lupri,'Step to take')
          END IF
-         call output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         call ls_output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
 !
 !     First estimate of Cartesian step.
@@ -4207,7 +4207,7 @@ Else
  13      CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Projected step')
-            call output(SCTRA,1,1,1,NRIC,1,MXCOOR,1,LUPRI)
+            call ls_output(SCTRA,1,1,1,NRIC,1,MXCOOR,1,LUPRI)
          END IF
       END IF
       ! 
@@ -4221,9 +4221,9 @@ Else
       !
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'Inverse of B^t')
-         call output(BMTINV,1,optinfo%NIntCoord,1,optinfo%ICartCoord,MXRCRD,MXCOOR,1,LUPRI)
+         call ls_output(BMTINV,1,optinfo%NIntCoord,1,optinfo%ICartCoord,MXRCRD,MXCOOR,1,LUPRI)
          call lsheader(lupri,'First estimate of Cartesian step')
-         call output(TMPVEC,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
+         call ls_output(TMPVEC,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
       END IF
       ITRCRD = 1
       RMSOLD = D0
@@ -4238,13 +4238,13 @@ Else
       call ls_GETINT(IATOM,MXRCRD,CRDNEW,VALNEW,lupri,optinfo)
       IF (optinfo%IPrint .GE. IPRDBG) THEN
          call lsheader(lupri,'New coordinates')
-         call output(CRDNEW,1,IATOM,1,4,MXCENT,8,1,LUPRI)
+         call ls_output(CRDNEW,1,IATOM,1,4,MXCENT,8,1,LUPRI)
          IF (optinfo%DelInt) THEN
             call lsheader(lupri,'New primitive internal values')
          ELSE
             call lsheader(lupri,'New internal values')
          END IF
-         call output(VALNEW,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         call ls_output(VALNEW,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
       call ls_DZERO(DIFF,MXRCRD)
       RMSINT = D0
@@ -4289,7 +4289,7 @@ Else
          ELSE
             call lsheader(lupri,'Difference to wanted step')
          END IF
-         call output(DIFF,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+         call ls_output(DIFF,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
       END IF
       IF (optinfo%DelInt) THEN
          call ls_DZERO(SCTRA,MXCOOR*MXCOOR)
@@ -4306,7 +4306,7 @@ Else
  205     CONTINUE
          IF (optinfo%IPrint .GE. IPRDBG) THEN
             call lsheader(lupri,'Difference to wanted step')
-            call output(DIFF,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(DIFF,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          END IF
       END IF
       RMSINT = SQRT(RMSINT/(1.0E0_realk*NRIC))
@@ -4330,7 +4330,7 @@ Else
             STPTXT = 'Updated step #XX'
             WRITE(STPTXT(15:16),'(I2)') ITRCRD
             call lsheader(lupri,STPTXT)
-            call output(TMPVEC,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
+            call ls_output(TMPVEC,1,1,1,optinfo%ICartCoord,1,MXCOOR,1,LUPRI)
          END IF
          ITRCRD = ITRCRD + 1
          GOTO 123
@@ -4407,7 +4407,7 @@ Else
          END IF
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Adjusted step')
-            call output(optinfo%STPINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPINT,1,1,1,optinfo%NIntCoord,1,MXRCRD,1,LUPRI)
          END IF
       END IF
       IF (CORREC) THEN
@@ -4426,7 +4426,7 @@ Else
  50      CONTINUE
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Adjusted step')
-            call output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
          END IF
          DO 60 I = 1, IATOM
             DO 62 J = 1, 3
@@ -4491,7 +4491,7 @@ Else
  550     CONTINUE
          IF (optinfo%IPrint .GE. IPRMAX) THEN
             call lsheader(lupri,'Adjusted step after freezing')
-            call output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
+            call ls_output(optinfo%STPINT,1,1,1,NRIC,1,MXRCRD,1,LUPRI)
          END IF
 !     If .FRZITR has been specified, the freezing is turned off after
 !     the requested number of iterations
@@ -4595,7 +4595,7 @@ Endif
 !      TMPMT2(NCRDHS+(NCRDHS-1)*NCRDHS) = D0
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Augmented Hessian')
-!         call output(TMPMT2,1,NCRDHS,1,NCRDHS,NCRDHS, &
+!         call ls_output(TMPMT2,1,NCRDHS,1,NCRDHS,NCRDHS, &
 !     &        NCRDHS,1,LUPRI)
 !      END IF
 !      call ls_DZERO(TMPMT3,MX2CRD*MX2CRD)
@@ -4637,9 +4637,9 @@ Endif
 ! 440  CONTINUE
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'RF-eigenvalues')
-!         call output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
+!         call ls_output(optinfo%EVAL,1,1,1,NCRDHS,1,MXRCRD,1,LUPRI)
 !         call lsheader(lupri,'RF-eigenvectors')
-!         call output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
+!         call ls_output(EVEC,1,NCRDHS,1,NCRDHS,MX2CRD,MX2CRD,1,LUPRI)
 !      END IF
 !      call ls_PRFSTP(MX2CRD,NCRDHS,MXRCRD,EVEC,optinfo%STPINT,optinfo%GRDINT, &
 !     &     TMPMAT,HESINT,1,lupri,optinfo)
@@ -4664,7 +4664,7 @@ Endif
 !      TMPMT2(4) = D0
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Augmented Hessian')
-!         call output(TMPMT2,1,2,1,2,2,2,1,LUPRI)
+!         call ls_output(TMPMT2,1,2,1,2,2,2,1,LUPRI)
 !      END IF
 !      call ls_DZERO(TMPMT3,MX2CRD*MX2CRD)
 !      call ls_DSITSP(2,TMPMT2,TMPMT3)
@@ -4702,7 +4702,7 @@ Endif
 !      optinfo%STPSYM(NCRDHS-1) = TMPVAL
 !      IF (optinfo%IPrint .GE. IPRDBG) THEN
 !         call lsheader(lupri,'Diagonal RF-step')
-!         call output(optinfo%STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
+!         call ls_output(optinfo%STPSYM,1,1,1,NCRDHS-1,1,MXRCRD,1,LUPRI)
 !      END IF
 !
 !     The symmetry step is constructed from the original eigenvectors

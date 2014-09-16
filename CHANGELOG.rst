@@ -1,33 +1,12 @@
 
 
+2014.0 (2014-09-08)
+===================
 
-2014.1 (this will be the next patch)
-====================================
-
-Common
-------
-
-
-DALTON
-------
+See the release notes at http://daltonprogram.org for a list of new features in
+Dalton and LSDalton.
 
 
-LSDALTON
---------
-
-===========================
-DO NOT EDIT BELOW THIS LINE
-===========================
-
-************************************
-New major release
-2014.0 (2014-09-06)
-************************************
-
-See release notes for list of new features in
-DALTON and LSDALTON.
-
-************************************
 2013.4 (2014-07-10)
 ===================
 

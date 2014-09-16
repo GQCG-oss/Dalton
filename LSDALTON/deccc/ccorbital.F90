@@ -1797,17 +1797,17 @@ contains
     nsize = nbasisSub(2)*noccsub(1)
     write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
     write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(2),noccsub(1)
-    call output(Cocc1,1,nbasisSub(2),1,noccsub(1),nbasisSub(2),noccsub(1),1,DECinfo%output)
+    call ls_output(Cocc1,1,nbasisSub(2),1,noccsub(1),nbasisSub(2),noccsub(1),1,DECinfo%output)
 
     write(DECinfo%output,'(1X,a,A)') ' The Occupied Orbitals Assigned to SubSystem: ',&
          & mylsitem%input%molecule%SubsystemLabel(2)
     nsize = nbasisSub(1)*noccsub(2)
     write(DECinfo%output,'(1X,A,ES16.8)') ' Norm = ',sqrt(ddot(nsize,Cocc1,1,Cocc1,1))
     write(DECinfo%output,'(1X,A,I5,I5)')  ' Dim  = ',nbasisSub(1),noccsub(2)
-    call output(Cocc2,1,nbasisSub(1),1,noccsub(2),nbasisSub(1),noccsub(2),1,DECinfo%output)
+    call ls_output(Cocc2,1,nbasisSub(1),1,noccsub(2),nbasisSub(1),noccsub(2),1,DECinfo%output)
 
     WRITE(DECinfo%output,*)'Full CMO '
-    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+    call ls_output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
 
     call mem_dealloc(Cocc1)
     call mem_dealloc(Cocc2)
@@ -1884,7 +1884,7 @@ contains
          & nOrb,MyMolecule%Co,CentralAtom,MyMolecule%SubSystemIndex)      
 
     WRITE(DECinfo%output,*)'CMO after force_Occupied_SubSystemLocality'
-    call output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
+    call ls_output(MyMolecule%Co,1,nbasis,1,nocc,nbasis,nocc,1,DECinfo%output)
 
     ! Delete orbitals
     call mem_dealloc(nOrb)

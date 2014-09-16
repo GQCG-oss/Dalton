@@ -184,9 +184,6 @@ CASE DEFAULT
    enddo
 END SELECT
 
-IpassEnd = 1 !WARNING 
-
-
 BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
 BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
 BASISTYPE(3) = 'UnitTest_segD1p     '; iBASISTYPE(3) = 15
