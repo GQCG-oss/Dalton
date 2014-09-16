@@ -389,6 +389,11 @@ add_dalton_runtest(qfit_dft_charges             "dalton;short;qfit;parallel")
 add_dalton_runtest(qfit_dft_transition_charges  "dalton;short;qfit;parallel")
 endif()
 
+if(ENABLE_EFS)
+    add_dalton_test(efs_b3lyp "dalton;efs")
+    add_dalton_test(efs_hf    "dalton;efs")
+endif()
+
 add_dalton_test(geoopt_cartmin                "dalton;medium")
 add_dalton_test(geoopt_dckerr                 "dalton;medium")
 add_dalton_test(geoopt_delintmin              "dalton;medium")
