@@ -869,29 +869,29 @@ END DO
 !call mem_dft_dealloc(NVALUE)
 
 !write (lupri,*) 'integrals from II_BLGETSOS',nvclen,NactBAS
-!call output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'x integrals from II_BLGETSOS'
-!call output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'y integrals from II_BLGETSOS'
-!call output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !write (lupri,*) 'z integrals from II_BLGETSOS'
-!call output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!call ls_output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !if (nder.eq. 2) then
 !   WRITE(lupri,*)'COOR(1,:)',(COOR(1,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(2,:)',(COOR(2,i),I=1,NVCLEN)
 !   WRITE(lupri,*)'COOR(3,:)',(COOR(3,i),I=1,NVCLEN)
 !   write (lupri,*) ' xx integrals from II_BLGETSOS '
-!   call output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,5),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xy integrals from II_BLGETSOS '
-!   call output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,6),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' xz integrals from II_BLGETSOS '
-!   call output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,7),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yy integrals from II_BLGETSOS '
-!   call output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,8),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' yz integrals from II_BLGETSOS '
-!   call output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,9),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !   write (lupri,*) ' zz integrals from II_BLGETSOS '
-!   call output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!   call ls_output(gao(1,1,10),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !end if
 call mem_dft_dealloc(PA)
 call mem_dft_dealloc(PA2)

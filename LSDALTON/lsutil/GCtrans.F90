@@ -493,7 +493,7 @@ WRITE(GCAOtrans_lun) nbast
 WRITE(GCAOtrans_lun) CCfull
 
 !print*,'write_GCtransformationmatrix nbast',nbast
-!call output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
+!call ls_output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
 
 call lsclose(GCAOtrans_lun,'KEEP')
 call mem_dealloc(CCfull)
@@ -579,7 +579,7 @@ ELSE
    call build_GCtransformationmatrixfull(CCfull,nbast,setting,lupri)
 ENDIF
 !print*,'read_GCtransformationmatrixfull nbast',nbast
-!call output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
+!call ls_output(CCfull,1,nbast,1,nbast,nbast,nbast,1,6)
 end SUBROUTINE read_GCtransformationmatrixfull
 
 SUBROUTINE read_GCtransformationmatrix(CCmatrix,nbast,setting,lupri)

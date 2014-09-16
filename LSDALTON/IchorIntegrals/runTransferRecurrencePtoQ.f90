@@ -162,7 +162,12 @@ subroutine PASSsub
                 call AddToString('exp,nPrimA,nPrimB,nPrimC,nPrimD,&')
                 call writeString(LUFILE)
                 call initString(9)          
-                call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)')
+                call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2')
+                IF(DoOpenACC)THEN
+                   call AddToString(',iASync)')
+                ELSE
+                   call AddToString(')')
+                ENDIF
                 call writeString(LUFILE)
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses'
@@ -264,6 +269,7 @@ subroutine PASSsub
                 ELSE
                    WRITE(LUFILE,'(A)')'!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)'
                 ENDIF
+                IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
                 WRITE(LUFILE,'(A)')'  !Local variables'
                 !             WRITE(LUFILE,'(A)')'  real(realk) :: Pexpfac,PREF'
                 !             WRITE(LUFILE,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
@@ -444,7 +450,7 @@ subroutine PASSsub
                    IF(SegP.OR.SegQ.OR.Seg)THEN
                       IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
 !                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(none) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) SHARED(nPrimQ,nPasses,nPrimP,Aux2)'
-                      IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2)'
+                      IF(DoOpenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,nPrimP,Aux2) ASYNC(iASync)'
 !                      IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
                       IF(SegP)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
                       IF(SegQ)WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
@@ -523,7 +529,7 @@ subroutine PASSsub
                    WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&'
                    WRITE(LUFILE,'(A)')'!$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&'
            WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC       ',FromExpLabel,'exp,',ToExpLabel,'exp,&'
-                   WRITE(LUFILE,'(A)')'!$ACC        IatomApass,IatomBpass,Aux2,Aux)'
+                   WRITE(LUFILE,'(A)')'!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)'
                 ENDIF
 
                 !START LOOP

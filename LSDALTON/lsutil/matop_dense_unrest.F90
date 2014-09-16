@@ -333,9 +333,9 @@ module matrix_operations_unres_dense
 
      !to be found in pdpack/printpkg.F
      write(lu,'(1x,a)') 'ALPHA part:'
-     call OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
+     call LS_OUTPUT(a%elms, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, 1, lu)
      write(lu,'(1x,a)') 'BETA part:'
-     call OUTPUT(a%elmsb, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, &
+     call LS_OUTPUT(a%elmsb, i_row1, i_rown, j_col1, j_coln, a%nrow, a%ncol, &
                & 1, lu)
   end subroutine mat_unres_dense_print
 

@@ -680,11 +680,11 @@ endif
 
  if (molcfg%solver%info_rsp_redspace) then 
           write(molcfg%lupri,*) 'Reduced E1:'
-          call OUTPUT(E1, 1, n_red+nx_new, 1, n_red+nx_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E1, 1, n_red+nx_new, 1, n_red+nx_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced E2:'
-          call OUTPUT(E2, 1, nm_red+nm_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, nm_red+nm_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced S1:'
-          call OUTPUT(S1, 1, n_red+nx_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S1, 1, n_red+nx_new, 1, nm_red+nm_new, max_red, max_red, 1, molcfg%lupri)
   endif
 
 call mat_free(x_j)
@@ -762,9 +762,9 @@ subroutine solve_std(molcfg,ndim,ndim_red,nm_red,ngd,freq,red_X,red_Xm)
          
        if (molcfg%solver%info_rsp_redspace) then
           write(molcfg%lupri,*) 'Reduced A:'
-          call OUTPUT(A, 1, ndim_red+nm_red, 1, ndim_red+nm_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(A, 1, ndim_red+nm_red, 1, ndim_red+nm_red, 2*max_red, 2*max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced RHS:'
-          call OUTPUT(KHS, 1, ndim_red+nm_red, 1, 1, 2*max_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(KHS, 1, ndim_red+nm_red, 1, 1, 2*max_red, 1, 1, molcfg%lupri)
        endif
 
        !Solve set of linear equations Ax = b:
@@ -1466,9 +1466,9 @@ subroutine solve_red_eigen(molcfg,ndim,ndim_red,nm_red,nexci,eival,red_X,red_Xm)
 
       if (molcfg%solver%info_rsp_redspace) then
           write(molcfg%lupri,*) 'Reduced E:'
-          call OUTPUT(A, 1, ndim_red_mat, 1, ndim_red_mat, 2*max_red, 2*max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(A, 1, ndim_red_mat, 1, ndim_red_mat, 2*max_red, 2*max_red, 1, molcfg%lupri)
           write(molcfg%lupri,*) 'Reduced S:'
-          call OUTPUT(S2FULL, 1, ndim_red_mat, 1, ndim_red_mat, 2*max_red, 2*max_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S2FULL, 1, ndim_red_mat, 1, ndim_red_mat, 2*max_red, 2*max_red, 1, molcfg%lupri)
       endif
 
 !************************************************************
@@ -1493,14 +1493,14 @@ subroutine solve_red_eigen(molcfg,ndim,ndim_red,nm_red,nexci,eival,red_X,red_Xm)
 
     if (molcfg%solver%info_rsp_redspace) then
         WRITE (molcfg%LUPRI,'(/A)') ' REDUCED EIGENVECTORS BEFORE ORDERING:'
-        CALL OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
+        CALL LS_OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
     &                     ndim_red_mat,ndim_red_mat,1,molcfg%LUPRI)
     endif
     CALL ReorderEigenvalues2(molcfg,ndim_red_mat,S2FULL,RED_EIVEC_scr, & 
     &                       alfr,ALFI,BETA,scr1,scr2,ISNDX)
     if (molcfg%solver%info_rsp_redspace) then
         WRITE (molcfg%LUPRI,'(/A)') ' REDUCED EIGENVECTORS AFTER ORDERING:'
-        CALL OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
+        CALL LS_OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
     &                     ndim_red_mat,ndim_red_mat,1,molcfg%LUPRI)
     endif
 
@@ -2014,23 +2014,23 @@ endif
   call ls_dzero(WRK2,NDIM*NDIM)
   if (molcfg%solver%info_rsp) then
     WRITE (molcfg%LUPRI,*) ' Reduced S(2) before diagonal basis '
-    CALL OUTPUT(SRED,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
+    CALL LS_OUTPUT(SRED,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
     WRITE (molcfg%LUPRI,*) ' Reduced Xvec before diagonal basis '
-    CALL OUTPUT(EIVEC,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
+    CALL LS_OUTPUT(EIVEC,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
   endif
 
   CALL DGEMM('N','N',NDIM,NDIM,NDIM,1E0_realk,SRED,NDIM, &
      &           EIVEC,NDIM,0E0_realk,WRK1,NDIM)
   if (molcfg%solver%info_rsp) then
     WRITE (molcfg%LUPRI,*) ' REDS[2]*X'
-    CALL OUTPUT(WRK1,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
+    CALL LS_OUTPUT(WRK1,1,NDIM,1,NDIM,NDIM,NDIM,1,molcfg%LUPRI)
   endif
   CALL DGEMM('T','N',NDIM,NDIM,NDIM,1E0_realk,EIVEC,NDIM, &
      &           WRK1,NDIM,0E0_realk,WRK2,NDIM)
   if (molcfg%solver%info_rsp) then
          WRITE (molcfg%LUPRI,'(/A)') ' Reduced S(2) in diagonal basis :'
          WRITE (molcfg%LUPRI,'(I10,1P,D12.2)') (I,WRK2(I,I),I=1,NDIM)
-!        CALL OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,molcfg%LUPRI)
+!        CALL LS_OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,molcfg%LUPRI)
   endif
 !
 !     select eigenvectors with positive normalization and store them
