@@ -247,25 +247,31 @@ C
       END IF
 C
       IF (PEQM) THEN
+#ifdef MOD_UNRELEASED
 #if defined (BUILD_PELIB)
-        IF (.NOT. TDHF) THEN
-            CALL QUIT('ERROR: MCSCF cubic response not'//
-     &                ' implemented with PE library.')
-        ELSE IF (NASHT > 0) THEN
-            CALL QUIT('ERROR: cubic response not implemented for'//
-     &                ' open shell systems with PE library.')
-        ELSE IF (TRPLET) THEN
-            CALL QUIT('ERROR: triplets not implemented for cubic'//
-     &                ' response with PE library.')
-        ENDIF
-        CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
-     &                 WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
-     &                 KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
-     &                 ISYMD, CMO, MJWOP)
+         IF (.NOT. TDHF) THEN
+             CALL QUIT('ERROR: MCSCF cubic response not'//
+     &                 ' implemented with PE library.')
+         ELSE IF (NASHT > 0) THEN
+             CALL QUIT('ERROR: cubic response not implemented for'//
+     &                 ' open shell systems with PE library.')
+         ELSE IF (TRPLET) THEN
+             CALL QUIT('ERROR: triplets not implemented for cubic'//
+     &                 ' response with PE library.')
+         ENDIF
+         CALL PE_RSPCRO(VECB, VECC, VECD, ETRS, XINDX, WRK(KZYMB),
+     &                  WRK(KZYMC), WRK(KZYMD), UDV, WRK(KFREE), LFREE,
+     &                  KZYVA, KZYVB, KZYVC, KZYVD, ISYMA, ISYMB, ISYMC,
+     &                  ISYMD, CMO, MJWOP)
 #endif
-      end if
+#else
+         CALL QUIT('ERROR: cubic response not implemented'//
+     &             ' using the PE library (.PEQM).')
+#endif
+      END IF
 C
       IF (QMMM) THEN
+#ifdef MOD_UNRELEASED
          IF (TDHF) THEN
              CALL QMMMCRO(VECB, VECC, VECD,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),WRK(KZYMD),
@@ -300,9 +306,13 @@ C
          ELSE
             CALL QUIT('CR-QM/MM only implemented for TDHF/TDDFT')
          END IF
-      END IF
+#else
+         CALL QUIT('ERROR: cubic response not implemented'//
+     &             ' for QMMM.')
+#endif
+      eND IF
 
-      IF (FLAG(16)) THEN
+      iF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          VAL = DDOT(KZYVA,VECA,1,ETRS,1)
          IF (TDHF) THEN
@@ -345,31 +355,31 @@ C
          END IF
          WRITE (LUPRI,'(A,F20.12)') 'Total contribution from E4SOL:',
      *        DDOT(KZYVA,VECA,1,ETRS,1) - VAL
-      END IF
+      eND IF
 C
-C     Overall minus sign for E[4] (missing in Eq. 34 jcp 105 (1996) 6401)
+C     overall minus sign for E[4] (missing in Eq. 34 jcp 105 (1996) 6401)
 C
-      CALL DSCAL(KZYVA,DM1,ETRS,1)
+      cALL DSCAL(KZYVA,DM1,ETRS,1)
 C
-      RETURN
-      END
-      SUBROUTINE BCDCHK(DOCAL,IBCDEQ,LURSPRES,DIPLEN,GAMMA,
+      rETURN
+      eND
+      sUBROUTINE BCDCHK(DOCAL,IBCDEQ,LURSPRES,DIPLEN,GAMMA,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,ISYMBC,ISYMBD,ISYMCD,
      *                  ALAB,BLAB,CLAB,DLAB,IAOP,IBOP,ICOP,IDOP,
      *                  IBFR,ICFR,IDFR,FREQA,FREQB,FREQC,FREQD,
      *                  KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
      *                  VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD,IEQTO)
 C
-C     Called from CRHYP or CRTMO or CRTPA.
+C     called from CRHYP or CRTMO or CRTPA.
 C
-C     Initialize variables.
+C     initialize variables.
 C
-C     Check if an equivalent calculation already has been done,
-C     DOCAL indicates the result. Save uniqe calculations in
-C     LAB(N,4) and FRQ(N,4).
+C     check if an equivalent calculation already has been done,
+C     dOCAL indicates the result. Save uniqe calculations in
+C     lAB(N,4) and FRQ(N,4).
 C
-C     Check if some of the response vectors are equal or zero,
-C     IBCDEQ indicates the result:
+C     check if some of the response vectors are equal or zero,
+C     iBCDEQ indicates the result:
 C       0  at least one of VECB VECC VECD equal to zero
 C       1  all of VECB, VECC, VECD unequal
 C       2  VECB = VECC
@@ -380,7 +390,7 @@ C
 C
 #include "implicit.h"
 C
-      PARAMETER ( D0 = 0.0D0, THRSML = 1.0D-9 )
+      pARAMETER ( D0 = 0.0D0, THRSML = 1.0D-9 )
 C
 #include "thrzer.h"
 #include "maxorb.h"
@@ -400,39 +410,39 @@ C
 #include "inftmo.h"
 #include "inftpa.h"
 C
-      PARAMETER (THD = 1.0D-8, MXCALC = 200)
+      pARAMETER (THD = 1.0D-8, MXCALC = 200)
 C
-      LOGICAL DOCAL,DIPLEN,ONFIL
+      lOGICAL DOCAL,DIPLEN,ONFIL
 C
-      CHARACTER*8 LAB, ALABEL, BLABEL, CLABEL, DLABEL, LABEL
-      CHARACTER*8 ALAB,BLAB,CLAB,DLAB
+      cHARACTER*8 LAB, ALABEL, BLABEL, CLABEL, DLABEL, LABEL
+      cHARACTER*8 ALAB,BLAB,CLAB,DLAB
 C
-      DIMENSION VECA(*), VECB(*),VECC(*),VECD(*),VECBC(*),
+      dIMENSION VECA(*), VECB(*),VECC(*),VECD(*),VECBC(*),
      &          VECBD(*),VECCD(*)
-      DIMENSION LAB(MXCALC,4), FRQ(MXCALC,4), ISYM(MXCALC,4)
-      DIMENSION GAMMA(3,3,3,3)
-      DIMENSION IEQTO(5)
+      dIMENSION LAB(MXCALC,4), FRQ(MXCALC,4), ISYM(MXCALC,4)
+      dIMENSION GAMMA(3,3,3,3)
+      dIMENSION IEQTO(5)
 C
-      SAVE LAB, FRQ, N, ISYM
+      sAVE LAB, FRQ, N, ISYM
 C
-      DATA N/0/
+      dATA N/0/
 C
-C     Set variables
+C     set variables
 C
-      ONFIL = .FALSE.
-      ISYMBC = MULD2H(ISYMB,ISYMC)
-      ISYMBD = MULD2H(ISYMB,ISYMD)
-      ISYMCD = MULD2H(ISYMC,ISYMD)
+      oNFIL = .FALSE.
+      iSYMBC = MULD2H(ISYMB,ISYMC)
+      iSYMBD = MULD2H(ISYMB,ISYMD)
+      iSYMCD = MULD2H(ISYMC,ISYMD)
 C
-      KZYVA  = MZYVAR(ISYMA)
-      KZYVB  = MZYVAR(ISYMB)
-      KZYVC  = MZYVAR(ISYMC)
-      KZYVD  = MZYVAR(ISYMD)
-      KZYVBC = MZYVAR(ISYMBC)
-      KZYVBD = MZYVAR(ISYMBD)
-      KZYVCD = MZYVAR(ISYMCD)
+      kZYVA  = MZYVAR(ISYMA)
+      kZYVB  = MZYVAR(ISYMB)
+      kZYVC  = MZYVAR(ISYMC)
+      kZYVD  = MZYVAR(ISYMD)
+      kZYVBC = MZYVAR(ISYMBC)
+      kZYVBD = MZYVAR(ISYMBD)
+      kZYVCD = MZYVAR(ISYMCD)
 C
-      IF (CRCAL) THEN
+      iF (CRCAL) THEN
          FREQB = BCRFR(IBFR)
          FREQC = CCRFR(ICFR)
          FREQD = DCRFR(IDFR)
@@ -442,9 +452,9 @@ C
          BLAB = BCRLB(ISYMB,IBOP)
          CLAB = CCRLB(ISYMC,ICOP)
          DLAB = DCRLB(ISYMD,IDOP)
-      END IF
+      eND IF
 C
-      IF (TOMOM) THEN
+      iF (TOMOM) THEN
          FREQB = -BTMFR(IBFR)
          FREQC = -CTMFR(ICFR)
          FREQD = EXCIT2(ISYMD,IDFR)
@@ -454,9 +464,9 @@ C
          BLAB = BTMLB(ISYMB,IBOP)
          CLAB = CTMLB(ISYMC,ICOP)
          DLAB = 'EXCITLAB'
-      END IF
+      eND IF
 C
-      IF (TPAMP) THEN
+      iF (TPAMP) THEN
          FREQB = -BTPFR(IBFR)
          FREQC = -EXCIT2(ISYMC,ICFR)
          FREQD = EXCIT2(ISYMD,IDFR)
@@ -466,21 +476,21 @@ C
          BLAB = BTPLB(ISYMB,IBOP)
          CLAB = 'EXCITLAB'
          DLAB = 'EXCITLAB'
-      END IF
+      eND IF
 C
 C If dipole operators only, store result in variable GAMMA
 C
-      DIPLEN = .FALSE.
-      IF (ALAB(2:7) .EQ. 'DIPLEN' .AND.
+      dIPLEN = .FALSE.
+      iF (ALAB(2:7) .EQ. 'DIPLEN' .AND.
      &    BLAB(2:7) .EQ. 'DIPLEN' .AND.
      &    CLAB(2:7) .EQ. 'DIPLEN' .AND.
      &    DLAB(2:7) .EQ. 'DIPLEN') THEN
           DIPLEN = .TRUE.
-      END IF
+      eND IF
 C
 C In case of gamma, only calculate contributions to average gamma
 C
-      IF (.NOT. GAMALL .AND. DIPLEN) THEN
+      iF (.NOT. GAMALL .AND. DIPLEN) THEN
          IF (.NOT.((ALAB.EQ.BLAB .OR. ALAB.EQ.CLAB .OR. ALAB.EQ.DLAB)
      &       .AND.(BLAB.EQ.ALAB .OR. BLAB.EQ.CLAB .OR. BLAB.EQ.DLAB)
      &       .AND.(CLAB.EQ.ALAB .OR. CLAB.EQ.BLAB .OR. CLAB.EQ.DLAB)
@@ -492,15 +502,15 @@ C
      &           ' not contribute to average gamma'
             RETURN
          END IF
-      END IF
+      eND IF
 C
-C     Check if an equivalent calculation already has been done.
+C     check if an equivalent calculation already has been done.
 C
-      DOCAL = .TRUE.
-      DO 110 I = 1,N
-      DO 120 J = 1,4
-      DO 130 K = 1,4
-      IF (K.NE.J) THEN
+      dOCAL = .TRUE.
+      dO 110 I = 1,N
+      dO 120 J = 1,4
+      dO 130 K = 1,4
+      iF (K.NE.J) THEN
          DO 140 L = 1,4
          IF (L.NE.K .AND. L.NE.J) THEN
             DO 150 M = 1,4
@@ -533,14 +543,14 @@ C
                          CALL DIPLAB(LAB(I,4),I8)
                          GAMMA(I1,I2,I3,I4)=GAMMA(I5,I6,I7,I8)
                       ELSE
-      WRITE(LUPRI,'(//A,4(/A,A10,I4,F10.6))')
+      wRITE(LUPRI,'(//A,4(/A,A10,I4,F10.6))')
      *     ' Cubic response function value in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,-FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      *     ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC,
      *     ' D operator, symmetry, frequency: ',DLAB,ISYMD,FREQD
-      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Cubic response function value in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),FRQ(I,2),
@@ -549,14 +559,14 @@ C
                       END IF
                    END IF
                    IF (DOCAL.AND.TOMOM) THEN
-      WRITE(LUPRI,'(//A,3(/A,A10,I4,F10.6),/A,I7,F10.6)')
+      wRITE(LUPRI,'(//A,3(/A,A10,I4,F10.6),/A,I7,F10.6)')
      *     ' Third order transition moment in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,-FREQB,
      *     ' C operator, symmetry, frequency: ',CLAB,ISYMC,-FREQC,
      *     ' State no.,  symmetry, excitation energy:',ISYMD,FREQD
-      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Third order transition moment in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),-FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
@@ -572,14 +582,14 @@ C
                       IEQTO(5)=ISYM(I,4)
                    END IF
                    IF (DOCAL.AND.TPAMP) THEN
-      WRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')
+      wRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')
      *     ' Third order transition moment in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,-FREQB,
      *     ' State no.,  symmetry, excitation energy:',ISYMC,-FREQC,
      *     ' State no.,  symmetry, excitation energy:',ISYMD,FREQD
-      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Third order transition moment in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),-FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
@@ -603,15 +613,15 @@ C
  150        CONTINUE
          END IF
  140     CONTINUE
-      END IF
- 130  CONTINUE
- 120  CONTINUE
- 110  CONTINUE
+      eND IF
+ 130  cONTINUE
+ 120  cONTINUE
+ 110  cONTINUE
 C
-C     Finally we check if the result is available from a previous
+C     finally we check if the result is available from a previous
 C     calculation
 C     
-      IF (DOCAL) THEN
+      iF (DOCAL) THEN
          REWIND (LURSPRES)
  346     READ (LURSPRES,'(A8)',END=347) LABEL
          IF (LABEL(2:6) .EQ. 'Cubic') THEN
@@ -717,12 +727,12 @@ C
 #if defined (VAR_MFDS)
          BACKSPACE (LURSPRES)
 #endif
-      END IF
+      eND IF
 
 C
-C     If not done before put in list with unique calculations
+C     if not done before put in list with unique calculations
 C
-      IF ((DOCAL .OR. ONFIL).AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
+      iF ((DOCAL .OR. ONFIL).AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
          N = N + 1
          IF (N .GT. MXCALC) THEN
             WRITE (LUPRI,'(/A,I3)')
@@ -741,78 +751,78 @@ C
          FRQ(N,2) = FREQB
          FRQ(N,3) = FREQC
          FRQ(N,4) = FREQD
-      ELSE
+      eLSE
          RETURN
-      END IF
+      eND IF
 C
 C
-C     Read in response vectors
+C     read in response vectors
 C
-      CALL READVE(ISYMA,ISYMB,ISYMC,ISYMD,
+      cALL READVE(ISYMA,ISYMB,ISYMC,ISYMD,
      *            ALAB,BLAB,CLAB,DLAB,
      *            FREQA,FREQB,FREQC,FREQD,
      *            KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
      *            VECA,VECB,VECC,VECD,VECBC,VECBD,VECCD)
 C
-C     Check if response vectors are zero or equal.
+C     check if response vectors are zero or equal.
 C
-      IBCDEQ = 1
-      IF ( ISYMB .EQ. ISYMC .AND. FREQB .EQ. FREQC ) THEN
+      iBCDEQ = 1
+      iF ( ISYMB .EQ. ISYMC .AND. FREQB .EQ. FREQC ) THEN
          VMIN = D0
          DO 210 I = 1,KZYVB
             VMIN = VMIN + ABS(VECB(I) - VECC(I))
   210    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = 2
-      END IF
+      eND IF
 C
-      IF ( ISYMB .EQ. ISYMD .AND. FREQB .EQ. FREQD ) THEN
+      iF ( ISYMB .EQ. ISYMD .AND. FREQB .EQ. FREQD ) THEN
          VMIN = D0
          DO 230 I = 1,KZYVB
             VMIN = VMIN + ABS(VECB(I) - VECD(I))
   230    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = IBCDEQ * 3
-      END IF
+      eND IF
 C
-      IF ( ISYMC .EQ. ISYMD .AND. FREQD .EQ. FREQC ) THEN
+      iF ( ISYMC .EQ. ISYMD .AND. FREQD .EQ. FREQC ) THEN
          VMIN = D0
          DO 250 I = 1,KZYVC
             VMIN = VMIN + ABS(VECC(I) - VECD(I))
   250    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = IBCDEQ * 4
-      END IF
+      eND IF
 C
-      VNORM = DNRM2(KZYVA,VECA,1)
-      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      vNORM = DNRM2(KZYVA,VECA,1)
+      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      VNORM = DNRM2(KZYVB,VECB,1)
-      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      vNORM = DNRM2(KZYVB,VECB,1)
+      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      VNORM = DNRM2(KZYVC,VECC,1)
-      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      vNORM = DNRM2(KZYVC,VECC,1)
+      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      VNORM = DNRM2(KZYVD,VECD,1)
-      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      vNORM = DNRM2(KZYVD,VECD,1)
+      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      RETURN
-      END
+      rETURN
+      eND
 
-      SUBROUTINE DIPLAB(LAB,I)
+      sUBROUTINE DIPLAB(LAB,I)
 C
 #include "implicit.h"
 C
-      CHARACTER*8 LAB
+      cHARACTER*8 LAB
 C
 C Map dipole operators to integer number
 C X => 1, Y => 2, and Z => 3
 C
-      IF (LAB(1:1).EQ.'X') I=1
-      IF (LAB(1:1).EQ.'Y') I=2
-      IF (LAB(1:1).EQ.'Z') I=3
+      iF (LAB(1:1).EQ.'X') I=1
+      iF (LAB(1:1).EQ.'Y') I=2
+      iF (LAB(1:1).EQ.'Z') I=3
 C
-      RETURN
-      END
+      rETURN
+      eND
 
-      SUBROUTINE DFT4DRV(VECB, VECC, VECD,
+      sUBROUTINE DFT4DRV(VECB, VECC, VECD,
      &                   FI,ZYMB,ZYMC,ZYMD,
      &                   KZYVB,KZYVC, KZYVD,
      &                   ISYMB,ISYMC, ISYMD,
@@ -825,23 +835,23 @@ C
 #include "infinp.h"
 #include "dftcom.h"
  
-      DIMENSION VECB(*),VECC(*),VECD(*)
-      DIMENSION ZYMB(*),ZYMC(*),ZYMD(*)
-      DIMENSION WRK(*),CMO(*)
-      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
-      LOGICAL ADDFOCK
+      dIMENSION VECB(*),VECC(*),VECD(*)
+      dIMENSION ZYMB(*),ZYMC(*),ZYMD(*)
+      dIMENSION WRK(*),CMO(*)
+      dIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      lOGICAL ADDFOCK
 c     unpack response vectors.
-      NSIM = 1
-      CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
-      CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
-      CALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
-C     ADDFOCK = .NOT.DIRFCK
-      ADDFOCK = .FALSE.
+      nSIM = 1
+      cALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
+      cALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
+      cALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
+C     aDDFOCK = .NOT.DIRFCK
+      aDDFOCK = .FALSE.
 c     compute dft contribution
-      CALL DFTCRCF(FI,CMO,
+      cALL DFTCRCF(FI,CMO,
      &             ZYMB,ISYMB,
      &             ZYMC,ISYMC,
      &             ZYMD,ISYMD,
      &             WRK,LFREE,IPRDFT)
 c     pack stuff back.
-      END
+      eND
