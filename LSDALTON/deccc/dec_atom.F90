@@ -85,7 +85,7 @@ contains
     
 
     ! Check that no core orbital are included in AOS space whith frozencore:
-    if (DECinfo%orb_based_fragopt.and.DECinfo%frozencore) then
+    if ((.not.DECinfo%no_orb_based_fragopt).and.DECinfo%frozencore) then
       do i=1,Mymolecule%ncore
          if(Occ_list(i)) call lsquit('core orbital should never be included in AOS space &
             & whith frozen core approximation',DECinfo%output)
@@ -625,7 +625,7 @@ contains
     do i=1,natoms
        if(.not. dofrag(i)) cycle
        MyAtom=i
-       if (DECinfo%orb_based_fragopt) then
+       if (.not.DECinfo%no_orb_based_fragopt) then
           ! Set # core orbitals to zero if the frozen core approximation is not used:
           if (DECinfo%frozencore) then
              ncore = MyMolecule%ncore

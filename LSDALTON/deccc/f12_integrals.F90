@@ -1803,6 +1803,10 @@ contains
        print *, "ncabsMO    ", ncabsMO
     end if
 
+    !> Memory Stats
+    WRITE(DECinfo%output,*) "Memory statistics before allocation of CoccEOS:"  
+    call stats_globalmem(DECinfo%output)
+
     ! Creating a CoccEOS matrix 
     call mem_alloc(CoccEOS, MyFragment%nbasis, noccEOS)
     do i=1, MyFragment%noccEOS
@@ -1810,17 +1814,26 @@ contains
        CoccEOS(:,i) = MyFragment%Co(:,ix)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of CoccEOS:"  
+    call stats_globalmem(DECinfo%output)
+
     ! Creating a CoccAOS matrix 
     call mem_alloc(CoccAOS, MyFragment%nbasis, noccAOS)
     do i=1, MyFragment%noccAOS
        CoccAOS(:,i) = MyFragment%Co(:,i)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of CoccAOS:"  
+    call stats_globalmem(DECinfo%output)
+
     ! Creating a CvirtAOS matrix 
     call mem_alloc(CvirtAOS, MyFragment%nbasis, nvirtAOS)
     do i=1, MyFragment%nunoccAOS
        CvirtAOS(:,i) = MyFragment%Cv(:,i)
     end do
+
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of CvirtAOS:"  
+    call stats_globalmem(DECinfo%output)
 
     ! Creating a CocvAOS matrix 
     call mem_alloc(CocvAOS, MyFragment%nbasis, nocvAOS)
@@ -1831,31 +1844,55 @@ contains
        CocvAOS(:,i+MyFragment%noccAOS) = MyFragment%Cv(:,i)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of CocvAOS:"  
+    call stats_globalmem(DECinfo%output)
+    
     ! Creating a Ccabs matrix 
     call mem_alloc(Ccabs, ncabsAO, ncabsMO)
     do i=1, ncabsMO
        Ccabs(:,i) = MyFragment%Ccabs(:,i)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Ccabs:"  
+    call stats_globalmem(DECinfo%output)
+    
     ! Creating a Cri matrix 
     call mem_alloc(Cri, ncabsAO, ncabsAO)
     do i=1, ncabsAO
        Cri(:,i) = MyFragment%Cri(:,i)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Cri:"  
+    call stats_globalmem(DECinfo%output)
+  
     call mem_alloc(Venergy,5)
+
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Venergy:"  
+    call stats_globalmem(DECinfo%output)
 
     call get_EV1(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
     call LSTIMER('get_EV1_timing: ',tcpu,twall,DECinfo%output)
    
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV1:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EV2(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
     call LSTIMER('get_EV2_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV2:"  
+    call stats_globalmem(DECinfo%output)
     
     call get_EV3(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri) 
     call LSTIMER('get_EV3_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV3:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EV4(Venergy, Fragment1, Fragment2, MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj) 
     call LSTIMER('get_EV4_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EV4:"  
+    call stats_globalmem(DECinfo%output)
         
     E_21 = 0.0E0_realk
     E_21 = Venergy(1) + Venergy(2) + Venergy(3) + Venergy(4) + Venergy(5)
@@ -1886,9 +1923,15 @@ contains
        Fkj(:,j) = MyFragment%ppfock(:,iy)
     end do
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Fkj:"  
+    call stats_globalmem(DECinfo%output)
+
     ! Creating a Fmn MO matrix occ AOS
     call mem_alloc(Fmn, noccAOS, noccAOS)
     Fmn = 0E0_realk 
+
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Fmn:"  
+    call stats_globalmem(DECinfo%output)
 
     !> Double Storage! This need to be changed, just for conceptual reasons
     Fmn = MyFragment%ppfock
@@ -1897,22 +1940,40 @@ contains
     call mem_alloc(Fab, nvirtAOS, nvirtAOS)
     Fab = 0E0_realk 
 
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Fab:"  
+    call stats_globalmem(DECinfo%output)
+
     !> Double storage! This need to be changed, just for conceptual reasons
     Fab = MyFragment%qqfock
     
     call mem_alloc(Xenergy,4)
+
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Xenergy:"  
+    call stats_globalmem(DECinfo%output)
     
     call get_EX1(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
     call LSTIMER('get_EX1_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EX1:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EX2(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
     call LSTIMER('get_EX2_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EX2:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EX3(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
     call LSTIMER('get_EX3_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EX3:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EX4(Xenergy,Fkj,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
     call LSTIMER('get_EX4_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EX4:"  
+    call stats_globalmem(DECinfo%output)
 
     E_22 = 0.0E0_realk
     E_22 = Xenergy(1) + Xenergy(2) + Xenergy(3) + Xenergy(4) 
@@ -1937,32 +1998,62 @@ contains
 
     call mem_alloc(Benergy,9)
     
+    WRITE(DECinfo%output,*) "Memory statistics after allocation of Benergy:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB1(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)
     call LSTIMER('get_EB1_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB1:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB2(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB2_timing: ',tcpu,twall,DECinfo%output)
     
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB2:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB3(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB3_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB3:"  
+    call stats_globalmem(DECinfo%output)
    
     call get_EB4(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB4_timing: ',tcpu,twall,DECinfo%output)
 
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB4:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB5(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB5_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB5:"  
+    call stats_globalmem(DECinfo%output)
 
     call get_EB6(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB6_timing: ',tcpu,twall,DECinfo%output)
 
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB6:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB7(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB7_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB7:"  
+    call stats_globalmem(DECinfo%output)
 
     call get_EB8(Benergy,Fmn,Fab,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB8_timing: ',tcpu,twall,DECinfo%output)
 
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB8:"  
+    call stats_globalmem(DECinfo%output)
+
     call get_EB9(Benergy,Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri)   
     call LSTIMER('get_EB9_timing: ',tcpu,twall,DECinfo%output)
+
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine get_EB9:"  
+    call stats_globalmem(DECinfo%output)
     
     B1energy = Benergy(1)
     B2energy = Benergy(2)  
@@ -2034,16 +2125,9 @@ contains
     
     call ccsdf12_EV1(ECCSD_V1, Fragment1,Fragment2,MyFragment,dopair,CoccEOS,CoccAOS,CvirtAOS,CocvAOS,Ccabs,Cri,Taibj)
 
+    WRITE(DECinfo%output,*) "Memory statistics after subroutine ccsdf12_EV1:"  
+    call stats_globalmem(DECinfo%output)
     
-
-
-
-
-
-
-
-  
-
 
     ! ***********************************************************
     !    Free Memory

@@ -39,6 +39,6 @@ f.add(string = 'Allocated memory (TOTAL)')
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
 
-test.run(['decmp2_orb_fragopt.dal'], ['StrangeString.mol'], {'out': f})
+test.run(['decmp2_energy_FO.dal'], ['ethane.mol'], {'out': f})
 
 sys.exit(test.return_code)
