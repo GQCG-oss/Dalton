@@ -51,6 +51,7 @@ type responseitem
    !> Used to store info about solver that is used for calculation.
    type(RSPSOLVERinputitem) :: RSPSOLVERinput
    type(rsp_tasksitem) :: tasks
+   logical :: noOpenRSP
 end type responseitem
 
 !> \brief Contains info, settings and data for entire calculation (defaults or read from input file).

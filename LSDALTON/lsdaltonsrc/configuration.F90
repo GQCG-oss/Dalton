@@ -118,6 +118,11 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef VAR_RSP
+  config%response%noOpenRSP = .FALSE. !Use OpenRSP module - Default
+#else
+  config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
+#endif
 #ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
@@ -1596,6 +1601,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*NoOpenRSP')
+          config%response%noOpenRSP = .TRUE. !Use LSDALTON own Response module
        CASE('*DIPOLE')
           config%response%tasks%doDipole=.true.
        CASE('*DIPOLEMOMENTMATRIX')

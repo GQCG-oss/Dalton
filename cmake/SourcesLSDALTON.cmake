@@ -182,6 +182,7 @@ set(SOLVERUTIL_SOURCES
     LSDALTON/SolverUtilities/rsp_utilities.F90
     )
 set(RSP_PROPERTIES_SOURCES	
+    LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
     )
