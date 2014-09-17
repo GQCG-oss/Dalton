@@ -4367,6 +4367,7 @@ enddo
 deallocate(NMST)
 deallocate(atomname)
 CALL LSTIMER('*SHIELD',TS,TE,LUPRI)
+WRITE(LUPRI,*) " Done with shielding tensor calculation"
 
 end subroutine NMRshieldresponse_driver
 
