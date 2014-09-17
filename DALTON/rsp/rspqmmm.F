@@ -1288,6 +1288,7 @@ C
       END
 C
 C-------------------------------------------------------------------------------
+#ifdef MOD_UNRELEASED
 C  /* Deck qmmmcro */
       SUBROUTINE QMMMCRO(VEC1,VEC2,VEC3,ETRS,XINDX,
      &                 ZYM1,ZYM2,ZYM3,UDV,WRK,LWRK,
@@ -1625,6 +1626,7 @@ C
       RETURN
       END
 C-------------------------------------------------------------------------------
+#endif
 C  /* Deck mmlno_iter1 */
       SUBROUTINE MMLNO_ITER1(J,EEX,EEY,EEZ,UDV,UDVTR,UCMO,UBO,
      *                       WRK,LWRK,IPRTMP)
@@ -3644,6 +3646,7 @@ C     No more integrals to calculate
       RETURN
       END
 C-------------------------------------------------------------------------------
+#ifdef MOD_UNRELEASED
 C  /* Deck qmmmcro_m1 */
       SUBROUTINE QMMMCRO_M1(EF1,EF2,EF3,UDV,UCMO,
      &                      ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
@@ -4084,6 +4087,7 @@ C     No more integrals to calculate
       CALL QEXIT('QMMMCRO_S2')
       RETURN
       END
+#endif
 #endif
 
 

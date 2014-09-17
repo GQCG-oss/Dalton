@@ -1030,6 +1030,7 @@
       end subroutine pe_rspqro
 
 !------------------------------------------------------------------------------
+#ifdef MOD_UNRELEASED
 
       subroutine pe_rspcro(vecb, vecc, vecd, etrs, xindx, zymb, zymc,
      &                     zymd, udv, wrk, nwrk, kzyva, kzyvb, kzyvc,
@@ -1279,5 +1280,7 @@
         call qexit('pe_rspcro')
 
       end subroutine pe_rspcro
+
+#endif
 
 #endif

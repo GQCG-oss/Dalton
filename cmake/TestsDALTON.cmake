@@ -76,7 +76,6 @@ add_dalton_runtest(qmmm3                         "dalton;runtest;qmmm;parallel;m
 add_dalton_runtest(qmmm4                         "dalton;runtest;qmmm;parallel;short")
 add_dalton_runtest(qmmm5                         "dalton;runtest;qmmm;parallel;medium")
 add_dalton_runtest(qmmm6                         "dalton;runtest;qmmm;medium;parallel")
-add_dalton_runtest(qmmm7                         "dalton;runtest;qmmm;parallel;medium")
 add_dalton_runtest(walk_solvmag                  "dalton;runtest;long")
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
