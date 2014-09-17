@@ -310,9 +310,9 @@ C
          CALL QUIT('ERROR: cubic response not implemented'//
      &             ' for QMMM.')
 #endif
-      eND IF
+      END IF
 
-      iF (FLAG(16)) THEN
+      IF (FLAG(16)) THEN
          CALL MEMGET('INTE',KSYRLM,(2*LSOLMX+1),WRK,KFREE,LFREE)
          VAL = DDOT(KZYVA,VECA,1,ETRS,1)
          IF (TDHF) THEN
@@ -355,15 +355,15 @@ C
          END IF
          WRITE (LUPRI,'(A,F20.12)') 'Total contribution from E4SOL:',
      *        DDOT(KZYVA,VECA,1,ETRS,1) - VAL
-      eND IF
+      END IF
 C
 C     overall minus sign for E[4] (missing in Eq. 34 jcp 105 (1996) 6401)
 C
-      cALL DSCAL(KZYVA,DM1,ETRS,1)
+      CALL DSCAL(KZYVA,DM1,ETRS,1)
 C
-      rETURN
-      eND
-      sUBROUTINE BCDCHK(DOCAL,IBCDEQ,LURSPRES,DIPLEN,GAMMA,
+      RETURN
+      END
+      SUBROUTINE BCDCHK(DOCAL,IBCDEQ,LURSPRES,DIPLEN,GAMMA,
      *                  ISYMA,ISYMB,ISYMC,ISYMD,ISYMBC,ISYMBD,ISYMCD,
      *                  ALAB,BLAB,CLAB,DLAB,IAOP,IBOP,ICOP,IDOP,
      *                  IBFR,ICFR,IDFR,FREQA,FREQB,FREQC,FREQD,
@@ -375,11 +375,11 @@ C
 C     initialize variables.
 C
 C     check if an equivalent calculation already has been done,
-C     dOCAL indicates the result. Save uniqe calculations in
-C     lAB(N,4) and FRQ(N,4).
+C     DOCAL indicates the result. Save uniqe calculations in
+C     LAB(N,4) and FRQ(N,4).
 C
 C     check if some of the response vectors are equal or zero,
-C     iBCDEQ indicates the result:
+C     IBCDEQ indicates the result:
 C       0  at least one of VECB VECC VECD equal to zero
 C       1  all of VECB, VECC, VECD unequal
 C       2  VECB = VECC
@@ -390,7 +390,7 @@ C
 C
 #include "implicit.h"
 C
-      pARAMETER ( D0 = 0.0D0, THRSML = 1.0D-9 )
+      PARAMETER ( D0 = 0.0D0, THRSML = 1.0D-9 )
 C
 #include "thrzer.h"
 #include "maxorb.h"
@@ -410,39 +410,39 @@ C
 #include "inftmo.h"
 #include "inftpa.h"
 C
-      pARAMETER (THD = 1.0D-8, MXCALC = 200)
+      PARAMETER (THD = 1.0D-8, MXCALC = 200)
 C
-      lOGICAL DOCAL,DIPLEN,ONFIL
+      LOGICAL DOCAL,DIPLEN,ONFIL
 C
-      cHARACTER*8 LAB, ALABEL, BLABEL, CLABEL, DLABEL, LABEL
-      cHARACTER*8 ALAB,BLAB,CLAB,DLAB
+      CHARACTER*8 LAB, ALABEL, BLABEL, CLABEL, DLABEL, LABEL
+      CHARACTER*8 ALAB,BLAB,CLAB,DLAB
 C
-      dIMENSION VECA(*), VECB(*),VECC(*),VECD(*),VECBC(*),
+      DIMENSION VECA(*), VECB(*),VECC(*),VECD(*),VECBC(*),
      &          VECBD(*),VECCD(*)
-      dIMENSION LAB(MXCALC,4), FRQ(MXCALC,4), ISYM(MXCALC,4)
-      dIMENSION GAMMA(3,3,3,3)
-      dIMENSION IEQTO(5)
+      DIMENSION LAB(MXCALC,4), FRQ(MXCALC,4), ISYM(MXCALC,4)
+      DIMENSION GAMMA(3,3,3,3)
+      DIMENSION IEQTO(5)
 C
-      sAVE LAB, FRQ, N, ISYM
+      SAVE LAB, FRQ, N, ISYM
 C
-      dATA N/0/
+      DATA N/0/
 C
 C     set variables
 C
-      oNFIL = .FALSE.
-      iSYMBC = MULD2H(ISYMB,ISYMC)
-      iSYMBD = MULD2H(ISYMB,ISYMD)
-      iSYMCD = MULD2H(ISYMC,ISYMD)
+      ONFIL = .FALSE.
+      ISYMBC = MULD2H(ISYMB,ISYMC)
+      ISYMBD = MULD2H(ISYMB,ISYMD)
+      ISYMCD = MULD2H(ISYMC,ISYMD)
 C
-      kZYVA  = MZYVAR(ISYMA)
-      kZYVB  = MZYVAR(ISYMB)
-      kZYVC  = MZYVAR(ISYMC)
-      kZYVD  = MZYVAR(ISYMD)
-      kZYVBC = MZYVAR(ISYMBC)
-      kZYVBD = MZYVAR(ISYMBD)
-      kZYVCD = MZYVAR(ISYMCD)
+      KZYVA  = MZYVAR(ISYMA)
+      KZYVB  = MZYVAR(ISYMB)
+      KZYVC  = MZYVAR(ISYMC)
+      KZYVD  = MZYVAR(ISYMD)
+      KZYVBC = MZYVAR(ISYMBC)
+      KZYVBD = MZYVAR(ISYMBD)
+      KZYVCD = MZYVAR(ISYMCD)
 C
-      iF (CRCAL) THEN
+      IF (CRCAL) THEN
          FREQB = BCRFR(IBFR)
          FREQC = CCRFR(ICFR)
          FREQD = DCRFR(IDFR)
@@ -452,9 +452,9 @@ C
          BLAB = BCRLB(ISYMB,IBOP)
          CLAB = CCRLB(ISYMC,ICOP)
          DLAB = DCRLB(ISYMD,IDOP)
-      eND IF
+      END IF
 C
-      iF (TOMOM) THEN
+      IF (TOMOM) THEN
          FREQB = -BTMFR(IBFR)
          FREQC = -CTMFR(ICFR)
          FREQD = EXCIT2(ISYMD,IDFR)
@@ -464,9 +464,9 @@ C
          BLAB = BTMLB(ISYMB,IBOP)
          CLAB = CTMLB(ISYMC,ICOP)
          DLAB = 'EXCITLAB'
-      eND IF
+      END IF
 C
-      iF (TPAMP) THEN
+      IF (TPAMP) THEN
          FREQB = -BTPFR(IBFR)
          FREQC = -EXCIT2(ISYMC,ICFR)
          FREQD = EXCIT2(ISYMD,IDFR)
@@ -476,21 +476,21 @@ C
          BLAB = BTPLB(ISYMB,IBOP)
          CLAB = 'EXCITLAB'
          DLAB = 'EXCITLAB'
-      eND IF
+      END IF
 C
 C If dipole operators only, store result in variable GAMMA
 C
-      dIPLEN = .FALSE.
-      iF (ALAB(2:7) .EQ. 'DIPLEN' .AND.
+      DIPLEN = .FALSE.
+      IF (ALAB(2:7) .EQ. 'DIPLEN' .AND.
      &    BLAB(2:7) .EQ. 'DIPLEN' .AND.
      &    CLAB(2:7) .EQ. 'DIPLEN' .AND.
      &    DLAB(2:7) .EQ. 'DIPLEN') THEN
           DIPLEN = .TRUE.
-      eND IF
+      END IF
 C
 C In case of gamma, only calculate contributions to average gamma
 C
-      iF (.NOT. GAMALL .AND. DIPLEN) THEN
+      IF (.NOT. GAMALL .AND. DIPLEN) THEN
          IF (.NOT.((ALAB.EQ.BLAB .OR. ALAB.EQ.CLAB .OR. ALAB.EQ.DLAB)
      &       .AND.(BLAB.EQ.ALAB .OR. BLAB.EQ.CLAB .OR. BLAB.EQ.DLAB)
      &       .AND.(CLAB.EQ.ALAB .OR. CLAB.EQ.BLAB .OR. CLAB.EQ.DLAB)
@@ -502,15 +502,15 @@ C
      &           ' not contribute to average gamma'
             RETURN
          END IF
-      eND IF
+      END IF
 C
 C     check if an equivalent calculation already has been done.
 C
-      dOCAL = .TRUE.
-      dO 110 I = 1,N
-      dO 120 J = 1,4
-      dO 130 K = 1,4
-      iF (K.NE.J) THEN
+      DOCAL = .TRUE.
+      DO 110 I = 1,N
+      DO 120 J = 1,4
+      DO 130 K = 1,4
+      IF (K.NE.J) THEN
          DO 140 L = 1,4
          IF (L.NE.K .AND. L.NE.J) THEN
             DO 150 M = 1,4
@@ -543,14 +543,14 @@ C
                          CALL DIPLAB(LAB(I,4),I8)
                          GAMMA(I1,I2,I3,I4)=GAMMA(I5,I6,I7,I8)
                       ELSE
-      wRITE(LUPRI,'(//A,4(/A,A10,I4,F10.6))')
+      WRITE(LUPRI,'(//A,4(/A,A10,I4,F10.6))')
      *     ' Cubic response function value in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,-FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,FREQB,
      *     ' C operator, symmetry, frequency: ',CLAB,ISYMC,FREQC,
      *     ' D operator, symmetry, frequency: ',DLAB,ISYMD,FREQD
-      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Cubic response function value in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),FRQ(I,2),
@@ -559,14 +559,14 @@ C
                       END IF
                    END IF
                    IF (DOCAL.AND.TOMOM) THEN
-      wRITE(LUPRI,'(//A,3(/A,A10,I4,F10.6),/A,I7,F10.6)')
+      WRITE(LUPRI,'(//A,3(/A,A10,I4,F10.6),/A,I7,F10.6)')
      *     ' Third order transition moment in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,-FREQB,
      *     ' C operator, symmetry, frequency: ',CLAB,ISYMC,-FREQC,
      *     ' State no.,  symmetry, excitation energy:',ISYMD,FREQD
-      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Third order transition moment in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),-FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
@@ -582,14 +582,14 @@ C
                       IEQTO(5)=ISYM(I,4)
                    END IF
                    IF (DOCAL.AND.TPAMP) THEN
-      wRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')
+      WRITE(LUPRI,'(//A,2(/A,A10,I4,F10.6),2(/A,I7,F10.6))')
      *     ' Third order transition moment in a.u. for',
      *     ' A operator, symmetry, frequency: ',ALAB,ISYMA,FREQA,
      *     ' B operator, symmetry, frequency: ',BLAB,ISYMB,-FREQB,
      *     ' State no.,  symmetry, excitation energy:',ISYMC,-FREQC,
      *     ' State no.,  symmetry, excitation energy:',ISYMD,FREQD
-      wRITE(LUPRI,'(/A)') ' is equal to the already calculated'
-      wRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
+      WRITE(LUPRI,'(/A)') ' is equal to the already calculated'
+      WRITE(LUPRI,'(/A,4(/A,A10,I4,F10.6))')
      *' Third order transition moment in a.u. for',
      *' A operator, symmetry, frequency: ',LAB(I,1),ISYM(I,1),-FRQ(I,1),
      *' B operator, symmetry, frequency: ',LAB(I,2),ISYM(I,2),-FRQ(I,2),
@@ -613,15 +613,15 @@ C
  150        CONTINUE
          END IF
  140     CONTINUE
-      eND IF
- 130  cONTINUE
- 120  cONTINUE
- 110  cONTINUE
+      END IF
+ 130  CONTINUE
+ 120  CONTINUE
+ 110  CONTINUE
 C
 C     finally we check if the result is available from a previous
 C     calculation
 C     
-      iF (DOCAL) THEN
+      IF (DOCAL) THEN
          REWIND (LURSPRES)
  346     READ (LURSPRES,'(A8)',END=347) LABEL
          IF (LABEL(2:6) .EQ. 'Cubic') THEN
@@ -727,12 +727,12 @@ C
 #if defined (VAR_MFDS)
          BACKSPACE (LURSPRES)
 #endif
-      eND IF
+      END IF
 
 C
 C     if not done before put in list with unique calculations
 C
-      iF ((DOCAL .OR. ONFIL).AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
+      IF ((DOCAL .OR. ONFIL).AND.(CRCAL.OR.TOMOM.OR.TPAMP)) THEN
          N = N + 1
          IF (N .GT. MXCALC) THEN
             WRITE (LUPRI,'(/A,I3)')
@@ -751,14 +751,14 @@ C
          FRQ(N,2) = FREQB
          FRQ(N,3) = FREQC
          FRQ(N,4) = FREQD
-      eLSE
+      ELSE
          RETURN
-      eND IF
+      END IF
 C
 C
 C     read in response vectors
 C
-      cALL READVE(ISYMA,ISYMB,ISYMC,ISYMD,
+      CALL READVE(ISYMA,ISYMB,ISYMC,ISYMD,
      *            ALAB,BLAB,CLAB,DLAB,
      *            FREQA,FREQB,FREQC,FREQD,
      *            KZYVA,KZYVB,KZYVC,KZYVD,KZYVBC,KZYVBD,KZYVCD,
@@ -766,63 +766,63 @@ C
 C
 C     check if response vectors are zero or equal.
 C
-      iBCDEQ = 1
-      iF ( ISYMB .EQ. ISYMC .AND. FREQB .EQ. FREQC ) THEN
+      IBCDEQ = 1
+      IF ( ISYMB .EQ. ISYMC .AND. FREQB .EQ. FREQC ) THEN
          VMIN = D0
          DO 210 I = 1,KZYVB
             VMIN = VMIN + ABS(VECB(I) - VECC(I))
   210    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = 2
-      eND IF
+      END IF
 C
-      iF ( ISYMB .EQ. ISYMD .AND. FREQB .EQ. FREQD ) THEN
+      IF ( ISYMB .EQ. ISYMD .AND. FREQB .EQ. FREQD ) THEN
          VMIN = D0
          DO 230 I = 1,KZYVB
             VMIN = VMIN + ABS(VECB(I) - VECD(I))
   230    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = IBCDEQ * 3
-      eND IF
+      END IF
 C
-      iF ( ISYMC .EQ. ISYMD .AND. FREQD .EQ. FREQC ) THEN
+      IF ( ISYMC .EQ. ISYMD .AND. FREQD .EQ. FREQC ) THEN
          VMIN = D0
          DO 250 I = 1,KZYVC
             VMIN = VMIN + ABS(VECC(I) - VECD(I))
   250    CONTINUE
          IF (VMIN .LE. THRZER) IBCDEQ = IBCDEQ * 4
-      eND IF
+      END IF
 C
-      vNORM = DNRM2(KZYVA,VECA,1)
-      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      VNORM = DNRM2(KZYVA,VECA,1)
+      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      vNORM = DNRM2(KZYVB,VECB,1)
-      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      VNORM = DNRM2(KZYVB,VECB,1)
+      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      vNORM = DNRM2(KZYVC,VECC,1)
-      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      VNORM = DNRM2(KZYVC,VECC,1)
+      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      vNORM = DNRM2(KZYVD,VECD,1)
-      iF ( VNORM .LT. THRSML ) IBCDEQ = 0
+      VNORM = DNRM2(KZYVD,VECD,1)
+      IF ( VNORM .LT. THRSML ) IBCDEQ = 0
 C
-      rETURN
-      eND
+      RETURN
+      END
 
-      sUBROUTINE DIPLAB(LAB,I)
+      SUBROUTINE DIPLAB(LAB,I)
 C
 #include "implicit.h"
 C
-      cHARACTER*8 LAB
+      CHARACTER*8 LAB
 C
 C Map dipole operators to integer number
 C X => 1, Y => 2, and Z => 3
 C
-      iF (LAB(1:1).EQ.'X') I=1
-      iF (LAB(1:1).EQ.'Y') I=2
-      iF (LAB(1:1).EQ.'Z') I=3
+      IF (LAB(1:1).EQ.'X') I=1
+      IF (LAB(1:1).EQ.'Y') I=2
+      IF (LAB(1:1).EQ.'Z') I=3
 C
-      rETURN
-      eND
+      RETURN
+      END
 
-      sUBROUTINE DFT4DRV(VECB, VECC, VECD,
+      SUBROUTINE DFT4DRV(VECB, VECC, VECD,
      &                   FI,ZYMB,ZYMC,ZYMD,
      &                   KZYVB,KZYVC, KZYVD,
      &                   ISYMB,ISYMC, ISYMD,
@@ -835,23 +835,23 @@ C
 #include "infinp.h"
 #include "dftcom.h"
  
-      dIMENSION VECB(*),VECC(*),VECD(*)
-      dIMENSION ZYMB(*),ZYMC(*),ZYMD(*)
-      dIMENSION WRK(*),CMO(*)
-      dIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
-      lOGICAL ADDFOCK
+      DIMENSION VECB(*),VECC(*),VECD(*)
+      DIMENSION ZYMB(*),ZYMC(*),ZYMD(*)
+      DIMENSION WRK(*),CMO(*)
+      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      LOGICAL ADDFOCK
 c     unpack response vectors.
-      nSIM = 1
-      cALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
-      cALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
-      cALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
-C     aDDFOCK = .NOT.DIRFCK
-      aDDFOCK = .FALSE.
+      NSIM = 1
+      CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
+      CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
+      CALL GTZYMT(NSIM,VECD,KZYVD,ISYMD,ZYMD,MJWOP)
+C     ADDFOCK = .NOT.DIRFCK
+      ADDFOCK = .FALSE.
 c     compute dft contribution
-      cALL DFTCRCF(FI,CMO,
+      CALL DFTCRCF(FI,CMO,
      &             ZYMB,ISYMB,
      &             ZYMC,ISYMC,
      &             ZYMD,ISYMD,
      &             WRK,LFREE,IPRDFT)
 c     pack stuff back.
-      eND
+      END
