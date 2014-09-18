@@ -19,7 +19,8 @@ module response_noOpenRSP_module
   use II_XC_interfaceModule
   use dal_interface
   use rsp_util
-  public NMRshieldresponse_noOpenRSP, lsdalton_response_noOpenRSP
+  use response_wrapper_type_module, only: ALPHAinputItem
+  public lsdalton_response_noOpenRSP
 
   private
 
@@ -46,7 +47,9 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
      if(config%response%tasks%doNMRshield) then
         call NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
      endif
-
+     if(config%response%tasks%doALPHA)then
+        call alpha_driver(molcfg,F,D,S,config%response%alphainput)
+     endif
      if(config%response%RSPSOLVERinput%rsp_mo_precond)then
         call util_free_MOstuff()
      endif
@@ -58,6 +61,128 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
   WRITE(config%lupri,*) "*****************************************************"
 
 end subroutine lsdalton_response_noOpenRSP
+
+!> \brief Driver for calculating polarizabilites for frequencies defined in input.
+!> If no frequencies are specified the frequency is set to zero.
+!> \author Thomas Kjaergaard
+!> \date 2014
+subroutine alpha_driver(molcfg,F,D,S,alphainput)
+  implicit none
+  !> Info on molecule needed by solver and integral programs
+  type(rsp_molcfg),intent(inout) :: molcfg
+  !> Unperturbed Fock, Density and Overlap matrix
+  type(Matrix),intent(in)        :: F(1),D(1),S
+  !> Contains alpha input
+  type(ALPHAinputItem),intent(inout) :: ALPHAinput
+  !Local variables
+  type(Matrix)         :: Bgrad(3),DIPLEN(3),XSOL(1)
+  type(Matrix)         :: tempm1,tempm2
+  real(realk),pointer  :: linrspfunc(:,:,:) !Array for response functions
+  logical              :: lineq_x
+  integer              :: i,j,ifreq,nfreq,ndim,lupri,luerr
+
+  ndim = S%nrow
+  lupri = molcfg%lupri
+  luerr = molcfg%lupri
+
+  IF(alphainput%imag_frequencies_in_input)THEN
+     CALL LSQUIT('Error Imaginary frequencies in alpha_driver',-1)
+  ENDIF
+
+  nfreq = alphainput%nfreq
+  lineq_x = .TRUE.
+
+  call mat_init(DIPLEN(1),ndim,ndim)
+  call mat_init(DIPLEN(2),ndim,ndim)
+  call mat_init(DIPLEN(3),ndim,ndim)
+  call II_get_integral(LUPRI,LUERR,molcfg%SETTING,DIPLEN,3,'DIPLEN ')
+  !BDS-SDB
+  call mat_init(tempm1,ndim,ndim)
+  call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+  DO I = 1,3
+     call mat_init(Bgrad(I),ndim,ndim)
+     call mat_mul(DIPLEN(I),tempm1,'N','N',1.0E0_realk,0.0E0_realk,Bgrad(I))
+     call mat_mul(tempm1,DIPLEN(I),'T','N',-1.0E0_realk,1.0E0_realk,Bgrad(I))
+     call mat_free(DIPLEN(I))
+     call util_scriptPx('T',D(1),S,Bgrad(I))
+  ENDDO
+  call mat_free(tempm1)
+
+  call mat_init(XSOL(1),ndim,ndim)
+  call mem_alloc(linrspfunc,3,nfreq,3)
+  do i = 1, 3
+   !FIXME try to solve response equations for more frequencies at a time
+   if ( mat_dotproduct(Bgrad(i),Bgrad(i)) > 1.0E-10_realk) then 
+      do ifreq = 1, nfreq
+         !Solve Linear response equation
+         call rsp_init(1,1,1,1,1)
+         call rsp_solver(molcfg,D(1),S,F(1),lineq_x,1,Bgrad(I:I),&
+              & alphainput%bfreq(ifreq:ifreq),XSOL)
+         ! <<GD_A,GD_B>>_omega
+         DO J = 1,3        
+            linrspfunc(J,ifreq,I) = -4.E0_realk*mat_dotproduct(Bgrad(J),XSOL(1))
+         ENDDO
+      enddo
+   else
+      !XSOL is zero
+      do ifreq = 1, nfreq
+         DO J = 1,3        
+            linrspfunc(J,ifreq,I) = 0.0E0_realk
+         ENDDO
+      enddo
+   endif
+  enddo
+  call mat_free(XSOL(1))
+  do i = 1, 3
+     call mat_free(Bgrad(i))
+  enddo
+  
+  ! Print the results
+  call print_alpha(linrspfunc,ALPHAinput,nfreq,lupri)
+  call mem_dealloc(linrspfunc)
+  
+end subroutine alpha_driver
+
+subroutine print_alpha(alpha,ALPHAinput,nfreq,lupri)
+  implicit none
+  !> Contains alpha input
+  type(ALPHAinputItem),intent(inout) :: ALPHAinput
+  integer, intent(in) :: nfreq,lupri
+  real(realk), intent(in) :: alpha(3,nfreq,3)
+  integer :: i
+  write(lupri,*) 
+  write(lupri,*) 
+  write(lupri,*) 
+  write(lupri,'(1X,A)') '*************************************************************'
+  write(lupri,'(1X,A)') '*          POLARIZABILITY TENSOR RESULTS (in a.u.)          *'
+  write(lupri,'(1X,A)') '*************************************************************'
+  write(lupri,*) 
+  write(lupri,*)
+  write(lupri,*) 
+  write(lupri,*) 
+  PrintFrequencyLoop: do i=1,nfreq
+
+     write(lupri,'(1X,A,g10.5)')  'Frequency = ', alphainput%bfreq(i)
+     write(lupri,*) '=================='
+     write(lupri,*) 
+     write(lupri,*) "                Ex               Ey               Ez"
+     write(lupri,'(1X,A, 3g18.8)') "Ex    ", real(alpha(1,i,:))
+     write(lupri,'(1X,A, 3g18.8)') "Ey    ", real(alpha(2,i,:))
+     write(lupri,'(1X,A, 3g18.8)') "Ez    ", real(alpha(3,i,:))
+     write(lupri,*) 
+     write(lupri,'(1X,A,g18.8)') 'Isotropic polarizability = ', &
+          & ( alpha(1,i,1) + alpha(2,i,2) + alpha(3,i,3) )/3E0_realk
+
+     write(lupri,*) 
+     write(lupri,*) 
+     write(lupri,*) 
+     write(lupri,*) 
+     write(lupri,*) 
+     
+  end do PrintFrequencyLoop
+
+end subroutine print_alpha
+
 
 subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   implicit none
@@ -200,7 +325,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   !##      Solve to get Da=[D,Xa]_S + D0^a --> Xa (Eq. 70)                    ##
   !## We can use the RSP solver, since K([D,Xa]s) = sigma = -1/2 * E[2]Xa     ##
   !#############################################################################
-
+  !FIXME try to solve response equations for more RHS at a time
   do icoor = 1,3 
 
      eival(1)=0.0E0_realk
