@@ -180,7 +180,7 @@ subroutine print_alpha(alpha,ALPHAinput,nfreq,lupri)
      write(lupri,*) 
      
   end do PrintFrequencyLoop
-
+  write(lupri,'(1X,A)') ' End of polarizability calculation'
 end subroutine print_alpha
 
 

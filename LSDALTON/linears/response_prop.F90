@@ -325,6 +325,8 @@ Contains
 
     end do PrintFrequencyLoop
 
+    write(lupri,'(1X,A)') ' End of polarizability calculation'
+
 
     ! Deallocate stuff
     deallocate(rsp_results_vec)
