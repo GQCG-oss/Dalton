@@ -289,7 +289,8 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   WRITE(LUPRI,*) "      Absolute chemical shift"
   WRITE(LUPRI,'(A,I12)') "number of atoms:",natoms
   do jcoor=1,natoms  
-     WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), 1.0E0_realk/3.0E0_realk*(NMST(3*jCOOR-2,1)+NMST(3*jCOOR-1,2)+NMST(3*jCOOR,3)), 'XXXX'
+   WRITE (LUPRI,'(2X,A8,f15.8,A8)')  atomname(jcoor), &
+        & 1.0E0_realk/3.0E0_realk*(NMST(3*jCOOR-2,1)+NMST(3*jCOOR-1,2)+NMST(3*jCOOR,3))
   enddo
   deallocate(atomname)
   call mem_dealloc(NMST)
