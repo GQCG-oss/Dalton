@@ -21,6 +21,6 @@ f.add(from_string = 'POLARIZABILITY',
 
 f.add(string = 'Allocated memory (TOTAL)')
 
-test.run(['LSresponse_DFT_alpha-NoOpenRSP.dal'], ['H2O2.mol'], {'out': f})
+test.run(['LSresponse_DFT_alpha_NoOpenRSP.dal'], ['H2O2.mol'], {'out': f})
 
 sys.exit(test.return_code)

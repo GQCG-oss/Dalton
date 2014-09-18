@@ -1,4 +1,3 @@
- THIS IS A DEBUG BUILD
   
      ******************************************************************    
      **********  LSDALTON - An electronic structure program  **********    
@@ -101,21 +100,23 @@
  C compiler version       | icc (ICC) 13.1.3 20130607
  C++ compiler             | /opt/intel/composer_xe_2013.5.192/bin/intel64/icpc
  C++ compiler version     | icpc (ICC) 13.1.3 20130607
- BLAS                     | /opt/intel/composer_xe_2013.5.192/mkl/lib/intel64/
-                          | libmkl_intel_lp64.so;/opt/intel/composer_xe_2013.5
-                          | .192/mkl/lib/intel64/libmkl_sequential.so;/opt/int
-                          | el/composer_xe_2013.5.192/mkl/lib/intel64/libmkl_c
-                          | ore.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so
- LAPACK                   | /opt/intel/composer_xe_2013.5.192/mkl/lib/intel64/
-                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2013
-                          | .5.192/mkl/lib/intel64/libmkl_intel_lp64.so
+ BLAS                     | -Wl,--start-group;/opt/intel/composer_xe_2013.5.19
+                          | 2/mkl/lib/intel64/libmkl_intel_lp64.so;/opt/intel/
+                          | composer_xe_2013.5.192/mkl/lib/intel64/libmkl_inte
+                          | l_thread.so;/opt/intel/composer_xe_2013.5.192/mkl/
+                          | lib/intel64/libmkl_core.so;/usr/lib64/libpthread.s
+                          | o;/usr/lib64/libm.so;-openmp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/opt/intel/composer_xe_2013.5.19
+                          | 2/mkl/lib/intel64/libmkl_lapack95_lp64.a;/opt/inte
+                          | l/composer_xe_2013.5.192/mkl/lib/intel64/libmkl_in
+                          | tel_lp64.so;-openmp;-Wl,--end-group
  Static linking           | OFF
  Last Git revision        | 4e329e6bb32cdac40b303b0e1c2bb109bd54447a
  Git branch               | master
- Configuration time       | 2014-09-18 14:32:20.993519
+ Configuration time       | 2014-09-18 14:39:43.135152
 
 Start simulation
-     Date and time (Linux)  : Thu Sep 18 14:33:58 2014
+     Date and time (Linux)  : Thu Sep 18 14:59:03 2014
      Host name              : localhost                               
                       
  -----------------------------------------
@@ -148,6 +149,7 @@ Start simulation
   .CONVDYN                                                                                            
   TIGHT                                                                                               
   **RESPONS                                                                                           
+  *NoOpenRSP                                                                                          
   *SOLVER                                                                                             
   .CONVDYN                                                                                            
   TIGHT                                                                                               
@@ -155,9 +157,6 @@ Start simulation
   .BFREQ                                                                                              
   2                                                                                                   
   0.1  0.21562679                                                                                     
-  .IMBFREQ                                                                                            
-  2                                                                                                   
-  0.0  0.001                                                                                          
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -197,7 +196,7 @@ BASISSETLIBRARY
   CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
    
  OPENING FILE
- /home/tkjaer/DaltonDevelopment2014/DebugMasterBranch/build-debug/basis/STO-3G
+ /home/tkjaer/DaltonDevelopment2014/DebugMasterBranch/build/basis/STO-3G
                       
 THE MOLECULE
  --------------------------------------------------------------------
@@ -241,7 +240,7 @@ total         18                               36       12
                       
  Configuration:
  ==============
-    This is a Single core calculation. (no OpenMP)
+    This is an OpenMP calculation using   4 threads.
     This is a serial calculation (no MPI)
  
      This is a DFT calculation of type: B3LYP
@@ -316,17 +315,18 @@ Matrix type: mtype_dense
  Level 1 atomic calculation on STO-3G Charge   8
  ================================================
  The Coulomb energy contribution    37.4307769960247     
- The Exchange energy contribution    1.55692278330168     
+ The Exchange energy contribution    1.55692278330169     
  The Fock energy contribution   -35.8738542127230     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       14368
  
-  Max allocated memory, Grid                    1.038 MB
+  Max allocated memory, Grid                    1.132 MB
  
-  KS electrons/energy:    7.99999999998175   -6.83204856304115 rel.err:-0.23E-11
+  KS electrons/energy:    7.99999999998179   -6.83204856304109 rel.err:-0.23E-11
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    AO gradient     ###
 ******************************************************************  ********************###
-  1    -73.8375497492    0.00000000000    0.00      0.00000    0.00    1.53E-14  ###
+  1    -73.8375497492    0.00000000000    0.00      0.00000    0.00    1.32E-14  ###
 ***********************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 ***********************************************************************************************%%%
@@ -336,9 +336,10 @@ Total Number of grid points:       14368
  The Coulomb energy contribution   0.387302965356771     
  The Exchange energy contribution   3.873029653567706E-002
  The Fock energy contribution  -0.348572668821094     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       10026
  
-  Max allocated memory, Grid                  753.473 kB
+  Max allocated memory, Grid                  849.496 kB
  
   KS electrons/energy:    1.00000000000014   -0.27155393895713 rel.err: 0.14E-12
 **************************************************************************************###
@@ -355,24 +356,23 @@ Matrix type: mtype_dense
  The Coulomb energy contribution    111.045990143539     
  The Exchange energy contribution   -3.35381546929185     
  The Fock energy contribution   -107.692174674248     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       48788
  
-  Max allocated memory, Grid                    2.520 MB
+  Max allocated memory, Grid                    3.734 MB
  
-  KS electrons/energy:   18.00000417520179  -14.42869208417948 rel.err: 0.23E-06
+  KS electrons/energy:   18.00000417520184  -14.42869208417953 rel.err: 0.23E-06
   Iteration 0 energy:  -149.177673258292     
- 
-Max no. of matrices allocated in Level 2 / get_initial_dens:         11
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        76 sparsity:     52.778 %
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
   Relative convergence threshold for solver:  1.000000000000000E-002
   SCF Convergence criteria for gradient norm:  4.242640687119285E-006
 ** Get Fock matrix number   1
- The Coulomb energy contribution    111.768139544709     
- The Exchange energy contribution   -3.47202343513962     
- The Fock energy contribution   -108.296116109569     
-  KS electrons/energy:   18.00000245059747  -14.50367029464382 rel.err: 0.14E-06
+ The Coulomb energy contribution    111.768139544707     
+ The Exchange energy contribution   -3.47202343513960     
+ The Fock energy contribution   -108.296116109568     
+  KS electrons/energy:   18.00000245059739  -14.50367029464376 rel.err: 0.14E-06
 **************************************************************************************###
  it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
 ******************************************************************  ********************###
@@ -386,16 +386,16 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  0.142590441488915     
+ OAO gradnorm  0.142590441488850     
     2 step norm =  0.196 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    45
- >>>  CPU Time used in SCF iteration is   0.83 seconds
- >>> wall Time used in SCF iteration is   0.83 seconds
+ >>>  CPU Time used in SCF iteration is   0.17 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   2
- The Coulomb energy contribution    110.559209518640     
- The Exchange energy contribution   -3.45076445888710     
- The Fock energy contribution   -107.108445059753     
-  KS electrons/energy:   18.00000222914477  -14.42597968401086 rel.err: 0.12E-06
+ The Coulomb energy contribution    110.559209518639     
+ The Exchange energy contribution   -3.45076445888708     
+ The Fock energy contribution   -107.108445059752     
+  KS electrons/energy:   18.00000222914480  -14.42597968401086 rel.err: 0.12E-06
   2   -149.3603845115   -0.01463101736    0.00      0.00000    0.00    7.55E-02  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
@@ -403,16 +403,16 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  7.545204352809094E-002
+ OAO gradnorm  7.545204352806337E-002
     3 step norm =  0.068 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    72
- >>>  CPU Time used in SCF iteration is   0.82 seconds
- >>> wall Time used in SCF iteration is   0.82 seconds
+ >>>  CPU Time used in SCF iteration is   0.21 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   3
- The Coulomb energy contribution    111.090204950717     
- The Exchange energy contribution   -3.45936532504327     
- The Fock energy contribution   -107.630839625674     
-  KS electrons/energy:   18.00000231006006  -14.45974374627688 rel.err: 0.13E-06
+ The Coulomb energy contribution    111.090204950716     
+ The Exchange energy contribution   -3.45936532504325     
+ The Fock energy contribution   -107.630839625673     
+  KS electrons/energy:   18.00000231006011  -14.45974374627688 rel.err: 0.13E-06
   3   -149.3648704220   -0.00448591056    0.00      0.00000    0.00    8.14E-03  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
@@ -420,16 +420,16 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  8.142011591662116E-003
+ OAO gradnorm  8.142011591669676E-003
     4 step norm =  0.006 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    64
- >>>  CPU Time used in SCF iteration is   0.81 seconds
- >>> wall Time used in SCF iteration is   0.81 seconds
+ >>>  CPU Time used in SCF iteration is   0.20 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   4
- The Coulomb energy contribution    111.040809152574     
- The Exchange energy contribution   -3.45861860952378     
- The Fock energy contribution   -107.582190543050     
-  KS electrons/energy:   18.00000230459979  -14.45658599290071 rel.err: 0.13E-06
+ The Coulomb energy contribution    111.040809152573     
+ The Exchange energy contribution   -3.45861860952376     
+ The Fock energy contribution   -107.582190543049     
+  KS electrons/energy:   18.00000230460001  -14.45658599290069 rel.err: 0.13E-06
   4   -149.3649203552   -0.00004993317    0.00      0.00000    0.00    2.23E-04  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
@@ -437,16 +437,16 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  2.228909067663376E-004
+ OAO gradnorm  2.228909067647005E-004
     5 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   9  %#%
 No. of matmuls in get_density:    69
- >>>  CPU Time used in SCF iteration is   0.81 seconds
- >>> wall Time used in SCF iteration is   0.82 seconds
+ >>>  CPU Time used in SCF iteration is   0.20 seconds
+ >>> wall Time used in SCF iteration is   0.05 seconds
 ** Get Fock matrix number   5
- The Coulomb energy contribution    111.039773424084     
- The Exchange energy contribution   -3.45859911462810     
- The Fock energy contribution   -107.581174309456     
-  KS electrons/energy:   18.00000230444343  -14.45651143416293 rel.err: 0.13E-06
+ The Coulomb energy contribution    111.039773424083     
+ The Exchange energy contribution   -3.45859911462808     
+ The Fock energy contribution   -107.581174309455     
+  KS electrons/energy:   18.00000230444353  -14.45651143416292 rel.err: 0.13E-06
   5   -149.3649203912   -0.00000003603    0.00      0.00000    0.00    1.33E-05  ###
 ** Make average of the last F and D matrices
 Matrix AO D  has nnz=       144 sparsity:    100.000 %
@@ -454,20 +454,20 @@ Matrix AO F  has nnz=       144 sparsity:    100.000 %
 Matrix OAO D has nnz=       144 sparsity:    100.000 %
 Matrix OAO F has nnz=       144 sparsity:    100.000 %
 ** Get new density 
- OAO gradnorm  1.332916450944227E-005
+ OAO gradnorm  1.332916450752218E-005
     6 step norm =  0.000 trust radius =   0.500 mu =   0.00 micro it. =   8  %#%
 No. of matmuls in get_density:    62
- >>>  CPU Time used in SCF iteration is   0.81 seconds
- >>> wall Time used in SCF iteration is   0.81 seconds
+ >>>  CPU Time used in SCF iteration is   0.18 seconds
+ >>> wall Time used in SCF iteration is   0.04 seconds
 ** Get Fock matrix number   6
- The Coulomb energy contribution    111.039802027867     
- The Exchange energy contribution   -3.45859989760632     
- The Fock energy contribution   -107.581202130261     
-  KS electrons/energy:   18.00000230447095  -14.45651391031026 rel.err: 0.13E-06
-  6   -149.3649203915   -0.00000000022    0.00      0.00000    0.00    1.34E-06  ###
+ The Coulomb energy contribution    111.039802027866     
+ The Exchange energy contribution   -3.45859989760630     
+ The Fock energy contribution   -107.581202130260     
+  KS electrons/energy:   18.00000230447093  -14.45651391031044 rel.err: 0.13E-06
+  6   -149.3649203915   -0.00000000023    0.00      0.00000    0.00    1.34E-06  ###
 SCF converged in      6 iterations
- >>>  CPU Time used in **ITER is   4.88 seconds
- >>> wall Time used in **ITER is   4.90 seconds
+ >>>  CPU Time used in **ITER is   1.17 seconds
+ >>> wall Time used in **ITER is   0.29 seconds
  
 Total no. of matmuls in SCF optimization:        477
  
@@ -499,18 +499,18 @@ Calculation of virtual orbital energies converged in     3 iterations!
   3   -0.00448591056    0.0000    0.0000    0.0000000
   4   -0.00004993317    0.0000    0.0000    0.0000000
   5   -0.00000003603    0.0000    0.0000    0.0000000
-  6   -0.00000000022    0.0000    0.0000    0.0000000
+  6   -0.00000000023    0.0000    0.0000    0.0000000
  
 ======================================================================
                    LINSCF ITERATIONS:
   It.nr.               Energy                 OAO Gradient norm
 ======================================================================
-    1          -149.34575349411403522026      0.142590441488915D+00
-    2          -149.36038451147183536705      0.754520435280909D-01
-    3          -149.36487042203165742649      0.814201159166212D-02
-    4          -149.36492035520208787602      0.222890906766338D-03
-    5          -149.36492039123393738009      0.133291645094423D-04
-    6          -149.36492039145883836682      0.134118152745805D-05
+    1          -149.34575349411414890710      0.142590441488850D+00
+    2          -149.36038451147194905388      0.754520435280634D-01
+    3          -149.36487042203177111332      0.814201159166968D-02
+    4          -149.36492035520231524970      0.222890906764700D-03
+    5          -149.36492039123405106693      0.133291645075222D-04
+    6          -149.36492039145912258391      0.134118153070244D-05
  
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
@@ -520,8 +520,6 @@ Calculation of virtual orbital energies converged in     3 iterations!
       Nuclear repulsion:                  36.151288508275
       Electronic energy:                -185.516208899734
  
- Starting linear response function calculation for: << EL  ; EL  >>
- 
 
 
 
@@ -530,45 +528,45 @@ Calculation of virtual orbital energies converged in     3 iterations!
 
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   0.107922052160988     
- The Exchange energy contribution  -6.012972190023068E-002
- The Fock energy contribution  -4.779233026075749E-002
+ The Coulomb energy contribution   0.107922052160994     
+ The Exchange energy contribution  -6.012972190022448E-002
+ The Fock energy contribution  -4.779233026076921E-002
  omega in build_reduc..   0.100000000000000     
- Dynamic response convergence threshold set to  2.347855014645657E-004
+ Dynamic response convergence threshold set to  2.347855014645993E-004
 Residual norm for vector   1 is:   0.234786E+00    and frequency =     0.100000   It =   1 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.359679817144702     
- The Exchange energy contribution  -9.149369426360343E-002
- The Fock energy contribution  -0.268186122881099     
+ The Coulomb energy contribution   0.359679817144695     
+ The Exchange energy contribution  -9.149369426360099E-002
+ The Fock energy contribution  -0.268186122881094     
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.354198E-01    and frequency =     0.100000   It =   2 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   6.942222842303802E-002
- The Exchange energy contribution  -6.642182766780819E-002
- The Fock energy contribution  -3.000400755229822E-003
+ The Coulomb energy contribution   6.942222842303693E-002
+ The Exchange energy contribution  -6.642182766780733E-002
+ The Fock energy contribution  -3.000400755229610E-003
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.246702E-01    and frequency =     0.100000   It =   3 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   8.502943439601068E-002
- The Exchange energy contribution  -6.607155825143304E-002
- The Fock energy contribution  -1.895787614457763E-002
+ The Coulomb energy contribution   8.502943439598941E-002
+ The Exchange energy contribution  -6.607155825142305E-002
+ The Fock energy contribution  -1.895787614456635E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.336907E-02    and frequency =     0.100000   It =   4 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   1.577808767330938E-002
- The Exchange energy contribution  -4.812791265444580E-002
- The Fock energy contribution   3.234982498113641E-002
+ The Coulomb energy contribution   1.577808767331564E-002
+ The Exchange energy contribution  -4.812791265444553E-002
+ The Fock energy contribution   3.234982498112989E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.123182E-02    and frequency =     0.100000   It =   5 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           6
- The Coulomb energy contribution   6.343485722346509E-002
- The Exchange energy contribution  -9.239686997548381E-002
- The Fock energy contribution   2.896201275201872E-002
+ The Coulomb energy contribution   6.343485722348027E-002
+ The Exchange energy contribution  -9.239686997544913E-002
+ The Fock energy contribution   2.896201275196888E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.166227E-03    and frequency =     0.100000   It =   6 CONV = T
 
@@ -581,38 +579,138 @@ Residual norm for vector   1 is:   0.166227E-03    and frequency =     0.100000 
 
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   0.271812313778147     
- The Exchange energy contribution  -8.663963309965676E-002
- The Fock energy contribution  -0.185172680678490     
+ The Coulomb energy contribution   9.073977172620484E-002
+ The Exchange energy contribution  -6.396973993200511E-002
+ The Fock energy contribution  -2.677003179419975E-002
+ omega in build_reduc..   0.215626790000000     
+ Dynamic response convergence threshold set to  2.876640375493589E-004
+Residual norm for vector   1 is:   0.287664E+00    and frequency =     0.215627   It =   1 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ The Coulomb energy contribution   0.261914338458983     
+ The Exchange energy contribution  -7.645741859989677E-002
+ The Fock energy contribution  -0.185456919859086     
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.145305E+00    and frequency =     0.215627   It =   2 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ The Coulomb energy contribution   0.182858086365816     
+ The Exchange energy contribution  -6.817091729588765E-002
+ The Fock energy contribution  -0.114687169069928     
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.222456E+00    and frequency =     0.215627   It =   3 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ The Coulomb energy contribution   2.516104123587123E-002
+ The Exchange energy contribution  -4.588992114335846E-002
+ The Fock energy contribution   2.072887990748724E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.174594E+01    and frequency =     0.215627   It =   4 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ The Coulomb energy contribution   6.433908828672941E-002
+ The Exchange energy contribution  -5.954601631383549E-002
+ The Fock energy contribution  -4.793071972893909E-003
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.357501E+01    and frequency =     0.215627   It =   5 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ The Coulomb energy contribution   3.334838593968582E-002
+ The Exchange energy contribution  -4.899745899193389E-002
+ The Fock energy contribution   1.564907305224805E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.596679E+01    and frequency =     0.215627   It =   6 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ The Coulomb energy contribution   7.643168510122397E-002
+ The Exchange energy contribution  -7.152837417743155E-002
+ The Fock energy contribution  -4.903310923792426E-003
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.204129E+02    and frequency =     0.215627   It =   7 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ The Coulomb energy contribution   3.102919662195181E-002
+ The Exchange energy contribution  -6.968282811199401E-002
+ The Fock energy contribution   3.865363149004221E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.327441E+02    and frequency =     0.215627   It =   8 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ The Coulomb energy contribution   1.173894468908095E-002
+ The Exchange energy contribution  -4.879538787497160E-002
+ The Fock energy contribution   3.705644318589064E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.709340E+01    and frequency =     0.215627   It =   9 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ The Coulomb energy contribution   3.637039244163097E-002
+ The Exchange energy contribution  -6.809887024251488E-002
+ The Fock energy contribution   3.172847780088391E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.979224E+00    and frequency =     0.215627   It =  10 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ The Coulomb energy contribution   5.020185993998723E-002
+ The Exchange energy contribution  -8.139224560731163E-002
+ The Fock energy contribution   3.119038566732441E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.522051E-01    and frequency =     0.215627   It =  11 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ The Coulomb energy contribution   5.363133118641814E-002
+ The Exchange energy contribution  -8.567397333882329E-002
+ The Fock energy contribution   3.204264215240515E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.718762E-02    and frequency =     0.215627   It =  12 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ The Coulomb energy contribution   1.714993920157823E-002
+ The Exchange energy contribution  -7.462186293482256E-002
+ The Fock energy contribution   5.747192373324432E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.298760E-04    and frequency =     0.215627   It =  13 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ The Coulomb energy contribution   0.271812313778136     
+ The Exchange energy contribution  -8.663963309965314E-002
+ The Fock energy contribution  -0.185172680678482     
  omega in build_reduc..   0.100000000000000     
- Dynamic response convergence threshold set to  7.446312825145153E-004
+ Dynamic response convergence threshold set to  7.446312825145386E-004
 Residual norm for vector   1 is:   0.744631E+00    and frequency =     0.100000   It =   1 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.252266200197711     
- The Exchange energy contribution  -6.977447389969306E-002
- The Fock energy contribution  -0.182491726298018     
+ The Coulomb energy contribution   0.252266200197717     
+ The Exchange energy contribution  -6.977447389969042E-002
+ The Fock energy contribution  -0.182491726298027     
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.471451E-01    and frequency =     0.100000   It =   2 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   5.551358537615673E-002
- The Exchange energy contribution  -6.463861973319568E-002
- The Fock energy contribution   9.125034357038930E-003
+ The Coulomb energy contribution   5.551358537616400E-002
+ The Exchange energy contribution  -6.463861973319376E-002
+ The Fock energy contribution   9.125034357029750E-003
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.106277E-01    and frequency =     0.100000   It =   3 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   5.581840414365880E-002
- The Exchange energy contribution  -6.663994796817151E-002
- The Fock energy contribution   1.082154382451270E-002
+ The Coulomb energy contribution   5.581840414366257E-002
+ The Exchange energy contribution  -6.663994796817060E-002
+ The Fock energy contribution   1.082154382450802E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.348852E-02    and frequency =     0.100000   It =   4 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   5.135016143798980E-002
- The Exchange energy contribution  -7.783520845475647E-002
- The Fock energy contribution   2.648504701676668E-002
+ The Coulomb energy contribution   5.135016143798993E-002
+ The Exchange energy contribution  -7.783520845476036E-002
+ The Fock energy contribution   2.648504701677043E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.631002E-03    and frequency =     0.100000   It =   5 CONV = T
 
@@ -625,255 +723,214 @@ Residual norm for vector   1 is:   0.631002E-03    and frequency =     0.100000 
 
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           1
+ The Coulomb energy contribution   0.265484900678999     
+ The Exchange energy contribution  -8.571274879076125E-002
+ The Fock energy contribution  -0.179772151888238     
+ omega in build_reduc..   0.215626790000000     
+ Dynamic response convergence threshold set to  8.287329939416801E-004
+Residual norm for vector   1 is:   0.828733E+00    and frequency =     0.215627   It =   1 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ The Coulomb energy contribution   0.238110606612725     
+ The Exchange energy contribution  -6.743766435038026E-002
+ The Fock energy contribution  -0.170672942262345     
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.724813E-01    and frequency =     0.215627   It =   2 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ The Coulomb energy contribution   4.135321640009056E-002
+ The Exchange energy contribution  -6.755753338615833E-002
+ The Fock energy contribution   2.620431698606778E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.824677E-01    and frequency =     0.215627   It =   3 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ The Coulomb energy contribution   7.492467840429891E-002
+ The Exchange energy contribution  -6.566594031766834E-002
+ The Fock energy contribution  -9.258738086630554E-003
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.335824E+00    and frequency =     0.215627   It =   4 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ The Coulomb energy contribution   1.771961288327513E-002
+ The Exchange energy contribution  -5.828525059684632E-002
+ The Fock energy contribution   4.056563771357119E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.600836E+00    and frequency =     0.215627   It =   5 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ The Coulomb energy contribution   3.757846878197461E-002
+ The Exchange energy contribution  -5.580662875242480E-002
+ The Fock energy contribution   1.822815997045019E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.274412E+01    and frequency =     0.215627   It =   6 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ The Coulomb energy contribution   2.504189696338366E-002
+ The Exchange energy contribution  -5.321656946336384E-002
+ The Fock energy contribution   2.817467249998018E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.406026E+01    and frequency =     0.215627   It =   7 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ The Coulomb energy contribution   2.887879958264592E-002
+ The Exchange energy contribution  -5.924800153786593E-002
+ The Fock energy contribution   3.036920195522001E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.385253E+02    and frequency =     0.215627   It =   8 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ The Coulomb energy contribution   3.795758504285338E-003
+ The Exchange energy contribution  -3.820415776063911E-002
+ The Fock energy contribution   3.440839925635377E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.385468E+02    and frequency =     0.215627   It =   9 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ The Coulomb energy contribution   0.138893479923102     
+ The Exchange energy contribution  -9.367659776068168E-002
+ The Fock energy contribution  -4.521688216242006E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.118979E+02    and frequency =     0.215627   It =  10 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ The Coulomb energy contribution   2.198872209370533E-002
+ The Exchange energy contribution  -5.107735812615745E-002
+ The Fock energy contribution   2.908863603245212E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.251987E+01    and frequency =     0.215627   It =  11 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ The Coulomb energy contribution   1.764225133650649E-002
+ The Exchange energy contribution  -0.101422084957196     
+ The Fock energy contribution   8.377983362068966E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.192488E-01    and frequency =     0.215627   It =  12 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ The Coulomb energy contribution   2.042326621464647E-002
+ The Exchange energy contribution  -6.300741969291968E-002
+ The Fock energy contribution   4.258415347827321E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.337134E-03    and frequency =     0.215627   It =  13 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
  The Coulomb energy contribution   0.158754607014650     
- The Exchange energy contribution  -5.441840814915025E-002
- The Fock energy contribution  -0.104336198865500     
+ The Exchange energy contribution  -5.441840814914715E-002
+ The Fock energy contribution  -0.104336198865503     
  omega in build_reduc..   0.100000000000000     
- Dynamic response convergence threshold set to  1.596468338097957E-004
+ Dynamic response convergence threshold set to  1.596468338098173E-004
 Residual norm for vector   1 is:   0.159647E+00    and frequency =     0.100000   It =   1 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.104421129037249     
- The Exchange energy contribution  -6.450424355798359E-002
- The Fock energy contribution  -3.991688547926558E-002
+ The Coulomb energy contribution   0.104421129037253     
+ The Exchange energy contribution  -6.450424355798319E-002
+ The Fock energy contribution  -3.991688547927006E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.153245E-01    and frequency =     0.100000   It =   2 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   5.976493594432189E-002
- The Exchange energy contribution  -5.736909993849069E-002
- The Fock energy contribution  -2.395836005831204E-003
+ The Coulomb energy contribution   5.976493594431134E-002
+ The Exchange energy contribution  -5.736909993848451E-002
+ The Fock energy contribution  -2.395836005826831E-003
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.425345E-02    and frequency =     0.100000   It =   3 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   3.672733728743285E-002
- The Exchange energy contribution  -4.614296878871817E-002
- The Fock energy contribution   9.415631501285309E-003
+ The Coulomb energy contribution   3.672733728741802E-002
+ The Exchange energy contribution  -4.614296878870457E-002
+ The Fock energy contribution   9.415631501286553E-003
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.889963E-03    and frequency =     0.100000   It =   4 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   4.276346031972085E-002
- The Exchange energy contribution  -5.551635885582681E-002
- The Fock energy contribution   1.275289853610597E-002
+ The Coulomb energy contribution   4.276346031963928E-002
+ The Exchange energy contribution  -5.551635885582011E-002
+ The Fock energy contribution   1.275289853618083E-002
  omega in build_reduc..   0.100000000000000     
 Residual norm for vector   1 is:   0.136279E-03    and frequency =     0.100000   It =   5 CONV = T
 
  *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
- Starting linear response function calculation for: << EL  ; EL  >>
- 
- Entering the complex sym rsp solver, gamma=  1.000000000000000E-003
- ------------------
- Start macroiteration:           1
- ------------------
- The Coulomb energy contribution   3.081487911019577E-033
- The Coulomb energy contribution   7.703719777548943E-033
- The Exchange energy contribution  -5.749681531702420E-002
- The Exchange energy contribution  -4.596254362800781E-002
- The Fock energy contribution   5.749681531702421E-002
- The Fock energy contribution   4.596254362800781E-002
- The Coulomb energy contribution   0.181488191310385     
- The Coulomb energy contribution   0.144712087561193     
- The Exchange energy contribution  -7.044010672937791E-002
- The Exchange energy contribution  -7.339500255839515E-002
- The Fock energy contribution  -0.111048084581008     
- The Fock energy contribution  -7.131708500279796E-002
-Residual norm: rhs   1 n   1 is:   0.136513E+01    and frequency =     0.215627   It =   1 CONV = F
- ------------------
- Start macroiteration:           2
- ------------------
- The Coulomb energy contribution   1.133987551255204E-030
- The Coulomb energy contribution   2.933576491290638E-030
- The Exchange energy contribution  -5.204391726466318E-002
- The Exchange energy contribution  -5.405931451571529E-002
- The Fock energy contribution   5.204391726466318E-002
- The Fock energy contribution   5.405931451571529E-002
- The Coulomb energy contribution   0.458387121884966     
- The Coulomb energy contribution   0.377144802062318     
- The Exchange energy contribution  -8.779981083754927E-002
- The Exchange energy contribution  -0.102790515657859     
- The Fock energy contribution  -0.370587311047416     
- The Fock energy contribution  -0.274354286404459     
-Residual norm: rhs   1 n   1 is:   0.116810E+01    and frequency =     0.215627   It =   2 CONV = F
- ------------------
- Start macroiteration:           3
- ------------------
- The Coulomb energy contribution   3.694827264828914E-028
- The Coulomb energy contribution   2.071154306657766E-027
- The Exchange energy contribution  -4.784975549545072E-002
- The Exchange energy contribution  -4.938163318746850E-002
- The Fock energy contribution   4.784975549545072E-002
- The Fock energy contribution   4.938163318746850E-002
- The Coulomb energy contribution   0.173968428943044     
- The Coulomb energy contribution   5.427318777654475E-002
- The Exchange energy contribution  -8.555365035911902E-002
- The Exchange energy contribution  -4.688443854478613E-002
- The Fock energy contribution  -8.841477858392495E-002
- The Fock energy contribution  -7.388749231758630E-003
-Residual norm: rhs   1 n   1 is:   0.465538E-02    and frequency =     0.215627   It =   3 CONV = F
- ------------------
- Start macroiteration:           4
- ------------------
- The Coulomb energy contribution   4.323289082191338E-025
- The Coulomb energy contribution   7.078512011420557E-025
- The Exchange energy contribution  -7.064904282260530E-002
- The Exchange energy contribution  -7.418105294254573E-002
- The Fock energy contribution   7.064904282260528E-002
- The Fock energy contribution   7.418105294254571E-002
- The Coulomb energy contribution   5.353950228939901E-002
- The Coulomb energy contribution   0.101524595036785     
- The Exchange energy contribution  -5.044041768560720E-002
- The Exchange energy contribution  -7.674979069051716E-002
- The Fock energy contribution  -3.099084603791810E-003
- The Fock energy contribution  -2.477480434626824E-002
-Residual norm: rhs   1 n   1 is:   0.267114E-04    and frequency =     0.215627   It =   4 CONV = F
- ------------------
- Start macroiteration:           5
- ------------------
- The Coulomb energy contribution   1.325481200969326E-022
- The Coulomb energy contribution   6.952363787319050E-021
- The Exchange energy contribution  -4.036965544816787E-002
- The Exchange energy contribution  -5.986822206983231E-002
- The Fock energy contribution   4.036965544816787E-002
- The Fock energy contribution   5.986822206983231E-002
- The Coulomb energy contribution   9.051948279627842E-002
- The Coulomb energy contribution   0.141353069946742     
- The Exchange energy contribution  -6.044545981313052E-002
- The Exchange energy contribution  -9.019223775583550E-002
- The Fock energy contribution  -3.007402298314791E-002
- The Fock energy contribution  -5.116083219090627E-002
-Residual norm: rhs   1 n   1 is:   0.576557E-07    and frequency =     0.215627   It =   5 CONV = T
- Entering the complex sym rsp solver, gamma=  1.000000000000000E-003
- ------------------
- Start macroiteration:           1
- ------------------
- The Coulomb energy contribution   7.703719777548943E-033
- The Coulomb energy contribution   9.860761315262648E-032
- The Exchange energy contribution  -5.735365889203513E-002
- The Exchange energy contribution  -6.529771499601929E-002
- The Fock energy contribution   5.735365889203513E-002
- The Fock energy contribution   6.529771499601927E-002
- The Coulomb energy contribution   0.530973940724898     
- The Coulomb energy contribution   8.878743352765384E-002
- The Exchange energy contribution  -0.114072148114326     
- The Exchange energy contribution  -7.488894041981617E-002
- The Fock energy contribution  -0.416901792610572     
- The Fock energy contribution  -1.389849310783766E-002
-Residual norm: rhs   1 n   1 is:   0.370097E+00    and frequency =     0.215627   It =   1 CONV = F
- ------------------
- Start macroiteration:           2
- ------------------
- The Coulomb energy contribution   2.958228394578794E-031
- The Coulomb energy contribution   1.874037687965666E-028
- The Exchange energy contribution  -4.357352692307843E-002
- The Exchange energy contribution  -6.164733065956596E-002
- The Fock energy contribution   4.357352692307843E-002
- The Fock energy contribution   6.164733065956597E-002
- The Coulomb energy contribution   0.506841532678919     
- The Coulomb energy contribution   0.136738029178960     
- The Exchange energy contribution  -9.672531919414354E-002
- The Exchange energy contribution  -6.574307865183547E-002
- The Fock energy contribution  -0.410116213484776     
- The Fock energy contribution  -7.099495052712476E-002
-Residual norm: rhs   1 n   1 is:   0.153762E-01    and frequency =     0.215627   It =   2 CONV = F
- ------------------
- Start macroiteration:           3
- ------------------
- The Coulomb energy contribution   2.362243980684320E-027
- The Coulomb energy contribution   3.466649247993736E-027
- The Exchange energy contribution  -5.480824894986453E-002
- The Exchange energy contribution  -4.124682938104814E-002
- The Fock energy contribution   5.480824894986452E-002
- The Fock energy contribution   4.124682938104814E-002
- The Coulomb energy contribution   0.101576634224542     
- The Coulomb energy contribution   7.832710241406743E-002
- The Exchange energy contribution  -8.279601513123784E-002
- The Exchange energy contribution  -5.003918429921340E-002
- The Fock energy contribution  -1.878061909330379E-002
- The Fock energy contribution  -2.828791811485403E-002
-Residual norm: rhs   1 n   1 is:   0.117515E-01    and frequency =     0.215627   It =   3 CONV = F
- ------------------
- Start macroiteration:           4
- ------------------
- The Coulomb energy contribution   1.224772819671659E-024
- The Coulomb energy contribution   2.922505617346766E-024
- The Exchange energy contribution  -5.099953923507637E-002
- The Exchange energy contribution  -3.791017671016308E-002
- The Fock energy contribution   5.099953923507638E-002
- The Fock energy contribution   3.791017671016308E-002
- The Coulomb energy contribution   5.921132631779463E-002
- The Coulomb energy contribution   0.155836412653864     
- The Exchange energy contribution  -5.373731085568609E-002
- The Exchange energy contribution  -8.439802339862013E-002
- The Fock energy contribution  -5.474015462108543E-003
- The Fock energy contribution  -7.143838925524405E-002
-Residual norm: rhs   1 n   1 is:   0.141978E-03    and frequency =     0.215627   It =   4 CONV = F
- ------------------
- Start macroiteration:           5
- ------------------
- The Coulomb energy contribution   6.311287543870195E-020
- The Coulomb energy contribution   2.067595766170989E-018
- The Exchange energy contribution  -4.458065664606910E-002
- The Exchange energy contribution  -9.639176967239899E-002
- The Fock energy contribution   4.458065664606910E-002
- The Fock energy contribution   9.639176967239899E-002
- The Coulomb energy contribution   1.357072945033327E-002
- The Coulomb energy contribution   4.693358261002650E-002
- The Exchange energy contribution  -3.028606366403770E-002
- The Exchange energy contribution  -5.874150674618149E-002
- The Fock energy contribution   1.671533421370443E-002
- The Fock energy contribution   1.180792413615500E-002
-Residual norm: rhs   1 n   1 is:   0.638535E-07    and frequency =     0.215627   It =   5 CONV = T
- Entering the complex sym rsp solver, gamma=  1.000000000000000E-003
- ------------------
- Start macroiteration:           1
- ------------------
- The Coulomb energy contribution   5.392603844284260E-033
- The Coulomb energy contribution   1.047705889746656E-031
- The Exchange energy contribution  -3.689938689082820E-002
- The Exchange energy contribution  -3.669891273754764E-002
- The Fock energy contribution   3.689938689082820E-002
- The Fock energy contribution   3.669891273754763E-002
- The Coulomb energy contribution   0.309102652418558     
- The Coulomb energy contribution   5.944822734357798E-002
- The Exchange energy contribution  -7.009824178768978E-002
- The Exchange energy contribution  -4.288171182368641E-002
- The Fock energy contribution  -0.239004410630869     
- The Fock energy contribution  -1.656651551989157E-002
-Residual norm: rhs   1 n   1 is:   0.173344E-01    and frequency =     0.215627   It =   1 CONV = F
- ------------------
- Start macroiteration:           2
- ------------------
- The Coulomb energy contribution   1.183291357831518E-030
- The Coulomb energy contribution   7.346267179870672E-030
- The Exchange energy contribution  -4.566811408878497E-002
- The Exchange energy contribution  -4.262009002104845E-002
- The Fock energy contribution   4.566811408878498E-002
- The Fock energy contribution   4.262009002104847E-002
- The Coulomb energy contribution   0.174165243591623     
- The Coulomb energy contribution   8.179764026937689E-002
- The Exchange energy contribution  -7.136760293363868E-002
- The Exchange energy contribution  -6.362624707493485E-002
- The Fock energy contribution  -0.102797640657985     
- The Fock energy contribution  -1.817139319444204E-002
-Residual norm: rhs   1 n   1 is:   0.107913E-03    and frequency =     0.215627   It =   2 CONV = F
- ------------------
- Start macroiteration:           3
- ------------------
- The Coulomb energy contribution   3.719479168117071E-028
- The Coulomb energy contribution   5.462861768655507E-029
- The Exchange energy contribution  -5.437416211465346E-002
- The Exchange energy contribution  -5.917224159640282E-002
- The Fock energy contribution   5.437416211465347E-002
- The Fock energy contribution   5.917224159640282E-002
- The Coulomb energy contribution   8.120586504050176E-002
- The Coulomb energy contribution   0.137306757674512     
- The Exchange energy contribution  -5.376949758395872E-002
- The Exchange energy contribution  -7.517889617137746E-002
- The Fock energy contribution  -2.743636745654306E-002
- The Fock energy contribution  -6.212786150313480E-002
-Residual norm: rhs   1 n   1 is:   0.404748E-06    and frequency =     0.215627   It =   3 CONV = T
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ The Coulomb energy contribution   0.154551023463987     
+ The Exchange energy contribution  -5.349873369483560E-002
+ The Fock energy contribution  -0.101052289769152     
+ omega in build_reduc..   0.215626790000000     
+ Dynamic response convergence threshold set to  1.719513376988930E-004
+Residual norm for vector   1 is:   0.171951E+00    and frequency =     0.215627   It =   1 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ The Coulomb energy contribution   0.101371597484052     
+ The Exchange energy contribution  -6.429773286768870E-002
+ The Fock energy contribution  -3.707386461636327E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.251844E-01    and frequency =     0.215627   It =   2 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ The Coulomb energy contribution   5.623860206683232E-002
+ The Exchange energy contribution  -6.285588597586361E-002
+ The Fock energy contribution   6.617283909031295E-003
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.160261E-01    and frequency =     0.215627   It =   3 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ The Coulomb energy contribution   3.674714954829116E-002
+ The Exchange energy contribution  -5.952301857424974E-002
+ The Fock energy contribution   2.277586902595859E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.105273E-01    and frequency =     0.215627   It =   4 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ The Coulomb energy contribution   4.040401067146841E-002
+ The Exchange energy contribution  -6.061072580201107E-002
+ The Fock energy contribution   2.020671513054267E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.437723E-02    and frequency =     0.215627   It =   5 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ The Coulomb energy contribution   6.682402506855546E-002
+ The Exchange energy contribution  -5.372616637691223E-002
+ The Fock energy contribution  -1.309785869164323E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.264628E-02    and frequency =     0.215627   It =   6 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ The Coulomb energy contribution   1.800554068762480E-002
+ The Exchange energy contribution  -4.260418782597131E-002
+ The Fock energy contribution   2.459864713834652E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.130308E-02    and frequency =     0.215627   It =   7 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ The Coulomb energy contribution   8.127595416176234E-003
+ The Exchange energy contribution  -5.267453085677672E-002
+ The Fock energy contribution   4.454693544060050E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.246943E-03    and frequency =     0.215627   It =   8 CONV = F
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ The Coulomb energy contribution   2.657221531351822E-002
+ The Exchange energy contribution  -5.401382318955071E-002
+ The Fock energy contribution   2.744160787603250E-002
+ omega in build_reduc..   0.215626790000000     
+Residual norm for vector   1 is:   0.837459E-04    and frequency =     0.215627   It =   9 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
  
  
  
@@ -884,72 +941,45 @@ Residual norm: rhs   1 n   1 is:   0.404748E-06    and frequency =     0.215627 
  
  
  
- Frequency = .10000E+00 + 0.0000    i
- ====================================
+ Frequency = .10000E+00
+ ==================
  
- 
- Real part of polarizability tensor
- ''''''''''''''''''''''''''''''''''
                  Ex               Ey               Ez
- Ex         1.4554159         1.5241559        0.15782931E-11
- Ey         1.5242085         9.0930516       -0.32431835E-11
- Ez        0.11854961E-11    0.12394530E-11     5.7512729    
+ Ex        -1.4554160        -1.5241559        0.44653170E-12
+ Ey        -1.5242085        -9.0930519       -0.10805801E-11
+ Ez        0.32174263E-12    0.29176661E-12    -5.7512732    
  
- Isotropic real polarizability =      5.4332468    
+ Isotropic polarizability =     -5.4332468    
  
  
- Imaginary part of polarizability tensor
- '''''''''''''''''''''''''''''''''''''''
+ 
+ 
+ 
+ Frequency = .21563    
+ ==================
+ 
                  Ex               Ey               Ez
- Ex         0.0000000         0.0000000         0.0000000    
- Ey         0.0000000         0.0000000         0.0000000    
- Ez         0.0000000         0.0000000         0.0000000    
+ Ex         12168.173         3882.8833       -0.65245587E-11
+ Ey         3882.8833         1229.7134       -0.45415893E-11
+ Ez       -0.67802830E-09    0.28614977E-09    -6.1387515    
  
- Isotropic imaginary polarizability =      0.0000000    
- 
- 
- 
- 
- 
- Frequency = .21563     + .10000E-02i
- ====================================
- 
- 
- Real part of polarizability tensor
- ''''''''''''''''''''''''''''''''''
-                 Ex               Ey               Ez
- Ex         1.4254984         1.6880024        0.13318235E-11
- Ey         1.6880008         10.253067       -0.20854429E-11
- Ez        0.15218937E-11    0.13278267E-11     6.1387312    
- 
- Isotropic real polarizability =      5.9390989    
- 
- 
- Imaginary part of polarizability tensor
- '''''''''''''''''''''''''''''''''''''''
-                 Ex               Ey               Ez
- Ex         14.613623         4.6670688       -0.98445557E-15
- Ey         4.6670803         1.5048262        0.27395620E-14
- Ez       -0.10342838E-11   -0.47657434E-11    0.50836131E-02
- 
- Isotropic imaginary polarizability =      5.3745110    
+ Isotropic polarizability =      4463.9158    
  
  
  
  
  
   End of polarizability calculation
- >>>  CPU Time used in LSDALTON RSP is  1 minute   3 seconds
- >>> wall Time used in LSDALTON RSP is  1 minute   4 seconds
+ >>>  CPU Time used in LSDALTON RSP is  10.82 seconds
+ >>> wall Time used in LSDALTON RSP is   2.72 seconds
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    63.3583670000000         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    10.8163560000000         **
  *****************************************************
- >>>  CPU Time used in *SCF is  1 minute   9 seconds
- >>> wall Time used in *SCF is  1 minute   9 seconds
+ >>>  CPU Time used in *SCF is  12.17 seconds
+ >>> wall Time used in *SCF is   3.06 seconds
  
-Total no. of matmuls used:                      3512
+Total no. of matmuls used:                      2716
 Total no. of Fock/KS matrix evaluations:           7
-Max no. of matrices allocated in Level 3:         53
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -998,10 +1028,10 @@ Max no. of matrices allocated in Level 3:         53
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                         90.665 MB
   Max allocated memory, type(matrix)                  86.704 kB
-  Max allocated memory, real(realk)                    1.694 MB
+  Max allocated memory, real(realk)                    4.245 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      352.848 kB
+  Max allocated memory, integer                      376.304 kB
   Max allocated memory, logical                      395.792 kB
   Max allocated memory, character                     74.080 kB
   Max allocated memory, AOBATCH                        9.072 kB
@@ -1024,14 +1054,14 @@ Max no. of matrices allocated in Level 3:         53
   Max allocated memory, ATOMTYPEITEM                   1.125 MB
   Max allocated memory, ATOMITEM                       6.144 kB
   Max allocated memory, LSMATRIX                       1.600 kB
-  Max allocated memory, OverlapT                      94.080 kB
+  Max allocated memory, OverlapT                     301.056 kB
   Max allocated memory, linkshell                      0.904 kB
-  Max allocated memory, integrand                     64.512 kB
-  Max allocated memory, integralitem                 829.440 kB
-  Max allocated memory, IntWork                       27.448 kB
-  Max allocated memory, Overlap                      710.996 kB
+  Max allocated memory, integrand                    258.048 kB
+  Max allocated memory, integralitem                   2.696 MB
+  Max allocated memory, IntWork                      109.792 kB
+  Max allocated memory, Overlap                        1.554 MB
   Max allocated memory, ODitem                         2.560 kB
-  Max allocated memory, LStensor                      16.038 kB
+  Max allocated memory, LStensor                      13.734 kB
   Max allocated memory, FMM                            0.000 Byte
   Max allocated memory, XC                             0.000 Byte
   Max allocated memory, Lvec_data                      0.000 Byte
@@ -1051,65 +1081,63 @@ Max no. of matrices allocated in Level 3:         53
    L1 mat_add                  8            0.0000            0.0000
    L1 mat_daxpy               10            0.0000            0.0000
    L1 mat_dotproduct          10            0.0000            0.0000
-   L1 mat_sqnorm2             10            0.0000            0.0000
+   L1 mat_sqnorm2             10            0.0010            0.0000
    L1 mat_zero                 8            0.0000            0.0000
       ==============================================================
-   L1 TOTAL MAT                             0.0000            0.0000
+   L1 TOTAL MAT                             0.0010            0.0000
       ==============================================================
-   L1     II_get_overlap       2            0.0020            0.0010
+   L1     II_get_overlap       2            0.0040            0.0000
    L1     II_get_kinetic       2            0.0000            0.0010
-   L1   II_get_nucel_mat       2            0.0030            0.0030
-   L1 II_GET_EXCHANGE_MA       2            0.0060            0.0050
-   L1 II_get_coulomb_mat       2            0.0040            0.0040
-   L1 II_get_xc_Fock_mat       2            0.1670            0.1670
+   L1   II_get_nucel_mat       2            0.0060            0.0010
+   L1 II_GET_EXCHANGE_MA       2            0.0060            0.0020
+   L1 II_get_coulomb_mat       2            0.0060            0.0010
+   L1 II_get_xc_Fock_mat       2            0.0900            0.0230
       ==============================================================
-   L1 TOTAL INTEGRAL                        0.1820            0.1810
+   L1 TOTAL INTEGRAL                        0.1120            0.0280
       ==============================================================
       ===============================================================
       Overall Timings for the Matrix Operations and Integral routines
                in Level 3 The Full molecular Calculation             
       Matrix Operation   # calls          CPU Time         Wall Time
       ===============================================================
-   L3 mat_set_from_full      487            0.0000            0.0010
-   L3 mat_to_full            139            0.0020            0.0000
-   L3 mat_trans             1258            0.0150            0.0140
-   L3 mat_assign             672            0.0010            0.0000
-   L3 mat_copy                12            0.0000            0.0000
-   L3 mat_trAB                27            0.0000            0.0000
-   L3 mat_mul               3505            0.0080            0.0110
-   L3 mat_add               1611            0.0010            0.0030
-   L3 mat_daxpy             4667            0.0040            0.0050
-   L3 mat_dotproduct        3770            0.0030            0.0080
-   L3 mat_sqnorm2           1605            0.0000            0.0020
+   L3 mat_set_from_full      349            0.0050            0.0010
+   L3 mat_to_full            113            0.0000            0.0000
+   L3 mat_trans             3586            0.0620            0.0130
+   L3 mat_assign             832            0.0050            0.0000
+   L3 mat_copy                10            0.0000            0.0000
+   L3 mat_mul               2709            0.0300            0.0080
+   L3 mat_add               1571            0.0060            0.0030
+   L3 mat_daxpy             4655            0.0160            0.0060
+   L3 mat_dotproduct        7948            0.0290            0.0150
+   L3 mat_sqnorm2           2204            0.0110            0.0030
    L3 mat_diag_f               2            0.0020            0.0020
-   L3 mat_scal               652            0.0000            0.0010
-   L3 mat_zero              1254            0.0030            0.0030
+   L3 mat_scal               449            0.0010            0.0000
+   L3 mat_zero               914            0.0030            0.0000
    L3 mat_density_from_o       1            0.0000            0.0000
    L3 mat_scal_dia_vec         2            0.0000            0.0000
    L3 mat_dsyev                1            0.0000            0.0000
-   L3 mat_identity             7            0.0010            0.0000
-   L3 mat_write_to_disk      211            0.0020            0.0050
-   L3 mat_read_from_disk     966            0.0060            0.0090
+   L3 mat_identity             7            0.0000            0.0000
+   L3 mat_write_to_disk      160            0.0160            0.0040
+   L3 mat_read_from_disk    1515            0.0480            0.0120
       ==============================================================
-   L3 TOTAL MAT                             0.0470            0.0640
+   L3 TOTAL MAT                             0.2340            0.0670
       ==============================================================
-   L3     II_get_overlap       1            0.0010            0.0020
-   L3     II_get_kinetic       1            0.0020            0.0020
-   L3   II_get_nucel_mat       1            0.0080            0.0080
-   L3 II_precalc_ScreenM       1            0.0450            0.0450
-   L3      II_get_nucpot       1            0.0000            0.0010
-   L3        II_get_prop       4            0.0780            0.0790
-   L3 II_GET_EXCHANGE_MA      58            3.2335            3.2480
-   L3 II_get_coulomb_mat      58            1.9937            1.9970
-   L3 II_get_xc_Fock_mat       7            5.0482            5.0650
-   L3   II_get_xc_linrsp      51           58.5381           58.7140
-   L3           homolumo       1            0.5729            0.5730
+   L3     II_get_overlap       1            0.0010            0.0000
+   L3     II_get_kinetic       1            0.0020            0.0000
+   L3   II_get_nucel_mat       1            0.0040            0.0010
+   L3 II_precalc_ScreenM       1            0.0100            0.0030
+   L3      II_get_nucpot       1            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA      58            0.4859            0.1200
+   L3 II_get_coulomb_mat      58            0.3050            0.0750
+   L3 II_get_xc_Fock_mat       7            1.2088            0.3020
+   L3   II_get_xc_linrsp      51            9.8065            2.4610
+   L3           homolumo       1            0.1780            0.0450
       ==============================================================
-   L3 TOTAL INTEGRAL                       69.5344           69.7470
+   L3 TOTAL INTEGRAL                       12.0122            3.0190
       ==============================================================
- >>>  CPU Time used in LSDALTON is  1 minute  10 seconds
- >>> wall Time used in LSDALTON is  1 minute  10 seconds
+ >>>  CPU Time used in LSDALTON is  12.60 seconds
+ >>> wall Time used in LSDALTON is   3.17 seconds
 
 End simulation
-     Date and time (Linux)  : Thu Sep 18 14:35:08 2014
+     Date and time (Linux)  : Thu Sep 18 14:59:06 2014
      Host name              : localhost                               
