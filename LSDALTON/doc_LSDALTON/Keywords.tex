@@ -16,6 +16,7 @@ for the optimization of the wave function (mandatory)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera} (optional).
 \item **PLTGRID contains information about grid used for construction of *.plt files (optional).
+\item **PCM contains information needed to set up a polarizable continuum model calculation using the \pcm external module~\cite{PCMSolver} (optional).
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
@@ -2092,6 +2093,15 @@ Manual definition of gridbox as described above. All input values are in a.u.
 \verb|<buffer>| \newline
 \verb|<deltax    deltay    deltaz>| \newline
 Molecule-specific definition of gridbox as described above. All input values are in a.u.
+
+\end{description}
+
+\section{**PCM}\label{sec:pcm}
+Keywords specified in this section set up the inclusion of a continuum description of the solvent using the polarizable continuum model for solvation~\cite{Tomasi2005}.
+
+\begin{description}
+\item[\Key{SEPARATE}] \verb| | \newline
+Triggers whether the nuclear and electronic electrostatic potential and apparent surface charge should be treated separately. This is a debug option.
 
 \end{description}
 
