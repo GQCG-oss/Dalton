@@ -72,10 +72,10 @@ subroutine get_nuclear_mep(nr_points, centers, mep)
        end do LoopOnPoints
    end do LoopOnAtoms
                                                                  
-   !print *, "Debug print of v_nuc at cavity points" 
-   !do ipoint = 1, nr_points
-   !   print *, "v_nuc(",ipoint,") = ", mep(ipoint)
-   !end do
+!  print *, "Debug print of v_nuc at cavity points" 
+!  do ipoint = 1, nr_points
+!     print *, "v_nuc(",ipoint,") = ", mep(ipoint)
+!  end do
          
 end subroutine get_nuclear_mep
          
@@ -104,7 +104,7 @@ subroutine get_electronic_mep(nr_points, centers, mep, density_matrix, setting, 
    type(matrix)                 :: density_matrix                           
    type(lssetting), intent(in)  :: setting
    integer,         intent(in)  :: lupri, luerr
-   !integer              :: ipoint
+   integer              :: ipoint
             
    call II_get_ep_integrals3(lupri,          &
                              luerr,          &
@@ -116,14 +116,10 @@ subroutine get_electronic_mep(nr_points, centers, mep, density_matrix, setting, 
    ! Change the sign             
    mep = -1.0 * mep
   
-   !print *, "Debug print of v_ele at cavity points"
-   !if (do_matrix) then
-   !   print *, "Called with get_matrix"
-   !else
-   !   do ipoint = 1, nr_points
-   !     print *, "v_ele(", ipoint,") = ", vector(ipoint)
-   !   end do
-   !end if
+!  print *, "Debug print of v_ele at cavity points"
+!  do ipoint = 1, nr_points
+!    print *, "v_ele(", ipoint,") = ", mep(ipoint)
+!  end do
 
 end subroutine get_electronic_mep
       

@@ -303,11 +303,16 @@ MODULE scf_stats
 #ifdef PCM_MODULE
       if (pcm_config%do_pcm) then
          WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f20.12)') get_pcm_energy()
+         WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc                                          
+         WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') &
+                                                stat_energy(stat_current_iteration)-opt%potnuc-get_pcm_energy()
+         WRITE(opt%LUPRI,*)
       end if              
-#endif      
-      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc
+#else      
+      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc      
       WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') stat_energy(stat_current_iteration)-opt%potnuc
       WRITE(opt%LUPRI,*)
+#endif      
 
    end subroutine scf_stats_end_print
 

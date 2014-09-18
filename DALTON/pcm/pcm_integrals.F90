@@ -105,6 +105,11 @@
            end do
            deallocate(scratch)
          end if
+   
+!        print *, "Debug print of v_nuc at cavity points"  
+!        do ipoint = 1, nr_points
+!           print *, "v_nuc(",ipoint,") = ", mep(ipoint)
+!        end do
          
          end subroutine get_nuclear_mep
          
@@ -165,13 +170,14 @@
             call vectorized_integration_pcm(nr_points, centers, vector, matrix, work, lwork, do_matrix)
          end if
 
-!        if (do_matrix) then
-!           write(lupri,*) "Called with get_matrix"
-!        else
-!           do ipoint = 1, nr_points
-!             write(lupri, *) "v_ele(", ipoint,") = ", vector(ipoint)
-!           end do
-!        end if
+!       if (do_matrix) then
+!          print *, "Called with get_matrix"
+!       else
+!          print *, "Debug print of v_ele at cavity points"   
+!          do ipoint = 1, nr_points
+!            print *, "v_ele(", ipoint,") = ", vector(ipoint)
+!          end do
+!       end if
 
          end subroutine get_electronic_mep
       
