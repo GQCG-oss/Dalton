@@ -17,7 +17,7 @@ f.add(string = 'Nuclear repulsion',
 f.add(from_string = 'ONE-PHOTON ABSORPTION',
       to_string   = 'End of excitation energy calculation',
       ignore_sign = True,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-4)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
