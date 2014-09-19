@@ -20,6 +20,32 @@ module response_noOpenRSP_module
   use dal_interface
   use rsp_util
   use response_wrapper_type_module, only: ALPHAinputItem
+
+  !***********************************************************************
+  ! Driver routine for linear response (polarizability), NMR shielding and 
+  ! excitation energies (quadratic response and hessian in the future)
+  !
+  ! This driver is to be used as a test code. 
+  ! It serves as a way to test for instance new density fitting integrals 
+  ! in the context of response. 
+  ! It may serve as an easy way to test the response solver for several 
+  ! frequencies at a time or several RHS at a time.  
+  ! This driver therefor have limited functionality. 
+  ! OpenRSP is used as default and have to be used to treat exotic properties. 
+  !  
+  ! If a new development show alot of promise you can consider making
+  ! a new driver using this development throughout or implement it in
+  ! OpenRSP. LSDALTON is a platform to develop new methods and as 
+  ! such this linear response code serve as such a platform. 
+  ! So keep it simpel. 
+  !
+  ! Be aware that the Code uses the same input types and input reading 
+  ! as the OpenRSP drivers and framework. 
+  !
+  ! Written by Thomas Kjaergard 2014 based on work of Sonia Coriani 
+  ! and Stinne Hoest 
+  !***********************************************************************
+
   public lsdalton_response_noOpenRSP
 
   private
@@ -49,6 +75,10 @@ subroutine lsdalton_response_noOpenRSP(ls,config,F,D,S)
      endif
      if(config%response%tasks%doALPHA)then
         call alpha_driver(molcfg,F,D,S,config%response%alphainput)
+     endif
+     if(config%response%tasks%doOPA)then
+        !one-photon absorption driver (OPA)
+        call excitation_energy_driver(molcfg,F,D,S,config%response%alphainput)
      endif
      if(config%response%RSPSOLVERinput%rsp_mo_precond)then
         call util_free_MOstuff()
@@ -80,7 +110,7 @@ subroutine alpha_driver(molcfg,F,D,S,alphainput)
   real(realk),pointer  :: linrspfunc(:,:,:) !Array for response functions
   logical              :: lineq_x
   integer              :: i,j,ifreq,nfreq,ndim,lupri,luerr
-
+  integer              :: ntrial,nrhs,nsol,nomega,nstart
   ndim = S%nrow
   lupri = molcfg%lupri
   luerr = molcfg%lupri
@@ -115,8 +145,15 @@ subroutine alpha_driver(molcfg,F,D,S,alphainput)
    if ( mat_dotproduct(Bgrad(i),Bgrad(i)) > 1.0E-10_realk) then 
       do ifreq = 1, nfreq
          !Solve Linear response equation
-         call rsp_init(1,1,1,1,1)
-         call rsp_solver(molcfg,D(1),S,F(1),lineq_x,1,Bgrad(I:I),&
+         ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+         nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+         nsol = 1   !# of solution (output) vectors
+         nomega = 1 !If lineq_x, number of laser freqs (input)
+                    !Otherwise number of excitation energies (output) 
+         nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+         !ntrial and nstart seem to be obsolete 
+         call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+         call rsp_solver(molcfg,D(1),S,F(1),lineq_x,nrhs,Bgrad(I:I),&
               & alphainput%bfreq(ifreq:ifreq),XSOL)
          ! <<GD_A,GD_B>>_omega
          DO J = 1,3        
@@ -142,6 +179,135 @@ subroutine alpha_driver(molcfg,F,D,S,alphainput)
   call mem_dealloc(linrspfunc)
   
 end subroutine alpha_driver
+
+!> \brief Driver routine for excitation energy & trans. moments 
+!> \author Thomas Kjaergaard
+!> \date 2014
+subroutine excitation_energy_driver(molcfg,F,D,S,alphainput)
+  implicit none
+  !> Info on molecule needed by solver and integral programs
+  type(rsp_molcfg),intent(inout) :: molcfg
+  !> Unperturbed Fock, Density and Overlap matrix
+  type(Matrix),intent(in)        :: F(1),D(1),S
+  !> Contains alpha input
+  type(ALPHAinputItem),intent(inout) :: ALPHAinput
+  !Local variables
+  type(Matrix)         :: Bgrad(3),DIPLEN(3),GDB(1)
+  type(Matrix),pointer :: XSOL(:)
+  type(Matrix)         :: tempm1,tempm2
+  real(realk),pointer  :: eival(:),ExciMoments(:,:)
+  logical              :: lineq_x
+  integer              :: i,j,ifreq,nfreq,ndim,lupri,luerr,nexci,lueigvec
+  integer              :: ntrial,nrhs,nsol,nomega,nstart
+
+  ! 1. Set number of excitation energies
+  ! ''''''''''''''''''''''''''''''''''''
+  ! (Defined by .NEXCIT in input)
+  nexci = molcfg%decomp%cfg_rsp_nexcit
+
+  ndim = S%nrow
+  lupri = molcfg%lupri
+  luerr = molcfg%lupri
+  lineq_x = .FALSE.
+
+  call mem_alloc(xsol,nexci)
+  do i = 1,nexci
+     call mat_init(xsol(i),ndim,ndim)
+  enddo
+  call mem_alloc(eival,nexci)
+
+  ntrial = 1     !# of trial vectors in a given iteration (number of RHS)
+  nrhs = 1       !# of RHS only relevant for linear equations (lineq_x = TRUE)
+  nsol = nexci   !# of solution (output) vectors
+  nomega = nexci !If lineq_x, number of laser freqs (input)
+                 !Otherwise number of excitation energies (output) 
+  nstart = nexci !Number of start vectors. Only relevant for eigenvalue problem
+
+  !ntrial and nstart seem to be obsolete 
+  call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+  call rsp_solver(molcfg,D(1),S,F(1),lineq_x,nexci,GDB,eival,xsol)
+
+!  lueigvec = -1
+!  CALL GPOPEN(lueigvec,'rsp_eigenvecs','unknown','SEQUENTIAL','UNFORMATTED',i,j)
+!  do i = 1, nexci
+!     write(lueigvec) i, EIVAL(i)
+!     call mat_write_to_disk(lueigvec,xsol(i))
+!  enddo
+!  call GPCLOSE(lueigvec,'KEEP') !Might be used for exc state stuff
+
+  call mat_init(DIPLEN(1),ndim,ndim)
+  call mat_init(DIPLEN(2),ndim,ndim)
+  call mat_init(DIPLEN(3),ndim,ndim)
+  call II_get_integral(LUPRI,LUERR,molcfg%SETTING,DIPLEN,3,'DIPLEN ')
+  call mat_init(tempm1,ndim,ndim)
+  call mat_mul(D(1),S,'n','n',1.0E0_realk,0.0E0_realk,tempm1)
+  DO I = 1,3
+     call mat_init(Bgrad(I),ndim,ndim)
+     call mat_mul(DIPLEN(I),tempm1,'N','N',1.0E0_realk,0.0E0_realk,Bgrad(I))
+     call mat_mul(tempm1,DIPLEN(I),'T','N',-1.0E0_realk,1.0E0_realk,Bgrad(I))
+     call mat_free(DIPLEN(I))
+     call util_scriptPx('T',D(1),S,Bgrad(I))
+  ENDDO
+  call mat_free(tempm1)
+  call mem_alloc(ExciMoments,nexci,3)
+  DO J = 1,3        
+     do I = 1, nexci     
+        ExciMoments(I,J) = -2.E0_realk*mat_dotproduct(Bgrad(J),XSOL(I))
+     enddo
+     call mat_free(Bgrad(J))
+  ENDDO
+  do i = 1,nexci
+     call mat_free(xsol(i))
+  enddo
+  call mem_dealloc(xsol)
+  call print_excit(ExciMoments,eival,AlphaInput,nexci,lupri)
+  call mem_dealloc(eival)
+  call mem_dealloc(ExciMoments)
+  
+end subroutine excitation_energy_driver
+
+subroutine print_excit(ExciMoments,e_excit,AlphaInput,nexci,lupri)
+  implicit none
+  !> Contains alpha input
+  type(ALPHAinputItem),intent(inout) :: AlphaInput
+  integer, intent(in) :: nexci,lupri
+  real(realk), intent(in) :: ExciMoments(nexci,3),e_excit(nexci)
+  integer :: i,j
+  real(realk) :: OscillatorStrength(nexci)
+
+  do i=1,nexci
+     OscillatorStrength(i) = 0E0_realk
+     do j=1,3
+        OscillatorStrength(i) = OscillatorStrength(i) + ExciMoments(i,j)**2
+     end do
+     OscillatorStrength(i) = (2E0_realk/3E0_realk)*e_excit(i)*OscillatorStrength(i)
+  enddo
+
+  write(lupri,*) 
+  write(lupri,*) 
+  write(lupri,'(2X,A)') '********************************************************&
+       &**********************'
+  write(lupri,'(2X,A)') '*                   ONE-PHOTON ABSORPTION RESULTS (in a.u.)&
+       &                  *'
+  write(lupri,'(2X,A)') '********************************************************&
+       &**********************'
+  write(lupri,*)
+  write(lupri,*) 
+  write(lupri,*) 
+  write(lupri,*) '     Excitation              Transition Dipole Moments      &
+       &         Oscillator'
+  write(lupri,*) '      Energies            x               y               z  &
+       &         Strengths'
+  write(lupri,*) '===================================================================&
+       &============'
+  
+  do i=1,nexci
+     write(lupri,'(5f16.8)') e_excit(i), ExciMoments(i,1:3), OscillatorStrength(i)
+  end do
+  write(lupri,*) 
+  write(lupri,*) 
+  write(lupri,'(1X,A)') ' End of excitation energy calculation'
+end subroutine print_excit
 
 subroutine print_alpha(alpha,ALPHAinput,nfreq,lupri)
   implicit none
@@ -195,6 +361,7 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
   Character(len=4),allocatable :: atomName(:)
   real(realk)                  :: TS,TE
   type(Matrix)                 :: Dx(3),Fx(3),Sx(3),tempm1,RHS(3),GbDs(3),Xx(1)
+  integer              :: ntrial,nrhs,nsol,nomega,nstart
   character(len=1)        :: CHRXYZ(-3:3)
   DATA CHRXYZ /'z','y','x',' ','X','Y','Z'/
 
@@ -330,12 +497,19 @@ subroutine NMRshieldresponse_noOpenRSP(molcfg,F,D,S)
 
      eival(1)=0.0E0_realk
      write(lupri,*)'Calling rsp solver for Xa  '
-     n_rhs=1
      call mat_init(Xx(1),nbast,nbast)                            !# Matrices Allocated 7 (DX,RHS,Xx)
      if ( mat_dotproduct(RHS(icoor),RHS(icoor))>1.0d-10) then 
         call util_scriptPx('T',D(1),S,RHS(icoor))
-        call rsp_init(1,1,1,1,1)
-        call rsp_solver(molcfg,D(1),S,F(1),.true.,n_rhs,RHS(icoor:icoor),EIVAL,Xx)
+
+        ntrial = 1 !# of trial vectors in a given iteration (number of RHS)
+        nrhs = 1   !# of RHS only relevant for linear equations (lineq_x = TRUE)
+        nsol = 1   !# of solution (output) vectors
+        nomega = 1 !If lineq_x, number of laser freqs (input)
+                   !Otherwise number of excitation energies (output) 
+        nstart = 1 !Number of start vectors. Only relevant for eigenvalue problem
+        !ntrial and nstart seem to be obsolete 
+        call rsp_init(ntrial,nrhs,nsol,nomega,nstart)
+        call rsp_solver(molcfg,D(1),S,F(1),.true.,nrhs,RHS(icoor:icoor),EIVAL,Xx)
      else
         write(lupri,*) 'WARNING: RHS norm is less than threshold'
         write(lupri,*) 'LIN RSP equations NOT solved for this RHS    '

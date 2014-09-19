@@ -232,10 +232,9 @@ if(ENABLE_RSP)
     add_restart_test(LSresponse/LSresponse_excit_restart             "linsca;lsresponse;restart")
     add_lsdalton_test(geomopt/Excited_state_opt                      "linsca;lsresponse")
 endif()
-
     add_lsdalton_runtest(LSresponse/LSresponse_NMR_SHIELD_NoOpenRSP  "linsca;lsresponse")
     add_lsdalton_runtest(LSresponse/LSresponse_DFT_alpha_NoOpenRSP   "linsca;lsresponse")
-
+    add_lsdalton_runtest(LSresponse/LSresponse_DFT_excit_NoOpenRSP   "linsca;lsresponse")
     add_lsdalton_test(geomopt/geoopt_constrain                       "linsca")
     add_lsdalton_test(geomopt/cartes_bfgs_min                        "linsca")
     add_lsdalton_test(geomopt/redint_bfgs                            "linsca")
