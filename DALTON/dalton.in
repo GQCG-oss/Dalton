@@ -8,6 +8,7 @@
 # Version 1.1 spring 2000 by K.Ruud and H.J.Aa.Jensen                          #
 # Version 2.1 Feb. 2005 by K.Ruud, H.J.Aa.Jensen, and P. Salek                 #
 # Version 2011 May 2011 by H.J.Aa.Jensen, with help from others                #
+# Version 2014 Aug 2014 by H.J.Aa.Jensen, with help from others                #
 #                                                                              #
 ################################################################################
 
@@ -27,16 +28,6 @@ DALTON_EXECUTABLE=$SCRIPT_DIR/dalton.x
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
-if [ -z "$DALTON_TMPDIR" ]; then
-    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
-    for dir in $scratch_dir_candidates; do
-        if [ -d "$dir" ]; then
-            DALTON_TMPDIR=$dir
-            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
-            break
-        fi
-    done
-fi
 
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
@@ -85,13 +76,14 @@ usage (){
         echo '                     automatically).'
         echo ' -w dir           : change WRKDIR to dir.'
         echo '                    (default:' $WRKDIR')'
-        echo ' -o file          : redirect output from program to this file in WRKDIR'
+        echo ' -o file          : redirect output from program to WRKDIR with "file" as file name'
+        echo ' -ow              : redirect output from program to WRKDIR with standard file name'
         echo ' -ext log         : change output extension from ".out" to ".log"'
         echo ' -nobackup        : do not backup files, simply overwrite outputs'
         echo ' -f dal_mol[_pot] : extract dal_mol[_pot].tar.gz archive from WRKDIR into'
         echo '                    DALTON_TMPDIR before calculation starts'
         echo ' -noarch          : do not create tar.gz archive'
-        echo " -t dir           : set scratch directory; this script will append"
+        echo " -t dir           : set scratch directory DALTON_TMPDIR; this script will append"
         echo "                    '/DALTON_scratch_$USER' to the path unless the path"
         echo "                    contains 'DALTON_scratch' or you explicitly set -noappend"
         echo ' -d               : delete job scratch directory before calculation starts'
@@ -167,6 +159,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
          -nw ) NODE_WRKMEM=$2; export NODE_WRKMEM; shift;;
          -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
+      -ow ) opto=2;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) DALTON_TMPDIR=$2; shift;;
@@ -198,25 +191,29 @@ if [ -z "$1" ]; then
    exit 1
 fi
 
-if [ -z "$DALTON_TMPDIR" ]; then
-    # DALTON_TMPDIR is still not set, better stop here
-    echo "ERROR: searched for suitable scratch directories"
-    echo "       among $scratch_dir_candidates"
-    echo "       but none of them exists"
-    echo "       please either set the DALTON_TMPDIR environment variable"
-    echo "       or use -t to set the scratch directory"
-    exit 1
+if [ -z "$DALTON_TMPDIR" ]; then  # not set as environment variable and not set with "-t dir" option
+    scratch_dir_candidates="$SCRATCH /global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "DALTON_TMPDIR not defined by user."
+            echo " Guessing $dir is appropriate scratch directory, and DALTON_TMPDIR is set to this directory"
+            break
+        fi
+    done
+
+    if [ -z "$DALTON_TMPDIR" ]; then
+        # DALTON_TMPDIR is still not set, better stop here
+        echo "ERROR: searched for suitable scratch directories among"
+        echo "       $scratch_dir_candidates"
+        echo "       but none of them exists."
+        echo "       Please either set the DALTON_TMPDIR environment variable"
+        echo "       or use -t to set the scratch directory."
+        exit 1
+    fi
 fi
 
-if [ $opt_noappend -eq 0 ]; then
-    if [[ "$DALTON_TMPDIR" != */ ]]; then
-        # if there is no final slash, we append it
-        DALTON_TMPDIR=${DALTON_TMPDIR}/
-    fi
-    # now we append DALTON_scratch_$USER
-    # better safe than sorry
-    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
-fi
+# -- identify input files and construct output file name
 
 #  remove .dal, if added by user
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
@@ -257,7 +254,27 @@ if [ -n "$3" ]; then
    fi
    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
+if [ $opto -eq 2 ]; then   # -ow input option
+   OUTFIL=$outnam.$OUTEXT
+   export OUTFIL
+fi
+if [ -n "$OUTFIL" ]; then
+if [ -s  $OUTFIL -a -r $OUTFIL ]; then
+   backup -v $OUTFIL
+fi
+fi
+
 #
+
+if [ $opt_noappend -eq 0 ]; then
+    if [[ "$DALTON_TMPDIR" != */ ]]; then
+        # if there is no final slash, we append it
+        DALTON_TMPDIR=${DALTON_TMPDIR}/
+    fi
+    # now we append DALTON_scratch_$USER
+    # better safe than sorry
+    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
+fi
 export DALTON_TMPDIR
 if [ ! -d "$DALTON_TMPDIR" ]; then
     mkdir -p $DALTON_TMPDIR
@@ -377,6 +394,19 @@ if [ -n "$DALTON_NUM_MPI_PROCS" ]; then
         optn=$DALTON_NUM_MPI_PROCS
     fi
 fi
+
+
+# set environment variables for EFS code
+if [ -z "$EFS_MEM_MB" ]; then
+    export EFS_MEM_MB=4096
+fi
+if [ -z "$EFS_BUFFER_MB" ]; then
+    export EFS_BUFFER_MB=1024
+fi
+if [ -z "$QIC_DIR" ]; then
+    export QIC_DIR=$SCRIPT_DIR/external/efs-build/qic
+fi
+
 
 if [ $optn -gt 1 ] ; then
 
@@ -518,7 +548,7 @@ if [ "$GET_FILES" != "" ]; then
    done
 fi
 
-if [ $opto -eq 1 ] ; then
+if [ $opto -ge 1 ] ; then
    if [ -s $WRKDIR/$OUTFIL -a -r $WRKDIR/$OUTFIL ]; then
       echo "Output is in $WRKDIR/$OUTFIL as requested in input."
    else

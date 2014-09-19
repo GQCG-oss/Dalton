@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  FILE: sirius/sirmp2.F
 C  ORIGINAL AUTHORS: Hans Joergen Aa. Jensen and Poul Joergensen (1987).
@@ -643,21 +642,20 @@ C
 C
       END IF
 C     END IF
-C
 #endif /*  MOD_SRDFT  */
-C     Save MP2 orbitals for MCSCF/CI if not SOPPA
 C
-      IF (.NOT.FLAG(25)) THEN
-         CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
-         CALL MOLLAB('EODATA  ',LUIT1,LUPRI)
-         BACKSPACE LUIT1
-         WRITE(LUIT1) '********        MP2SAVE NATOCC  '
-         NORBT4 = MAX(NORBT,4)
-         CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
-         WRITE(LUIT1) '********        MP2SAVE EODATA  '
-      END IF
+C     Save MP2 orbitals for MCSCF/CI
+C     (SOPPA uses SIRIFC, so this is also OK if SOPPA)
 C
-   20 CONTINUE
+      CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
+      CALL MOLLAB('EODATA  ',LUIT1,LUPRI)
+      BACKSPACE LUIT1
+      WRITE(LUIT1) '********        MP2SAVE NATOCC  '
+      NORBT4 = MAX(NORBT,4)
+      CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
+      WRITE(LUIT1) '********        MP2SAVE EODATA  '
+C
+   20 CONTINUE ! if (SR_MP2INTS) go to 20
 C
       IF (MP2FRO) THEN
 C     If (mp2fro) then also calculate full MP2 energy and NO occupations

@@ -2355,9 +2355,15 @@ ENDIF
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
         ENDIF
+
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
+#ifdef MOD_UNRELEASED
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
+#else
+            write(lupri,'(3X,A)') 'Warning: the linear-response part of the code does not apply ADMM for exchange'
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+#endif
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
@@ -3076,12 +3082,13 @@ ENDIF
       integer :: AOAlphaStart,AOAlphaEnd,iA,iG,iB,iD,ABATCH,GBATCH
       character :: INTSPEC(5)
       type(DecAObatchinfo),pointer :: AObatchinfo(:)
-      logical :: SameMOL,ForcePrint
+      logical :: SameMOL,ForcePrint,MoTrans,NoSymmetry
       real(realk) :: t1,t2
       IF(ls%setting%IntegralTransformGC)THEN
          call lsquit('di_decpackedJ requires .NOGCBASIS',-1)
       ENDIF
       ForcePrint = .TRUE.
+      NoSymmetry = .FALSE. !activate permutational symmetry
       call mem_alloc(Dfull,D%nrow,D%ncol)
       call mat_to_full(D,1E0_realk,DFULL)
       iprint = 0
@@ -3091,6 +3098,7 @@ ENDIF
       INTSPEC(4) = 'R'
       INTSPEC(5) = 'C' !operator
       SameMOL = .TRUE.
+      MoTrans = .FALSE.
       call LSTIMER('START',t1,t2,LUPRI)
       call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
       call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
@@ -3133,7 +3141,7 @@ ENDIF
           !calc (beta,delta,alphaB,gammaB)
           call MAIN_ICHORERI_DRIVER(lupri,iprint,ls%setting,dim1,dim2,dimAlpha,dimGamma,&
                & Integral,INTSPEC,.FALSE.,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
-               & AOGammaStart,AOGammaEnd)
+               & AOGammaStart,AOGammaEnd,MoTrans,dim1,dim2,dimAlpha,dimGamma,NoSymmetry)
           iG = GammaStart-1
           do Gbatch = 1,dimGamma
              iG = iG + 1

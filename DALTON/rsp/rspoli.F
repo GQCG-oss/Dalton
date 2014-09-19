@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C FILE: rsp/rspoli.F ("Orbital LInear transformation")
 C
@@ -36,6 +35,40 @@ C
 920721-hinne hettema: implemented RSPSUP (super symmetry averaging)
 ========================================================================
 #endif
+
+#ifdef ENABLE_EFS
+C Use this hack to correctly pass the arrays to c++
+      SUBROUTINE SIREFS(FMAT, DMAT, NMAT, ITYP)
+      use efs_interface
+#include "implicit.h"
+#include "cbihr2.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*),ITYP(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT, ITYP
+
+!      write (*,*) "nmat in sirk4m ", nmat
+
+      call mpixbcast (const_fock_update, 1, 'INTEGER', 0)
+      iprint = 0
+      call mpixbcast (iprint, 1, 'INTEGER', 0)
+      call efs_fock_update(FMAT, DMAT, IFTHRS, NMAT, ITYP)
+      END
+
+      SUBROUTINE SIRPRNT(FMAT, DMAT, NMAT)
+#include "implicit.h"
+#include "inforb.h"
+      DIMENSION FMAT(*),DMAT(*)
+      REAL*8 FMAT, DMAT
+      INTEGER NMAT
+
+      write (*,*) "nmat in sirprnt ", nmat
+
+      call efs_print_matrices(FMAT, DMAT, NBAST, NMAT)
+      END
+
+#endif
+
 C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
@@ -45,7 +78,9 @@ C  /* Deck rspoli */
 #ifdef USE_XCINT_RESPONSE
       use xcint_integrator
 #endif
-
+#ifdef ENABLE_EFS
+      use efs_interface
+#endif
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
 C
@@ -85,6 +120,8 @@ C
 C
 #include "thrzer.h"
 #include "dummy.h"
+
+#include "cbihr2.h"
 C
 C  INFDIM : NASHDI
 C  INFINP : DIRFCK
@@ -427,10 +464,12 @@ C
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FCX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         IF (NASHT .GT. 0) THEN
          WRITE(LUPRI,'(/2A,I5)')' FVOEX MULLIKEN DISTRIBUTION CONTRB'
      *      ,' FOR VECTOR ',IOSIM
          CALL OUTPUT(FVX(1,1,IOSIM),
      *                     1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
+         END IF
  1002    CONTINUE
       END IF
       IF ((IPRRSP.GT.50).AND.(NCSIM.GT.0).AND.(NASHT.GT.1)) THEN
@@ -636,13 +675,13 @@ C
       END IF
       KDTOTAO = KDTVAO + NCSIM*N2BASX
 
-!ifdef DEBUG_RSPOLI
+#ifdef DEBUG_RSPOLI
       write(lupri,*) 'rspoli: ncsim,nosim',ncsim,nosim
       write(lupri,*) 'rspoli: nfmat,ndmat',nfmat,ndmat
       write(lupri,*) 'rspoli: KDXCAO,KDXVAO,KDTCAO,KDTVAO,
      &                        KDTOTAO,kfree',
      &                KDXCAO,KDXVAO,KDTCAO,KDTVAO,KDTOTAO,KFREE
-!endif
+#endif
 
 #ifdef MOD_SRDFT
       IF (DOHFSRDFT .OR. DOMCSRDFT) THEN
@@ -872,10 +911,19 @@ C     Change IFCTYP for all Fa matrices
       END IF
 #endif
 
+! Manu test !!!!!!!!!!!
       DFTADX = DFTADD
       DFTADD = .FALSE.
+#if defined (ENABLE_EFS)
+      if (use_efs) then
+          call sirefs(WRK(KFXCAO),WRK(KDXCAO),NFMAT,       IFCTYP)
+      else
+#endif
       CALL SIRFCK(WRK(KFXCAO),WRK(KDXCAO),NFMAT,ISYMDM,IFCTYP,
      &            DIRFCK,WRK(KFREE),LFREE)
+#if defined (ENABLE_EFS)
+      end if
+#endif
       DFTADD = DFTADX
 
 #ifdef DEBUG_RSPOLI

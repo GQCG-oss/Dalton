@@ -95,7 +95,7 @@ real(realk),pointer :: max_orbspreads(:)
            exit
         endif
     endif
-    if( nrmG.le. CFG%macro_thresh*10.0) then
+    if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
         write(ls%lupri,'(a)') '  %LOC% '
         write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
         write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
@@ -225,6 +225,23 @@ real(realk),pointer :: max_orbspreads(:)
   call orbspread_init(CFG%orbspread_inp,m,norb)
   call orbspread_update(CFG%orbspread_inp,CMO)
   call orbspread_gradx(G,norb,CFG%orbspread_inp)
+  !check for symmetry minimum, make random rotation
+  ! in case such a minimum is detected
+  nrmG = sqrt(mat_sqnorm2(G))
+  if (nrmG.lt. 1.0E-8) then
+    write(CFG%lupri,'(a,ES10.2)') '  %LOC% False minimum detected. Gradient norm = ', nrmG 
+    call mat_assign(X,G)
+    call normalize(X) 
+    call mat_trans(X,G)
+    call mat_daxpy(-1.0_realk,G,X)
+    call normalize(X)
+    call mat_scal(0.001_realk,X)
+    call updatecmo(cmo,X) 
+    call orbspread_update(CFG%orbspread_inp,CMO)
+    call orbspread_gradx(G,norb,CFG%orbspread_inp)
+    write(CFG%lupri,'(a,ES10.2)') '  %LOC% Norm after random rotation = ', sqrt(mat_sqnorm2(G)) 
+  endif
+
   call orbspread_value(oVal,CFG%orbspread_inp)
 
 
@@ -267,7 +284,7 @@ real(realk),pointer :: max_orbspreads(:)
             exit
      endif
   endif
-  if( nrmG.le. CFG%macro_thresh) then
+  if( nrmG.le. CFG%macro_thresh .and. i.gt.1) then
         write(ls%lupri,'(a)') '  %LOC% '
         write(ls%lupri,'(a)') '  %LOC%  ********* Orbital localization converged ************'
         write(ls%lupri,'(a)') '  %LOC%  *                                                   *'
@@ -280,7 +297,6 @@ real(realk),pointer :: max_orbspreads(:)
         exit
     end if
 
-   
    call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings

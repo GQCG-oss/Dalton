@@ -96,7 +96,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter,&
        & II_get_Fock_mat
-  use integralinterfaceIchorMod, only: II_Unittest_Ichor
+  use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
   implicit none
@@ -138,7 +138,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
-     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption)
+     call II_unittest_Ichor(LUPRI,LUERR,LS%SETTING,config%integral%debugIchorOption,config%integral%debugIchorLink)
      !the return statement leads to memory leaks but I do not care about this
      !for now atleast
      RETURN
@@ -311,6 +311,11 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
         !debug integral routines
         call di_debug_general(lupri,luerr,ls,nbast,S,D(1),config%integral%debugProp)
+
+        IF(config%integral%debugIchorLinkFull)THEN
+           call II_ichor_LinK_test(lupri,luerr,ls%setting,D)
+        ENDIF
+
         if (mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
@@ -704,6 +709,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use init_lsdalton_mod, only: open_lsdalton_files
   use lstensorMem, only: lstmem_init
   use rsp_util, only: init_rsp_util
+  use dft_memory_handling
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers, lstimer,  print_timers,time_start_phase,PHASE_WORK
   use lspdm_tensor_operations_module,only:init_persistent_array
@@ -733,6 +739,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   call set_matrix_default !initialize global matrix counters
   call init_rsp_util      !initialize response util module
   call lstmem_init
+  call setPrintDFTmem(.FALSE.)
   call init_IIDF_matrix
 #ifdef VAR_ICHOR
   call InitIchorSaveGabModule()
@@ -774,20 +781,26 @@ implicit none
   logical,intent(inout)      :: meminfo
   real(realk), intent(inout) :: t1,t2
   
+  IF(OnMaster)THEN
+     !these routines free matrices and must be called while the 
+     !slaves are still in mpislave routine
+     call free_IIDF_matrix
+     call free_AO2GCAO_GCAO2AO()
+  ENDIF
+  call lstmem_free
+#ifdef VAR_ICHOR
+  if(OnMaster)call FreeIchorSaveGabModule()
+#endif
+  
+
   !IF MASTER ARRIVED, CALL THE SLAVES TO QUIT AS WELL
 #ifdef VAR_MPI
   if(OnMaster)call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 #endif  
 
-  call free_IIDF_matrix
-  call lstmem_free
-
-#ifdef VAR_ICHOR
-  call FreeIchorSaveGabModule()
-#endif
-  call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
   call free_decinfo()
+
 
   if(OnMaster) call stats_mem(lupri)
 

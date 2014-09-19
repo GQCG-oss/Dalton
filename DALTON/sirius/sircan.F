@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 C     FILE: DALTON/sirius/sircan.F
 C
-#include "single.h"
 C
 C  /* Deck sircan */
       SUBROUTINE SIRCAN (IPRCAN,CREF,CMO,OCC,WRK,KFRSAV,LFRSAV)
@@ -269,6 +268,7 @@ C   INFORB : NASHT,?
 C   INFIND : IROW(*),ISSMO(*),...
 C   INFDIM : NBASMA,?
 C   INFTAP : 
+C   PGROUP : REP(),GROUP
 C
 #include "maxash.h"
 #include "maxorb.h"
@@ -281,6 +281,7 @@ C
 #include "inftap.h"
 #include "infpri.h"
 #include "dftcom.h"
+#include "pgroup.h"
 C
       DIMENSION DVZRAS(3)
       LOGICAL TRTONO, GETOCC, TRTOFC, TRTOCO, TRCVEC, TSTFLG
@@ -643,7 +644,8 @@ CHJ-E
             END IF
             DO 440 ISYM = 1,NSYM
                IF (NASH(ISYM) .GT. 0) THEN
-                  WRITE (LUPRI,'(/A,I3/)') ' Symmetry',ISYM
+                  WRITE (LUPRI,'(/A,I3,5A/)') ' Symmetry',ISYM,
+     &               ' ( irrep ',REP(ISYM-1),' in ',GROUP,' )'
                   IST  = IASH(ISYM) + 1
                   IEND = IASH(ISYM) + NASH(ISYM)
                   WRITE (LUPRI,'(5F14.9)') (AOCC(I), I = IST,IEND)

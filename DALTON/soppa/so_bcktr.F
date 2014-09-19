@@ -1,4 +1,3 @@
-#include "single.h"
 C
 C  /* Deck so_bcktr */
       SUBROUTINE SO_BCKTR(TR1E,LTR1E,TR1D,LTR1D,BTR1E,LBTR1E,BTR1D,

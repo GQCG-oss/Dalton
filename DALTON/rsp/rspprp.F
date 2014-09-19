@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 #ifdef REVLOG
 C===========================================================================
@@ -104,12 +103,7 @@ C
       JZDIM = 0
       JRSP5 = 0
       DO 100 I = 1,KZDIM
-#if defined (VAR_SPLITFILES)
-         CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-         IF (LRSP5 .EQ. -1) GOTO 110
-#else
          READ (LURSP5,END=110,ERR=110) JUNK
-#endif
          JZDIM = I
   100 CONTINUE
   110 KZDIM = JZDIM
@@ -122,39 +116,18 @@ C
          JZDIM  = KZDIM
          CALL REWSPL(LURSP3)
          CALL REWSPL(LURSP5)
-#if defined (VAR_SPLITFILES)
-         JRSP3 = 0
-         JRSP5 = 0
-#endif
  200     CONTINUE
             NLOAD  = NLOAD +1
             IF ((NLOAD.EQ.1).AND.(KOFFTY.EQ.1)) THEN
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-               IF (LRSP3 .EQ. -1) GOTO 910
-               CALL READST(LURSP5,LRSP5,DUMMY,JRSP5,.FALSE.)
-               IF (LRSP5 .EQ. -1) GOTO 920
-#else
                READ (LURSP3,ERR=910)
                READ (LURSP5,ERR=920)
-#endif
                JZDIM = JZDIM - 1
             ENDIF
             IF ( NLOAD .GT. 1) THEN
                CALL REWSPL(LURSP3)
-#if defined (VAR_SPLITFILES)
-               JRSP3 = 0
-               IF (KOFFTY.EQ.1) CALL READST(LURSP3,KZCONF,DUMMY,JRSP3,
-     &                                      .FALSE.)
-#else
                IF ( KOFFTY.EQ.1)READ (LURSP3)
-#endif
                DO 61 IVEC = 1,KZRED
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,DUMMY,JRSP3,.FALSE.)
-#else
                   READ (LURSP3)
-#endif
  61            CONTINUE
             END IF
             NSIM   = MIN(MAXSIM,JZDIM)
@@ -186,36 +159,17 @@ C
             IF (SOPPA) THEN
                CALL REWSPL(LURSP4)
                JRSP4 = 0
-#if defined (VAR_SPLITFILES)
-               CALL READST(LURSP4,LRSP4,WRK(KDIAE),JRSP4,.TRUE.)
-               IF (LRSP4 .NE. KZCONF) CALL QUIT('Inconsistent record '//
-     &              'length on unit LURSP4 in PPRST')
-#else
                CALL READT(LURSP4,KZCONF,WRK(KDIAE))
-#endif
             ENDIF
             DO 400 ISIM=1,NSIM
                IF (IBTYP(KOFFTY+KZRED+ISIM).EQ.JBCNDX) THEN
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBC),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZCONF) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in PPRST')
-#else
                   CALL READT(LURSP3,KZCONF,WRK(ISTBC))
-#endif
 C
 C   If SOPPA read in the p-h part of the transformed vector
 C   and construct the 2p-2h part and put everything as if read
 C
                   IF (SOPPA) THEN
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,
-     &                           WRK(ISTEC+KZCONF),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in PPRST')
-#else
                      CALL READT(LURSP5,KZYWOP,WRK(ISTEC+KZCONF))
-#endif
                      CALL DCOPY(KZWOPT,WRK(ISTEC+KZVAR),1,
      *                          WRK(ISTEC+KZVAR+KZCONF),1)
                      DO I=0,KZCONF-1
@@ -223,28 +177,13 @@ C
                      ENDDO
                      CALL DZERO(WRK(ISTEC+KZVAR),KZCONF)
                   ELSE
-#if defined (VAR_SPLITFILES)
-                     CALL READST(LURSP5,LRSP5,WRK(ISTEC),JRSP5,.TRUE.)
-                     IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                    'record length on unit LURSP5 in PPRST (2)')
-#else
                      CALL READT(LURSP5,KZYVAR,WRK(ISTEC))
-#endif
                   ENDIF
                   ISTBC = ISTBC + KZCONF
                   ISTEC = ISTEC + KZYVAR
                ELSE
-#if defined (VAR_SPLITFILES)
-                  CALL READST(LURSP3,LRSP3,WRK(ISTBO),JRSP3,.TRUE.)
-                  IF (LRSP3 .NE. KZYWOP) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP3 in PPRST (2)')
-                  CALL READST(LURSP5,LRSP5,WRK(ISTEO),JRSP5,.TRUE.)
-                  IF (LRSP5 .NE. KZYVAR) CALL QUIT('Inconsistent '//
-     &                 'record length on unit LURSP5 in PPRST (3)')
-#else
                   CALL READT(LURSP3,KZYWOP,WRK(ISTBO))
                   CALL READT(LURSP5,KZYVAR,WRK(ISTEO))
-#endif
                   ISTBO = ISTBO + KZYWOP
                   ISTEO = ISTEO + KZYVAR
                ENDIF

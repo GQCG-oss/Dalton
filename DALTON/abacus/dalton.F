@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -20,7 +20,6 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
-#include "single.h"
 C
 C=========================================================================
 C old log:
@@ -33,7 +32,7 @@ C=========================================================================
 #ifdef VAR_CHEMSHELL
       subroutine dalton
 #else
-      PROGRAM DALTON2013_DALTON
+      PROGRAM DALTON2014_DALTON
 #endif
 C
       use parallel_models_mpi
@@ -230,32 +229,33 @@ C
      &' ',
      &'   K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,',
      &'   L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,',
-     &'   P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,',
-     &'   J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,',
-     &'   H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,',
-     &'   H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,',
-     &'   E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,',
-     &'   B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,',
-     &'   J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,',
-     &'   S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,',
-     &'   K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,',
-     &'   K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,',
-     &'   P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,',
-     &'   M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,',
-     &'   S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,',
-     &'   P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,',
-     &'   S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,',
-     &'   A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,',
-     &'   A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,',
-     &'   L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,',
-     &'   M. Ziolkowski and H. Aagren,',
+     &'   J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,',
+     &'   T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,',
+     &'   L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,',
+     &'   C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,',
+     &'   H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,',
+     &'   M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,',
+     &'   P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,',
+     &'   T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,',
+     &'   J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,',
+     &'   O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,',
+     &'   C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,',
+     &'   J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,',
+     &'   T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,',
+     &'   T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,',
+     &'   A. Sanchez de Meras, T. Saue, S. P. A. Sauer,',
+     &'   B. Schimmelpfennig, K. Sneskov, A. H. Steindal,',
+     &'   K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,',
+     &'   E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,',
+     &'   O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski',
+     &'   and H. Aagren,',
      &'   "The Dalton quantum chemistry program system",',
      &'   WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)',
      &'',
      &'and',
      &'',
      &'   Dalton, a Molecular Electronic Structure Program,',
-     &'   Release DALTON2013.3 (2013), see http://daltonprogram.org'
+     &'   Release DALTON2014.0 (2014), see http://daltonprogram.org'
 C
          WRITE (LUPRI,'(3X,A)') SEPARATOR(1:76)
          WRITE (LUPRI,'(/T5,A//,(T3,A,T29,A,T59,A,T71,A))')
@@ -281,6 +281,8 @@ C
      &  '(NEVPT2)',
      *'Sonia Coriani,','University of Trieste,','Italy',
      &  '(CC module, MCD in RESPONS)',
+     *'Janusz Cukras,','University of Trieste,','Italy',
+     &  '(MChD in RESPONS)',
      *'Paal Dahle,','University of Oslo,','Norway',
      &  '(Parallelization)',
      *'Erik K. Dalskov,','UNI-C,','Denmark',
@@ -327,6 +329,8 @@ C
      &  '(cubic response in RESPONS module)',
      *'Poul Joergensen,','Aarhus University,','Denmark',
      &  '(RESPONS, ABACUS, and CC modules)',
+     *'Maciej Kaminski,','University of Warsaw,','Poland',
+     &  '(CPPh in RESPONS)',
      *'Joanna Kauczor,','Linkoeping University,','Sweden',
      &  '(Complex polarization propagator (CPP) module)',
      *'Sheela Kirpekar,','Univ. of Southern Denmark,','Denmark',
@@ -382,7 +386,7 @@ C
      *'Torgeir A. Ruden,','University of Oslo,','Norway',
      &  '(Numerical derivatives in ABACUS)',
      *'Kenneth Ruud,','UiT The Arctic U. of Norway,','Norway',
-     &  '(DALTON; ABACUS magnetic properties and  much more)',
+     &  '(DALTON; ABACUS magnetic properties and much more)',
      *'Pawel Salek,','KTH Stockholm,','Sweden',
      &  '(DALTON; DFT code)',
      *'Claire C. M. Samson','University of Karlsruhe','Germany',
@@ -572,7 +576,7 @@ C ahs only print if number of cores are less than 16
          IF (NODTOT .LE. 15) THEN
            CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-           WRITE(LUPRI,'(/A)') ' * Release: DALTON2013.3'
+           WRITE(LUPRI,'(/A)') ' * Release: DALTON2014.0'
            WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
            CALL TSTAMP('INIT',LUPRI)
            IF (GBYTES .GE. 1.D0) THEN

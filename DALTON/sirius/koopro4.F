@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -44,7 +44,6 @@ C        Spin free version of NEVPT
 C
 C
 C-----------------------------------------------------------------------
-#include "single.h"
 #include "implicit.h"
 #include "maxorb.h"
 #include "mxpdim.h"
@@ -2925,7 +2924,7 @@ C     CALCUL DE L ELEMENT DE MATRICE
          WRITE (lupri,1008) (ITB(K+NE2),K=1,NE2)
  1007    FORMAT (' TROU',8I4)
  1008    FORMAT (' PART',8I4)
-         STOP
+         CALL QUIT('PROBLEM IN NEVPT2, SEE OUTPUT')
          END
 c------------------------------------------------------------------
       integer function index(i,j,k,l)
@@ -5346,7 +5345,6 @@ c      write (6,'(''norm ou'',8I3)') nv(1),nv(2),nv(3),nv(4)
       end
 c-----------------------------------------------------
       subroutine nwadd(nwall,nadd)
-#include "single.h"
 #include "implicit.h"
 #include "priunit.h"
       nwall=nwall+nadd
@@ -5357,7 +5355,6 @@ c      call flshfo(lupri)
       end
 c-----------------------------------------------------
       subroutine nwdel(nwall,ndel)
-#include "single.h"
 #include "implicit.h"
 #include "priunit.h"
       nwall=nwall-ndel
