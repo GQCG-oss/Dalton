@@ -318,6 +318,7 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+        use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -372,6 +373,8 @@ C
 C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
+!     peqm
+      real*8, dimension(:,:), allocatable :: molgrad
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -887,10 +890,38 @@ Ckr
 Ckr   Get QMMM gradient/Hessian integrals
 Ckr
 C
+
+C     ****************************************
+C     ***** PE contribution to gradient ******
+C     ****************************************
+C     NHL 03/13
+
+      ! den dalwrk vi sender ind kommer til at holde PE-gradientbidrag.
+
+      if (propty .and. peqm) then
+         allocate(molgrad(3,natoms))
+         call pe_master(runtype='molgrad', denmats=denmat,
+     &                  molgrads=molgrad, nmats=1)
+         j = 1
+         do i = 1, natoms
+             pegrad(j:j+2) = molgrad(:,i)
+             j = j + 3
+         end do
+         deallocate(molgrad)
+!     når man giver input variable ved "navn=", så kan man skrive dem i
+!     vilkårlig rækkefølge     
+!     What is expgra and should we do something if true. It's something
+!     with the analytical gradient.
+      end if
+C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
+C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
+
+
 C     *************************
 C     ***** Print Section *****
 C     *************************
 C
+
       IF (IPRINT .GT. 0) THEN
          IF (EXPGRA) THEN
             CALL HEADER('One-electron part of alpha gradient',-1)
@@ -900,7 +931,7 @@ C
             KCSTRA = 1
             KSCTRA = KCSTRA + 9*NUCDEP*NUCDEP
             KLAST  = KSCTRA + 9*NUCDEP*NUCDEP
-            IF (KLAST .GT. LWORK) 
+            IF (KLAST .GT. LWORK)
      &           CALL STOPIT('ONEDR1','TRACOR',KLAST,LWORK)
             CALL HEADER('Kinetic energy integral gradient',-1)
             CALL PRIGRD(GRADKE,WORK(KCSTRA),WORK(KSCTRA))
@@ -930,6 +961,10 @@ C
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Cavity solvent part of the gradient',-1)
                CALL PRIGRD(GSOLCV,WORK(KCSTRA),WORK(KSCTRA))
+            END IF
+            IF (PEQM) THEN
+               CALL HEADER('Polarizable Embedding part of gradient',-1)
+               CALL PRIGRD(PEGRAD,WORK(KCSTRA),WORK(KSCTRA))
             END IF
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)

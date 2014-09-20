@@ -213,7 +213,7 @@ C     ***** Dipole moment gradient *****
 C     **********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (.NOT. PASDIP) THEN
+      IF (.NOT. PASDIP .AND. .NOT. peqm) THEN
          CALL DIPCTL(WORK(KLAST),LWRK,PASDIP)
          IF (PASDIP) CALL ABAWRITRS
          CALL FLSHFO(LUPRI)
@@ -301,7 +301,8 @@ C
       IF (.NOT. PASREL) THEN
       IF (MOLHES .OR. SHIELD .OR. MAGSUS .OR. VCD .OR.
      &    DIPDER .OR. POLAR .OR. QPGRAD .OR. (SPNSPN .AND. DOPSO) .OR.
-     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT) THEN
+     &    ECD .OR. VROA .OR. MOLGFA .OR. SPINRO .OR. OPTROT 
+     &    .AND. .NOT. peqm) THEN
          CALL RELAX(WORK(KPSO),WORK(KSD),WORK(KFC),WORK(KSDFC),
      &              WORK(KLAST),LWRK,PASREL,.FALSE.)
          IF (PASREL) CALL ABAWRITRS
@@ -542,6 +543,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
+         if (peqm) call addgrd(pegrad)
       END IF
 C
 C     Calculated dipole moment
@@ -550,9 +552,9 @@ C
 C
 C     Calculated elements of dipole gradient
 C
-      CALL DZERO(DIP1,9*NUCDEP)
+      IF (.NOT. PEQM) CALL DZERO(DIP1,9*NUCDEP)
 Clf to be adjusted for PCM IR intensities calculation
-      IF (DIPDER) THEN
+      IF (DIPDER .and. .not. peqm) THEN
          CALL DIPADD(DDIPN)
          CALL DIPADD(DDIPE)
          CALL DIPADD(DDIPS)
@@ -593,6 +595,13 @@ C     ***** Fold in contrbutions from floating orbitals *****
 C     *******************************************************
 C
       CALL FLTORB(WORK(KLST2),LWRK1)
+      CALL FLSHFO(LUPRI)
+C
+C     *******************************************************
+C     ***** Freezing any coordinates ???                *****
+C     *******************************************************
+C
+      CALL FREEZE_COORDINATES(WORK(KLST2),LWRK1)
       CALL FLSHFO(LUPRI)
 C
 C     **************************
@@ -646,7 +655,11 @@ C     ***** Vibrational analysis *****
 C     ********************************
 C
       CALL GETTIM(TIMSTR,TIMDUM)
-      IF (VIB) CALL VIBCTL(WORK(KLAST),LWRK3)
+      IF (VIB) THEN 
+          CALL SET_VIBCTL('Copy_PRJTRO')
+          CALL VIBCTL(WORK(KLAST),LWRK3)
+          CALL SET_VIBCTL('Reset')
+      END IF
       CALL GETTIM(TIMVIB,TIMDUM)
       TIMVIB = TIMVIB - TIMSTR
       CALL FLSHFO(LUPRI)

@@ -2698,7 +2698,7 @@ C
       WRITE (LUSIFC) LAB123,LBSIFC
 C     ... the label LBSIFC is initialized in block data sbdtap
       WRITE (LUSIFC) POTNUC,EMY,EACTIV,EMCSCF,
-     &               ISTATE,ISPIN,NACTEL,LSYM
+     &               ISTATE,ISPIN,NACTEL,LSYM,GRDNRM
       WRITE (LUSIFC) NISHT,NASHT,NOCCT,NORBT,NBAST,NCONF,NWOPT,NWOPH,
      &               NCDETS, NCMOT,NNASHX,NNASHY,NNORBT,N2ORBT,
      &               NSYM,MULD2H, NRHF,NFRO,
