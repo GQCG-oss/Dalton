@@ -169,7 +169,12 @@ subroutine PASSsub
                 call AddToString('exp,nPrimA,nPrimB,nPrimC,nPrimD,&')
                 call writeString(LUFILE)
                 call initString(9)          
-                call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)')
+                call AddToString('& MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2')
+                IF(DoOpenACC)THEN
+                   call AddToString(',iASync)')
+                ELSE
+                   call AddToString(')')
+                ENDIF
                 call writeString(LUFILE)
 
                 WRITE(LUFILE,'(A)')'  implicit none'
@@ -288,6 +293,7 @@ subroutine PASSsub
                 ELSE
                    WRITE(LUFILE,'(A)')'!  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)'
                 ENDIF
+                IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
                 WRITE(LUFILE,'(A)')'  !Local variables'
                 !             WRITE(LUFILE,'(A)')'  real(realk) :: Pexpfac,PREF'
                 !             WRITE(LUFILE,'(A,i4,A)')'  real(realk) :: TwoTerms(',MAX(1,nTUVprev2-nTUVprev3),')'
@@ -470,15 +476,15 @@ subroutine PASSsub
 !                      IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP PARALLEL DO DEFAULT(shared) COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ) '
                       IF(Doopenmp)WRITE(LUFILE,'(A)')'!$OMP DO COLLAPSE(3) PRIVATE(iP,iTUVP,iTUVQ)'
                       IF(SegP)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimQ,nPasses,Aux2) ASYNC(iASync)'
                          WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPasses'
                       ENDIF
                       IF(SegQ)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimP,nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPrimP,nPasses,Aux2) ASYNC(iASync)'
                          WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimP*nPasses'
                       ENDIF
                       IF(Seg)THEN
-                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)'
+                         IF(DoopenACC)WRITE(LUFILE,'(A)')'!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)'
                          WRITE(LUFILE,'(A)') '  DO iP = 1,nPasses'
                       ENDIF
                       WRITE(LUFILE,'(A,I3)')'   DO iTUVQ=1,',nTUVQ
@@ -550,7 +556,7 @@ subroutine PASSsub
                    WRITE(LUFILE,'(A)')'!$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &'
                    WRITE(LUFILE,'(A)')'!$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&'
                    WRITE(LUFILE,'(A,A,A,A,A)')'!$ACC        ',ToExpLabel,'exp,',FromExpLabel,'exp,&'
-                   WRITE(LUFILE,'(A)')'!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)'
+                   WRITE(LUFILE,'(A)')'!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)'
                 ENDIF
                 !START LOOP
                 IF(COLLAPSE)THEN

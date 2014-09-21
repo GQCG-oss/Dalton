@@ -614,9 +614,9 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
    enddo
 
 !   WRITE(lupri,*)'The transformation matrix itype=',itype,'ang=',ang
-!   call output(bCMO,1,nb,1,nb,nb,nb,1,lupri)
+!   call ls_output(bCMO,1,nb,1,nb,nb,nb,1,lupri)
 !   WRITE(lupri,*)'The Original block:'
-!   call output(shell2%segment(1)%elms,1,shell2%nprim,1,shell2%norb,&
+!   call ls_output(shell2%segment(1)%elms,1,shell2%nprim,1,shell2%norb,&
 !        &shell2%nprim,shell2%norb,1,lupri)
    IF(.NOT. ls%input%BASIS%wbasis(gctbasparam))THEN
       call lsquit('GCtrans basis not call mem_allocd in trilevel_convert_ao2gcao',lupri)
@@ -715,7 +715,7 @@ integer :: icont,iprim,iprimLoc,iContLoc,iseg,ielm,ip1,ic1
          shell2%segment(1)%elms = reshape(CCtmp, (/ nprim*norb /))
          call mem_dealloc(CCtmp)
          !      WRITE(6,*)'The transformed block:'
-         !      call output(shell2%segment(1)%UCCelms,1,shell2%nprim,1,shell2%norb,&
+         !      call ls_output(shell2%segment(1)%UCCelms,1,shell2%nprim,1,shell2%norb,&
          !           &shell2%nprim,shell2%norb,1,6)
          ls%input%basis%BINFO(REGBASPARAM)%GCbasis = .TRUE.
       ELSE
@@ -805,7 +805,7 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            iCont = iCont + BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(iseg)%ncol
         ENDDO
 !        WRITE(6,*)'VBASIS untransfomed',nrow,ncol
-!        call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+!        call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
         IF(GCtransAlloc)THEN
            !GCbasis requested
            IF(GCbasis)THEN
@@ -814,13 +814,13 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            ELSE
               !the input basis have not been transformed so we need to transform valence basis
               !WRITE(6,*)'VBASIS untransfomed',nrow,ncol
-              !call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+              !call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
               nrow2 = GCtrans%ATOMTYPE(J)%SHELL(K)%nprim
               ncol2 = GCtrans%ATOMTYPE(J)%SHELL(K)%norb
               call mem_alloc(bCMO,nrow2,ncol2)
               bCMO = reshape(GCtrans%ATOMTYPE(J)%SHELL(K)%segment(1)%elms,(/ nrow2,ncol2 /))
               !WRITE(6,*)'transform matrix',nrow2,ncol2
-              !call output(bCMO,1,nrow2,1,ncol2,nrow2,ncol2,1,6)
+              !call ls_output(bCMO,1,nrow2,1,ncol2,nrow2,ncol2,1,6)
               CCtmp = matmul(CCtmp,bCMO) 
               VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms = reshape(CCtmp, (/ nrow*ncol /))
               !print*,'GCtransAlloc true so we transform GC basis and we keep ',VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms
@@ -831,7 +831,7 @@ integer :: iprim,icont,iseg,ielm,icontloc,ic1,ip1,iprimloc,nrow2,ncol2
            VBASISINFO%ATOMTYPE(J)%SHELL(K)%segment(1)%elms = reshape(CCtmp, (/ nrow*ncol /))
         ENDIF
 !        WRITE(6,*)'VBASIS transformed'
-!        call output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
+!        call ls_output(CCtmp,1,nrow,1,ncol,nrow,ncol,1,6)
         call mem_dealloc(CCtmp)
      ENDDO
   ENDDO

@@ -141,7 +141,11 @@ CONTAINS
                 WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,&'
                 WRITE(LUFILE,'(A)')'         & Pcent,Qcent,integralPrefactor,&'
                 WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&'
-                WRITE(LUFILE,'(A)')'         & AUXarray)'
+                IF(DoOpenACC)THEN
+                   WRITE(LUFILE,'(A)')'         & AUXarray,iASync)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'         & AUXarray)'
+                ENDIF
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
@@ -159,6 +163,7 @@ CONTAINS
                    WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: QpreExpFac(nPrimQ),PpreExpFac(nPrimP,nAtomsA,nAtomsB)'
                 ENDIF
                 WRITE(LUFILE,'(A,A,A)')'  real(realk),intent(inout) :: AUXarray(',nPrimLabel(1:nPrim),')'
+                IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
                 WRITE(LUFILE,'(A)')'  !local variables'
                 WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',36.0d0,'_realk'
                 WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
@@ -310,7 +315,11 @@ CONTAINS
                 WRITE(LUFILE,'(A)')'         & reducedExponents,TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
              ENDIF
              WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
-             WRITE(LUFILE,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
+             IF(DoOpenACC)THEN
+                WRITE(LUFILE,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray,iASync)'
+             ELSE
+                WRITE(LUFILE,'(A)')'         & PpreExpFac,QpreExpFac,AUXarray)'
+             ENDIF
              WRITE(LUFILE,'(A)')'  implicit none'
              WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
              WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
@@ -345,6 +354,7 @@ CONTAINS
              ELSE
                 WRITE(LUFILE,'(A,A,A)')'  real(realk),intent(inout) :: AUXarray(',nPrimLabel(1:nPrim),',4)'
              ENDIF
+             IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
              WRITE(LUFILE,'(A)')'  !local variables'
              IF(.NOT.Seg1Prim)THEN
                 WRITE(LUFILE,'(A)')'  Integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB'
@@ -754,7 +764,11 @@ CONTAINS
                 ELSEIF(center.EQ.4)THEN
                    WRITE(LUFILE,'(A)')'         & reducedExponents,RJ000Array,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&'
                 ENDIF
-                WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)'
+                IF(DoOpenACC)THEN
+                   WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray,iASync)'
+                ELSE
+                   WRITE(LUFILE,'(A)')'         & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,AUXarray)'
+                ENDIF
                 WRITE(LUFILE,'(A)')'  implicit none'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
                 WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
@@ -818,6 +832,7 @@ CONTAINS
                       IF(Seg1Prim)WRITE(LUFILE,'(A,I5,A)')'  real(realk),intent(inout) :: AUXarray(nPassP,',nTUV,')'
                    ENDIF
                 ENDIF
+                IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
                 WRITE(LUFILE,'(A)')'  !local variables'
                 IF(.NOT.Seg1Prim)THEN
                    WRITE(LUFILE,'(A)')'  integer :: iPassP,iPrimP,iPrimQ,ipnt,IP,iTUV,iAtomA,iAtomB'
@@ -1435,7 +1450,11 @@ CONTAINS
                       WRITE(LUFILE,'(A,A,I2,A)')'subroutine BuildRJ000'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,'(nPassP,nPrimP,nPrimQ,reducedExponents,&'
                    ENDIF
                    WRITE(LUFILE,'(A)')'         & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
-                   WRITE(LUFILE,'(A)')'         & RJ000array)'
+                   IF(DoOpenACC)THEN
+                      WRITE(LUFILE,'(A)')'         & RJ000array,iASync)'
+                   ELSE
+                      WRITE(LUFILE,'(A)')'         & RJ000array)'
+                   ENDIF
                    WRITE(LUFILE,'(A)')'  implicit none'
                    WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ'
                    WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
@@ -1461,6 +1480,7 @@ CONTAINS
                          WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: RJ000array(nPassP,0:',JMAX,')'
                       ENDIF
                    ENDIF
+                   IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
                    WRITE(LUFILE,'(A)')'  !local variables'
                    IF(COLLAPSE)THEN
                       IF(Seg1Prim)THEN
@@ -1524,7 +1544,7 @@ CONTAINS
                        WRITE(LUFILE,'(A)') '!$ACC         iPrimQ,iPrimP,iPassP,&'
                       ENDIF
                       WRITE(LUFILE,'(A)')  '!$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&'
-                      WRITE(LUFILE,'(A)')  '!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)'
+                      WRITE(LUFILE,'(A)')  '!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)'
                    ENDIF
                    IF(Collapse)THEN
                       IF(Seg1Prim)THEN
@@ -1874,7 +1894,11 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
              WRITE(LUFILE,'(4A)')DIR,'        Pexp,',centerstring,'center, &'
           ENDIF
        ENDIF
-       WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP)'
+       IF(OpenACC)THEN          
+          WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP) ASYNC(iASync)'
+       ELSE
+          WRITE(LUFILE,'(2A)')      DIR,'        nPrimP,nPrimQ,nPassP)'
+       ENDIF
     ENDIF
 !!This is a CPU code so if OpenMP it uses OpenMP. However, I would like 
 !!to test OpenACC so in case of no OpenMP and OpenACC it uses OpenACC)

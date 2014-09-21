@@ -388,13 +388,13 @@ contains
 
    if (decomp%info_rsp_precond) then
       write (decomp%lupri,*) 'b vector overlaps, response solver:'
-      call OUTPUT(rsp_boverlaps, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
+      call LS_OUTPUT(rsp_boverlaps, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
 
       write (decomp%lupri,*) 'Reduced E2, response solver:'
-      call OUTPUT(rsp_Ared, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
+      call LS_OUTPUT(rsp_Ared, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
 
       write (decomp%lupri,*) 'Reduced S2, response solver:'
-      call OUTPUT(rsp_Sred, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
+      call LS_OUTPUT(rsp_Sred, 1, 2*iter, 1, 2*iter, 200, 200, 1, decomp%lupri)
    endif
 
    error = abs(rsp_Ared(1,2*iter) - rsp_Ared(2*iter,1))
@@ -474,16 +474,16 @@ contains
    RHS(1:2*iter) = rsp_Gred(1:2*iter)
 
    !write (decomp%lupri,*) "E2:"
-   !call OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
    !write (decomp%lupri,*) "S2:"
-   !call OUTPUT(S, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(S, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
    A = A + omega*S  !Stinne: SIGN CHANGED ON OMEGA!!! 10/7-2009 
                     !NB: comments not changed!
    !write (decomp%lupri,*) 'E2 - omega*S2:'
-   !call OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
   
    !write (decomp%lupri,*) 'RHS:'
-   !call OUTPUT(RHS, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(RHS, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    !Solve set of linear equations Ax = b:
    call DGESV(2*iter, 1, A, 2*iter, IPIV, RHS, 2*iter, IERR) !Solution vector is found in RHS.
    if (IERR /= 0) then
@@ -492,7 +492,7 @@ contains
       CALL lsQUIT(' Problem in DGESV',decomp%lupri)
    endif
    !write (decomp%lupri,*) 'Solution vector:'
-   !call OUTPUT(RHS, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(RHS, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    xred = RHS
    !Now obtain x and residual in real space
    call mat_zero(res) ; call mat_zero(x)
@@ -571,12 +571,12 @@ contains
    S(1:2*iter,1:2*iter) = rsp_Sred(1:2*iter,1:2*iter)
 
    !write (decomp%lupri,*) "E2:"
-   !call OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
    !write (decomp%lupri,*) "S2:"
-   !call OUTPUT(S, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(S, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
 
    !write (decomp%lupri,*) 'E2 - omega*S2:'
-   !call OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(A, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
   
    !Solve eigenvalue equation AX = omegaBX:
    call RGG(2*iter,2*iter,A,S,ALFR,ALFI,BETA,1,EIGENVEC,IERR)
@@ -586,13 +586,13 @@ contains
       CALL lsQUIT(' Problem in RGG',decomp%lupri)
    endif
    !write (decomp%lupri,*) 'Numerator: Real part of eigenval:'
-   !call OUTPUT(ALFR, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(ALFR, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    !write (decomp%lupri,*) 'Numerator: Im part of eigenval:'
-   !call OUTPUT(ALFI, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(ALFI, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    !write (decomp%lupri,*) 'Denominator: Real part of eigenval:'
-   !call OUTPUT(BETA, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(BETA, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    !write (decomp%lupri,*) 'Eigenvectors:'
-   !call OUTPUT(EIGENVEC, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
+   !call LS_OUTPUT(EIGENVEC, 1, 2*iter, 1, 2*iter, 2*iter, 2*iter, 1, decomp%lupri)
   
    do i = 1, 2*iter
       if (abs(ALFI(i)) > 1.0E-10_realk) then
@@ -602,7 +602,7 @@ contains
    enddo 
 
    !write (decomp%lupri,*) 'Eigenvalues:'
-   !call OUTPUT(ALFR, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(ALFR, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
 
    !Find lowest positive eigenvalue:
    omega = 1.0E6_realk
@@ -628,7 +628,7 @@ contains
    xred =  EIGENVEC(1:2*iter,chosen_eival)
    
    !write (decomp%lupri,*) 'Chosen eigenvec:'
-   !call OUTPUT(xred, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
+   !call LS_OUTPUT(xred, 1, 2*iter, 1, 1, 2*iter, 1, 1, decomp%lupri)
    
    !Now obtain x and residual in real space
    call mat_zero(res) ; call mat_zero(x)

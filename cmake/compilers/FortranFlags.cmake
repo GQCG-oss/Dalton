@@ -13,8 +13,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -m64"
             )
     endif()
+    if(NOT DEVELOPMENT_CODE)
+        # suppress warnings in exported code
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w")
+    endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace -fcray-pointer -Wuninitialized")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
@@ -68,7 +72,11 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFORT)
-    set(CMAKE_Fortran_FLAGS         "-w -fpp -assume byterecl -DVAR_IFORT")
+    set(CMAKE_Fortran_FLAGS         "-fpp -assume byterecl -DVAR_IFORT")
+    if(NOT DEVELOPMENT_CODE)
+        # suppress warnings in exported code
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -w")
+    endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
     set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")

@@ -365,7 +365,7 @@ do Ipass = IpassStart,IpassEnd
              KmatIchor = 0.0E0_realk
              call MakeRandomDmat(Dmat,dim2,dim4,nDmat) !NON SYMMETRIC DMAT
 !             WRITE(lupri,*)'The Density Matrix: '
-!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+!             call ls_output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
 
              if(associated(integralsII))THEN
                 call mem_dealloc(integralsII)
@@ -398,11 +398,11 @@ do Ipass = IpassStart,IpassEnd
              call FREE_SCREEN_ICHORERI
 
 !             WRITE(lupri,*)'The Exchange Matrix: '
-!             call output(KmatII(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             call ls_output(KmatII(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
 !             WRITE(lupri,*)'The Exchange Matrix: '
-!             call output(KmatIchor(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             call ls_output(KmatIchor(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
 !             WRITE(lupri,*)'The Density Matrix: '
-!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+!             call ls_output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
 
              write(lupri,'(A,A,A,A,A,A,A,A,A)')'LINK BASIS(',BASISTYPE(iBasis1),',',&
                   & BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
@@ -558,7 +558,7 @@ do Ipass = IpassStart,IpassEnd
           call SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
 !          WRITE(lupri,*)'The LHS BatchGab  DIM:',nBatchA,nBatchB,'atoms=',&
 !               & atomicmolecule(1)%nAtoms,atomicmolecule(2)%nAtoms
-!          call OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!          call LS_OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
           IF(atomicmolecule(1)%nAtoms.NE.nBatchA)call lsquit('Error dim1 in IchorTestingScreen',-1)
           IF(atomicmolecule(2)%nAtoms.NE.nBatchB)call lsquit('Error dim2 in IchorTestingScreen',-1)
           call mem_alloc(IIBATCHGAB,nBatchA,nBatchB)
@@ -593,9 +593,9 @@ do Ipass = IpassStart,IpassEnd
                    WRITE(lupri,*)'Thermite Matrix OUTPUT'
                    call mat_print(GAB,1,dim1,1,dim2,lupri)
                    WRITE(lupri,*)'The Ichor BatchGab'
-                   call OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+                   call LS_OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
                    WRITE(lupri,*)'The Thermite BatchGab'
-                   call OUTPUT(IIBATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+                   call LS_OUTPUT(IIBATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
                    call lsquit('Error in Ichor Screening Testing',-1)
 !                ELSE
 !                   print*,'ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))',ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))

@@ -1136,7 +1136,7 @@ Do i=1, NAtoms
    TransformPM((I-1)*3+1:(I-1)*3+3, (I-1)*3+1:(I-1)*3+3) = Principle_Axes
 Enddo
 !Call Underline(lupri, 'Transformation matrix to principle axes', -1)
-!Call Output(TransfrmPM, 1, NumCoord, 1, NumCoord, NumCoord, &
+!Call LS_Output(TransfrmPM, 1, NumCoord, 1, NumCoord, NumCoord, &
 !            NumCoord, 1, lupri)
 ! Set up the translational vectors
 TraRotVec(1:(NAtoms*3):3, 1) = Sqrt(Mass(1:NAtoms))/Sqrt(TotalMass)
@@ -1183,12 +1183,12 @@ End Do
 
 If (print_level >= 9) Then
 !  Call Underline(lupri, 'MW geometry in principal axes', -1)
-!  Call Output(Scale_Vector, 1, 1, 1, NAtoms*3, 1, NAtoms*3, 1, lupri)
+!  Call LS_Output(Scale_Vector, 1, 1, 1, NAtoms*3, 1, NAtoms*3, 1, lupri)
 !  Call Underline(lupri, &
 !                'Translation and rotation vectors in MW Cartesians', -1)
-!  Call Output(TraRotVec, 1, NAtoms*3, 1, TraRotDim, NAtoms*3, 6, 1, lupri)
+!  Call LS_Output(TraRotVec, 1, NAtoms*3, 1, TraRotDim, NAtoms*3, 6, 1, lupri)
 !  Call Underline(lupri, 'Projection matrix in principal axes', -1)
-!  Call Output(Proj_MatPM, 1, NAtoms*3, 1, NAtoms*3, NAtoms*3, NAtoms*3, &
+!  Call LS_Output(Proj_MatPM, 1, NAtoms*3, 1, NAtoms*3, NAtoms*3, NAtoms*3, &
 !              1, lupri)
 End If
 !
@@ -1200,7 +1200,7 @@ Proj_MatPM = Proj_Mat
 Proj_Mat = MatMul(TransformPM, Proj_MatPM)
 If (print_level >= 3) Then
 !    Call Underline(lupri, 'Projection matrix', -1)
-!    Call Output(Proj_Mat, 1, NAtoms*3, 1, NAtoms*3, NAtoms*3, NAtoms*3, &
+!    Call LS_Output(Proj_Mat, 1, NAtoms*3, 1, NAtoms*3, NAtoms*3, NAtoms*3, &
 !                1, lupri)
 End If
 ! Do the projection

@@ -668,12 +668,12 @@ subroutine print_dec_info()
    if(DECinfo%PairEstimate) then
         write(LU,'(a,g15.3)') 'Pair distance cutoff threshold (Angstrom)           = ',&
           & DECinfo%pair_distance_threshold*bohr_to_angstrom
-        if (DECinfo%orb_based_fragopt) then 
-           write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom     = ',&
-             & DECinfo%estimateInitAtom
-        else
+        if (DECinfo%no_orb_based_fragopt) then 
            write(LU,'(a,e15.3)') 'Use Pair Estimate initialisation radius (Angstrom)  = ',&
              & DECinfo%estimateINITradius*bohr_to_angstrom
+        else
+           write(LU,'(a,i5)') 'Use Pair Estimate initialisation number of atom     = ',&
+             & DECinfo%estimateInitAtom
         end if
    endif
 
