@@ -678,16 +678,19 @@ def write_subroutine_body_acc(f,idxarr,perm,modes,args,acc_case):
     offsetstr2 = offsetstr + "  "
 
     #WRITING OPENACC DIRECTIVES:
-    oaccparallel_init = "!$acc parallel present(array_in,array_out) async(async_id)\n"
+    oaccparallel_init = "!$acc parallel present(array_in,array_out)&\n"
     if(modes == 4):
+      oaccparallel_init += "!$acc& firstprivate(pre1,pre2,da,db,dc,dd) private(a,b,c,d) async(async_id)\n"
       oaccloop_gang = "!$acc loop gang collapse(2)\n"
       oaccloop_worker = "!$acc loop worker\n"
       oaccloop_vector = "!$acc loop vector\n"
     elif(modes == 3):
+      oaccparallel_init += "!$acc& firstprivate(pre1,pre2,da,db,dc) private(a,b,c) async(async_id)\n"
       oaccloop_gang = "!$acc loop gang\n"
       oaccloop_worker = "!$acc loop worker\n"
       oaccloop_vector = "!$acc loop vector\n"
     elif(modes == 2):
+      oaccparallel_init += "!$acc& firstprivate(pre1,pre2,da,db) private(a,b) async(async_id)\n"
       oaccloop_gang = "!$acc loop gang, worker\n"
       oaccloop_vector = "!$acc loop vector\n"
 
@@ -886,7 +889,7 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   subheaderstr+= "    real(realk),intent(in) :: array_in("+reordstr2+")\n"
   subheaderstr+= "    !> reordered array\n"
   subheaderstr+= "    real(realk),intent(inout) :: array_out("+reordstr3+")\n"
-  subheaderstr+= "    integer(acc_handle_kind) :: async_id\n"
+  subheaderstr+= "    integer(acc_handle_kind),intent(in) :: async_id\n"
   subheaderstr+= "    integer :: "
   for i in range(modes):
     subheaderstr+= abc[i]+",d"+abc[i]+","
@@ -896,8 +899,6 @@ def write_subroutine_header_acc(f,idxarr,perm,now,modes,acc_case):
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
   subheaderstr += "\n" 
-  subheaderstr += "    if (async_id .eq. -1) async_id = acc_async_sync\n"
-  subheaderstr += "\n"
 
   f.write(subheaderstr)
   return sname
