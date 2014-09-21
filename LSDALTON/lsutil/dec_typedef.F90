@@ -88,6 +88,8 @@ module dec_typedef_module
      logical :: frozencore
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
+     !> Print fragment energies for full molecular cc
+     logical :: print_frags
      !> Enforce canonical orbitals in calculation 
      logical :: use_canonical
      !> Simulate full molecular calculation in DEC mode  (debug)
