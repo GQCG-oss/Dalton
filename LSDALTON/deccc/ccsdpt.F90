@@ -41,8 +41,8 @@ module ccsdpt_module
   
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
-       & ccsdpt_energy_e4_full, print_e4_full, ccsdpt_energy_e5_full,&
-       & print_e5_full,ccsdpt_energy_e5_ddot
+       & ccsdpt_energy_e4_full, print_e4_full,&
+       & ccsdpt_energy_e5_full,print_e5_full,ccsdpt_energy_e5_ddot
   private
 
 #ifdef VAR_OPENACC
@@ -861,8 +861,10 @@ contains
 
                         if (full_no_frags) then
 
-                           call ccsdpt_e4_full_ijk(i,i,k,nocc,nvirt,eivalocc,eivalvirt,&
-                                             & trip_ampl,trip_tmp,e4,.true.,async_id(4),cublas_handle)
+                          call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
+                                               & e4,async_id(4),cublas_handle)
 
                         else
 
@@ -907,8 +909,10 @@ contains
 
                         if (full_no_frags) then
 
-                           call ccsdpt_e4_full_ijk(i,j,j,nocc,nvirt,eivalocc,eivalvirt,&
-                                             & trip_ampl,trip_tmp,e4,.true.,async_id(4),cublas_handle)
+                          call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),&
+                                               & e4,async_id(4),cublas_handle)
 
                         else
 
@@ -956,8 +960,11 @@ contains
 
                         if (full_no_frags) then
 
-                           call ccsdpt_e4_full_ijk(i,j,k,nocc,nvirt,eivalocc,eivalvirt,&
-                                             & trip_ampl,trip_tmp,e4,.true.,async_id(4),cublas_handle)
+                          call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
+                                               & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
+                                               & vvoo(:,:,j,k),vvoo(:,:,k,i),vvoo(:,:,k,j),&
+                                               & ccsdpt_singles(:,i),ccsdpt_singles(:,j),ccsdpt_singles(:,k),&
+                                               & e4,async_id(4),cublas_handle)
 
                         else
 
