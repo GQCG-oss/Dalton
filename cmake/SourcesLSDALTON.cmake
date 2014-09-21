@@ -182,6 +182,7 @@ set(SOLVERUTIL_SOURCES
     LSDALTON/SolverUtilities/rsp_utilities.F90
     )
 set(RSP_PROPERTIES_SOURCES	
+    LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
     )
@@ -417,7 +418,10 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ODbatches.F90
     LSDALTON/LSint/ReadMolFile.F90
     LSDALTON/LSint/ThermiteDistribute.F90
+    LSDALTON/LSint/ThermiteDistribute2.F90
+    LSDALTON/LSint/ThermiteDistributeGen.F90
     LSDALTON/LSint/ThermiteDistributeK.F90
+    LSDALTON/LSint/ThermiteDistributeK2.F90
     LSDALTON/LSint/ThermiteDistributeDEC.F90
     LSDALTON/LSint/ThermiteDriver.F90
     LSDALTON/LSint/ThermiteIntegrals.F90

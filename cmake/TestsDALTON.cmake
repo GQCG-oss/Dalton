@@ -76,7 +76,6 @@ add_dalton_runtest(qmmm3                         "dalton;runtest;qmmm;parallel;m
 add_dalton_runtest(qmmm4                         "dalton;runtest;qmmm;parallel;short")
 add_dalton_runtest(qmmm5                         "dalton;runtest;qmmm;parallel;medium")
 add_dalton_runtest(qmmm6                         "dalton;runtest;qmmm;medium;parallel")
-add_dalton_runtest(qmmm7                         "dalton;runtest;qmmm;parallel;medium")
 add_dalton_runtest(walk_solvmag                  "dalton;runtest;long")
 
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
@@ -387,6 +386,11 @@ if(ENABLE_QFITLIB)
 add_dalton_runtest(qfit_hf_charges              "dalton;short;qfit;parallel;essential")
 add_dalton_runtest(qfit_dft_charges             "dalton;short;qfit;parallel")
 add_dalton_runtest(qfit_dft_transition_charges  "dalton;short;qfit;parallel")
+endif()
+
+if(ENABLE_EFS)
+    add_dalton_test(efs_b3lyp "dalton;efs")
+    add_dalton_test(efs_hf    "dalton;efs")
 endif()
 
 add_dalton_test(geoopt_cartmin                "dalton;medium")

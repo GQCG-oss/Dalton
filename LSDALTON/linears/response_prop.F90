@@ -325,6 +325,8 @@ Contains
 
     end do PrintFrequencyLoop
 
+    write(lupri,'(1X,A)') ' End of polarizability calculation'
+
 
     ! Deallocate stuff
     deallocate(rsp_results_vec)
@@ -4367,6 +4369,7 @@ enddo
 deallocate(NMST)
 deallocate(atomname)
 CALL LSTIMER('*SHIELD',TS,TE,LUPRI)
+WRITE(LUPRI,*) " Done with shielding tensor calculation"
 
 end subroutine NMRshieldresponse_driver
 

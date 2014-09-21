@@ -1,0 +1,2073 @@
+ THIS IS A DEBUG BUILD
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+  
+      This is output from LSDALTON 2014.0
+  
+  
+      IF RESULTS OBTAINED WITH THIS CODE ARE PUBLISHED,
+      THE FOLLOWING PAPER SHOULD BE CITED:
+      
+      K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
+      L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
+      P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
+      J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+      L. Ferrighi, H. Fliegl, L. Frediani, K. Hald,
+      A. Halkier, C. Haettig, H. Heiberg,
+      T. Helgaker, A. C. Hennum, H. Hettema,
+      E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+      M. F. Iozzi, B. Jansik, H. J. Aa. Jensen,
+      D. Jonsson, P. Joergensen, J. Kauczor,
+      S. Kirpekar, T. Kjaergaard, W. Klopper,
+      S. Knecht, R. Kobayashi, H. Koch, J. Kongsted,
+      A. Krapp, K. Kristensen, A. Ligabue,
+      O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+      C. Neiss, C. B. Nielsen, P. Norman,
+      J. Olsen, J. M. H. Olsen, A. Osted,
+      M. J. Packer, F. Pawlowski, T. B. Pedersen,
+      P. F. Provasi, S. Reine, Z. Rinkevicius,
+      T. A. Ruden, K. Ruud, V. Rybkin,
+      P. Salek, C. C. M. Samson, A. Sanchez de Meras,
+      T. Saue, S. P. A. Sauer, B. Schimmelpfennig,
+      K. Sneskov, A. H. Steindal, K. O. Sylvester-Hvid,
+      P. R. Taylor, A. M. Teale, E. I. Tellgren,
+      D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+      O. Vahtras, M. A. Watson, D. J. D. Wilson,
+      M. Ziolkowski, and H. AAgren,
+      "The Dalton quantum chemistry program system",
+      WIREs Comput. Mol. Sci. (doi: 10.1002/wcms.1172)
+  
+  
+                                                
+      LSDALTON authors in alphabetical order (main contribution(s) in parenthesis)
+      ----------------------------------------------------------------------------
+      Vebjoern Bakken,         University of Oslo,        Norway    (geometry optimizer)
+      Radovan Bast,            KTH Stockholm,             Sweden    (CMake, Testing)
+      Sonia Coriani,           University of Trieste,     Italy     (response)
+      Patrick Ettenhuber,      Aarhus University,         Denmark   (CCSD)
+      Trygve Helgaker,         University of Oslo,        Norway    (supervision)
+      Stinne Hoest,            Aarhus University,         Denmark   (SCF optimization)
+      Ida-Marie Hoeyvik,       Aarhus University,         Denmark   (orbital localization, SCF optimization)
+      Branislav Jansik,        Aarhus University,         Denmark   (trilevel, orbital localization)
+      Poul Joergensen,         Aarhus University,         Denmark   (supervision)
+      Joanna Kauczor,          Aarhus University,         Denmark   (response solver)
+      Thomas Kjaergaard,       Aarhus University,         Denmark   (response, integrals)
+      Andreas Krapp,           University of Oslo,        Norway    (FMM, dispersion-corrected DFT)
+      Kasper Kristensen,       Aarhus University,         Denmark   (response, DEC)
+      Patrick Merlot,          University of Oslo,        Norway    (PARI)
+      Cecilie Nygaard,         Aarhus University,         Denmark   (SOEO)
+      Jeppe Olsen,             Aarhus University,         Denmark   (supervision)
+      Simen Reine,             University of Oslo,        Norway    (integrals, geometry optimizer)
+      Vladimir Rybkin,         University of Oslo,        Norway    (geometry optimizer, dynamics)
+      Pawel Salek,             KTH Stockholm,             Sweden    (FMM, DFT functionals)
+      Andrew M. Teale,         University of Nottingham   England   (E-coefficients)
+      Erik Tellgren,           University of Oslo,        Norway    (density fitting, E-coefficients)
+      Andreas J. Thorvaldsen,  University of Tromsoe,     Norway    (response)
+      Lea Thoegersen,          Aarhus University,         Denmark   (SCF optimization)
+      Mark Watson,             University of Oslo,        Norway    (FMM)
+      Marcin Ziolkowski,       Aarhus University,         Denmark   (DEC)
+  
+  
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     energies and properties using various electronic structure models.
+     The authors accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+  
+  
+ Who compiled             | tkjaer
+ Host                     | localhost
+ System                   | Linux-3.6.10-4.fc18.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | OFF
+ Fortran compiler         | /opt/intel/composer_xe_2013.5.192/bin/intel64/ifor
+                          | t
+ Fortran compiler version | ifort (IFORT) 13.1.3 20130607
+ C compiler               | /opt/intel/composer_xe_2013.5.192/bin/intel64/icc
+ C compiler version       | icc (ICC) 13.1.3 20130607
+ C++ compiler             | /opt/intel/composer_xe_2013.5.192/bin/intel64/icpc
+ C++ compiler version     | icpc (ICC) 13.1.3 20130607
+ BLAS                     | /opt/intel/composer_xe_2013.5.192/mkl/lib/intel64/
+                          | libmkl_intel_lp64.so;/opt/intel/composer_xe_2013.5
+                          | .192/mkl/lib/intel64/libmkl_sequential.so;/opt/int
+                          | el/composer_xe_2013.5.192/mkl/lib/intel64/libmkl_c
+                          | ore.so;/usr/lib64/libpthread.so;/usr/lib64/libm.so
+ LAPACK                   | /opt/intel/composer_xe_2013.5.192/mkl/lib/intel64/
+                          | libmkl_lapack95_lp64.a;/opt/intel/composer_xe_2013
+                          | .5.192/mkl/lib/intel64/libmkl_intel_lp64.so
+ Static linking           | OFF
+ Last Git revision        | f6b88194876938fca013c8864966b0c0c73044c9
+ Git branch               | master
+ Configuration time       | 2014-09-04 14:18:06.405220
+
+Start simulation
+     Date and time (Linux)  : Fri Sep  5 10:17:17 2014
+     Host name              : localhost                               
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  cc-pVDZ                                 
+                                          
+                                          
+  Atomtypes=2 Nosymmetry Angstrom                             
+  Charge=3.0 Atoms=1                                          
+  Li  0.000000    0.000000    0.000000                        
+  Charge=9.0 Atoms=1                                          
+  F   1.563900    0.000000    0.000000                        
+                      
+ -----------------------------------------
+          PRINTING THE LSDALTON.INP FILE 
+ -----------------------------------------
+                      
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .ARH                                                                                                
+  .START                                                                                              
+  TRILEVEL                                                                                            
+  .CONVTHR                                                                                            
+  1.0d-5                                                                                              
+  **DEC                                                                                               
+  .gradient                                                                                           
+  .SimulateFull                                                                                       
+  .kappaTHR                                                                                           
+  1e-6                                                                                                
+  .MEMORY                                                                                             
+  2.0                                                                                                 
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+  Coordinates are entered in Angstroms and converted to atomic units.
+  Conversion factor : 1 bohr = 0.52917721 A
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  6
+   Written in atomic units    
+ 
+   1   Li       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+ 
+   4   F        x      2.9553427008
+   5            y      0.0000000000
+   6            z      0.0000000000
+ 
+ 
+ BASISSETLIBRARY  : REGULAR  
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  cc-pVDZ                                           
+  CHARGES:    3.0000    9.0000
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR   BASIS
+   
+ OPENING FILE
+ /home/tkjaer/DaltonDevelopment2014/DebugMasterBranch/build-debug/basis/cc-pVDZ
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       28
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       52
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   3.000  cc-pVDZ         F             26          14
+     2   9.000  cc-pVDZ         F             26          14
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  Li          1        0.00000000        0.00000000        0.00000000
+     2  F           1        2.95534270        0.00000000        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      2
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 cc-pVDZ                   26       14 [9s4p1d|3s2p1d]                              
+      2 F      9.000 cc-pVDZ                   26       14 [9s4p1d|3s2p1d]                              
+---------------------------------------------------------------------
+total         12                               52       28
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+    This is a Single core calculation. (no OpenMP)
+    This is a serial calculation (no MPI)
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+ 
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+ Maximum size of subspace in ARH linear equations:           2
+ 
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ Maximum size of Fock/density queue in averaging:          10
+ 
+Convergence threshold for gradient:   0.10E-04
+ We have detected a Dunnings Basis set so we deactivate the
+ use of the Grand Canonical basis, which is normally default.
+ The use of Grand Canonical basis can be enforced using the FORCEGCBASIS keyword
+We perform the calculation in the standard input basis
+ 
+    The Overall Screening threshold is set to              :1.0000E-08
+    The Screening threshold used for Coulomb               :1.0000E-10
+    The Screening threshold used for Exchange              :1.0000E-08
+    The Screening threshold used for One-electron operators:1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+ 
+ End of configuration!
+ 
+ 
+ First density: Trilevel procedure 
+ 
+ Level 2 molecular calculation
+=============================
+ 
+ We now perform the 2. Level of the TRILEVEL starting guess 
+ see PCCP 11, 5805-5813 (2009) as well as JCTC 5, 1027 (2009)
+ The 2. level is a full molecular calculation done in a minimal basis
+ 
+  The 2. Level Basis
+  Total number of atoms        :      2
+---------------------------------------------------------------------
+  atom label  charge basisset                cont   basis
+---------------------------------------------------------------------
+      1 Li     3.000 GC Minimal Basis           2   [2s]                                         
+      2 F      9.000 GC Minimal Basis           5   [2s1p]                                       
+---------------------------------------------------------------------
+total         12                                7
+---------------------------------------------------------------------
+                      
+ The Coulomb energy contribution    62.9377103947612     
+ The Exchange energy contribution    11.5962572265179     
+ The Fock energy contribution   -51.3414531682433     
+  Iteration 0 energy:  -106.604223490053     
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=        23 sparsity:     46.939 %
+Matrix AO D  has nnz=        26 sparsity:     55.102 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  1.000000000000000E-004
+** Get Fock matrix number   1
+ The Coulomb energy contribution    68.9430494189000     
+ The Exchange energy contribution    12.4768866337980     
+ The Fock energy contribution   -56.4661627851019     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1   -106.8005772545    0.00000000000    0.00      0.00000    0.00    7.51E-02  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        26 sparsity:     55.102 %
+Matrix AO F  has nnz=        26 sparsity:     55.102 %
+Matrix OAO D has nnz=        26 sparsity:     55.102 %
+Matrix OAO F has nnz=        26 sparsity:     55.102 %
+** Get new density 
+ OAO gradnorm  7.505446424939512E-002
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.120161 au
+   -E(HOMO):                     -0.217574 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.337736 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0117940508 (mu =       0.00, xmax = 0.807438E-01, xnorm = 0.121166E+00, THR = 0.750545E-03)
+  Error of red space iteration  2:      0.0021695484 (mu =       0.00, xmax = 0.927481E-01, xnorm = 0.136701E+00, THR = 0.750545E-03)
+  Error of red space iteration  3:      0.0000226265 (mu =       0.00, xmax = 0.956688E-01, xnorm = 0.140611E+00, THR = 0.750545E-03)
+Newton equations converged in  3 iterations!
+No. of matmuls in get_density:    45
+ >>>  CPU Time used in SCF iteration is   0.10 seconds
+ >>> wall Time used in SCF iteration is   0.11 seconds
+** Get Fock matrix number   2
+ The Coulomb energy contribution    68.4827549107082     
+ The Exchange energy contribution    12.4122427217274     
+ The Fock energy contribution   -56.0705121889807     
+ 0.60000 (xnorm)    0.09567    0.14061    0.00        1.4881    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  2   -106.8133084713   -0.01273121677    0.00      0.00000    0.00    2.79E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        26 sparsity:     55.102 %
+Matrix AO F  has nnz=        26 sparsity:     55.102 %
+Matrix OAO D has nnz=        26 sparsity:     55.102 %
+Matrix OAO F has nnz=        26 sparsity:     55.102 %
+** Get new density 
+ OAO gradnorm  2.791425008411295E-002
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.126366 au
+   -E(HOMO):                     -0.253927 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.380292 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0140506455 (mu =       0.00, xmax = 0.504876E-01, xnorm = 0.730591E-01, THR = 0.279143E-03)
+  Error of red space iteration  2:      0.0003167867 (mu =       0.00, xmax = 0.955377E-01, xnorm = 0.138347E+00, THR = 0.279143E-03)
+  Error of red space iteration  3:      0.0000051024 (mu =       0.00, xmax = 0.963045E-01, xnorm = 0.139462E+00, THR = 0.279143E-03)
+Newton equations converged in  3 iterations!
+No. of matmuls in get_density:    57
+ >>>  CPU Time used in SCF iteration is   0.10 seconds
+ >>> wall Time used in SCF iteration is   0.10 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    67.8641531661154     
+ The Exchange energy contribution    12.3314143156101     
+ The Fock energy contribution   -55.5327388505053     
+ 0.60000 (xnorm)    0.09630    0.13946    0.00        0.8946    0.9578         1          2    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  3   -106.8167393978   -0.00343092654    0.00      0.00000    0.00    1.10E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        26 sparsity:     55.102 %
+Matrix AO F  has nnz=        26 sparsity:     55.102 %
+Matrix OAO D has nnz=        26 sparsity:     55.102 %
+Matrix OAO F has nnz=        26 sparsity:     55.102 %
+** Get new density 
+ OAO gradnorm  1.099201801311452E-002
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.126632 au
+   -E(HOMO):                     -0.293207 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.419839 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0023378778 (mu =       0.00, xmax = 0.809786E-02, xnorm = 0.140225E-01, THR = 0.109920E-03)
+  Error of red space iteration  2:      0.0006654816 (mu =       0.00, xmax = 0.113218E-01, xnorm = 0.175096E-01, THR = 0.109920E-03)
+  Error of red space iteration  3:      0.0000053571 (mu =       0.00, xmax = 0.126160E-01, xnorm = 0.190777E-01, THR = 0.109920E-03)
+Newton equations converged in  3 iterations!
+No. of matmuls in get_density:    53
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    67.9745956555313     
+ The Exchange energy contribution    12.3461368022082     
+ The Fock energy contribution   -55.6284588533231     
+ 0.60000 (xnorm)    0.01262    0.01908    0.00        0.9410    0.9555         2          3    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  4   -106.8168814359   -0.00014203803    0.00      0.00000    0.00    8.19E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=        26 sparsity:     55.102 %
+Matrix AO F  has nnz=        26 sparsity:     55.102 %
+Matrix OAO D has nnz=        26 sparsity:     55.102 %
+Matrix OAO F has nnz=        26 sparsity:     55.102 %
+** Get new density 
+ OAO gradnorm  8.186139647467583E-004
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                      0.127173 au
+   -E(HOMO):                     -0.287697 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.414869 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0003178235 (mu =       0.00, xmax = 0.113938E-02, xnorm = 0.174333E-02, THR = 0.818614E-06)
+  Error of red space iteration  2:      0.0000794669 (mu =       0.00, xmax = 0.169967E-02, xnorm = 0.257257E-02, THR = 0.818614E-06)
+  Error of red space iteration  3:      0.0000028660 (mu =       0.00, xmax = 0.185117E-02, xnorm = 0.280645E-02, THR = 0.818614E-06)
+  Error of red space iteration  4:      0.0000000689 (mu =       0.00, xmax = 0.185317E-02, xnorm = 0.281002E-02, THR = 0.818614E-06)
+Newton equations converged in  4 iterations!
+No. of matmuls in get_density:    62
+ >>>  CPU Time used in SCF iteration is   0.09 seconds
+ >>> wall Time used in SCF iteration is   0.09 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    67.9628488870343     
+ The Exchange energy contribution    12.3446429520421     
+ The Fock energy contribution   -55.6182059349922     
+ 0.60000 (xnorm)    0.00185    0.00281    0.00        0.9924    0.9990         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  5   -106.8168835192   -0.00000208329    0.00      0.00000    0.00    3.35E-05  ###
+SCF converged in      5 iterations
+ >>>  CPU Time used in **ITER is   0.47 seconds
+ >>> wall Time used in **ITER is   0.48 seconds
+ 
+Total no. of matmuls in SCF optimization:        298
+ 
+ Number of occupied orbitals:           6
+ Number of virtual orbitals:           1
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     4 iterations!
+ 
+Calculation of virtual orbital energies converged in     1 iterations!
+ 
+    E(LUMO):                         0.127146 au
+   -E(HOMO):                        -0.288196 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.415343 au
+ 
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.01273121677    0.0000    0.0000    0.0000000
+  3   -0.00343092654    0.0000    0.0000    0.0000000
+  4   -0.00014203803    0.0000    0.0000    0.0000000
+  5   -0.00000208329    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+    1          -106.80057725452248007514      0.750544642493951D-01
+    2          -106.81330847129129324458      0.279142500841130D-01
+    3          -106.81673939783314608576      0.109920180131145D-01
+    4          -106.81688143586772810067      0.818613964746758D-03
+    5          -106.81688351915678936166      0.335154786322152D-04
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                  -106.816883519157
+      Nuclear repulsion:                   9.135996306733
+      Electronic energy:                -115.952879825890
+ 
+ Level 2 minimization done! Starting Level 3 minimization...
+ Level 3 is the final level of the TRILEVEL algorithm 
+ and is the standard calculation using the TRILEVEL starting guess
+ obtained from Level 2.
+ 
+  %LOC%   
+  %LOC%   ********************************************
+  %LOC%   *       LEVEL 2 ORBITAL LOCALIZATION       *
+  %LOC%   ********************************************
+  %LOC%   
+  %LOC%  
+  %LOC% *******  LOCALIZE     2 CORE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  0.67 mu =  0.0E+00 grd =  5.4E-03 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:             0.5
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  0.67 mu =  0.0E+00 grd =  1.4E-09 it =  2 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     4 VALENCE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  1.62 mu =  0.0E+00 grd =  5.8E-01 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:            12.8
+Linesearch  :   1 Diff. in function value:            -1.8
+Linesearch  :   2 Diff. in function value:            -0.4
+Linesearch  :   3 Diff. in function value:            -0.8
+Linesearch  :   4 Diff. in function value:             0.9
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  1.42 mu = -3.3E+01 grd =  1.5E+00 it =  4 trust-region =  0.50 step = 2.00
+Linesearch  :   0 Original function value:             9.9
+Linesearch  :   1 Diff. in function value:            -0.8
+Linesearch  :   2 Diff. in function value:             0.7
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  1.37 mu = -1.0E+01 grd =  5.8E-01 it =  7 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:             9.1
+Linesearch  :   1 Diff. in function value:            -0.4
+Linesearch  :   2 Diff. in function value:             1.5
+Linesearch done, we choose previous point 
+  %LOC%  4 sigma_2 =  1.37 mu = -7.1E+00 grd =  2.6E-01 it =  6 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:             8.7
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.5
+Linesearch done, we choose previous point 
+  %LOC%  5 sigma_2 =  1.35 mu = -1.2E+00 grd =  1.5E-01 it =  7 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:             8.6
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.4
+Linesearch done, we choose previous point 
+  %LOC%  6 sigma_2 =  1.28 mu = -1.0E+00 grd =  1.1E-01 it =  7 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:             8.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.1
+Linesearch done, we choose previous point 
+  %LOC%  7 sigma_2 =  1.25 mu =  0.0E+00 grd =  1.2E-02 it =  6 trust-region =  0.50 step = 0.45
+Linesearch  :   0 Original function value:             8.5
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  8 sigma_2 =  1.24 mu =  0.0E+00 grd =  7.6E-05 it =  6 trust-region =  0.50 step = 0.04
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     1 VIRTUAL ORBITALS ******
+  %LOC%  
+  %LOC% Too few orbitals to localize...
+ 
+  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    0.67    2
+  %LOC%   Max. sigma_4 and orb.number:    0.87    2
+  %LOC%   Min. sigma_2 and orb.number:    0.20    1
+  %LOC%   Min. sigma_4 and orb.number:    0.26    1
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    1.24    3
+  %LOC%   Max. sigma_4 and orb.number:    1.92    3
+  %LOC%   Min. sigma_2 and orb.number:    1.17    4
+  %LOC%   Min. sigma_4 and orb.number:    1.82    4
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    3.48    7
+  %LOC%   Max. sigma_4 and orb.number:    3.85    7
+  %LOC%   Min. sigma_2 and orb.number:    3.48    7
+  %LOC%   Min. sigma_4 and orb.number:    3.85    7
+ 
+ >>>  CPU Time used in Orbital Localization is   0.58 seconds
+ >>> wall Time used in Orbital Localization is   0.59 seconds
+ 
+ Number of electrons  in molecule =           12
+ Number of occ. orb.  in molecule =            6
+ Number of virt. orb. in molecule =           22
+ 
+ 
+ OCCUPIED: (Orbital index, MOS) =            3   1.24405966776734     
+ VIRTUAL : (Orbital index, MOS) =           12   7.21237204013192     
+ 
+ 
+ 
+Max no. of matrices allocated in Level 2 / get_initial_dens:         75
+ Preparing to do S^1/2 decomposition...
+Matrix S     has nnz=       187 sparsity:     23.980 %
+Matrix AO D  has nnz=        26 sparsity:      3.444 %
+  Relative convergence threshold for solver:  1.000000000000000E-002
+  SCF Convergence criteria for gradient norm:  1.000000000000000E-005
+ The Coulomb energy contribution    62.9377103947612     
+ The Exchange energy contribution    11.5962572265179     
+ The Fock energy contribution   -51.3414531682433     
+  Iteration 0 energy:  -106.604223490053     
+ The Coulomb energy contribution    67.9003597924831     
+ The Coulomb energy contribution    67.9628488870343     
+ The Exchange energy contribution    12.3396287936456     
+ The Exchange energy contribution    12.3446429520421     
+ The Fock energy contribution   -55.5607309988375     
+ The Fock energy contribution   -55.6182059349922     
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+Atoms   -106.8778455325    0.00000000000    0.00      0.00000    0.00    4.12E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+**************************************************************************************###
+ it        E(HF)            dE(HF)         exit      alpha RHshift    OAO gradient     ###
+******************************************************************  ********************###
+  1   -106.8168835192    0.00000000000    0.00      0.00000    0.00    4.96E-01  ###
+***********************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift       Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+***********************************************************************************************%%%
+Matrix AO D  has nnz=       268 sparsity:     34.184 %
+Matrix AO F  has nnz=       272 sparsity:     34.694 %
+Matrix OAO D has nnz=       386 sparsity:     49.235 %
+Matrix OAO F has nnz=       390 sparsity:     49.745 %
+Matrix AO D  has nnz=        26 sparsity:      3.444 %
+Matrix AO F  has nnz=       272 sparsity:     34.694 %
+Matrix OAO D has nnz=       386 sparsity:     49.235 %
+Matrix OAO F has nnz=       390 sparsity:     49.745 %
+ OAO gradnorm  0.495901308414215     
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.004468 au
+   -E(HOMO):                     -0.288196 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.283728 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.1713464624 (mu =       0.00, xmax = 0.653586E-01, xnorm = 0.359094E+00, THR = 0.495901E-02)
+  Error of red space iteration  2:      0.0730308353 (mu =       0.00, xmax = 0.757200E-01, xnorm = 0.392986E+00, THR = 0.495901E-02)
+  Error of red space iteration  3:      0.0427273827 (mu =       0.00, xmax = 0.814850E-01, xnorm = 0.415491E+00, THR = 0.495901E-02)
+  Error of red space iteration  4:      0.0306514818 (mu =       0.00, xmax = 0.932998E-01, xnorm = 0.478926E+00, THR = 0.495901E-02)
+Error went down by   58.03%
+  Error of red space iteration  5:      0.0184957925 (mu =       0.00, xmax = 0.104511E+00, xnorm = 0.560227E+00, THR = 0.495901E-02)
+  Error of red space iteration  6:      0.0087690536 (mu =       0.00, xmax = 0.108128E+00, xnorm = 0.618934E+00, THR = 0.495901E-02)
+  Error of red space iteration  7:      0.0035770831 (mu =       0.00, xmax = 0.108860E+00, xnorm = 0.646340E+00, THR = 0.495901E-02)
+Newton equations converged in  7 iterations!
+No. of matmuls in get_density:    98
+** Get Fock matrix number   2
+ The Coulomb energy contribution    63.1866139267915     
+ The Exchange energy contribution    11.7283512691324     
+ The Fock energy contribution   -51.4582626576590     
+ 0.60000 (xnorm)    0.10886    0.64634    0.00        0.4061    0.8775         1          1    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+  2   -106.8888239849   -0.07194046573    0.00      0.00000    0.00    3.83E-01  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       434 sparsity:     55.357 %
+Matrix AO F  has nnz=       486 sparsity:     61.990 %
+Matrix OAO D has nnz=       510 sparsity:     65.051 %
+Matrix OAO F has nnz=       537 sparsity:     68.622 %
+** Get new density 
+ OAO gradnorm  0.382967903005332     
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.004674 au
+   -E(HOMO):                     -0.587986 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.583311 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.3144761514 (mu =       0.00, xmax = 0.255063E-01, xnorm = 0.140995E+00, THR = 0.382968E-02)
+  Error of red space iteration  2:      0.0593599598 (mu =       0.00, xmax = 0.309635E-01, xnorm = 0.186215E+00, THR = 0.382968E-02)
+  Error of red space iteration  3:      0.0113928461 (mu =       0.00, xmax = 0.315673E-01, xnorm = 0.188004E+00, THR = 0.382968E-02)
+  Error of red space iteration  4:      0.0051931525 (mu =       0.00, xmax = 0.322660E-01, xnorm = 0.192866E+00, THR = 0.382968E-02)
+Error went down by   91.25%
+  Error of red space iteration  5:      0.0020274892 (mu =       0.00, xmax = 0.328696E-01, xnorm = 0.197734E+00, THR = 0.382968E-02)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    76
+ >>>  CPU Time used in SCF iteration is   0.84 seconds
+ >>> wall Time used in SCF iteration is   0.84 seconds
+** Get Fock matrix number   3
+ The Coulomb energy contribution    65.5646884354230     
+ The Exchange energy contribution    12.0306996129207     
+ The Fock energy contribution   -53.5339888225022     
+ 0.60000 (xnorm)    0.03287    0.19773    0.00        0.9382    0.9788         2          2    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  3   -106.9435582585   -0.05473427363    0.00      0.00000    0.00    4.03E-02  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       418 sparsity:     53.316 %
+Matrix AO F  has nnz=       442 sparsity:     56.378 %
+Matrix OAO D has nnz=       524 sparsity:     66.837 %
+Matrix OAO F has nnz=       510 sparsity:     65.051 %
+** Get new density 
+ OAO gradnorm  4.026625351450262E-002
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.003460 au
+   -E(HOMO):                     -0.453590 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.450130 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0429367090 (mu =       0.00, xmax = 0.797698E-02, xnorm = 0.303666E-01, THR = 0.402663E-03)
+  Error of red space iteration  2:      0.0094314344 (mu =       0.00, xmax = 0.104127E-01, xnorm = 0.376378E-01, THR = 0.402663E-03)
+  Error of red space iteration  3:      0.0060223130 (mu =       0.00, xmax = 0.123150E-01, xnorm = 0.443066E-01, THR = 0.402663E-03)
+  Error of red space iteration  4:      0.0018453522 (mu =       0.00, xmax = 0.161626E-01, xnorm = 0.581352E-01, THR = 0.402663E-03)
+Error went down by   80.43%
+  Error of red space iteration  5:      0.0005752214 (mu =       0.00, xmax = 0.170342E-01, xnorm = 0.611473E-01, THR = 0.402663E-03)
+  Error of red space iteration  6:      0.0002110738 (mu =       0.00, xmax = 0.171704E-01, xnorm = 0.615186E-01, THR = 0.402663E-03)
+Newton equations converged in  6 iterations!
+No. of matmuls in get_density:    84
+ >>>  CPU Time used in SCF iteration is   0.83 seconds
+ >>> wall Time used in SCF iteration is   0.84 seconds
+** Get Fock matrix number   4
+ The Coulomb energy contribution    65.3439219233677     
+ The Exchange energy contribution    12.0028207501353     
+ The Fock energy contribution   -53.3411011732324     
+ 0.60000 (xnorm)    0.01717    0.06152    0.00        0.9468    0.9459         3          3    %%%
+ Trust radius based on max norm!
+ % Expand trust-radius by a factor   1.20000000000000      h(old), h(new):
+  0.600000000000000       0.720000000000000     
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  4   -106.9450874888   -0.00152923030    0.00      0.00000    0.00    9.09E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       396 sparsity:     50.510 %
+Matrix AO F  has nnz=       410 sparsity:     52.296 %
+Matrix OAO D has nnz=       506 sparsity:     64.541 %
+Matrix OAO F has nnz=       506 sparsity:     64.541 %
+** Get new density 
+ OAO gradnorm  9.089229913178964E-003
+ Number of densities in queue:           4
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.002425 au
+   -E(HOMO):                     -0.467711 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.465286 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0107097187 (mu =       0.00, xmax = 0.640031E-03, xnorm = 0.365172E-02, THR = 0.908923E-04)
+  Error of red space iteration  2:      0.0025525802 (mu =       0.00, xmax = 0.875055E-03, xnorm = 0.511648E-02, THR = 0.908923E-04)
+  Error of red space iteration  3:      0.0004465279 (mu =       0.00, xmax = 0.864835E-03, xnorm = 0.509981E-02, THR = 0.908923E-04)
+  Error of red space iteration  4:      0.0001640704 (mu =       0.00, xmax = 0.878333E-03, xnorm = 0.529161E-02, THR = 0.908923E-04)
+Error went down by   93.57%
+  Error of red space iteration  5:      0.0000617265 (mu =       0.00, xmax = 0.895203E-03, xnorm = 0.546592E-02, THR = 0.908923E-04)
+Newton equations converged in  5 iterations!
+No. of matmuls in get_density:    72
+ >>>  CPU Time used in SCF iteration is   0.82 seconds
+ >>> wall Time used in SCF iteration is   0.83 seconds
+** Get Fock matrix number   5
+ The Coulomb energy contribution    65.3919270347768     
+ The Exchange energy contribution    12.0093670569047     
+ The Fock energy contribution   -53.3825599778721     
+ 0.60000 (xnorm)    0.00090    0.00547    0.00        1.0813    0.8595         4          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  5   -106.9451250237   -0.00003753492    0.00      0.00000    0.00    9.04E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       372 sparsity:     47.449 %
+Matrix AO F  has nnz=       400 sparsity:     51.020 %
+Matrix OAO D has nnz=       494 sparsity:     63.010 %
+Matrix OAO F has nnz=       501 sparsity:     64.031 %
+** Get new density 
+ OAO gradnorm  9.040141799043644E-004
+ Number of densities in queue:           5
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.002497 au
+   -E(HOMO):                     -0.464568 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.462071 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0005090367 (mu =       0.00, xmax = 0.165828E-03, xnorm = 0.858262E-03, THR = 0.904014E-06)
+  Error of red space iteration  2:      0.0001615516 (mu =       0.00, xmax = 0.196225E-03, xnorm = 0.943998E-03, THR = 0.904014E-06)
+  Error of red space iteration  3:      0.0000649914 (mu =       0.00, xmax = 0.208677E-03, xnorm = 0.100315E-02, THR = 0.904014E-06)
+  Error of red space iteration  4:      0.0000235470 (mu =       0.00, xmax = 0.229633E-03, xnorm = 0.108784E-02, THR = 0.904014E-06)
+Error went down by   85.42%
+  Error of red space iteration  5:      0.0000074816 (mu =       0.00, xmax = 0.236590E-03, xnorm = 0.111245E-02, THR = 0.904014E-06)
+  Error of red space iteration  6:      0.0000046556 (mu =       0.00, xmax = 0.237957E-03, xnorm = 0.111366E-02, THR = 0.904014E-06)
+  Error of red space iteration  7:      0.0000019533 (mu =       0.00, xmax = 0.239354E-03, xnorm = 0.111364E-02, THR = 0.904014E-06)
+Error went down by   73.89%
+  Error of red space iteration  8:      0.0000008223 (mu =       0.00, xmax = 0.240198E-03, xnorm = 0.111352E-02, THR = 0.904014E-06)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in SCF iteration is   0.83 seconds
+ >>> wall Time used in SCF iteration is   0.83 seconds
+** Get Fock matrix number   6
+ The Coulomb energy contribution    65.3931657552762     
+ The Exchange energy contribution    12.0095326576571     
+ The Fock energy contribution   -53.3836330976191     
+ 0.60000 (xnorm)    0.00024    0.00111    0.00        1.0970    0.9564         5          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  6   -106.9451259486   -0.00000092481    0.00      0.00000    0.00    1.52E-04  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       356 sparsity:     45.408 %
+Matrix AO F  has nnz=       398 sparsity:     50.765 %
+Matrix OAO D has nnz=       468 sparsity:     59.694 %
+Matrix OAO F has nnz=       496 sparsity:     63.265 %
+** Get new density 
+ OAO gradnorm  1.522990335463581E-004
+ Number of densities in queue:           6
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.002495 au
+   -E(HOMO):                     -0.464413 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.461918 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000499086 (mu =       0.00, xmax = 0.275790E-04, xnorm = 0.121755E-03, THR = 0.152299E-06)
+  Error of red space iteration  2:      0.0000139111 (mu =       0.00, xmax = 0.264136E-04, xnorm = 0.127905E-03, THR = 0.152299E-06)
+  Error of red space iteration  3:      0.0000079790 (mu =       0.00, xmax = 0.267040E-04, xnorm = 0.134682E-03, THR = 0.152299E-06)
+  Error of red space iteration  4:      0.0000040657 (mu =       0.00, xmax = 0.275383E-04, xnorm = 0.141656E-03, THR = 0.152299E-06)
+Error went down by   70.77%
+  Error of red space iteration  5:      0.0000009972 (mu =       0.00, xmax = 0.280678E-04, xnorm = 0.146664E-03, THR = 0.152299E-06)
+  Error of red space iteration  6:      0.0000005437 (mu =       0.00, xmax = 0.281212E-04, xnorm = 0.147007E-03, THR = 0.152299E-06)
+  Error of red space iteration  7:      0.0000002977 (mu =       0.00, xmax = 0.280859E-04, xnorm = 0.146948E-03, THR = 0.152299E-06)
+Error went down by   70.15%
+  Error of red space iteration  8:      0.0000000927 (mu =       0.00, xmax = 0.280523E-04, xnorm = 0.146892E-03, THR = 0.152299E-06)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   101
+ >>>  CPU Time used in SCF iteration is   0.83 seconds
+ >>> wall Time used in SCF iteration is   0.83 seconds
+** Get Fock matrix number   7
+ The Coulomb energy contribution    65.3932202676030     
+ The Exchange energy contribution    12.0095326698947     
+ The Fock energy contribution   -53.3836875977084     
+ 0.60000 (xnorm)    0.00003    0.00015    0.00        1.0727    0.9181         6          6    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  7   -106.9451259682   -0.00000001969    0.00      0.00000    0.00    2.28E-05  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       324 sparsity:     41.327 %
+Matrix AO F  has nnz=       394 sparsity:     50.255 %
+Matrix OAO D has nnz=       456 sparsity:     58.163 %
+Matrix OAO F has nnz=       478 sparsity:     60.969 %
+** Get new density 
+ OAO gradnorm  2.284089378012873E-005
+ Number of densities in queue:           7
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ 
+    E(LUMO):                     -0.002496 au
+   -E(HOMO):                     -0.464398 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.461903 au
+ 
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000267241 (mu =       0.00, xmax = 0.315614E-05, xnorm = 0.147534E-04, THR = 0.228409E-07)
+  Error of red space iteration  2:      0.0000054053 (mu =       0.00, xmax = 0.400319E-05, xnorm = 0.171053E-04, THR = 0.228409E-07)
+  Error of red space iteration  3:      0.0000018279 (mu =       0.00, xmax = 0.433752E-05, xnorm = 0.182761E-04, THR = 0.228409E-07)
+  Error of red space iteration  4:      0.0000009835 (mu =       0.00, xmax = 0.475446E-05, xnorm = 0.199754E-04, THR = 0.228409E-07)
+Error went down by   81.80%
+  Error of red space iteration  5:      0.0000001843 (mu =       0.00, xmax = 0.513983E-05, xnorm = 0.215794E-04, THR = 0.228409E-07)
+  Error of red space iteration  6:      0.0000000756 (mu =       0.00, xmax = 0.516895E-05, xnorm = 0.216955E-04, THR = 0.228409E-07)
+  Error of red space iteration  7:      0.0000000364 (mu =       0.00, xmax = 0.517427E-05, xnorm = 0.217102E-04, THR = 0.228409E-07)
+Error went down by   80.27%
+  Error of red space iteration  8:      0.0000000147 (mu =       0.00, xmax = 0.517589E-05, xnorm = 0.217149E-04, THR = 0.228409E-07)
+Newton equations converged in  8 iterations!
+No. of matmuls in get_density:   100
+ >>>  CPU Time used in SCF iteration is   0.83 seconds
+ >>> wall Time used in SCF iteration is   0.83 seconds
+** Get Fock matrix number   8
+ The Coulomb energy contribution    65.3931216911677     
+ The Exchange energy contribution    12.0095202344166     
+ The Fock energy contribution   -53.3836014567511     
+ 0.60000 (xnorm)    0.00001    0.00002    0.00        1.0129    0.9222         7          7    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.600000000000000       , resetting trust radius!
+  8   -106.9451259686   -0.00000000034    0.00      0.00000    0.00    2.68E-06  ###
+SCF converged in      8 iterations
+ >>>  CPU Time used in **ITER is   7.01 seconds
+ >>> wall Time used in **ITER is   7.03 seconds
+ 
+Total no. of matmuls in SCF optimization:       1812
+ 
+ Number of occupied orbitals:           6
+ Number of virtual orbitals:          22
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+Calculation of occupied orbital energies converged in     4 iterations!
+ 
+Calculation of virtual orbital energies converged in     2 iterations!
+ 
+    E(LUMO):                         0.365529 au
+   -E(HOMO):                        -0.489008 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.854537 au
+ 
+ 
+********************************************************
+ it       dE(HF)          exit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.07194046573    0.0000    0.0000    0.0000000
+  3   -0.05473427363    0.0000    0.0000    0.0000000
+  4   -0.00152923030    0.0000    0.0000    0.0000000
+  5   -0.00003753492    0.0000    0.0000    0.0000000
+  6   -0.00000092481    0.0000    0.0000    0.0000000
+  7   -0.00000001969    0.0000    0.0000    0.0000000
+  8   -0.00000000034    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                 OAO Gradient norm
+======================================================================
+  Atoms        -106.87784553254536490385      0.412477213070952D+00
+    1          -106.81688351915673251824      0.495901308414215D+00
+    2          -106.88882398488847513818      0.382967903005332D+00
+    3          -106.94355825852191799186      0.402662535145026D-01
+    4          -106.94508748882131499158      0.908922991317896D-02
+    5          -106.94512502373963513946      0.904014179904364D-03
+    6          -106.94512594855417830786      0.152299033546358D-03
+    7          -106.94512596824809236296      0.228408937801287D-04
+    8          -106.94512596859259190296      0.267892390845504D-05
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                  -106.945125968593
+      Nuclear repulsion:                   9.135996306733
+      Electronic energy:                -116.081122275326
+ 
+ inside leastchange_lcm
+  %LOC%   
+  %LOC%   ********************************************
+  %LOC%   *       LEVEL 3 ORBITAL LOCALIZATION       *
+  %LOC%   ********************************************
+  %LOC%   
+  %LOC%  
+  %LOC% *******  LOCALIZE     2 CORE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  0.68 mu =  0.0E+00 grd =  6.9E-04 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:             0.5
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  0.68 mu =  0.0E+00 grd =  2.9E-12 it =  2 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE     4 VALENCE ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  1.27 mu =  0.0E+00 grd =  8.0E-02 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:            10.1
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  1.26 mu =  0.0E+00 grd =  1.2E-04 it =  2 trust-region =  0.50 step = 0.05
+Linesearch  :   0 Original function value:            10.1
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:            -0.2
+Linesearch  :   3 Diff. in function value:             0.6
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  1.27 mu = -1.4E+00 grd =  1.4E-01 it =  7 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:             9.8
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  4 sigma_2 =  1.27 mu =  0.0E+00 grd =  3.3E-03 it =  4 trust-region =  0.50 step = 0.30
+Linesearch  :   0 Original function value:             9.8
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC%  5 sigma_2 =  1.27 mu =  0.0E+00 grd =  2.1E-06 it =  4 trust-region =  0.50 step = 0.00
+  %LOC% 
+  %LOC%  ********* Orbital localization converged ************
+  %LOC%  *                                                   *
+  %LOC%  * The gradient norm for the orbital localization    *
+  %LOC%  * function is below the threshold, and we exit      *
+  %LOC%  * the localization procedure.                       *
+  %LOC%  *                                                   *
+  %LOC%  *****************************************************
+  %LOC% 
+  %LOC%  
+  %LOC% *******  LOCALIZE    22 VIRTUAL ORBITALS ******
+  %LOC%  
+  %LOC%  1 sigma_2 =  8.07 mu =  0.0E+00 grd =  2.5E+02 it =  1 trust-region =  0.50 step = 0.00
+Linesearch  :   0 Original function value:         16430.9
+Linesearch  :   1 Diff. in function value:         -1872.8
+Linesearch  :   2 Diff. in function value:         -2630.1
+Linesearch  :   3 Diff. in function value:          -122.1
+Linesearch  :   4 Diff. in function value:          1269.0
+Linesearch done, we choose previous point 
+  %LOC%  2 sigma_2 =  6.63 mu = -3.0E+04 grd =  2.3E+02 it =  9 trust-region =  0.50 step = 2.00
+Linesearch  :   0 Original function value:         11805.8
+Linesearch  :   1 Diff. in function value:         -1160.6
+Linesearch  :   2 Diff. in function value:            52.9
+Linesearch done, we choose previous point 
+  %LOC%  3 sigma_2 =  6.41 mu = -1.4E+04 grd =  1.9E+02 it =  6 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:         10645.2
+Linesearch  :   1 Diff. in function value:         -1107.0
+Linesearch  :   2 Diff. in function value:         -1824.2
+Linesearch  :   3 Diff. in function value:          1557.3
+Linesearch done, we choose previous point 
+  %LOC%  4 sigma_2 =  5.38 mu = -1.2E+04 grd =  1.4E+02 it =  7 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:          7714.0
+Linesearch  :   1 Diff. in function value:          -551.0
+Linesearch  :   2 Diff. in function value:          -473.1
+Linesearch  :   3 Diff. in function value:          1565.1
+Linesearch done, we choose previous point 
+  %LOC%  5 sigma_2 =  4.97 mu = -4.8E+03 grd =  9.5E+01 it =  8 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:          6689.8
+Linesearch  :   1 Diff. in function value:          -332.8
+Linesearch  :   2 Diff. in function value:           243.1
+Linesearch done, we choose previous point 
+  %LOC%  6 sigma_2 =  4.83 mu = -2.3E+03 grd =  4.1E+01 it =  7 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          6357.0
+Linesearch  :   1 Diff. in function value:          -234.8
+Linesearch  :   2 Diff. in function value:          1015.7
+Linesearch done, we choose previous point 
+  %LOC%  7 sigma_2 =  4.78 mu = -4.5E+03 grd =  5.3E+01 it = 16 trust-region =  0.50 step = 0.98
+Linesearch  :   0 Original function value:          6122.2
+Linesearch  :   1 Diff. in function value:          -203.3
+Linesearch  :   2 Diff. in function value:           300.4
+Linesearch done, we choose previous point 
+  %LOC%  8 sigma_2 =  4.75 mu = -2.5E+03 grd =  4.1E+01 it = 22 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          5918.8
+Linesearch  :   1 Diff. in function value:          -241.0
+Linesearch  :   2 Diff. in function value:             9.2
+Linesearch done, we choose previous point 
+  %LOC%  9 sigma_2 =  4.76 mu = -2.9E+03 grd =  4.5E+01 it = 10 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          5677.9
+Linesearch  :   1 Diff. in function value:          -241.0
+Linesearch  :   2 Diff. in function value:          -237.0
+Linesearch  :   3 Diff. in function value:          1135.7
+Linesearch done, we choose previous point 
+  %LOC% 10 sigma_2 =  4.80 mu = -2.7E+03 grd =  6.0E+01 it = 10 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:          5199.9
+Linesearch  :   1 Diff. in function value:          -193.7
+Linesearch  :   2 Diff. in function value:           243.2
+Linesearch done, we choose previous point 
+  %LOC% 11 sigma_2 =  4.66 mu = -1.3E+03 grd =  2.4E+01 it = 16 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          5006.2
+Linesearch  :   1 Diff. in function value:           -91.1
+Linesearch  :   2 Diff. in function value:           103.9
+Linesearch done, we choose previous point 
+  %LOC% 12 sigma_2 =  4.55 mu = -7.8E+02 grd =  1.4E+01 it = 14 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4915.1
+Linesearch  :   1 Diff. in function value:           -61.9
+Linesearch  :   2 Diff. in function value:           -22.0
+Linesearch  :   3 Diff. in function value:           530.7
+Linesearch done, we choose previous point 
+  %LOC% 13 sigma_2 =  4.39 mu = -5.3E+02 grd =  2.9E+01 it = 17 trust-region =  0.50 step = 1.50
+Linesearch  :   0 Original function value:          4831.2
+Linesearch  :   1 Diff. in function value:           -63.9
+Linesearch  :   2 Diff. in function value:           186.5
+Linesearch done, we choose previous point 
+  %LOC% 14 sigma_2 =  4.43 mu = -4.9E+02 grd =  8.4E+00 it = 16 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4767.3
+Linesearch  :   1 Diff. in function value:           -29.8
+Linesearch  :   2 Diff. in function value:            50.5
+Linesearch done, we choose previous point 
+  %LOC% 15 sigma_2 =  4.41 mu = -2.3E+02 grd =  4.8E+00 it = 22 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4737.4
+Linesearch  :   1 Diff. in function value:           -10.2
+Linesearch  :   2 Diff. in function value:            -6.5
+Linesearch  :   3 Diff. in function value:            79.0
+Linesearch done, we choose previous point 
+  %LOC% 16 sigma_2 =  4.34 mu = -2.9E+02 grd =  8.3E+00 it = 17 trust-region =  0.50 step = 0.75
+Linesearch  :   0 Original function value:          4720.7
+Linesearch  :   1 Diff. in function value:            -9.1
+Linesearch  :   2 Diff. in function value:            -0.4
+Linesearch  :   3 Diff. in function value:            70.3
+Linesearch done, we choose previous point 
+  %LOC% 17 sigma_2 =  4.39 mu = -2.1E+02 grd =  1.4E+01 it = 22 trust-region =  0.50 step = 0.75
+Linesearch  :   0 Original function value:          4711.2
+Linesearch  :   1 Diff. in function value:           -14.2
+Linesearch  :   2 Diff. in function value:            31.5
+Linesearch done, we choose previous point 
+  %LOC% 18 sigma_2 =  4.35 mu = -2.3E+02 grd =  3.0E+00 it = 20 trust-region =  0.50 step = 0.50
+Linesearch  :   0 Original function value:          4697.0
+Linesearch  :   1 Diff. in function value:           -11.1
+Linesearch  :   2 Diff. in function value:           101.7
+Linesearch done, we choose previous point 
+  %LOC% 19 sigma_2 =  4.33 mu = -1.1E+02 grd =  6.9E+00 it = 24 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4685.8
+Linesearch  :   1 Diff. in function value:           -15.2
+Linesearch  :   2 Diff. in function value:            72.5
+Linesearch done, we choose previous point 
+  %LOC% 20 sigma_2 =  4.32 mu = -1.5E+02 grd =  7.8E+00 it = 23 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4670.6
+Linesearch  :   1 Diff. in function value:           -15.8
+Linesearch  :   2 Diff. in function value:            34.5
+Linesearch done, we choose previous point 
+  %LOC% 21 sigma_2 =  4.30 mu = -1.2E+02 grd =  4.4E+00 it = 24 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4654.8
+Linesearch  :   1 Diff. in function value:            -6.4
+Linesearch  :   2 Diff. in function value:            -1.8
+Linesearch  :   3 Diff. in function value:            63.8
+Linesearch done, we choose previous point 
+  %LOC% 22 sigma_2 =  4.31 mu = -1.7E+02 grd =  1.4E+01 it = 20 trust-region =  0.50 step = 0.75
+Linesearch  :   0 Original function value:          4646.5
+Linesearch  :   1 Diff. in function value:           -11.3
+Linesearch  :   2 Diff. in function value:             2.5
+Linesearch done, we choose previous point 
+  %LOC% 23 sigma_2 =  4.31 mu = -2.5E+02 grd =  3.4E+00 it = 19 trust-region =  0.50 step = 0.50
+Linesearch  :   0 Original function value:          4635.2
+Linesearch  :   1 Diff. in function value:           -17.8
+Linesearch  :   2 Diff. in function value:           147.0
+Linesearch done, we choose previous point 
+  %LOC% 24 sigma_2 =  4.27 mu = -2.3E+02 grd =  6.7E+00 it = 17 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4617.4
+Linesearch  :   1 Diff. in function value:           -16.9
+Linesearch  :   2 Diff. in function value:            68.2
+Linesearch done, we choose previous point 
+  %LOC% 25 sigma_2 =  4.24 mu = -1.2E+02 grd =  3.4E+00 it = 22 trust-region =  0.50 step = 1.00
+Linesearch  :   0 Original function value:          4600.5
+Linesearch  :   1 Diff. in function value:            -5.0
+Linesearch  :   2 Diff. in function value:            -4.3
+Linesearch  :   3 Diff. in function value:            26.6
+Linesearch done, we choose previous point 
+  %LOC% 26 sigma_2 =  4.24 mu = -1.3E+02 grd =  6.1E+00 it = 22 trust-region =  0.50 step = 0.75
+Linesearch  :   0 Original function value:          4591.2
+Linesearch  :   1 Diff. in function value:            -5.6
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:            48.2
+Linesearch done, we choose previous point 
+  %LOC% 27 sigma_2 =  4.22 mu = -1.3E+02 grd =  1.1E+01 it = 23 trust-region =  0.50 step = 0.75
+Linesearch  :   0 Original function value:          4585.6
+Linesearch  :   1 Diff. in function value:            -9.4
+Linesearch  :   2 Diff. in function value:            32.1
+Linesearch done, we choose previous point 
+  %LOC% 28 sigma_2 =  4.23 mu = -1.8E+02 grd =  2.3E+00 it = 22 trust-region =  0.50 step = 0.50
+Linesearch  :   0 Original function value:          4576.2
+Linesearch  :   1 Diff. in function value:            -2.0
+Linesearch  :   2 Diff. in function value:            -2.6
+Linesearch  :   3 Diff. in function value:             0.3
+Linesearch done, we choose previous point 
+  %LOC% 29 sigma_2 =  4.22 mu = -2.2E+02 grd =  2.7E+00 it = 17 trust-region =  0.31 step = 0.37
+Linesearch  :   0 Original function value:          4571.6
+Linesearch  :   1 Diff. in function value:            -1.1
+Linesearch  :   2 Diff. in function value:            -0.4
+Linesearch  :   3 Diff. in function value:             4.5
+Linesearch done, we choose previous point 
+  %LOC% 30 sigma_2 =  4.21 mu = -2.7E+02 grd =  5.2E+00 it = 18 trust-region =  0.20 step = 0.23
+Linesearch  :   0 Original function value:          4570.1
+Linesearch  :   1 Diff. in function value:            -1.5
+Linesearch  :   2 Diff. in function value:             1.6
+Linesearch done, we choose previous point 
+  %LOC% 31 sigma_2 =  4.21 mu = -1.6E+02 grd =  7.2E-01 it = 24 trust-region =  0.24 step = 0.20
+Linesearch  :   0 Original function value:          4568.5
+Linesearch  :   1 Diff. in function value:            -0.8
+Linesearch  :   2 Diff. in function value:            -1.2
+Linesearch  :   3 Diff. in function value:             0.8
+Linesearch done, we choose previous point 
+  %LOC% 32 sigma_2 =  4.21 mu = -1.1E+02 grd =  1.9E+00 it = 23 trust-region =  0.31 step = 0.37
+Linesearch  :   0 Original function value:          4566.4
+Linesearch  :   1 Diff. in function value:            -0.5
+Linesearch  :   2 Diff. in function value:            -0.4
+Linesearch  :   3 Diff. in function value:             0.7
+Linesearch done, we choose previous point 
+  %LOC% 33 sigma_2 =  4.20 mu = -1.4E+02 grd =  3.2E+00 it = 24 trust-region =  0.19 step = 0.23
+Linesearch  :   0 Original function value:          4565.5
+Linesearch  :   1 Diff. in function value:            -0.6
+Linesearch  :   2 Diff. in function value:             0.7
+Linesearch done, we choose previous point 
+  %LOC% 34 sigma_2 =  4.20 mu = -2.5E+02 grd =  5.1E-01 it = 18 trust-region =  0.12 step = 0.10
+Linesearch  :   0 Original function value:          4564.9
+Linesearch  :   1 Diff. in function value:            -0.6
+Linesearch  :   2 Diff. in function value:            -1.0
+Linesearch  :   3 Diff. in function value:            -0.1
+Linesearch  :   4 Diff. in function value:             6.1
+Linesearch done, we choose previous point 
+  %LOC% 35 sigma_2 =  4.18 mu = -8.5E+01 grd =  3.8E+00 it = 21 trust-region =  0.30 step = 0.48
+Linesearch  :   0 Original function value:          4563.2
+Linesearch  :   1 Diff. in function value:            -1.1
+Linesearch  :   2 Diff. in function value:             2.5
+Linesearch done, we choose previous point 
+  %LOC% 36 sigma_2 =  4.18 mu = -1.1E+02 grd =  4.0E-01 it = 22 trust-region =  0.19 step = 0.15
+Linesearch  :   0 Original function value:          4562.1
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:            -0.1
+Linesearch  :   3 Diff. in function value:             0.1
+Linesearch done, we choose previous point 
+  %LOC% 37 sigma_2 =  4.17 mu = -1.0E+02 grd =  5.0E-01 it = 24 trust-region =  0.12 step = 0.14
+Linesearch  :   0 Original function value:          4561.8
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:             0.4
+Linesearch done, we choose previous point 
+  %LOC% 38 sigma_2 =  4.17 mu = -1.4E+02 grd =  7.7E-01 it = 22 trust-region =  0.07 step = 0.09
+Linesearch  :   0 Original function value:          4561.7
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.1
+Linesearch done, we choose previous point 
+  %LOC% 39 sigma_2 =  4.17 mu = -2.7E+02 grd =  2.2E-01 it = 16 trust-region =  0.05 step = 0.04
+Linesearch  :   0 Original function value:          4561.6
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:            -0.0
+Linesearch  :   4 Diff. in function value:             0.1
+Linesearch done, we choose previous point 
+  %LOC% 40 sigma_2 =  4.16 mu = -1.3E+02 grd =  6.9E-01 it = 20 trust-region =  0.06 step = 0.09
+Linesearch  :   0 Original function value:          4561.5
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.1
+Linesearch done, we choose previous point 
+  %LOC% 41 sigma_2 =  4.16 mu = -1.2E+02 grd =  1.6E-01 it = 22 trust-region =  0.07 step = 0.06
+Linesearch  :   0 Original function value:          4561.4
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:            -0.0
+Linesearch  :   4 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 42 sigma_2 =  4.17 mu = -1.3E+02 grd =  4.3E-01 it = 19 trust-region =  0.04 step = 0.07
+Linesearch  :   0 Original function value:          4561.3
+Linesearch  :   1 Diff. in function value:            -0.1
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 43 sigma_2 =  4.16 mu = -1.3E+02 grd =  1.3E-01 it = 21 trust-region =  0.06 step = 0.04
+Linesearch  :   0 Original function value:          4561.3
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:            -0.0
+Linesearch  :   4 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 44 sigma_2 =  4.16 mu = -7.3E+01 grd =  3.9E-01 it = 24 trust-region =  0.07 step = 0.11
+Linesearch  :   0 Original function value:          4561.2
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 45 sigma_2 =  4.16 mu = -1.9E+02 grd =  1.5E-01 it = 18 trust-region =  0.04 step = 0.03
+Linesearch  :   0 Original function value:          4561.1
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 46 sigma_2 =  4.16 mu = -1.9E+02 grd =  1.4E-01 it = 16 trust-region =  0.03 step = 0.03
+Linesearch  :   0 Original function value:          4561.1
+Linesearch  :   1 Diff. in function value:            -0.0
+Linesearch  :   2 Diff. in function value:            -0.0
+Linesearch  :   3 Diff. in function value:             0.0
+Linesearch done, we choose previous point 
+  %LOC% 47 sigma_2 =  4.16 mu = -1.3E+02 grd =  1.6E-01 it = 20 trust-region =  0.03 step = 0.04
+  %LOC% 
+  %LOC%   ********* Orbital localization converged ************
+  %LOC%   *                                                   *
+  %LOC%   * There are insignificant changes in the  locality  *
+  %LOC%   * of the least local orbital, and procedure is      *
+  %LOC%   * exited irresptective of gradient norm.            *
+  %LOC%   *                                                   *
+  %LOC%   *****************************************************
+  %LOC% 
+ 
+  %LOC%  %%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    0.68    2
+  %LOC%   Max. sigma_4 and orb.number:    0.89    2
+  %LOC%   Min. sigma_2 and orb.number:    0.20    1
+  %LOC%   Min. sigma_4 and orb.number:    0.26    1
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    1.27    5
+  %LOC%   Max. sigma_4 and orb.number:    1.94    6
+  %LOC%   Min. sigma_2 and orb.number:    1.20    6
+  %LOC%   Min. sigma_4 and orb.number:    1.81    4
+ 
+ 
+  %LOC%  %%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+  %LOC%   Max. sigma_2 and orb.number:    4.16    8
+  %LOC%   Max. sigma_4 and orb.number:    5.60   28
+  %LOC%   Min. sigma_2 and orb.number:    3.48   21
+  %LOC%   Min. sigma_4 and orb.number:    5.03   15
+ 
+ >>>  CPU Time used in Orbital Localization is   5.63 seconds
+ >>> wall Time used in Orbital Localization is   5.66 seconds
+  %LOC%
+  %LOC% Localized orbitals written to lcm_orbitals.u
+  %LOC%
+ 
+
+-- Full molecular info --
+
+FULL: Overall charge of molecule :      0
+
+FULL: Number of electrons        :     12
+FULL: Number of atoms            :      2
+FULL: Number of basis func.      :     28
+FULL: Number of aux. basis func. :      0
+FULL: Number of core orbitals    :      2
+FULL: Number of valence orbitals :      4
+FULL: Number of occ. orbitals    :      6
+FULL: Number of virt. orbitals   :     22
+ 
+ Calculating carmom matrix for DEC calculation...
+ 
+ 
+=============================================================================
+             -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
+=============================================================================
+ 
+ Memory set in input to be:    2.000     GB
+
+DEC calculation is carried out...
+
+
+ ================================================ 
+                  DEC-CC driver                   
+ ================================================ 
+
+
+--------------------------
+   DEC input parameters   
+--------------------------
+
+FOT (Fragment Optimization Threshold)               =        0.10E-03
+Use Pair Estimates to screen pairs                  =            TRUE
+Pair distance cutoff threshold (Angstrom)           =       0.100E+04
+Use Pair Estimate initialisation radius (Angstrom)  =       0.200E+01
+Simple orbital thr.                                 =       0.500E-01
+Expansion step size                                 =              10
+Use RI for Expansion step                           =           FALSE
+Print level                                         =               0
+Fragment-adapted orbitals                           =           FALSE
+Calculate Interaction Energies                      =           FALSE
+Fit Molecular Orbitals                              =            TRUE
+ 
+DEC orbitals will be generated using  simple Lowdin charge analysis
+Assignment of Molecular Orbitals to Atoms will be based on Lowdin charge analysis
+
+--------------------------
+  Coupled-cluster input   
+--------------------------
+
+Wave function                =           MP2     
+Maximum number of iterations =             100
+Convergence threshold        =       0.100E-05
+Use CROP                     =            TRUE
+CROP subspace                =               3
+Use Preconditioner           =            TRUE
+Precond. B                   =            TRUE
+Debug mode                   =           FALSE
+CC Solver distributes Memory =           FALSE
+Memory Usage Allowed(GB)     =            2.00
+Backup Time Interval(s)      =          300.00
+Use F12 correction           =           FALSE
+ 
+ Generating DEC orbitals using simple Lowdin charge analysis
+ THIS IS A SIMULATED FULL MOLECULAR CALCULATION!
+ 
+ 
+ Simple Lowdin-based orbital assignment: Summary
+ -----------------------------------------------
+ 
+ 
+ ORBITAL DISTRIBUTION INFORMATION
+ ********************************
+ 
+    Atom type     Occ Orbitals     Unocc Orbitals     Occ Secondary    Unocc Sec
+ ondary
+     1    Li           6               22                6               22
+     2    F            0                0                0                0
+ Total:                6               22
+ 
+ 
+ 
+ ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
+ **********************************************************************
+ 
+ Maximum occ orbital extent   =      2   -- Orbital index     1
+ Maximum unocc orbital extent =      2   -- Orbital index     1
+ Average occ orbital extent   =       2.0000
+ Average unocc orbital extent =       2.0000
+ 
+ 
+ >>>  CPU Time used in DEC INIT is   0.00 seconds
+ >>> wall Time used in DEC INIT is   0.00 seconds
+ 
+ 
+ ******************************************************************
+        ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       
+ ******************************************************************
+ 
+ JobNumber  AtomType  AtomIndex  SizeMeasure
+      1       Li         1        2352
+      2       F          2           0
+ 
+ 
+ 
+ 
+ *** Initiating optimization of atomic fragments ***
+ 
+ 
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+ FOP  Fragment optimization scheme 
+ FOP  Standard Fragment optimization scheme is used
+ FOP Fragment includes all orbitals and fragment optimization is skipped
+ >>>  CPU Time used in DEC Atomic Fragment Calculation is   0.00 seconds
+ >>> wall Time used in DEC Atomic Fragment Calculation is   0.01 seconds
+ Preparing job list...
+ 
+ 
+ 
+ *******************************************************************************
+              Atomic fragments listed according to total size
+ *******************************************************************************
+    Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
+      1      6     22     28   0.00    /1.56     0.00    /1.56              FRAG_SIZE
+ 
+ FRAGANALYSIS: Max/Ave/Min occ         :        6       /     6.0000    /       6
+ FRAGANALYSIS: Max/Ave/Min unocc       :       22       /     22.000    /      22
+ FRAGANALYSIS: Max/Ave/Min basis       :       28       /     28.000    /      28
+ FRAGANALYSIS: Max/Ave/Min Radius AOS  :      0.0000    /     0.0000    /     0.0000    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :      1.5639    /     1.5639    /     1.5639    
+ FRAGANALYSIS: Max/Ave/Min Diameter AOS:      0.0000    /     0.0000    /     0.0000    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :      1.5639    /     1.5639    /     1.5639    
+ 
+ 
+ 
+ *****************************************************
+ *               DEC FRAGMENT JOB LIST               *
+ *****************************************************
+ Number of jobs =            1
+ 
+ JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis
+        1               3696              1                6       22       28
+ 
+ 
+ DEC JOB SUMMARY: Number of single jobs =          1
+ DEC JOB SUMMARY: Number of pair jobs   =          0
+ DEC JOB SUMMARY: Total number of jobs  =          1
+ 
+ 
+ 
+ *** Calculating single and pair interaction energies ***
+ 
+#SINGLEDIMS# basis,occ,virt       28       6      22
+ 
+ 
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+ 
+ 85% of available memory (GB)            =  1.62    
+ 
+ Number of atomic basis functions        =      28
+ Number of occupied orbitals AOS/EOS     =       6       6
+ Number of virtual  orbitals AOS/EOS     =      22      22
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =      28
+ Maximum virtual batch dimension         =      22
+ Number of OMP threads                   =       1
+ 
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.146E-02
+ Memory required for tmp array 1 (GB)    = 0.105E-02
+ Memory required for tmp array 2 (GB)    = 0.177E-03
+ Memory required for tmp array 3 (GB)    = 0.226E-03
+ 
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.456E-03
+ Memory required for tmp array 1 (GB)    = 0.139E-03
+ Memory required for tmp array 2 (GB)    = 0.139E-03
+ Memory required for tmp array 3 (GB)    = 0.139E-03
+ Memory required for tmp array 4 (GB)    = 0.380E-04
+ 
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.650E-03
+ Memory required for tmp array 1 (GB)    = 0.511E-03
+ Memory required for tmp array 2 (GB)    = 0.139E-03
+ 
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.146E-02
+ Big Array Memory required       (GB)    = 0.147E-02
+ 
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            6
+ BATCH: Number of virtual batches =           1
+ 
+ 
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.2093148371    
+ Single virtual  energy =    -0.2093148371    
+ Single Lagrangian occ term  =     0.1536510160    
+ Single Lagrangian virt term =     0.5566382102E-01
+ 
+ 
+ Calculating MP2 gradient for fragment           1
+ Initiating MP2 gradient structure for single fragment            1
+ Initiating MP2 density matrix...
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   9.53 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   9.57 seconds
+ 
+ 
+ =============================================================================
+ 
+ 
+ =================================================================
+ MP2 occupied single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.2093148371        AF_MP2_OCC
+ 
+ 
+ =================================================================
+ MP2 virtual single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.2093148371        AF_MP2_VIR
+ 
+ 
+ =================================================================
+ MP2 Lagrangian single energies
+ =================================================================
+ 
+ Fragment       Energy
+     1      -0.2093148371        AF_MP2_LAG
+ 
+ 
+ =================================================================
+ MP2 occupied pair energies
+ =================================================================
+ 
+  Atom1  Atom2     Dist(Ang)        Energy
+ 
+ 
+ =================================================================
+ MP2 virtual pair energies
+ =================================================================
+ 
+  Atom1  Atom2     Dist(Ang)        Energy
+ 
+ 
+ =================================================================
+ MP2 Lagrangian pair energies
+ =================================================================
+ 
+  Atom1  Atom2     Dist(Ang)        Energy
+ 
+ MP2 occupied   correlation energy :    -0.2093148371    
+ MP2 virtual    correlation energy :    -0.2093148371    
+ MP2 Lagrangian correlation energy :    -0.2093148371    
+ 
+ 
+ 
+ =============================================================================
+ The Coulomb energy contribution   2.362803179213885E-003
+ The Exchange energy contribution   9.815647069190763E-003
+ The Fock energy contribution   7.452843889976877E-003
+ 
+ Starting kappabar multiplier solver for zeroth order equation...
+ 
+Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-05
+ 
+ Starting kappabar iterations
+ -------------------------
+ ***  Iteration     Residual norm
+ ***      1         0.14096830    
+ ***      2         0.68886044E-01
+ ***      3         0.34938959E-01
+ ***      4         0.21537377E-01
+ ***      5         0.15047333E-01
+ ***      6         0.79390096E-02
+ ***      7         0.28673939E-02
+ ***      8         0.13172337E-02
+ ***      9         0.87013380E-03
+ ***     10         0.57204595E-03
+ ***     11         0.27705351E-03
+ ***     12         0.12495106E-03
+ ***     13         0.63708284E-04
+ ***     14         0.32915320E-04
+ ***     15         0.17014046E-04
+ ***     16         0.63581600E-05
+ ***     17         0.26315459E-05
+ ***     18         0.10555014E-05
+ ***     19         0.56535280E-06
+Zeroth order kappabar multiplier equation solved    19 iterations!
+ Residual norm:  5.653527990879108E-007
+ 
+ Starting kappabar multiplier solver for full equation...
+ 
+Virt-occ kappabar multiplier equation: Conv. thr. set to    0.100000E-05
+ 
+ Starting kappabar iterations
+ -------------------------
+ ***  Iteration     Residual norm
+ The Coulomb energy contribution   3.704290348169698E-003
+ The Exchange energy contribution   4.648659494180250E-003
+ The Fock energy contribution   9.443691460105518E-004
+ ***      1         0.74326704E-01
+ The Coulomb energy contribution   2.700807263255786E-003
+ The Exchange energy contribution   7.025762248120678E-003
+ The Fock energy contribution   4.324954984864892E-003
+ ***      2         0.17845722E-01
+ The Coulomb energy contribution   3.104077737370398E-003
+ The Exchange energy contribution   6.122494467910750E-003
+ The Fock energy contribution   3.018416730540352E-003
+ ***      3         0.92010793E-02
+ The Coulomb energy contribution   3.149159439480757E-003
+ The Exchange energy contribution   6.203226401306043E-003
+ The Fock energy contribution   3.054066961825283E-003
+ ***      4         0.45239182E-02
+ The Coulomb energy contribution   3.067020720883356E-003
+ The Exchange energy contribution   6.190901371160198E-003
+ The Fock energy contribution   3.123880650276840E-003
+ ***      5         0.26256709E-02
+ The Coulomb energy contribution   3.088803327563879E-003
+ The Exchange energy contribution   6.240729598391386E-003
+ The Fock energy contribution   3.151926270827508E-003
+ ***      6         0.20127233E-02
+ The Coulomb energy contribution   3.103585980523429E-003
+ The Exchange energy contribution   6.266491563886582E-003
+ The Fock energy contribution   3.162905583363156E-003
+ ***      7         0.14042028E-02
+ The Coulomb energy contribution   3.108330143931738E-003
+ The Exchange energy contribution   6.279301237449146E-003
+ The Fock energy contribution   3.170971093517405E-003
+ ***      8         0.69354105E-03
+ The Coulomb energy contribution   3.111845222290340E-003
+ The Exchange energy contribution   6.289666453829343E-003
+ The Fock energy contribution   3.177821231539002E-003
+ ***      9         0.27883040E-03
+ The Coulomb energy contribution   3.111905308923105E-003
+ The Exchange energy contribution   6.292366450198903E-003
+ The Fock energy contribution   3.180461141275800E-003
+ ***     10         0.10241416E-03
+ The Coulomb energy contribution   3.112112342436114E-003
+ The Exchange energy contribution   6.293185612181220E-003
+ The Fock energy contribution   3.181073269745106E-003
+ ***     11         0.56519640E-04
+ The Coulomb energy contribution   3.112467837014537E-003
+ The Exchange energy contribution   6.293706062010571E-003
+ The Fock energy contribution   3.181238224996037E-003
+ ***     12         0.31431491E-04
+ The Coulomb energy contribution   3.112562608288037E-003
+ The Exchange energy contribution   6.293840564982482E-003
+ The Fock energy contribution   3.181277956694446E-003
+ ***     13         0.19784617E-04
+ The Coulomb energy contribution   3.112552020211499E-003
+ The Exchange energy contribution   6.293839463041668E-003
+ The Fock energy contribution   3.181287442830167E-003
+ ***     14         0.11511161E-04
+ The Coulomb energy contribution   3.112579341615805E-003
+ The Exchange energy contribution   6.293885796280319E-003
+ The Fock energy contribution   3.181306454664515E-003
+ ***     15         0.71676554E-05
+ The Coulomb energy contribution   3.112567391845589E-003
+ The Exchange energy contribution   6.293869824078785E-003
+ The Fock energy contribution   3.181302432233196E-003
+ ***     16         0.35954282E-05
+ The Coulomb energy contribution   3.112576140144607E-003
+ The Exchange energy contribution   6.293885440439011E-003
+ The Fock energy contribution   3.181309300294404E-003
+ ***     17         0.19949199E-05
+ The Coulomb energy contribution   3.112583581518004E-003
+ The Exchange energy contribution   6.293893183595559E-003
+ The Fock energy contribution   3.181309602077554E-003
+ ***     18         0.11080204E-05
+ The Coulomb energy contribution   3.112586157529915E-003
+ The Exchange energy contribution   6.293895969351210E-003
+ The Fock energy contribution   3.181309811821293E-003
+ ***     19         0.57864466E-06
+Full kappabar multiplier equation solved    19 iterations!
+ Residual norm:  5.786446575865661E-007
+ 
+ 
+ *****************************************************************
+ *                     MP2 DENSITY SANITY CHECK                  *
+ *****************************************************************
+ HF state : Number of electrons =      12.00000000    
+ MP2 state: Number of electrons =      12.00000000    
+ Number of electrons from input =          12
+ 
+ 
+ 
+ 
+     DIPOLE MOMENTS AT THE HARTREE-FOCK AND MP2 LEVELS OF THEORY 
+     =========================================================== 
+ 
+ 
+                       HF: Permanent dipole moment
+                       ---------------------------
+               au              Debye           10**-30 C m
+            2.54630           6.47206           21.5884    
+ 
+ 
+                       HF: Dipole moment components
+                       ----------------------------
+               au              Debye           10**-30 C m
+ x         -2.54630          -6.47206          -21.5884    
+ y         0.164414E-11      0.417900E-11      0.139396E-10
+ z        -0.537348E-10     -0.136580E-09     -0.455583E-09
+ 
+ 
+ 
+ 
+                       MP2: Permanent dipole moment
+                       ----------------------------
+               au              Debye           10**-30 C m
+            2.41150           6.12943           20.4456    
+ 
+ 
+                       MP2: Dipole moment components
+                       -----------------------------
+               au              Debye           10**-30 C m
+ x         -2.41150          -6.12943          -20.4456    
+ y        -0.604688E-07     -0.153697E-06     -0.512676E-06
+ z         0.189039E-06      0.480490E-06      0.160274E-05
+ 
+ 
+ 
+ Writing full molecular MP2 density to file....
+ The Coulomb energy contribution   6.168671796185293E-003
+ The Exchange energy contribution   1.049517249798185E-002
+ The Fock energy contribution   4.326500701796555E-003
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   Li       3.0852689346           -0.0000001877           -0.0000005993
+   F       -3.0852689346            0.0000001877            0.0000005993
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   Li      -0.1081362931            0.0000000194            0.0000000659
+   F        0.1081362931           -0.0000000194           -0.0000000659
+     ********************************************************************************
+     *                 MP2 MOLECULAR GRADIENT FROM DEC CALCULATION                  *
+     ********************************************************************************
+ 
+     DEC-MP2 GRADIENT NORM:       0.13200502E-01
+     DEC-MP2 GRADIENT RMS :       0.59034440E-02
+ 
+ 
+                         TOTAL MP2 MOLECULAR GRADIENT
+                         ****************************
+ 
+    Li          0.0093341646        0.0000000146        0.0000000544
+    F          -0.0093341646       -0.0000000146       -0.0000000544
+ 
+ 
+ 
+ 
+                         Individual contributions
+                         ************************
+ 
+ 
+ 
+                         Nuclear repulsion gradient
+                         --------------------------
+ 
+    Li          3.0913492043        0.0000000000        0.0000000000
+    F          -3.0913492043        0.0000000000        0.0000000000
+ 
+ 
+ 
+                        One-electron integral gradient
+                        ------------------------------
+ 
+    Li         -6.1380706634        0.0000001781        0.0000005749
+    F           6.1380706634       -0.0000001781       -0.0000005749
+ 
+ 
+ 
+                        Reorthonormalization gradient
+                        -----------------------------
+ 
+    Li          0.0642971670        0.0000000048        0.0000000129
+    F          -0.0642971670       -0.0000000048       -0.0000000129
+ 
+ 
+ 
+                       Two-electron integral gradient 1
+                    (Fock matrix derivative contribution)
+                    -------------------------------------
+ 
+    Li          2.9771326416       -0.0000001683       -0.0000005334
+    F          -2.9771326416        0.0000001683        0.0000005334
+ 
+ 
+ 
+                       Two-electron integral gradient 2
+                             (Ltheta contribution)
+                       --------------------------------
+ 
+    Li          0.0146258151        0.0000000000       -0.0000000000
+    F          -0.0146258151       -0.0000000000        0.0000000000
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+             **********************************************************
+             *                   DEC ENERGY SUMMARY                   *
+             **********************************************************
+ 
+               G: Hartree-Fock energy :     -106.9451259686
+               G: Correlation energy  :       -0.2093148371
+               G: Estimated DEC error :        0.0000000000
+               G: Total MP2 energy    :     -107.1544408056
+ 
+ 
+ >>>  CPU Time used in DEC FINAL is  22.09 seconds
+ >>> wall Time used in DEC FINAL is  22.17 seconds
+ 
+ DEC CALCULATION BOOK KEEPING
+ ============================
+ 
+ # calculations done for FOTlevel      1 is      0
+ # calculations done for FOTlevel      2 is      0
+ # calculations done for FOTlevel      3 is      0
+ # calculations done for FOTlevel      4 is      1
+ # calculations done for FOTlevel      5 is      0
+ # calculations done for FOTlevel      6 is      0
+ # calculations done for FOTlevel      7 is      0
+ 
+ 
+ CC Memory summary
+ -----------------
+ Allocated memory for array4   :  0.2331E-02 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.1107E-02 GB
+ ------------------
+ Allocated memory for array3   :   0.000     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :   0.000     GB
+ ------------------
+ 
+
+------------------------------------------------------
+Total CPU  time used in DEC          :         31.6252     s
+Total Wall time used in DEC          :         31.7700     s
+------------------------------------------------------
+
+ 
+Job finished   : Date: 05/09/2014   Time: 10:18:04
+ 
+ 
+
+=============================================================================
+                          -- end of DEC program --
+=============================================================================
+
+ 
+ 
+ >>>  CPU Time used in *SCF is  44.88 seconds
+ >>> wall Time used in *SCF is  45.07 seconds
+ 
+Total no. of matmuls used:                     12935
+Total no. of Fock/KS matrix evaluations:          15
+Max no. of matrices allocated in Level 3:         81
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                      0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MPI):                       0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (character):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMITEM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECORBITAL):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECFRAG):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (DECAOBATCHINFO):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY):                     0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (PNOSpaceInfo):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lvec_data)):           0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(lattice_cell)):        0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                         91.854 MB
+  Max allocated memory, type(matrix)                 384.640 kB
+  Max allocated memory, real(realk)                   41.000 MB
+  Max allocated memory, MPI                            0.000 Byte
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                       83.885 kB
+  Max allocated memory, logical                      201.448 kB
+  Max allocated memory, character                      3.776 kB
+  Max allocated memory, AOBATCH                       24.192 kB
+  Max allocated memory, DECORBITAL                     4.928 kB
+  Max allocated memory, DECFRAG                       23.600 kB
+  Max allocated memory, BATCHTOORB                     0.560 kB
+  Max allocated memory, DECAOBATCHINFO                 0.000 Byte
+  Max allocated memory, MYPOINTER                      0.864 kB
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                         87.200 MB
+  Max allocated memory, PNOSpaceInfo                   0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                        6.336 kB
+  Max allocated memory, LSAOTENSOR                     4.240 kB
+  Max allocated memory, SLSAOTENSOR                    5.120 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 450.112 kB
+  Max allocated memory, ATOMITEM                       1.536 kB
+  Max allocated memory, LSMATRIX                       7.360 kB
+  Max allocated memory, OverlapT                     225.792 kB
+  Max allocated memory, linkshell                      1.632 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                  14.746 MB
+  Max allocated memory, IntWork                      507.528 kB
+  Max allocated memory, Overlap                       37.082 MB
+  Max allocated memory, ODitem                         4.608 kB
+  Max allocated memory, LStensor                     834.239 kB
+  Max allocated memory, FMM                            0.000 Byte
+  Max allocated memory, XC                             0.000 Byte
+  Max allocated memory, Lvec_data                      0.000 Byte
+  Max allocated memory, Lattice_cell                   0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 2 The Valence Calculation                    
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L2 mat_set_from_full        8            0.0000            0.0000
+   L2 mat_to_full              9            0.0000            0.0000
+   L2 mat_trans              184            0.0040            0.0040
+   L2 mat_assign             375            0.0000            0.0000
+   L2 mat_copy                 8            0.0000            0.0000
+   L2 mat_mul               1026            0.0010            0.0050
+   L2 mat_add                286            0.0000            0.0000
+   L2 mat_daxpy             2858            0.0030            0.0030
+   L2 mat_dotproduct         694            0.0020            0.0020
+   L2 mat_sqnorm2            855            0.0000            0.0010
+   L2 mat_diag_f               2            0.0010            0.0140
+   L2 mat_create_block         2            0.0000            0.0000
+   L2 mat_retrieve_block       5            0.0000            0.0000
+   L2 mat_scal               212            0.0000            0.0000
+   L2 mat_zero               808            0.0020            0.0000
+   L2 mat_density_from_o       1            0.0000            0.0000
+   L2 mat_scal_dia_vec         2            0.0000            0.0000
+   L2 mat_scal_dia            10            0.0000            0.0000
+   L2 mat_dsyev                1            0.0000            0.0000
+   L2 mat_dsyevx               8            0.0000            0.0010
+   L2 mat_identity            23            0.0000            0.0000
+   L2 mat_write_to_disk        5            0.0000            0.0000
+      ==============================================================
+   L2 TOTAL MAT                             0.0130            0.0290
+      ==============================================================
+   L2     II_get_overlap       2            0.0030            0.0020
+   L2     II_get_kinetic       1            0.0010            0.0010
+   L2   II_get_nucel_mat       1            0.0030            0.0030
+   L2 II_precalc_ScreenM       1            0.0570            0.0580
+   L2 II_GET_EXCHANGE_MA       6            0.2780            0.2820
+   L2 II_get_coulomb_mat       6            0.2490            0.2520
+   L2           homolumo       1            0.5879            0.5910
+      ==============================================================
+   L2 TOTAL INTEGRAL                        1.1788            1.1900
+      ==============================================================
+      ===============================================================
+      Overall Timings for the Matrix Operations and Integral routines
+               in Level 3 The Full molecular Calculation             
+      Matrix Operation   # calls          CPU Time         Wall Time
+      ===============================================================
+   L3 mat_set_from_full       30            0.0000            0.0000
+   L3 mat_to_full             17            0.0000            0.0000
+   L3 mat_trans             2297            0.0480            0.0590
+   L3 mat_assign            4946            0.0080            0.0080
+   L3 mat_copy                97            0.0000            0.0000
+   L3 mat_mul              11907            0.0690            0.0480
+   L3 mat_add               1800            0.0020            0.0040
+   L3 mat_daxpy           389116            0.4299            0.4240
+   L3 mat_dotproduct       77252            0.0960            0.0810
+   L3 mat_sqnorm2          30042            0.0410            0.0300
+   L3 mat_diag_f               2            0.0010            0.0000
+   L3 mat_create_block        35            0.0000            0.0000
+   L3 mat_retrieve_block       6            0.0000            0.0000
+   L3 mat_scal              5194            0.0100            0.0040
+   L3 mat_zero             32745            0.1960            0.1870
+   L3 mat_density_from_o       1            0.0000            0.0000
+   L3 mat_scal_dia_vec         2            0.0000            0.0000
+   L3 mat_scal_dia            54            0.0000            0.0000
+   L3 mat_dsyev                1            0.0010            0.0010
+   L3 mat_dsyevx              21            0.0010            0.0020
+   L3 mat_identity           112            0.0010            0.0010
+   L3 mat_write_to_disk       13            0.0010            0.0020
+      ==============================================================
+   L3 TOTAL MAT                             0.9019            0.8470
+      ==============================================================
+   L3     II_get_overlap       3            0.0150            0.0220
+   L3     II_get_kinetic       2            0.0080            0.0080
+   L3   II_get_nucel_mat       2            0.1980            0.1990
+   L3 II_GET_NN_GRADIENT       1            0.0000            0.0000
+   L3 II_precalc_ScreenM       2            0.3270            0.3550
+   L3 II_get_ne_gradient       1            0.0360            0.0360
+   L3 II_GET_KINETIC_GRA       1            0.0100            0.0100
+   L3 II_GET_REORTHONORM       1            0.0210            0.0220
+   L3  II_get_J_gradient       1            0.7529            0.7550
+   L3  II_get_K_gradient       2           10.2564           10.2910
+   L3  II_GET_K_GRADIENT       2           10.2564           10.2910
+   L3      II_get_nucpot       2            0.0000            0.0000
+   L3 II_GET_EXCHANGE_MA      30           16.0166           16.0850
+   L3 II_get_coulomb_mat      30            8.2597            8.2950
+   L3 II_GET_DECPACKED4C       6            2.1427            2.1500
+   L3           homolumo       1            0.5949            0.5960
+      ==============================================================
+   L3 TOTAL INTEGRAL                       54.0808           54.4750
+      ==============================================================
+ >>>  CPU Time used in LSDALTON is  47.04 seconds
+ >>> wall Time used in LSDALTON is  47.36 seconds
+
+End simulation
+     Date and time (Linux)  : Fri Sep  5 10:18:04 2014
+     Host name              : localhost                               
