@@ -1,3 +1,5 @@
+set(LSDALTON_EXTERNAL_LIBS)
+
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
@@ -144,9 +146,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-matrix-defop)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-matrix-defop matrixmlib)
@@ -200,10 +202,10 @@ if(ENABLE_XCFUN)
     add_external(xcfun)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(EXTERNAL_LIBS
+    set(LSDALTON_EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${EXTERNAL_LIBS}
+        ${LSDALTON_EXTERNAL_LIBS}
         )
 endif()
 
@@ -309,9 +311,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-openrsp)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-openrsp ls-matrix-defop)
@@ -462,6 +464,7 @@ target_link_libraries(
     lsdalton
     lsdaltonmain
     ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 if(NOT ENABLE_CHEMSHELL)

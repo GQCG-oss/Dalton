@@ -70,6 +70,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef VAR_RSP
   use lsdalton_rsp_mod, only: lsdalton_response, get_excitation_energy
 #endif
+  use response_noOpenRSP_module, only: lsdalton_response_noOpenRSP
   ! DYNAMICS
   use dynamics_driver, only: LS_dyn_run
   ! SOEO
@@ -538,14 +539,21 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
 
-#ifdef VAR_RSP
         IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
            CALL Print_Memory_info(lupri,'before lsdalton_response')
-           call lsdalton_response(ls,config,F(1),D(1),S)
+           IF(config%response%noOpenRSP)THEN
+              !A pure LSDALTON
+              call lsdalton_response_noOpenRSP(ls,config,F,D,S)
+           ELSE
+#ifdef VAR_RSP
+              call lsdalton_response(ls,config,F(1),D(1),S)
+#else
+              call lsquit('lsdalton_response requires VAR_RSP defined',-1)
+#endif
+           ENDIF
            CALL Print_Memory_info(lupri,'after lsdalton_response')
         ENDIF
-#endif
-        
+
         call config_shutdown(config)
 
         !

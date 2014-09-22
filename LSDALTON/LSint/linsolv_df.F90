@@ -203,7 +203,7 @@ do iter=1, MAX_ITER
     testx = abs(sqrt(mat_sqnorm2(T1))-t1_converged)
     converged = testx .le.  1.0E-8_realk
 
-    write(*,'(I2,A9,E12.6,A7,F8.6,A9,F8.6,A9,E12.6)')&
+    write(*,'(I2,A9,E14.6,A7,F14.6,A9,F14.6,A9,E14.6)')&
     &iter,    " Norm= ", testx, " l2= ", l2," emax= ", emax," emin= ", emin
     
     if (converged) exit

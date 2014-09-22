@@ -822,9 +822,9 @@ module lspdm_tensor_operations_module
     implicit none
 
     type(array), intent(in) :: arr, t1
-    integer, intent(out) :: table_iajb(:,:), table_ibja(:,:)   
+    integer, intent(inout) :: table_iajb(:,:), table_ibja(:,:)   
     integer, intent(in) :: dims(4), ord(4)
-    real(realk), intent(out) :: t1tile(:)
+    real(realk), intent(inout) :: t1tile(:)
     
     !> mode and combined idices of the tile:
     integer :: timode(4), ticomb
@@ -1609,7 +1609,7 @@ module lspdm_tensor_operations_module
     !> dimensions in the modes
     integer :: dims(nmodes)
     !> divisor the last dimension whic is slict
-    integer,intent(out) :: div
+    integer,intent(inout) :: div
     !> tdim output 
     integer :: tdim(nmodes)
     integer :: i,j
@@ -4436,9 +4436,9 @@ module lspdm_tensor_operations_module
     !> global index number of the tile
     integer, intent(in) :: globtinr
     !> optional input, return value for the destination of the tile
-    integer, intent(out), optional :: whichnode
+    integer, intent(inout), optional :: whichnode
     !> optional input, return value for the norm
-    real(realk), intent(out), optional :: nrm
+    real(realk), intent(inout), optional :: nrm
     real(realk) :: norm
     integer :: i,j,loctinr,gtnr
     integer(kind=ls_mpik) :: dest
@@ -5000,7 +5000,7 @@ module lspdm_tensor_operations_module
   subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
     implicit none
     integer(kind=long), intent(in) :: o2v2
-    integer, intent(out) :: firstintel,nintel
+    integer, intent(inout) :: firstintel,nintel
     integer(kind=ls_mpik), intent(in), optional :: remoterank
     integer(kind=ls_mpik) :: nnod, me
     nnod = 1

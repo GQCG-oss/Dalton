@@ -802,7 +802,7 @@ contains
          res = b - scr
          call VECNORM(res, ndim, err)
          if (decomp%info_stability) then
-            write (decomp%LUPRI, '("          VECTOR ", i3, ": Error of PCG iteration", i3, ":  ", E16.10)') vec_number, N, err
+            write (decomp%LUPRI, '("          VECTOR ", i3, ": Error of PCG iteration", i3, ":  ", E18.10)') vec_number, N, err
          endif
          call DD_Fock_precond(ndim,A,res,scr)
          call DD_Fock_project(ndim,Proj,scr,p)
@@ -827,7 +827,7 @@ contains
          !Convergence of PCG?
          call VECNORM(res, ndim, err)
          if (decomp%info_stability) then
-            write (decomp%LUPRI, '("          VECTOR ", i3, ": Error of PCG iteration", i3, ":  ", E16.10)') vec_number, N, err
+            write (decomp%LUPRI, '("          VECTOR ", i3, ": Error of PCG iteration", i3, ":  ", E18.10)') vec_number, N, err
          endif
          if (err < thresh) then
             if (decomp%info_stability) then
@@ -949,7 +949,7 @@ contains
           endif
           if (decomp%info_stability) then
                 write (decomp%LUPRI, '("    FUP/FUQ eival: Residual for vector ", &
-                & i3, ":  ", E16.10, " and mu: ",E16.10, "  It = ", i3, "  Conv = ", L2)') &
+                & i3, ":  ", E18.10, " and mu: ",E18.10, "  It = ", i3, "  Conv = ", L2)') &
                 & i, err(i), mu(i), iter, conv(i)
           endif
        enddo
@@ -1159,7 +1159,7 @@ contains
           endif
           if (decomp%info_stability) then
                 write (decomp%LUPRI, '("    Hessian eival: Residual for vector ", &
-                & i3, ":  ", E16.10, " and eival: ",E16.10, "  It = ", i5, "  Conv = ", L2)') &
+                & i3, ":  ", E18.10, " and eival: ",E18.10, "  It = ", i5, "  Conv = ", L2)') &
                 & i, err(i), mu(i), iter, conv(i)
           endif
        enddo

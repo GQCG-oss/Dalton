@@ -41,6 +41,7 @@ contains
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
+    DECinfo%print_frags = .false.
     DECinfo%simulate_full     = .false.
     DECinfo%simulate_natoms   = 1
     DECinfo%SkipReadIn        = .false.
@@ -480,6 +481,9 @@ contains
        case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
        case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
        case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.PRINTFRAGS')
+          ! Print fragment energies for full molecular cc calculation
+          DECinfo%print_frags = .true.
 
 
 #ifdef MOD_UNRELEASED
