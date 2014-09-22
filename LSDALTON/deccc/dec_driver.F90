@@ -1286,7 +1286,7 @@ subroutine print_dec_info()
 
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
-       call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
+       call restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
 

@@ -76,6 +76,10 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 

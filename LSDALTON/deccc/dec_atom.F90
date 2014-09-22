@@ -3379,11 +3379,9 @@ contains
   !> file atomicfragmentsdone.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
+  subroutine restart_atomic_fragments_from_file(MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
        & DoBasis,fragments,jobs)
     implicit none
-    !> Number of atoms in the full molecule
-    integer,intent(in) :: natoms
     !> Full molecule info
     type(fullmolecule),intent(in)  :: MyMolecule
     !> LSitem info
@@ -3395,7 +3393,7 @@ contains
     !> Construct Fock matrix and MO coeff for fragments?
     logical,intent(in) :: DoBasis
     !> Atomic fragments. NOTE: Only those fragments specified by bookkeeping will be initialized here.
-    type(decfrag), intent(inout),dimension(natoms) :: fragments
+    type(decfrag), intent(inout),dimension(MyMolecule%nfrags) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
     character(len=40) :: FileName
