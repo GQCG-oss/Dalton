@@ -2988,11 +2988,11 @@ contains
     type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Number of unoccupied orbitals assigned to each occupied orbital
     integer, intent(inout) :: nunocc_per_occ(nocc)
-    integer :: i
+    integer :: i,j
 
     nunocc_per_occ=0
-    do i=1,nocc
-       nunocc_per_occ(UnoccOrbitals%centralatom) = nunocc_per_occ(UnoccOrbitals%centralatom) + 1
+    do j=1,nunocc
+       nunocc_per_occ(UnoccOrbitals(j)%centralatom) = nunocc_per_occ(UnoccOrbitals(j)%centralatom) + 1
     end do
 
 
@@ -3164,6 +3164,43 @@ contains
 
   end subroutine get_orbital_extent_info
 
+
+
+  !> \brief Determine which fragments to consider
+  !> For atom-based DEC - the atoms with orbitals assigned
+  !> For DECCO - all occupied orbitals (but not the core orbitals if frozencore is used)
+  !> \author Kasper Kristensen
+  !> \date October 2013
+  subroutine which_fragments_to_consider(ncore,nocc,nunocc,natoms,&
+       & OccOrbitals,UnoccOrbitals,dofrag,PhantomAtom)
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nOcc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nUnocc
+    !> Number of atoms in full molecule
+    integer,intent(in) :: nAtoms
+    !> Occupied orbitals in DEC format
+    type(decorbital), intent(in) :: OccOrbitals(nocc)
+    !> Unoccupied orbitals in DEC format
+    type(decorbital), intent(in) :: UnoccOrbitals(nunocc)
+    !> dofrag(P) is true/false if atom P has one or more/zero orbitals assigned.
+    logical,intent(inout) :: dofrag(natoms)
+    !> Which atoms are Phantom Atoms
+    logical, intent(in) :: PhantomAtom(natoms)
+
+    if(DECinfo%DECCO) then
+       dofrag=.true.
+       if(DECinfo%frozencore) then
+          dofrag(1:ncore)=.false.
+       end if
+    else
+       call which_atoms_have_orbitals_assigned(ncore,nocc,nunocc,natoms,&
+            & OccOrbitals,UnoccOrbitals,dofrag,PhantomAtom)
+    end if
+
+  end subroutine which_fragments_to_consider
 
 
   !> \brief Determine which atoms have one or more orbitals assigned.

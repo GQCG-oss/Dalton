@@ -82,12 +82,11 @@ contains
     call mem_alloc(UnoccOrbitals,nUnocc)
     call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals)
-stop 'KK HACK'
 
     ! *************************************************
     ! Optimize all atomic fragments and calculate pairs
     ! *************************************************
-    call mem_alloc(FragEnergiesOcc,MyMolecule%natoms,MyMolecule%natoms)
+    call mem_alloc(FragEnergiesOcc,MyMolecule%nfrags,MyMolecule%nfrags)
     call main_fragment_driver(MyMolecule,mylsitem,D,&
          &OccOrbitals,UnoccOrbitals, &
          & natoms,nocc,nunocc,EHF,Ecorr,molgrad,Eerr,FragEnergiesOcc)
@@ -155,7 +154,7 @@ stop 'KK HACK'
     !> Estimated energy error
     real(realk),intent(inout) :: Eerr
     !> Fragment energies for occupied partitioning scheme
-    real(realk),dimension(natoms,natoms),intent(inout) :: FragEnergiesOcc
+    real(realk),dimension(MyMolecule%nfrags,MyMolecule%nfrags),intent(inout) :: FragEnergiesOcc
     logical :: esti
     ! Fragment energies
     !real(realk) :: FragEnergies(natoms,natoms,ndecenergies)
@@ -171,14 +170,14 @@ stop 'KK HACK'
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
-    logical :: dofrag(natoms)
+    logical :: dofrag(MyMolecule%nfrags)
     type(array2) :: t1old,fockt1,t1new
     logical :: redo
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
     integer :: jobdone,newjob, nworkers, siz, jobidx
     integer(kind=ls_mpik) :: groupsize
-    integer :: af_list(natoms),MPIdatatype,MyAtom
+    integer :: MPIdatatype,MyAtom,nfrags
     type(joblist) :: jobs
     real(realk) :: tcpu,twall,oldpaircut,newpaircut,tcpu1,tcpu2,twall1,twall2,mastertime
     ! (T) contribution to fragment energies for occupied (:,:,1), and virtual (:,:,2) schemes 
@@ -192,6 +191,10 @@ stop 'KK HACK'
     master=0
     ForcePrintTime = .TRUE.
 
+    ! Number of potential fragments
+    nfrags = MyMolecule%nfrags
+    
+
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
@@ -202,15 +205,15 @@ stop 'KK HACK'
 
     redo=.false.
     nbasis = MyMolecule%nbasis
-    call mem_alloc(AtomicFragments,natoms)
-    do i=1,natoms
+    call mem_alloc(AtomicFragments,nfrags)
+    do i=1,nfrags
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
-    call mem_alloc(FragEnergies,natoms,natoms,ndecenergies)
+    call mem_alloc(FragEnergies,nfrags,nfrags,ndecenergies)
     FragEnergies=0E0_realk
 
-    ! Find out which atoms have one or more orbitals assigned
-    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,natoms,&
+    ! Which fragments should we consider
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,natoms,&
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     if(DECinfo%StressTest)then
@@ -277,7 +280,7 @@ stop 'KK HACK'
     DECinfo%gradient    = .false.
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output,ForcePrintTime)
 
-
+stop 'kkhack'
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &

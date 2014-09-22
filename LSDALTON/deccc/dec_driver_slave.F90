@@ -88,7 +88,7 @@ contains
 
     ! Get list of which atoms have orbitals assigned
     call mem_alloc(dofrag,natoms)
-    call which_atoms_have_orbitals_assigned(MyMolecule%ncore,nocc,nunocc,&
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,&
          & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     IF(DECinfo%StressTest)THEN
