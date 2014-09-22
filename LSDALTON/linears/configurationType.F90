@@ -27,6 +27,9 @@ use arhDensity, only: solveritem
 use ls_pcm_config, only: pcmtype
 #endif
 use precision
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: LSQMat
+#endif
 
 private
 public :: responseitem,ConfigItem,LowAccuracyStartType,&
@@ -54,6 +57,7 @@ type responseitem
    !> Used to store info about solver that is used for calculation.
    type(RSPSOLVERinputitem) :: RSPSOLVERinput
    type(rsp_tasksitem) :: tasks
+   logical :: noOpenRSP
 end type responseitem
 
 !> \brief Contains info, settings and data for entire calculation (defaults or read from input file).
@@ -129,6 +133,10 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+#if defined(ENABLE_QMATRIX)
+   logical :: do_qmatrix = .false.
+   type(LSQMat) ls_qmat
+#endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
    !> set debugging mode for the PDM type arrays

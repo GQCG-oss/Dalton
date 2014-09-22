@@ -37,6 +37,7 @@ contains
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc = .false. ! full molecular cc
+    DECinfo%print_frags = .false.
     DECinfo%simulate_full     = .false.
     DECinfo%simulate_natoms   = 1
     DECinfo%SkipReadIn        = .false.
@@ -134,7 +135,7 @@ contains
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
-    DECinfo%orb_based_fragopt      = .false.
+    DECinfo%no_orb_based_fragopt   = .false.
     DECinfo%OnlyOccPart            = .false.
     DECinfo%OnlyVirtPart           = .false.
     ! Repeat atomic fragment calcs after fragment optimization
@@ -471,6 +472,9 @@ contains
        case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
        case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
        case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.PRINTFRAGS')
+          ! Print fragment energies for full molecular cc calculation
+          DECinfo%print_frags = .true.
 
 
 #ifdef MOD_UNRELEASED
@@ -582,7 +586,7 @@ contains
        case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
-       case('.ORB_BASED_FRAGOPT'); DECinfo%orb_based_fragopt = .true.
+       case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
@@ -924,7 +928,7 @@ contains
     write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
-    write(lupri,*) 'Orb_Based_FragOpt ', DECitem%orb_based_fragopt
+    write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist

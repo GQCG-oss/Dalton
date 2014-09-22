@@ -121,6 +121,11 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef VAR_RSP
+  config%response%noOpenRSP = .FALSE. !Use OpenRSP module - Default
+#else
+  config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
+#endif
 #ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
@@ -225,6 +230,10 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: ls_qmatrix_init, &
+                      ls_qmatrix_input
+#endif
 implicit none
 !> Logical unit number for LSDALTON.OUT
 INTEGER            :: LUPRI
@@ -857,6 +866,18 @@ DO
   ENDDO
 
    ENDIF
+#endif
+
+#if defined(ENABLE_QMATRIX)
+   ! QMatrix library
+   if (WORD=='**QMATRIX') then
+       config%do_qmatrix = .true.
+       ! initializes the QMatrix interface
+       call ls_qmatrix_init(config%ls_qmat)
+       ! processes input
+       READWORD = .true.
+       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
+   end if
 #endif
 
    IF (WORD == '*END OF INPUT') THEN
@@ -1619,6 +1640,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*NoOpenRSP')
+          config%response%noOpenRSP = .TRUE. !Use LSDALTON own Response module
        CASE('*DIPOLE')
           config%response%tasks%doDipole=.true.
        CASE('*DIPOLEMOMENTMATRIX')

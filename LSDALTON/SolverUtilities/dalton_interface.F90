@@ -295,7 +295,7 @@ CONTAINS
       CALL DAXPY(3*natoms,1E0_realk,tmpGrad,1,Grad,1)
 
 !      WRITE(lupri,*)'The h1grad'
-!      call output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
+!      call ls_output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
 
       do I=1,Natoms
          IF(ABS(mat_trAB(genh1x(3*(I-1)+1),D)-grad(1,I)).GT.1E-8_realk)THEN
@@ -2381,9 +2381,15 @@ ENDIF
         ELSE
             ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
         ENDIF
+
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
+#ifdef MOD_UNRELEASED
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
+#else
+            write(lupri,'(3X,A)') 'Warning: the linear-response part of the code does not apply ADMM for exchange'
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+#endif
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)

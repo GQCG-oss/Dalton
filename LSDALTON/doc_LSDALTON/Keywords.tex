@@ -45,7 +45,7 @@ detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will f
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010} 
+\item[\Key{ADMM}] Use the Auxiliary Density Matrix Method (ADMM)~\cite{ADMM:2010,ADMM:2014} 
 to approximate the exact-exchange contribution; by projecting the density to a smaller
 basis for calculation of the exact exchange, and by including a GGA exchange correction 
 between the regular and smaller auxiliary basis. When using this keyword, an auxiliary 
@@ -60,25 +60,28 @@ specify the auxiliary basis for density fitting (optional)).
 The \Key{ADMM} keyword defaults to ADMM2 with Becke type exchange for the GGA 
 correction term (identical to using \Key{ADMM2} together with \Key{ADMM-FUNC} 
 specified to B88X).
+Note that although calculations requesting ADMM and reponse properties are allowed, 
+the response part of the code does not actually apply the ADMM approximation.
+ADMM energy and gradients are implemented.
 
 \item[\Key{ADMM1}] Use the ADMM1 approximation of Ref.~\cite{ADMM:2010}. Note: This 
-approximation does not work for gradients or response theory!
+approximation does not work for gradients!
 
 \item[\Key{ADMM2}] Use the ADMM2 approximation of Ref.~\cite{ADMM:2010}. Default.
 
-\item[\Key{ADMMS}] Use the ADMMS approximation of Merlot~\emph{et.al} (under review). 
+\item[\Key{ADMMS}] Use the ADMMS approximation of Ref.~\cite{ADMM:2014}.
 Reccomended.
 
-\item[\Key{ADMMP}] Use the ADMMP approximation of Merlot~\emph{et.al} (under review).
+\item[\Key{ADMMP}] Use the ADMMP approximation of Ref.~\cite{ADMM:2014}.
 
-\item[\Key{ADMMQ}] Use the ADMMQ approximation of Merlot~\emph{et.al} (under review). 
+\item[\Key{ADMMQ}] Use the ADMMQ approximation of Ref.~\cite{ADMM:2014}.
 Not reccomended.
 
 \item[\Key{ADMM-FUNC}] Reads a GGA exchange functional from the next input line. 
 Specifies the GGA exchange functional to use for the correction 
 term. List of possible functionals: B88X, PBEX, RPBEX, REVPBEX, MPBEX, PW91X, 
 KT1X, KT2X, KT3X, G96X, LG93X and OPTX. KT3X together with ADMMS works well for 
-basis-set combinations 6-31G**/3-21G and cc-pVTZ/3-21G (to be published).
+basis-set combinations 6-31G**/3-21G and cc-pVTZ/3-21G~\cite{ADMM:2014}.
 
 LDAX is also implemented, but is currently not working as expected. Its use is
 therefore discouraged.

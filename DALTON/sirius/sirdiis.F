@@ -1824,12 +1824,9 @@ C           put FV in DCAO
      &                 NSYM,NBAS,NORB)
 C           form FC = FD - FV in FCAO
             CALL DAXPY(NNORBT,DM1,DCAO,1,FCAO,1)
-            IF (NASHT .EQ. 1) THEN
+            IF (NASHT .GE. 1) THEN
                CALL DZERO(WRK(KFQ),NASHT*NORBT)
-C              FQ matrix is zero matrix for single open shell RHF
-            ELSE
-               WRK(KFQ:KFQ+LFQ-1) = -9.87654321D123
-               ! see notes in connection with PV above
+C              FQ matrix is zero matrix for open shell RHF
             END IF
          END IF
 C

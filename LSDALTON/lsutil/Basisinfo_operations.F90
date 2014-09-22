@@ -652,12 +652,12 @@ DO J=1,natomtypes
                WRITE(LUPRI,'(2X,I2,A)')K,'-TYPE FUNCTIONS'
             ENDIF
             WRITE(LUPRI,'(A22,I3,A22,I3)')'Exponents BLOCK=',L
-            call OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%&
+            call LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%&
                  &Exponents, 1, nPrimitives, 1, 1, nPrimitives, 1, 1, LUPRI)
             WRITE(LUPRI,*)'segment BLOCK=',L
-            CALL OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%elms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
+            CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%elms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
             WRITE(LUPRI,*)'unmodified segment BLOCK=',L
-            CALL OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
+            CALL LS_OUTPUT(BASISINFO%ATOMTYPE(J)%SHELL(K)%segment(L)%UCCelms,1,nPrimitives,1,ncol,nPrimitives,ncol,1,LUPRI)
          ENDDO
       ELSE
          IF (K.LE. 10) THEN
