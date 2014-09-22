@@ -328,7 +328,7 @@ subroutine print_alpha(alpha,ALPHAinput,nfreq,lupri)
   write(lupri,*) 
   PrintFrequencyLoop: do i=1,nfreq
 
-     write(lupri,'(1X,A,g10.5)')  'Frequency = ', alphainput%bfreq(i)
+     write(lupri,'(1X,A,g12.5)')  'Frequency = ', alphainput%bfreq(i)
      write(lupri,*) '=================='
      write(lupri,*) 
      write(lupri,*) "                Ex               Ey               Ez"

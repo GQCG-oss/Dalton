@@ -1184,7 +1184,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
   INTEGER               :: LUBAS,ios,IEX,I,M,LUPRI,IPRINT
   LOGICAL               :: POLFUN,CONTRACTED,segmentedFormat,BLANK
   INTEGER               :: atype,nang,nprim,nOrbital,IAUG,NUMNUMOLD
-  INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers
+  INTEGER               :: J,NUMBER_OF_LINES,KNTORB,NUMNUM,KAUG,nNumbers,LIST(2,20)
   CHARACTER(len=280)    :: STRING
   CHARACTER(len=1)      :: SIGN
   real(realk)           :: exmin2,exmin1,PI,Exp,PIPPI
@@ -1212,7 +1212,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
               J=J+1
               !LINES_OF_CONTRACTION returns the number of lines 
               !the contraction coeffecients written on.
-              CALL determine_nNumbers_in_string(STRING,nNUMBERS)
+              CALL determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
               IF(nNUMBERS.GT.7)THEN
                  WRITE(lupri,*)'WARNING This basis format violate the old dalton basis format'
                  WRITE(lupri,*)'Which consist of 1 Exponent F16.9 and up to 6 contraction'
@@ -1256,9 +1256,11 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                     KNTORB = nOrbital
                  ELSE
                     KNTORB = nNUMBERS-1
-                 END IF                 
-                 READ (STRING,*) Exponents%elms(J),&
-                      &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
+                 END IF                        
+                 READ (STRING(LIST(1,1):LIST(2,1)),*) Exponents%elms(J)
+                 DO I = 1, KNTORB
+                    READ (STRING(LIST(1,I+1):LIST(2,I+1)),*) ContractionMatrix%elms(J+(I-1)*(nprim+IAUG))
+                 ENDDO
                  !         Reading the first line with exponents and contractioncoeffecients
                  !     READ (STRING, '(F16.9, 6F12.9)') Exponents%elms(J),&
                  !          &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
@@ -1267,7 +1269,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  NUMNUM = nNUMBERS-1
                  NUMNUMOLD = nNUMBERS-1
                  DO I=2, NUMBER_OF_LINES
-                    CALL determine_nNumbers_in_string(STRING,nNUMBERS)
+                    CALL determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
                     IF(nNUMBERS.GT.7)THEN
                        WRITE(lupri,*)'WARNING This is a continuation line, which violte the old dalton basis format'
                        WRITE(lupri,*)'The continuation line should contain at most 7 contraction coefficients'
@@ -1390,10 +1392,10 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
 
 END SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS
 
-subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
+subroutine determine_nNumbers_in_string(STRING,nNUMBERS,LIST)
   implicit none
   CHARACTER(len=280)    :: STRING
-  integer :: nNUMBERS
+  integer :: nNUMBERS,LIST(2,20)
   !
   logical :: INSIDENUMBER,SCIENTIFIC
   integer :: I
@@ -1402,10 +1404,21 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   SCIENTIFIC = .FALSE.
   DO I=1,LEN(STRING)
 !    The '-' allows fixed format type numbers with no space separation
-     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-'.OR.STRING(I:I).EQ.'+').AND.INSIDENUMBER)THEN
+     IF(INSIDENUMBER.AND.STRING(I:I).EQ.' ')THEN
+        INSIDENUMBER=.FALSE.
+        LIST(2,nNUMBERS) = I-1 !Last charater in String
+     ELSEIF((STRING(I:I).EQ.'-'.OR.STRING(I:I).EQ.'+').AND.INSIDENUMBER)THEN
 !       In case of scientific number representation 1.2345678D-09 we do not 
 !       accept '-' to separate two nnumbers
-        INSIDENUMBER=SCIENTIFIC
+        IF(SCIENTIFIC)THEN
+           !still inside a number 
+           INSIDENUMBER=.TRUE.
+        ELSE
+           LIST(2,nNUMBERS) = I-1 !Last charater in String
+           nNUMBERS=nNUMBERS+1    !new number starting with - or plus
+           LIST(1,nNUMBERS) = I   !First charater in String
+           INSIDENUMBER=.TRUE.
+        ENDIF
      ELSEIF(STRING(I:I).EQ.' '.AND..NOT.INSIDENUMBER)THEN
         !still outside number but not yet inside new number
 !     ELSEIF(STRING(I:I).EQ.'H'.AND..NOT.INSIDENUMBER)THEN
@@ -1413,6 +1426,7 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
      ELSE
         IF(.NOT.INSIDENUMBER)THEN
            nNUMBERS=nNUMBERS+1
+           LIST(1,nNUMBERS) = I !First charater in String
            INSIDENUMBER=.TRUE.
         ENDIF
      ENDIF

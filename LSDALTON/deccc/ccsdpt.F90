@@ -6446,7 +6446,7 @@ contains
           ! write increments only if pair interaction energy is nonzero
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
+             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
                   & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
@@ -6558,12 +6558,12 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
 
              if (i .eq. a) then
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',a,i,&
                      &0.000, e5_matrix(a,i)
 
              else
 
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',a,i,&
                      &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if

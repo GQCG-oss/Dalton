@@ -3520,20 +3520,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 ! Write Screening Thresholds:
 !======================
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
 & config%integral%THRESHOLD*config%integral%J_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
 &config%integral%THRESHOLD*config%integral%K_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
 &config%integral%THRESHOLD*config%integral%ONEEL_THR
    if(config%integral%DALINK)THEN
       WRITE(config%LUPRI,'(A)')' '
-      WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
            & config%integral%THRESHOLD*config%integral%K_THR      
       WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
       WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-      WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
       &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
    endif
 
@@ -3606,7 +3606,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          CALL mat_select_type(mtype_csr,lupri)
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
-         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d7.2)') cutoff
+         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
 #else
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif

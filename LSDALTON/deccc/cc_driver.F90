@@ -2599,7 +2599,7 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    implicit none
    integer, intent(in) :: nb
    logical,intent(out) :: restart
-   real(realk), intent(out) :: norm,energy,Uo(:,:),Uv(:,:)
+   real(realk), intent(inout) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
    type(array), intent(inout) :: t2,iajb,Co,Cv,oof,vvf,vof
    logical, intent(in) :: local
