@@ -383,8 +383,8 @@ contains
    if (arh%info_lineq) then
       xnorm = sqrt(mat_sqnorm2(x))
       call mat_max_elm(x, maxelm)
-      write (arh%lupri, '("  Error of red space iteration", i3, ":  ", F16.10, " (mu = ", F10.2, ", xmax = ", &
-            & E12.6, ", xnorm = ", E12.6, ", THR = ", E12.6, ")")') it, err, mu, maxelm, xnorm, thresh
+      write (arh%lupri, '("  Error of red space iteration", i3, ":  ", F18.10, " (mu = ", F10.2, ", xmax = ", &
+            & E14.6, ", xnorm = ", E14.6, ", THR = ", E14.6, ")")') it, err, mu, maxelm, xnorm, thresh
    endif
 
    if (err < thresh .or. err < 1.0E-9_realk) then

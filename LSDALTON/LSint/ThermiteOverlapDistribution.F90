@@ -2225,7 +2225,7 @@ IF (IPRINT.GT. 50) THEN
   DO iPrim=1,nPrim
     DO iOrb=1,nOrb
         WRITE(LUPRI,'(5X,A,I3,A,I3)') 'iPrim =',iPrim,', iOrb =',iOrb
-        WRITE(LUPRI,'(7X,5ES10.4/,(7X,5ES10.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
+        WRITE(LUPRI,'(7X,5ES12.4/,(7X,5ES12.4))') (EcoeffCont(iAng,iOrb,iPrim),iAng=1,nAng)
     ENDDO
   ENDDO
 ENDIF
@@ -2522,7 +2522,7 @@ IF (IPRINT.GT. 30) THEN
   WRITE(LUPRI,'(7X,A)') 'C1  C2 CC(prim12)'
   DO iC2=1,nC2
     DO iC1=1,nC1
-      WRITE(LUPRI,'(5X,2I4,5ES10.4/,(13X,5ES10.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
+      WRITE(LUPRI,'(5X,2I4,5ES12.4/,(13X,5ES12.4))') iC1,iC2,(CC(iP,iC1,iC2),iP=1,nP)
     ENDDO
   ENDDO
 ENDIF

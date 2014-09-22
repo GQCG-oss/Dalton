@@ -5641,9 +5641,9 @@ integer                       :: AO1,AO2,AO3,AO4,Oper,intType,Spec
 TYPE(LSTENSOR),pointer        :: result_tensor,result_tensor_other,dmat_lhs,dmat_rhs
 TYPE(LSTENSOR),pointer        :: CS_rhs_full,CS_lhs_full
 INTEGER,intent(IN)            :: lupri,luerr
-Logical,intent(OUT)           :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
-Logical,intent(OUT)           :: rhsCS_created,lhsCS_created
-Logical,intent(OUT)           :: PermuteResultTensor,doscreen
+Logical,intent(INOUT)         :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
+Logical,intent(INOUT)         :: rhsCS_created,lhsCS_created
+Logical,intent(INOUT)         :: PermuteResultTensor,doscreen
 Logical,intent(IN)            :: LHSpartioning,RHSpartioning,BOTHpartioning
 !
 #ifdef VAR_MPI

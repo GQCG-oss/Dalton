@@ -4282,7 +4282,7 @@ contains
             write(DECinfo%output,*)
             write(DECinfo%output,*) '   Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      '
           endif
-          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,10X,"FRAG_SIZE")') &
+          write(DECinfo%output,'(1X,i6,1X,i6,1X,i6,1X,i6,3X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,10X,"FRAG_SIZE")') &
                & myatom, &
                & occsize(myatom), &
                & unoccsize(myatom), &
@@ -4293,7 +4293,7 @@ contains
                & AtomicFragments(myatom)%DmaxAE*bohr_to_angstrom
           if(DECinfo%PL>1)then
             write(DECinfo%output,*) '   Rave(AOS/AE)      Rsdv(AOS/AE)      Dave(AOS/AE)      Dsdv(AOS/AE)'
-            write(DECinfo%output,'(4X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3,1X,g8.3,"/",g8.3," FRAG_SIZE_EXT")') &
+            write(DECinfo%output,'(4X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3,1X,g10.3,"/",g10.3," FRAG_SIZE_EXT")') &
                & AtomicFragments(myatom)%RaveAOS*bohr_to_angstrom, &
                & AtomicFragments(myatom)%RaveAE*bohr_to_angstrom, &
                & AtomicFragments(myatom)%RsdvAOS*bohr_to_angstrom, &

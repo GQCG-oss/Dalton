@@ -1872,7 +1872,7 @@ subroutine solve_red_eigen(molcfg,ndim,ndim_red,nm_red,nexci,eival,red_X,red_Xm)
     type(Matrix), intent(inout) :: Bvec_tmp_i
     real(realk) :: TT
     logical    :: symm
-    logical, intent(out) :: run_ortho_again
+    logical, intent(inout) :: run_ortho_again
     integer  :: j,k
 
     TT = mat_sqnorm2(Bvec_tmp_i)
