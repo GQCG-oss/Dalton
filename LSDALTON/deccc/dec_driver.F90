@@ -302,7 +302,7 @@ contains
     ! Done with estimates
     esti=.false.
     ! Save fragment energies and set model for atomic fragments appropriately
-    do i=1,natoms
+    do i=1,nfrags
        if( dofrag(i) ) then
           do j=1,ndecenergies
              FragEnergies(i,i,j) = AtomicFragments(i)%energies(j)
@@ -343,9 +343,12 @@ contains
 
     ! Get job list 
     calcAF = DECinfo%RepeatAF
-    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
+print *, 'dofrag', dofrag
+print *, 'calcAF',calcAF
+    call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
 
+stop 'kkhack'
 
     !Crash calculation on purpose to test restart option
     IF(DECinfo%CRASHCALC)THEN
@@ -914,7 +917,7 @@ subroutine print_dec_info()
 
     counter=0
     JobLoop: do k=1,jobs%njobs+nworkers
-
+print *, 'Doing job ', k
        ! Counter used to distinquish real (counter<=jobs%njobs) and quit (counter>jobs%njobs) 
        ! calculations
        counter=counter+1
@@ -1037,7 +1040,7 @@ subroutine print_dec_info()
              FragoptCheck2: if(jobs%dofragopt(jobdone)) then
 
                 ! Fragment optimization
-                call optimize_atomic_fragment(atomA,AtomicFragments(atomA),MyMolecule%nAtoms, &
+                call optimize_atomic_fragment(atomA,AtomicFragments(atomA),MyMolecule%nfrags, &
                      & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
                      & MyMolecule,mylsitem,.true.)
 
@@ -1312,7 +1315,7 @@ subroutine print_dec_info()
           end do
        end do
        IF(DECinfo%InteractionEnergy)THEN
-          !We are only intrested in certain fragments. 
+          !We are only intrested in certain fragments.
           !So we only do estimates on those we are 
           !intrested in. 
           do i=1,nfrags
@@ -1332,7 +1335,7 @@ subroutine print_dec_info()
        call mem_alloc(EstAtomicFragments,nfrags)
        call init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
             & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,EstAtomicFragments)
-stop 'kkhack2'
+
 #ifdef VAR_MPI
        ! Send estimated fragment information to slaves
        call mpi_bcast_many_fragments(nfrags,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)
@@ -1345,7 +1348,7 @@ stop 'kkhack2'
        calcAF = .false.  ! No atomic fragments, just pairs
        call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
             &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
-stop 'kkhack2'
+
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
           call read_fragment_energies_for_restart(natoms,FragEnergies,estijobs,esti)
@@ -1354,11 +1357,10 @@ stop 'kkhack2'
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)
        call concatenate_joblists(fragoptjobs,estijobs,jobs)
 
-       call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+       call fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,OccOrbitals,&
             & UnoccOrbitals,jobs,AtomicFragments,FragEnergies,esti,&
             & fragoptjobs=fragoptjobs,estijobs=estijobs,EstAtomicFragments=EstAtomicFragments)
-
-       do i=1,natoms
+       do i=1,nfrags
           if(dofrag(i)) then
              call atomic_fragment_free_simple(EstAtomicFragments(i))
           end if
@@ -1425,8 +1427,6 @@ stop 'kkhack2'
        call free_joblist(jobs)
        call free_joblist(estijobs)
     end if
-
-
 
   end subroutine fragopt_and_estimated_frags
 

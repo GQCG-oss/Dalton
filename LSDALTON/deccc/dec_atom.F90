@@ -2085,6 +2085,9 @@ contains
     ! All orbitals included in fragment
     unocc_list=.true.
     occ_list=.true.
+    if(DECinfo%frozencore) then  ! never include core orbitals for frozen core
+       occ_list(1:MyMolecule%ncore)=.false.
+    end if
 
     call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
          & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
@@ -4984,7 +4987,13 @@ contains
     write(DECinfo%output,*) '*****************************************************'
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
+    else
+       write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
+    end if
+
+
     do i=1,njobs
        if(jobs%atom1(i)==jobs%atom2(i)) then ! single
           write(DECinfo%output,'(1X,i8,4X,i15,7X,i8,11X,i6,3X,i6,3X,i6)') &
