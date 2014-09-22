@@ -4354,7 +4354,7 @@ contains
   !> In this way the enviroment (first factor), the nature of the atom
   !> (second factor), and the direct orbital assignments (third factor) become determining factors.
   !> The atoms are sorted according to estimated size, with the largest first.
-  subroutine estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+  subroutine estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
        & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     implicit none
@@ -4365,6 +4365,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4419,8 +4421,18 @@ contains
     ! ************************************************************
     SizeMeasure=0
     do i=1,natoms
-       atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
-       SizeMeasure(i) = interactions(i)*atomtype*norb(i)
+       if(DECinfo%DECCO) then
+          if(DECinfo%frozencore .and. (i .le. ncore) ) then
+             !Set size measure to 0 for core orbitals when frozen core approx is used
+             SizeMeasure(i)=0
+          else
+             ! For DECCO, simply use number of neighbour orbitals.
+             SizeMeasure(i) = interactions(i)
+          end if
+       else
+          atomtype = MyLsitem%input%molecule%atom(i)%atomic_number ! atom type for atom "i"
+          SizeMeasure(i) = interactions(i)*atomtype*norb(i)
+       end if
     end do
 
     ! Sort according to size measure (largest first)
@@ -4430,14 +4442,28 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '******************************************************************'
-    write(DECinfo%output,*) '       ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       '
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) '  OCCUPIED ORBITAL FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES  '
+    else
+       write(DECinfo%output,*) '       ATOMIC FRAGMENTS SORTED ACCORDING TO ESTIMATED SIZES       '
+    end if
     write(DECinfo%output,*) '******************************************************************'
     write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') 'JobNumber  AtomType  AtomIndex  SizeMeasure'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,'(1X,a)') 'JobNumber    OrbitalIndex   NeighbourOrbitals'
+    else
+       write(DECinfo%output,'(1X,a)') 'JobNumber  AtomType  AtomIndex  SizeMeasure'
+    end if
     do i=1,natoms
        j=af_list(i)  ! atom index for job number "i"
-       write(DECinfo%output,'(1X,i6,7X,a4,2X,i6,2X,i10)') i, MyLsitem%input%molecule%atom(j)%name, &
-            & j, SizeMeasure(i)
+       if(DECinfo%DECCO) then
+          if(SizeMeasure(i)>0) then
+             write(DECinfo%output,'(1X,i7,7X,i7,7X,i7)') i,j,SizeMeasure(i)
+          end if
+       else
+          write(DECinfo%output,'(1X,i6,7X,a4,2X,i6,2X,i10)') i, MyLsitem%input%molecule%atom(j)%name, &
+               & j, SizeMeasure(i)
+       end if
     end do
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -4557,7 +4583,7 @@ contains
   !> only 2 atomic fragments and 1 pair fragment
   !> \author Thomas Kjaergaard
   !> \date Marts 2014
-  subroutine StressTest_mod_dofrag(natoms,nocc,nunocc,&
+  subroutine StressTest_mod_dofrag(natoms,nocc,nunocc,ncore,&
        & DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
     implicit none
     !> Number of atoms in full molecule
@@ -4566,6 +4592,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4580,7 +4608,7 @@ contains
     integer :: njobs,i,j
 
     ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
          & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     i=0    
@@ -4596,7 +4624,7 @@ contains
   !> \brief Create job list for DEC fragment optimization calculations.
   !> \author Kasper Kristensen
   !> \date November 2013
-  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,DistanceTable,&
+  subroutine create_dec_joblist_fragopt(natoms,nocc,nunocc,ncore,DistanceTable,&
        & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,jobs)
     implicit none
 
@@ -4606,6 +4634,8 @@ contains
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals in full molecule
     integer, intent(in) :: nunocc
+    !> Number of core orbitals in full molecule
+    integer,intent(in) :: ncore
     !> Distance table for all atoms in the molecule
     real(realk), dimension(natoms,natoms), intent(in) :: DistanceTable
     !> Information about DEC occupied orbitals
@@ -4622,7 +4652,7 @@ contains
     integer :: njobs,i,j
 
     ! Get list of atomic fragment ordered according to their (very roughly) estimated sizes
-    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&
+    call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,ncore,DistanceTable,&
          & OccOrbitals, UnoccOrbitals, mylsitem,af_list)
 
     ! Init job list with number of jobs corresponding to number of atoms with orbitals assigned

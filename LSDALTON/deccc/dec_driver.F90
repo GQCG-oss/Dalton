@@ -217,7 +217,7 @@ contains
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     if(DECinfo%StressTest)then
-       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+       call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,MyMolecule%ncore,&
             & MyMolecule%DistanceTable,OccOrbitals, UnoccOrbitals, dofrag, mylsitem)
     endif
 
@@ -280,12 +280,11 @@ contains
     DECinfo%gradient    = .false.
     call LSTIMER('DEC INIT',tcpu,twall,DECinfo%output,ForcePrintTime)
 
-stop 'kkhack'
+
     ! FRAGMENT OPTIMIZATION AND (POSSIBLY) ESTIMATED FRAGMENTS
     ! ********************************************************
     call fragopt_and_estimated_frags(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
          & MyMolecule,mylsitem,dofrag,esti,AtomicFragments,FragEnergies)
-
 
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
@@ -1257,19 +1256,19 @@ subroutine print_dec_info()
     !> Information about DEC unoccupied orbitals
     type(decorbital), dimension(nUnocc), intent(in) :: UnoccOrbitals
     !> List of which atoms have orbitals assigned
-    logical,intent(in),dimension(MyMolecule%natoms) :: dofrag
+    logical,intent(in),dimension(MyMolecule%nfrags) :: dofrag
     !> Is this a calculation with predefined small orbital spaces used to estimate frag energies?
     !> (This is effectively intent(in), only intent(inout) in practice for MPI purposes).
     logical,intent(inout) :: esti
     !> Atomic Fragments with orbital spaces determined to the FOT precision
-    type(decfrag), intent(inout),dimension(MyMolecule%natoms) :: AtomicFragments
+    type(decfrag), intent(inout),dimension(MyMolecule%nfrags) :: AtomicFragments
     !> Fragment energies 
-    real(realk),intent(inout) :: FragEnergies(MyMolecule%natoms,MyMolecule%natoms,ndecenergies)
+    real(realk),intent(inout) :: FragEnergies(MyMolecule%nfrags,MyMolecule%nfrags,ndecenergies)
     real(realk),pointer :: FragEnergiesPart(:,:)
     type(decfrag),pointer :: EstAtomicFragments(:)
     logical :: DoBasis,calcAF
     real(realk) :: init_radius,tcpu1,twall1,tcpu2,twall2,mastertime,Epair_est,Eskip_est
-    integer :: natoms,i,j,k
+    integer :: nfrags,i,j,k,natoms
     type(joblist) :: jobs,fragoptjobs,estijobs
     integer(kind=ls_mpik) :: master
     master=0
@@ -1277,12 +1276,13 @@ subroutine print_dec_info()
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
+    nfrags= MyMolecule%nfrags
     natoms= MyMolecule%natoms
 
     ! Initialize job list for atomic fragment optimizations
-    call create_dec_joblist_fragopt(natoms,nocc,nunocc,MyMolecule%DistanceTable,&
+    call create_dec_joblist_fragopt(nfrags,nocc,nunocc,MyMolecule%ncore,MyMolecule%DistanceTable,&
        & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
-
+stop 'kkhack'
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
