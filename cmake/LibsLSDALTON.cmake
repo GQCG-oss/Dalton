@@ -137,15 +137,15 @@ target_link_libraries(matrixulib matrixolib)
 
 if(ENABLE_PCMSOLVER)
     add_definitions(-DPCM_MODULE)
-    add_library(
-        lspcm
-        ${LSDALTON_PCM_SOURCES})
     set(PCMSOLVER_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
 	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
 	stdc++
         z)
     set(EXTERNAL_LIBS ${PCMSOLVER_LIBS} ${EXTERNAL_LIBS})
+    add_library(
+        lspcm
+        ${LSDALTON_PCM_SOURCES})
 endif()
 
 set(ExternalProjectCMakeArgs
@@ -368,10 +368,11 @@ target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
-target_link_libraries(lsdaltonmain lspcm)
-
 if(ENABLE_PCMSOLVER)
-    add_dependencies(lsdaltonmain pcmsolver)
+    target_link_libraries(lsdaltonmain lspcm)
+    add_dependencies(lsdaltonmain  pcmsolver lspcm)
+    add_dependencies(linearslib    pcmsolver lspcm)
+    add_dependencies(solverutillib pcmsolver lspcm)
 endif()
 
 if(NOT ENABLE_CHEMSHELL)
@@ -445,6 +446,9 @@ set(LIBS_TO_MERGE
     lspcm
     lsdaltonmain 
     )
+if(ENABLE_PCMSOLVER)
+	set(LIBS_TO_MERGE ${LIBS_TO_MERGE} lspcm)
+endif()	
 
 MERGE_STATIC_LIBS(
     rsp_prop
