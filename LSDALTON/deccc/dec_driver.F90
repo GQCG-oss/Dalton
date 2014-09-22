@@ -343,12 +343,8 @@ contains
 
     ! Get job list 
     calcAF = DECinfo%RepeatAF
-print *, 'dofrag', dofrag
-print *, 'calcAF',calcAF
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
-
-stop 'kkhack'
 
     !Crash calculation on purpose to test restart option
     IF(DECinfo%CRASHCALC)THEN
@@ -441,7 +437,7 @@ stop 'kkhack'
           jobs%dofragopt = .false.
        endif
 
-       call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,&
+       call fragment_jobs(nocc,nunocc,nfrags,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,jobs,AtomicFragments,&
             & FragEnergies,esti,fullgrad=fullgrad,t1old=t1old,t1new=t1new)
 
@@ -467,11 +463,11 @@ stop 'kkhack'
     ! Plot pair interaction energies using occ. partitioning scheme
     ! *************************************************************
     IF(DECinfo%onlyVirtPart)THEN
-       call get_virtfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       call get_virtfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
     ELSE
-       call get_occfragenergies(natoms,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
+       call get_occfragenergies(nfrags,DECinfo%ccmodel,FragEnergies,FragEnergiesOcc)
     ENDIF
-    call plot_pair_energies(natoms,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
+    call plot_pair_energies(nfrags,DECinfo%pair_distance_threshold,FragEnergiesOcc,&
          & MyMolecule,dofrag)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
@@ -503,7 +499,7 @@ stop 'kkhack'
     ELSE
        ! Total correlation energy 
        do j=1,ndecenergies
-          call add_dec_energies(natoms,FragEnergies(:,:,j),dofrag,energies(j))
+          call add_dec_energies(nfrags,FragEnergies(:,:,j),dofrag,energies(j))
        end do
        if(DECinfo%PrintInteractionEnergy)then
          call mem_alloc(Interactionenergies,ndecenergies)
@@ -515,7 +511,7 @@ stop 'kkhack'
     endif
 
     ! Print all fragment energies
-    call print_all_fragment_energies(natoms,FragEnergies,dofrag,&
+    call print_all_fragment_energies(nfrags,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
      call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
@@ -536,7 +532,7 @@ stop 'kkhack'
        call array2_free(t1old)
        call array2_free(t1new)
     end if
-    do i=1,nAtoms
+    do i=1,nfrags
        if(.not. dofrag(i)) cycle
        call atomic_fragment_free_simple(AtomicFragments(i))
     end do
@@ -565,7 +561,7 @@ stop 'kkhack'
     call free_joblist(jobs)
 
     ! Estimate energy error
-    call get_estimated_energy_error(natoms,energies,Eerr)
+    call get_estimated_energy_error(nfrags,energies,Eerr)
     call mem_dealloc(energies)
 
     ! Print short summary
@@ -917,7 +913,7 @@ subroutine print_dec_info()
 
     counter=0
     JobLoop: do k=1,jobs%njobs+nworkers
-print *, 'Doing job ', k
+
        ! Counter used to distinquish real (counter<=jobs%njobs) and quit (counter>jobs%njobs) 
        ! calculations
        counter=counter+1

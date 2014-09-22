@@ -210,9 +210,6 @@ contains
 
     end do UnoccEOSLoop
 
-    print *, 'occEOS  ', occEOS, count(occEOS)
-    print *, 'unoccEOS', unoccEOS, count(unoccEOS)
-
 
     ! Size of occupied AOS - number of "true" elements in logical occupied vector
     ! ***************************************************************************
@@ -4988,9 +4985,9 @@ contains
     write(DECinfo%output,*) 'Number of jobs = ', njobs
     write(DECinfo%output,*)
     if(DECinfo%DECCO) then
-       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
-    else
        write(DECinfo%output,*) 'JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis'
+    else
+       write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved    #occ   #virt  #basis'
     end if
 
 

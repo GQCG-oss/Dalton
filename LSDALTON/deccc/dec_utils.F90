@@ -4732,7 +4732,7 @@ end function max_batch_dimension
     write(DECinfo%output,*) trim(headline)
     write(DECinfo%output,*) '================================================================='
     write(DECinfo%output,*)
-    write(DECinfo%output,'(2X,a)') 'Atom1  Atom2     Dist(Ang)        Energy'
+    write(DECinfo%output,'(2X,a)') 'Frag1  Frag2     Dist(Ang)        Energy'
     thr=1.0E-15_realk
     do i=1,natoms
        do j=i+1,natoms
