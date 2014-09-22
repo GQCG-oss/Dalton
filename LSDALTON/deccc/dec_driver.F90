@@ -426,10 +426,10 @@ contains
        if(DECinfo%DECrestart) then
           if(DECinfo%first_order) then ! density or gradient
              write(DECinfo%output,*) 'Restarting pair fragments - energy and first order prop...'
-             call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
+             call read_gradient_and_energies_for_restart(nfrags,FragEnergies,jobs,fullgrad)
           else
              write(DECinfo%output,*) 'Restarting pair fragments - energy...'
-             call read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+             call read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
           end if
        end if
        if(DECinfo%only_n_frag_jobs > 0)then
@@ -1276,9 +1276,9 @@ subroutine print_dec_info()
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-
     nfrags= MyMolecule%nfrags
     natoms= MyMolecule%natoms
+
 
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(nfrags,nocc,nunocc,MyMolecule%ncore,MyMolecule%DistanceTable,&
@@ -1347,7 +1347,7 @@ subroutine print_dec_info()
 
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
-          call read_fragment_energies_for_restart(natoms,FragEnergies,estijobs,esti)
+          call read_fragment_energies_for_restart(nfrags,FragEnergies,estijobs,esti)
        end if
 
        ! Merge job list of atomic fragment optimization and estimated fragments (in this order)

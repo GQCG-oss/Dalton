@@ -4417,15 +4417,12 @@ contains
     interactions=0
     do i=1,natoms
        do j=1,natoms
-
           ! Atom "i": Count atom j's orbitals if j is within distance
           if(DistanceTable(j,i)<dist) then
              interactions(i) = interactions(i) + norb(j)
           end if
-
        end do
     end do
-
 
     ! Size measure = interaction orbitals * atomtype * EOSorbitals
     ! ************************************************************
@@ -4444,6 +4441,7 @@ contains
           SizeMeasure(i) = interactions(i)*atomtype*norb(i)
        end if
     end do
+
 
     ! Sort according to size measure (largest first)
     ! **********************************************
@@ -4876,7 +4874,11 @@ contains
     write(DECinfo%output,*)
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
-    write(DECinfo%output,*) '             Atomic fragments listed according to total size'
+    if(DECinfo%DECCO) then
+       write(DECinfo%output,*) '        Occ Orbital fragments listed according to total size'
+    else
+       write(DECinfo%output,*) '             Atomic fragments listed according to total size'
+    end if
     write(DECinfo%output,'(1X,a)') '***************************************************************&
          &****************'
 
@@ -5311,13 +5313,13 @@ contains
   !> file fragenergies.info (or estimate_fragenergies.info for estimated energies).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine write_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+  subroutine write_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
 
     implicit none
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments
+    integer,intent(in) :: nfrags
     !> Fragment energies (see decfrag type def)
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(in) :: FragEnergies
     !> Job list of fragment jobs
     type(joblist),intent(in) :: jobs
     !> Read estimated fragment energies for restart?
@@ -5353,13 +5355,13 @@ contains
   !> \brief Read fragment energies for fragment from file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine read_fragment_energies_for_restart(natoms,FragEnergies,jobs,esti)
+  subroutine read_fragment_energies_for_restart(nfrags,FragEnergies,jobs,esti)
 
     implicit none
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments
+    integer,intent(in) :: nfrags
     !> Fragment energies (see decfrag type def)
-    real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
+    real(realk),dimension(nfrags,nfrags,ndecenergies),intent(inout) :: FragEnergies
     !> Job list of fragments
     type(joblist),intent(inout) :: jobs
     !> Read estimated fragment energies for restart?

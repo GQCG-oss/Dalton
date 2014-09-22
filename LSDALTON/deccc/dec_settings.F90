@@ -674,11 +674,6 @@ contains
           call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
        end if
 
-       ! Restart currently not working
-       if(DECinfo%DECrestart) then
-          call lsquit('DECCO is not implemented for DEC restart!',DECinfo%output)
-       end if
-
        ! Not for MPI at the moment
 #ifdef VAR_MPI
        call lsquit('DECCO is not tested for MPI!',DECinfo%output)
