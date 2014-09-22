@@ -76,19 +76,18 @@ contains
     !> Is it a pair fragment?
     logical,intent(in) :: pairfrag
     integer :: j,idx,i,natoms,startidx
-    integer :: CentralAtom, Rcntr,Dcntr
+    integer :: CentralAtom, Rcntr,Dcntr,nfrags
     real(realk) :: tcpu, twall
     logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
     !> list of atoms with AOS orbitals assigned
     logical,pointer :: all_atoms(:)
-
     
 
     ! Check that no core orbital are included in AOS space whith frozencore:
     if ((.not.DECinfo%no_orb_based_fragopt).and.DECinfo%frozencore) then
       do i=1,Mymolecule%ncore
          if(Occ_list(i)) call lsquit('core orbital should never be included in AOS space &
-            & whith frozen core approximation',DECinfo%output)
+            & with frozen core approximation',DECinfo%output)
       end do
     end if
 
@@ -106,10 +105,11 @@ contains
     fragment%PNOset          = .false.
 
     natoms = MyMolecule%natoms
+    nfrags = MyMolecule%nfrags
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    call mem_alloc( all_atoms,  natoms )
+    call mem_alloc( all_atoms,  nfrags )
     all_atoms  = .false.
 
 
@@ -210,6 +210,9 @@ contains
 
     end do UnoccEOSLoop
 
+    print *, 'occEOS  ', occEOS, count(occEOS)
+    print *, 'unoccEOS', unoccEOS, count(unoccEOS)
+
 
     ! Size of occupied AOS - number of "true" elements in logical occupied vector
     ! ***************************************************************************
@@ -307,7 +310,7 @@ contains
        end if
 
     end do
-    !print *,"checking",idx,fragment%nunoccAOS,fragment%EOSatoms,pairfrag
+
     
     if(idx /= fragment%nunoccAOS) then
       print *,unocc_list
@@ -438,7 +441,7 @@ contains
     end if
 
     call LSTIMER('FRAGMENT INIT',tcpu,twall,DECinfo%output)
-     
+
   end subroutine atomic_fragment_init_orbital_specific
 
   
@@ -608,60 +611,67 @@ contains
     !> Distance beyond which to include neighbour atoms
     real(realk),intent(in) :: init_radius
     !> List of which atoms have orbitals assigned
-    logical,intent(in),dimension(MyMolecule%natoms) :: dofrag
+    logical,intent(in),dimension(MyMolecule%nfrags) :: dofrag
     !> Fragments to construct
-    type(decfrag), intent(inout), dimension(MyMolecule%natoms) :: AtomicFragments
+    type(decfrag), intent(inout), dimension(MyMolecule%nfrags) :: AtomicFragments
 
     !> Orbital priority lists:
     integer, pointer :: esti_list_occ(:), esti_list_vir(:)
     !> Logical vector telling which orbital is include in the fragment
     logical, pointer :: Occ_AOS(:), Vir_AOS(:)
     integer :: nesti_occ, nesti_vir
-    integer :: i,D1,D2,D3,D4,MyAtom,ncore,natoms
+    integer :: i,D1,D2,D3,D4,MyAtom,ncore,nfrags
     logical :: full_mol
 
-    natoms = MyMolecule%natoms
+    nfrags = MyMolecule%nfrags
 
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle
+    FragLoop: do i=1,nfrags
+       if(.not. dofrag(i)) cycle FragLoop
+
        MyAtom=i
-       if (.not.DECinfo%no_orb_based_fragopt) then
+
+       OrbitalBasedFragOpt: if (.not.DECinfo%no_orb_based_fragopt) then
           ! Set # core orbitals to zero if the frozen core approximation is not used:
           if (DECinfo%frozencore) then
              ncore = MyMolecule%ncore
           else
              ncore = 0
           end if
-           
+
           ! Get ninit_occ and ninit_vir:
-          nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/natoms)
-          nesti_vir = DECinfo%estimateInitAtom*ceiling(nunocc*1.0E0_realk/natoms)
+          nesti_occ = DECinfo%EstimateInitAtom*ceiling((nocc-ncore)*1.0E0_realk/nfrags)
+          nesti_vir = DECinfo%estimateInitAtom*ceiling(nunocc*1.0E0_realk/nfrags)
 
           call mem_alloc(esti_list_occ,nocc)
           call mem_alloc(esti_list_vir,nunocc)
           call mem_alloc(Occ_AOS,nocc)
           call mem_alloc(Vir_AOS,nunocc)
+
           ! Get orbital priority list and number of orbital for esti frags
-          call define_frag_expansion(nocc,nunocc,natoms,MyAtom,MyMolecule, &
-             & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
+          call define_frag_expansion(nocc,nunocc,nfrags,MyAtom,MyMolecule, &
+               & AtomicFragments(MyAtom),esti_list_occ,esti_list_vir,D1,D2,D3,D4)
+
           ! Get logical list Occ_AOS/Vir_AOS to know which orbitals to include:
           call expand_fragment(nocc,nunocc,esti_list_occ,esti_list_vir,nesti_occ, &
-             & nesti_vir,MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,Occ_AOS,Vir_AOS, &
-             & full_mol,.true.)
+               & nesti_vir,MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,Occ_AOS,Vir_AOS, &
+               & full_mol,.true.)
           ! Initialize fragment base on orbital lists Occ_AOS/Vir_AOS:
+
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,Vir_AOS, &
-             & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
-             & DoBasis,.false.) 
+               & Occ_AOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(MyAtom), &
+               & DoBasis,.false.) 
           call mem_dealloc(esti_list_occ)
           call mem_dealloc(esti_list_vir)
           call mem_dealloc(Occ_AOS)
           call mem_dealloc(Vir_AOS)
        else
+
+          ! Atomic based fragment optimization
           call atomic_fragment_init_within_distance(MyAtom,&
-             & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-             & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
-       end if
-    end do
+               & nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
+               & MyMolecule,mylsitem,DoBasis,init_radius,AtomicFragments(MyAtom))
+       end if OrbitalBasedFragOpt
+    end do FragLoop
 
   end subroutine init_estimated_atomic_fragments
 
@@ -4497,7 +4507,7 @@ contains
 
 
     ! Find list of atoms where one or more occupied AOS orbitals are assigned
-    call mem_alloc(which_atoms,MyMolecule%natoms)
+    call mem_alloc(which_atoms,MyMolecule%nfrags)
     which_atoms=.false.
     do i=1,MyFragment%noccAOS
        idx = MyFragment%occAOSidx(i)  ! orbital index in full list

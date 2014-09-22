@@ -213,7 +213,7 @@ contains
     FragEnergies=0E0_realk
 
     ! Which fragments should we consider
-    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,natoms,&
+    call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,nfrags,&
          & OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     if(DECinfo%StressTest)then
@@ -1271,6 +1271,8 @@ subroutine print_dec_info()
     integer :: nfrags,i,j,k,natoms
     type(joblist) :: jobs,fragoptjobs,estijobs
     integer(kind=ls_mpik) :: master
+
+
     master=0
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
@@ -1281,12 +1283,12 @@ subroutine print_dec_info()
 
     ! Initialize job list for atomic fragment optimizations
     call create_dec_joblist_fragopt(nfrags,nocc,nunocc,MyMolecule%ncore,MyMolecule%DistanceTable,&
-       & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
-stop 'kkhack'
+         & OccOrbitals, UnoccOrbitals, dofrag, mylsitem,fragoptjobs)
+
     if(DECinfo%DECrestart) then
        write(DECinfo%output,*) 'Restarting atomic fragment optimizations....'
        call restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
-          & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
+            & UnoccOrbitals,.false.,AtomicFragments,fragoptjobs)
     end if
 
     write(DECinfo%output,*)
@@ -1296,15 +1298,15 @@ stop 'kkhack'
     write(DECinfo%output,*)
 
 
-    if(esti) then
+    UseEstimatedFragments: if(esti) then
 
        ! fragment opt. AND estimate pair fragments
        ! *****************************************
 
        ! All estimates are done using MP2, set model for all fragments to MP2
        ! (MyMolecule%ccmodel is then redefined below based on these estimates)
-       do i=1,natoms
-          do j=i+1,natoms
+       do i=1,nfrags
+          do j=i+1,nfrags
              MyMolecule%ccmodel(i,j) = MODEL_MP2
              MyMolecule%ccmodel(j,i) = MODEL_MP2
           end do
@@ -1313,8 +1315,8 @@ stop 'kkhack'
           !We are only intrested in certain fragments. 
           !So we only do estimates on those we are 
           !intrested in. 
-          do i=1,natoms
-             do j=1,natoms
+          do i=1,nfrags
+             do j=1,nfrags
                 if(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))then
                    MyMolecule%ccmodel(i,j) = MODEL_NONE
                 endif
@@ -1322,27 +1324,28 @@ stop 'kkhack'
           end do
        endif
 
-!
+       !
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms
        ! within 2 Angstrom.
        init_radius = DECinfo%EstimateINITradius
        DoBasis = .false.
-       call mem_alloc(EstAtomicFragments,natoms)
+       call mem_alloc(EstAtomicFragments,nfrags)
        call init_estimated_atomic_fragments(nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
             & MyMolecule,mylsitem,DoBasis,init_radius,dofrag,EstAtomicFragments)
-
+stop 'kkhack2'
 #ifdef VAR_MPI
        ! Send estimated fragment information to slaves
-       call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)
+       call mpi_bcast_many_fragments(nfrags,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)
 
        ! Send CC models to use for each pair based on estimates (always MP2, but keep it general)
-       call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
 #endif
 
        ! Get job list for estimated pair fragments
        calcAF = .false.  ! No atomic fragments, just pairs
-       call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,natoms,nocc,nunocc,&
+       call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
             &OccOrbitals,UnoccOrbitals,EstAtomicFragments,dofrag,esti,estijobs)
+stop 'kkhack2'
        if(DECinfo%DECrestart) then
           write(DECinfo%output,*) 'Restarting pair fragment estimate calculations...'
           call read_fragment_energies_for_restart(natoms,FragEnergies,estijobs,esti)
@@ -1368,7 +1371,7 @@ stop 'kkhack'
        call fragment_jobs(nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
             & UnoccOrbitals,fragoptjobs,AtomicFragments,FragEnergies,esti)
 
-    end if
+    end if UseEstimatedFragments
 
 
 

@@ -216,7 +216,7 @@ contains
 
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
-    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
