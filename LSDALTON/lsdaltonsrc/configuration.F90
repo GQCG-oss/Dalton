@@ -2012,6 +2012,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
+                  config%decomp%cfg_no_of_startvectors = config%response%rspsolverinput%rsp_no_of_startvectors
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR

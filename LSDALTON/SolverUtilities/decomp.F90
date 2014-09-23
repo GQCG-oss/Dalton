@@ -227,6 +227,7 @@ contains
          decomp%cfg_hessian_nvec     = 1
    
          decomp%cfg_rsp_nexcit       = 0
+         decomp%cfg_no_of_startvectors = 0 
          decomp%cfg_rsp_mostart      = .false.
          decomp%cfg_startvectors     = .false.
    
