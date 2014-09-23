@@ -502,8 +502,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
+   write(DECinfo%output,*)
+   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
    if(DECinfo%PrintInteractionEnergy)then
     write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy =', interactionE
+    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
+   write(DECinfo%output,*)
    endif
    write(DECinfo%output,*)
 
@@ -511,8 +515,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    ccenergy = ccenergy + ccsdpt_tot
 
    if(ccmodel == MODEL_CCSDpT)then
-      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-      write(DECinfo%output,*)
       write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
       write(DECinfo%output,*)
       write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
