@@ -1229,7 +1229,12 @@ contains
 
     end do OrbitalLoop
 
+    ! Sanity check
+    call DECCO_assignment_sanity_check(MyMolecule,DistOccUnocc,OccOrbitals,UnoccOrbitals)
 
+    ! Print orbital info
+    call print_orbital_info_DECCO(nocc,nunocc,OccOrbitals,&
+         & UnoccOrbitals,MyMolecule%ncore)
 
     call mem_dealloc(sorted_dists)
     call mem_dealloc(DistOccUnocc)
@@ -1237,13 +1242,6 @@ contains
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
 
-
-    ! Print orbital info
-    call print_orbital_info_DECCO(nocc,nunocc,OccOrbitals,&
-         & UnoccOrbitals,MyMolecule%ncore)
-
-    ! Sanity check
-    call DECCO_assignment_sanity_check(MyMolecule,OccOrbitals,UnoccOrbitals)
 
     call LSTIMER('GenerateOrb',tcpu,twall,DECinfo%output)
 
@@ -1253,16 +1251,22 @@ contains
 
 
   !> Sanity check for orbital assignment in DECCO
-  subroutine DECCO_assignment_sanity_check(MyMolecule,OccOrbitals,UnoccOrbitals)
+  !> Includes reassigning of unocc orbitals, if necessary
+  subroutine DECCO_assignment_sanity_check(MyMolecule,DistOccUnocc,OccOrbitals,UnoccOrbitals)
 
     implicit none
     !> Molecule info
     type(fullmolecule), intent(in) :: MyMolecule
+    !> Distances between occ and unocc orbitals
+    real(realk),intent(in) :: DistOccUnocc(MyMolecule%nocc,MyMolecule%nunocc)
     !> Occupied orbitals
     type(decorbital), intent(in), dimension(MyMolecule%nocc) :: OccOrbitals
     !> Unoccupied orbitals
-    type(decorbital), intent(in), dimension(MyMolecule%nunocc) :: UnoccOrbitals
-    integer :: i, nunocc_per_occ(MyMolecule%nocc)
+    type(decorbital), intent(inout), dimension(MyMolecule%nunocc) :: UnoccOrbitals
+    integer :: i, nunocc_per_occ(MyMolecule%nocc),a,sorted_orbitals(MyMolecule%nunocc),idx,ax
+    real(realk) :: sorted_dists(MyMolecule%nunocc)
+    real(realk),parameter :: maxdist = 2.0/bohr_to_angstrom
+    logical :: did_reassign
 
 
     call DECCO_get_nvirt_per_occ_orbital(MyMolecule%nocc,MyMolecule%nunocc,&
@@ -1272,26 +1276,87 @@ contains
     ! and that core orbitals have nothing assigned
 
     ! Valence check
-    do i=MyMolecule%ncore+1,MyMolecule%nocc
-       if(nunocc_per_occ(i)==0) then
-          call lsquit('DECCO_assignment_sanity_check: &
-               &Valence orbital has no unoccupied orbital(s) assigned!',-1)
-          print *, 'Error for orbital: ',i
-          print *, 'You cannot use DECCO for this system - unless you are willing to&
-               & change the source code!'
-          print *, 'nunocc_per_occ: ', nunocc_per_occ
-       end if
-    end do
+    ValenceCheck: do i=MyMolecule%ncore+1,MyMolecule%nocc
+
+       ValenceProblem: if(nunocc_per_occ(i)==0) then
+
+          ! No unocc orbitals assigned to orbital "i"
+          ! --> we try to fix the problem by reassigning...
+
+          ! Sort unocc orbitals according to distance from orbital "i"
+          do a=1,MyMolecule%nunocc
+             sorted_dists(a) = DistOccUnocc(i,a)
+          end do
+          call real_inv_sort_with_tracking(sorted_dists,sorted_orbitals,MyMolecule%nunocc)
+
+          ! Reassigning procedure
+          ! *********************
+          did_reassign=.false.
+
+          ! Loop over unocc orbitals, start with those closest to "i"
+          ReAssign: do a=MyMolecule%nunocc,1,-1
+
+             ! Occupied orbital to which unocc orbital "a" is currently assigned
+             idx = UnoccOrbitals(sorted_orbitals(a))%centralatom
+
+             ! Unsorted unocc orbital index
+             ax = sorted_orbitals(a)
+
+             ! Reassign unocc orbital "a" to occ orbital "i" IF:
+             ! 
+             ! 1. The occ orbital "idx" to which "a" is currently assigned 
+             !    has more than one unocc orbital assigned,
+             !    such that orbital "idx" does not get into the same
+             !    problem that orbital "i" is currently facing.
+             !
+             !    AND
+             ! 
+             ! 2. The distance from "a" to "i" is smaller than 2 Angstrom
+             ! 
+             ! 
+             if(nunocc_per_occ(idx)>1 .and. sorted_dists(a)<maxdist) then
+                UnoccOrbitals(ax)%centralatom = i
+                nunocc_per_occ(idx) = nunocc_per_occ(idx) - 1
+                did_reassign=.true.
+                exit ReAssign
+             end if
+          end do ReAssign
+
+          if(did_reassign) then
+             write(DECinfo%output,*) 'WARNING: Reassigning unoccupied orbital ', ax, &
+                  & ' from occ orbital ', idx, ' to occ orbital ',i
+          else
+             print *, 'Error for orbital: ',i
+             print *, 'You cannot use DECCO for this system - unless you are willing to&
+                  & change the source code!'
+             print *, 'nunocc_per_occ: ', nunocc_per_occ
+
+             write(DECinfo%output,*) 'Print DECCO orbital info before quitting...'
+             call print_orbital_info_DECCO(MyMolecule%nocc,MyMolecule%nunocc,OccOrbitals,&
+                  & UnoccOrbitals,MyMolecule%ncore)
+             call lsquit('DECCO_assignment_sanity_check: &
+                  &Valence orbital has no unoccupied orbital(s) assigned!',-1)
+          end if
+
+       end if ValenceProblem
+
+    end do ValenceCheck
 
     ! Core check
     do i=1,MyMolecule%ncore
        if(nunocc_per_occ(i)/=0) then
-          call lsquit('DECCO_assignment_sanity_check: &
-               &Core orbital has unoccupied orbital(s) assigned!',-1)
+          ! This should never happen!
+          ! Something went wrong somewhere...
           print *, 'Error for orbital: ',i
           print *, 'You cannot use DECCO for this system - unless you are willing to&
                & change the source code!'
           print *, 'nunocc_per_occ: ', nunocc_per_occ
+
+          write(DECinfo%output,*) 'Print DECCO orbital info before quitting...'
+          call print_orbital_info_DECCO(MyMolecule%nocc,MyMolecule%nunocc,OccOrbitals,&
+               & UnoccOrbitals,MyMolecule%ncore)
+          call lsquit('DECCO_assignment_sanity_check: &
+               &Core orbital has unoccupied orbital(s) assigned!',-1)
        end if
     end do
 
