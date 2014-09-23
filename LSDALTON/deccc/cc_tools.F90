@@ -13,7 +13,7 @@ module cc_tools_module
       integer,intent(inout)::fai
       integer,intent(inout)::tl
       logical,intent(out)  :: have_part
-      integer(kind=ls_mpik),optional,intent(inout)::nod
+      integer(kind=ls_mpik),optional,intent(in)::nod
       integer(kind=ls_mpik) :: nnod, me
       integer :: l,ml
 

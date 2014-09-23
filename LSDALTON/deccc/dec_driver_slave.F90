@@ -222,7 +222,7 @@ contains
           call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
                & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
-fisse
+
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
        if(infpar%lg_mynum==master .and. infpar%lg_nodtot>1) then
