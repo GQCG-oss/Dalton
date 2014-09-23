@@ -4512,7 +4512,6 @@ contains
        which_atoms(atom)=.true.
     end do
 
-
     ! Include core orbitals for atoms which already contribute with one or more valence orbitals
     ! ******************************************************************************************
     call mem_alloc(which_core_orbitals,MyMolecule%ncore)
@@ -4523,6 +4522,7 @@ contains
           which_core_orbitals(i)=.true.
        end if
     end do
+
 
     ! Set number of core orbitals for fragment
     MyFragment%ncore = count(which_core_orbitals)

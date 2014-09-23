@@ -655,24 +655,24 @@ contains
     DoDECCO: if(DECinfo%DECCO) then
 
        ! Occupied partitioning scheme
-       if(.not. DECinfo%OnlyOccPart) then
-          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
-          print *, '--> I will only use occupied partitioning scheme.'
-          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
-          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
-          DECinfo%OnlyOccPart=.true.
-          DECinfo%OnlyVirtPart=.false.
-       end if
+!!$       if(.not. DECinfo%OnlyOccPart) then
+!!$          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
+!!$          print *, '--> I will only use occupied partitioning scheme.'
+!!$          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
+!!$          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
+!!$          DECinfo%OnlyOccPart=.true.
+!!$          DECinfo%OnlyVirtPart=.false.
+!!$       end if
 
        ! Not simulate full
        if(DECinfo%simulate_full) then
           call lsquit('DECCO not implemented for SIMULATEFULL',-1)
        end if
 
-       ! Not working for first-order properties
-       if(DECinfo%first_order) then
-          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
-       end if
+!!$       ! Not working for first-order properties
+!!$       if(DECinfo%first_order) then
+!!$          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
+!!$       end if
 
 
        ! No stress test implemented
