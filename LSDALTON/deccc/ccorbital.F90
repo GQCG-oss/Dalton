@@ -52,8 +52,6 @@ contains
        ! Orbital-based DEC
        call GenerateOrbitals_DECCO(nocc,nunocc,natoms, &
             & MyMolecule,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-       call print_orbital_info_DECCO(mylsitem,nocc,nunocc,OccOrbitals,&
-            & UnoccOrbitals,MyMolecule%ncore)
        return
 
     else
@@ -1201,7 +1199,7 @@ contains
           call real_inv_sort_with_tracking(sorted_dists,sorted_orbitals,nocc)
 
           ! Assign to nearest valence orbital (ensure that we do not assign to core orbitals)
-          Assigning: do n=1,nocc
+          Assigning: do n=nocc,1,-1
              if(sorted_orbitals(n)>offset) then
                 central_orbital = sorted_orbitals(n)
                 exit Assigning
@@ -1209,10 +1207,10 @@ contains
           end do Assigning
 
           if(DECinfo%PL>1) then
-             write(DECinfo%output,'(1X,a,i10)') 'Sorted occ orbs for orbital: ', i
+             write(DECinfo%output,'(1X,a,i10)') 'Sorted (occ orbs,dist) for orbital: ', i
              write(DECinfo%output,*) '--------------------------------------------------------'
              do j=1,nocc
-                write(DECinfo%output,*) sorted_orbitals(j)
+                write(DECinfo%output,*) sorted_orbitals(j), sorted_dists(j)
              end do
              write(DECinfo%output,*) 'Central orbital: ', central_orbital
           end if
@@ -1239,6 +1237,10 @@ contains
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
 
+
+    ! Print orbital info
+    call print_orbital_info_DECCO(nocc,nunocc,OccOrbitals,&
+         & UnoccOrbitals,MyMolecule%ncore)
 
     ! Sanity check
     call DECCO_assignment_sanity_check(MyMolecule,OccOrbitals,UnoccOrbitals)
@@ -2937,12 +2939,10 @@ contains
   !> \brief Print number of occupied and unoccupied orbitals assigned to each atom for
   !> all atoms in the molecule.
   !> \author Kasper Kristensen
-  subroutine print_orbital_info_DECCO(mylsitem,nocc,nunocc,OccOrbitals,&
+  subroutine print_orbital_info_DECCO(nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,ncore)
 
     implicit none
-    !> Dalton LSITEM (just for printing atom type)
-    type(lsitem), intent(inout) :: mylsitem
     !> Number of occupied orbitals
     integer, intent(in) :: nocc
     !> Number of unoccupied orbitals
