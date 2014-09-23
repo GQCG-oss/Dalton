@@ -92,7 +92,7 @@ contains
          & nfrags,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     IF(DECinfo%StressTest)THEN
-     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nunocc,&
+     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nunocc,MyMolecule%ncore,&
           & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
     ENDIF
 
