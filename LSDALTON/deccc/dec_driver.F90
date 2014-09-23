@@ -289,7 +289,7 @@ contains
     ! Send CC models to use for all pairs based on estimates
     if(esti) then
 #ifdef VAR_MPI
-       call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+       call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
 #endif
     end if
 
