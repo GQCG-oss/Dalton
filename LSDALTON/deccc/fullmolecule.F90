@@ -76,6 +76,10 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
@@ -140,7 +144,11 @@ contains
     end if
      
     call molecule_get_carmom(molecule,mylsitem)
-       
+
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
@@ -190,6 +198,15 @@ contains
     molecule%nCabsAO = 0
     molecule%nCabsMO = 0
 
+    ! Number of possible fragments:
+    ! natoms for atom-based approach
+    ! nocc for orbital-based approach
+    if(DECinfo%DECCO) then
+       molecule%nfrags=molecule%nocc
+    else
+       molecule%nfrags=molecule%natoms
+    end if
+
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
 
@@ -201,13 +218,9 @@ contains
     call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
     call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
 
-    !> Interatomic distances in atomic units
-    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
-
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
-    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
@@ -553,7 +566,7 @@ contains
     type(matrix) :: XYZmat(4),Cocc,Cvirt,Xocc,Xvirt
     integer :: nbasis,nocc,nvirt,natoms,nmat,nderiv,XYZ,I
     real(realk) :: CenterX,CenterY,CenterZ
-    
+
     ! Init stuff
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -612,7 +625,7 @@ contains
              molecule%carmomvirt(XYZ,I) = Xvirt%elms(I+(I-1)*nvirt)
           enddo
        enddo
-       
+
        call mat_free(Cocc)
        call mat_free(Cvirt)
        call mat_free(Xocc)
@@ -630,6 +643,7 @@ contains
        call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
             & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
+
   end subroutine molecule_get_carmom
 
 
