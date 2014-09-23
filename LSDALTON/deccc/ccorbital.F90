@@ -1262,10 +1262,6 @@ contains
     type(decorbital), intent(in), dimension(MyMolecule%nunocc) :: UnoccOrbitals
     integer :: i, nunocc_per_occ(MyMolecule%nocc)
 
-    ! Only occupied partitioning scheme - nothing to check
-    if(DECinfo%OnlyOccPart) then
-       return
-    end if
 
     call DECCO_get_nvirt_per_occ_orbital(MyMolecule%nocc,MyMolecule%nunocc,&
          & UnoccOrbitals,nunocc_per_occ)
