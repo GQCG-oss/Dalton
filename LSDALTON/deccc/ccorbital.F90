@@ -1212,7 +1212,7 @@ contains
              write(DECinfo%output,'(1X,a,i10)') 'Sorted occ orbs for orbital: ', i
              write(DECinfo%output,*) '--------------------------------------------------------'
              do j=1,nocc
-                write(DECinfo%output,*) sorted_orbitals(i)
+                write(DECinfo%output,*) sorted_orbitals(j)
              end do
              write(DECinfo%output,*) 'Central orbital: ', central_orbital
           end if
