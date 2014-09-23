@@ -10,7 +10,6 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO,nBasisBasParam,nullifyMainBasis,&
        & nullifyBasisset
   use basis_type, only: lsmpi_alloc_basissetinfo
-  use lstiming, only: lstimer
   use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
        & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
   use integralparameters
@@ -1273,6 +1272,8 @@ call LS_MPI_BUFFER(dalton%DEBUG4CENTER,Master)
 call LS_MPI_BUFFER(dalton%DEBUG4CENTER_ERI,Master)
 call LS_MPI_BUFFER(dalton%DEBUGPROP,Master)
 call LS_MPI_BUFFER(dalton%DEBUGICHOR,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHORLINK,Master)
+call LS_MPI_BUFFER(dalton%DEBUGICHORLINKFULL,Master)
 call LS_MPI_BUFFER(dalton%DEBUGICHOROPTION,Master)
 call LS_MPI_BUFFER(dalton%DEBUGGEN1INT,Master)
 call LS_MPI_BUFFER(dalton%DEBUGCGTODIFF,Master)

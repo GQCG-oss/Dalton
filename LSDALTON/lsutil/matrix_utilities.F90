@@ -18,7 +18,7 @@ use matrix_operations_aux, only: mat_to_full2, mat_set_from_full2,mat_density_fr
 use files
 use memory_handling
 
-real(realk),parameter  :: matsymthresh = 1.0E-11_realk
+real(realk),parameter  :: matsymthresh = 1.0E-10_realk
 
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)
@@ -758,7 +758,7 @@ contains
    call mat_to_full(A,1.0E0_realk,Afull)
 
    !write (lupri,*) 'Afull (hessian):'
-   !call OUTPUT(Afull, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+   !call LS_OUTPUT(Afull, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
 
    call DSYEVX('V', 'A', 'U', ndim, Afull, ndim, VL, VU, IL, IU, &
      &  0.0E0_realk, neig, eigenval, eigenvec, ndim, temp, Ltemp, Itemp, &
@@ -782,7 +782,7 @@ contains
 
    if (print_eivecs) then
       write (lupri,*) 'Eigenvectors of A:'
-      call OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
+      call LS_OUTPUT(eigenvec, 1, ndim, 1, ndim, ndim, ndim, 1, lupri)
    endif
 
    deallocate(Afull)

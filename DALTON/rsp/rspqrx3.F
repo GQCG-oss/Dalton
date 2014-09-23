@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -23,7 +23,6 @@
 !
 #define DFTQRC dft_qr_respons
 c#define DFTQRC dftqrcf
-#include "single.h"
 C
 #ifdef REVLOG
 C=========================================================================
@@ -409,10 +408,10 @@ C
          ELSE IF (TRPLET) THEN
             CALL QUIT('ERROR: triplets not implemented for quadratic'//
      &                ' response with the PE library.')
-        ENDIF
-        CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
-     &                 UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
-     &                 ISYMA, ISYMB, ISYMC, CMO, MJWOP)
+         ENDIF
+         CALL PE_RSPQRO(VECB, VECC, ETRS, XINDX, WRK(KZYMB), WRK(KZYMC),
+     &                  UDV, WRK(KFREE), LFREE, KZYVA, KZYVB, KZYVC,
+     &                  ISYMA, ISYMB, ISYMC, CMO, MJWOP)
 #endif
       END IF
 

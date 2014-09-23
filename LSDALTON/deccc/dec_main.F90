@@ -424,9 +424,19 @@ contains
     call mat_free(C)
 
     ! -- Calculate correlation energy
-    call mem_alloc(dummy,3,Molecule%natoms)
-    call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,dummy,Eerr)
-    call mem_dealloc(dummy)
+    if(DECinfo%full_molecular_cc) then
+       ! -- Call full molecular CC
+       write(DECinfo%output,'(/,a,/)') 'Full molecular calculation is carried out ...'
+       call full_driver(molecule,mylsitem,D,EHF,Ecorr)
+       ! --
+    else
+       ! -- Initialize DEC driver for energy calculation
+       write(DECinfo%output,'(/,a,/)') 'DEC calculation is carried out...'
+       call mem_alloc(dummy,3,Molecule%natoms)
+       call DEC_wrapper(Molecule,mylsitem,D,EHF,Ecorr,dummy,Eerr)
+       call mem_dealloc(dummy)
+       ! --
+    end if
 
     ! Total CC energy: EHF + Ecorr
     ECC = EHF + Ecorr

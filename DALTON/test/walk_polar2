@@ -74,6 +74,11 @@ cat > walk_polar2.dal <<'%EOF%'
 **START
 .PRINT
  4
+*TWOEXP   ! checking PTRAN and PSORT
+.PTRPRI
+ 9
+.SORPRI
+ 9
 **PROPERTIES
 .POLARI
 .VIBANA

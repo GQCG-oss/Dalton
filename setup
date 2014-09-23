@@ -197,7 +197,19 @@ def parse_input():
             action='store_true',
             default=False,
             help='enable ichor integrals library [default: %(default)s]')
-    
+    group.add_argument('--qmatrix',
+            action='store_true',
+            default=False,
+            help='enable QMatrix external library [default: %(default)s]')
+    group.add_argument('--openrsp',
+            action='store_true',
+            default=False,
+            help='enable OpenRSP external library (need QMatrix library) [default: %(default)s]')
+    group.add_argument('--tdrsp',
+            action='store_true',
+            default=False,
+            help='enable TDRSP external library (need QMatrix library) [default: %(default)s]')
+
     group = parser.add_argument_group('pass extra flags to the compiler')
     group.add_argument('--extra-fc-flags',
             action='store',
@@ -262,7 +274,7 @@ def gen_cmake_command(args):
     command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
     command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
     command += ' -DENABLE_OPENACC=%s'        % translate_cmake(args.openacc)
-    command += ' -DENABLE_COLLAPSE=%s'        % translate_cmake(args.collapse)
+    command += ' -DENABLE_COLLAPSE=%s'       % translate_cmake(args.collapse)
     command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
     command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
     command += ' -DENABLE_VAMPIRTRACE=%s'    % translate_cmake(args.vampirtrace)
@@ -271,6 +283,9 @@ def gen_cmake_command(args):
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
     command += ' -DENABLE_ICHOR=%s'          % translate_cmake(args.ichor)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
+    command += ' -DENABLE_QMATRIX=%s'        % translate_cmake(args.qmatrix)
+    command += ' -DENABLE_TDRSP=%s'          % translate_cmake(args.tdrsp)
+    command += ' -DENABLE_OPENRSP=%s'        % translate_cmake(args.openrsp)
 
     command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
     if args.scalapack:
@@ -477,12 +492,20 @@ def configure_default_compilers(args):
             args.mpi = 'on'
 
     if not args.fc:
-        args.fc = 'gfortran'
+        if os.environ.has_key("FC"):
+            args.fc = os.environ["FC"]
+        else:
+            args.fc = 'gfortran'
     if not args.cc:
-        args.cc = 'gcc'
+        if os.environ.has_key("CC"):
+            args.cc = os.environ["CC"]
+        else:
+            args.cc = 'gcc'
     if not args.cxx:
-        args.cxx = 'g++'
-
+        if os.environ.has_key("CXX"):
+            args.cxx = os.environ["CXX"]
+        else:
+            args.cxx = 'g++'
 
 configure_ubuntu = configure_default_compilers
 configure_fedora = configure_default_compilers

@@ -52,6 +52,7 @@ use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
+use dft_memory_handling
 use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
@@ -117,6 +118,11 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef VAR_RSP
+  config%response%noOpenRSP = .FALSE. !Use OpenRSP module - Default
+#else
+  config%response%noOpenRSP = .TRUE.  !Use LSDALTON own Response module
+#endif
 #ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
@@ -217,6 +223,10 @@ end subroutine config_free
 SUBROUTINE read_dalton_input(LUPRI,config)
 ! READ THE INPUT FOR THE INTEGRAL 
 use IIDFTINT, only: II_DFTsetFunc
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: ls_qmatrix_init, &
+                      ls_qmatrix_input
+#endif
 implicit none
 !> Logical unit number for LSDALTON.OUT
 INTEGER            :: LUPRI
@@ -839,6 +849,18 @@ DO
    ENDIF
 #endif
 
+#if defined(ENABLE_QMATRIX)
+   ! QMatrix library
+   if (WORD=='**QMATRIX') then
+       config%do_qmatrix = .true.
+       ! initializes the QMatrix interface
+       call ls_qmatrix_init(config%ls_qmat)
+       ! processes input
+       READWORD = .true.
+       call ls_qmatrix_input(config%ls_qmat, LUCMD, LUPRI, READWORD, WORD)
+   end if
+#endif
+
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
    ENDIF
@@ -1126,6 +1148,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.DEBUGICHOR')
            INTEGRAL%DEBUGICHOR = .TRUE.
            READ(LUCMD,*) INTEGRAL%DEBUGICHORoption
+        CASE ('.DEBUGICHORLINK')
+           INTEGRAL%DEBUGICHORLINK = .TRUE.
+        CASE ('.DEBUGICHORLINKFULL')
+           INTEGRAL%DEBUGICHORLINKFULL = .TRUE.
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -1466,6 +1492,7 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         ENDIF
      CASE('.DEBUG_SCF_MEM')
         call Set_PrintSCFmemory(.TRUE.)
+        call setPrintDFTmem(.TRUE.)
      CASE('.DEBUG_MPI_MEM')
         config%mpi_mem_monitor = .true.
      CASE('.DEBUG_ARH_LINTRA')
@@ -1594,6 +1621,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
      if (WORD(1:1) == '*') then
        !which type of response is wanted??
        SELECT CASE(WORD)
+       CASE('*NoOpenRSP')
+          config%response%noOpenRSP = .TRUE. !Use LSDALTON own Response module
        CASE('*DIPOLE')
           config%response%tasks%doDipole=.true.
        CASE('*DIPOLEMOMENTMATRIX')
@@ -2003,6 +2032,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
+                  config%decomp%cfg_no_of_startvectors = config%response%rspsolverinput%rsp_no_of_startvectors
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
@@ -2517,6 +2547,7 @@ DO
          READ (LUCMD,*) DALTON%DFT%DFTIPT, DALTON%DFT%DFTBR1, DALTON%DFT%DFTBR2
       CASE ('.DFTELS'); READ(LUCMD,*) DALTON%DFT%DFTELS
       CASE ('.DFTTHR'); READ(LUCMD,*) DALTON%DFT%DFTHR0,DALTON%DFT%DFTHRL, DALTON%DFT%DFTHRI, DALTON%DFT%RHOTHR
+      CASE ('.MEMORY'); call setPrintDFTmem(.TRUE.)  
       CASE ('.LB94');
          DALTON%DFT%LB94=.TRUE.
       CASE ('.CS00');
@@ -3492,20 +3523,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
 ! Write Screening Thresholds:
 !======================
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
 & config%integral%THRESHOLD*config%integral%J_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
 &config%integral%THRESHOLD*config%integral%K_THR
-   WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+   WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
 &config%integral%THRESHOLD*config%integral%ONEEL_THR
    if(config%integral%DALINK)THEN
       WRITE(config%LUPRI,'(A)')' '
-      WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
            & config%integral%THRESHOLD*config%integral%K_THR      
       WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
       WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-      WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+      WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
       &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
    endif
 
@@ -3578,7 +3609,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          CALL mat_select_type(mtype_csr,lupri)
          call mat_inquire_cutoff(cutoff)
          write(config%lupri,*)
-         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d7.2)') cutoff
+         write(config%lupri, '("Using Compressed-Sparse Row matrices - zero cutoff is ", d10.2)') cutoff
 #else
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif

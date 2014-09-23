@@ -182,6 +182,7 @@ set(SOLVERUTIL_SOURCES
     LSDALTON/SolverUtilities/rsp_utilities.F90
     )
 set(RSP_PROPERTIES_SOURCES	
+    LSDALTON/rsp_properties/response_prop_noOpenRSP.F90
     LSDALTON/rsp_properties/molecular_hessian.F90
     LSDALTON/rsp_properties/test_molHessian.F90
     )
@@ -234,6 +235,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/MainIchorInterface.F90
     LSDALTON/IchorIntegrals/IchorPresicion.F90
     LSDALTON/IchorIntegrals/IchorParameters.F90
+    LSDALTON/IchorIntegrals/IchorInputInfo.F90
     LSDALTON/IchorIntegrals/IchorCommon.F90
     LSDALTON/IchorIntegrals/IchorMem.F90
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
@@ -381,12 +383,18 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceBtoDSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceDtoBSeg1Prim.F90
     LSDALTON/IchorIntegrals/AGC_GPU_TransferRecurrenceCtoBSeg1Prim.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePAtoB.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrencePBtoA.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQCtoD.F90
-    LSDALTON/IchorIntegrals/AGC_HorizontalRecurrenceQDtoC.F90
-    LSDALTON/IchorIntegrals/AGC_SphContractOBS1.F90
-    LSDALTON/IchorIntegrals/AGC_SphContractOBS2.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrencePBtoA.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_HorizontalRecurrenceQDtoC.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrencePAtoB.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrencePBtoA.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrenceQCtoD.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_HorizontalRecurrenceQDtoC.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_CPU_SphContractOBS2.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_SphContractOBS1.F90
+    LSDALTON/IchorIntegrals/AGC_GPU_SphContractOBS2.F90
     )
 #    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_SSSS.F90
 set(LSINT_SOURCES
@@ -410,7 +418,10 @@ set(LSINT_SOURCES
     LSDALTON/LSint/ODbatches.F90
     LSDALTON/LSint/ReadMolFile.F90
     LSDALTON/LSint/ThermiteDistribute.F90
+    LSDALTON/LSint/ThermiteDistribute2.F90
+    LSDALTON/LSint/ThermiteDistributeGen.F90
     LSDALTON/LSint/ThermiteDistributeK.F90
+    LSDALTON/LSint/ThermiteDistributeK2.F90
     LSDALTON/LSint/ThermiteDistributeDEC.F90
     LSDALTON/LSint/ThermiteDriver.F90
     LSDALTON/LSint/ThermiteIntegrals.F90
@@ -560,6 +571,15 @@ set(LSDALTON_OWN_LAPACK_SOURCES
     LSDALTON/pdpack/gp_dlapack.F
     LSDALTON/pdpack/gp_zlapack.F
     )
+# backend matrix module and interface of QMatrix library
+if(ENABLE_QMATRIX)
+    set(LSUTIL_MATRIXU_SOURCES
+        ${LSUTIL_MATRIXU_SOURCES}
+        LSDALTON/qmatrix/qmatrix_backend.F90
+        )
+    set(LS_QMATRIX_SOURCES
+        LSDALTON/qmatrix/ls_qmatrix.F90)
+endif()
 # collect all free fortran sources
 set(LSDALTON_FREE_FORTRAN_SOURCES
     ${DFTFUNC_F_SOURCES}
@@ -586,4 +606,5 @@ set(LSDALTON_FREE_FORTRAN_SOURCES
     ${LSUTILLIB_SOURCES}
     ${LSLIB_SOURCES}
     ${ICHORLIB_SOURCES}
+    ${LS_QMATRIX_SOURCES}
  )

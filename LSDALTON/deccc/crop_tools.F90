@@ -522,7 +522,7 @@ module crop_tools_module
          write(DECinfo%output,'(/,a)') '-------------------------------'
          write(DECinfo%output,'(a)')   '  Coupled-cluster job summary  '
          write(DECinfo%output,'(a,/)') '-------------------------------'
-         if(bi) then
+         if(bi.and.li<DECinfo%ccMaxIter) then
             if(gm)then
                write(DECinfo%output,'(a)')     'Yeeehaw! left-transformations converged!'
             else
@@ -533,25 +533,25 @@ module crop_tools_module
                & DECinfo%ccMaxIter, ' iterations!'
             call lsquit('CC equation not solved!',DECinfo%output)
          end if
-         write(DECinfo%output,'(a,g8.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
-         write(DECinfo%output,'(a,g8.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
+         write(DECinfo%output,'(a,g10.3,a)') 'CCSOL: Total cpu time    = ',tec-tsc,' s'
+         write(DECinfo%output,'(a,g10.3,a)') 'CCSOL: Total wall time   = ',tew-tsw,' s'
 
          if(fj) then
             write(DECinfo%output,'(a,f16.10)')  'Frag. corr. energy = ',ce
          else
             if(gm)then
                if(us)then
-                  write(DECinfo%output,'(a,g12.7)')  'Singles multiplier norm  = ',snorm
+                  write(DECinfo%output,'(a,g14.7)')  'Singles multiplier norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,g12.7)')  'Doubles multiplier norm  = ',dnorm
-               write(DECinfo%output,'(a,g12.7)')  'Total multiplier norm    = ',tnorm
+               write(DECinfo%output,'(a,g14.7)')  'Doubles multiplier norm  = ',dnorm
+               write(DECinfo%output,'(a,g14.7)')  'Total multiplier norm    = ',tnorm
             else
                if(us)then
-                  write(DECinfo%output,'(a,g12.7)')  'Singles amplitudes norm  = ',snorm
+                  write(DECinfo%output,'(a,g14.7)')  'Singles amplitudes norm  = ',snorm
                endif
-               write(DECinfo%output,'(a,g12.7)')  'Doubles amplitudes norm  = ',dnorm
-               write(DECinfo%output,'(a,g12.7)')  'Total amplitudes norm    = ',tnorm
-               write(DECinfo%output,'(a,f16.10)')  'Corr. energy             = ',ce
+               write(DECinfo%output,'(a,g14.7)')  'Doubles amplitudes norm  = ',dnorm
+               write(DECinfo%output,'(a,g14.7)')  'Total amplitudes norm    = ',tnorm
+               write(DECinfo%output,'(a,f17.10)')  'Corr. energy             = ',ce
             endif
          end if
          write(DECinfo%output,'(a,i5)') 'Number of CC iterations  =', li

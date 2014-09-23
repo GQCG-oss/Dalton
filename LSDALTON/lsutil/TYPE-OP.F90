@@ -189,6 +189,8 @@ DALTON%DEBUG4CENTER = .FALSE.
 DALTON%DEBUG4CENTER_ERI = .FALSE.
 DALTON%DEBUGPROP = .FALSE.
 DALTON%DEBUGICHOR = .FALSE.
+DALTON%DEBUGICHORLINK = .FALSE.
+DALTON%DEBUGICHORLINKFULL = .FALSE.
 DALTON%DEBUGICHOROPTION = -1
 DALTON%DEBUGGEN1INT = .FALSE.
 DALTON%DEBUGCGTODIFF = .FALSE.
@@ -435,7 +437,7 @@ IF(SET%RHSdfull)THEN
    dim2 = SIZE(SET%DfullRHS, 2)  
    DO imat = 1,SET%nDmatRHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymRHS(Imat)
-      call output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'RHSdfull',SET%RHSdfull
@@ -457,7 +459,7 @@ IF(SET%LHSdfull)THEN
    dim2 = SIZE(SET%DfullLHS, 2)  
    DO imat = 1,SET%nDmatLHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymLHS(Imat)
-      call output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'LHSdfull',SET%LHSdfull
@@ -899,6 +901,8 @@ WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGOVERLAP',DALTON%DEBUGOVERLAP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUG4CENTER',DALTON%DEBUG4CENTER
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGPROP',DALTON%DEBUGPROP
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOR',DALTON%DEBUGICHOR
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHORLINK',DALTON%DEBUGICHORLINK
+WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHORLINKFULL',DALTON%DEBUGICHORLINKFULL
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGICHOROPTION',DALTON%DEBUGICHOROPTION
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGGEN1INT',DALTON%DEBUGGEN1INT
 WRITE(LUPRI,'(2X,A35,7X,L1)')'DEBUGCGTODIFF',DALTON%DEBUGCGTODIFF
@@ -3056,7 +3060,7 @@ IF (iprint.GE.1) THEN
   WRITE(IUNIT,'(A,I4)') 'Printing reduced screening information with print level',iprint
   IF (redCS%isset) THEN
 #ifdef VAR_MPI
-    WRITE(IUNIT,'(A,G10.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
+    WRITE(IUNIT,'(A,G12.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
     DO iAO=1,4
       IF (IPRINT.GE.5) write(IUNIT,'(3X,A,I1)') 'Printing AO item info for iAO ',iAO
       call print_aoAtomInfo(redCS%AO(iAO),iprint,iunit)

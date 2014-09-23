@@ -27,7 +27,10 @@ F90_OBJS = \
 	II_dft_ksm_worker.o \
 	II_XC_interface.o\
         ThermiteDistribute.o \
+        ThermiteDistribute2.o \
+        ThermiteDistributeGen.o \
         ThermiteDistributeK.o \
+        ThermiteDistributeK2.o \
         ThermiteDistributeDEC.o \
         ThermiteDriver.o \
         ThermiteOverlapDistribution.o \

@@ -76,6 +76,10 @@ contains
 
     call molecule_get_carmom(molecule,mylsitem)
 
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
@@ -140,7 +144,11 @@ contains
     end if
      
     call molecule_get_carmom(molecule,mylsitem)
-       
+
+    !> Interatomic distances in atomic units
+    call mem_alloc(molecule%DistanceTable,molecule%nfrags,molecule%nfrags)
+    call GetDistances(molecule,mylsitem,DECinfo%output) 
+
     call mem_alloc(molecule%PhantomAtom,molecule%nAtoms)
     call getPhantomAtoms(mylsitem,molecule%PhantomAtom,molecule%nAtoms)
 
@@ -190,6 +198,15 @@ contains
     molecule%nCabsAO = 0
     molecule%nCabsMO = 0
 
+    ! Number of possible fragments:
+    ! natoms for atom-based approach
+    ! nocc for orbital-based approach
+    if(DECinfo%DECCO) then
+       molecule%nfrags=molecule%nocc
+    else
+       molecule%nfrags=molecule%natoms
+    end if
+
     ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
 
@@ -201,13 +218,9 @@ contains
     call mem_alloc(molecule%SubSystemIndex,molecule%natoms)
     call GetSubSystemIndex(molecule%SubSystemIndex,molecule%natoms,mylsitem,DECinfo%output) 
 
-    !> Interatomic distances in atomic units
-    call mem_alloc(molecule%DistanceTable,molecule%natoms,molecule%natoms)
-    call GetDistances(molecule%DistanceTable,molecule%natoms,mylsitem,DECinfo%output) 
-
     !> Which model to use for different pair calculations?
     !> At this initialization step - use the input CC model for all pairs
-    call mem_alloc(molecule%ccmodel,molecule%natoms,molecule%natoms)
+    call mem_alloc(molecule%ccmodel,molecule%nfrags,molecule%nfrags)
     molecule%ccmodel = DECinfo%ccmodel
 
     ! Print some info about the molecule
@@ -553,7 +566,7 @@ contains
     type(matrix) :: XYZmat(4),Cocc,Cvirt,Xocc,Xvirt
     integer :: nbasis,nocc,nvirt,natoms,nmat,nderiv,XYZ,I
     real(realk) :: CenterX,CenterY,CenterZ
-    
+
     ! Init stuff
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -612,7 +625,7 @@ contains
              molecule%carmomvirt(XYZ,I) = Xvirt%elms(I+(I-1)*nvirt)
           enddo
        enddo
-       
+
        call mat_free(Cocc)
        call mat_free(Cvirt)
        call mat_free(Xocc)
@@ -630,6 +643,7 @@ contains
        call GetOrbAtomDistances(molecule%DistanceTableOrbAtomVirt,nvirt,natoms,&
             & Molecule%carmomvirt,molecule%AtomCenters) 
 !endif
+
   end subroutine molecule_get_carmom
 
 
@@ -877,7 +891,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     !> All MO coefficients (occupied and virtual)
     real(realk),dimension(molecule%nbasis,molecule%nbasis),intent(in) :: C
-    integer :: nbasis,nocc,nvirt
+    integer :: nbasis,nocc,nvirt,i,j,k
 
     nbasis = molecule%nbasis
     nocc = molecule%nocc
@@ -886,8 +900,21 @@ contains
     call mem_alloc(molecule%Cv,nbasis,nvirt)
 
     ! assign
-    molecule%Co = C(1:nbasis,1:nocc)
-    molecule%Cv = C(1:nbasis,nocc+1:nbasis)
+    !molecule%Co = C(1:nbasis,1:nocc)
+    !molecule%Cv = C(1:nbasis,nocc+1:nbasis)
+    do j = 1,nocc
+    do i = 1,nbasis
+    molecule%Co(i,j) = C(i,j)
+    enddo
+    enddo
+    k=nocc+1
+    do j=1,nvirt
+    do i=1,nbasis
+    molecule%Cv(i,j) = C(i,k)
+    enddo
+    k=k+1
+    enddo
+    !write(*,*) 'Johannes after before (:,:)='
 
   end subroutine molecule_generate_basis
 
@@ -899,6 +926,7 @@ contains
     type(fullmolecule), intent(inout) :: molecule
     type(array2) :: ppfock, qqfock, Co,Cv,Co2,Cv2,fock
     integer :: nocc, nvirt, oo(2), bo(2), bv(2), vv(2), bb(2),nbasis
+    integer :: i,j,k
 
     nocc = molecule%nocc
     nvirt = molecule%nunocc
@@ -924,7 +952,12 @@ contains
     call array2_free(Co)
     call array2_free(Co2)
     call mem_alloc(molecule%ppfock,nocc,nocc)
-    molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
+    !molecule%ppfock(1:nocc,1:nocc) = ppfock%val(1:nocc,1:nocc)
+    do i =1,nocc
+    do j=1,nocc
+    molecule%ppfock(j,i) = ppfock%val(j,i)
+    enddo
+    enddo
     call array2_free(ppfock)
 
     ! Virt-virt block
@@ -935,7 +968,12 @@ contains
     call array2_free(Cv2)
     call array2_free(fock)
     call mem_alloc(molecule%qqfock,nvirt,nvirt)
-    molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
+    !molecule%qqfock(1:nvirt,1:nvirt) = qqfock%val(1:nvirt,1:nvirt)
+    do i=1,nvirt
+    do j=1,nvirt
+    molecule%qqfock(j,i) = qqfock%val(j,i)
+    enddo
+    enddo
     call array2_free(qqfock)
 
   end subroutine molecule_mo_fock

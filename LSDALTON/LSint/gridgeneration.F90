@@ -62,7 +62,7 @@ SUBROUTINE GenerateGrid(NBAST,radint,angmin,angint,ihardness,iprune,natoms,&
      & X,Y,Z,Charge,GRIDDONE,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,&
      & MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,RSHEL,ITERATIONS,TURBO,MaxNbuflen,&
      & RADIALGRID,ZdependenMaxAng,PARTITIONING,nstart,MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node,GridId)
+     & IPRINT,USE_MPI,numnodes,node,GridId,Gridnumnodes)
 IMPLICIT NONE
 !> How many times do we write (and should we read)  from disk 
 INTEGER  :: ITERATIONS
@@ -129,6 +129,7 @@ INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> should we use MPI
 LOGICAL,intent(in)    :: USE_MPI
 integer(kind=ls_mpik),intent(in)    :: numnodes,node
+integer,intent(inout) :: Gridnumnodes
 !> if the grid id
 INTEGER :: GRIDID
 !
@@ -171,6 +172,7 @@ call mem_grid_dealloc(RADIALPOINTS)
 call mem_grid_dealloc(RADIALWEIGHT)
 call mem_grid_dealloc(nRadialPoints)   
 call mem_grid_dealloc(GRIDANG)
+Gridnumnodes = numnodes !number of nodes used to construct the grid. 
 GRIDDONE=1
 #ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN

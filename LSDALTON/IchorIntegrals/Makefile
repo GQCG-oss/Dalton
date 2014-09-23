@@ -132,14 +132,21 @@ F90_OBJS = \
         AGC_GPU_TransferRecurrenceBtoDSeg1Prim.o \
         AGC_GPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_GPU_TransferRecurrenceCtoBSeg1Prim.o \
-        AGC_HorizontalRecurrencePAtoB.o \
-        AGC_HorizontalRecurrencePBtoA.o \
-        AGC_HorizontalRecurrenceQCtoD.o \
-        AGC_HorizontalRecurrenceQDtoC.o \
-        AGC_SphContractOBS1.o \
-        AGC_SphContractOBS2.o \
+        AGC_CPU_HorizontalRecurrencePAtoB.o \
+        AGC_CPU_HorizontalRecurrencePBtoA.o \
+        AGC_GPU_HorizontalRecurrencePAtoB.o \
+        AGC_GPU_HorizontalRecurrencePBtoA.o \
+        AGC_CPU_HorizontalRecurrenceQCtoD.o \
+        AGC_CPU_HorizontalRecurrenceQDtoC.o \
+        AGC_GPU_HorizontalRecurrenceQCtoD.o \
+        AGC_GPU_HorizontalRecurrenceQDtoC.o \
+        AGC_CPU_SphContractOBS1.o \
+        AGC_CPU_SphContractOBS2.o \
+        AGC_GPU_SphContractOBS1.o \
+        AGC_GPU_SphContractOBS2.o \
         IchorParameters.o \
         IchorCommon.o \
+        IchorInputInfo.o\
         IchorBatchTools.o \
         IchorMem.o \
 	IchorSaveGab.o \

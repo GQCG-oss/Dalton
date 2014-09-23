@@ -41,7 +41,10 @@ class TestRun(runtest.TestRun):
             inp_no_suffix = os.path.splitext(inp)[0]
             for mol in mol_files:
                 mol_no_suffix = os.path.splitext(mol)[0]
-                output_no_suffix = '%s_%s' % (inp_no_suffix, mol_no_suffix)
+                if inp_no_suffix == mol_no_suffix:
+                    output_no_suffix = '%s' % (inp_no_suffix,)
+                else:
+                    output_no_suffix = '%s_%s' % (inp_no_suffix, mol_no_suffix)
                 sys.stdout.write('\nrunning test: %s %s\n' % (inp_no_suffix, mol_no_suffix))
 
                 command = launcher + ' %s %s' % (inp_no_suffix, mol_no_suffix)

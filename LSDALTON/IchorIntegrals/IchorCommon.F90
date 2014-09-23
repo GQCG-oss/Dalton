@@ -894,7 +894,7 @@ subroutine build_ichor_AOextent(MaxnAtomsA,MaxnprimA,MaxnContA,ntypesA,exponents
     ENDDO
     IF (extent2.LT. 0E0_realk) THEN
      WRITE(*,*) 'Negative squared distance in build_ichor_AOextent',extent2
-     CALL LSQUIT('Negative squared distance in build_ichor_AOextent',-1)
+     CALL ICHORQUIT('Negative squared distance in build_ichor_AOextent',-1)
     ENDIF
     ExtentOfTypeA(itypeA) = sqrt(extent2)
    enddo

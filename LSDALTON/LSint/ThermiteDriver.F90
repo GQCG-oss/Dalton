@@ -23,8 +23,11 @@ MODULE integraldriver
   use Fundamental
   use OverlapType
   use thermite_distribute
+  use thermite_distribute2
+  use thermite_distributeGen
   use thermite_distributeDEC
   use thermite_distributeK
+  use thermite_distributeK2
   use math_fun
 SAVE
 TYPE LINKshell
@@ -614,7 +617,7 @@ REAL(REALK)          :: CPU1,CPU2,WALL1,WALL2
 
 Integer             :: JmaxA,JmaxB,JmaxP,JMAXAP,JMAXBP,JMAXTP,JMAXD,JMAXM,JMAXT
 Integer             :: ITEX,iPrimP,iAngmomP,nPrimP,proptype,ijkP,ijk1,ijk2,lmP
-integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX
+integer             :: nOperatorComp,J,nPrimPQ,jmaxPQ,I,U,V,tuv,T,IX,QnPasses
 integer             :: iprimA,iprimB,offsetTUV,offsetTUV2,iPassQ,offset
 REAL(REALK)         :: SAAB13,FAC,TEXPB1,FACB,TMPB
 REAL(REALK)         :: ORIGIN(3),Apreexpfac
@@ -678,6 +681,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
        ENDDO
     ENDIF
     IF(Input%addtointegral.AND.Q%orbital1%TYPE_Nucleus)THEN
+       QnPasses = Q%nPasses 
        ! We sum all the charges in Overlap PassQ (all same charge)
        call mem_alloc(ptemp,nPrimPQ*Integral%nTUV )
        Z = -Q%orbital1%CC(1)%p%elms(1) !Charge
@@ -693,7 +697,7 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
              iPassQ=1
              offsetTUV2=(I-1)*Q%nPasses + (TUV-1)*nPrimPQ
              INTEGRAL%Rtuv(I+offsetTUV)= ptemp(iPassQ + offsetTUV2) 
-             DO iPassQ=2,Q%nPasses
+             DO iPassQ=2,QnPasses
                 INTEGRAL%Rtuv(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)+ptemp(iPassQ + offsetTUV2) 
              ENDDO
           ENDDO
@@ -3057,88 +3061,87 @@ END SUBROUTINE Build_Integrand
 !> \param IUNIT the logical unit number for the output file
 SUBROUTINE SetIntegrand(rPQ,squaredDistance,exponents,&
      &                  reducedExponents,coulomb,nucpotRHS,nucpotLHS,integralPrefactor,npq,&
-     &                  pexps,qexps,pcent,qcent,np,nq,nprimQ,nPassQ,IUNIT)
+     &                  pexps,qexps,pcent,qcent,nPrimPassP,nPrimPassQ,nprimQ,nPassQ,IUNIT)
 implicit none
-integer     :: np,nq,npq,IUNIT,nprimQ,nPassQ
-!integer     :: iprimP(npq),iprimQ(npq)
-real(realk) :: rPQ(nq,np,3),squaredDistance(nQ,nP)
-real(realk) :: exponents(nPrimQ,nPassQ,nP),reducedExponents(nPrimQ,nPassQ,nP),integralPrefactor(nPrimQ,nPassQ,nP)
-real(realk) :: pexps(np),pcent(3,np)
-real(realk) :: qexps(nq),qcent(3,nq)
-real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz
-logical     :: nucpotRHS,nucpotLHS
+integer,intent(in)     :: nPrimPassP,nPrimPassQ,npq,IUNIT,nprimQ,nPassQ
+real(realk),intent(inout) :: rPQ(nPrimPassQ,nPrimPassP,3)
+real(realk),intent(inout) :: exponents(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(inout) :: squaredDistance(nPrimPassQ,nPrimPassP)
+real(realk),intent(inout) :: reducedExponents(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(inout) :: integralPrefactor(nPrimQ,nPassQ,nPrimPassP)
+real(realk),intent(in) :: pexps(nPrimPassP),pcent(3,nPrimPassP)
+real(realk),intent(in) :: qexps(nPrimPassQ),qcent(3,nPrimPassQ)
+logical,intent(in)     :: nucpotRHS,nucpotLHS,coulomb
 !
+real(realk) :: px,py,pz,qx,qy,qz,pqx,pqy,pqz
 integer :: ipq,ip,iq,idir,startq,ipassQ,tmpipq
 real(realk) :: pqdist(3),pqdist2,d2,p,q,p_q,pq_inv
 Real(realk), parameter :: PI=3.14159265358979323846E0_realk, Nill = 0.0E0_realk, OneHalf=1.5E0_realk
 Real(realk), parameter :: Two = 2.0E0_realk, TwoHalf=2.5E0_realk 
 Real(realk), parameter :: PIFAC = 34.986836655249725E0_realk !Two*PI**TwoHalf
 Real(realk), parameter :: TWOPI = 6.2831853071795862E0_realk 
-Real(realk) :: expoTMP(nPrimQ,np),expoTMP2(nPrimQ,np)
-Real(realk) :: invexponents(nPrimQ,np)
-Real(realk) :: sqrtexpoTMP(nPrimQ,np)
+! Too much stack memory usage
+!Real(realk) :: expoTMP(nPrimQ,np),expoTMP2(nPrimQ,np)
+!Real(realk) :: invexponents(nPrimQ,np)
+!Real(realk) :: sqrtexpoTMP(nPrimQ,np)
 !
-logical :: coulomb
 
 !Primitives ordered according to (Q,P)
 !exponents(nPrimQ,nPassQ,nP)
-DO ip=1, np
-   p  = pexps(ip)
-   DO iq=1, nPrimQ
-      expoTMP(iq,ip) = p + qexps(iq)
-      expoTMP2(iq,ip) = p * qexps(iq)
-   ENDDO
-ENDDO
-call ls_vdinv(np*nPrimQ,expoTMP,invexponents)
+
+!use rPQ and squaredDistance as temporary array
 IF (coulomb) THEN
-   call ls_vdsqrt(np*nPrimQ,expoTMP,sqrtexpoTMP)
+   !   exponents not needed for Coulomb
+   DO ip=1, nPrimPassP
+      p = pexps(ip)
+      DO iq=1, nPrimQ
+         rPQ(iq,ip,2) = p * qexps(iq)
+         rPQ(iq,ip,3) = 1.0E0_realk/(p + qexps(iq))
+         squaredDistance(iq,ip) = SQRT(p + qexps(iq))
+      ENDDO
+   ENDDO
+ELSE
+   DO ip=1, nPrimPassP
+      p = pexps(ip)
+      DO iq=1, nPrimQ
+         exponents(iq,1,ip) = p + qexps(iq)
+         rPQ(iq,ip,2) = p * qexps(iq)
+         rPQ(iq,ip,3) = 1.0E0_realk/(p + qexps(iq))
+      ENDDO
+   ENDDO
 ENDIF
+
 !WE BUILD THE PART WHICH IS THE SAME FOR ALL PASSES
-DO ip=1, np
+DO ip=1, nPrimPassp
+   p = pexps(ip)
    DO iq=1, nPrimQ
-      reducedExponents(iq,1,ip) = expoTMP2(iq,ip)*invexponents(iq,ip)
+      reducedExponents(iq,1,ip) = rPQ(iq,ip,2)*rPQ(iq,ip,3)
    ENDDO
 ENDDO
 IF (coulomb) THEN
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       DO iq=1, nPrimQ
-         integralPrefactor(iq,1,ip) = PIFAC/(expoTMP2(iq,ip)*sqrtexpoTMP(iq,ip))
+         integralPrefactor(iq,1,ip) = PIFAC/(rPQ(iq,ip,2)*squaredDistance(iq,ip))
       ENDDO
    ENDDO
-!   exponents not needed for Coulomb
 ELSEIF(nucpotRHS)THEN
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       p  = pexps(ip)
       DO iq=1, nPrimQ
          integralPrefactor(iq,1,ip) = TWOPI/p
       ENDDO
    ENDDO
 ELSEIF(nucpotLHS)THEN
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
    DO iq=1, nPrimQ
       q  = qexps(iq)
-      DO ip=1, np
+      DO ip=1, nPrimPassP
          integralPrefactor(iq,1,ip) = TWOPI/q
       ENDDO
    ENDDO
 ELSE
-   DO ip=1, np
+   DO ip=1, nPrimPassp
       DO iq=1, nPrimQ
-         exponents(iq,1,ip) = expoTMP(iq,ip)
-      ENDDO
-   ENDDO
-   DO ip=1, np
-      DO iq=1, nPrimQ
-         integralPrefactor(iq,1,ip) = (PI*invexponents(iq,ip))**(OneHalf)
+         integralPrefactor(iq,1,ip) = (PI*rPQ(iq,ip,3))**(OneHalf)
       ENDDO
    ENDDO
 ENDIF
@@ -3146,23 +3149,23 @@ ENDIF
 IF(npassQ.GT.1)then
    IF(.NOT.coulomb)THEN
       !not needed for coulomb
-      do ipassQ=2,npassQ
-         DO ip=1, np
+      DO ip=1, nPrimPassp
+         do ipassQ=2,npassQ
             DO iq=1, nPrimQ
-               exponents(iq,ipassQ,ip) = expoTMP(iq,ip)
+               exponents(iq,ipassQ,ip) = exponents(iq,1,ip)
             ENDDO
          ENDDO
       ENDDO
    ENDIF
-   do ipassQ=2,npassQ
-      DO ip=1, np
+   DO ip=1, nPrimPassp
+      do ipassQ=2,npassQ
          DO iq=1, nPrimQ
             reducedExponents(iq,ipassQ,ip) = reducedExponents(iq,1,ip) 
          ENDDO
       ENDDO
    enddo
-   do ipassQ=2,npassQ
-      DO ip=1, np
+   DO ip=1, nPrimPassp
+      do ipassQ=2,npassQ
          DO iq=1, nPrimQ
             integralPrefactor(iq,ipassQ,ip) = integralPrefactor(iq,1,ip)
          ENDDO
@@ -3171,11 +3174,11 @@ IF(npassQ.GT.1)then
 ENDIF
 !BUILD THE PART WHICH IS UNIQUE FOR EACH OVERLAP
 !ipq = 0
-DO ip=1, np
+DO ip=1, nPrimPassp
    px = pcent(1,ip)
    py = pcent(2,ip)
    pz = pcent(3,ip)
-   DO iq=1, nq
+   DO iq=1, nPrimPassq
       pqx = px - qcent(1,iq)
       pqy = py - qcent(2,iq)
       pqz = pz - qcent(3,iq)

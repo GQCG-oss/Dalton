@@ -11,7 +11,7 @@ module lsmpi_type
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &
        & MemModParamPrintMemory, Print_Memory_info, &
-       & MemModParamPrintMemorylupri
+       & MemModParamPrintMemorylupri, mem_allocated_global
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_module
@@ -199,13 +199,8 @@ module lsmpi_type
   integer,parameter     :: SPLIT_MPI_MSG      = 100000000
   !The recommended size of message chunks
   integer,parameter     :: SPLIT_MSG_REC      =  100000000
-  !split mpi one sided communication into 1GB msg, with CRAY workaround in 100MB
-  !chunks
-#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-  integer,parameter     :: MAX_SIZE_ONE_SIDED = 125000000
-#else
+  !split mpi one sided communication into 100MB chunks
   integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
-#endif
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
@@ -4564,6 +4559,7 @@ contains
       integer(kind=long) :: recvbuffer
       real(realk) :: recvbuffer_real
       integer(kind=long),pointer :: longintbufferInt(:) 
+      integer(KIND=long) :: MPImem_allocated_global
 #ifdef VAR_INT64
       integer, parameter :: i2l = 1
 #else
@@ -4622,6 +4618,7 @@ contains
          call mem_dealloc(longintbufferInt)
 
       ELSE          
+         MPImem_allocated_global = 0
          DO I=1,infpar%nodtot-1
             call init_globalmemvar !WARNING removes all mem info on master 
             call mem_alloc(longintbufferInt,longintbuffersize)
@@ -4632,7 +4629,11 @@ contains
             call mem_dealloc(longintbufferInt)
             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
             call stats_mpi_mem(lupri)
+            MPImem_allocated_global = MPImem_allocated_global + mem_allocated_global
+            call flush(lupri)
          ENDDO
+         WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+              &- Should be zero - otherwise a leakage is present")') MPImem_allocated_global
       ENDIF
 
 !!$!#ifdef VAR_LSDEBUG

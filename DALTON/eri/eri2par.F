@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
@@ -1093,10 +1092,12 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             CALL QMMMQRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMQRO_2_WORK) THEN
             CALL QMMMQRO_S2(WORK(1),MWORK,IPRINT)
+#ifdef MOD_UNRELEASED
          ELSE IF (IPRTYP.EQ.QMMMCRO_1_WORK) THEN
             CALL QMMMCRO_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMCRO_2_WORK) THEN
             CALL QMMMCRO_S2(WORK(1),MWORK,IPRINT)
+#endif
          ELSE IF (IPRTYP.EQ.QMMMFIRST_1_WORK) THEN
             CALL QMMMFIRST_S1(WORK(1),MWORK,IPRINT)
          ELSE IF (IPRTYP.EQ.QMMMFIRST_2_WORK) THEN
@@ -1148,7 +1149,11 @@ C added by Bin Gao, May 12, 2012
 #endif
 
          ELSE IF (IPRTYP.EQ.QMCMM_WORK) THEN
+#ifdef ENABLE_VPOTDAMP
             CALL vpotdamped_slave()
+#else
+            call quit('VPOTDAMP not compiled in this version')
+#endif
 
 #if defined(ENABLE_EFS)
          else if (IPRTYP.eq.efs_add_atomtype_work) then

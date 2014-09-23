@@ -43,7 +43,7 @@ module dec_typedef_module
   ! Parameters defining the fragment energies are given here.
 
   !> Number of different fragment energies
-  integer, parameter :: ndecenergies = 17
+  integer, parameter :: ndecenergies = 18
   !> Numbers for storing of fragment energies in the decfrag%energies array
   integer,parameter :: FRAGMODEL_LAGMP2   = 1   ! MP2 Lagrangian partitioning scheme
   integer,parameter :: FRAGMODEL_OCCMP2   = 2   ! MP2 occupied partitioning scheme
@@ -54,7 +54,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCCC2   = 7   ! CC2 occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTCC2  = 8   ! CC2 virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCCCSD  = 9   ! CCSD occupied partitioning scheme
-  integer,parameter :: FRAGMODEL_VIRTCCSD = 10   ! CCSD virtual partitioning scheme
+  integer,parameter :: FRAGMODEL_VIRTCCSD = 10  ! CCSD virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT    = 11  ! (T) contribution, occupied partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT   = 12  ! (T) contribution, virtual partitioning scheme
   integer,parameter :: FRAGMODEL_OCCpT4   = 13  ! Fourth order (T) contribution, occ partitioning scheme
@@ -62,7 +62,7 @@ module dec_typedef_module
   integer,parameter :: FRAGMODEL_OCCpT5   = 15  ! Fifth order (T) contribution, occ partitioning scheme
   integer,parameter :: FRAGMODEL_VIRTpT5  = 16  ! Fifth order (T) contribution, virt partitioning scheme
   integer,parameter :: FRAGMODEL_MP2f12   = 17  ! MP2-F12 energy correction
-
+  integer,parameter :: FRAGMODEL_CCSDf12  = 18  ! CCSD-F12 energy correction
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -88,6 +88,8 @@ module dec_typedef_module
      logical :: frozencore
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
+     !> Print fragment energies for full molecular cc
+     logical :: print_frags
      !> Enforce canonical orbitals in calculation 
      logical :: use_canonical
      !> Simulate full molecular calculation in DEC mode  (debug)
@@ -104,6 +106,9 @@ module dec_typedef_module
      logical :: use_singles
      !> is the density and other matrices in the grand-canonical basis?
      logical :: gcbasis
+     !> DEC-CC orbital-based (DECCO)
+     logical :: DECCO
+
 
 
      !> Restart options
@@ -335,15 +340,23 @@ module dec_typedef_module
      !> Max accepted FOT level
      integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
-     integer :: FragmentExpansionScheme
+     integer :: Frag_Exp_Scheme
+     !> Which Fragment Reduction Scheme should be used
+     integer :: Frag_Red_Scheme
+     !> Number of atoms to include in initial fragment
+     integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
-     integer :: FragmentExpansionSize
+     integer :: Frag_Exp_Size
+     real(realk) :: Frag_red_occ_thr
+     real(realk) :: Frag_red_virt_thr
      !> Use RI for Fragment Expansion 
      logical :: FragmentExpansionRI
      !> Model to use for fragment expansion
      integer :: fragopt_exp_model
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
+     !> Temporary keyword to use clean version of the frag opt
+     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
@@ -382,6 +395,8 @@ module dec_typedef_module
      logical :: PairEstimateIgnore
      !> initiation radius of the estimated fragments
      real(realk) :: EstimateINITradius
+     !> number of average atoms that will be included in the estimated fragments
+     integer :: EstimateInitAtom
      ! --
 
 
@@ -543,6 +558,9 @@ module dec_typedef_module
      integer :: nCabsAO
      !> Number of cabs MO orbitals
      integer :: nCabsMO
+     !> Number of possible fragments
+     integer :: nfrags
+     
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()

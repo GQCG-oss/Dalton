@@ -38,6 +38,7 @@ add_definitions(-DBINARY_INFO_AVAILABLE)
 if(cmake_build_type_tolower STREQUAL "debug")
     add_definitions(-DVAR_LSDEBUGINT)
     add_definitions(-DVAR_LSDEBUG)
+    add_definitions(-DVAR_DEBUGICHOR)
 endif()
 
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
@@ -82,4 +83,16 @@ endif()
 
 if(ENABLE_ICHOR)
     add_definitions(-DVAR_ICHOR)
+endif()
+
+if(ENABLE_QMATRIX)
+    add_definitions(-DENABLE_QMATRIX)
+endif()
+
+if(ENABLE_OPENRSP)
+    add_definitions(-DENABLE_OPENRSP)
+endif()
+
+if(ENABLE_TDRSP)
+    add_definitions(-DENABLE_TDRSP)
 endif()

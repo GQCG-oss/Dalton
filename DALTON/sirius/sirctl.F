@@ -1,10 +1,10 @@
 !
-!...   Copyright (c) 2013 by the authors of Dalton (see below).
+!...   Copyright (c) 2014 by the authors of Dalton (see below).
 !...   All Rights Reserved.
 !...
 !...   The source code in this file is part of
 !...   "Dalton, a molecular electronic structure program,
-!...    Release DALTON2013 (2013), see http://daltonprogram.org"
+!...    Release DALTON2014 (2014), see http://daltonprogram.org"
 !...
 !...   This source code is provided under a written licence and may be
 !...   used, copied, transmitted, or stored only in accord with that
@@ -21,7 +21,6 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
 C
 C  /* Deck sirctl */
       SUBROUTINE SIRCTL(ICONV,WORK,LWORK)
@@ -166,8 +165,6 @@ C     Do some solvent initializations
 C
 Cbm initialized PCMSV
       PCMSV   = PCM
-c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
-c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
       IF (PCM) THEN
          CALL PCMSOLVNT(WORK,LWORK)
       END IF
@@ -178,12 +175,14 @@ C        *** set RHF parameters for RHF and MP2 ***
 C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
-         IF (DOMP2) THEN
+         IF (DOMP2 ) THEN
             FLAG(25) = .TRUE. ! SIRIFC from RHF needed for MP2 if embedding
          END IF
-C        ... do not write interface file if RHF or MP2 not final calc.
-C        ... no solvent if RHF followed by MP2 and CI or MC
-C            because solvent not implemented in MP2
+         IF (DOCINO .OR. DOCI .OR. DOMC .OR. DOLUCITA) THEN
+C        ... no continuum models if RHF followed by MP2 and CI or MC
+            FLAG(16) = .FALSE.
+            PCM = .FALSE.
+         END IF
 C
 C
 C        Define closed shell RHF wave function
@@ -443,7 +442,7 @@ C        *** MP2 ***
 C
       IF (DOMP2) THEN
          IF (DOCINO .OR. DOCI .OR. DOMC .OR. DOLUCITA) THEN
-            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if MP2 followed by MC or CI
          END IF
          IF (DFT_SPINDNS .OR. DFT_LOCALSPIN) THEN
             WRITE(LUPRI,'(//A)') 'WARNING - DFT spin density is not '//
@@ -649,8 +648,6 @@ C Recover MCSCF flags and settings
             FLAG(IFLAG) = FLAGSV(IFLAG)
     3    CONTINUE
          PCM    = PCMSV
-Cbm
-c        WRITE(LUPRI,*)'rimetto PCM = PCMSV',PCM
          MCTYPE = MCTPSV
 C
          FLAG( 2) = .TRUE.

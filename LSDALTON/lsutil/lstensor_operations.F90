@@ -401,7 +401,7 @@ CONTAINS
           WRITE(lupri,'(A)') ' The LSAOTENSOR structure'
           WRITE(lupri,'(A16,I8)')' nelms ' ,LSAOTENSORitem%nelms
           IF(ASSOCIATED(LSAOTENSORitem%elms))THEN
-             call output(LSAOTENSORitem%elms,1,LSAOTENSORitem%nLocal(1),1,LSAOTENSORitem%nLocal(2),&
+             call ls_output(LSAOTENSORitem%elms,1,LSAOTENSORitem%nLocal(1),1,LSAOTENSORitem%nLocal(2),&
                   & LSAOTENSORitem%nLocal(1),LSAOTENSORitem%nLocal(2),1,lupri)
           ELSE
              WRITE(lupri,'(A16,A)')' elms ' , ' NOT ASSOCIATED ' 
@@ -592,7 +592,7 @@ CONTAINS
        n1 = size(LSTENSORitem%MBIE,2)
        n2 = size(LSTENSORitem%MBIE,3)
        DO I=1,LSTENSORitem%nMBIE
-          call output(LSTENSORitem%MBIE(I,:,:),1,n1,1,n2,n1,n2,1,lupri)
+          call ls_output(LSTENSORitem%MBIE(I,:,:),1,n1,1,n2,n1,n2,1,lupri)
        ENDDO
     ELSE
        WRITE(lupri,'(A16,A)')' MBIE ' , ' NOT ASSOCIATED ' 
@@ -1960,7 +1960,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !       Print*,'I am ',infpar%mynum,' should I send to ',Iproc,'?',CommunicationNodesGlobalSend(iproc)
 !       IF(CommunicationNodesGlobalSend(iproc))THEN
 !          Print*,'I am ',infpar%mynum,' and I send this block to ',Iproc
-!          CALL output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
+!          CALL ls_output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
 !       ENDIF
 !    enddo
 
@@ -2050,7 +2050,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !          Print*,'I am ',infpar%mynum,'did I recieved from ',Iproc,'?',CommunicationNodesGlobalRecv(iproc)
 !          IF(CommunicationNodesGlobalRecv(iproc))THEN
 !             Print*,'I am ',infpar%mynum,'and I recieved this block from ',Iproc,'size',nsizeRecv(iProc)
-!             CALL output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
+!             CALL ls_output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
 !          ENDIF
 !       enddo
 !    ENDIF
@@ -2334,7 +2334,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !       Print*,'BUILDSCALAPACK: I am ',infpar%mynum,' should I send to ',Iproc,'CommNodes',CommunicationNodesGlobalSend(iproc)
 !       IF(CommunicationNodesGlobalSend(iproc))THEN
 !          Print*,'BUILDSCALAPACK: I am ',infpar%mynum,'and I will send this block to ',Iproc
-!          CALL output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
+!          CALL ls_output(ASendbuffer(Iproc)%elms,1,nsizesend(iProc),1,1,nsizesend(iProc),1,1,6)
 !       ENDIF
 !    enddo
 !    ENDIF
@@ -2431,7 +2431,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
 !          print*,'RECV:',CommunicationNodesGlobalRecv(iproc),'mynum',infpar%mynum
 !          IF(CommunicationNodesGlobalRecv(iproc))THEN
 !             Print*,'BUILDSCALAPACK: I am ',infpar%mynum,' and I recieved this block from ',Iproc
-!             CALL output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
+!             CALL ls_output(ARecvbuffer(Iproc)%elms,1,nsizeRecv(iProc),1,1,nsizeRecv(iProc),1,1,6)
 !          ENDIF
 !       enddo
 !    ENDIF
@@ -5069,13 +5069,13 @@ case(mtype_scalapack)
       do I=1,TENSOR%ndim5
          call mat_set_from_full(fullmat(:,1,:,1,I),1E0_realk, MAT(I))
       enddo
-!      call output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(3),TENSOR%nbast(1),TENSOR%nbast(3),1,lupri)
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(3),TENSOR%nbast(1),TENSOR%nbast(3),1,lupri)
    ENDIF
    IF(TENSOR%nbast(3) .EQ. 1) THEN
       do I=1,TENSOR%ndim5
          call mat_set_from_full(fullmat(:,:,1,1,I),1E0_realk, MAT(I))
       enddo
-!      call output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
+!      call ls_output(fullmat,1,TENSOR%nbast(1),1,TENSOR%nbast(2),TENSOR%nbast(1),TENSOR%nbast(2),1,lupri)
    ENDIF
    call mem_dealloc(fullMAT)
 case(mtype_unres_dense)

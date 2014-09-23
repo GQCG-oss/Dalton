@@ -788,34 +788,44 @@ end function max_batch_dimension
     ENDIF
   end subroutine GetSubSystemIndex
 
-  !> \brief Get a table with interatomic distances
-  subroutine GetDistances(DistanceTable,nAtoms,mylsitem,int_output)
+  !> \brief Get a table with interatomic distances (or interorbital for DECCO)
+  subroutine GetDistances(MyMolecule,mylsitem,int_output)
 
     implicit none
+    type(fullmolecule),intent(in) :: MyMolecule
     type(lsitem), intent(inout) :: mylsitem
-    integer, intent(in) :: nAtoms,int_output
-    real(realk), dimension(nAtoms,nAtoms), intent(inout) :: DistanceTable
+    integer, intent(in) :: int_output
     real(realk), pointer :: geometry(:,:)
     real(realk) :: dist
     integer :: i,j,k
 
-    DistanceTable=0.0E0_realk
+    MyMolecule%DistanceTable=0.0E0_realk
 
     ! get geometry
-    call mem_alloc(geometry,nAtoms,3)
+    call mem_alloc(geometry,MyMolecule%nfrags,3)
     geometry=0.0E0_realk
-    call get_geometry(int_output,0,mylsitem%input%molecule,nAtoms,geometry(:,1), &
-         geometry(:,2),geometry(:,3))
+    if(DECinfo%DECCO) then
+       ! Geometry corresponds to center of charge for occupied MOs.
+       do j=1,MyMolecule%nfrags
+          do i=1,3
+             geometry(j,i) = MyMolecule%carmomocc(i,j)
+          end do
+       end do
+    else
+       ! Atombased DEC (nfrags=natoms)
+       call get_geometry(int_output,0,mylsitem%input%molecule,MyMolecule%nfrags,geometry(:,1), &
+            geometry(:,2),geometry(:,3))
+    end if
 
-    do i=1,nAtoms
+    do i=1,MyMolecule%nfrags
        do j=1,i
           dist=0.0E0_realk
           do k=1,3
              dist=dist+(geometry(i,k)-geometry(j,k))**2
           end do
           dist=sqrt(dist)
-          DistanceTable(i,j)=dist
-          DistanceTable(j,i)=dist
+          MyMolecule%DistanceTable(i,j)=dist
+          MyMolecule%DistanceTable(j,i)=dist
        end do
     end do
 
@@ -1227,7 +1237,8 @@ end function max_batch_dimension
     integer, intent(in) :: dim2
     !> Output matrix
     real(realk), intent(inout), dimension(dim1,dim2) :: mat
-    real(realk), dimension(dim1,dim2) :: tmp
+    !real(realk), dimension(dim1,dim2) :: tmp
+    real(realk),pointer :: tmp(:,:)
     logical :: file_exist
     integer :: funit, i,j
     integer(kind=8) :: i64,j64
@@ -1237,6 +1248,7 @@ end function max_batch_dimension
     file_exist=.false.
     inquire(file=filename,exist=file_exist)
     if(file_exist) then
+      call mem_alloc(tmp,dim1,dim2)
 
        funit=-1
        call lsopen(funit,filename,'OLD','UNFORMATTED')
@@ -1275,6 +1287,7 @@ end function max_batch_dimension
        write(DECinfo%output,*) 'File does not exist: ', filename
        call lsquit('dec_read_mat_from_file: File does not exist',DECinfo%output)
     end if
+    call mem_dealloc(tmp)
 
   end subroutine dec_read_mat_from_file
 
@@ -2710,11 +2723,35 @@ end function max_batch_dimension
     type(lsitem), intent(inout) :: MyLsitem
     !> HF Density matrix
     type(matrix),intent(in) :: D
-    type(matrix) :: F
+    type(matrix) :: F,h
+    real(realk)  :: exchangeFactor
 
     ! Init Fock matrix in matrix form
     call mat_init(F,MyMolecule%nbasis,MyMolecule%nbasis)
-    call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
+
+    if(DECinfo%DFTreference) then
+      !Needs the fock matrix from the KS density
+      exchangeFactor = mylsitem%SETTING%SCHEME%exchangeFactor
+      mylsitem%SETTING%SCHEME%exchangeFactor=1.0_realk
+      !This was from the beginning set to zero, has
+      !to be 1.0 for evaluation of exact exchange.
+
+      call mat_init(h,MyMolecule%nbasis,MyMolecule%nbasis)
+      call mat_zero(h)
+      call mat_zero(F)
+
+      call II_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+      call II_get_coulomb_and_exchange_mat(DECinfo%output, &
+        & DECinfo%output,mylsitem%setting,D,F,1)
+      !adds one-particle part
+      call mat_daxpy(1.0_realk,h,F)
+      !reset exchangeFactor for future use
+      mylsitem%SETTING%SCHEME%exchangeFactor=exchangeFactor 
+
+      call mat_free(h)
+    else
+      call mat_set_from_full(MyMolecule%fock, 1E0_realk, F)
+    endif
 
     ! Get HF energy
     Ehf = get_HF_energy(D,F,Mylsitem) 
@@ -4122,6 +4159,9 @@ end function max_batch_dimension
        IF(.NOT.DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        ENDIF
+       IF(DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'G: DFT energy :', Ehf
+       ENDIF
        write(lupri,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
@@ -4139,6 +4179,12 @@ end function max_batch_dimension
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_RPA) then
+         if(.not. DECinfo%SOS) then
+           write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
+         else
+           write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy:', Ehf+Ecorr
+         endif
        end if
     else
        IF(DECinfo%InteractionEnergy)THEN
@@ -4153,6 +4199,9 @@ end function max_batch_dimension
           IF(.NOT.DECinfo%DFTreference)THEN
              write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
           ENDIF
+       IF(DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'E: DFT energy :', Ehf
+       ENDIF
           write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
           ! skip error print for full calculation (0 by definition)
           if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
@@ -4171,9 +4220,19 @@ end function max_batch_dimension
           elseif(DECinfo%ccmodel==MODEL_CC2) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
           elseif(DECinfo%ccmodel==MODEL_CCSD) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+             if (DECinfo%F12) then
+                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+             else          
+                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+             endif
           elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+          elseif(DECinfo%ccmodel==MODEL_RPA) then
+             if(.not. DECinfo%SOS) then
+               write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy:', Ehf+Ecorr
+             else
+               write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy:', Ehf+Ecorr
+             endif
           end if
        ENDIF
     end if
@@ -4527,46 +4586,59 @@ end function max_batch_dimension
     ! MODIFY FOR NEW CORRECTION
     if(DECInfo%F12) then
 
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-            & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+       select case(DECinfo%ccmodel)
+       case(MODEL_MP2)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-            & DistanceTable, 'MP2f12 occupied pair energies','PF_MP2f12_OCC')
-       
+       case(MODEL_CCSD)
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & 'MP2F12 occupied single energies','AF_CCSDf12_OCC')
+          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+               & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
+       end select
+
+
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a)') '**********************************************************'
-       write(DECinfo%output,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
+       write(DECinfo%output,'(1X,a)') '*                  DEC ENERGY SUMMARY                    *'
        write(DECinfo%output,'(1X,a)') '**********************************************************'
 
-       if(DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_VIRTMP2)  
-       else
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
-       endif
-       write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
-       if(DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-               & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-       else
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
+       select case(DECinfo%ccmodel)
+       case(MODEL_MP2)
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:     ', energies(FRAGMODEL_OCCMP2)  
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_MP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY:   ', &
                & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-       endif
-       write(DECinfo%output,*)       
+          write(DECinfo%output,*)       
 
-       if(DECinfo%F12debug) then
-          write(*,'(1X,a)') '**********************************************************'
-          write(*,'(1X,a)') '*               DEC-MP2_F12 ENERGY SUMMARY               *'
-          write(*,'(1X,a)') '**********************************************************'
-          write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_OCCMP2)  
-          write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO ENERGY :   ', energies(FRAGMODEL_MP2f12)
-          if(DECinfo%onlyvirtpart) then  
-             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-                  & energies(FRAGMODEL_VIRTMP2) + energies(FRAGMODEL_MP2f12)
-          else
-             write(*,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY : ', &
-                  & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
-          endif
-       endif
+       case(MODEL_CCSD)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY: ', energies(FRAGMODEL_OCCCCSD)
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD ENERGY: ', energies(FRAGMODEL_MP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:    ', &
+               & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
+       end select
+
+!!$       if(DECinfo%F12debug) then
+!!$          write(*,'(1X,a)') '**********************************************************'
+!!$          write(*,'(1X,a)') '*                   DEC-F12 ENERGY SUMMARY               *'
+!!$          write(*,'(1X,a)') '**********************************************************'
+!!$        
+!!$          select case(DECinfo%ccmodel)
+!!$          case(MODEL_MP2)
+!!$             write(*,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:         ', energies(FRAGMODEL_OCCMP2)  
+!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2  ENERGY:    ', energies(FRAGMODEL_MP2f12)
+!!$          case(MODEL_CCSD)
+!!$             write(*,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:        ', energies(FRAGMODEL_OCCCCSD)
+!!$             write(*,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD  ENERGY:   ', energies(FRAGMODEL_MP2f12)
+!!$
+!!$             write(*,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:      ', &
+!!$                  & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
+!!$          end select
+!!$       endif
+       
     endif
 #endif
 
@@ -4660,7 +4732,7 @@ end function max_batch_dimension
     write(DECinfo%output,*) trim(headline)
     write(DECinfo%output,*) '================================================================='
     write(DECinfo%output,*)
-    write(DECinfo%output,'(2X,a)') 'Atom1  Atom2     Dist(Ang)        Energy'
+    write(DECinfo%output,'(2X,a)') 'Frag1  Frag2     Dist(Ang)        Energy'
     thr=1.0E-15_realk
     do i=1,natoms
        do j=i+1,natoms
@@ -5324,6 +5396,28 @@ end function max_batch_dimension
 
 
  end subroutine secondary_assigning
+
+
+
+ !> For two sets of points in space, make table with distances between the points of the two sets
+ subroutine general_distance_table(n1,n2,list1,list2,DistanceTable)
+   implicit none
+   !> Dimensions of the two lists
+   integer,intent(in) :: n1,n2
+   !> The two lists, e.g. list1(i,j) is the x (i=1), y (i=2), or z (i=3) coordinate
+   !> of the jth point in list1.
+   real(realk),intent(in) :: list1(3,n1), list2(3,n2)
+   !> Distance table described above
+   real(realk),intent(inout) :: DistanceTable(n1,n2)
+   integer :: i,j
+
+   do j=1,n2
+      do i=1,n1
+           DistanceTable(i,j) = get_distance_between_two_points( list1(1:3,i) , list2(1:3,j) )
+      end do
+   end do
+   
+ end subroutine general_distance_table
 
 
 

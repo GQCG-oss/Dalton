@@ -61,13 +61,13 @@ SUBROUTINE wtuvRecurrence(WTUV,WJ000,sharedTUV,Rpq,jmin,jmax,&
   Real(realk),intent(inout)    :: WTUV(nPrim,ntuv)
   !
   !INTEGER,PARAMETER :: MAXJ = 50
-  Real(realk) :: Xtemp,Ytemp,Ztemp,WTUV2(nPrim,ntuv)
+  Real(realk) :: Xtemp,Ytemp,Ztemp
   Integer     :: n,j,t,u,v,ntuvfull,ituv,dir
   Real(realk),pointer :: CUR(:,:),OLD(:,:),TEMP(:,:)
   Real(realk) :: W100,W010,W001,W200,W110,W101,W020,W011,W002,WJ,WJ1,WJ2,WJ3
   integer :: tm1,um1,vm1,tm2,um2,vm2,m1,ituvm,ituvm2,ioffp
   integer :: idp1,idir,k
-  IF(jmin.EQ.0.AND.jmax.LT.9)then
+  IF(jmin.EQ.0.AND.jmax.LT.4)then
      IF (jmax.EQ. 0) THEN
         call wtuvRecurrenceJMIN0JMAX0(WTUV,WJ000,nPrim)
      ELSEIF (jmax.EQ. 1) THEN
@@ -76,16 +76,16 @@ SUBROUTINE wtuvRecurrence(WTUV,WJ000,sharedTUV,Rpq,jmin,jmax,&
         call wtuvRecurrenceJMIN0JMAX2(WTUV,WJ000,Rpq,nPrim)
      ELSEIF (jmax.EQ. 3) THEN
         call wtuvRecurrenceJMIN0JMAX3(WTUV,WJ000,Rpq,nPrim)
-     ELSEIF (jmax.EQ. 4) THEN
-        call wtuvRecurrenceJMIN0JMAX4(WTUV,WJ000,Rpq,nPrim)
-     ELSEIF (jmax.EQ. 5) THEN
-        call wtuvRecurrenceJMIN0JMAX5(WTUV,WJ000,Rpq,nPrim)
-     ELSEIF (jmax.EQ. 6) THEN
-        call wtuvRecurrenceJMIN0JMAX6(WTUV,WJ000,Rpq,nPrim)
-     ELSEIF (jmax.EQ. 7) THEN
-        call wtuvRecurrenceJMIN0JMAX7(WTUV,WJ000,Rpq,nPrim)
-     ELSEIF (jmax.EQ. 8) THEN
-        call wtuvRecurrenceJMIN0JMAX8(WTUV,WJ000,Rpq,nPrim)         
+!     ELSEIF (jmax.EQ. 4) THEN
+!        call wtuvRecurrenceJMIN0JMAX4(WTUV,WJ000,Rpq,nPrim)
+!     ELSEIF (jmax.EQ. 5) THEN
+!        call wtuvRecurrenceJMIN0JMAX5(WTUV,WJ000,Rpq,nPrim)
+!     ELSEIF (jmax.EQ. 6) THEN
+!        call wtuvRecurrenceJMIN0JMAX6(WTUV,WJ000,Rpq,nPrim)
+!     ELSEIF (jmax.EQ. 7) THEN
+!        call wtuvRecurrenceJMIN0JMAX7(WTUV,WJ000,Rpq,nPrim)
+!     ELSEIF (jmax.EQ. 8) THEN
+!        call wtuvRecurrenceJMIN0JMAX8(WTUV,WJ000,Rpq,nPrim)         
      ENDIF
   ELSE
      IF (jmax.EQ. 0) THEN
@@ -1855,7 +1855,7 @@ SUBROUTINE buildRJ000_OP_HA(RJ000,nPrim,Jmax,LUPRI,IPRINT,alpha,R2,Prefactor,TAB
  REAL(REALK),intent(in)     :: alpha(nPrim),R2(nprim),Prefactor(nprim)
  REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)
 !
- INTEGER         :: I,I2
+ INTEGER         :: I
  REAL(REALK)     :: D2JP36,WVAL!,WVALS(Nprim,3),WVALU(Nprim)
  REAL(REALK),PARAMETER :: HALF =0.5E0_realk,D1=1E0_realk,D2 = 2E0_realk, D4 = 4E0_realk, D10=10E0_realk,D100=100E0_realk
  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
@@ -1874,51 +1874,13 @@ SUBROUTINE buildRJ000_OP_HA(RJ000,nPrim,Jmax,LUPRI,IPRINT,alpha,R2,Prefactor,TAB
  Real(realk) :: W2,W3,R!W4,W5,W6,
 ! LOGICAL :: maxJgt0
  REAL(REALK), PARAMETER :: SMALL = 1E-15_realk!0.000001E0_realk
- integer :: NVAL1(Nprim),NVAL2(Nprim),NVAL3(Nprim),NVAL4(Nprim),N1,N2,N3,N4
- real(realk) :: WVAL2(Nprim),WVAL3(Nprim),WVAL4(Nprim)
- N1 = 0
- N2 = 0
- N3 = 0
- N4 = 0
  D2JP36 = 2*JMAX + 36
  DO I = 1, Nprim
     WVAL = alpha(I)*R2(I)
-    !  0 < WVAL < 0.000001
-    IF (ABS(WVAL) .LT. SMALL) THEN         
-       N1 = N1 + 1
-       NVAL1(N1) = I
     !  0 < WVAL < 12 
-    ELSE IF (WVAL .LT. D12) THEN
-       N2 = N2 + 1
-       NVAL2(N2) = I
-       WVAL2(N2) = WVAL
-    !  12 < WVAL <= (2J+36) 
-    ELSE IF (WVAL.LE.D2JP36) THEN
-       N3 = N3 + 1
-       NVAL3(N3) = I
-       WVAL3(N3) = WVAL
-       !  (2J+36) < WVAL 
-    ELSE
-       N4 = N4 + 1
-       NVAL4(N4) = I
-       WVAL4(N4) = WVAL
-    ENDIF
- ENDDO
-
- IF(N1.GT.0)THEN
-    DO I = 1, N1
-       I2 = NVAL1(I)
-       RJ000(0,I2) = D1
-       DO J=1,JMAX
-          RJ000(J,I2)= D1/(2*J + 1) !THE BOYS FUNCTION FOR ZERO ARGUMENT
-       ENDDO
-    ENDDO
- ENDIF
- IF(N2.GT.0)THEN
-    DO I = 1, N2
-       I2 = NVAL2(I)
-       IPNT = NINT(D100*WVAL2(I))
-       WDIFF = WVAL2(I) - TENTH*IPNT
+    IF (WVAL .LT. D12) THEN
+       IPNT = NINT(D100*WVAL)
+       WDIFF = WVAL - TENTH*IPNT
        W2    = WDIFF*WDIFF
        W3    = W2*WDIFF
        !    W4    = W3*WDIFF
@@ -1937,36 +1899,27 @@ SUBROUTINE buildRJ000_OP_HA(RJ000,nPrim,Jmax,LUPRI,IPRINT,alpha,R2,Prefactor,TAB
           !    R = R + TABFJW(J+4,IPNT)*W4
           !    R = R + TABFJW(J+5,IPNT)*W5
           !    R = R + TABFJW(J+6,IPNT)*W6
-          RJ000(J,I2) = R
-       ENDDO
-    ENDDO
- ENDIF
- IF (N3.GT.0) THEN
-    CALL ls_vdinv2(N3,WVAL3,WVAL2) !use WVAL2 as temp array to store D1/WVAL3
-    DO I = 1, N3
-       I2 = NVAL3(I)
-       REXPW = HALF*EXP(-WVAL3(I))
-       RWVAL = WVAL2(I)!D1/WVAL3(I)
+          RJ000(J,I) = R
+       ENDDO       
+    !  12 < WVAL <= (2J+36) 
+    ELSE IF (WVAL.LE.D2JP36) THEN
+       REXPW = HALF*EXP(-WVAL)
+       RWVAL = D1/WVAL
        GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))
-       RJ000(0,I2) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
+       RJ000(0,I) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL
        DO J=1,JMAX
-          RJ000(J,I2) = RWVAL*((J - HALF)*RJ000(J-1,I2)-REXPW)
+          RJ000(J,I) = RWVAL*((J - HALF)*RJ000(J-1,I)-REXPW)
        ENDDO
-    ENDDO
- ENDIF
- IF(N4.GT.0)THEN
-    CALL ls_vdinv2(N4,WVAL4,WVAL2) !use WVAL2 as temp array to store D1/WVAL3
-    DO I = 1, N4
-       I2 = NVAL4(I)
-       RWVAL = PID4*WVAL2(I) !PID4/WVAL4(I)
-       RJ000(0,I2) = SQRT(RWVAL)
-!       RWVAL = RWVAL*PID4I = WVAL2(I)
-       RWVAL = WVAL2(I)
+       !  (2J+36) < WVAL 
+    ELSE
+       RWVAL = PID4/WVAL
+       RJ000(0,I) = SQRT(RWVAL)
+       RWVAL = RWVAL*PID4I
        DO J = 1, JMAX
-          RJ000(J,I2) = RWVAL*(J - HALF)*RJ000(J-1,I2)
+          RJ000(J,I) = RWVAL*(J - HALF)*RJ000(J-1,I)
        ENDDO
-    ENDDO
- END IF
+    ENDIF
+ ENDDO
 
  ! Scaling
  DO I=1,nPrim
@@ -1979,24 +1932,7 @@ SUBROUTINE buildRJ000_OP_HA(RJ000,nPrim,Jmax,LUPRI,IPRINT,alpha,R2,Prefactor,TAB
           RJ000(J,I) = PREF*RJ000(J,I)
        ENDDO
     ENDIF
- ENDDO
- CONTAINS
-   subroutine ls_vdinv2(N,A,invA)
-     implicit none
-     integer,intent(in) :: N
-     real(realk),intent(in) :: A(N)
-     real(realk),intent(inout) :: invA(N)
-     !
-!#ifdef VAR_MKL
-!     call vdinv(N,A,invA)
-!#else
-     integer :: i
-     DO i=1, N
-        invA(i) = 1.0E0_realk/A(i)
-     ENDDO
-!#endif
-   end subroutine ls_vdinv2
-   
+ ENDDO   
 END SUBROUTINE buildRJ000_OP_HA
 
 !> \brief tabulation of the boys function or incomplete gamma function \f$ F_{n} \f$
@@ -2879,7 +2815,7 @@ SUBROUTINE printHermitePQ(tuvTUV,nPrim,startP,endP,startQ,endQ,&
                    WRITE(LUPRI,'(5X,A,I1,A,I1,A,I1,A,I1,A,I1,A,I1,A)') &
                         &            'W(',tP,',',uP,',',vP,'|',tQ,',',uQ,',',vQ,') ='
 
-                   WRITE(LUPRI,'(5X,6ES10.4/,(5X,6ES10.4))') &
+                   WRITE(LUPRI,'(5X,6ES12.4/,(5X,6ES12.4))') &
                         &           (tuvTUV(ituvQ,ituvP,iPrimPQ),iPrimPQ=1,nPrim)
                 ENDDO
              ENDDO
@@ -2970,7 +2906,7 @@ SUBROUTINE PrintTuvQ_old(TUVQ,nTUVP,nPrimP,nCompQ,nContQ,LUPRI,IPRINT)
        DO iCompQ=1,nCompQ
           DO iTUVP=1,nTUVP
              WRITE(LUPRI,'(5X,A,I3,A,I3,A,I3)') 'iTUVP =',iTUVP,' iCompQ =',iCompQ,' iContQ =',iContQ
-             WRITE(LUPRI,'(5X,5ES10.4)')  (TUVQ(iPrimP,iTUVP,iCompQ,iContQ), iPrimP=1,nPrimP)
+             WRITE(LUPRI,'(5X,5ES12.4)')  (TUVQ(iPrimP,iTUVP,iCompQ,iContQ), iPrimP=1,nPrimP)
           ENDDO
        ENDDO
     ENDDO

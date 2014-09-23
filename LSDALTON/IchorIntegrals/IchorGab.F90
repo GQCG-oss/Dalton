@@ -198,7 +198,7 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
      nOrbCompB = (AngmomB+1)*(AngmomB+2)/2
   ENDIF
   nAtomsB = nAtomsOfTypeB(ItypeB) 
-  IF(nAtomsB.EQ.0)CALL LSQUIT('Gab cyle atomB',-1)!CYCLE
+  IF(nAtomsB.EQ.0)CALL ICHORQUIT('Gab cyle atomB',-1)!CYCLE
   iBatchIndexOfTypeB = BatchIndexOfTypeB(ItypeB)
   nOrbB = nContB*nOrbCompB
   nDimB = nOrbB*nAtomsB
@@ -230,7 +230,7 @@ DO IAngmomTypes = 0,MaxTotalAngmomAB
        nOrbCompA = (AngmomA+1)*(AngmomA+2)/2
     ENDIF
     nAtomsA = nAtomsOfTypeA(ItypeA)
-    IF(nAtomsA.EQ.0)CALL LSQUIT('Gab cyle atomA',-1)!CYCLE
+    IF(nAtomsA.EQ.0)CALL ICHORQUIT('Gab cyle atomA',-1)!CYCLE
     iBatchIndexOfTypeA = BatchIndexOfTypeA(ItypeA)
     nOrbA = nContA*nOrbCompA
     nDimA = nContA*nOrbCompA*nAtomsA
@@ -328,12 +328,12 @@ ENDDO
 !symmetrize BATCHGAB!
 !output requires to zero first otherwise a floating invalid
 !WRITE(lupri,*)'The BatchGab NON SYMM'
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
 
 IF(SameLHSaos)THEN
    call AddUpperTriAngular(OutputStorage,OutputDim1,lupri)
 !   print*,'SameLHSaos GAB OutputStorage'
-!   call output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
+!   call ls_output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
 ENDIF
 
 call mem_ichor_dealloc(TABFJW)
@@ -348,8 +348,8 @@ call mem_ichor_dealloc(OrderdListB)
 deallocate(OrderdListB)
 
 !WRITE(lupri,*)'The BatchGab'
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
-!call output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,6)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!call ls_output(OutputStorage,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,6)
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
 IF(INTPRINT.GT.3)THEN
    call stats_ichor_mem(lupri)

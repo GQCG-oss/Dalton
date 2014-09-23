@@ -522,6 +522,7 @@ contains
     ! ---------------
     call ls_mpibcast(MyMolecule%nelectrons,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nauxbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -569,8 +570,8 @@ contains
           call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
        ENDIF
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
-       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
-       call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
+       call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
     end if
 
 
@@ -615,8 +616,8 @@ contains
        call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     ENDIF
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -1115,13 +1116,14 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2,mylsitem)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2,mylsitem,print_frags)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
     real(realk)        :: ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
+    logical            :: print_frags
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1130,13 +1132,14 @@ contains
     call ls_mpi_buffer(nbasis,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvirt,infpar%master)
+    call ls_mpi_buffer(print_frags,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     ! communicate rest of the quantities, master here, slaves back in the slave
     ! routine, due to crappy pointer/non-pointer issues (->allocations)
     if (infpar%lg_mynum .eq. infpar%master) then
-       call ls_mpibcast(ccsd_t2,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata
@@ -2107,6 +2110,7 @@ contains
     master = 0
 
     call ls_mpi_buffer(DECitem%doDEC,Master)
+    call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
@@ -2204,11 +2208,16 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
-    call ls_mpi_buffer(DECitem%FragmentExpansionScheme,Master)
-    call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
+    call ls_mpi_buffer(DECitem%Frag_Exp_Scheme,Master)
+    call ls_mpi_buffer(DECitem%Frag_Red_Scheme,Master)
+    call ls_mpi_buffer(DECitem%Frag_Init_Size,Master)
+    call ls_mpi_buffer(DECitem%Frag_Exp_Size,Master)
+    call ls_mpi_buffer(DECitem%Frag_red_occ_thr,Master)
+    call ls_mpi_buffer(DECitem%Frag_red_virt_thr,Master)
     call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
+    call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)
     call ls_mpi_buffer(DECitem%OnlyOccPart,Master)
     call ls_mpi_buffer(DECitem%OnlyVirtPart,Master)
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
@@ -2220,7 +2229,8 @@ contains
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
     call ls_mpi_buffer(DECitem%PairMP2,Master)
     call ls_mpi_buffer(DECitem%PairEstimate,Master)
-    call ls_mpi_buffer(DECitem%EstimateINITradius,Master)
+    call ls_mpi_buffer(DECitem%EstimateInitRadius,Master)
+    call ls_mpi_buffer(DECitem%EstimateInitAtom,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%density,Master)
     call ls_mpi_buffer(DECitem%gradient,Master)
