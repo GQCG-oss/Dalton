@@ -2507,7 +2507,7 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
-    logical :: deb,do_alloc
+    logical :: deb,do_alloc,extra_locking
 #ifdef VAR_MPI
 #ifdef COMPILER_UNDERSTANDS_FORTRAN_2003
     procedure(put_acc_el), pointer :: pga => null()
@@ -2983,6 +2983,15 @@ module lspdm_tensor_operations_module
 
              endif
 
+             extra_locking=.true.
+#ifndef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+             if(do_alloc)then
+                nbuffs = 1
+             endif
+             extra_locking=.false.
+#endif
+             
+
 
 
              if(nbuffs/=0) then
@@ -2996,8 +3005,8 @@ module lspdm_tensor_operations_module
 
                 do j=1,nbuffs-1
                    call get_tile_dim(nelintile,j,arr%dims,arr%tdim,arr%mode)
-                   call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
-                   call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                   if(extra_locking)call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
+                   call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=extra_locking,flush_it=.true.)
                 enddo
 
                 do j=1,arr%ntiles
@@ -3006,11 +3015,11 @@ module lspdm_tensor_operations_module
                    if(j+nbuffs-1<=arr%ntiles)then
                       ctidx = j+nbuffs-1
                       call get_tile_dim(nelintile,ctidx,arr%dims,arr%tdim,arr%mode)
-                      call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                      call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=.true.,flush_it=.true.)
+                      if(extra_locking)call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
+                      call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=extra_locking,flush_it=.true.)
                    endif
 
-                   call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
+                   if(extra_locking)call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
                    ti => tile_buff(:,mod(j-1,nbuffs)+1)
 
 
