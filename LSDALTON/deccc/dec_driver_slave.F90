@@ -46,7 +46,7 @@ contains
     implicit none
     integer :: job,i
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
-    integer :: nunocc,nocc,natoms,siz
+    integer :: nunocc,nocc,siz,nfrags
     type(lsitem) :: MyLsitem
     type(decfrag),pointer :: AtomicFragments(:),EstAtomicFragments(:)
     type(fullmolecule) :: MyMolecule
@@ -84,15 +84,15 @@ contains
     ! Get remaining full molecular information needed for all fragment calculations
     call mpi_dec_fullinfo_master_to_slaves(nocc,nunocc,&
          & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
-    natoms=MyMolecule%natoms
+    nfrags=MyMolecule%nfrags
 
     ! Get list of which atoms have orbitals assigned
-    call mem_alloc(dofrag,natoms)
+    call mem_alloc(dofrag,nfrags)
     call which_fragments_to_consider(MyMolecule%ncore,nocc,nunocc,&
-         & natoms,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
+         & nfrags,OccOrbitals,UnoccOrbitals,dofrag,MyMolecule%PhantomAtom)
 
     IF(DECinfo%StressTest)THEN
-     call StressTest_mod_dofrag(MyMolecule%natoms,nocc,nunocc,&
+     call StressTest_mod_dofrag(MyMolecule%nfrags,nocc,nunocc,&
           & MyMolecule%DistanceTable,OccOrbitals,UnoccOrbitals,dofrag,mylsitem)
     ENDIF
 
@@ -107,8 +107,8 @@ contains
     DECinfo%gradient=.false.
 
     ! Atomic fragments
-    call mem_alloc(AtomicFragments,natoms)
-    do i=1,natoms
+    call mem_alloc(AtomicFragments,nfrags)
+    do i=1,nfrags
        call atomic_fragment_nullify(AtomicFragments(i))
     end do
 
@@ -129,14 +129,14 @@ contains
        ! *******************************************
        if(step==1 .and. esti) then
           ! Get optimized atomic fragments from master node
-          call mem_alloc(EstAtomicFragments,natoms)
-          do i=1,natoms
+          call mem_alloc(EstAtomicFragments,nfrags)
+          do i=1,nfrags
              call atomic_fragment_nullify(EstAtomicFragments(i))
           end do
-          call mpi_bcast_many_fragments(natoms,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
+          call mpi_bcast_many_fragments(nfrags,dofrag,EstAtomicFragments,MPI_COMM_LSDALTON)          
 
           ! Receive CC models to use for each pair based on estimates
-          call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
        end if
        
 
@@ -150,7 +150,7 @@ contains
           DECinfo%gradient = grad_save
 
           ! Get FOT-optimized atomic fragments from master node
-          call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
+          call mpi_bcast_many_fragments(nfrags,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
        end if Step2
 
@@ -215,14 +215,14 @@ contains
        ! ======================================================
        if(step==1 .and. esti) then
           ! Calculate estimated pair fragment energies
-          call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
                & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,&
                & EstAtomicFragments=EstAtomicFragments)
        else
-          call fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+          call fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
                & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
        end if
-
+fisse
        ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
        job=QUITNOMOREJOBS
        if(infpar%lg_mynum==master .and. infpar%lg_nodtot>1) then
@@ -237,7 +237,7 @@ contains
 
        ! Clean up estimated fragments used in step 1 and receive CC models to use for all pairs
        CleanupAndUpdateCCmodel: if(step==1 .and. esti) then
-          do i=1,natoms
+          do i=1,nfrags
              if(dofrag(i)) then
                 call atomic_fragment_free_simple(EstAtomicFragments(i))
              end if
@@ -245,7 +245,7 @@ contains
           call mem_dealloc(EstAtomicFragments)
 
           ! Receive CC models to use for each pair based on estimates
-          call ls_mpibcast(MyMolecule%ccmodel,natoms,natoms,master,MPI_COMM_LSDALTON)
+          call ls_mpibcast(MyMolecule%ccmodel,nfrags,nfrags,master,MPI_COMM_LSDALTON)
 
        end if CleanupAndUpdateCCmodel
 
@@ -254,7 +254,7 @@ contains
 
     ! Free stuff
     ! **********
-    do i=1,natoms
+    do i=1,nfrags
        if(dofrag(i)) then
           call atomic_fragment_free_simple(AtomicFragments(i))
        end if
@@ -280,13 +280,13 @@ contains
 !> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-  subroutine fragments_slave(natoms,nocc,nunocc,OccOrbitals,&
+  subroutine fragments_slave(nfrags,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs,EstAtomicFragments)
 
     implicit none
 
-    !> Number of atoms in the molecule
-    integer,intent(in) :: natoms
+    !> Number of fragments (# atoms for atom-based DEC, #occ orbitals for DECCO)
+    integer,intent(in) :: nfrags
     !> Number of occupied orbitals in the molecule
     integer,intent(in) :: nocc
     !> Number of unoccupied orbitals in the molecule
@@ -300,11 +300,11 @@ contains
     !> LS item structure
     type(lsitem),intent(inout) :: MyLsitem
     !> Atomic fragments
-    type(decfrag),dimension(natoms),intent(inout) :: AtomicFragments
+    type(decfrag),dimension(nfrags),intent(inout) :: AtomicFragments
     !> Job list for  fragments
     type(joblist),intent(in) :: jobs
     !> Estimated atomic fragments
-    type(decfrag),dimension(natoms),intent(inout),optional :: EstAtomicFragments
+    type(decfrag),dimension(nfrags),intent(inout),optional :: EstAtomicFragments
     type(joblist) :: singlejob
     type(decfrag) :: PairFragment
     type(decfrag) :: MyFragment
@@ -437,11 +437,11 @@ contains
              if(jobs%esti(job)) then
                 ! Estimated pair fragment
                 call merged_fragment_init(EstAtomicFragments(atomA), EstAtomicFragments(atomB),&
-                     & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment,esti=.true.)
              else
                 call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                     & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, &
+                     & nunocc, nocc, nfrags,OccOrbitals,UnoccOrbitals, &
                      & MyMolecule,mylsitem,.true.,PairFragment)
              end if
              call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
@@ -513,7 +513,7 @@ contains
                 &  ' single fragment optimization: ', atomA
 
              ! Fragment optimization
-             call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nAtoms, &
+             call optimize_atomic_fragment(atomA,MyFragment,MyMolecule%nfrags, &
                 & OccOrbitals,nOcc,UnoccOrbitals,nUnocc, MyMolecule,mylsitem,.true.)
 
 
@@ -552,7 +552,7 @@ contains
                    ! Estimated pair fragment
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                       & EstAtomicFragments(atomA), EstAtomicFragments(atomB), &
-                      & natoms,PairFragment,grad)
+                      & nfrags,PairFragment,grad)
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
@@ -562,7 +562,7 @@ contains
                    ! Pair fragment according to FOT precision
                    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                       & AtomicFragments(atomA), AtomicFragments(atomB), &
-                      & natoms,PairFragment,grad)
+                      & nfrags,PairFragment,grad)
 
                    write(*, '(1X,a,i5,a,i6,a,i15,a,i4,a,i4,a,i4,a,i6,i6)')'Slave ',infpar%mynum, &
                       &' will do job: ', job, ' of size ', jobs%jobsize(job),&
