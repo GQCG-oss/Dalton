@@ -1090,14 +1090,14 @@ contains
     type(decorbital), intent(inout), dimension(nocc) :: OccOrbitals
     !> Unoccupied orbitals to create
     type(decorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
-    integer :: i,central_orbital,n,norbital_extent,nbasis,atom
+    integer :: i,central_orbital,n,norbital_extent,nbasis,atom,j
     integer, pointer :: list_of_atoms_to_consider(:)
     real(realk) :: error,charge,twall,tcpu
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
     integer, pointer :: atomic_idx(:,:)
     integer :: offset
-    real(realk),pointer :: DistoccUnocc(:,:)
+    real(realk),pointer :: DistoccUnocc(:,:),DistOccOcc(:,:),sorted_dists(:)
     integer :: sorted_orbitals(nocc)
 
 
@@ -1134,8 +1134,10 @@ contains
     ! Distances between occ and unocc orbitals
     call mem_alloc(DistOccUnocc,nocc,nunocc)
     call general_distance_table(nocc,nunocc,MyMolecule%carmomocc,MyMolecule%carmomvirt,DistOccUnocc)
-
-
+    ! .. and between occ and occ orbitals
+    call mem_alloc(DistOccOcc,nocc,nocc)
+    call general_distance_table(nocc,nocc,MyMolecule%carmomocc,MyMolecule%carmomocc,DistOccOcc)
+    call mem_alloc(sorted_dists,nocc)
 
     ! *************************************
     ! Orbital assignment and orbital extent
@@ -1190,16 +1192,30 @@ contains
 
        else  ! unoccupied orbital or core orbital
 
-          ! Central orbital is nearest occupied valence orbital
-          ! ---------------------------------------------------
-          call real_inv_sort_with_tracking(DistOccUnocc(:,i-nocc),sorted_orbitals,nocc)
-          ! (ensure that we do not assign to core orbitals)
+          ! Sort occ orbitals according to distance to orbital "i"
+          if(i.le.offset) then  ! core orbital
+             sorted_dists = DistOccOcc(:,i)
+          else ! unocc orbital
+             sorted_dists = DistOccUnocc(:,i-nocc)
+          end if
+          call real_inv_sort_with_tracking(sorted_dists,sorted_orbitals,nocc)
+
+          ! Assign to nearest valence orbital (ensure that we do not assign to core orbitals)
           Assigning: do n=1,nocc
              if(sorted_orbitals(n)>offset) then
                 central_orbital = sorted_orbitals(n)
                 exit Assigning
              end if
           end do Assigning
+
+          if(DECinfo%PL>1) then
+             write(DECinfo%output,'(1X,a,i10)') 'Sorted occ orbs for orbital: ', i
+             write(DECinfo%output,*) '--------------------------------------------------------'
+             do j=1,nocc
+                write(DECinfo%output,*) sorted_orbitals(i)
+             end do
+             write(DECinfo%output,*) 'Central orbital: ', central_orbital
+          end if
 
           if(i.le.offset) then  ! core orbital
              OccOrbitals(i) = orbital_init(i,central_orbital, &
@@ -1216,7 +1232,10 @@ contains
     end do OrbitalLoop
 
 
+
+    call mem_dealloc(sorted_dists)
     call mem_dealloc(DistOccUnocc)
+    call mem_dealloc(DistOccOcc)
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
 
