@@ -674,10 +674,6 @@ contains
           call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
        end if
 
-       ! Not for MPI at the moment
-#ifdef VAR_MPI
-       call lsquit('DECCO is not tested for MPI!',DECinfo%output)
-#endif
 
        ! No stress test implemented
        if( DECinfo%StressTest ) then
