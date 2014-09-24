@@ -23,6 +23,14 @@ macro(add_external _project)
         set(UPDATE_COMMAND echo)
     endif()
 
+    add_custom_target(
+        check_external_timestamp_${_project}
+        COMMAND python ${PROJECT_SOURCE_DIR}/cmake/check_external_timestamp.py
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp/${_project}-configure
+                       ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+                       ${PROJECT_SOURCE_DIR}/external/${_project}
+    )
+
     ExternalProject_Add(${_project}
         DOWNLOAD_COMMAND ${UPDATE_COMMAND}
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
@@ -36,17 +44,11 @@ macro(add_external _project)
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
+
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
+        add_dependencies(check_external_timestamp_${_project} git_update)
     endif()
+    add_dependencies(${_project} check_external_timestamp_${_project})
 
-    if(ALWAYS_RESET_EXTERNAL)
-        # remove stamps for external builds so that they are rebuilt every time
-        add_custom_command(
-            TARGET ${_project}
-            PRE_BUILD
-            COMMAND rm -rf ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-            WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
-    endif()
 endmacro()
