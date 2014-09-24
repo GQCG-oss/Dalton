@@ -792,7 +792,7 @@ end function max_batch_dimension
   subroutine GetDistances(MyMolecule,mylsitem,int_output)
 
     implicit none
-    type(fullmolecule),intent(in) :: MyMolecule
+    type(fullmolecule),intent(inout) :: MyMolecule
     type(lsitem), intent(inout) :: mylsitem
     integer, intent(in) :: int_output
     real(realk), pointer :: geometry(:,:)
