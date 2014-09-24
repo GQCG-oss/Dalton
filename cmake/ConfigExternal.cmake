@@ -67,7 +67,7 @@ macro(add_external _project)
         INSTALL_DIR ${PROJECT_BINARY_DIR}/external
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
-    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
+
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
 
