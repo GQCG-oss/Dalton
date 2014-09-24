@@ -3006,7 +3006,8 @@ module lspdm_tensor_operations_module
                 do j=1,nbuffs-1
                    call get_tile_dim(nelintile,j,arr%dims,arr%tdim,arr%mode)
                    if(extra_locking)call lsmpi_win_lock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j),'s')
-                   call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=extra_locking,flush_it=.true.)
+                   call array_get_tile(arr,j,tile_buff(:,mod(j-1,nbuffs)+1),nelintile,lock_set=extra_locking,&
+                       &flush_it=.true.)
                 enddo
 
                 do j=1,arr%ntiles
@@ -3016,7 +3017,8 @@ module lspdm_tensor_operations_module
                       ctidx = j+nbuffs-1
                       call get_tile_dim(nelintile,ctidx,arr%dims,arr%tdim,arr%mode)
                       if(extra_locking)call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                      call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,lock_set=extra_locking,flush_it=.true.)
+                      call array_get_tile(arr,ctidx,tile_buff(:,mod(ctidx-1,nbuffs)+1),nelintile,&
+                       &lock_set=extra_locking,flush_it=.true.)
                    endif
 
                    if(extra_locking)call lsmpi_win_unlock(int(tinfo(j,1),kind=ls_mpik),arr%wi(j))
