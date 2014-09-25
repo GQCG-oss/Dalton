@@ -89,7 +89,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(array4) :: t2_final_arr4, VOVO_arr4, mp2_amp
    type(array) :: t2_final,ccsdpt_t2,VOVO
    type(array) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
-   integer :: natoms,ncore,nocc_tot,p,pdx,i
+   integer :: natoms,nfrags,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
@@ -227,6 +227,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
    
       natoms   = MyMolecule%natoms
+      nfrags   = MyMolecule%nfrags
       nocc_tot = MyMolecule%nocc
    
       if(ccmodel == MODEL_CCSDpT)then
@@ -265,7 +266,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          & occ_orbitals,unocc_orbitals)
    
       ! Orbital assignment
-      call mem_alloc(orbitals_assigned,natoms)
+      call mem_alloc(orbitals_assigned,nfrags)
       orbitals_assigned=.false.
       if (DECinfo%onlyoccpart) then
          do p=1,nocc_tot
@@ -292,25 +293,26 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call array_reorder(VOVO,[1,3,2,4])
    
       ! print out ccsd fragment and pair interaction energies
-      ccsd_mat_tot = array_init([natoms,natoms],2)
-      ccsd_mat_tmp = array_init([natoms,natoms],2)
+      ccsd_mat_tot = array_init([nfrags,nfrags],2)
+      ccsd_mat_tmp = array_init([nfrags,nfrags],2)
       call array_zero(ccsd_mat_tot)
       call array_zero(ccsd_mat_tmp)
    
-      call ccsd_energy_full_occ(nocc,nvirt,natoms,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
+      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
          & ccsd_mat_tot%elm1,ccsd_mat_tmp%elm1)
    
       call array_free(ccsd_mat_tmp)
    
-      call print_ccsd_full_occ(natoms,ccsd_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+      call print_ccsd_full_occ(nfrags,ccsd_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
    
    
       if(DECinfo%InteractionEnergy)then
          call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
       endif
       if(DECinfo%PrintInteractionEnergy)then
-         call add_dec_interactionenergies(natoms,ccsd_mat_tot%elm1,orbitals_assigned,&
-            & interactionE,MyMolecule%SubSystemIndex,2)
+         call lsquit('InteractionEnergy not supported anymore',-1)
+         !call add_dec_interactionenergies(natoms,ccsd_mat_tot%elm1,orbitals_assigned,&
+         !   & interactionE,MyMolecule%SubSystemIndex,2)
       endif
    
       ! release ccsd stuff
@@ -321,55 +323,56 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
-         e4_mat_tot = array_init([natoms,natoms],2)
-         e4_mat_tmp = array_init([natoms,natoms],2)
-         e5_mat_tot = array_init([natoms,natoms],2)
+         e4_mat_tot = array_init([nfrags,nfrags],2)
+         e4_mat_tmp = array_init([nfrags,nfrags],2)
+         e5_mat_tot = array_init([nfrags,nfrags],2)
    
-         call ccsdpt_energy_e4_full(nocc,nvirt,natoms,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
+         call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
             & e4_mat_tot%elm1,e4_mat_tmp%elm1,ccsdpt_e4)
    
-         call ccsdpt_energy_e5_full(nocc,nvirt,natoms,ncore,t1_final,ccsdpt_t1,&
+         call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
             & occ_orbitals,unocc_orbitals,e5_mat_tot%elm1,ccsdpt_e5)
    
          ! print out the fourth- and fifth-order fragment and pair interaction energies
-         !call print_atomic_fragment_energies(natoms,e4_mat_tot%elm1,dofrag, &
+         !call print_atomic_fragment_energies(nfrags,e4_mat_tot%elm1,dofrag, &
          !   & '(T) occupied single energies','AF_ParT_BOTH')
    
-         call print_atomic_fragment_energies(natoms,e4_mat_tot%elm1,orbitals_assigned, &
+         call print_atomic_fragment_energies(nfrags,e4_mat_tot%elm1,orbitals_assigned, &
             & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
    
-         call print_atomic_fragment_energies(natoms,e5_mat_tot%elm1,orbitals_assigned, &
+         call print_atomic_fragment_energies(nfrags,e5_mat_tot%elm1,orbitals_assigned, &
             & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
    
-         call print_pair_fragment_energies(natoms,e4_mat_tot%elm1,orbitals_assigned, &
+         call print_pair_fragment_energies(nfrags,e4_mat_tot%elm1,orbitals_assigned, &
             & mymolecule%distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
    
-         call print_pair_fragment_energies(natoms,e5_mat_tot%elm1,orbitals_assigned, &
+         call print_pair_fragment_energies(nfrags,e5_mat_tot%elm1,orbitals_assigned, &
             & mymolecule%distancetable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
    
-         !call print_e4_full(natoms,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+         !call print_e4_full(nfrags,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
    
-         !call print_e5_full(natoms,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
+         !call print_e5_full(nfrags,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
    
    
          if(DECinfo%PrintInteractionEnergy)then
-            call add_dec_interactionenergies(natoms,e4_mat_tot%elm1,orbitals_assigned,&
-               & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
-            write(DECinfo%output,'(A)') ' '
-            write(DECinfo%output,'(A)') ' '
-            write(DECinfo%output,'(A)') 'Interaction Energies '
-            write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-               & interactionE
-            write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
-               & InteractionECCSDPT4
-            call add_dec_interactionenergies(natoms,e5_mat_tot%elm1,orbitals_assigned,&
-               & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
-            write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
-               & InteractionECCSDPT5
-            write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
-               & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
-            write(DECinfo%output,'(A)') ' '
-            interactionE = InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
+            call lsquit('InteractionEnergy not supported anymore',-1)
+            !call add_dec_interactionenergies(natoms,e4_mat_tot%elm1,orbitals_assigned,&
+            !   & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
+            !write(DECinfo%output,'(A)') ' '
+            !write(DECinfo%output,'(A)') ' '
+            !write(DECinfo%output,'(A)') 'Interaction Energies '
+            !write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+            !   & interactionE
+            !write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
+            !   & InteractionECCSDPT4
+            !call add_dec_interactionenergies(natoms,e5_mat_tot%elm1,orbitals_assigned,&
+            !   & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
+            !write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
+            !   & InteractionECCSDPT5
+            !write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
+            !   & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
+            !write(DECinfo%output,'(A)') ' '
+            !interactionE = InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
          endif
    
          ! release stuff
@@ -378,14 +381,15 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          call array_free(e5_mat_tot)
       else
          if(DECinfo%PrintInteractionEnergy)then
-            write(DECinfo%output,'(A)') ' '
-            if (ccmodel == MODEL_CCSD ) then
-               write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-                    & interactionE
-            else if (ccmodel == MODEL_MP2 ) then
-               write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Interaction correlation energy                  :',&
-                    & interactionE
-            endif
+            call lsquit('InteractionEnergy not supported anymore',-1)
+            !write(DECinfo%output,'(A)') ' '
+            !if (ccmodel == MODEL_CCSD ) then
+            !   write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
+            !        & interactionE
+            !else if (ccmodel == MODEL_MP2 ) then
+            !   write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Interaction correlation energy                  :',&
+            !        & interactionE
+            !endif
          endif
       endif
    

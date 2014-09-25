@@ -6222,7 +6222,7 @@ contains
   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
+  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
 
     implicit none
@@ -6230,12 +6230,12 @@ contains
     !> ccsd and ccsd(t) doubles amplitudes
     type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -6310,8 +6310,8 @@ contains
     ! for the e4 pair fragment energy matrix,
     ! we only consider pairs IJ where J>I; thus, move contributions
 
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
+    do AtomJ=1,nfrags
+       do AtomI=AtomJ+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -6402,7 +6402,7 @@ contains
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e5_full(nocc,nvirt,natoms,offset,ccsd_singles,ccsdpt_singles,&
+  subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
                              & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
 
     implicit none
@@ -6410,14 +6410,14 @@ contains
     !> ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
     type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
     !> integers
     integer :: i,a,AtomI,AtomA
     !> tmp energy real
