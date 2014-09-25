@@ -15,6 +15,7 @@ MODULE DEC_settings_mod
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_type, only: LSMPIASYNCP
 #endif
 
 contains
@@ -65,7 +66,7 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
-    DECinfo%dyn_load             = .false.
+    DECinfo%dyn_load             = LSMPIASYNCP
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
     DECinfo%array_test           = .false.
@@ -484,6 +485,7 @@ contains
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.

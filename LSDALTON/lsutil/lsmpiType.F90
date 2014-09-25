@@ -189,7 +189,7 @@ module lsmpi_type
 !General MPI vars, aka junkbox!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
-  logical               :: LSMPIASYNCP
+  logical               :: LSMPIASYNCP                !contains environment value of async progress
   logical               :: lsmpi_enabled_comm_procs 
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
