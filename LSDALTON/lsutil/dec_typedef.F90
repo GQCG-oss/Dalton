@@ -341,8 +341,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
-     !> Which Fragment Reduction Scheme should be used
-     integer :: Frag_Red_Scheme
+     !> Which Fragment Reduction Scheme should be used for the occ space
+     integer :: Frag_RedOcc_Scheme
+     !> Which Fragment Reduction Scheme should be used for the vir space
+     integer :: Frag_RedVir_Scheme
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion

@@ -127,7 +127,8 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Exp_Scheme        = 1
-    DECinfo%Frag_Red_Scheme        = 1
+    DECinfo%Frag_RedOcc_Scheme        = 1
+    DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
@@ -592,7 +593,8 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
@@ -970,7 +972,8 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
-    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
+    write(lupri,*) 'Frag_RedOcc_Scheme ', DECitem%Frag_RedOcc_Scheme
+    write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr

@@ -1056,8 +1056,10 @@ contains
          dE_red_vir = DECinfo%frag_red_occ_thr*DECinfo%FOT
       end if
 
+      ! 1) DEFINE REDUCTION OF OCCUPIED SPACE:
+      ! ======================================
       ! SCHEME 1:
-      if (DECinfo%Frag_Red_Scheme == 1) then
+      if (DECinfo%Frag_RedOcc_Scheme == 1) then
          ! The priority list for scheme one is based on energy contribution:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
@@ -1065,14 +1067,8 @@ contains
             & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
-         ! Get contribution from local virtual orbitals:
-         call mem_alloc(vir_priority_list,nv_full)
-         call get_energy_priority_list(MyFragment,nv_full,.false., &
-            & track_vir_priority_list,vir_priority_list)
-         call mem_dealloc(vir_priority_list)
-
       ! SCHEME 2:
-      else if (DECinfo%Frag_Red_Scheme == 2) then
+      else if (DECinfo%Frag_RedOcc_Scheme == 2) then
          ! The priority list for scheme 2 is based on contribution to the fock matrix:
          ! Get contribution from local occupied orbitals:
          call mem_alloc(occ_priority_list,no_full)
@@ -1080,29 +1076,11 @@ contains
             & track_occ_priority_list,occ_priority_list)
          call mem_dealloc(occ_priority_list)
 
-         ! Get contribution from local virtual orbitals:
-         call mem_alloc(vir_priority_list,nv_full)
-         call get_fock_priority_list(MyFragment,MyMolecule,nv_full,.false., &
-            & track_vir_priority_list,vir_priority_list)
-         call mem_dealloc(vir_priority_list)
-
       ! SCHEME 3:
-      else if (DECinfo%Frag_Red_Scheme == 3) then
+      else if (DECinfo%Frag_RedOcc_Scheme == 3) then
          ! The priority list for scheme 3 is based on distance:
          if (DECinfo%decco) then 
-            ! Distances between occ and unocc orbitals
-            call mem_alloc(DistVirOcc,nv_full,no_full)
-            call mem_alloc(vir_priority_list,nv_full)
-             
-            call general_distance_table(nv_full,no_full,MyMolecule%carmomvirt, &
-               & MyMolecule%carmomocc,DistVirOcc)
-            call GetSortedList(vir_priority_list,track_vir_priority_list,&
-               & DistVirOcc,nv_full,no_full,MyAtom)
-
-            call mem_dealloc(DistVirOcc)
-            call mem_dealloc(vir_priority_list)
-             
-            ! .. and between occ and occ orbitals
+            ! Distance between occ and occ orbitals
             call mem_alloc(DistOccOcc,no_full,no_full)
             call mem_alloc(occ_priority_list,no_full)
              
@@ -1119,7 +1097,44 @@ contains
             call GetSortedList(occ_priority_list,track_occ_priority_list,&
                  & mymolecule%DistanceTableOrbAtomOcc,no_full,natoms,MyAtom)
             call mem_dealloc(occ_priority_list)
+         end if
+      else 
+         call lsquit('ERROR FOP: Occupied Reduction scheme not defined',DECinfo%output)
+      end if
+
+      ! 2) DEFINE REDUCTION OF OCCUPIED SPACE:
+      ! ======================================
+      ! SCHEME 1:
+      if (DECinfo%Frag_RedVir_Scheme == 1) then
+         ! Get contribution from local virtual orbitals:
+         call mem_alloc(vir_priority_list,nv_full)
+         call get_energy_priority_list(MyFragment,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
+         call mem_dealloc(vir_priority_list)
+
+      ! SCHEME 2:
+      else if (DECinfo%Frag_RedVir_Scheme == 2) then
+         ! Get contribution from local virtual orbitals:
+         call mem_alloc(vir_priority_list,nv_full)
+         call get_fock_priority_list(MyFragment,MyMolecule,nv_full,.false., &
+            & track_vir_priority_list,vir_priority_list)
+         call mem_dealloc(vir_priority_list)
+
+      ! SCHEME 3:
+      else if (DECinfo%Frag_RedVir_Scheme == 3) then
+         if (DECinfo%decco) then 
+            ! Distances between occ and unocc orbitals
+            call mem_alloc(DistVirOcc,nv_full,no_full)
+            call mem_alloc(vir_priority_list,nv_full)
              
+            call general_distance_table(nv_full,no_full,MyMolecule%carmomvirt, &
+               & MyMolecule%carmomocc,DistVirOcc)
+            call GetSortedList(vir_priority_list,track_vir_priority_list,&
+               & DistVirOcc,nv_full,no_full,MyAtom)
+
+            call mem_dealloc(DistVirOcc)
+            call mem_dealloc(vir_priority_list)
+         else
             ! Get virtual priority list:
             call mem_alloc(vir_priority_list,nv_full)
             call GetSortedList(vir_priority_list,track_vir_priority_list,&
@@ -1127,7 +1142,7 @@ contains
             call mem_dealloc(vir_priority_list)
          end if
       else 
-         call lsquit('ERROR FOP: Reduction scheme not defined',DECinfo%output)
+         call lsquit('ERROR FOP: Virtual Reduction scheme not defined',DECinfo%output)
       end if
 
 
