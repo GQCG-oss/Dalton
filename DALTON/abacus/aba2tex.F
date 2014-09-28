@@ -626,10 +626,12 @@ C
                CALL HEADER('Molecular gradient',-1)
                CALL ADDGRD(GRADFS)
                CALL ADDGRD(GRADKE)
-               IF (SOLVNT) THEN
+               IF (SOLVNT .OR. PCM) THEN
                   CALL ADDGRD(GSOLTT)
                   CALL ADDGRD(GSOLNN)
                END IF
+               IF (PCM) CALL ADDGRD(GSOLCV)
+               if (peqm) call addgrd(pegrad)
                CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
                NCDEP3 = 3*NUCDEP
                GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)
