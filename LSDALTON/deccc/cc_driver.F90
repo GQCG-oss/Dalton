@@ -230,16 +230,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       nocc_tot = MyMolecule%nocc
    
       if(ccmodel == MODEL_CCSDpT)then
-   
+  
+         call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+         call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+ 
          ccsdpt_t1 = array_init([nvirt,nocc],2)
          ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
    
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
                & ccsdpt_t1,ccsdpt_t2)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,ccsdpt_t2)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,ccsdpt_t2)
          end if
    
          if(DECinfo%PL>1)then
@@ -287,9 +290,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             orbitals_assigned(pdx) = .true.
          end do
       end if
-   
-      ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
-      call array_reorder(VOVO,[1,3,2,4])
    
       ! print out ccsd fragment and pair interaction energies
       ccsd_mat_tot = array_init([natoms,natoms],2)
@@ -449,20 +449,28 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       t2_final = array_init(t2_final_arr4%dims,4)
       call array_convert(t2_final_arr4%val,t2_final)
       call array4_free(t2_final_arr4)
+      VOVO = array_init(VOVO_arr4%dims,4)
+      call array_convert(VOVO_arr4%val,VOVO)
       call array4_free(VOVO_arr4)
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       if(ccmodel == MODEL_CCSDpT)then
 
+         call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+         call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
          ccsdpt_t1 = array_init([nvirt,nocc],2)
 
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,t2_final,&
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
                & ccsdpt_t1,e4=ccsdpt_e4)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,t2_final,ccsdpt_t1,e4=ccsdpt_e4)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,e4=ccsdpt_e4)
          end if
+
+         ! free integrals
+         call array_free(VOVO)
 
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccsdpt_e5)
 

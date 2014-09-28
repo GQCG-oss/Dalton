@@ -324,7 +324,7 @@ contains
        ! Extract EOS indices for integrals
        ! *********************************
        call array_extract_eos_indices(VOVO,MyFragment,Arr_occEOS=VOVOocc,Arr_virtEOS=VOVOvirt)
-       call array_free(VOVO)
+!       call array_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -357,6 +357,9 @@ contains
 
           call dec_fragment_time_init(times_pt)
 
+          call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
           ccsdpt_t1 = array_init([MyFragment%nunoccAOS,MyFragment%noccAOS],2)
           ccsdpt_t2 = array_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
@@ -367,7 +370,7 @@ contains
                              & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
-                             & t2,ccsdpt_t1,ccsdpt_t2)
+                             & VOVO,t2,ccsdpt_t1,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
@@ -380,6 +383,9 @@ contains
 
        end if
 #endif 
+
+       ! free vovo integrals
+       call array_free(VOVO)
 
        if(DECinfo%use_singles)then
           call array_free(t1)
@@ -977,7 +983,7 @@ contains
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
-       call array_free(VOVO)
+!       call array_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -1068,6 +1074,9 @@ contains
 
        call dec_fragment_time_init(times_pt)
 
+       call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+       call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array_init([PairFragment%nunoccAOS,PairFragment%noccAOS],2)
        ccsdpt_t2 = array_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
@@ -1078,7 +1087,7 @@ contains
                           & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
-                          & t2,ccsdpt_t1,ccsdpt_t2)
+                          & VOVO,t2,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
@@ -1090,6 +1099,9 @@ contains
 
     end if
 #endif
+
+    ! free vovo integrals
+    call array_free(VOVO)
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
        if(DECinfo%use_singles)then

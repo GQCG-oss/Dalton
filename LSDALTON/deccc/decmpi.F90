@@ -1115,12 +1115,12 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2,mylsitem,print_frags)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: ccsd_t2(:,:,:,:)
+    real(realk)        :: vovo(:,:,:,:),ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
     logical            :: print_frags
 
@@ -1138,6 +1138,7 @@ contains
     ! communicate rest of the quantities, master here, slaves back in the slave
     ! routine, due to crappy pointer/non-pointer issues (->allocations)
     if (infpar%lg_mynum .eq. infpar%master) then
+       call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
     endif
 
