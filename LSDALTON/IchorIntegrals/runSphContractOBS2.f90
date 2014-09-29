@@ -127,7 +127,7 @@ DO GPUrun = 1,2
                  WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(in)    :: IN(nContPasses*nlmP,',ijkcartP,')'
                  WRITE(LUMOD3,'(A,I3,A,I3,A)')'  real(realk),intent(inout) :: OUT(nContPasses*nlmP,',ijkP,')'                 
               ENDIF
-              IF(DoOpenACC)WRITE(LUMOD3,'(A)')'  integer,intent(in) :: iASync'
+              IF(DoOpenACC)WRITE(LUMOD3,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
               WRITE(LUMOD3,'(A)')'  integer :: iPass,ijkP,iP'
               iparam = 0
               do ijkP = 1,ijkcart

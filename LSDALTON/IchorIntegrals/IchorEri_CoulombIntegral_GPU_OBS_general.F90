@@ -24,7 +24,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
@@ -59,6 +59,7 @@ CONTAINS
 !   TMP variables - allocated outside
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+    integer(kind=acckind),intent(in) :: iASync
   
     IF(PQorder)THEN
        call IchorQuit('PQorder OBS general expect to get QP ordering',-1)
@@ -77,7 +78,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
    ELSEIF(Psegmented.AND.Qsegmented)THEN
     call IchorCoulombIntegral_GPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
@@ -88,7 +89,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
    ELSEIF(Psegmented)THEN
     call IchorCoulombIntegral_GPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
@@ -99,7 +100,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
    ELSEIF(Qsegmented)THEN
     call IchorCoulombIntegral_GPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
@@ -110,7 +111,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
    ELSE
     call IchorCoulombIntegral_GPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
@@ -121,7 +122,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass)
+       & IatomAPass,iatomBPass,iASync)
    ENDIF
   end subroutine IchorCoulombIntegral_GPU_OBS_general
   

@@ -595,6 +595,71 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
   END IF
 end subroutine Build_qcent_Qdistance12_QpreExpFac
 
+subroutine Build_qcent_Qdistance12_QpreExpFacGPU(nPrimC,nPrimD,nContC,nContD,&
+     & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,Segmented,&
+     & qcent,Qdistance12,QpreExpFac,INTPRINT)
+  implicit none
+  integer,intent(in) :: nPrimC,nPrimD,nContC,nContD,INTPRINT
+  real(realk),intent(in) :: expC(nPrimC),expD(nPrimD)
+  real(realk),intent(in) :: Ccenter(3),Dcenter(3)
+  real(realk),intent(in) :: ContractCoeffC(nPrimC,nContC)
+  real(realk),intent(in) :: ContractCoeffD(nPrimD,nContD)
+  logical,intent(in) :: Segmented
+  real(realk),intent(inout) :: qcent(3,nPrimC,nPrimD),Qdistance12(3)
+  real(realk),intent(inout) :: QpreExpFac(nPrimC,nPrimD)
+  !local variables
+  integer :: i12,i2,i1,offset
+  real(realk) :: e2,e1,X,Y,Z,d2,eDX,eDY,eDZ,TMPCCD
+  IF (Segmented) THEN
+!$ACC KERNELS &
+!$ACC PRESENT(QpreExpFac,Qcent,Qdistance12,nPrimC,nPrimD,nContC,nContD,&
+!$ACC         expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD)
+     d2 = 0.0E0_realk
+     DO I1=1,3
+        Qdistance12(I1) = Ccenter(I1) - Dcenter(I1)
+        d2 = d2 + Qdistance12(I1)*Qdistance12(I1)
+     ENDDO
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
+        TMPCCD = ContractCoeffD(i2,1)
+        DO i1=1,nPrimC
+           e1  = expC(i1)
+           qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
+           Qcent(2,i1,i2) = (e1*Ccenter(2) + eDY)/(e1+e2)
+           Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
+           QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)*ContractCoeffC(i1,1)*TMPCCD
+        ENDDO
+     ENDDO
+!$ACC END KERNELS
+  ELSE
+!$ACC KERNELS &
+!$ACC PRESENT(QpreExpFac,Qcent,Qdistance12,nPrimC,nPrimD,nContC,nContD,&
+!$ACC         expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD)
+     d2 = 0.0E0_realk
+     DO I1=1,3
+        Qdistance12(I1) = Ccenter(I1) - Dcenter(I1)
+        d2 = d2 + Qdistance12(I1)*Qdistance12(I1)
+     ENDDO
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
+        DO i1=1,nPrimC
+           e1  = expC(i1)
+           qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
+           Qcent(2,i1,i2) = (e1*Ccenter(2) + eDY)/(e1+e2)
+           Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
+           QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)
+        ENDDO
+     ENDDO
+!$ACC END KERNELS
+  END IF
+end subroutine Build_qcent_Qdistance12_QpreExpFacGPU
+
 subroutine Build_Seg_qcent_QpreExpFac(nPrimC,nPrimD,&
      & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,&
      & qcent,QpreExpFac,INTPRINT)

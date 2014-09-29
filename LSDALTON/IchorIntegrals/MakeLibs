@@ -44,18 +44,18 @@ all: libIchorIntegrals.a
 #
 #ARCH        = linux
 #FMMDIR      = mm
-##
-##
-#CPPFLAGS      = -DVAR_ICHOR
+#
+#
+#CPPFLAGS      = -DVAR_ICHOR -DVAR_OPENACC -DVAR_PGF90
 #F90            = pgf90
 #FLNK           = pgf90
 #RM             = rm -f
-#F90OPTFLAGS    = -acc #-Minfo=accel
+#F90OPTFLAGS    = -mp -Mconcur -acc #-Minfo=accel
 #INCLUDES       =  
 #LIBS           = 
 #AR             = ar
 #ARFLAGS        =  rvs
-##
+#
 #########################################################
 #
 # END OF COMPILER SECTION 
@@ -241,7 +241,7 @@ libIchorIntegrals.a: $(F90_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD *.x
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90)
@@ -257,6 +257,6 @@ include Makefile.depend
 
 #the above code makes the libIchorIntegrals.a now you just have to link using
 
-test.x: $(F90_OBJS) 
+test.x: $(F90_OBJS) libIchorIntegrals.a
 	@echo "---------------> Linking test.x ..."
 	$(F90) $(F90OPTFLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a

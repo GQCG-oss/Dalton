@@ -4,7 +4,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  CONTAINS
  subroutine TransferRecurrenceGPUP1Q2CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -14,6 +14,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   20)
   real(realk),intent(inout) :: Aux2(nPasses,    4,   10)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 10,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -24,7 +25,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 10
     DO iTUVP=1,  4
@@ -41,7 +42,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
@@ -141,7 +142,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  end subroutine TransferRecurrenceGPUP1Q2CtoASeg
  subroutine TransferRecurrenceGPUP1Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -151,6 +152,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   35)
   real(realk),intent(inout) :: Aux2(nPasses,    4,   20)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 20,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -161,7 +163,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk) :: Xab,Yab,Zab,Xcd,Ycd,Zcd,expP
   real(realk) :: expBX,expBY,expBZ
   real(realk) :: invexpP,inv2expP,facX,facY,facZ,qinvp
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 20
     DO iTUVP=1,  4
@@ -178,7 +180,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
@@ -326,7 +328,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  end subroutine TransferRecurrenceGPUP1Q3CtoASeg
  subroutine TransferRecurrenceGPUP1Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -336,6 +338,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   56)
   real(realk),intent(inout) :: Aux2(nPasses,    4,   35)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 35,  4)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -367,7 +370,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 35
     DO iTUVP=1,  4
@@ -384,7 +387,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
@@ -472,7 +475,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  end subroutine TransferRecurrenceGPUP1Q4CtoASeg
  subroutine TransferRecurrenceGPUP2Q3CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -482,6 +485,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   56)
   real(realk),intent(inout) :: Aux2(nPasses,   10,   20)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 20, 10)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -514,7 +518,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   !CARTDIR = 3
   integer,parameter, dimension(20) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4 /)
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 20
     DO iTUVP=1, 10
@@ -532,7 +536,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
@@ -777,7 +781,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  end subroutine TransferRecurrenceGPUP2Q3CtoASeg
  subroutine TransferRecurrenceGPUP2Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -787,6 +791,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,   84)
   real(realk),intent(inout) :: Aux2(nPasses,   10,   35)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 35, 10)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -825,7 +830,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   integer,parameter, dimension(35) :: IfacX3 = (/ 1,1,1,2,1,1,2,&
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5 /)
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 35
     DO iTUVP=1, 10
@@ -843,7 +848,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ
@@ -1088,7 +1093,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
  end subroutine TransferRecurrenceGPUP2Q4CtoASeg
  subroutine TransferRecurrenceGPUP3Q4CtoASeg(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP),Pexp(nPrimP),Qexp(nPrimQ)
@@ -1098,6 +1103,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
   real(realk),intent(in) :: Aux(nPrimQ,nPrimP,nPasses,  120)
   real(realk),intent(inout) :: Aux2(nPasses,   20,   35)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 35, 20)
 ! Note that Tmp0 have the opposite order Tmp0(nTUVQ,nTUVP), than the Aux2
@@ -1146,7 +1152,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
           & 1,2,3,1,1,2,1,2,3,1,2,3,4,1,1,2,1,&
           & 2,3,1,2,3,4,1,2,3,4,5,1,1,2,1,2,3,&
           & 1,2,3,4,1,2,3,4,5,1,2,3,4,5,6 /)
-!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2)
+!$ACC PARALLEL LOOP PRIVATE(iP,iTUVP,iTUVQ) PRESENT(nPasses,Aux2) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iTUVQ=1, 35
     DO iTUVP=1, 20
@@ -1165,7 +1171,7 @@ MODULE AGC_GPU_OBS_TRMODCtoASeg
 !$ACC         invexpP,inv2expP,facX,facY,facZ,qinvp,iTUVQ,iTUVP,iTUVplus1) &
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimC,reducedExponents,Pexp,Qexp,&
 !$ACC        Bexp,Dexp,&
-!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        Pdistance12,Qdistance12,IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    DO iPrimQP=1,nPrimQ*nPrimP
     iPrimQ = iPrimQP - ((iPrimQP-1)/nPrimQ)*nPrimQ

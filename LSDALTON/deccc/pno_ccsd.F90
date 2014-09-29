@@ -2035,7 +2035,9 @@ module pno_ccsd_module
      real(realk), pointer :: dummy1(:), dummy2(:,:)
      integer(kind=8) :: nelms
      integer :: edit,max_nthreads,max_w_per_thr(5,nloops),loop,thread
-     !$ integer, external :: omp_get_num_threads, omp_get_max_threads
+#ifdef VAR_OMP
+     integer, external :: omp_get_num_threads, omp_get_max_threads
+#endif
 
      !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
      basic = 11

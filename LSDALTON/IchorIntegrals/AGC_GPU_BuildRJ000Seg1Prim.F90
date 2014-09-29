@@ -5,7 +5,7 @@ MODULE AGC_GPU_OBS_BUILDRJ000MODSeg1Prim
 
 subroutine BuildRJ000GPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -14,6 +14,7 @@ subroutine BuildRJ000GPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 2)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -40,7 +41,7 @@ subroutine BuildRJ000GPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -88,7 +89,7 @@ subroutine BuildRJ000GPUSeg1Prim2(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -97,6 +98,7 @@ subroutine BuildRJ000GPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 3)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -123,7 +125,7 @@ subroutine BuildRJ000GPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -176,7 +178,7 @@ subroutine BuildRJ000GPUSeg1Prim3(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -185,6 +187,7 @@ subroutine BuildRJ000GPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 4)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -211,7 +214,7 @@ subroutine BuildRJ000GPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -269,7 +272,7 @@ subroutine BuildRJ000GPUSeg1Prim4(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -278,6 +281,7 @@ subroutine BuildRJ000GPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 5)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -304,7 +308,7 @@ subroutine BuildRJ000GPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -367,7 +371,7 @@ subroutine BuildRJ000GPUSeg1Prim5(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -376,6 +380,7 @@ subroutine BuildRJ000GPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 6)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -402,7 +407,7 @@ subroutine BuildRJ000GPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -470,7 +475,7 @@ subroutine BuildRJ000GPUSeg1Prim6(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -479,6 +484,7 @@ subroutine BuildRJ000GPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 7)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -505,7 +511,7 @@ subroutine BuildRJ000GPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)
@@ -578,7 +584,7 @@ subroutine BuildRJ000GPUSeg1Prim7(nPassP,nPrimP,nPrimQ,reducedExponents,&
 
 subroutine BuildRJ000GPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
          & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
-         & RJ000array)
+         & RJ000array,iASync)
   implicit none
   integer,intent(in) :: nPassP,nPrimP,nPrimQ
   integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB
@@ -587,6 +593,7 @@ subroutine BuildRJ000GPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
   real(realk),intent(in) :: reducedExponents(1)
   real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)
   real(realk),intent(inout) :: RJ000array(nPassP,0: 8)
+  integer(kind=acckind),intent(in) :: iASync
   !local variables
   integer :: iP,iPassP,ipnt,iAtomA,iAtomB
   real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq
@@ -613,7 +620,7 @@ subroutine BuildRJ000GPUSeg1Prim8(nPassP,nPrimP,nPrimQ,reducedExponents,&
 !$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&
 !$ACC         iP,iPassP,&
 !$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,RJ000,REXPW,&
-!$ACC         mPX,mPY,mPZ,RWVAL,GVAL)
+!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)
   DO iP = 1,nPassP
    iPassP = iP
    iAtomA = iAtomApass(iPassP)

@@ -1,8 +1,8 @@
 rm runVerticalRecurrenceQP.x 
-ifort -c -g -check all -debug all mathfile.f90
-ifort -c -g -check all -debug all IchorPresicion.F90
-ifort -c -g -check all -debug all Strings.f90
-ifort -g -check all -debug all -o runVerticalRecurrenceQP.x runVerticalRecurrenceQP.f90 Strings.o
+ifort -c mathfile.f90
+ifort -c IchorPresicion.F90
+ifort -c Strings.f90
+ifort -o runVerticalRecurrenceQP.x runVerticalRecurrenceQP.f90 Strings.o
 ./runVerticalRecurrenceQP.x 
 
 ifort -g -check all -debug all -openmp -o runVerticalRecurrenceCPUQPAGen.x runVerticalRecurrenceCPUQPAGen.F90 mathfile.o IchorPresicion.o
