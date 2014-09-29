@@ -1782,16 +1782,16 @@ contains
 
     if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
        write (molcfg%lupri,*) 'b vector overlaps, extend_red_matrices2:'
-       call OUTPUT(b_overlaps, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
+       call LS_OUTPUT(b_overlaps, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
             &2*molcfg%solver%rsp_maxred, 1, molcfg%lupri)
        write (molcfg%lupri,*) 'b vector overlaps over the METRIC, extend_red_matrices2:'
-       call OUTPUT(bS_overlaps, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred,& 
+       call LS_OUTPUT(bS_overlaps, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred,& 
        &2*molcfg%solver%rsp_maxred, 1, molcfg%lupri)
        write (molcfg%lupri,*) 'Reduced E2, extend_red_matrices2:'
-       call OUTPUT(red_E, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
+       call LS_OUTPUT(red_E, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
             &2*molcfg%solver%rsp_maxred, 1, molcfg%lupri)
        write (molcfg%lupri,*) 'Reduced S2, extend_red_matrices2:'
-       call OUTPUT(red_S, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
+       call LS_OUTPUT(red_S, 1, 2*ndim_red, 1, 2*ndim_red, 2*molcfg%solver%rsp_maxred, &
             &2*molcfg%solver%rsp_maxred, 1, molcfg%lupri)
     endif
 
@@ -1857,7 +1857,7 @@ contains
 
     if (molcfg%solver%info_rsp) then
       write(molcfg%lupri,*) 'extend_gradients: after gradient extension'
-      call OUTPUT(red_gd, 1, 2*(ndim_red+nb_new), 1, ngd, 2*molcfg%solver%rsp_maxred, &
+      call LS_OUTPUT(red_gd, 1, 2*(ndim_red+nb_new), 1, ngd, 2*molcfg%solver%rsp_maxred, &
            &2*molcfg%solver%rsp_maxgd, 1, molcfg%lupri)
     endif
 
@@ -1898,18 +1898,18 @@ contains
 
        if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
           write (molcfg%lupri,*) "E2, solve_red_lineq2:"
-          call OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
           write (molcfg%lupri,*) "S2, solve_red_lineq2:"
-          call OUTPUT(S2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
+          call LS_OUTPUT(S2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
        endif
        E2 = E2 - freq(igd)*S2   
 
        if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
           write (molcfg%lupri,*) 'E2 - omega*S2:'
-          call OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, 2*ndim_red, 1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
   
           write (molcfg%lupri,*) 'RHS:'
-          call OUTPUT(RHS, 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(RHS, 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
        endif
 
        !Solve set of linear equations Ax = b:
@@ -1922,7 +1922,7 @@ contains
 
        if (MOLCFG%SOLVER%INFO_RSP_REDSPACE) then
           write (molcfg%lupri,*) 'Solution vector, solve_red_lineq:'
-          call OUTPUT(RHS, 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(RHS, 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
        endif
        red_X(1:2*ndim_red,igd) = RHS
     enddo
@@ -2561,7 +2561,7 @@ end subroutine verify_conv_prop
     &                       alfr,ALFI,BETA,scr1,scr2,ISNDX)
     if (molcfg%solver%info_rsp_redspace) then
         WRITE (molcfg%LUPRI,'(/A)') ' REDUCED EIGENVECTORS AFTER ORDERING:'
-        CALL OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
+        CALL LS_OUTPUT(RED_EIVEC_scr,1,ndim_red_mat,1,ndim_red_mat, &
     &                     ndim_red_mat,ndim_red_mat,1,molcfg%LUPRI)
     endif
 
@@ -2698,23 +2698,23 @@ end subroutine verify_conv_prop
   call ls_dzero(WRK2,NDIM*NDIM)
   if (molcfg%solver%info_rsp) then
     WRITE (MOLCFG%LUPRI,*) ' Reduced S(2) before diagonal basis '
-    CALL OUTPUT(SRED,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
+    CALL LS_OUTPUT(SRED,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
     WRITE (MOLCFG%LUPRI,*) ' Reduced Xvec before diagonal basis '
-    CALL OUTPUT(EIVEC,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
+    CALL LS_OUTPUT(EIVEC,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
   endif
 
   CALL DGEMM('N','N',NDIM,NDIM,NDIM,1E0_realk,SRED,NDIM, &
      &           EIVEC,NDIM,0E0_realk,WRK1,NDIM)
   if (molcfg%solver%info_rsp) then
     WRITE (MOLCFG%LUPRI,*) ' REDS[2]*X'
-    CALL OUTPUT(WRK1,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
+    CALL LS_OUTPUT(WRK1,1,NDIM,1,NDIM,NDIM,NDIM,1,MOLCFG%LUPRI)
   endif
   CALL DGEMM('T','N',NDIM,NDIM,NDIM,1E0_realk,EIVEC,NDIM, &
      &           WRK1,NDIM,0E0_realk,WRK2,NDIM)
   if (molcfg%solver%info_rsp) then
          WRITE (MOLCFG%LUPRI,'(/A)') ' Reduced S(2) in diagonal basis :'
          WRITE (MOLCFG%LUPRI,'(I10,1P,D12.2)') (I,WRK2(I,I),I=1,NDIM)
-!        CALL OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,MOLCFG%LUPRI)
+!        CALL LS_OUTPUT(WRK2,1,KZYRED,1,KZYRED,KZYRED,KZYRED,1,MOLCFG%LUPRI)
   endif
 !
 !     select eigenvectors with positive normalization and store them
@@ -3215,21 +3215,21 @@ end subroutine verify_conv_prop
        !only print E2 and S2 once (for the first equation)
        if (igd==1.and.molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) "UNMOD E2 :"
-          call OUTPUT(red_E(1:2*ndim_red,1:2*ndim_red), 1, 2*ndim_red, &
+          call LS_OUTPUT(red_E(1:2*ndim_red,1:2*ndim_red), 1, 2*ndim_red, &
           &           1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
           write (molcfg%lupri,*) "UNMOD S2 :"
-          call OUTPUT(red_S(1:2*ndim_red,1:2*ndim_red), 1, 2*ndim_red, &
+          call LS_OUTPUT(red_S(1:2*ndim_red,1:2*ndim_red), 1, 2*ndim_red, &
           &           1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
        endif
 
        if (molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) "FREQUENCY IN SOLVE RED SPACE:",freq(igd)
           write (molcfg%lupri,*) "UNMOD E2 - omega S2:"
-          call OUTPUT(red_E(1:2*ndim_red,1:2*ndim_red) - freq(igd)* &
+          call LS_OUTPUT(red_E(1:2*ndim_red,1:2*ndim_red) - freq(igd)* &
           &           red_S(1:2*ndim_red,1:2*ndim_red), 1, 2*ndim_red, &
           &           1, 2*ndim_red, 2*ndim_red, 2*ndim_red, 1, molcfg%lupri)
           write (molcfg%lupri,*) 'UNMOD RHS:'
-          call OUTPUT(red_GD(1:2*ndim_red,igd), 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(red_GD(1:2*ndim_red,igd), 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
        endif
 
        !copy from red_E/S/GD into E2/S2/RHS, skipping resonant rows/cols
@@ -3245,13 +3245,13 @@ end subroutine verify_conv_prop
 
        if (molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) "REDUCED E2, solve_red_lineq:"
-          call OUTPUT(E2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
+          call LS_OUTPUT(E2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
           write (molcfg%lupri,*) "REDUCED S2, solve_red_lineq:"
-          call OUTPUT(S2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
+          call LS_OUTPUT(S2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
           write (molcfg%lupri,*) 'REDUCED E2 - omega*S2:'
-          call OUTPUT(E2 - freq(igd)*S2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
+          call LS_OUTPUT(E2 - freq(igd)*S2, 1, rdim, 1, rdim, rdim, rdim, 1, molcfg%lupri)
           write (molcfg%lupri,*) 'REDUCED RHS:'
-          call OUTPUT(RHS(:,igd), 1, rdim, 1, 1, rdim, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(RHS(:,igd), 1, rdim, 1, 1, rdim, 1, 1, molcfg%lupri)
        endif
 
        !Solve set of linear equations Ax = b: (Solution vector is found in RHS)
@@ -3264,7 +3264,7 @@ end subroutine verify_conv_prop
 
        if (molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) 'REDUCED Solution vector - solve_red_lineq:'
-          call OUTPUT(RHS(:,igd), 1, rdim, 1, 1, rdim, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(RHS(:,igd), 1, rdim, 1, 1, rdim, 1, 1, molcfg%lupri)
        endif
 
        !copy from RHS over to red_X, filling in zeros for the resonant indices
@@ -3276,7 +3276,7 @@ end subroutine verify_conv_prop
 
        if (molcfg%solver%info_rsp) then
           write (molcfg%lupri,*) 'Solution vector - MODIFIED - solve_red_lineq:'
-          call OUTPUT(red_X(1:2*ndim_red,igd), 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
+          call LS_OUTPUT(red_X(1:2*ndim_red,igd), 1, 2*ndim_red, 1, 1, 2*ndim_red, 1, 1, molcfg%lupri)
        endif
 
     enddo
@@ -3587,10 +3587,10 @@ subroutine orthogonalizeDegenerate(molcfg,D,S,F,eivecs,eival,nexci)
      !   enddo
      !enddo
      !WRITE(molcfg%lupri,*)'QQQ THE TRANSFORMED bE[2]b matrix'
-     !call output(EMAT2,1,nexci,1,nexci,nexci,nexci,1,lupri)
+     !call ls_output(EMAT2,1,nexci,1,nexci,nexci,nexci,1,lupri)
      !WRITE(molcfg%lupri,*)' '
      !WRITE(molcfg%lupri,*)'    THE TRANSFORMED bS[2]b matrix'
-     !call output(EMAT2,1,nexci,1,nexci,nexci,nexci,1,lupri)
+     !call ls_output(EMAT2,1,nexci,1,nexci,nexci,nexci,1,lupri)
 !----------------------------------------------------------------------
 
    CALL MAT_free(rho1)

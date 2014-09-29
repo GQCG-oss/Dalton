@@ -70,6 +70,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 #ifdef VAR_RSP
   use lsdalton_rsp_mod, only: lsdalton_response, get_excitation_energy
 #endif
+  use response_noOpenRSP_module, only: lsdalton_response_noOpenRSP
   ! DYNAMICS
   use dynamics_driver, only: LS_dyn_run
   ! SOEO
@@ -99,6 +100,10 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use integralinterfaceIchorMod, only: II_Unittest_Ichor,II_Ichor_link_test
   use dec_main_mod!, only: dec_main_prog
   use optimlocMOD, only: optimloc
+#if defined(ENABLE_QMATRIX)
+  use ls_qmatrix, only: ls_qmatrix_test, &
+                        ls_qmatrix_finalize
+#endif
   implicit none
   logical, intent(in) :: OnMaster
   logical, intent(inout):: meminfo_slaves
@@ -534,14 +539,21 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
 
-#ifdef VAR_RSP
         IF(config%response%tasks%doDipole.OR.config%response%tasks%doResponse)THEN
            CALL Print_Memory_info(lupri,'before lsdalton_response')
-           call lsdalton_response(ls,config,F(1),D(1),S)
+           IF(config%response%noOpenRSP)THEN
+              !A pure LSDALTON
+              call lsdalton_response_noOpenRSP(ls,config,F,D,S)
+           ELSE
+#ifdef VAR_RSP
+              call lsdalton_response(ls,config,F(1),D(1),S)
+#else
+              call lsquit('lsdalton_response requires VAR_RSP defined',-1)
+#endif
+           ENDIF
            CALL Print_Memory_info(lupri,'after lsdalton_response')
         ENDIF
-#endif
-        
+
         call config_shutdown(config)
 
         !
@@ -559,6 +571,18 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
         endif
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
+
+#if defined(ENABLE_QMATRIX)
+        if (config%do_qmatrix) then
+            ! performs the Fortran test of the QMatrix library
+            call ls_qmatrix_test(config%ls_qmat)
+            !- performs Delta-SCF using the QMatrix library (NB! this is not linear-scaling)
+            !-call ls_qmatrix_scf()
+            ! finalizes the QMatrix interface
+            call ls_qmatrix_finalize(config%ls_qmat)
+            config%do_qmatrix = .false.
+        end if
+#endif
 
 #ifdef MOD_UNRELEASED
         ! Numerical Derivatives
@@ -813,6 +837,10 @@ implicit none
   endif
 
   call lsmpi_finalize(lupri,.false.)
+#else
+  WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+       &- Should be zero - otherwise a leakage is present")') 0
+  WRITE(LUPRI,'(A)')'  This is a non MPI calculation so naturally no memory is allocated on slaves!'
 #endif
 
   if(OnMaster)then

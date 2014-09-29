@@ -2014,7 +2014,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         call MPI_Request_free(request,ierr)
 
 !        print*,'AlphaCD  MYNUM',MYNUM
-!        call output(AlphaCD3,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
+!        call ls_output(AlphaCD3,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
 
      ENDIF
   endif
@@ -2092,7 +2092,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         enddo
      ENDIF
 !     print*,'Calpha OWN contribtuion',MYNUM
-!     call output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
+!     call ls_output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
      !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
      !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
      !so we do:
@@ -2164,7 +2164,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         ENDIF
      ENDDO
 !     print*,'FINAL Calpha  MYNUM',MYNUM
-!     call output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
+!     call ls_output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
 
      call mem_dealloc(nbasisAuxMPI)
      call mem_dealloc(startAuxMPI)
@@ -2240,7 +2240,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END PARALLEL
 
 !     print*,'tocc  MYNUM',MYNUM
-!     call output(tocc,1,nvirt*nvirt,1,noccEOS*noccEOS,nvirt*nvirt,noccEOS*noccEOS,1,6)
+!     call ls_output(tocc,1,nvirt*nvirt,1,noccEOS*noccEOS,nvirt*nvirt,noccEOS*noccEOS,1,6)
 
      !     IF(DECinfo%onlyoccpart)THEN
      !        call mem_dealloc(EVocc)

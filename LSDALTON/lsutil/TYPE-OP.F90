@@ -437,7 +437,7 @@ IF(SET%RHSdfull)THEN
    dim2 = SIZE(SET%DfullRHS, 2)  
    DO imat = 1,SET%nDmatRHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymRHS(Imat)
-      call output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullRHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'RHSdfull',SET%RHSdfull
@@ -459,7 +459,7 @@ IF(SET%LHSdfull)THEN
    dim2 = SIZE(SET%DfullLHS, 2)  
    DO imat = 1,SET%nDmatLHS
       WRITE(LUPRI,*)'THE RHS DENSITY REAL(REALK) NR=',Imat,'Dim=',dim1,dim2,'Sym=',SET%DsymLHS(Imat)
-      call output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
+      call ls_output(SET%DfullLHS(:,:,imat),1,dim1,1,dim2,dim1,dim2,1,lupri)
    ENDDO
 ELSE
    WRITE(lupri,*)'LHSdfull',SET%LHSdfull
@@ -3060,7 +3060,7 @@ IF (iprint.GE.1) THEN
   WRITE(IUNIT,'(A,I4)') 'Printing reduced screening information with print level',iprint
   IF (redCS%isset) THEN
 #ifdef VAR_MPI
-    WRITE(IUNIT,'(A,G10.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
+    WRITE(IUNIT,'(A,G12.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
     DO iAO=1,4
       IF (IPRINT.GE.5) write(IUNIT,'(3X,A,I1)') 'Printing AO item info for iAO ',iAO
       call print_aoAtomInfo(redCS%AO(iAO),iprint,iunit)

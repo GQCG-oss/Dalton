@@ -24,6 +24,9 @@ use lattice_type, only: lvec_list_t
 use davidson_settings, only: RedSpaceItem
 use arhDensity, only: solveritem
 use precision
+#if defined(ENABLE_QMATRIX)
+use ls_qmatrix, only: LSQMat
+#endif
 
 private
 public :: responseitem,ConfigItem,LowAccuracyStartType,&
@@ -51,6 +54,7 @@ type responseitem
    !> Used to store info about solver that is used for calculation.
    type(RSPSOLVERinputitem) :: RSPSOLVERinput
    type(rsp_tasksitem) :: tasks
+   logical :: noOpenRSP
 end type responseitem
 
 !> \brief Contains info, settings and data for entire calculation (defaults or read from input file).
@@ -122,6 +126,10 @@ type ConfigItem
    type(pltinfo) :: PLT
    !> Should we do an F12 calc which requires a CABS basis
    logical              :: doF12
+#if defined(ENABLE_QMATRIX)
+   logical :: do_qmatrix = .false.
+   type(LSQMat) ls_qmat
+#endif
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
    !> set debugging mode for the PDM type arrays
@@ -186,20 +194,20 @@ config%integral%HIGH_RJ000_ACCURACY = .FALSE.
 ls%setting%scheme%HIGH_RJ000_ACCURACY = .FALSE.
 
 WRITE(config%LUPRI,'(A)')' '
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
      & config%integral%THRESHOLD*config%integral%J_THR
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
      &config%integral%THRESHOLD*config%integral%K_THR
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
      &config%integral%THRESHOLD*config%integral%ONEEL_THR
 if(config%integral%DALINK)THEN
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+   WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
         & config%integral%THRESHOLD*config%integral%K_THR      
    WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
    WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-   WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+   WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
         &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
 endif
 
@@ -239,20 +247,20 @@ config%integral%HIGH_RJ000_ACCURACY = LAStype%HIGH_RJ000_ACCURACY
 config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold
 
 WRITE(config%LUPRI,'(A)')' '
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Coulomb               :',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Overall Screening threshold is set to              :',config%integral%THRESHOLD
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Coulomb               :',&
      & config%integral%THRESHOLD*config%integral%J_THR
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for Exchange              :',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for Exchange              :',&
      &config%integral%THRESHOLD*config%integral%K_THR
-WRITE(config%LUPRI,'(A60,ES10.4)')'The Screening threshold used for One-electron operators:',&
+WRITE(config%LUPRI,'(A60,ES12.4)')'The Screening threshold used for One-electron operators:',&
      &config%integral%THRESHOLD*config%integral%ONEEL_THR
 if(config%integral%DALINK)THEN
    WRITE(config%LUPRI,'(A)')' '
-   WRITE(config%LUPRI,'(A,ES10.4)')'   DaLink have been activated, so in addition to using ',&
+   WRITE(config%LUPRI,'(A,ES12.4)')'   DaLink have been activated, so in addition to using ',&
         & config%integral%THRESHOLD*config%integral%K_THR      
    WRITE(config%LUPRI,'(A)')'   as a screening threshold on the integrals contribution to'
    WRITE(config%LUPRI,'(A)')'   the Fock matrix, we also use a screening threshold'
-   WRITE(config%LUPRI,'(A,ES10.4)')'   on the integrals contribution to the Energy:       ',&
+   WRITE(config%LUPRI,'(A,ES12.4)')'   on the integrals contribution to the Energy:       ',&
         &config%integral%THRESHOLD*config%integral%K_THR*(1.0E+1_realk**(-config%INTEGRAL%DASCREEN_THRLOG))
 endif
 

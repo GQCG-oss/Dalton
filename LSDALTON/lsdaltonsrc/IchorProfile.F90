@@ -188,9 +188,9 @@ IF(COMPARE)THEN
    ENDDO
  ENDDO
  write(lupri,*)'integralsIchor:'
- call output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+ call ls_output(integralsIchor,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
  write(lupri,*)'integralsThermie:'
- call output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
+ call ls_output(integralsII,1,dim1*dim2,1,dim3*dim4,dim1*dim2,dim3*dim4,1,lupri)
  call mem_dealloc(integralsIchor)
  call mem_dealloc(integralsII)
 ENDIF

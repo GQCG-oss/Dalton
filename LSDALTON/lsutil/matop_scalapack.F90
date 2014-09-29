@@ -1398,7 +1398,7 @@ module matrix_operations_scalapack
 !    enddo
 !    if(debug)then
 !       print*,'VISUAL'
-!       call output(VISUAL,1,ndim1,1,ndim2,ndim1,ndim2,1,6)
+!       call ls_output(VISUAL,1,ndim1,1,ndim2,ndim1,ndim2,1,6)
 !    endif
     localnrow2 = localnrow
 #endif
@@ -1915,7 +1915,7 @@ module matrix_operations_scalapack
      write(*,'("I am number ",I3," at postion (",I3,",",I3,")")')infpar%mynum,SLGrid%myrow,SLGrid%mycol
      write(*,'("and this is my block:A%localnrow,A%localncol:",I3,",",I3)')A%localnrow,A%localncol
      IF(A%localnrow*A%localncol.GT.0)THEN
-        call output(A%p,1,A%localnrow,1,A%localncol,A%localnrow,A%localncol,1,6)
+        call ls_output(A%p,1,A%localnrow,1,A%localncol,A%localnrow,A%localncol,1,6)
      ELSE
         write(*,*)'I have no block'
      ENDIF
@@ -2249,7 +2249,7 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_abs_max_elm(A,val)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
+     real(realk),intent(inout)   :: val
      !
      INTEGER      :: DESC_A(9), i,j
      REAL(REALK)  :: MAXA
@@ -2271,8 +2271,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_max_elm(A,val,pos)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer, intent(out)        :: pos(2)
+     real(realk),intent(inout)     :: val
+     integer, intent(inout)        :: pos(2)
      !
      real(realk), allocatable    :: vals(:)
      integer(kind=ls_mpik), allocatable        :: poss(:)
@@ -2329,8 +2329,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_min_elm(A,val,pos)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer, intent(out)        :: pos(2)
+     real(realk),intent(inout)     :: val
+     integer, intent(inout)        :: pos(2)
      !
      real(realk), allocatable    :: vals(:)
      integer(kind=ls_mpik), allocatable :: poss(:)
@@ -2387,8 +2387,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_max_diag_elm(A,pos,val)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer,intent(out)         :: pos
+     real(realk),intent(inout)   :: val
+     integer,intent(inout)       :: pos
      !
      INTEGER      :: DESC_A(9),i,j
      REAL(REALK)  :: MAXA(1)

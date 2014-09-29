@@ -88,6 +88,8 @@ module dec_typedef_module
      logical :: frozencore
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
+     !> Print fragment energies for full molecular cc
+     logical :: print_frags
      !> Enforce canonical orbitals in calculation 
      logical :: use_canonical
      !> Simulate full molecular calculation in DEC mode  (debug)
@@ -104,6 +106,9 @@ module dec_typedef_module
      logical :: use_singles
      !> is the density and other matrices in the grand-canonical basis?
      logical :: gcbasis
+     !> DEC-CC orbital-based (DECCO)
+     logical :: DECCO
+
 
 
      !> Restart options
@@ -336,8 +341,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
-     !> Which Fragment Reduction Scheme should be used
-     integer :: Frag_Red_Scheme
+     !> Which Fragment Reduction Scheme should be used for the occ space
+     integer :: Frag_RedOcc_Scheme
+     !> Which Fragment Reduction Scheme should be used for the vir space
+     integer :: Frag_RedVir_Scheme
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
@@ -351,7 +358,7 @@ module dec_typedef_module
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
      !> Temporary keyword to use clean version of the frag opt
-     logical :: orb_based_fragopt
+     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning
@@ -553,6 +560,9 @@ module dec_typedef_module
      integer :: nCabsAO
      !> Number of cabs MO orbitals
      integer :: nCabsMO
+     !> Number of possible fragments
+     integer :: nfrags
+     
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()

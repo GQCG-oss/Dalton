@@ -268,21 +268,21 @@ do Ipass = IpassStart,IpassEnd
    !nPassesP = 20 (OpenMP improved)
    nPass = 1
    IF(iPass.EQ.2)nPass = 5
-   IF(SpecialPass)nPass = 3
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 3
    ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,nPass,lupri)
 
 
    IF(iPass.EQ.2)nPass = 4
-   IF(SpecialPass)nPass = 2
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 2
    ICHARGE=8; Rxyz(1)=0.762266389544351E0_realk; Rxyz(2)=0.983877565461657E0_realk;Rxyz(3)=0.624979148086261E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(2),ICHARGE,Rxyz,nPass,lupri)
    IF(iPass.EQ.2)nPass = 3
-   IF(SpecialPass)nPass = 1
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 1
    ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
    IF(iPass.EQ.2)nPass = 2
-   IF(SpecialPass)nPass = 1
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 1
    ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=1.086728949849219E0_realk;Rxyz(3)=0.913548738546455E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,nPass,lupri)
    DO iao=1,4
@@ -365,7 +365,7 @@ do Ipass = IpassStart,IpassEnd
              KmatIchor = 0.0E0_realk
              call MakeRandomDmat(Dmat,dim2,dim4,nDmat) !NON SYMMETRIC DMAT
 !             WRITE(lupri,*)'The Density Matrix: '
-!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+!             call ls_output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
 
              if(associated(integralsII))THEN
                 call mem_dealloc(integralsII)
@@ -398,11 +398,11 @@ do Ipass = IpassStart,IpassEnd
              call FREE_SCREEN_ICHORERI
 
 !             WRITE(lupri,*)'The Exchange Matrix: '
-!             call output(KmatII(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             call ls_output(KmatII(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
 !             WRITE(lupri,*)'The Exchange Matrix: '
-!             call output(KmatIchor(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
+!             call ls_output(KmatIchor(:,:,2),1,dim1,1,dim3,dim1,dim3,1,lupri)
 !             WRITE(lupri,*)'The Density Matrix: '
-!             call output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
+!             call ls_output(Dmat(:,:,2),1,dim2,1,dim4,dim2,dim4,1,lupri)
 
              write(lupri,'(A,A,A,A,A,A,A,A,A)')'LINK BASIS(',BASISTYPE(iBasis1),',',&
                   & BASISTYPE(iBasis2),',',BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),') TESTING'
@@ -558,7 +558,7 @@ do Ipass = IpassStart,IpassEnd
           call SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
 !          WRITE(lupri,*)'The LHS BatchGab  DIM:',nBatchA,nBatchB,'atoms=',&
 !               & atomicmolecule(1)%nAtoms,atomicmolecule(2)%nAtoms
-!          call OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+!          call LS_OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
           IF(atomicmolecule(1)%nAtoms.NE.nBatchA)call lsquit('Error dim1 in IchorTestingScreen',-1)
           IF(atomicmolecule(2)%nAtoms.NE.nBatchB)call lsquit('Error dim2 in IchorTestingScreen',-1)
           call mem_alloc(IIBATCHGAB,nBatchA,nBatchB)
@@ -593,9 +593,9 @@ do Ipass = IpassStart,IpassEnd
                    WRITE(lupri,*)'Thermite Matrix OUTPUT'
                    call mat_print(GAB,1,dim1,1,dim2,lupri)
                    WRITE(lupri,*)'The Ichor BatchGab'
-                   call OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+                   call LS_OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
                    WRITE(lupri,*)'The Thermite BatchGab'
-                   call OUTPUT(IIBATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
+                   call LS_OUTPUT(IIBATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
                    call lsquit('Error in Ichor Screening Testing',-1)
 !                ELSE
 !                   print*,'ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))',ABS(IIBATCHGAB(Iatom,Jatom)-BATCHGAB(Iatom,Jatom))

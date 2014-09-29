@@ -508,7 +508,7 @@ DO iAtomA=1,ABsparseMat%nAtomsA
     WRITE(IUNIT,'(5X,A,I6,A,I6)') 'ABblock for atom A =',iAtomA, ' and atom B =',iAtomB
     DO iMat=1,currentBlock%nMat
       WRITE(IUNIT,'(5X,A,I6,A,I6)') 'Matrix number ',iMat, ' out of a total of',currentBlock%nMat
-          CALL output(currentBlock%elms(1,1,iMat),1,nA,1,nB,nA,nB,1,iunit)
+          CALL ls_output(currentBlock%elms(1,1,iMat),1,nA,1,nB,nA,nB,1,iunit)
     ENDDO
     currentBlock => currentBlock%next
     printed = .true.

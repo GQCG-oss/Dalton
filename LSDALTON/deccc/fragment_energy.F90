@@ -420,6 +420,10 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
     
+    !> Memory Stats
+     WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
+    call stats_globalmem(DECinfo%output)
+
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
        call get_f12_fragment_energy(MyFragment, t2occ%elm4)
@@ -2127,7 +2131,7 @@ contains
      logical :: BruteForce,FockMatrixOrdering
 
 
-     if (DECinfo%orb_based_fragopt) then
+     if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
             & MyMolecule,mylsitem,freebasisinfo)
