@@ -279,6 +279,7 @@ C
 #include "dftcom.h"
 #include "rspprp.h"
 #include "esg.h"
+#include "pcmlog.h"
 C defined parallel calculation types 
 #include "iprtyp.h"
 C

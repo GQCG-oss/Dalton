@@ -65,6 +65,28 @@
         call qexit('pe_ifc_fock')
       end subroutine pe_ifc_fock
 
+      subroutine pe_ifc_infld
+        use polarizable_embedding, only: pe_master
+        implicit none
+        call qenter('pe_ifc_infld')
+        call pe_master(runtype='infld')
+        call qexit('pe_ifc_infld')
+      end subroutine
+
+      subroutine pe_ifc_grad(denmats, molgrad, nmats)
+        use polarizable_embedding, only: pe_master
+        use pe_variables, only: qmnucs
+        implicit none
+#include "inforb.h"
+        integer, intent(in) :: nmats
+        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
+        real*8, dimension(3,qmnucs), intent(out) :: molgrad
+        call qenter('pe_ifc_grad')
+        call pe_master(runtype='molgrad',denmats=denmats,
+     &                 molgrads=molgrad, nmats=1)
+        call qexit('pe_ifc_grad')       
+      end subroutine pe_ifc_grad 
+
       subroutine pe_ifc_energy(denmats, nmats)
         use polarizable_embedding, only: pe_master
         implicit none

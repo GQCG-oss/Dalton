@@ -1610,6 +1610,7 @@ C
 #include "parint.h"
 #include "r12int.h"
 #include "expopt.h"
+#include "pcmlog.h"
 C
 #include "cbisol.h"
 #include "incore.h"
@@ -1970,6 +1971,7 @@ C
 #include "maxorb.h"
 #include "dummy.h"
 #include "mtags.h"
+#include "pcmlog.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DIA2SO, ZFS2EL,
      &        DISTRI, NOCONT, SPNORB,
@@ -2444,7 +2446,7 @@ C
                CALL ADDGRD(GSOLNN)
             END IF
             IF (PCM) CALL ADDGRD(GSOLCV)
-            if (peqm) call addgrd(pegrad)
+C            if (peqm) call addgrd(pegrad)
             CALL PRIGRD(GRDMOL,WORK(KCSTRA),WORK(KSCTRA))
             NCDEP3 = 3*NUCDEP
             GRDNRM = DDOT(NCDEP3,GRDMOL,1,GRDMOL,1)

@@ -318,7 +318,6 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-        use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -374,7 +373,7 @@ C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
 !     peqm
-      real*8, dimension(:,:), allocatable :: molgrad
+      real*8, dimension(:,:), allocatable :: MOLGRAD
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -898,21 +897,22 @@ C     NHL 03/13
 
       ! den dalwrk vi sender ind kommer til at holde PE-gradientbidrag.
 
-      if (propty .and. peqm) then
-         allocate(molgrad(3,natoms))
-         call pe_master(runtype='molgrad', denmats=denmat,
-     &                  molgrads=molgrad, nmats=1)
-         j = 1
-         do i = 1, natoms
-             pegrad(j:j+2) = molgrad(:,i)
-             j = j + 3
-         end do
-         deallocate(molgrad)
+      IF (PROPTY .AND. PEQM) THEN
+         ALLOCATE(MOLGRAD(3,NATOMS))
+         CALL PE_IFC_GRAD(DENMAT, MOLGRAD, 1)
+!         call pe_master(runtype='molgrad', denmats=denmat,
+!     &                  molgrads=molgrad, nmats=1)
+         J = 1
+         DO I = 1, natoms
+             PEGRAD(J:J+2) = MOLGRAD(:,I)
+             J = J + 3
+         END DO
+         DEALLOCATE(MOLGRAD)
 !     når man giver input variable ved "navn=", så kan man skrive dem i
 !     vilkårlig rækkefølge     
 !     What is expgra and should we do something if true. It's something
 !     with the analytical gradient.
-      end if
+      END IF
 C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
 C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
 

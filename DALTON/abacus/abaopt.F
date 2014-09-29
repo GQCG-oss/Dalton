@@ -2246,6 +2246,7 @@ C
             else
                 pe_infld = .false.
             end if
+!            CALL PE_IFC_INFLD
             call pe_master('infld')
             pe_infld = infld_save
          end if
