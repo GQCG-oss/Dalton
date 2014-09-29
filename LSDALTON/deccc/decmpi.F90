@@ -1115,31 +1115,40 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
     real(realk)        :: vovo(:,:,:,:),ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
-    logical            :: print_frags
+    logical            :: print_frags,abc
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
     call ls_mpi_buffer(DECinfo%memory,infpar%master)
     call ls_mpi_buffer(nbasis,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(print_frags,infpar%master)
+    call ls_mpi_buffer(abc,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     ! communicate rest of the quantities, master here, slaves back in the slave
     ! routine, due to crappy pointer/non-pointer issues (->allocations)
     if (infpar%lg_mynum .eq. infpar%master) then
-       call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-       call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+       if (abc) then
+
+          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+
+       else
+
+          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+          call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+       endif
     endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata

@@ -223,6 +223,10 @@ module dec_typedef_module
      !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
      logical :: v2o2_free_solver
 
+     !> ccsd(T) settings
+     !> *****************************
+     logical :: abc
+
      !> F12 settings
      !> ************
      !> Use F12 correction

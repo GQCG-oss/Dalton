@@ -2,7 +2,7 @@
 !> DEC-CCSD(T) routines
 !> \brief: ccsd(t) module
 !> \author: Janus Juul Eriksen
-!> \date: 2012-2013, Aarhus
+!> \date: 2012-2014, Aarhus
 module ccsdpt_module
 
 #ifdef VAR_MPI
@@ -93,7 +93,7 @@ contains
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
   subroutine ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_doubles,&
-                         & ccsdpt_singles,ccsdpt_doubles,e4)
+                         & ccsdpt_singles,print_frags,abc,ccsdpt_doubles,e4)
 
     implicit none
 
@@ -116,7 +116,7 @@ contains
     ! if this is a parallel calculation
     type(array) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     ! abc scheme
-    type(array) :: ooov ! integrals (AI|JK) in the order (K,I,J,A)
+    type(array) :: ooov ! integrals (AI|JK) in the order (I,J,K,A)
     ! vovv is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
     type(array) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
@@ -132,11 +132,12 @@ contains
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
-    type(array) :: ccsdpt_doubles_2
     type(array),intent(inout) :: ccsdpt_singles
+    logical :: print_frags,abc
     type(array),intent(inout),optional :: ccsdpt_doubles
     real(realk),optional :: e4 
-    logical :: print_frags,master
+    logical :: master
+    type(array) :: ccsdpt_doubles_2
 #ifdef VAR_OPENACC
     !> device type
     integer(acc_device_kind) :: acc_device_type
@@ -144,7 +145,6 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    print_frags = .false.
     master = .true.
 #ifdef VAR_MPI
     master = (infpar%lg_mynum == infpar%master)
@@ -159,29 +159,6 @@ contains
     dims_aaa    = [nvirt,nvirt,nvirt]
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
-
-    ! sanity checks
-    if (present(ccsdpt_doubles)) then
-
-       if (present(e4)) then
-
-          call lsquit('print == .true., but e4 energy present',DECinfo%output)
-
-       else
-
-          print_frags = .true.
-
-       endif
-
-    else
-
-       if (.not. present(e4)) then
-
-          call lsquit('print == .false., but no e4 energy present',DECinfo%output)
-
-       endif
-
-    endif
 
     if (print_frags) then
 
@@ -217,8 +194,17 @@ contains
       ! ************************************************************
       ! transform vovo and ccsd doubles amplitudes to diagonal basis
       ! ************************************************************
-      call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
-      call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+      if (abc) then
+
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+      else
+
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
+         call local_can_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+
+      endif
 
     end if
 
@@ -227,14 +213,14 @@ contains
 
     call time_start_phase(PHASE_COMM)
 
-   ! bcast the JOB specifier and distribute data to all the slaves within local group
+    ! bcast the JOB specifier and distribute data to all the slaves within local group
     waking_the_slaves: if ((nodtotal .gt. 1) .and. master) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,mylsitem,print_frags)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_doubles%elm4,mylsitem,print_frags,abc)
 
     end if waking_the_slaves
 
@@ -249,13 +235,20 @@ contains
     call time_start_phase(PHASE_WORK)
 #endif
 
-    ! ***************************************************
-    ! get vo³, v²o², and v³o integrals in proper sequence
-    ! ***************************************************
+    ! ********************************************
+    ! get vo³ and v³o integrals in proper sequence
+    ! ********************************************
     ! note: the integrals are calculated in canonical basis
 
-!    call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
-    call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv)
+    if (abc) then
+
+       call get_CCSDpT_integrals_abc(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ooov,vovv)
+
+    else
+
+       call get_CCSDpT_integrals_ijk(mylsitem,nbasis,nocc,nvirt,C_can_occ%val,C_can_virt%val,ovoo,vvvo)
+
+    endif
 
     ! release occ and virt canonical MOs
     call array2_free(C_can_occ)
@@ -287,29 +280,46 @@ contains
     ! and ccsdpt_contract_22, respectively.
     if (print_frags) then
 
-       ccsdpt_doubles_2 = array_init(dims_iaai,4)
+       if (abc) then
+
+          ccsdpt_doubles_2 = array_init([nvirt,nocc,nocc,nvirt],4)
+
+       else
+
+          ccsdpt_doubles_2 = array_init([nocc,nvirt,nvirt,nocc],4)
+ 
+       endif
+
        call array_zero(ccsdpt_doubles_2)
 
     endif
 
-    !**********************************************************
-    ! here: the main ijk-loop: this is where the magic happens!
-    !**********************************************************
+    !************************************************************!
+    ! here: the main  (t) loop: this is where the magic happens! !
+    !************************************************************!
 
 #ifdef VAR_MPI
 
     call time_start_phase(PHASE_WORK)
 
-    ! the parallel version of the ijk-loop
-    if (print_frags) then
+    if (abc) then
 
-       call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
-                       & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+       call lsquit('abc_loop_par is not implemented yet...',DECinfo%output)
 
     else
 
-       call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
-                       & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,e4=e4)
+       ! the parallel version of the ijk-loop
+       if (print_frags) then
+   
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+   
+       else
+   
+          call ijk_loop_par(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,nodtotal,ccsdpt_singles%elm1,e4=e4)
+   
+       endif
 
     endif
 
@@ -317,31 +327,36 @@ contains
 
 #else
 
-    ! the serial version of the ijk-loop
-!    if (print_frags) then
-!
-!       call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-!                       & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
-!
-!    else
-!
-!       call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
-!                       & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
-!
-!    endif
-    ! the serial version of the abc-loop
-    call array_reorder(vovo,[3,4,1,2])
-    call array_reorder(ccsd_doubles,[3,4,1,2])
-    call array_reorder(ccsdpt_doubles,[3,4,1,2])
-    call array_reorder(ccsdpt_doubles_2,[2,1,4,3])
-    call array_reorder(ccsdpt_singles,[2,1])
-    call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
-                    & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
-    call array_reorder(vovo,[3,4,1,2])
-    call array_reorder(ccsd_doubles,[3,4,1,2])
-    call array_reorder(ccsdpt_doubles,[3,4,1,2])
-    call array_reorder(ccsdpt_doubles_2,[2,1,4,3])
-    call array_reorder(ccsdpt_singles,[2,1])
+    if (abc) then
+
+       ! the serial version of the abc-loop
+       if (print_frags) then
+
+          call abc_loop_ser(nocc,nvirt,ooov%elm1,vovo%elm1,vovv%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+
+       else
+
+          call lsquit('abc_loop_ser for print_frags == .false. is not implemented yet...',DECinfo%output)
+
+       endif
+
+    else
+
+       ! the serial version of the ijk-loop
+       if (print_frags) then
+   
+          call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,ccsdpt_doubles%elm1,ccsdpt_doubles_2%elm1)
+   
+       else
+   
+          call ijk_loop_ser(nocc,nvirt,ovoo%elm1,vovo%elm1,vvvo%elm1,ccsd_doubles%elm1,&
+                          & eivalocc,eivalvirt,ccsdpt_singles%elm1,e4=e4)
+   
+       endif
+
+    endif
 
 #endif
 
@@ -361,6 +376,7 @@ contains
        call time_start_phase(PHASE_COMM)
 
        call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
+
        if (print_frags) then
 
           call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
@@ -385,10 +401,18 @@ contains
        if (print_frags) call array_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
-!       call array_free(ovoo)
-!       call array_free(vvvo)
-       call array_free(ooov)
-       call array_free(vovv)
+
+       if (abc) then
+
+          call array_free(ooov)
+          call array_free(vovv)
+
+       else
+
+          call array_free(ovoo)
+          call array_free(vvvo)
+
+       endif
 
        ! now, release the slaves  
        return
@@ -410,7 +434,7 @@ contains
                                   &ccsdpt_doubles_2%dims(2),ccsdpt_doubles_2%dims(3),ccsdpt_doubles_2%dims(4),&
                                   &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
    
-       ! release ccsdpt_doubles_2 array4 structure
+       ! release ccsdpt_doubles_2 array structure
        call array_free(ccsdpt_doubles_2)
 
     endif
@@ -421,12 +445,29 @@ contains
 
     if (print_frags) then
 
-       call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
-       call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+       if (abc) then
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+
+       else
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+
+       endif
 
     else
 
-       call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
+       if (abc) then
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,ov=ccsdpt_singles%elm1)
+
+       else
+
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vo=ccsdpt_singles%elm1)
+
+       endif
 
     endif
 
@@ -437,11 +478,18 @@ contains
     ! clean up
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
-!    call array_free(ovoo)
-!    call array_free(vvvo)
-    call array_free(ooov)
-    call array_free(vovv)
 
+    if (abc) then
+
+       call array_free(ooov)
+       call array_free(vovv)
+
+    else
+
+       call array_free(ovoo)
+       call array_free(vvvo)
+
+    endif
 
   end subroutine ccsdpt_driver
 
@@ -1561,22 +1609,6 @@ contains
     ! init 3d wrk array
     call mem_alloc(trip_tmp,nocc,nocc,nocc)
 
-!    call mem_alloc(ovoo_2,nocc,nocc,nocc,nvirt)
-!    call mem_alloc(vvoo_2,nocc,nocc,nvirt,nvirt)
-!    call mem_alloc(vvvo_2,nvirt,nocc,nvirt,nvirt)
-!    call mem_alloc(ccsd_doubles_2,nocc,nocc,nvirt,nvirt)
-!    call mem_alloc(ccsdpt_doubles_3,nocc,nocc,nvirt,nvirt)
-!    call mem_alloc(ccsdpt_doubles_4,nvirt,nocc,nocc,nvirt)
-!    call mem_alloc(ccsdpt_singles_2,nocc,nvirt)
-!    call array_reorder_4d(1.0E0_realk,ovoo,nocc,nvirt,nocc,nocc,[1,4,3,2],0.0E0_realk,ovoo_2)
-!    call array_reorder_4d(1.0E0_realk,vvoo,nvirt,nvirt,nocc,nocc,[3,4,1,2],0.0E0_realk,vvoo_2)
-!    call array_reorder_4d(1.0E0_realk,vvvo,nvirt,nvirt,nvirt,nocc,[1,4,3,2],0.0E0_realk,vvvo_2)
-!    call array_reorder_4d(1.0E0_realk,ccsd_doubles,nvirt,nvirt,nocc,nocc,[3,4,1,2],0.0E0_realk,ccsd_doubles_2)
-!
-!    ccsdpt_doubles_3 = 0.0E0_realk
-!    ccsdpt_doubles_4 = 0.0E0_realk
-!    ccsdpt_singles_2 = 0.0E0_realk
-
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
     async_id(1) = int(1,kind=acc_handle_kind) ! handle for ccsd_doubles
@@ -1741,17 +1773,6 @@ contains
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
-
-!    call mem_dealloc(ovoo_2)
-!    call mem_dealloc(vvoo_2)
-!    call mem_dealloc(vvvo_2)
-!    call mem_dealloc(ccsd_doubles_2)
-!    call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_3,nocc,nocc,nvirt,nvirt,[3,4,1,2],0.0E0_realk,ccsdpt_doubles)
-!    call mem_dealloc(ccsdpt_doubles_3)
-!    call array_reorder_4d(1.0E0_realk,ccsdpt_doubles_4,nvirt,nocc,nocc,nvirt,[3,4,1,2],0.0E0_realk,ccsdpt_doubles_2)
-!    call mem_dealloc(ccsdpt_doubles_4)
-!    call array_reorder_2d(1.0E0_realk,ccsdpt_singles_2,nocc,nvirt,[2,1],0.0E0_realk,ccsdpt_singles)
-!    call mem_dealloc(ccsdpt_singles_2)
 
   end subroutine abc_loop_ser
 
@@ -2064,16 +2085,16 @@ contains
     ! since i .ge. j, the composite ij indices will make up a lower triangular matrix.
     ! for each ij, k (where j .ge. k) jobs have to be carried out.
     ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
-    ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
+    ! i.e. the largest jobs will be those for which the ij index appears near the diagonal.
     ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
     ! for j-values in descending order.
 
     ! the below is the lower triangular part of the ij (5*5) matrix written in row-major order
 
-    ! ||  1               ||
-    ! ||  2   3           ||
-    ! ||  4   5  6        ||
-    ! ||  7   8  9 10     ||
+    ! ||   1              ||
+    ! ||   2  3           ||
+    ! ||   4  5  6        ||
+    ! ||   7  8  9 10     ||
     ! ||  11 12 13 14 15  ||
 
     ! examples of ij --> i,j conversion
@@ -2153,7 +2174,7 @@ contains
 
     nodtotal = infpar%lg_nodtot
 
-    ! fill the jobs array with values of ij stored in ij_array
+    ! fill the jobs array with values of ij stored in ij_array.
     ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
 
     ! the below algorithm distributes the jobs evenly among the nodes.
@@ -2164,7 +2185,7 @@ contains
 
        if (fill_sum .le. njobs) then
 
-          jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
+          jobs(fill + 1) = ij_array(fill_sum) 
 
        else
 
@@ -6816,12 +6837,11 @@ contains
           n = dimAlpha*nvirt**2
           call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(1,GammaStart),nvirt,tmp1,k,0.0E0_realk,tmp3,m)
 
-#ifdef VAR_MPI
-          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           m = nvirt**3
           k = dimAlpha
           n = 1
-
+#ifdef VAR_MPI
+          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           do i=1,nocc
 
              ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
@@ -6874,13 +6894,6 @@ contains
 
 #else
 
-          ! reorder tmp1 and do vvvo(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
-          m = nvirt**3
-          k = dimAlpha
-!          n = nocc
-          n = 1
-!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart,1),nbasis,0.0E0_realk,tmp1,m)
-!          call array_reorder_4d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,nocc,[3,2,1,4],1.0E0_realk,vvvo%elm1)
           do i=1,nocc
 
              ! for description, see mpi section above
@@ -6951,7 +6964,7 @@ contains
 
   !> \brief Get MO integrals for abc-CCSD(T) (in canonical basis), see integral storing order below.
   !> \author Janus Eriksen and Kasper Kristensen
-  !> \date September-October 2014
+  !> \date September 2014
   subroutine get_CCSDpT_integrals_abc(MyLsitem,nbasis,nocc,nvirt,Cocc,Cvirt,ooov,vovv)
 
     implicit none
@@ -7021,6 +7034,7 @@ contains
     dims = [nvirt,nocc,nvirt,nvirt]
 
 #ifdef VAR_MPI
+
     mode   = MPI_MODE_NOCHECK
     master = (infpar%lg_mynum == infpar%master)
 
@@ -7607,9 +7621,6 @@ contains
        size1 = max(size1,tmpI)
        tmpI = i8*alphadim*nocc*nvirt**2
        size1 = max(size1,tmpI)
-! temp!!!!!
-       tmpI = i8*nvirt**3
-       size1 = max(size1,tmpI)
 
     else
 
@@ -7633,9 +7644,10 @@ contains
        size2 = max(size2,tmpI)
        tmpI = i8*alphadim*gammadim*nocc*nvirt
        size2 = max(size2,tmpI)
-! temp!!!!!
-       tmpI = i8*nvirt**3
+#ifdef VAR_MPI
+       tmpI = i8*nocc*nvirt**2
        size2 = max(size2,tmpI)
+#endif
 
     else
 
@@ -7652,9 +7664,6 @@ contains
 
        size3 = i8*alphadim*gammadim*nocc**2
        tmpI = i8*alphadim*nocc**3
-       size3 = max(size3,tmpI)
-! temp!!!!!
-       tmpI = i8*nvirt**3
        size3 = max(size3,tmpI)
  
     else
@@ -7712,32 +7721,63 @@ end module ccsdpt_module
     type(array) :: vovo,ccsd_t2, ccsdpt_t2
     real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
-    logical :: print_frags
+    logical :: print_frags,abc
 
+    abc = .false.
     print_frags = .false.
 
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_t2%elm4,mylsitem,print_frags)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo%elm4,ccsd_t2%elm4,mylsitem,print_frags,abc)
 
     !FIXME: split MPI messages!!!!!!!!!!
     ! init and receive vovo and ccsd_doubles array structures
-    vovo = array_init([nvirt,nvirt,nocc,nocc],4)
-    ccsd_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
-    call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
-    call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+    if (abc) then
+
+       vovo = array_init([nocc,nocc,nvirt,nvirt],4)
+       ccsd_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
+
+       call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+
+    else
+
+       vovo = array_init([nvirt,nvirt,nocc,nocc],4)
+       ccsd_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+
+       call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+       call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+    endif
 
     if (print_frags) then
  
        ! init ccsd(t) singles and ccsd(t) doubles
-       ccsdpt_t1 = array_init([nvirt,nocc],2)
-       ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+       if (abc) then
+
+          ccsdpt_t1 = array_init([nocc,nvirt],2)
+          ccsdpt_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
+
+       else
+
+          ccsdpt_t1 = array_init([nvirt,nocc],2)
+          ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+
+       endif
 
     else
 
        ! init ccsd(t) singles
-       ccsdpt_t1 = array_init([nvirt,nocc],2)
+       if (abc) then
+
+          ccsdpt_t1 = array_init([nocc,nvirt],2)
+
+       else
+
+          ccsdpt_t1 = array_init([nvirt,nocc],2)
+
+       endif
        ccsdpt_e4 = 0.0E0_realk
 
     endif
@@ -7748,12 +7788,12 @@ end module ccsdpt_module
     if (print_frags) then
 
        call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_t2,&
-                               & ccsdpt_t1,ccsdpt_t2)
+                               & ccsdpt_t1,print_frags,abc,ccsdpt_t2)
 
     else
 
        call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_t2,&
-                               & ccsdpt_t1,e4=ccsdpt_e4)
+                               & ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
 
     endif
 
@@ -7762,6 +7802,7 @@ end module ccsdpt_module
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
     call array_free(vovo)
     call array_free(ccsd_t2)
+
     if (print_frags) then
 
        call array_free(ccsdpt_t1)
@@ -7772,6 +7813,7 @@ end module ccsdpt_module
        call array_free(ccsdpt_t1)
 
     endif
+
     call ls_free(mylsitem)
 
   end subroutine ccsdpt_slave

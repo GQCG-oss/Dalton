@@ -93,7 +93,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
-   logical :: local
+   logical :: local,print_frags,abc
    real(realk) :: InteractionE,InteractionECCSDPT4,InteractionECCSDPT5
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
@@ -230,21 +230,46 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       nocc_tot = MyMolecule%nocc
    
       if(ccmodel == MODEL_CCSDpT)then
-  
-         call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-         call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
+         print_frags = DECinfo%print_frags
+         abc = DECinfo%abc
  
-         ccsdpt_t1 = array_init([nvirt,nocc],2)
-         ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+         if (abc) then
+
+            call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call array_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
    
+            ccsdpt_t1 = array_init([nocc,nvirt],2)
+            ccsdpt_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
+
+         else
+ 
+            call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+    
+            ccsdpt_t1 = array_init([nvirt,nocc],2)
+            ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+   
+         endif
+
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
-               & ccsdpt_t1,ccsdpt_t2)
+               & ccsdpt_t1,print_frags,abc,ccsdpt_t2)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,ccsdpt_t2)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
          end if
-   
+  
+         ! now, reorder amplitude and integral arrays
+         if (abc) then
+
+            call array_reorder(ccsdpt_t1,[2,1]) ! order (i,a) --> (a,i)
+            call array_reorder(VOVO,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
+            call array_reorder(ccsdpt_t2,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
+            call array_reorder(t2_final,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
+     
+         endif
+ 
          if(DECinfo%PL>1)then
             call time_start_phase(PHASE_WORK,dwwork = time_pT_work, dwcomm = time_pT_comm, dwidle = time_pT_idle, &
                &labeldwwork = 'MASTER WORK pT: ',&
@@ -456,17 +481,31 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       if(ccmodel == MODEL_CCSDpT)then
 
-         call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-         call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+         print_frags = DECinfo%print_frags
+         abc = DECinfo%abc
 
-         ccsdpt_t1 = array_init([nvirt,nocc],2)
+         if (abc) then
+
+            call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call array_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+
+            ccsdpt_t1 = array_init([nocc,nvirt],2)
+
+         else
+
+            call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call array_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
+            ccsdpt_t1 = array_init([nvirt,nocc],2)
+
+         endif
 
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
-               & ccsdpt_t1,e4=ccsdpt_e4)
+               & ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,e4=ccsdpt_e4)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
          end if
 
          ! free integrals

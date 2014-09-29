@@ -181,6 +181,8 @@ contains
     DECinfo%array4OnFile            = .false.
     DECinfo%array4OnFile_specified  = .false.
 
+    ! ccsd(t) settings
+    DECinfo%abc = .false.
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -333,6 +335,7 @@ contains
        case('.CCSD(T)') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
+       case('.PT_ABC'); DECinfo%abc=.true.
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
 !#ifdef VAR_MPI
