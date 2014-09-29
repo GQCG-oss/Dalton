@@ -268,21 +268,21 @@ do Ipass = IpassStart,IpassEnd
    !nPassesP = 20 (OpenMP improved)
    nPass = 1
    IF(iPass.EQ.2)nPass = 5
-   IF(SpecialPass)nPass = 3
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 3
    ICHARGE=6; Rxyz(1)=0.813381591740787E0_realk; Rxyz(2)=1.059191498062862E0_realk;Rxyz(3)=0.889158554601339E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(1),ICHARGE,Rxyz,nPass,lupri)
 
 
    IF(iPass.EQ.2)nPass = 4
-   IF(SpecialPass)nPass = 2
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 2
    ICHARGE=8; Rxyz(1)=0.762266389544351E0_realk; Rxyz(2)=0.983877565461657E0_realk;Rxyz(3)=0.624979148086261E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(2),ICHARGE,Rxyz,nPass,lupri)
    IF(iPass.EQ.2)nPass = 3
-   IF(SpecialPass)nPass = 1
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 1
    ICHARGE=9; Rxyz(1)=0.736938390171405E0_realk; Rxyz(2)=1.108186821166992E0_realk;Rxyz(3)=0.713699152299640E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(3),ICHARGE,Rxyz,nPass,lupri)
    IF(iPass.EQ.2)nPass = 2
-   IF(SpecialPass)nPass = 1
+   IF(iPass.EQ.2.AND.SpecialPass)nPass = 1
    ICHARGE=17; Rxyz(1)=0.574178167982901E0_realk; Rxyz(2)=1.086728949849219E0_realk;Rxyz(3)=0.913548738546455E0_realk; 
    call build_unittest_atomicmolecule(atomicmolecule(4),ICHARGE,Rxyz,nPass,lupri)
    DO iao=1,4
