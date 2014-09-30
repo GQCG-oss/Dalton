@@ -8,11 +8,14 @@ MODULE IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorPrecisionModule
 use IchorMemory
 use IchorCommonModule
-use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod
+use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
+     & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 private 
 public :: IchorCoulombIntegral_CPU_McM_general, &
-     & IchorCoulombIntegral_CPU_McM_general_size
+     & IchorCoulombIntegral_CPU_McM_general_size, &
+     & TmpArray3,TmpArray4,DetermineSizeTmpArray34, &
+     & PreCalciChorSPHMAT, FreeiChorSPHMAT
 
 !build from old IchorEri_CoulombIntegral_general.f90 in
 !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
@@ -25,11 +28,31 @@ type vector
 real(realk),pointer :: elms(:)
 end type vector
 type(vector),allocatable :: SPH_MAT(:)
+integer :: nTmpArray3,nTmpArray4
+real(realk),allocatable :: TmpArray3(:),TmpArray4(:)
 
 CONTAINS
+  subroutine DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,nPasses,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,AngmomP,AngmomQ,AngmomPQ,nTmpArray3o,nTmpArray4o)
+    implicit none
+    integer,intent(in) :: nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,nPasses
+    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD,AngmomP,AngmomQ,AngmomPQ
+    integer,intent(inout) :: nTmpArray3o,nTmpArray4o
+    !TmpArray3 used Ecoeff and Rpq
+    nTmpArray3o = MAX(nTUVQ*nCartOrbCompQ*nPrimQ,nTUVP*nCartOrbCompP*nPrimP*nPasses,nPrimQ*nPrimP*nPasses*3)
+    !TmpArray4 used for RJ000 and ETIJ (tmp array in building Ecoeff)
+    nTmpArray4o = MAX(nPasses*nPrimQ*nPrimP*(AngmomPQ+1),nPrimQ*(AngmomQ+1)*(AngmomC+1)*(AngmomD+1)*3)
+    nTmpArray4o = MAX(nTmpArray4o,nPasses*nPrimP*(AngmomP+1)*(AngmomA+1)*(AngmomB+1)*3)
+    nTmpArray3 = nTmpArray3o
+    nTmpArray4 = nTmpArray4o
+  end subroutine DetermineSizeTmpArray34
+
   subroutine IchorCoulombIntegral_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -45,6 +68,9 @@ CONTAINS
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD,nAtomsA,nAtomsB
     integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD
+    integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+    integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
     real(realk),intent(inout) :: TmpArray1(TMParray1maxsize),TmpArray2(TMParray2maxsize)
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)
     logical,intent(in)     :: Qsegmented,Psegmented,sphericalGTO,PQorder
@@ -63,52 +89,25 @@ CONTAINS
     real(realk),intent(in) :: Pdistance12(3*nAtomsA*nAtomsB) !full set nAtomsA*nAtomsB
     !local variables
 !    real(realk),allocatable :: squaredDistance(:),Rpq(:)
-    integer :: AngmomP,AngmomQ,AngmomPQ,nTUV,nTUVQ
+    integer :: AngmomP,AngmomQ,AngmomPQ
     logical :: RHS,TMP1
-    integer :: ijk1,ijk2,ijkPcart,ijk1s,ijk2s,ijkPsph
-    integer :: ijk3,ijk4,ijkQcart,ijk3s,ijk4s,ijkQsph,nTUVP
+!    integer :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+!    integer :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD
+!    integer :: nCartOrbCompP,nOrbCompP,nCartOrbCompQ,nOrbCompQ
     logical :: Sph1,Sph2,Sph3,Sph4,SphericalTransP,SphericalTransQ
-    integer :: AngmomID,nTmpArray3,nTmpArray4,TUV,J,T,U,V,I
+    integer :: AngmomID,TUV,J,T,U,V,I
     integer,parameter :: nPassQ = 1
-    real(realk),allocatable :: TmpArray3(:),TmpArray4(:)
     !FIXME this should be called at a much higher place
-    CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
 
     AngmomP = AngmomA+AngmomB     
     AngmomQ = AngmomC+AngmomD
     AngmomPQ  = AngmomP + AngmomQ
-    nTUV=(AngmomPQ+1)*(AngmomPQ+2)*(AngmomPQ+3)/6
-    ijk1 = (AngmomA + 1)*(AngmomA + 2)/2
-    ijk2 = (AngmomB + 1)*(AngmomB + 2)/2
-    ijk3 = (AngmomC + 1)*(AngmomC + 2)/2
-    ijk4 = (AngmomD + 1)*(AngmomD + 2)/2
-    ijkPcart = ijk1*ijk2
-    ijkQcart = ijk3*ijk4
-    ijk1s = 2*AngmomA + 1
-    ijk2s = 2*AngmomB + 1
-    ijk3s = 2*AngmomC + 1
-    ijk4s = 2*AngmomD + 1
-    ijkPsph = ijk1s*ijk2s
-    ijkQsph = ijk3s*ijk4s
-    nTUVP=(AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
-    nTUVQ=(AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
     Sph1 = sphericalGTO.AND.(AngmomA.GT. 1)
     Sph2 = sphericalGTO.AND.(AngmomB.GT. 1)
     Sph3 = sphericalGTO.AND.(AngmomC.GT. 1)
     Sph4 = sphericalGTO.AND.(AngmomD.GT. 1)
     SphericalTransP = Sph1.OR.Sph2
     SphericalTransQ = Sph3.OR.Sph4
-
-    !ACC DATA REGION to transfer TmpArray3 = Ecoeff,Rpq
-    !TmpArray3 used Ecoeff and Rpq
-    nTmpArray3 = MAX(nTUVQ*ijkQcart*nPrimQ,nTUVP*ijkPcart*nPrimP*nPasses,nPrimQ*nPrimP*nPasses*3)
-    allocate(TmpArray3(nTmpArray3))
-    call mem_ichor_alloc(TmpArray3)
-    !TmpArray4 used for RJ000 and ETIJ (tmp array in building Ecoeff)
-    nTmpArray4 = MAX(nPasses*nPrimQ*nPrimP*(AngmomPQ+1),nPrimQ*(AngmomQ+1)*(AngmomC+1)*(AngmomD+1)*3)
-    nTmpArray4 = MAX(nTmpArray4,nPasses*nPrimP*(AngmomP+1)*(AngmomA+1)*(AngmomB+1)*3)
-    allocate(TmpArray4(nTmpArray4))
-    call mem_ichor_alloc(TmpArray4)
 
 #ifdef VAR_DEBUGICHOR
     IF(nTmpArray3.LT.nPrimQ*nPrimP*nPasses*3)call ichorquit('IchorTmp0G1',-1)
@@ -133,22 +132,22 @@ CONTAINS
     TMP1 = .TRUE.
     IF (AngmomPQ.EQ. 0) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3A',-1)
 #endif
        call IchorwtuvRecurrenceJMIN0JMAX0(TmpArray4,TmpArray1,nPrimQP*nPasses)
     ELSEIF (AngmomPQ.EQ. 1) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3B',-1)
 #endif
        call IchorwtuvRecurrenceJMIN0JMAX1(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
     ELSEIF (AngmomPQ.EQ. 2) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3C',-1)
 #endif
        call IchorwtuvRecurrenceJMIN0JMAX2(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
     ELSEIF (AngmomPQ.EQ. 3) THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuv)call ichorquit('IchorTmp1G3D',-1)
 #endif
        call IchorwtuvRecurrenceJMIN0JMAX3(TmpArray4,TmpArray1,TmpArray3,nPrimQP*nPasses)
     ELSE !AngmomPQ > 3
@@ -179,205 +178,192 @@ CONTAINS
        ENDIF
     ENDIF
 
-    !WARNING ONLY ZERO FOR DEBUGGING PURPOSES
-    CALL LS_DZERO(TmpArray3,nTUVQ*ijkQcart*nPrimQ)
-    !builds Ecoeff(nPrimQ,nPasses,nTUVQ,ijkQcart)
+    !builds Ecoeff(nPrimQ,nPasses,nTUVQ,nCartOrbCompQ)
     !FOR NOW THIS IS NOT OpenMP parallized - unclear what the best method is. 
     call Ichorbuild_Ecoeff_RHS(nPrimQ,nPrimC,nPrimD,AngmomQ,AngmomC,AngmomD,nTUVQ,&
-         & ijkQcart,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,TmpArray4)
+         & nCartOrbCompQ,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,TmpArray4)
 
-    IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVQ,ijkQcart,nPrimQ,nPassQ,lupri)
+    IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVQ,nCartOrbCompQ,nPrimQ,nPassQ,lupri)
 
     IF(TMP1)THEN !current intermediate WTUV reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.nPrimQP*nPasses*ntuvP*ijkQcart)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray2maxsize.LT.nPrimQP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q1',-1)
 #endif
-       CALL LS_DZERO(TmpArray2,nPrimQ*nPrimP*nPasses*nTUVP*ijkQcart)!WARNING ONLY ZERO FOR DEBUGGING PURPOSES
-       !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart)
+       !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
        call DirectcontractEQgen(TmpArray1,TmpArray2,nPrimQP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
-            & TmpArray3,ijkQcart,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
-       IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray2,nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
+            & TmpArray3,nCartOrbCompQ,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
+       IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray2,nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
     ELSE !current intermediate WTUV reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuvP*ijkQcart)call ichorquit('IchorTmp1G3',-1)
+       IF(TMParray1maxsize.LT.nPrimQP*nPasses*ntuvP*nCartOrbCompQ)call ichorquit('IchorTmp1G3Q2',-1)
 #endif
-       CALL LS_DZERO(TmpArray1,nPrimQ*nPrimP*nPasses*nTUVP*ijkQcart)!WARNING ONLY ZERO FOR DEBUGGING PURPOSES
-       !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart)
+       !builds RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
        call DirectcontractEQgen(TmpArray2,TmpArray1,nPrimQP,nPrimP*nPasses,nPrimQ,nTUV,ntuvP,ntuvQ,&
-            & TmpArray3,ijkQcart,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
-       IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray1,nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
+            & TmpArray3,nCartOrbCompQ,AngmomA,AngmomB,AngmomC,AngmomD,AngmomPQ)
+       IF (IntPrint .GE. 25)call PrintIchorTensorRE(TmpArray1,nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
     ENDIF
     TMP1 = .NOT.TMP1
     
-    IF(TMP1)THEN !current intermediate RE(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart) reside in TmpArray1
+    IF(TMP1)THEN !current intermediate RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ) reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*ijkQcart)call ichorquit('IchorTmp2G4',-1)
+       IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*nCartOrbCompQ)call ichorquit('IchorTmp2G4',-1)
 #endif
-       !Build REC(nContQ,nPrimP,nPasses,nTUVP,ijkQcart)
+       !Build REC(nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
        IF(Qsegmented)THEN
-          call contractBasisSegQ(TmpArray1,TmpArray2,nPrimC,nPrimD,nPrimP*nPasses*nTUVP*ijkQcart) 
+          call contractBasisSegQ(TmpArray1,TmpArray2,nPrimC,nPrimD,nPrimP*nPasses*nTUVP*nCartOrbCompQ) 
        ELSE
-          call contractBasisGenQ(TmpArray1,TmpArray2,CCC,DCC,nPrimC,nPrimD,nContC,nContD,nPrimP*nPasses*nTUVP*ijkQcart) 
+          call contractBasisGenQ(TmpArray1,TmpArray2,CCC,DCC,nPrimC,nPrimD,nContC,nContD,nPrimP*nPasses*nTUVP*nCartOrbCompQ) 
        ENDIF
-       IF (IntPrint .GE. 25)call PrintIchorTensorREC(TmpArray2,nContQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
-    ELSE !current intermediate RE(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart) reside in TmpArray2
+       IF (IntPrint .GE. 25)call PrintIchorTensorREC(TmpArray2,nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
+    ELSE !current intermediate RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ) reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*ijkQcart)call ichorquit('IchorTmp2G4',-1)
+       IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*nCartOrbCompQ)call ichorquit('IchorTmp2G4',-1)
 #endif
-       !Build REC(nContQ,nPrimP,nPasses,nTUVP,ijkQcart)
+       !Build REC(nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
        IF(Qsegmented)THEN
-          call contractBasisSegQ(TmpArray2,TmpArray1,nPrimC,nPrimD,nPrimP*nPasses*nTUVP*ijkQcart) 
+          call contractBasisSegQ(TmpArray2,TmpArray1,nPrimC,nPrimD,nPrimP*nPasses*nTUVP*nCartOrbCompQ) 
        ELSE
-          call contractBasisGenQ(TmpArray2,TmpArray1,CCC,DCC,nPrimC,nPrimD,nContC,nContD,nPrimP*nPasses*nTUVP*ijkQcart) 
+          call contractBasisGenQ(TmpArray2,TmpArray1,CCC,DCC,nPrimC,nPrimD,nContC,nContD,nPrimP*nPasses*nTUVP*nCartOrbCompQ) 
        ENDIF
-       IF (IntPrint .GE. 25)call PrintIchorTensorREC(TmpArray1,nContQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
+       IF (IntPrint .GE. 25)call PrintIchorTensorREC(TmpArray1,nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(SphericalTransQ)THEN
-       IF(TMP1)THEN !current intermediate REC(nContQ,nPrimP,nPasses,nTUVP,ijkQcart) reside in TmpArray1
+       IF(TMP1)THEN !current intermediate REC(nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ) reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-          IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*ijkQsph)call ichorquit('IchorTmp1G5',-1)
+          IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*nOrbCompQ)call ichorquit('IchorTmp1G5',-1)
 #endif
-          !Build RECS(nContQ,nPrimP,nPasses,nTUVP,ijkQsph)
+          !Build RECS(nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ)
           IF(Sph3.AND.Sph4)THEN
              call SphericalTransformGenQCD(TmpArray1,TmpArray2,SPH_MAT(AngmomC)%elms,SPH_MAT(AngmomD)%elms,&
-                  & ijk3,ijk3s,ijk4,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nCartOrbCompC,nOrbCompC,nCartOrbCompD,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ELSEIF(Sph3)THEN
              call SphericalTransformGenQC(TmpArray1,TmpArray2,SPH_MAT(AngmomC)%elms,&
-                  & ijk3,ijk3s,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nCartOrbCompC,nOrbCompC,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ELSE
              call SphericalTransformGenQD(TmpArray1,TmpArray2,SPH_MAT(AngmomD)%elms,&
-                  & ijk3s,ijk4,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nOrbCompC,nCartOrbCompD,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ENDIF
-          IF (IntPrint .GE. 25) call PrintIchorTensorRECS(TmpArray2,nContQ,nPrimP,nPasses,nTUVP,ijkQsph,lupri)
-       ELSE !current intermediate REC(nContQ,nPrimP,nPasses,nTUVP,ijkQcart) reside in TmpArray2
+          IF (IntPrint .GE. 25) call PrintIchorTensorRECS(TmpArray2,nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ,lupri)
+       ELSE !current intermediate REC(nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ) reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-          IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*ijkQsph)call ichorquit('IchorTmp1G5',-1)
+          IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*nTUVP*nOrbCompQ)call ichorquit('IchorTmp1G5',-1)
 #endif
-          !Build RECS(nContQ,nPrimP,nPasses,nTUVP,ijkQsph)
+          !Build RECS(nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ)
           IF(Sph3.AND.Sph4)THEN
              call SphericalTransformGenQCD(TmpArray2,TmpArray1,SPH_MAT(AngmomC)%elms,SPH_MAT(AngmomD)%elms,&
-                  & ijk3,ijk3s,ijk4,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nCartOrbCompC,nOrbCompC,nCartOrbCompD,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ELSEIF(Sph3)THEN
              call SphericalTransformGenQC(TmpArray2,TmpArray1,SPH_MAT(AngmomC)%elms,&
-                  & ijk3,ijk3s,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nCartOrbCompC,nOrbCompC,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ELSE
              call SphericalTransformGenQD(TmpArray2,TmpArray1,SPH_MAT(AngmomD)%elms,&
-                  & ijk3s,ijk4,ijk4s,nContQ*nPrimP*nPasses*nTUVP)
+                  & nOrbCompC,nCartOrbCompD,nOrbCompD,nContQ*nPrimP*nPasses*nTUVP)
           ENDIF
-          IF (IntPrint .GE. 25) call PrintIchorTensorRECS(TmpArray1,nContQ,nPrimP,nPasses,nTUVP,ijkQsph,lupri)
+          IF (IntPrint .GE. 25) call PrintIchorTensorRECS(TmpArray1,nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ,lupri)
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
 
-    CALL LS_DZERO(TmpArray3,nTUVP*ijkPcart*nPrimP*nPasses)
-    !builds Ecoeff(nPrimP,nPasses,nTUVP,ijkPcart)
+    !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
     !currently not OpenMP parallel 
     call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
-         & ijkPcart,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
+         & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
          & nAtomsA,nAtomsB,IatomApass,IatomBpass,MaxPasses,intprint,lupri,TmpArray4)
 
-    IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVP,ijkPcart,nPrimP,nPasses,lupri)
+    IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVP,nCartOrbCompP,nPrimP,nPasses,lupri)
     
-    !builds ERECS(nContQ,nPrimP,nPasses,ijkPcart,ijkQsph)
+    !builds ERECS(nContQ,nPrimP,nPasses,nCartOrbCompP,nOrbCompQ)
     IF(TMP1)THEN
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*ijkPcart*ijkQsph)call ichorquit('IchorTmp2G6A',-1)
+       IF(TMParray2maxsize.LT.nContQ*nPrimP*nPasses*nCartOrbCompP*nOrbCompQ)call ichorquit('IchorTmp2G6A',-1)
 #endif
-       !WARNING ONLY ZERO FOR DEBUGGING PURPOSES
-       CALL LS_DZERO(TmpArray2,nContQ*nPrimP*nPasses*ijkPcart*ijkQsph)
-       call contractEcoeffGenP(TmpArray1,TmpArray2,TmpArray3,ijkQsph,ijkPcart,nTUVP,nContQ,nPrimP*nPasses)
+       call contractEcoeffGenP(TmpArray1,TmpArray2,TmpArray3,nOrbCompQ,nCartOrbCompP,nTUVP,nContQ,nPrimP*nPasses)
 
-       IF (IntPrint .GE. 25)call PrintIchorTensorERECS(TmpArray2,nContQ,nPrimP,nPasses,ijkPcart,ijkQsph,lupri)
+       IF (IntPrint .GE. 25)call PrintIchorTensorERECS(TmpArray2,nContQ,nPrimP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
     ELSE
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*ijkPcart*ijkQsph)call ichorquit('IchorTmp1G6B',-1)
+       IF(TMParray1maxsize.LT.nContQ*nPrimP*nPasses*nCartOrbCompP*nOrbCompQ)call ichorquit('IchorTmp1G6B',-1)
 #endif
-       !WARNING ONLY ZERO FOR DEBUGGING PURPOSES
-       CALL LS_DZERO(TmpArray1,nContQ*nPrimP*nPasses*ijkPcart*ijkQsph)
-       call contractEcoeffGenP(TmpArray2,TmpArray1,TmpArray3,ijkQsph,ijkPcart,nTUVP,nContQ,nPrimP*nPasses)
-       IF (IntPrint .GE. 25)call PrintIchorTensorERECS(TmpArray1,nContQ,nPrimP,nPasses,ijkPcart,ijkQsph,lupri)
+       call contractEcoeffGenP(TmpArray2,TmpArray1,TmpArray3,nOrbCompQ,nCartOrbCompP,nTUVP,nContQ,nPrimP*nPasses)
+       IF (IntPrint .GE. 25)call PrintIchorTensorERECS(TmpArray1,nContQ,nPrimP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(.NOT.TMP1)THEN !current intermediate reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray1maxsize.LT.nContQ*nContP*nPasses*ijkPcart*ijkQsph)call ichorquit('IchorTmp1G7',-1)
+       IF(TMParray1maxsize.LT.nContQ*nContP*nPasses*nCartOrbCompP*nOrbCompQ)call ichorquit('IchorTmp1G7',-1)
 #endif
-       !builds CERECS(nContQ,nContP,nPasses,ijkPcart,ijkQpsh)
+       !builds CERECS(nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ)
        IF(Psegmented)THEN
-          call contractBasisSegP(TmpArray2,TmpArray1,nContQ,nPasses*ijkPcart*ijkQsph,nPrimA,nPrimB) 
+          call contractBasisSegP(TmpArray2,TmpArray1,nContQ,nPasses*nCartOrbCompP*nOrbCompQ,nPrimA,nPrimB) 
        ELSE
-          call contractBasisGenP(TmpArray2,TmpArray1,ACC,BCC,nContQ,nPasses*ijkPcart*ijkQsph,nPrimA,nPrimB,nContA,nContB) 
+          call contractBasisGenP(TmpArray2,TmpArray1,ACC,BCC,nContQ,nPasses*nCartOrbCompP*nOrbCompQ,nPrimA,nPrimB,nContA,nContB) 
        ENDIF
-       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray1,nContQ,nContP,nPasses,ijkPcart,ijkQsph,lupri)
+       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray1,nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
     ELSE !current intermediate reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.nContQ*nContP*nPasses*ijkPcart*ijkQsph)call ichorquit('IchorTmp2G7',-1)
+       IF(TMParray2maxsize.LT.nContQ*nContP*nPasses*nCartOrbCompP*nOrbCompQ)call ichorquit('IchorTmp2G7',-1)
 #endif
-       !builds CERECS(nContQ,nContP,nPasses,ijkPcart,ijkQpsh)
+       !builds CERECS(nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ)
        IF(Psegmented)THEN
-          call contractBasisSegP(TmpArray1,TmpArray2,nContQ,nPasses*ijkPcart*ijkQsph,nPrimA,nPrimB) 
+          call contractBasisSegP(TmpArray1,TmpArray2,nContQ,nPasses*nCartOrbCompP*nOrbCompQ,nPrimA,nPrimB) 
        ELSE
-          call contractBasisGenP(TmpArray1,TmpArray2,ACC,BCC,nContQ,nPasses*ijkPcart*ijkQsph,nPrimA,nPrimB,nContA,nContB) 
+          call contractBasisGenP(TmpArray1,TmpArray2,ACC,BCC,nContQ,nPasses*nCartOrbCompP*nOrbCompQ,nPrimA,nPrimB,nContA,nContB) 
        ENDIF
-       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray2,nContQ,nContP,nPasses,ijkPcart,ijkQsph,lupri)
+       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray2,nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(SphericalTransP)THEN
        IF(TMP1)THEN !current intermediate reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
-          IF(TMParray2maxsize.LT.nContQ*nContP*nPasses*ijkPsph*ijkQsph)call ichorquit('IchorTmp1G8',-1)
+          IF(TMParray2maxsize.LT.nContQ*nContP*nPasses*nOrbCompP*nOrbCompQ)call ichorquit('IchorTmp1G8',-1)
 #endif
-          !builds SCEREC(nContQ,nContP,nPasses,ijkPsph,ijkQsph)
+          !builds SCEREC(nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ)
           IF(Sph1.AND.Sph2)THEN
              call SphericalTransformGenPAB(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
-                  & SPH_MAT(AngmomB)%elms,ijk1,ijk1s,ijk2,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & SPH_MAT(AngmomB)%elms,nCartOrbCompA,nOrbCompA,nCartOrbCompB,nOrbCompB,&
+                  & nContQ*nContP*nPasses,nOrbCompQ)
           ELSEIF(Sph1)THEN
              call SphericalTransformGenPA(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
-                  & ijk1,ijk1s,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContQ*nContP*nPasses,nOrbCompQ)
           ELSE
              call SphericalTransformGenPB(TmpArray1,TmpArray2,SPH_MAT(AngmomB)%elms,&
-                  & ijk1s,ijk2,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContQ*nContP*nPasses,nOrbCompQ)
           ENDIF
           IF(IntPrint.GE.25)call PrintIchorTensorSCERECS(TmpArray2,&
-               & nContQ,nContP,nPasses,ijkPsph,ijkQsph,lupri)
+               & nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ,lupri)
        ELSE !current intermediate reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
-          IF(TMParray1maxsize.LT.nContQ*nContP*nPasses*ijkPsph*ijkQsph)call ichorquit('IchorTmp2G8',-1)
+          IF(TMParray1maxsize.LT.nContQ*nContP*nPasses*nOrbCompP*nOrbCompQ)call ichorquit('IchorTmp2G8',-1)
 #endif
-          !builds SCEREC(nContQ,nContP,nPasses,ijkPsph,ijkQsph)
+          !builds SCEREC(nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ)
           IF(Sph1.AND.Sph2)THEN
              call SphericalTransformGenPAB(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
-                  & SPH_MAT(AngmomB)%elms,ijk1,ijk1s,ijk2,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & SPH_MAT(AngmomB)%elms,nCartOrbCompA,nOrbCompA,nCartOrbCompB,nOrbCompB,&
+                  & nContQ*nContP*nPasses,nOrbCompQ)
           ELSEIF(Sph1)THEN
              call SphericalTransformGenPA(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
-                  & ijk1,ijk1s,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContQ*nContP*nPasses,nOrbCompQ)
           ELSE
              call SphericalTransformGenPB(TmpArray2,TmpArray1,SPH_MAT(AngmomB)%elms,&
-                  & ijk1s,ijk2,ijk2s,nContQ*nContP*nPasses,ijkQsph)
+                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContQ*nContP*nPasses,nOrbCompQ)
           ENDIF          
           IF(IntPrint.GE.25)call PrintIchorTensorSCERECS(TmpArray1,&
-               & nContQ,nContP,nPasses,ijkPsph,ijkQsph,lupri)
+               & nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ,lupri)
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
 
-    !reorder From SCERECS(nContQ,nContP,nPasses,ijkPsph,ijkQsph) to 
+    !reorder From SCERECS(nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ) to 
     !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
     IF(.NOT.TMP1)THEN
-       call reorderABCD(TmpArray2,CDAB,nContQ*nContP*nPasses,ijkPsph*ijkQsph)
+       call reorderABCD(TmpArray2,CDAB,nContQ*nContP*nPasses,nOrbCompP*nOrbCompQ)
     ELSE
-       call reorderABCD(TmpArray1,CDAB,nContQ*nContP*nPasses,ijkPsph*ijkQsph)
+       call reorderABCD(TmpArray1,CDAB,nContQ*nContP*nPasses,nOrbCompP*nOrbCompQ)
     ENDIF
-    call mem_ichor_dealloc(TmpArray3)
-    deallocate(TmpArray3)
-    call mem_ichor_dealloc(TmpArray4)
-    deallocate(TmpArray4)
-    !FIXME MUCH LATER
-    call FreeIchorSPHMAT()
   end subroutine IchorCoulombIntegral_CPU_McM_general
 
   subroutine IchorCoulombIntegral_CPU_McM_general_size(TMParray1maxsize,&
@@ -392,8 +378,8 @@ CONTAINS
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
     !local variables
     integer :: AngmomP,AngmomQ,AngmomPQ,nTUV,nTUVQ
-    integer :: ijk1,ijk2,ijkPcart,ijk1s,ijk2s,ijkPsph
-    integer :: ijk3,ijk4,ijkQcart,ijk3s,ijk4s,ijkQsph,nTUVP,j
+    integer :: ijk1,ijk2,nCartOrbCompP,ijk1s,ijk2s,nOrbCompP
+    integer :: ijk3,ijk4,nCartOrbCompQ,ijk3s,ijk4s,nOrbCompQ,nTUVP,j
     logical :: Sph1,Sph2,Sph3,Sph4,SphericalTransP,SphericalTransQ
     logical :: TMP1
 
@@ -408,14 +394,14 @@ CONTAINS
     ijk2 = (AngmomB + 1)*(AngmomB + 2)/2
     ijk3 = (AngmomC + 1)*(AngmomC + 2)/2
     ijk4 = (AngmomD + 1)*(AngmomD + 2)/2
-    ijkPcart = ijk1*ijk2
-    ijkQcart = ijk3*ijk4
+    nCartOrbCompP = ijk1*ijk2
+    nCartOrbCompQ = ijk3*ijk4
     ijk1s = 2*AngmomA + 1
     ijk2s = 2*AngmomB + 1
     ijk3s = 2*AngmomC + 1
     ijk4s = 2*AngmomD + 1
-    ijkPsph = ijk1s*ijk2s
-    ijkQsph = ijk3s*ijk4s
+    nOrbCompP = ijk1s*ijk2s
+    nOrbCompQ = ijk3s*ijk4s
     nTUVP=(AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
     nTUVQ=(AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
 !    Sph1 = sphericalGTO.AND.(AngmomA.GT. 1)
@@ -453,50 +439,49 @@ CONTAINS
        ENDDO
     ENDIF    
     IF(TMP1)THEN 
-       TMParray2maxsize = MAX(TMParray2maxsize,nPrimQP*ntuvP*ijkQcart)
+       TMParray2maxsize = MAX(TMParray2maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
     ELSE 
-       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuvP*ijkQcart)
+       TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
     IF(TMP1)THEN 
-       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*ijkQcart)
+       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*nCartOrbCompQ)
     ELSE 
-       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*nTUVP*ijkQcart)
+       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*nTUVP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(SphericalTransQ)THEN
        IF(TMP1)THEN 
-          TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*ijkQsph)
+          TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*nOrbCompQ)
        ELSE 
-          TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*nTUVP*ijkQsph)
+          TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*nTUVP*nOrbCompQ)
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
 
     IF(TMP1)THEN
-       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*ijkPcart*ijkQsph)
+       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nCartOrbCompP*nOrbCompQ)
     ELSE
-       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*ijkPcart*ijkQsph)
+       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nPrimP*nCartOrbCompP*nOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(.NOT.TMP1)THEN
-       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nContP*ijkPcart*ijkQsph)
+       TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nContP*nCartOrbCompP*nOrbCompQ)
     ELSE
-       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nContP*ijkPcart*ijkQsph)
+       TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nContP*nCartOrbCompP*nOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
 
     IF(SphericalTransP)THEN
        IF(TMP1)THEN 
-          TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nContP*ijkPsph*ijkQsph)
+          TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nContP*nOrbCompP*nOrbCompQ)
        ELSE
-          TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nContP*ijkPsph*ijkQsph)
+          TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nContP*nOrbCompP*nOrbCompQ)
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
-
   end subroutine IchorCoulombIntegral_CPU_McM_general_size
   
   subroutine reorderABCD(SCERECS,ABCD,ndim1,ndim2)
@@ -506,7 +491,7 @@ CONTAINS
     real(realk),intent(inout) :: ABCD(ndim2,ndim1)
     !
     integer :: I,J
-    !$OMP DO COLLAPSE(I,J) PRIVATE(I,J)
+    !$OMP DO COLLAPSE(2) PRIVATE(I,J)
     do I=1,ndim1
        do J=1,ndim2
           ABCD(J,I) = SCERECS(I,J)
@@ -640,7 +625,7 @@ CONTAINS
     !
     integer :: d,ds,i
     real(realk) :: TMP
-    !$OMP DO COLLAPSE(2) PRIVATE(d,i)
+    !$OMP DO COLLAPSE(2) PRIVATE(ds,i)
     do ds = 1,ijk4s
        do i = 1,ndim*ijk3
           RECS(i,ds) = 0.0E0_realk
@@ -659,20 +644,20 @@ CONTAINS
     enddo
   end subroutine SphericalTransformGenQD
 
-  SUBROUTINE contractEcoeffGenP(IN,OUT,Ecoeff,ijkQsph,ijkPcart,nTUVP,nContQ,nPrimPassesP)
+  SUBROUTINE contractEcoeffGenP(IN,OUT,Ecoeff,nOrbCompQ,nCartOrbCompP,nTUVP,nContQ,nPrimPassesP)
     implicit none
-    Integer,intent(IN) :: ijkQsph,ijkPcart,nTUVP,nContQ,nPrimPassesP
-    Real(realk),intent(IN)  :: IN(nContQ,nPrimPassesP,nTUVP,ijkQsph)
-    Real(realk),intent(IN)  :: Ecoeff(nPrimPassesP,nTUVP,ijkPcart)
-    Real(realk),intent(OUT) :: OUT(nContQ,nPrimPassesP,ijkPcart,ijkQsph)
+    Integer,intent(IN) :: nOrbCompQ,nCartOrbCompP,nTUVP,nContQ,nPrimPassesP
+    Real(realk),intent(IN)  :: IN(nContQ,nPrimPassesP,nTUVP,nOrbCompQ)
+    Real(realk),intent(IN)  :: Ecoeff(nPrimPassesP,nTUVP,nCartOrbCompP)
+    Real(realk),intent(OUT) :: OUT(nContQ,nPrimPassesP,nCartOrbCompP,nOrbCompQ)
     !local variables
     Integer      :: ijkP,ijkQ,iP,iQ,ituvP
     Real(realk) :: TMP
     !
     IF(nTUVP.GT.1)THEN
        !$OMP DO COLLAPSE(3) PRIVATE(ijkP,ijkQ,iP,iQ,ituvP,TMP)
-       DO ijkP = 1,ijkPcart
-          DO ijkQ = 1,ijkQsph
+       DO ijkP = 1,nCartOrbCompP
+          DO ijkQ = 1,nOrbCompQ
              DO iP = 1,nPrimPassesP
                 TMP = Ecoeff(iP,1,ijkP)
                 DO iQ = 1,nContQ
@@ -683,8 +668,8 @@ CONTAINS
        ENDDO
        !$OMP END DO
        !$OMP DO COLLAPSE(2) PRIVATE(ijkP,ijkQ,iP,iQ,ituvP,TMP)
-       DO ijkP = 1,ijkPcart
-          DO ijkQ = 1,ijkQsph
+       DO ijkP = 1,nCartOrbCompP
+          DO ijkQ = 1,nOrbCompQ
              DO iTUVP = 2,nTUVP
                 DO iP = 1,nPrimPassesP
                    TMP = Ecoeff(iP,iTUVP,ijkP)
@@ -698,7 +683,7 @@ CONTAINS
        !$OMP END DO
     ELSE
        !$OMP DO COLLAPSE(2) PRIVATE(ijkQ,iP,iQ,TMP)
-       DO ijkQ = 1,ijkQsph
+       DO ijkQ = 1,nOrbCompQ
           DO iP = 1,nPrimPassesP
              TMP = Ecoeff(iP,1,1)
              DO iQ = 1,nContQ
@@ -766,17 +751,17 @@ CONTAINS
   end Subroutine contractBasisSegP
 
   subroutine SphericalTransformGenPAB(CERECS,SCERECS,SPHMATA,SPHMATB,&
-       & ijk1,ijk1s,ijk2,ijk2s,ndim,ijkQsph)
+       & ijk1,ijk1s,ijk2,ijk2s,ndim,nOrbCompQ)
     implicit none
-    integer,intent(in) :: ijk1,ijk1s,ijk2,ijk2s,ndim,ijkQsph
+    integer,intent(in) :: ijk1,ijk1s,ijk2,ijk2s,ndim,nOrbCompQ
     real(realk),intent(in) :: SPHMATA(ijk1,ijk1s),SPHMATB(ijk2,ijk2s)
-    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2,ijkQsph)
-    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2s,ijkQsph)
+    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2,nOrbCompQ)
+    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2s,nOrbCompQ)
     !
     integer :: a,b,as,bs,i,ijkQ
     real(realk) :: TMP,TMPB
     !$OMP DO COLLAPSE(3) PRIVATE(a,b,as,bs,i,ijkQ,TMP,TMPB)
-    do ijkQ = 1,ijkQsph
+    do ijkQ = 1,nOrbCompQ
      do as = 1,ijk1s
       do bs = 1,ijk2s
        do i = 1,ndim
@@ -798,17 +783,17 @@ CONTAINS
   end subroutine SphericalTransformGenPAB
 
   subroutine SphericalTransformGenPA(CERECS,SCERECS,SPHMATA,&
-       & ijk1,ijk1s,ijk2,ndim,ijkQsph)
+       & ijk1,ijk1s,ijk2,ndim,nOrbCompQ)
     implicit none
-    integer,intent(in) :: ijk1,ijk1s,ijk2,ndim,ijkQsph
+    integer,intent(in) :: ijk1,ijk1s,ijk2,ndim,nOrbCompQ
     real(realk),intent(in) :: SPHMATA(ijk1,ijk1s)
-    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2*ijkQsph)
-    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2*ijkQsph)
+    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2*nOrbCompQ)
+    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2*nOrbCompQ)
     !
     integer :: a,as,i,ijkQ
     real(realk) :: TMP
     !$OMP DO COLLAPSE(2) PRIVATE(a,as,i,ijkQ,TMP)
-    do ijkQ = 1,ijkQsph*ijk2
+    do ijkQ = 1,nOrbCompQ*ijk2
        do as = 1,ijk1s
           do i = 1,ndim
              SCERECS(i,as,ijkQ) = 0.0E0_realk
@@ -825,17 +810,17 @@ CONTAINS
   end subroutine SphericalTransformGenPA
 
   subroutine SphericalTransformGenPB(CERECS,SCERECS,SPHMATB,&
-       & ijk1,ijk2,ijk2s,ndim,ijkQsph)
+       & ijk1,ijk2,ijk2s,ndim,nOrbCompQ)
     implicit none
-    integer,intent(in) :: ijk1,ijk2,ijk2s,ndim,ijkQsph
+    integer,intent(in) :: ijk1,ijk2,ijk2s,ndim,nOrbCompQ
     real(realk),intent(in) :: SPHMATB(ijk2,ijk2s)
-    real(realk),intent(in) :: CERECS(ndim*ijk1,ijk2,ijkQsph)
-    real(realk),intent(inout) :: SCERECS(ndim*ijk1,ijk2s,ijkQsph)
+    real(realk),intent(in) :: CERECS(ndim*ijk1,ijk2,nOrbCompQ)
+    real(realk),intent(inout) :: SCERECS(ndim*ijk1,ijk2s,nOrbCompQ)
     !
     integer :: b,bs,i,ijkQ
     real(realk) :: TMP
     !$OMP DO COLLAPSE(2) PRIVATE(b,bs,i,ijkQ,TMP)
-    do ijkQ = 1,ijkQsph
+    do ijkQ = 1,nOrbCompQ
        do bs = 1,ijk2s
           do i = 1,ndim*ijk1
              SCERECS(i,bs,ijkQ) = 0.0E0_realk
@@ -1099,18 +1084,18 @@ CONTAINS
   end Subroutine contractBasisGen
 
 SUBROUTINE contractEcoeffGen(IN,OUT,Ecoeff,&
-     & ijkQcart,ijkPcart,nTUVP,nPrimP,nPrimQ,nPasses)
+     & nCartOrbCompQ,nCartOrbCompP,nTUVP,nPrimP,nPrimQ,nPasses)
 implicit none
-Integer,intent(IN) :: ijkQcart,ijkPcart,nTUVP,nPrimP,nPrimQ,nPasses
-Real(realk),intent(IN)  :: IN(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart)
-Real(realk),intent(IN)  :: Ecoeff(nPrimP,nPasses,nTUVP,ijkPcart)
-Real(realk),intent(OUT) :: OUT(nPrimQ,nPrimP,nPasses,ijkPcart,ijkQcart)
+Integer,intent(IN) :: nCartOrbCompQ,nCartOrbCompP,nTUVP,nPrimP,nPrimQ,nPasses
+Real(realk),intent(IN)  :: IN(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
+Real(realk),intent(IN)  :: Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
+Real(realk),intent(OUT) :: OUT(nPrimQ,nPrimP,nPasses,nCartOrbCompP,nCartOrbCompQ)
 !local variables
 Integer      :: ijkP,ijkQ,iP,iQ,iPass,ituvP
 Real(realk) :: tmp
 !
-DO ijkP = 1,ijkPcart
- DO ijkQ = 1,ijkQcart
+DO ijkP = 1,nCartOrbCompP
+ DO ijkQ = 1,nCartOrbCompQ
   DO iPass = 1,nPasses
    DO iP = 1,nPrimP
     TMP = Ecoeff(iP,iPass,1,ijkP)
@@ -1376,15 +1361,15 @@ subroutine PrintRJ000(RJ000,AngmomPQ,nPrim,nPasses,lupri)
   ENDDO
 end subroutine PrintRJ000
 
-subroutine PrintIchorTensorRE(RE,nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
+subroutine PrintIchorTensorRE(RE,nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: nTUVP,ijkQcart,nPrimQ,nPrimP,nPasses,lupri
-real(realk),intent(in) :: RE(nPrimQ,nPrimP,nPasses,nTUVP,ijkQcart)
+integer,intent(in) :: nTUVP,nCartOrbCompQ,nPrimQ,nPrimP,nPasses,lupri
+real(realk),intent(in) :: RE(nPrimQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
 integer :: iTUV,iPass,iP,ijkQ,iQ
 iTUV=0
-WRITE(lupri,'(A)')'Print the RTUV tensor contracted with Ecoeff segmented: RE(nPrimP,nPasses,nTUVP,ijkQcart)'
+WRITE(lupri,'(A)')'Print the RTUV tensor contracted with Ecoeff segmented: RE(nPrimP,nPasses,nTUVP,nCartOrbCompQ)'
 WRITE(lupri,'(A,I7)')'nTUVP:   ',nTUVP
-WRITE(lupri,'(A,I7)')'ijkQcart:',ijkQcart
+WRITE(lupri,'(A,I7)')'nCartOrbCompQ:',nCartOrbCompQ
 WRITE(lupri,'(A,I7)')'nPrimQ:  ',nPrimQ
 WRITE(lupri,'(A,I7)')'nPrimP:  ',nPrimP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
@@ -1392,7 +1377,7 @@ WRITE(lupri,'(A4,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQ','iPrimQ','iPrimP','iPass','iT
 do iQ = 1,nPrimQ
  do iP = 1,nPrimP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQcart
+   do ijkQ = 1,nCartOrbCompQ
     WRITE(LUPRI,'(I4,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(RE(iQ,iP,iPass,iTUV,ijkQ),iTUV=1,nTUVP)
    enddo
   enddo
@@ -1400,15 +1385,15 @@ do iQ = 1,nPrimQ
 enddo
 end subroutine PrintIchorTensorRE
 
-subroutine PrintIchorTensorREC(REC,nContQ,nPrimP,nPasses,nTUVP,ijkQcart,lupri)
+subroutine PrintIchorTensorREC(REC,nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: nTUVP,ijkQcart,nContQ,nPrimP,nPasses,lupri
-real(realk),intent(in) :: REC(nContQ,nPrimP,nPasses,nTUVP,ijkQcart)
+integer,intent(in) :: nTUVP,nCartOrbCompQ,nContQ,nPrimP,nPasses,lupri
+real(realk),intent(in) :: REC(nContQ,nPrimP,nPasses,nTUVP,nCartOrbCompQ)
 integer :: iTUV,iPass,iP,ijkQ,iQ
 iTUV=0
 WRITE(lupri,'(A)')'Print REC'
 WRITE(lupri,'(A,I7)')'nTUVP:   ',nTUVP
-WRITE(lupri,'(A,I7)')'ijkQcart:',ijkQcart
+WRITE(lupri,'(A,I7)')'nCartOrbCompQ:',nCartOrbCompQ
 WRITE(lupri,'(A,I7)')'nContQ:  ',nContQ
 WRITE(lupri,'(A,I7)')'nPrimP:  ',nPrimP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
@@ -1416,7 +1401,7 @@ WRITE(lupri,'(A4,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQ','iContQ','iPrimP','iPass','iT
 do iQ = 1,nContQ
  do iP = 1,nPrimP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQcart
+   do ijkQ = 1,nCartOrbCompQ
     WRITE(LUPRI,'(I4,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(REC(iQ,iP,iPass,iTUV,ijkQ),iTUV=1,nTUVP)
    enddo
   enddo
@@ -1424,23 +1409,23 @@ do iQ = 1,nContQ
 enddo
 end subroutine PrintIchorTensorREC
 
-subroutine PrintIchorTensorRECS(RECS,nContQ,nPrimP,nPasses,nTUVP,ijkQsph,lupri)
+subroutine PrintIchorTensorRECS(RECS,nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: nTUVP,ijkQsph,nContQ,nPrimP,nPasses,lupri
-real(realk),intent(in) :: RECS(nContQ,nPrimP,nPasses,nTUVP,ijkQsph)
+integer,intent(in) :: nTUVP,nOrbCompQ,nContQ,nPrimP,nPasses,lupri
+real(realk),intent(in) :: RECS(nContQ,nPrimP,nPasses,nTUVP,nOrbCompQ)
 integer :: iTUV,iPass,iP,ijkQ,iQ
 iTUV=0
 WRITE(lupri,'(A)')'Print RECS'
 WRITE(lupri,'(A,I7)')'nTUVP:   ',nTUVP
-WRITE(lupri,'(A,I7)')'ijkQsph: ',ijkQsph
+WRITE(lupri,'(A,I7)')'nOrbCompQ: ',nOrbCompQ
 WRITE(lupri,'(A,I7)')'nContQ:  ',nContQ
 WRITE(lupri,'(A,I7)')'nPrimP:  ',nPrimP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
-WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQsph','iContQ','iPrimP','iPass','iTUV=1,nTUVP'
+WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'nOrbCompQ','iContQ','iPrimP','iPass','iTUV=1,nTUVP'
 do iQ = 1,nContQ
  do iP = 1,nPrimP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQsph
+   do ijkQ = 1,nOrbCompQ
     WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(RECS(iQ,iP,iPass,iTUV,ijkQ),iTUV=1,nTUVP)
    enddo
   enddo
@@ -1448,72 +1433,72 @@ do iQ = 1,nContQ
 enddo
 end subroutine PrintIchorTensorRECS
 
-subroutine PrintIchorTensorERECS(ERECS,nContQ,nPrimP,nPasses,ijkPcart,ijkQsph,lupri)
+subroutine PrintIchorTensorERECS(ERECS,nContQ,nPrimP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: ijkQsph,ijkPcart,nContQ,nPrimP,nPasses,lupri
-real(realk),intent(in) :: ERECS(nContQ,nPrimP,nPasses,ijkPcart,ijkQsph)
+integer,intent(in) :: nOrbCompQ,nCartOrbCompP,nContQ,nPrimP,nPasses,lupri
+real(realk),intent(in) :: ERECS(nContQ,nPrimP,nPasses,nCartOrbCompP,nOrbCompQ)
 !
 integer :: iPass,iP,ijkQ,ijkP,iQ
 WRITE(lupri,'(A)')'Print ERECS'
-WRITE(lupri,'(A,I7)')'ijkPcart:',ijkPcart
-WRITE(lupri,'(A,I7)')'ijkQsph: ',ijkQsph
+WRITE(lupri,'(A,I7)')'nCartOrbCompP:',nCartOrbCompP
+WRITE(lupri,'(A,I7)')'nOrbCompQ: ',nOrbCompQ
 WRITE(lupri,'(A,I7)')'nContQ:  ',nContQ
 WRITE(lupri,'(A,I7)')'nPrimP:  ',nPrimP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
-WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQsph','iContQ','iPrimP','iPass','ijkP=1,ijkPcart'
+WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'nOrbCompQ','iContQ','iPrimP','iPass','ijkP=1,nCartOrbCompP'
 do iQ = 1,nContQ
  do iP = 1,nPrimP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQsph
-    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(ERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,ijkPcart)
+   do ijkQ = 1,nOrbCompQ
+    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(ERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,nCartOrbCompP)
    enddo
   enddo
  enddo
 enddo
 end subroutine PrintIchorTensorERECS
 
-subroutine PrintIchorTensorCERECS(CERECS,nContQ,nContP,nPasses,ijkPcart,ijkQsph,lupri)
+subroutine PrintIchorTensorCERECS(CERECS,nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: ijkQsph,ijkPcart,nContQ,nContP,nPasses,lupri
-real(realk),intent(in) :: CERECS(nContQ,nContP,nPasses,ijkPcart,ijkQsph)
+integer,intent(in) :: nOrbCompQ,nCartOrbCompP,nContQ,nContP,nPasses,lupri
+real(realk),intent(in) :: CERECS(nContQ,nContP,nPasses,nCartOrbCompP,nOrbCompQ)
 !
 integer :: iPass,iP,ijkQ,ijkP,iQ
 WRITE(lupri,'(A)')'Print CERECS'
-WRITE(lupri,'(A,I7)')'ijkPcart:',ijkPcart
-WRITE(lupri,'(A,I7)')'ijkQcart:',ijkQsph
+WRITE(lupri,'(A,I7)')'nCartOrbCompP:',nCartOrbCompP
+WRITE(lupri,'(A,I7)')'nOrbCompQ:',nOrbCompQ
 WRITE(lupri,'(A,I7)')'nContQ:  ',nContQ
 WRITE(lupri,'(A,I7)')'nContP:  ',nContP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
-WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQsph','iContQ','iContP','iPass','ijkP=1,ijkPcart'
+WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'nOrbCompQ','iContQ','iContP','iPass','ijkP=1,nCartOrbCompP'
 do iQ = 1,nContQ
  do iP = 1,nContP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQsph
-    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(CERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,ijkPcart)
+   do ijkQ = 1,nOrbCompQ
+    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(CERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,nCartOrbCompP)
    enddo
   enddo
  enddo
 enddo
 end subroutine PrintIchorTensorCERECS
 
-subroutine PrintIchorTensorSCERECS(SCERECS,nContQ,nContP,nPasses,ijkPsph,ijkQsph,lupri)
+subroutine PrintIchorTensorSCERECS(SCERECS,nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ,lupri)
 implicit none
-integer,intent(in) :: ijkQsph,ijkPsph,nContQ,nContP,nPasses,lupri
-real(realk),intent(in) :: SCERECS(nContQ,nContP,nPasses,ijkPsph,ijkQsph)
+integer,intent(in) :: nOrbCompQ,nOrbCompP,nContQ,nContP,nPasses,lupri
+real(realk),intent(in) :: SCERECS(nContQ,nContP,nPasses,nOrbCompP,nOrbCompQ)
 !
 integer :: iPass,iP,ijkQ,ijkP,iQ
 WRITE(lupri,'(A)')'Print SCERECS'
-WRITE(lupri,'(A,I7)')'ijkPcart:',ijkPsph
-WRITE(lupri,'(A,I7)')'ijkQcart:',ijkQsph
+WRITE(lupri,'(A,I7)')'nOrbCompP:',nOrbCompP
+WRITE(lupri,'(A,I7)')'nOrbCompQ:',nOrbCompQ
 WRITE(lupri,'(A,I7)')'nContQ:  ',nContQ
 WRITE(lupri,'(A,I7)')'nContP:  ',nContP
 WRITE(lupri,'(A,I7)')'nPasses: ',nPasses
-WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'ijkQsph','iContQ','iContP','iPass','ijkP=1,ijkPsph'
+WRITE(lupri,'(A7,1X,A6,1X,A5,1X,A5,1X,A12)')'nOrbCompQ','iContQ','iContP','iPass','ijkP=1,nOrbCompP'
 do iQ = 1,nContQ
  do iP = 1,nContP
   do iPass = 1,nPasses
-   do ijkQ = 1,ijkQsph
-    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(SCERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,ijkPsph)
+   do ijkQ = 1,nOrbCompQ
+    WRITE(LUPRI,'(I7,I7,I7,I6,5ES18.9/,(24X,5ES18.9))') ijkQ,iQ,iP,iPass,(SCERECS(iQ,iP,iPass,ijkP,ijkQ),ijkP=1,nOrbCompP)
    enddo
   enddo
  enddo

@@ -27,15 +27,18 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
   real(realk) :: TWOB(nPrimP)
   real(realk),parameter :: DHALF=0.5E0_realk,D2=2.0E0_realk
   !
-  integer :: iPrimP
+  integer :: iPrimP,I,J
   integer,parameter :: nPasses = 1
+  real(realk) :: bexpo
+!$OMP MASTER
+  CALL LS_DZERO(Ecoeffn,nPrimP*nTUV*ijk)
   call build_auxiliary(nPrimA,nPrimB,Aexp,Bexp,PINV,APINV,BPINV,HPINV,TWOA,TWOB)
   !X DIST
   DO iPrimP=1,nPrimP
      PA(iPrimP) = -BPINV(iPrimP)*Pdistance12(1)
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(1)
   ENDDO  
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6)THEN
      CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,1,LUPRI)  
   ELSE !special less than 6
@@ -50,7 +53,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      PA(iPrimP) = -BPINV(iPrimP)*Pdistance12(2)
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(2)
   ENDDO  
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6 )THEN
      CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,2,LUPRI)
   ELSE !special less than 6
@@ -65,7 +68,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      PA(iPrimP) = -BPINV(iPrimP)*Pdistance12(3)
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(3)
   ENDDO  
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6 )THEN !6
      CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,3,LUPRI)
   ELSE !NORMALY call special for less than 6
@@ -82,6 +85,8 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
   ELSE
      call ICHOR_Ecoeffn_general_RHS(nPrimP,nTUV,ijk,maxAngP,maxAng1,maxAng2,Ecoeffn,ETIJ,PreExpFac)
   ENDIF
+!$OMP END MASTER
+!$OMP BARRIER 
 end Subroutine Ichorbuild_Ecoeff_RHS
 
 Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nTUV,&
@@ -103,6 +108,8 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
   real(realk),parameter :: DHALF=0.5E0_realk,D2=2.0E0_realk
   !
   integer :: K,iPass,iPrimP,iAtomA,iAtomB
+!$OMP MASTER
+  CALL LS_DZERO(Ecoeffn,nPrimP*nPasses*nTUV*ijk)
   call build_auxiliary(nPrimA,nPrimB,Aexp,Bexp,PINV,APINV,BPINV,HPINV,TWOA,TWOB)
   !X DIST
   do iPass=1,nPasses
@@ -117,7 +124,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
         PB(iPrimP,iPass) =  APINV(iPrimP)*dist
      ENDDO
   enddo
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6 )THEN
      CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,1,LUPRI)  
   ELSE !special less than 6
@@ -140,7 +147,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
         PB(iPrimP,iPass) =  APINV(iPrimP)*dist
      ENDDO
   enddo
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6 )THEN
      CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,2,LUPRI)
   ELSE !special less than 6
@@ -163,7 +170,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
         PB(iPrimP,iPass) =  APINV(iPrimP)*dist
      ENDDO
   enddo
-  IF(maxAng1+maxAng2.GT.-1 )THEN !6
+  IF(maxAng1+maxAng2.GT.6 )THEN
      CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,3,LUPRI)
   ELSE !NORMALY call special for less than 6
@@ -182,6 +189,8 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      call ICHOR_Ecoeffn_general_LHS(nPrimP,nPasses,nTUV,ijk,maxAngP,maxAng1,maxAng2,&
           & Ecoeffn,ETIJ,PreExpFac,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass)
   ENDIF
+!$OMP END MASTER
+!$OMP BARRIER 
 end Subroutine Ichorbuild_Ecoeff_LHS
   
 SUBROUTINE PRINT_ETIJ(ETIJ,nPrimP,nPasses,MAXI,MAXJ,X,LUPRI)

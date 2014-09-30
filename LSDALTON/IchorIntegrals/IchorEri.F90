@@ -15,6 +15,8 @@ MODULE IchorErimodule
   use IchorprecisionModule
   use IchorCommonModule
   use IchorBatchToolsModule
+  use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,DetermineSizeTmpArray34,&
+       & precalcichorsphmat, freeichorsphmat
   use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general, &
        & IchorCoulombIntegral_CPU_OBS_general_size
   use IchorEriCoulombintegralGPUOBSGeneralMod, only: IchorCoulombIntegral_GPU_OBS_general, &
@@ -179,7 +181,7 @@ Integer,intent(in) :: lupri
 ! Local variables
 integer :: nPrimP,nContP,nPrimQ,nContQ
 integer :: nTABFJW1,nTABFJW2,i1,i2,i3,i4,AngmomQ,TotalAngmom
-integer :: i12,offset,K,I,iPrimQ,iPrimP,icont
+integer :: i12,offset,K,I,iPrimQ,iPrimP,icont,AngmomP
 integer :: oldmaxangmomABCD
 integer :: ItypeA,ItypeB,itypeC,itypeD,AngmomA,AngmomB,AngmomC,AngmomD
 integer :: ItypeAnon,ItypeBnon,itypeCnon,itypeDnon,nLocalInt
@@ -187,6 +189,8 @@ integer :: nPrimA,nPrimB,nContA,nAtomsA,nAtomsB,nAtomsC,nAtomsD,nOrbA
 integer :: nDimA,nOrbCompA,nContB,nOrbB,nDimB
 integer :: nPrimC,nContC,nPrimD,nContD,nOrbC,nOrbD,nOrbCompB,nOrbCompC,nDimC
 integer :: nDimD,nOrbCompD,INTPRINT,maxangmomABCD
+integer :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+integer :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
 integer,allocatable :: Qiprim1(:),Qiprim2(:)
 integer,allocatable :: OrderdListA(:),OrderdListB(:),OrderdListC(:),OrderdListD(:)
 logical :: Psegmented,Qsegmented,PQorder,Spherical,SameLHSaos,SameRHSaos,SameODs
@@ -421,20 +425,10 @@ MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
 DO IAngmomTypes = 0,MaxTotalAngmom
  DO ItypeDnon=1,nTypesD
   ! TYPE D CALC ===========================
-  ItypeD = OrderdListD(ItypeDnon)  
-  nAtomsD = nAtomsOfTypeD(ItypeD)
+  call ObtainTypeInfo(nTypesD,ItypeDnon,OrderdListD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
+       & nContOfTypeD,ExtentOfTypeD,ItypeD,nAtomsD,AngmomD,nPrimD,nContD,extentD,nOrbCompD,&
+       & nOrbD,nDimD,nCartOrbCompD,spherical)
   IF(nAtomsD.EQ.0)CYCLE
-  AngmomD = AngmomOfTypeD(ItypeD)
-  nPrimD = nPrimOfTypeD(ItypeD)
-  nContD = nContOfTypeD(ItypeD)
-  extentD = ExtentOfTypeD(ItypeD)
-  IF (spherical) THEN
-   nOrbCompD = 2*(AngmomD+1)-1
-  ELSE
-   nOrbCompD = (AngmomD+1)*(AngmomD+2)/2
-  ENDIF
-  nOrbD = nContD*nOrbCompD
-  nDimD = nContD*nOrbCompD*nAtomsD
   allocate(expD(nPrimD))
   call mem_ichor_alloc(expD)
   allocate(ContractCoeffD(nPrimD,nContD))
@@ -464,19 +458,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    IF(SameRHSaos .AND. ItypeD.GT.ItypeC)CYCLE
    TriangularRHSAtomLoop = SameRHSaos .AND. ItypeD.EQ.ItypeC
    PermuteRHSTypes = SameRHSaos .AND. ItypeD.LT.ItypeC
-   nAtomsC = nAtomsOfTypeC(ItypeC)
+   call ObtainTypeInfo(nTypesC,ItypeCnon,OrderdListC,nAtomsOfTypeC,AngmomOfTypeC,nPrimOfTypeC,&
+        & nContOfTypeC,ExtentOfTypeC,ItypeC,nAtomsC,AngmomC,nPrimC,nContC,extentC,nOrbCompC,&
+        & nOrbC,nDimC,nCartOrbCompC,spherical)   
    IF(nAtomsC.EQ.0)CYCLE
-   AngmomC = AngmomOfTypeC(ItypeC)
-   nPrimC = nPrimOfTypeC(ItypeC)
-   nContC = nContOfTypeC(ItypeC)
-   extentC = ExtentOfTypeC(ItypeC)
-   IF (spherical) THEN
-      nOrbCompC = 2*(AngmomC+1)-1
-   ELSE
-      nOrbCompC = (AngmomC+1)*(AngmomC+2)/2
-   ENDIF
-   nOrbC = nContC*nOrbCompC
-   nDimC = nOrbC*nAtomsC
    allocate(expC(nPrimC))
    call mem_ichor_alloc(expC)
    allocate(ContractCoeffC(nPrimC,nContC))
@@ -505,6 +490,9 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    AngmomQ = AngmomC + AngmomD
    nPrimQ = nPrimC*nPrimD
    nContQ = nContC*nContD
+   nOrbCompQ = nOrbCompC*nOrbCompD
+   nCartOrbCompQ = nCartOrbCompC*nCartOrbCompD
+   nTUVQ = (AngmomQ+1)*(AngmomQ+2)*(AngmomQ+3)/6
    allocate(Qiprim1(nPrimQ))
    call mem_ichor_alloc(Qiprim1) !not used
    allocate(Qiprim2(nPrimQ))
@@ -553,19 +541,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
    DO ItypeBnon=1,nTypesB
     ! TYPE B CALC ================================
     ItypeB = OrderdListB(ItypeBnon)
-    nAtomsB = nAtomsOfTypeB(ItypeB)
+    call ObtainTypeInfo(nTypesB,ItypeBnon,OrderdListB,nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,&
+         & nContOfTypeB,ExtentOfTypeB,ItypeB,nAtomsB,AngmomB,nPrimB,nContB,extentB,nOrbCompB,&
+         & nOrbB,nDimB,nCartOrbCompB,spherical)
     IF(nAtomsB.EQ.0)CYCLE
-    AngmomB = AngmomOfTypeB(ItypeB)
-    nPrimB = nPrimOfTypeB(ItypeB)
-    nContB = nContOfTypeB(ItypeB)
-    extentB = ExtentOfTypeB(ItypeB)
-    IF (spherical) THEN
-       nOrbCompB = 2*(AngmomB+1)-1
-    ELSE
-       nOrbCompB = (AngmomB+1)*(AngmomB+2)/2
-    ENDIF
-    nOrbB = nContB*nOrbCompB
-    nDimB = nOrbB*nAtomsB
     allocate(expB(nPrimB))
     call mem_ichor_alloc(expB)
     allocate(ContractCoeffB(nPrimB,nContB))
@@ -598,24 +577,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
      PermuteODTypes = SameODs
 !     IF(ItypeC.EQ.ItypeA.AND.ItypeD.EQ.ItypeB)PermuteODTypes=.FALSE.
      TriangularODAtomLoop = SameODs .AND. ((ItypeC.EQ.ItypeA).AND.(ItypeD.EQ.ItypeB))
-
-     nAtomsA = nAtomsOfTypeA(ItypeA)
+     call ObtainTypeInfo(nTypesA,ItypeAnon,OrderdListA,nAtomsOfTypeA,AngmomOfTypeA,nPrimOfTypeA,&
+          & nContOfTypeA,ExtentOfTypeA,ItypeA,nAtomsA,AngmomA,nPrimA,nContA,extentA,nOrbCompA,&
+          & nOrbA,nDimA,nCartOrbCompA,spherical)
      IF(nAtomsA.EQ.0)CYCLE
-     AngmomA = AngmomOfTypeA(ItypeA)
      TotalAngmom = AngmomA + AngmomB + AngmomQ
      IF(TotalAngmom.EQ.IAngmomTypes)THEN
       !This if statement ensures that we call GAMMATABULATION a very limited number of times
       !and it reduceses branch mispredictions inside the code,...
-      nPrimA = nPrimOfTypeA(ItypeA)
-      nContA = nContOfTypeA(ItypeA)
-      extentA = ExtentOfTypeA(ItypeA)
-      IF (spherical) THEN
-         nOrbCompA = 2*(AngmomA+1)-1
-      ELSE
-         nOrbCompA = (AngmomA+1)*(AngmomA+2)/2
-      ENDIF
-      nOrbA = nContA*nOrbCompA
-      nDimA = nContA*nOrbCompA*nAtomsA
       allocate(expA(nPrimA))
       call mem_ichor_alloc(expA)
       allocate(ContractCoeffA(nPrimA,nContA))
@@ -641,9 +610,14 @@ DO IAngmomTypes = 0,MaxTotalAngmom
 
       ! DONE TYPE A CALC ===========================
       ! TYPE P CALC ================================
+      AngmomP = AngmomA + AngmomB
       sumExtent2AB = (extentA + extentB)*(extentA + extentB)
       nPrimP = nPrimA*nPrimB
       nContP = nContA*nContB
+      nOrbCompP = nOrbCompA*nOrbCompB
+      nCartOrbCompP = nCartOrbCompA*nCartOrbCompB
+      nTUVP = (AngmomP+1)*(AngmomP+2)*(AngmomP+3)/6
+      nTUV = (TotalAngmom+1)*(TotalAngmom+2)*(TotalAngmom+3)/6
       IF (nContP.EQ. 1)THEN
          Psegmented = .TRUE.
       ELSE
@@ -866,6 +840,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & expC,ContractCoeffC,AngmomC,Ccenter,nOrbC,&
                  & nAtomsD,nPrimD,nContD,nOrbCompD,&
                  & expD,ContractCoeffD,AngmomD,Dcenter,nOrbD,&
+                 & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+                 & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
                  & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
                  & qcent,Ppreexpfac,Qpreexpfac,&
                  & Qiprim1,Qiprim2,&
@@ -896,6 +872,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
                  & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
                  & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+                 & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+                 & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
                  & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
                  & qcent,Ppreexpfac,Qpreexpfac,&
                  & Qiprim1,Qiprim2,&
@@ -919,6 +897,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
                  & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
                  & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+                 & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+                 & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
                  & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
                  & qcent,Ppreexpfac,Qpreexpfac,&
                  & Qiprim1,Qiprim2,&
@@ -940,6 +920,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                  & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
                  & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
                  & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+                 & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+                 & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
                  & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
                  & Ppreexpfac,Qiprim1,Qiprim2,&
                  & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
@@ -1205,6 +1187,35 @@ IF(MemAllocated.NE.0)THEN
 ENDIF
 
 end subroutine IchorEri
+
+subroutine ObtainTypeInfo(nTypesD,ItypeDnon,OrderdListD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
+     & nContOfTypeD,ExtentOfTypeD,ItypeD,nAtomsD,AngmomD,nPrimD,nContD,extentD,nOrbCompD,nOrbD,&
+     & nDimD,nCartOrbCompD,spherical)
+  implicit none
+  logical,intent(in) :: spherical
+  integer,intent(in) :: nTypesD,ItypeDnon
+  real(realk),intent(inout) :: extentD
+  integer,intent(inout) :: nAtomsD,AngmomD,nPrimD,nContD,nCartOrbCompD
+  integer,intent(inout) :: nOrbCompD,nOrbD,nDimD,ItypeD
+  integer,intent(in) :: OrderdListD(nTypesD),nAtomsOfTypeD(nTypesD),AngmomOfTypeD(nTypesD)
+  integer,intent(in) :: nPrimOfTypeD(nTypesD),nContOfTypeD(nTypesD)
+  real(realk),intent(in) :: ExtentOfTypeD(nTypesD)
+  
+  ItypeD = OrderdListD(ItypeDnon)  
+  nAtomsD = nAtomsOfTypeD(ItypeD)
+  AngmomD = AngmomOfTypeD(ItypeD)
+  nPrimD = nPrimOfTypeD(ItypeD)
+  nContD = nContOfTypeD(ItypeD)
+  extentD = ExtentOfTypeD(ItypeD)
+  nCartOrbCompD = (AngmomD+1)*(AngmomD+2)/2
+  IF (spherical) THEN
+     nOrbCompD = 2*(AngmomD+1)-1
+  ELSE
+     nOrbCompD = nCartOrbCompD
+  ENDIF
+  nOrbD = nContD*nOrbCompD
+  nDimD = nContD*nOrbCompD*nAtomsD
+end subroutine ObtainTypeInfo
 
 subroutine MakeCombCMO34(nDimC,nDimD,nCMO3,nCMO4,CMO3,CMO4,CombCMO34)
   implicit none
@@ -1479,6 +1490,8 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
      & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
      & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+     & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+     & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
      & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
      & qcent,Ppreexpfac,Qpreexpfac,&
      & Qiprim1,Qiprim2,&
@@ -1522,6 +1535,8 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   !
   real(realk),intent(in) :: BATCHGCD(nBatchC,nBatchD)
   !A & B
+  integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
+  integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
   integer,intent(in) :: iBatchIndexOfTypeA,iBatchIndexOfTypeB,AngmomB,AngmomA,nOrbA,nOrbB
   integer,intent(in) :: nAtomsA,nAtomsB,nOrbCompA,nOrbCompB,nBatchA,nBatchB,nContA,nContB
   integer,intent(in) :: nPrimA,nPrimB
@@ -1546,6 +1561,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
+  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1592,9 +1608,23 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$OMP        integralPrefactor,AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,&
 !$OMP        Qdistance12,PQorder,LocalIntPass1,LocalIntPass2,nLocalIntPass,&
 !$OMP        Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,Bcenter,nOrbQ,&
-!$OMP        TMParray2maxsizePass,Acenter,&
+!$OMP        TMParray2maxsizePass,Acenter,nTmpArray3,nTmpArray4,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
-!$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage)
+!$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
+!$OMP        nTUVQ,nCartOrbCompQ,nTUVP,nCartOrbCompP,TmpArray3,TmpArray4,nTUV,&
+!$OMP        nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,nOrbCompP,nOrbCompQ)
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
+     !$OMP END MASTER
+     !$OMP BARRIER 
+  ENDIF
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    startD = startOrbitalD(iAtomD)
@@ -1644,11 +1674,13 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-
      call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+          & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+          & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+          & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -1671,6 +1703,17 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
     ENDIF !noscreenCD2
    ENDDO !IatomC
   ENDDO !iAtomD
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+    call mem_ichor_dealloc(TmpArray3)
+    deallocate(TmpArray3)
+    call mem_ichor_dealloc(TmpArray4)
+    deallocate(TmpArray4)
+    !FIXME MUCH LATER
+    call FreeIchorSPHMAT()
+    !$OMP END MASTER
+    !$OMP BARRIER 
+  ENDIF
 !$OMP END PARALLEL
 
   call mem_ichor_dealloc(TmpArray1)
@@ -1695,6 +1738,8 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
      & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
      & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+     & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+     & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
      & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
      & Ppreexpfac,Qiprim1,Qiprim2,&
      & nTABFJW1,nTABFJW2,TABFJW,TotalAngmom,&
@@ -1737,9 +1782,10 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   !
   real(realk),intent(in) :: BATCHGCD(nBatchC,nBatchD)
   !A & B
+  integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
   integer,intent(in) :: iBatchIndexOfTypeA,iBatchIndexOfTypeB,AngmomB,AngmomA,nOrbA,nOrbB
   integer,intent(in) :: nAtomsA,nAtomsB,nOrbCompA,nOrbCompB,nBatchA,nBatchB,nContA,nContB
-  integer,intent(in) :: nPrimA,nPrimB
+  integer,intent(in) :: nPrimA,nPrimB,nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
   integer,intent(in) :: startOrbitalA(nAtomsA)
   integer,intent(in) :: startOrbitalB(nAtomsB)
   real(realk),intent(in) :: Acenter(3,nAtomsA),expA(nPrimA),ContractCoeffA(nPrimA,nContA)
@@ -1906,6 +1952,9 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
           & nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+          & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+          & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+          & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
           & pcentPass,Qcent(:,:,iCAH),PpreexpfacPass,Qpreexpfac(:,iCAH),&
           & nTABFJW1,nTABFJW2,TABFJW,Qiprim1,Qiprim2,expA,expB,expC,expD,&
           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -3759,6 +3808,8 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
      & expC,ContractCoeffC,AngmomC,Ccenter,nOrbC,&
      & nAtomsD,nPrimD,nContD,nOrbCompD,&
      & expD,ContractCoeffD,AngmomD,Dcenter,nOrbD,&
+     & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+     & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
      & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
      & qcent,Ppreexpfac,Qpreexpfac,&
      & Qiprim1,Qiprim2,&
@@ -3781,6 +3832,8 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   logical,intent(in) :: TriangularODAtomLoop
   logical,intent(in) :: SameRHSaos,SameLHSaos,SameODs
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri,nDimA,nDimB,nDimC,nDimD,nDmat
+  integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+  integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
   integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
   integer,intent(in) :: nKetList(nAtomsD),KetList(nAtomsC,nAtomsD)
@@ -3835,6 +3888,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
+  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -3865,6 +3919,18 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   allocate(DoINT(nAtomsA,nAtomsB))
   CALL Mem_ichor_alloc(DoINT)
   !Link Procedure
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
+     !$OMP END MASTER
+     !$OMP BARRIER 
+  ENDIF
   DO iatomD = 1,natomsD
    DcenterSpec(1) = Dcenter(1,IAtomD)
    DcenterSpec(2) = Dcenter(2,IAtomD)
@@ -3953,6 +4019,9 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
          & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
          & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
          & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+         & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+         & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+         & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
          & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
          & Qiprim1,Qiprim2,expA,expB,expC,expD,&
          & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -3992,6 +4061,17 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
 
    ENDDO !IatomC
   ENDDO !iAtomD
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+    call mem_ichor_dealloc(TmpArray3)
+    deallocate(TmpArray3)
+    call mem_ichor_dealloc(TmpArray4)
+    deallocate(TmpArray4)
+    !FIXME MUCH LATER
+    call FreeIchorSPHMAT()
+    !$OMP END MASTER
+    !$OMP BARRIER 
+  ENDIF
 
   call mem_ichor_dealloc(TmpArray1)
   deallocate(TmpArray1)
@@ -4044,6 +4124,8 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      & iBatchIndexOfTypeC,expC,ContractCoeffC,AngmomC,Ccenter,nBatchC,nOrbC,&
      & nAtomsD,nPrimD,nContD,nOrbCompD,startOrbitalD,&
      & iBatchIndexOfTypeD,expD,ContractCoeffD,AngmomD,Dcenter,nBatchD,nOrbD,&
+     & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+     & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
      & nPrimP,nPrimQ,nContP,nContQ,expP,expQ,&
      & qcent,Ppreexpfac,Qpreexpfac,&
      & Qiprim1,Qiprim2,&
@@ -4063,6 +4145,8 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   logical,intent(in) :: Qsegmented,Psegmented,PQorder,Spherical,CSscreen
   logical,intent(in) :: TriangularODAtomLoop,PermuteRHSTypes
   integer,intent(in) :: nTABFJW1,nTABFJW2,lupri,nCMO1,nCMO2,nCMO3,nCMO4
+  integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+  integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
   real(realk),intent(in) :: TABFJW(0:nTABFJW1,0:nTABFJW2),THRESHOLD_CS
   real(realk),intent(in) :: CMO1A(nOrbA*nAtomsA,nCMO1),CMO2B(nOrbB*nAtomsB,nCMO2)
   real(realk),intent(in) :: CMO3C(nOrbC*nAtomsC,nCMO3),CMO4D(nOrbD*nAtomsD,nCMO4)
@@ -4121,6 +4205,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   integer :: ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
   integer :: nDimA,nDimB,nDimC,nDimD
+  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -4178,11 +4263,25 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$OMP        integralPrefactor,AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,&
 !$OMP        Qdistance12,PQorder,LocalIntPass1,LocalIntPass2,nLocalIntPass,&
 !$OMP        Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,Bcenter,nOrbQ,&
-!$OMP        TMParray2maxsizePass,Acenter,&
+!$OMP        TMParray2maxsizePass,Acenter,TmpArray3,TmpArray4,&
 !$OMP        nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,PermuteLHSTypes,nOrbD,nOrbC,&
 !$OMP        OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
 !$OMP        nDimA,nDimB,nDimC,nDimD,CMO1A,CMO1B,CMO2A,CMO2B,nCMO1,nCMO2,&
-!$OMP        OutputA,OutputCD,PermuteRHSTypes)
+!$OMP        OutputA,OutputCD,PermuteRHSTypes,nTmpArray3,nTmpArray4,&
+!$OMP        nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+!$OMP        nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV)
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
+     !$OMP END MASTER
+     !$OMP BARRIER 
+  ENDIF
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    iBatchD = iBatchIndexOfTypeD + IatomD
@@ -4235,6 +4334,9 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
+          & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+          & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+          & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
           & pcentPass,qcent,PpreexpfacPass,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
           & Qiprim1,Qiprim2,expA,expB,expC,expD,&
           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -4275,6 +4377,17 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
     ENDIF !noscreenCD2
    ENDDO !IatomC
   ENDDO !iAtomD
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+    !$OMP MASTER
+    call mem_ichor_dealloc(TmpArray3)
+    deallocate(TmpArray3)
+    call mem_ichor_dealloc(TmpArray4)
+    deallocate(TmpArray4)
+    !FIXME MUCH LATER
+    call FreeIchorSPHMAT()
+    !$OMP END MASTER
+    !$OMP BARRIER 
+  ENDIF
 !$OMP END PARALLEL
 
   !SYMMETRY 

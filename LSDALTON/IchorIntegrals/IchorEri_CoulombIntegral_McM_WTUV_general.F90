@@ -261,7 +261,7 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2(WJ000,WTUV,Rpq,nPrim)
      WTUV(n,7) = Rpq(n,1)*Rpq(n,3)*WJ000(2,n)
      WTUV(n,9) = Rpq(n,2)*Rpq(n,3)*WJ000(2,n)
   ENDDO
-!$OMP END DO NOWAIT
+!$OMP END DO
 end SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2
 
 SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3(WJ000,WTUV,Rpq,nPrim)
