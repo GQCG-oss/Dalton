@@ -3176,7 +3176,7 @@ module lspdm_tensor_operations_module
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
                       call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                      call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                      call pgav(p_fort3(tl_max+1:tl_max+modp1,for3,for4),modp1,&
                          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                       call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                    enddo
