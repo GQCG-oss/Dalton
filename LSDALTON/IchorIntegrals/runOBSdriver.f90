@@ -81,6 +81,12 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
 
+  IF(CPU)THEN
+     DO ILUMOD=2,7
+        WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'McMGeneralMod'
+     ENDDO
+  ENDIF
+
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
      WRITE(ILUMOD,'(A)')'use IchorCommonModule'
@@ -632,18 +638,34 @@ DO GPUrun=1,2
            ENDDO
         ENDDO
      ENDDO
-     WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-
-     IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'',-1)'
-     ELSEIF(SegQ)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'',-1)'
-     ELSEIF(SegP)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'',-1)'
-     ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'',-1)'
-     ELSEIF(Seg1Prim)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'',-1)'
+        WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
+     IF(CPU)THEN
+        WRITE(ILUMOD,'(A)')'        call IchorCoulombIntegral_'//ARCSTRING//'_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(ILUMOD,'(A)')'           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+        WRITE(ILUMOD,'(A)')'           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+        WRITE(ILUMOD,'(A)')'           & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
+        WRITE(ILUMOD,'(A)')'           & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
+        WRITE(ILUMOD,'(A)')'           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
+        WRITE(ILUMOD,'(A)')'           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+        WRITE(ILUMOD,'(A)')'           & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+        WRITE(ILUMOD,'(A)')'           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+        IF(CPU)THEN
+           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass)' 
+        ELSE
+           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass,iASync)' 
+        ENDIF
+     ELSE
+        IF(Gen)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'',-1)'
+        ELSEIF(SegQ)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'',-1)'
+        ELSEIF(SegP)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'',-1)'
+        ELSEIF(Seg)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'',-1)'
+        ELSEIF(Seg1Prim)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'',-1)'
+        ENDIF
      ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
      IF(Gen)THEN
@@ -794,7 +816,24 @@ DO GPUrun=1,2
         ENDDO
      ENDDO
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-     WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_general_size'',-1)'
+     IF(CPU)THEN
+        WRITE(ILUMOD,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_McM_general_size(TMParray1maxsize,&'
+        WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+        WRITE(ILUMOD,'(A)')'         & nContA,nContB,nContC,nContD,&'
+        WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&'
+        IF(Gen)THEN
+           WRITE(ILUMOD,'(A)')'         & .FALSE.,.FALSE.)'
+        ELSEIF(SegQ)THEN
+           WRITE(ILUMOD,'(A)')'         & .FALSE.,.TRUE.)'
+        ELSEIF(SegP)THEN
+           WRITE(ILUMOD,'(A)')'         & .TRUE.,.FALSE.)'
+        ELSE !Seg or Seg1Prim
+           WRITE(ILUMOD,'(A)')'         & .TRUE.,.TRUE.)'
+        ENDIF
+     ELSE
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_general_size'',-1)'
+     ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
 
      IF(Gen)THEN

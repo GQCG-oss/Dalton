@@ -4,7 +4,7 @@
 !> \brief General McMurchie-Davidson Integral scheme
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorEriCoulombintegralMcMGeneralWTUVMod
+MODULE IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 use IchorPrecisionModule
 private 
 public :: IchorwtuvRecurrenceJMIN0JMAX0,IchorwtuvRecurrenceJMIN0JMAX1,&
@@ -28,6 +28,8 @@ CONTAINS
     integer :: um1,vm1,um2,vm2,dir
     real(realk) :: Xtemp,Ytemp,Ztemp,WJ,WJ1,WJ2,WJ3
     real(realk) :: W100,W010,W001,W200,W110,W101,W020,W011,W002
+    !$OMP DO PRIVATE(n,Xtemp,Ytemp,Ztemp,WJ,WJ1,WJ2,WJ3,W100,W010,W001,&
+    !$OMP            W200,W110,W101,W020,W011,W002)
     DO n=1,nPrimQ*nPrimP*nPasses
        Xtemp = Rpq(n,1)
        Ytemp = Rpq(n,2)
@@ -66,6 +68,7 @@ CONTAINS
        CUR(n,19) =       W010 + Ztemp*W011       !012
        CUR(n,20) = 2.0E0_realk*W001 + Ztemp*W002 !003
     ENDDO
+    !$OMP END DO
     ituv = 20
     DO k=4,JMAX-j
        TUVauxJm1 = IchorTUVindexFuncJ(k-1)
@@ -82,9 +85,11 @@ CONTAINS
              !ituvm2=TUVauxJm2+ichorfactorial(1+U+V)/(ichorfactorial(U+V-1)*ichorfactorial(2))+V+1
              ituvm1 = TUVauxJm1 + 1 + V + ((U+V+1)*(U+V))/2
              ituvm2 = TUVauxJm2 + 1 + V + ((U+V+1)*(U+V))/2
+!$OMP DO PRIVATE(n)
              DO n=1,nPrimQ*nPrimP*nPasses
                 CUR(n,ituv) = m1*OLD(n,ituvm2) + Rpq(n,1)*OLD(n,ituvm1)
              ENDDO
+!$OMP END DO
           ENDDO
        ENDDO
        DO t=k-k/2-1,0,-1
@@ -122,9 +127,11 @@ CONTAINS
              !Thanks to Ulf Ekstroem for IchorTUVindexFunc
              ituvm1 = IchorTUVindexFunc(um1,vm1,TUVauxJm1)
              ituvm2 = IchorTUVindexFunc(um2,vm2,TUVauxJm2)
+!$OMP DO PRIVATE(n)
              DO n=1,nPrimQ*nPrimP*nPasses
                 CUR(n,ituv) = m1*OLD(n,ituvm2) + Rpq(n,dir)*OLD(n,ituvm1)
              ENDDO
+!$OMP END DO
           ENDDO
        ENDDO
     ENDDO
@@ -209,9 +216,11 @@ CONTAINS
     Real(realk),intent(inout)    :: WTUV(nPrim,1)
     !
     integer :: n
+!$OMP DO PRIVATE(n)
     DO n=1,nPrim
        WTUV(n,1) = WJ000(0,n)
     ENDDO
+!$OMP END DO
   END SUBROUTINE ICHORWTUVRECURRENCEJMIN0JMAX0
 
   SUBROUTINE ichorwtuvrecurrenceJMIN0JMAX1(WJ000,WTUV,Rpq,nPrim)
@@ -221,12 +230,14 @@ CONTAINS
     Real(realk),intent(inout)    :: WTUV(nPrim,4)
     !
     integer :: n
+!$OMP DO PRIVATE(n)
     DO n=1,nPrim
        WTUV(n,1) = WJ000(0,n)
        WTUV(n,2) = Rpq(n,1)*WJ000(1,n)
        WTUV(n,3) = Rpq(n,2)*WJ000(1,n)
        WTUV(n,4) = Rpq(n,3)*WJ000(1,n)
     ENDDO
+!$OMP END DO
   END SUBROUTINE ICHORWTUVRECURRENCEJMIN0JMAX1
   
 SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2(WJ000,WTUV,Rpq,nPrim)
@@ -237,11 +248,9 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2(WJ000,WTUV,Rpq,nPrim)
   !
   integer :: n
   !000
+!$OMP DO PRIVATE(n)
   DO n=1,nPrim
      WTUV(n,1) = WJ000(0,n)
-  ENDDO
-  !it can reuse registers with this collection of this in 1 loop
-  DO n=1,nPrim
      WTUV(n,2) = Rpq(n,1)*WJ000(1,n)
      WTUV(n,3) = Rpq(n,2)*WJ000(1,n)
      WTUV(n,4) = Rpq(n,3)*WJ000(1,n)
@@ -252,6 +261,7 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2(WJ000,WTUV,Rpq,nPrim)
      WTUV(n,7) = Rpq(n,1)*Rpq(n,3)*WJ000(2,n)
      WTUV(n,9) = Rpq(n,2)*Rpq(n,3)*WJ000(2,n)
   ENDDO
+!$OMP END DO NOWAIT
 end SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX2
 
 SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3(WJ000,WTUV,Rpq,nPrim)
@@ -266,11 +276,9 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3(WJ000,WTUV,Rpq,nPrim)
   Real(realk) :: WTUVTEMP25,WTUVTEMP28
   Real(realk) :: WTUVTEMP210,WTUVTEMP29
   integer :: n
+!$OMP DO PRIVATE(n)
   DO n=1,nPrim
      WTUV(n,1) = WJ000(0,n)
-  ENDDO
-  !it can reuse registers with this collection of this in 1 loop
-  DO n=1,nPrim
      WTUV(n,2)   = Rpq(n,1)*WJ000(1,n)
      WTUVTEMP_21 = Rpq(n,1)*WJ000(2,n)
      WTUVTEMP_22 = Rpq(n,1)*WJ000(3,n)
@@ -301,6 +309,7 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3(WJ000,WTUV,Rpq,nPrim)
      WTUV(n,17) = 2*WTUVTEMP_31 + Rpq(n,2)*WTUVTEMP28
      WTUV(n,20) = 2*WTUVTEMP_41 + Rpq(n,3)*WTUVTEMP210
   ENDDO
+!$OMP END DO
 END SUBROUTINE ichorWTUVRECURRENCEJMIN0JMAX3
 
 SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3J(WJ000,WTUV,Rpq,nPrim,maxJ,J)
@@ -315,11 +324,9 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3J(WJ000,WTUV,Rpq,nPrim,maxJ,J)
   Real(realk) :: WTUVTEMP25,WTUVTEMP28
   Real(realk) :: WTUVTEMP210,WTUVTEMP29
   integer :: n
+!$OMP DO PRIVATE(n)
   DO n=1,nPrim
      WTUV(n,1) = WJ000(0+J,n)
-  ENDDO
-  !it can reuse registers with this collection of this in 1 loop
-  DO n=1,nPrim
      WTUV(n,2)   = Rpq(n,1)*WJ000(1+J,n)
      WTUVTEMP_21 = Rpq(n,1)*WJ000(2+J,n)
      WTUVTEMP_22 = Rpq(n,1)*WJ000(3+J,n)
@@ -350,6 +357,7 @@ SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3J(WJ000,WTUV,Rpq,nPrim,maxJ,J)
      WTUV(n,17) = 2*WTUVTEMP_31 + Rpq(n,2)*WTUVTEMP28
      WTUV(n,20) = 2*WTUVTEMP_41 + Rpq(n,3)*WTUVTEMP210
   ENDDO
+!$OMP END DO
 END SUBROUTINE ichorwtuvRecurrenceJMIN0JMAX3J
 
 ! WARNING CHANGE ORDER OF WTUV 
@@ -1325,4 +1333,4 @@ subroutine PrintWTUV(WTUV,AngmomPQ,nPrimQP,nPasses,nTUV,lupri)
   ENDDO
 end subroutine PrintWTUV
 
-end MODULE IchorEriCoulombintegralMcMGeneralWTUVMod
+end MODULE IchorEriCoulombintegralCPUMcMGeneralWTUVMod

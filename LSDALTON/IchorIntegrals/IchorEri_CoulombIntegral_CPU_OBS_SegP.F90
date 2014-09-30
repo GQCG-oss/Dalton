@@ -1,6 +1,7 @@
 MODULE IchorEriCoulombintegralCPUOBSGeneralModSegP
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for Segmented contracted LHS and a General Contracted RHS Basisset 
+use IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
@@ -5038,7 +5039,16 @@ CONTAINS
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContQ*nPasses,TMParray1,&
             & LOCALINTS)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_CPU_OBS_SegP',-1)
+        call IchorCoulombIntegral_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+           & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+           & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+           & IatomAPass,iatomBPass)
     END SELECT
   end subroutine IchorCoulombIntegral_CPU_OBS_SegP
   
@@ -5677,7 +5687,12 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,875*nContQ)
        TMParray1maxSize = MAX(TMParray1maxSize,900*nContQ)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
+     call IchorCoulombIntegral_CPU_McM_general_size(TMParray1maxsize,&
+         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
+         & nContA,nContB,nContC,nContD,&
+         & nPrimA,nPrimB,nPrimC,nPrimD,&
+         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&
+         & .TRUE.,.FALSE.)
     END SELECT
   end subroutine IchorCoulombIntegral_CPU_OBS_general_sizeSegP
 

@@ -5,6 +5,7 @@ use IchorEriCoulombintegralCPUOBSGeneralModSegQ
 use IchorEriCoulombintegralCPUOBSGeneralModSegP
 use IchorEriCoulombintegralCPUOBSGeneralModSeg
 use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim
+use IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory

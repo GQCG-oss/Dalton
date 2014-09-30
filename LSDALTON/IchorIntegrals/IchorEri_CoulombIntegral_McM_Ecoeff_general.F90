@@ -4,9 +4,9 @@
 !> \brief General McMurchie-Davidson Integral scheme
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorEriCoulombintegralMcMGeneralEcoeffMod
+MODULE IchorEriCoulombintegralCPUMcMGeneralEcoeffMod
 use IchorPrecisionModule
-use IchorEriCoulombintegralMcMGeneralWTUVMod
+use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 private 
 public :: Ichorbuild_Ecoeff_LHS,Ichorbuild_Ecoeff_RHS, printEcoeff
 
@@ -36,7 +36,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(1)
   ENDDO  
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,1,LUPRI)  
   ELSE !special less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -51,7 +51,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(2)
   ENDDO  
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,2,LUPRI)
   ELSE !special less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -66,7 +66,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      PB(iPrimP) =  APINV(iPrimP)*Pdistance12(3)
   ENDDO  
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,3,LUPRI)
   ELSE !NORMALY call special for less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -118,7 +118,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      ENDDO
   enddo
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,1,LUPRI)  
   ELSE !special less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -141,7 +141,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      ENDDO
   enddo
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,2,LUPRI)
   ELSE !special less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -164,7 +164,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
      ENDDO
   enddo
   IF(maxAng1+maxAng2.GT.-1 )THEN !6
-     CALL ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
+     CALL ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
           & PA,PB,HPINV,TWOA,TWOB,3,LUPRI)
   ELSE !NORMALY call special for less than 6
      CALL ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPasses,maxAng1,maxAng2,&
@@ -277,7 +277,7 @@ end subroutine build_auxiliary
 !> \param TWOB 2b (b is exponent on orbital 2)
 !> \param X INTEGER SPECIFYING X,Y,Z (1,2,3) COMPONENT OF OVERALL OVERLAP DISTRIBUTION
 !> \param LUPRI the logical unit number for the output file
-SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL(ETIJ,nPrimP,nPass,MAXI,MAXJ,PA,PB,&
+SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL_LHS(ETIJ,nPrimP,nPass,MAXI,MAXJ,PA,PB,&
      & HPINV,TWOA,TWOB,X,LUPRI)
 implicit none
 INTEGER,intent(in)        :: nPrimP,nPass,MAXI,MAXJ,LUPRI,X
@@ -415,7 +415,156 @@ DO I = 0, MAXI
       END IF
    END DO
 END DO
-END SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL
+END SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL_LHS
+
+!> \brief SUBROUTINE TO CALCULATE E's USING THE HERMITE RECURANNCE RELATIONS
+!> \author A. Teale 
+!> \date 2009
+!>
+!> Original code was written by Andrew Teale Andrew.Teale@nottingham.ac.uk
+!> Copied and modified to Ichor code 2014.
+!>
+!> VARIABLES
+!> =========      
+!> nPrimP       NUMBER OF PRIMITIVES IN OVERLAP DISTRIBUTION
+!> MAXI,MAXJ    MAXIMUM I,J VALUES IN ETIJ's (MAX ANGMOM OF G_i and G_j RESPECTIVELY)
+!> I,J,K,IJ     COUNTERS     
+!> PA           DISTANCE BETWEEN CENTRE OF CHARGE P AND A (THE CENTRE OF PRIMITIVE GAUSSIAN G_i)           
+!> PB           DISTANCE BETWEEN CENTRE OF CHARGE P AND B (THE CENTRE OF PRIMITIVE GAUSSIAN G_j)
+!> HPINV        1/2p (p = a + b I.E. SUM OF EXPONENTS OF PRIM G_i and G_j)           
+!> PINV         1/p
+!> APINV, BPINV a/p b/p
+!> TWOA, TWOB   2a, 2b
+!> ETIJ         E COEFFICIENTS 
+!> X            INTEGER SPECIFYING X,Y,Z (1,2,3) COMPONENT OF OVERALL OVERLAP DISTRIBUTION
+!> T            COUNTER INDEX USED TO COUNT UPTO SUM OF ANGULAR MOMENTA OF G_i AND G_j 
+!>
+!> \param ETIJ the single cartesian Ecoeff to be built 
+!> \param nprimP the number of primitives
+!> \param MAXI the maximum angular momentum for orbital 1
+!> \param MAXJ the maximum angular momentum for orbital 2
+!> \param PA the argument -b/p*Rpq (b is exponent on orbital 2, p=a+b)
+!> \param PB the argument  a/p*Rpq (a is exponent on orbital 1, p=a+b)
+!> \param HPINV the argument 1/2p
+!> \param TWOA 2a (a is exponent on orbital 1)
+!> \param TWOB 2b (b is exponent on orbital 2)
+!> \param X INTEGER SPECIFYING X,Y,Z (1,2,3) COMPONENT OF OVERALL OVERLAP DISTRIBUTION
+!> \param LUPRI the logical unit number for the output file
+SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL_RHS(ETIJ,nPrimP,MAXI,MAXJ,PA,PB,&
+     & HPINV,TWOA,TWOB,X,LUPRI)
+implicit none
+INTEGER,intent(in)        :: nPrimP,MAXI,MAXJ,LUPRI,X
+REAL(REALK),intent(in)    :: PA(nPrimP), PB(nPrimP)
+REAL(REALK),intent(inout) :: ETIJ(nPrimP,0:MAXI+MAXJ,0:MAXI,0:MAXJ,3)
+REAL(REALK),intent(in)    :: HPINV(nPrimP)
+REAL(REALK)               :: TWOA(nPrimP),TWOB(nPrimP)
+!
+REAL(REALK),PARAMETER     :: D1 = 1.0E0_realk, D2 = 2.0E0_realk
+INTEGER                   :: MAXIJ,K,IJ,I,J,TJM,TIM,T,T1
+!
+! Run over I (J = 0)                                     
+! ==================
+!
+DO I = 0, MAXI
+   TIM = I-1
+   IF (I .LE. 2) THEN
+      !           E(0,0,0)                                              
+      IF (I .EQ. 0) THEN
+         DO K = 1, nPrimP
+            ETIJ(K,0,0,0,X) = D1
+         ENDDO
+      ELSE IF (I .EQ. 1) THEN
+         !           E(T,1,0)                                            
+         DO K = 1, nPrimP
+            ETIJ(K,0,1,0,X) = PA(K)
+            ETIJ(K,1,1,0,X) = HPINV(K)
+         ENDDO
+      ELSE IF (I .EQ. 2) THEN
+         !           E(T,2,0)                                              
+         DO K = 1, nPrimP
+            ETIJ(K,0,2,0,X) = PA(K)*PA(K) + HPINV(K) - D1/TWOA(K)
+            ETIJ(K,1,2,0,X) = D2*PA(K)*HPINV(K)
+            ETIJ(K,2,2,0,X) = HPINV(K)*HPINV(K)
+         ENDDO
+      ENDIF
+   ELSE
+      DO K = 1, nPrimP
+         ETIJ(K,0,I,0,X) = PA(K)*ETIJ(K,0,I-1,0,X) + ETIJ(K,1,I-1,0,X) - TIM*ETIJ(K,0,I-2,0,X)/TWOA(K)
+         ETIJ(K,I-1,I,0,X) = HPINV(K)*ETIJ(K,I-2,I-1,0,X) + PA(K)*ETIJ(K,I-1,I-1,0,X)
+         ETIJ(K,I,I,0,X) = HPINV(K)*ETIJ(K,I-1,I-1,0,X)
+      END DO
+      DO T = 1, I - 2                                    
+         T1 = T + 1
+         DO K = 1, nPrimP
+            ETIJ(K,T,I,0,X) = HPINV(K)*ETIJ(K,T-1,I-1,0,X)+ PA(K)*ETIJ(K,  T,I-1,0,X)&
+                 & + T1*ETIJ(K,T+1,I-1,0,X) - TIM*ETIJ(K, T,I-2,0,X)/TWOA(K)
+         ENDDO
+      END DO
+   END IF
+   !   Run over J                                          
+   !   ==========                                          
+   DO J = 1, MAXJ
+      IJ = I + J
+      TJM = J-1
+      
+      IF (IJ .LE. 2) THEN
+         IF (IJ .EQ. 1) THEN                                                                 
+            !              E(0,1)                                           
+            DO K = 1, nPrimP
+               ETIJ(K,0,0,1,X) = PB(K)    
+               ETIJ(K,1,0,1,X) = HPINV(K) 
+            ENDDO
+         ELSE IF (IJ .EQ. 2) THEN     
+            !                 E(0,2)                        
+            IF (I .EQ. 0) THEN
+               DO K = 1, nPrimP
+                  ETIJ(K,0,0,2,X) = PB(K)*PB(K) + HPINV(K) - D1/TWOB(K)
+                  ETIJ(K,1,0,2,X) = D2*PB(K)*HPINV(K)
+                  ETIJ(K,2,0,2,X) = HPINV(K)*HPINV(K)
+               ENDDO
+            ELSE
+               !                    E(1,1)                                    
+               DO K = 1, nPrimP
+                  ETIJ(K,0,1,1,X) = PA(K)*PB(K) + HPINV(K)
+                  ETIJ(K,1,1,1,X) = (PA(K) + PB(K))*HPINV(K)
+                  ETIJ(K,2,1,1,X) = HPINV(K)*HPINV(K)
+               ENDDO
+            END IF
+         ENDIF
+      ELSE
+         !             E(I,J)                                            
+         IF(J.LT. 2)THEN
+            DO K = 1, nPrimP
+               ETIJ(K,0,I,J,X) = PB(K)*ETIJ(K,0,I,J-1,X)+ ETIJ(K,1,I,J-1,X)
+               ETIJ(K,IJ-1,I,J,X) = HPINV(K)*ETIJ(K,IJ-2,I,J-1,X)+ PB(K)*ETIJ(K,IJ-1,I,J-1,X)
+               ETIJ(K,IJ,I,J,X) = HPINV(K)*ETIJ(K,IJ-1,I,J-1,X)
+            ENDDO
+            DO T = 1, IJ - 2
+               T1 = T + 1
+               DO K = 1, nPrimP
+                  ETIJ(K,T,I,J,X)= HPINV(K)*ETIJ(K,T-1,I,J-1,X)+ PB(K)*ETIJ(K,  T,I,J-1,X)&
+                       & + T1*ETIJ(K,T+1,I,J-1,X)! - TJM*ETIJ(K,  T,I,J-2)/TWOB(K)
+               ENDDO
+            END DO
+         ELSE
+            DO K = 1, nPrimP
+               ETIJ(K,   0,I,J,X) = PB(K)*ETIJ(K,   0,I,J-1,X)+ ETIJ(K,   1,I,J-1,X)&
+                    & -TJM*ETIJ(K,  0,I,J-2,X)/TWOB(K)
+               ETIJ(K,IJ-1,I,J,X) = HPINV(K)*ETIJ(K,IJ-2,I,J-1,X)+ PB(K)*ETIJ(K,IJ-1,I,J-1,X)
+               ETIJ(K,  IJ,I,J,X) = HPINV(K)*ETIJ(K,IJ-1,I,J-1,X)
+            ENDDO
+            DO T = 1, IJ - 2
+               T1 = T + 1
+               DO K = 1, nPrimP
+                  ETIJ(K,T,I,J,X)= HPINV(K)*ETIJ(K,T-1,I,J-1,X)+ PB(K)*ETIJ(K,  T,I,J-1,X)&
+                       & + T1*ETIJ(K,T+1,I,J-1,X) - TJM*ETIJ(K,  T,I,J-2,X)/TWOB(K)
+               ENDDO
+            END DO
+         ENDIF
+      END IF
+   END DO
+END DO
+END SUBROUTINE ICHOR_HERM_ECOEFFS_GENERAL_RHS
 
 SUBROUTINE ICHOR_HERM_ECOEFFS(ETIJ,nPrimP,nPass,MAXI,MAXJ,PA,PB,&
      & HPINV,TWOA,TWOB,X,LUPRI)
@@ -1735,4 +1884,4 @@ ENDDO
 
 end subroutine printEcoeff
 
-end MODULE IchorEriCoulombintegralMcMGeneralEcoeffMod
+end MODULE IchorEriCoulombintegralCPUMcMGeneralEcoeffMod

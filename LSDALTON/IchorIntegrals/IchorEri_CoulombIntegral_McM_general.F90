@@ -4,15 +4,15 @@
 !> \brief General McMurchie-Davidson Integral scheme
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorEriCoulombintegralMcMGeneralMod
+MODULE IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorPrecisionModule
 use IchorMemory
 use IchorCommonModule
-use IchorEriCoulombintegralMcMGeneralEcoeffMod
-use IchorEriCoulombintegralMcMGeneralWTUVMod
+use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod
+use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 private 
-public :: IchorCoulombIntegral_McM_general, &
-     & IchorCoulombIntegral_McM_general_size
+public :: IchorCoulombIntegral_CPU_McM_general, &
+     & IchorCoulombIntegral_CPU_McM_general_size
 
 !build from old IchorEri_CoulombIntegral_general.f90 in
 !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
@@ -27,7 +27,7 @@ end type vector
 type(vector),allocatable :: SPH_MAT(:)
 
 CONTAINS
-  subroutine IchorCoulombIntegral_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine IchorCoulombIntegral_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
@@ -116,7 +116,7 @@ CONTAINS
     !Rpq(nPrimQ,nPrimP,nPasses,3)
     call build_Rpq(nPrimQ,nPasses,nPrimP,Qcent,Pcent,TmpArray3,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB)
 
-    IF(PQorder) call lsquit('PQorder McM general expect to get QP ordering',-1)
+    IF(PQorder) call lsquit('PQorder CPU_McM general expect to get QP ordering',-1)
 
     !
     !      builds RJ000(0:AngmomPQ,nPrimQ,nPrimP,nPasses) Store in TmpArray4
@@ -182,6 +182,7 @@ CONTAINS
     !WARNING ONLY ZERO FOR DEBUGGING PURPOSES
     CALL LS_DZERO(TmpArray3,nTUVQ*ijkQcart*nPrimQ)
     !builds Ecoeff(nPrimQ,nPasses,nTUVQ,ijkQcart)
+    !FOR NOW THIS IS NOT OpenMP parallized - unclear what the best method is. 
     call Ichorbuild_Ecoeff_RHS(nPrimQ,nPrimC,nPrimD,AngmomQ,AngmomC,AngmomD,nTUVQ,&
          & ijkQcart,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,TmpArray4)
 
@@ -272,6 +273,7 @@ CONTAINS
 
     CALL LS_DZERO(TmpArray3,nTUVP*ijkPcart*nPrimP*nPasses)
     !builds Ecoeff(nPrimP,nPasses,nTUVP,ijkPcart)
+    !currently not OpenMP parallel 
     call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
          & ijkPcart,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
          & nAtomsA,nAtomsB,IatomApass,IatomBpass,MaxPasses,intprint,lupri,TmpArray4)
@@ -376,9 +378,9 @@ CONTAINS
     deallocate(TmpArray4)
     !FIXME MUCH LATER
     call FreeIchorSPHMAT()
-  end subroutine IchorCoulombIntegral_McM_general
+  end subroutine IchorCoulombIntegral_CPU_McM_general
 
-  subroutine IchorCoulombIntegral_McM_general_size(TMParray1maxsize,&
+  subroutine IchorCoulombIntegral_CPU_McM_general_size(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
     implicit none
@@ -495,7 +497,7 @@ CONTAINS
        TMP1 = .NOT.TMP1
     ENDIF
 
-  end subroutine IchorCoulombIntegral_McM_general_size
+  end subroutine IchorCoulombIntegral_CPU_McM_general_size
   
   subroutine reorderABCD(SCERECS,ABCD,ndim1,ndim2)
     implicit none
@@ -504,11 +506,13 @@ CONTAINS
     real(realk),intent(inout) :: ABCD(ndim2,ndim1)
     !
     integer :: I,J
+    !$OMP DO COLLAPSE(I,J) PRIVATE(I,J)
     do I=1,ndim1
        do J=1,ndim2
           ABCD(J,I) = SCERECS(I,J)
        enddo
     enddo
+    !$OMP END DO
   end subroutine ReorderABCD
 
   Subroutine contractBasisGenQ(RE,REC,CCC,DCC,nPrimC,nPrimD,nContC,nContD,ndim)
@@ -519,8 +523,9 @@ CONTAINS
     real(realk),intent(in) :: RE(nPrimC,nPrimD,ndim)
     real(realk),intent(inout) :: REC(nContC,nContD,ndim)
     !
-    integer :: i, icC,icD,ipC,ipD
+    integer :: i,icC,icD,ipC,ipD
     real(realk) :: TMP,TMPD
+    !$OMP DO COLLAPSE(3) PRIVATE(i,icC,icD,ipC,ipD,TMP,TMPD)
     do icd = 1,nContD
        do icC = 1,nContC
           do i = 1,ndim
@@ -535,6 +540,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end Subroutine contractBasisGenQ
 
   Subroutine contractBasisSegQ(RE,REC,nPrimC,nPrimD,ndim)
@@ -545,6 +551,7 @@ CONTAINS
     !
     integer :: i,ipC,ipD
     real(realk) :: TMP
+    !$OMP DO PRIVATE(i,ipC,ipD,TMP)
     do i = 1,ndim
        TMP = 0.0E0_realk          
        do ipD = 1,nPrimD
@@ -554,6 +561,7 @@ CONTAINS
        enddo
        REC(i) = TMP  
     enddo
+    !$OMP END DO
   end Subroutine contractBasisSegQ
 
   subroutine SphericalTransformGenQCD(REC,RECS,SPHMATC,SPHMATD,ijk3,ijk3s,ijk4,ijk4s,ndim)
@@ -563,13 +571,20 @@ CONTAINS
     real(realk),intent(in) :: REC(ndim,ijk3,ijk4)
     real(realk),intent(inout) :: RECS(ndim,ijk3s,ijk4s)
     !
-    integer :: a,b,c,d,as,bs,cs,ds,i
+    integer :: c,d,cs,ds,i
     real(realk) :: TMP,TMPD
+    !$OMP DO COLLAPSE(3) PRIVATE(cs,ds,i)
     do cs = 1,ijk3s
        do ds = 1,ijk4s
           do i = 1,ndim
              RECS(i,cs,ds) = 0.0E0_realk
           enddo
+       enddo
+    enddo
+    !$OMP END DO
+    !$OMP DO COLLAPSE(2) PRIVATE(c,d,cs,ds,i,TMP,TMPD)
+    do cs = 1,ijk3s
+       do ds = 1,ijk4s
           do d = 1,ijk4
              TMPD = SPHMATD(d,ds) 
              do c = 1,ijk3
@@ -581,6 +596,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end subroutine SphericalTransformGenQCD
 
   subroutine SphericalTransformGenQC(REC,RECS,SPHMATC,ijk3,ijk3s,ijk4,ndim)
@@ -592,11 +608,18 @@ CONTAINS
     !
     integer :: c,cs,ds,i
     real(realk) :: TMP
+    !$OMP DO COLLAPSE(3) PRIVATE(cs,ds,i)
     do cs = 1,ijk3s
        do ds = 1,ijk4
           do i = 1,ndim
              RECS(i,cs,ds) = 0.0E0_realk
           enddo
+       enddo
+    enddo
+    !$OMP END DO
+    !$OMP DO COLLAPSE(2) PRIVATE(c,cs,ds,i,TMP)
+    do cs = 1,ijk3s
+       do ds = 1,ijk4
           do c = 1,ijk3
              TMP = SPHMATC(c,cs)
              do i = 1,ndim
@@ -605,6 +628,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end subroutine SphericalTransformGenQC
 
   subroutine SphericalTransformGenQD(REC,RECS,SPHMATD,ijk3,ijk4,ijk4s,ndim)
@@ -616,15 +640,21 @@ CONTAINS
     !
     integer :: d,ds,i
     real(realk) :: TMP
+    !$OMP DO COLLAPSE(2) PRIVATE(d,i)
     do ds = 1,ijk4s
        do i = 1,ndim*ijk3
           RECS(i,ds) = 0.0E0_realk
        enddo
+    enddo
+    !$OMP END DO
+    do ds = 1,ijk4s
        do d = 1,ijk4
           TMP = SPHMATD(d,ds) 
+          !$OMP DO PRIVATE(i)
           do i = 1,ndim*ijk3
              RECS(i,ds) = RECS(i,ds) + REC(i,d)*TMP
           enddo
+          !$OMP END DO
        enddo
     enddo
   end subroutine SphericalTransformGenQD
@@ -640,6 +670,7 @@ CONTAINS
     Real(realk) :: TMP
     !
     IF(nTUVP.GT.1)THEN
+       !$OMP DO COLLAPSE(3) PRIVATE(ijkP,ijkQ,iP,iQ,ituvP,TMP)
        DO ijkP = 1,ijkPcart
           DO ijkQ = 1,ijkQsph
              DO iP = 1,nPrimPassesP
@@ -648,6 +679,12 @@ CONTAINS
                    OUT(iQ,iP,ijkP,ijkQ) = IN(iQ,iP,1,ijkQ)*TMP
                 ENDDO
              ENDDO
+          ENDDO
+       ENDDO
+       !$OMP END DO
+       !$OMP DO COLLAPSE(2) PRIVATE(ijkP,ijkQ,iP,iQ,ituvP,TMP)
+       DO ijkP = 1,ijkPcart
+          DO ijkQ = 1,ijkQsph
              DO iTUVP = 2,nTUVP
                 DO iP = 1,nPrimPassesP
                    TMP = Ecoeff(iP,iTUVP,ijkP)
@@ -658,7 +695,9 @@ CONTAINS
              ENDDO
           ENDDO
        ENDDO
+       !$OMP END DO
     ELSE
+       !$OMP DO COLLAPSE(2) PRIVATE(ijkQ,iP,iQ,TMP)
        DO ijkQ = 1,ijkQsph
           DO iP = 1,nPrimPassesP
              TMP = Ecoeff(iP,1,1)
@@ -667,6 +706,7 @@ CONTAINS
              ENDDO
           ENDDO
        ENDDO
+       !$OMP END DO
     ENDIF
   END SUBROUTINE contractEcoeffGenP
   
@@ -679,6 +719,7 @@ CONTAINS
     !
     integer :: i,icA,icB,ipA,ipB,iQ
     real(realk) :: TMP,TMPB
+    !$OMP DO COLLAPSE(3) PRIVATE(i,icA,icB,ipA,ipB,iQ,TMP,TMPB)
     do icB = 1,nContB
        do icA = 1,nContA
           do i = 1,ndim
@@ -697,6 +738,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
 
   end Subroutine contractBasisGenP
 
@@ -707,6 +749,7 @@ CONTAINS
     real(realk),intent(inout) :: CERECS(nContQ,ndim)
     !
     integer :: i,ipA,ipB,iQ
+    !$OMP DO PRIVATE(i,ipA,ipB,iQ)
     do i = 1,ndim
        do iQ = 1,nContQ
           CERECS(iQ,i) = 0.0E0_realk
@@ -719,6 +762,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end Subroutine contractBasisSegP
 
   subroutine SphericalTransformGenPAB(CERECS,SCERECS,SPHMATA,SPHMATB,&
@@ -731,6 +775,7 @@ CONTAINS
     !
     integer :: a,b,as,bs,i,ijkQ
     real(realk) :: TMP,TMPB
+    !$OMP DO COLLAPSE(3) PRIVATE(a,b,as,bs,i,ijkQ,TMP,TMPB)
     do ijkQ = 1,ijkQsph
      do as = 1,ijk1s
       do bs = 1,ijk2s
@@ -749,6 +794,7 @@ CONTAINS
       enddo
      enddo
     enddo
+    !$OMP END DO
   end subroutine SphericalTransformGenPAB
 
   subroutine SphericalTransformGenPA(CERECS,SCERECS,SPHMATA,&
@@ -761,6 +807,7 @@ CONTAINS
     !
     integer :: a,as,i,ijkQ
     real(realk) :: TMP
+    !$OMP DO COLLAPSE(2) PRIVATE(a,as,i,ijkQ,TMP)
     do ijkQ = 1,ijkQsph*ijk2
        do as = 1,ijk1s
           do i = 1,ndim
@@ -774,6 +821,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end subroutine SphericalTransformGenPA
 
   subroutine SphericalTransformGenPB(CERECS,SCERECS,SPHMATB,&
@@ -786,6 +834,7 @@ CONTAINS
     !
     integer :: b,bs,i,ijkQ
     real(realk) :: TMP
+    !$OMP DO COLLAPSE(2) PRIVATE(b,bs,i,ijkQ,TMP)
     do ijkQ = 1,ijkQsph
        do bs = 1,ijk2s
           do i = 1,ndim*ijk1
@@ -799,6 +848,7 @@ CONTAINS
           enddo
        enddo
     enddo
+    !$OMP END DO
   end subroutine SphericalTransformGenPB
 
   subroutine SphericalTransformGen(CEREC,SCERECS,SPHMATA,SPHMATB,&
@@ -1123,6 +1173,7 @@ ENDDO
 ntuvp2=ituvp
 ntuvq2=ituvq
 
+!$OMP DO PRIVATE(ijk,ituvP,ituvQP,iPrimPass,iPrimQ,ituvQ,ioff)
 DO ijk = 1, ijkQ
    DO ituvP = 1,ntuvP2
       ituvQP=TUVQPindex(ituvP)
@@ -1206,24 +1257,21 @@ subroutine build_Rpq(nPrimQ,nPassP,nPrimP,Qcent,Pcent,Rpq,&
   integer,intent(in) :: nPrimQ,nPassP,nPrimP,MaxPasses,nAtomsA,nAtomsB
   integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)
   real(realk),intent(in) :: Qcent(3,nPrimQ),Pcent(3,nPrimP,nAtomsA,nAtomsB)
-  real(realk),intent(inout) :: Rpq(nPrimQ,nPrimP,nPassP,3)
+  real(realk),intent(inout) :: Rpq(nPrimQ*nPrimP*nPassP,3)
   !
-  integer :: iPrimQ,iPassP,iPrimP,iAtomA,iAtomB
-  real(realk) :: px,py,pz
-  DO iPassP=1, nPassP
+  integer :: iP,iPrimQ,iPassP,iPrimP,iAtomA,iAtomB
+!$OMP DO PRIVATE(iP,iPrimQ,iPassP,iPrimP,iAtomA,iAtomB)
+  DO iP=1,nPrimQ*nPrimP*nPassP
+     iPrimQ = mod(IP-1,nPrimQ)+1
+     iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1
+     iPassP = (IP-1)/(nPrimQ*nPrimP) + 1
      iAtomA = iAtomApass(iPassP)
      iAtomB = iAtomBpass(iPassP)
-     DO iPrimP=1, nPrimP
-        px = Pcent(1,iPrimP,iAtomA,iAtomB)
-        py = Pcent(2,iPrimP,iAtomA,iAtomB)
-        pz = Pcent(3,iPrimP,iAtomA,iAtomB)
-        DO iPrimQ=1, nPrimQ
-           rPQ(iPrimQ,iPrimP,iPassP,1) = px - Qcent(1,iPrimQ)
-           rPQ(iPrimQ,iPrimP,iPassP,2) = py - Qcent(2,iPrimQ)
-           rPQ(iPrimQ,iPrimP,iPassP,3) = pz - Qcent(3,iPrimQ)
-        ENDDO
-     ENDDO
+     rPQ(iP,1) = Pcent(1,iPrimP,iAtomA,iAtomB) - Qcent(1,iPrimQ)
+     rPQ(iP,2) = Pcent(2,iPrimP,iAtomA,iAtomB) - Qcent(2,iPrimQ)
+     rPQ(iP,3) = Pcent(3,iPrimP,iAtomA,iAtomB) - Qcent(3,iPrimQ)
   ENDDO
+!$OMP END DO
 end subroutine build_Rpq
 
   SUBROUTINE buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
@@ -1253,8 +1301,9 @@ end subroutine build_Rpq
     Real(realk) :: W2,W3,R,pqx,pqy,pqz
     REAL(REALK), PARAMETER :: SMALL = 1E-15_realk
     Integer :: IPNT,J,iP,iPrimQP
-    D2JP36 = 2*JMAX + 36
+!$OMP DO PRIVATE(iP,iPrimQP,WVAL,IPNT,WDIFF,W2,W3,R,J,REXPW,RWVAL,PREF,D2MALPHA,D2JP36)
     DO iP = 1,nPrimQ*nPrimP*nPasses
+       D2JP36 = 2*JMAX + 36
        iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
        !(nPrimP,nPrimQ)*(nPrimP,nPrimQ,nPasses)        squaredDistance
        WVAL = reducedExponents(iPrimQP)*(Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3))
@@ -1306,6 +1355,7 @@ end subroutine build_Rpq
           RJ000(J,IP) = PREF*RJ000(J,IP)
        ENDDO
     ENDDO
+!$OMP END DO
   END SUBROUTINE buildRJ000_general
 
 subroutine PrintRJ000(RJ000,AngmomPQ,nPrim,nPasses,lupri)
@@ -1470,4 +1520,4 @@ do iQ = 1,nContQ
 enddo
 end subroutine PrintIchorTensorSCERECS
 
-end MODULE IchorEriCoulombintegralMcMGeneralMod
+end MODULE IchorEriCoulombintegralCPUMcMGeneralMod
