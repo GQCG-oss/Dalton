@@ -74,6 +74,17 @@ module ccsdpt_module
       real (C_DOUBLE) :: alpha, beta
     end function cublasDgemm_v2
 
+    ! cublasDdot_v2
+    integer (C_INT) function cublasDdot_v2 ( handle, n, A, incA, B, incB, res ) bind (C, name="cublasDdot_v2")
+      use iso_c_binding
+      implicit none
+      type (C_PTR), value :: handle
+      type (C_PTR), value :: A, B
+      integer (C_INT), value :: n, incA, incB
+      real (C_DOUBLE) :: res
+    end function cublasDdot_v2
+
+    ! cublasSetStream_v2
     integer (C_INT) function cublasSetStream_v2 ( handle, stream ) bind (C, name="cublasSetStream_v2")
       use iso_c_binding
       implicit none
@@ -170,6 +181,16 @@ contains
 
        !Zero to be able to sum up
        call array_zero(ccsdpt_singles)
+ 
+       if (present(e4)) then
+
+          e4 = 0.0E0_realk
+
+       else
+
+          call lsquit('print_frags == .false., but e4 is missing... aborting.',DECinfo%output) 
+
+       endif
 
     endif
 
@@ -1211,9 +1232,14 @@ contains
 #endif
 
 ! copy in orbital energies and create triples amplitudes and work arrays
+!
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalocc,eivalvirt)
+!$acc& copyin(eivalocc,eivalvirt) if(.not. full_no_frags)
+! 
+!$acc enter data create(trip_tmp,trip_ampl,&
+!$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
+!$acc& copyin(eivalocc,eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 
 !$acc wait
 
@@ -1235,7 +1261,7 @@ contains
 !$acc enter data copyin(vvvo(:,:,:,i)) async(async_id(2))
 
 !$acc enter data copyin(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
 
     jrun_ser: do j=1,i
 
@@ -1244,7 +1270,9 @@ contains
 !$acc enter data copyin(ovoo(:,:,i,j)) async(async_id(2))
 
 !$acc enter data copyin(vvoo(:,:,i,j),&
-!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3))
+!$acc& ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                  else ! i .gt. j
 
@@ -1267,7 +1295,9 @@ contains
 !$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i),&
 !$acc& ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                  end if
 
@@ -1295,7 +1325,9 @@ contains
 !$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),&
 !$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                     else if ((i .gt. j) .and. (j .eq. k)) then
 
@@ -1305,7 +1337,9 @@ contains
 !$acc enter data copyin(ovoo(:,:,j,k)) async(async_id(2))
 
 !$acc enter data copyin(vvoo(:,:,j,k),&
-!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3))
+!$acc& ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                     else
 
@@ -1321,7 +1355,9 @@ contains
 !$acc& ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
 !$acc& ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc enter data copyin(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 
                     end if
 
@@ -1360,6 +1396,8 @@ contains
 
                        if (full_no_frags) then
 
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
+
                           call ccsdpt_energy_full_ijk_case1(i,i,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,i),vvoo(:,:,i,k),vvoo(:,:,k,i),&
                                                & ccsdpt_singles(:,i),ccsdpt_singles(:,k),&
@@ -1393,7 +1431,9 @@ contains
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i))&
 !$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i)) async(async_id(3)) if(full_no_frags)
 
                     case(2)
 
@@ -1407,6 +1447,8 @@ contains
                                                & trip_tmp,trip_ampl,async_id(4),cublas_handle)
 
                        if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                           call ccsdpt_energy_full_ijk_case2(i,j,j,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,j,i),vvoo(:,:,j,j),&
@@ -1438,7 +1480,9 @@ contains
 
 !$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,j,k))&
-!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles(:,:,j,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,j,k)) async(async_id(3)) if(full_no_frags)
 
                     case(3)
 
@@ -1458,6 +1502,8 @@ contains
 !$acc exit data delete(ccsd_doubles(:,:,:,k)) async(async_id(1))
 
                        if (full_no_frags) then
+
+!$acc wait(async_id(2),async_id(3)) async(async_id(4))
 
                           call ccsdpt_energy_full_ijk_case3(i,j,k,nocc,nvirt,eivalocc,eivalvirt,trip_ampl,trip_tmp,&
                                                & vvoo(:,:,i,j),vvoo(:,:,i,k),vvoo(:,:,j,i),&
@@ -1496,7 +1542,9 @@ contains
 !$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j))&
 !$acc& copyout(ccsdpt_singles(:,k),&
 !$acc& ccsdpt_doubles(:,:,i,k),ccsdpt_doubles(:,:,k,i),ccsdpt_doubles(:,:,j,k),ccsdpt_doubles(:,:,k,j),&
-!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,k),vvoo(:,:,k,i),vvoo(:,:,j,k),vvoo(:,:,k,j)) async(async_id(3)) if(full_no_frags)
 
                     end select TypeOfTuple_ser_ijk
 
@@ -1508,7 +1556,9 @@ contains
 !$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))k
 !$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j))&
-!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(3))
+!$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j)) async(async_id(3)) if(full_no_frags)
 
                  else ! i .gt. j
 
@@ -1523,7 +1573,9 @@ contains
 !$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i))&
 !$acc& copyout(ccsdpt_singles(:,j),&
 !$acc& ccsdpt_doubles(:,:,i,j),ccsdpt_doubles(:,:,j,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,j)) async(async_id(3)) if(.not. full_no_frags)
+!
+!$acc exit data delete(vvoo(:,:,i,j),vvoo(:,:,j,i)) async(async_id(3)) if(full_no_frags)
 
                  end if
  
@@ -1537,14 +1589,17 @@ contains
 
 !$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data copyout(ccsdpt_singles(:,i),&
-!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3))
+!$acc& ccsdpt_doubles_2(:,:,:,i)) async(async_id(3)) if(.not. full_no_frags)
 
            end do irun_ser
 
 !$acc wait 
 
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalocc,eivalvirt)
+!$acc& eivalocc,eivalvirt) if(.not. full_no_frags)
+!
+!$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
+!$acc& eivalocc,eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
 
 #ifdef VAR_CUBLAS
     ! Destroy the CUBLAS context
@@ -1803,18 +1858,32 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
     !> ddot
     real(realk), external :: ddot
 
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case1 routine 
 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+
     trip_tmp = trip_ampl
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+!$acc end host_data
+#endif
+#else
     e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
@@ -1829,7 +1898,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
@@ -1839,14 +1920,34 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.true.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
 
+#ifdef VAR_OPENACC
+!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+#else
     e4 = e4 + e4_tmp
+#endif
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case1
 
@@ -1877,18 +1978,32 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3
     !> ddot
     real(realk), external :: ddot
 
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case2 routine 
 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+
     trip_tmp = trip_ampl
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+!$acc end host_data
+#endif
+#else
     e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
@@ -1903,7 +2018,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
@@ -1918,9 +2045,29 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
+#ifdef VAR_OPENACC
+!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
+!$acc end kernels
+#else
     e4 = e4 + e4_tmp
+#endif
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case2
 
@@ -1952,18 +2099,32 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     !> temp e4 energy
-    real(realk) :: e4_tmp
+    real(realk) :: e4_tmp, e4_tmp1, e4_tmp2, e4_tmp3, e4_tmp4, e4_tmp5, e4_tmp6
     !> ddot
     real(realk), external :: ddot
 
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case3 routine 
 
+!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
+
     trip_tmp = trip_ampl
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+!$acc end host_data
+#endif
+#else
     e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23,vvoo_tile_32,&
                  & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
@@ -1978,7 +2139,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31,vvoo_tile_13,&
                  & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
@@ -1993,7 +2166,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
@@ -2008,7 +2193,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp4,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp4)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp4,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp4)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
                  & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
@@ -2023,7 +2220,19 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp5,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp5)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp5,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp5)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32,vvoo_tile_23,&
                  & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
@@ -2038,14 +2247,35 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
+#ifdef VAR_OPENACC
+#if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp6,trip_tmp,trip_ampl)
+    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp6)
+!$acc end host_data
+#elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
+!$acc host_data use_device(e4_tmp6,trip_tmp,trip_ampl)
+    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp6)
+!$acc end host_data
+#endif
+#else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+#endif
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
 
+#ifdef VAR_OPENACC
+!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
+    e4 = e4 + 8.0E0_realk * e4_tmp1 + 2.0E0_realk * e4_tmp2 + 2.0E0_realk * e4_tmp3 &
+          & - 4.0E0_realk * e4_tmp4 - 4.0E0_realk * e4_tmp5 - 4.0E0_realk * e4_tmp6
+!$acc end kernels
+#else
     e4 = e4 + 2.0E0_realk * e4_tmp
+#endif
+
+!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case3
 
