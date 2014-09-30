@@ -907,11 +907,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ! CHECKING and MEASURING variables
      integer(kind=long) :: maxsize64,dummy64
      integer :: myload,nelms,n4
-     real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,MemFree,ActuallyUsed
+     real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,ActuallyUsed
+     real(realk) :: MemFree,MemFree2,MemFree3,MemFree4
      real(realk) :: tcpu_end,twall_end,time_a, time_c, time_d,time_singles
      real(realk) :: time_doubles,timewall_start,wait_time,max_wait_time,min_wait_time,ave_wait_time
      integer     :: scheme
      integer(kind=8) :: els2add
+     logical :: memfound
 
      ! variables used for BATCH construction and INTEGRAL calculation
      integer :: alphaB,gammaB,dimAlpha,dimGamma
@@ -1165,7 +1167,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !ZERO the integral matrix if  first iteration
      if(iter==1) call array_zero(govov)
 
-
      ! ************************************************
      ! * Determine batch information for Gamma batch  *
      ! ************************************************
@@ -1223,7 +1224,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      end do
 
 
-
      ! ************************************************
      ! *  Allocate matrices used in the batched loop  *
      ! ************************************************
@@ -1241,6 +1241,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
         ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
+        ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.)
      endif
 
      ! Use the dense amplitudes
@@ -1259,7 +1260,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         & needs to be constructed correctly"
         stop 0
      endif
-
 
      !if I am the working process, then
      call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
@@ -1328,37 +1328,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      ! allocate working arrays depending on the batch sizes
-     maxsize64 = int((i8*nb2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8)
-     w0size    = maxsize64
+     w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
      call mem_alloc( w0, w0size , simple = .true. )
 
-     maxsize64 = max(int((i8*nb2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int((i8*v2o)*MaxActualDimAlpha,kind=8))
-     maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimGamma,kind=8))
-     if(scheme==4.or.scheme==3) maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimAlpha,kind=8))
-     w1size    = maxsize64
+     w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
      call mem_alloc( w1, w1size , simple = .true.)
 
-     maxsize64 = max(int((i8*nb)*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),o2v2)
-     maxsize64 = max(maxsize64,int(nor*no2,kind=8))
-     w2size    = maxsize64
+     w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
      call mem_alloc( w2, w2size , simple = .true. )
 
-     maxsize64 = max(int((i8*nv)*no*MaxActualDimAlpha*MaxActualDimGamma,kind=8),&
-        &int((i8*no2)*MaxActualDimAlpha*MaxActualDimGamma,kind=8))
-     maxsize64 = max(maxsize64,int((i8*o2v)*MaxActualDimAlpha,kind=8))
-     maxsize64 = max(maxsize64,int((2_long*nor)*MaxActualDimAlpha*MaxActualDimGamma,kind=8)) 
-     maxsize64 = max(maxsize64,int((i8*nor)*nv*MaxActualDimAlpha,kind=8)) 
-     maxsize64 = max(maxsize64,int((i8*nor)*nv*MaxActualDimGamma,kind=8)) 
-     maxsize64 = max(maxsize64,int((i8*no)*nor*MaxActualDimAlpha,kind=8)) 
-     maxsize64 = max(maxsize64,int((i8*no)*nor*MaxActualDimGamma,kind=8)) 
-     w3size    = maxsize64
+     w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
      call mem_alloc( w3, w3size , simple = .true. )
 
-
-     !Sanity checks for matrix sizes which need to be filled
-     if(w0size>MAXINT.or.w1size>MAXINT.or.w2size>MAXINT.or.w3size>MAXINT)then
-        call lsquit("ERROR(CCSD):matrix sizes too large, please recompile with 64bit integers",-1)
-     endif
 
      !allocate semi-permanent storage arrays for loop
      !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
@@ -1370,7 +1351,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         sio4%d=0.0E0_realk
         !$OMP END WORKSHARE
      endif
-
 
      ! This subroutine builds the full screening matrix.
      call II_precalc_DECScreenMat(DECscreen,DECinfo%output,6,mylsitem%setting,&
@@ -1441,7 +1421,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         write( *,'("-------------------------------------------------------------------")')
         write( *,'("CCSD residual init work:",g10.3,"s, comm:",g10.3,"s")')time_init_work,time_init_comm
      endif
-
 
      fullRHS=(nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -1774,7 +1753,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_dealloc(w2)
      call mem_dealloc(w3)
 
-
 #ifdef VAR_MPI
      ! Finish the MPI part of the Residual calculation
      call time_start_phase(PHASE_IDLE, at = time_intloop_work )
@@ -1891,7 +1869,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif
 
 
-
      ! Reallocate 1 temporary array
      maxsize64 = max(int((i8*nv2)*no2,kind=8),int(nb2,kind=8))
      maxsize64 = max(maxsize64,int((i8*nv2)*nor,kind=8))
@@ -1908,7 +1885,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
      w1%d=0.0E0_realk
 #endif
-
 
      !reorder integral for use within the solver and the c and d terms
      if( iter==1 .and. scheme==4 )then
@@ -2056,6 +2032,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
+     !call get_currently_available_memory(MemFree2)
+     !call get_available_memory(6,MemFree3,memfound,.true.)
+     !print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
+     !call lsmpi_barrier(infpar%lg_comm)
 
      ! slaves should exit the subroutine after the main work is done
      if(.not. master) then
@@ -2978,10 +2958,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            if(lock_outside)call arr_lock_wins(govov,'s',mode)
            call array_gather_2cme(govov,w1,o2v2,[2,4],wrk=w3,iwrk=w3size)
-           !call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
-           !if(lock_outside)call arr_unlock_wins(govov,.true.)
-           !if(lock_outside)call arr_lock_wins(govov,'s',mode)
-           !call array_gather(-1.0E0_realk,govov,1.0E0_realk,w1,o2v2,oo=[1,4,3,2],wrk=w3,iwrk=w3size)
            if(lock_outside)call arr_unlock_wins(govov,.true.)
 
            if(DECinfo%PL>3.and.master)then
@@ -3185,7 +3161,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical,intent(in)     :: manual,first
     integer(kind=8), intent(inout) :: e2a
     logical, intent(in)    :: local, mpi_split
-    integer(kind=8) :: v2o2
+    integer(kind=8) :: v2o2,thrsize,w0size,w1size,w2size,w3size
     integer :: nnod,magic
 
     frac_of_total_mem=0.80E0_realk
@@ -3288,11 +3264,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! This block is routinely used in a calculation
     else
       !make batches larger until they do not fit anymore
+
       !determine gamma batch first
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
+
         nbg=nbg+1
         mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
+
       enddo
+
       if (nbg>=nb)then
         nbg = nb
       else if (nbg<=minbsize)then
@@ -3300,11 +3280,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       else
         nbg=nbg-1
       endif
-      !determine
+
+
+      !determine alpha batch
+
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
-        nba=nba+1
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
+        nba      = nba+1
+        mem_used = get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
       enddo
+
       if (nba>=nb)then
          nba = nb
       else if (nba<=minbsize)then
@@ -3312,6 +3296,30 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       else
          nba=nba-1
       endif
+
+      !w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
+      !w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
+      !w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
+      !w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
+
+      !!check if none of the working matrices exceed a certain size
+      !thrsize = (no*no*i8)*nv*nv
+      !do while(nba>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
+      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
+      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
+      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
+      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
+      !   nba = nba - 1
+      !enddo
+      !do while(nbg>minbsize.and.(w0size>thrsize.or.w1size>thrsize.or.w2size>thrsize.or.w3size>thrsize))
+      !   w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,scheme)
+      !   w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,scheme)
+      !   w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,scheme)
+      !   w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,scheme)
+      !   nbg = nbg - 1
+      !enddo
+
+
     endif
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
 
@@ -3366,6 +3374,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     integer :: l4,ml4,fai4,tl4
     integer :: nloctiles
     integer :: cd , e2
+    integer(kind=long) :: w0size, w1size, w2size, w3size
     nor = no*(no+1)/2
     nvr = nv*(nv+1)/2
     master = 0
@@ -3434,6 +3443,19 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
+    w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,s)
+    w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,s)
+    w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,s)
+    w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,s)
+    !w0
+    memin = 1.0E0_realk * w0size
+    !w1
+    memin = memin + 1.0E0_realk * w1size
+    !w2
+    memin = memin + 1.0E0_realk * w2size
+    !w3
+    memin = memin + 1.0E0_realk * w3size
+
     !calculate minimum memory requirement
     ! u+3*integrals
     select case(s)
@@ -3452,25 +3474,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !*******************
 
       !uigcj sio4
-      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+      memin = memin +1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + (i8*nor)*nvr*2.0E0_realk
-      !w0
-      memin = memin + 1.0E0_realk*(i8*nb*nb)*nba*nbg
-      !w1
-      memin = memin + 1.0E0_realk * &
-      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
-      !w2
-      memin = memin +1.0E0_realk *&
-      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
-      !w3
-      memin = memin + 1.0E0_realk*&
-      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
-      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no*nor)*nba),(i8*no)*nor*nbg)
+      memin = memin + (i8*nor)*nvr*2.0E0_realk
 
       ! govov if iter == 1, else only allocated outside
       if(iter == 1) memin = memin + (1.0E0_realk*no*no)*nv*nv
-
 
 
       !OUTSIDE OF MAIN LOOP
@@ -3500,22 +3509,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !*******************
 
       !uigcj sio4
-      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+      memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + 1.0E0_realk*nor*(nvr*2_long)
-      !w0
-      memin = memin + 1.0E0_realk * (i8*nb*nb)*nba*nbg
-      !w1
-      memin = memin + 1.0E0_realk*&
-      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
-      !w2
-      memin = memin + 1.0E0_realk*&
-      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
-      !w3
-      memin = memin + 1.E0_realk*&
-      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
-      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
-
+      memin = memin + 1.0E0_realk*nor*(nvr*2_long)
 
       !OUTSIDE OF MAIN LOOP
       !********************
@@ -3549,22 +3545,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !*******************
 
       !uigcj sio4
-      memin  = 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
+      memin = memin + 1.0E0_realk*((i8*no*no)*nv*nbg+(i8*no*no)*nor)
       !tpl tmi
-      memin  = memin + 1.0E0_realk*(nor*nvr*i8)
-      !w0
-      memin = memin + 1.0E0_realk*(i8*nb*nb)*nba*nbg
-      !w1
-      memin = memin + 1.0E0_realk *&
-      &max(max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*nba),(i8*no*no)*nv*nbg),(i8*no*no)*nv*nba)
-      !w2
-      memin = memin + 1.0E0_realk * &
-      &max(max((i8*nb*nb)*nba*nbg,(i8*nv*nv)*no*no),(i8*nor)*no*no)
-      !w3
-      memin = memin + 1.0E0_realk * &
-      &max(max(max(max(max(max(max((i8*nv*no)*nba*nbg,(i8*no*no)*nba*nbg),(i8*no*no)*nv*nba),&
-      &(2_long*nor)*nba*nbg),(i8*nor)*nv*nba),(i8*nor)*nv*nbg),(i8*no)*nor*nba),(i8*no)*nor*nbg)
-
+      memin = memin + 1.0E0_realk*(nor*nvr*i8)
 
       !OUTSIDE OF MAIN LOOP
       !********************
@@ -3612,6 +3595,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+    memrq = memrq * 1.8E0_realk
+#endif
+
 
   end function get_min_mem_req
 
@@ -5889,6 +5876,44 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
   end subroutine ccsd_debug_print
 
+
+  function get_wsize_for_ccsd_int_direct(wnr,no,nv,nb,nba,nbg,s) result(wsize)
+     implicit none
+     integer, intent(in) :: wnr,no,nv,nb,nba,nbg,s
+     integer(kind=long) :: wsize
+     integer(kind=long) :: maxsize64,nor,nvr
+     nor = (i8*(no*(no+1))/2)
+     nvr = (i8*(nv*(nv+1))/2)
+     select case(wnr)
+     case(0)
+        maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
+     case(1)
+        maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
+        maxsize64 = max(maxsize64,int((i8*no*no*nv)*nbg,kind=8))
+        if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
+     case(2)
+        maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
+        maxsize64 = max(maxsize64,int(nor*no*no,kind=8))
+     case(3)
+        maxsize64 = max(int((i8*nv)*no*nba*nbg,kind=8),int((i8*no*no)*nba*nbg,kind=8))
+        maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
+        maxsize64 = max(maxsize64,int((2_long*nor)*nba*nbg,kind=8)) 
+        maxsize64 = max(maxsize64,int((i8*nor)*nv*nba,kind=8)) 
+        maxsize64 = max(maxsize64,int((i8*nor)*nv*nbg,kind=8)) 
+        maxsize64 = max(maxsize64,int((i8*no)*nor*nba,kind=8)) 
+        maxsize64 = max(maxsize64,int((i8*no)*nor*nbg,kind=8)) 
+     case default
+        call lsquit("ERROR(get_wsize_for_ccsd_int_direct):unknown identifier",-1)
+     end select
+
+     wsize = maxsize64
+
+     !Sanity checks for matrix sizes which need to be filled
+     if(wsize>MAXINT)then
+        call lsquit("ERROR(CCSD):matrix sizes too large, please recompile with 64bit integers",-1)
+     endif
+
+  end function get_wsize_for_ccsd_int_direct
 
 end module ccsd_module
 

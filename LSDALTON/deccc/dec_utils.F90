@@ -2149,7 +2149,7 @@ end function max_batch_dimension
        ! error prone and not recommended. The /proc/meminfo can be preferred
        ! over the input setting on some systems
 
-       call get_available_memory(DECinfo%output,mem,memfound)
+       call get_available_memory(DECinfo%output,mem,memfound,.true.)
 
        if(.not.memfound)then
           call lsquit("ERROR(get_currently_available_memory):system call failed,&
