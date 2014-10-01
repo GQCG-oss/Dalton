@@ -27,12 +27,12 @@ use AGC_CPU_OBS_Sphcontract1Mod
 use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
-public :: IchorCoulombIntegral_CPU_OBS_Gen,IchorCoulombIntegral_CPU_OBS_general_sizeGen  
+public :: ICI_CPU_OBS_Gen,ICI_CPU_OBS_general_sizeGen  
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -6580,7 +6580,7 @@ CONTAINS
         call SphericalContractOBS2_CPU_maxAngQ3_maxAngC1(25,nContQP*nPasses,TMParray1,&
             & LOCALINTS)
     CASE DEFAULT
-        call IchorCoulombIntegral_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+        call ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
            & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
            & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
            & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -6594,10 +6594,10 @@ CONTAINS
            & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
            & IatomAPass,iatomBPass)
     END SELECT
-  end subroutine IchorCoulombIntegral_CPU_OBS_Gen
+  end subroutine ICI_CPU_OBS_Gen
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_general_sizeGen(TMParray1maxsize,&
+  subroutine ICI_CPU_OBS_general_sizeGen(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
@@ -7393,14 +7393,14 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,875*nContQP)
        TMParray1maxSize = MAX(TMParray1maxSize,900*nContQP)
     CASE DEFAULT
-     call IchorCoulombIntegral_CPU_McM_general_size(TMParray1maxsize,&
+     call ICI_CPU_McM_general_size(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&
          & .FALSE.,.FALSE.)
     END SELECT
-  end subroutine IchorCoulombIntegral_CPU_OBS_general_sizeGen
+  end subroutine ICI_CPU_OBS_general_sizeGen
 
    subroutine PrimitiveContractionCCPUGen1(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&

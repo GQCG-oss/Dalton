@@ -167,6 +167,7 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
         IchorEri_CoulombIntegral_GPU_OBS_general.o \
+        IchorEri_GabIntegral_McM_general.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \

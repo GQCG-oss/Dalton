@@ -6,6 +6,7 @@ use IchorCommonModule
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000MODGen
 use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim
+use IchorEriGabintegralCPUMcMGeneralMod
 use AGC_CPU_OBS_VERTICALRECURRENCEMODAGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBGen
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDGen
@@ -30,14 +31,16 @@ use AGC_CPU_OBS_Sphcontract1Mod
 use AGC_CPU_OBS_Sphcontract2Mod
   
 private   
-public :: IchorGabIntegral_OBS_Seg,IchorGabIntegral_OBS_general_sizeSeg  
+public :: IGI_OBS_Seg,IGI_OBS_general_sizeSeg  
   
 CONTAINS
   
   
-  subroutine IchorGabIntegral_OBS_Seg(nPrimA,nPrimB,&
+  subroutine IGI_OBS_Seg(nPrimA,nPrimB,&
        & nPrimP,IntPrint,lupri,&
        & nContA,nContB,nContP,pexp,ACC,BCC,&
+       & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+       & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
        & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
        & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,Acenter,Bcenter,&
@@ -48,6 +51,8 @@ CONTAINS
     integer,intent(in) :: IntPrint,lupri
     integer,intent(in) :: nContA,nContB,nContP,nTABFJW1,nTABFJW2
     integer,intent(in) :: AngmomA,AngmomB
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB
+    integer,intent(in) :: nCartOrbCompP,nOrbCompP,nTUVP,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB)
     logical,intent(in)     :: Psegmented
     real(realk),intent(in) :: pexp(nPrimP)
@@ -519,11 +524,20 @@ CONTAINS
             & TMParray2)
         call ExtractGabElmP15Seg(TMParray2,LOCALINTS)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_Seg',-1)
+        call IGI_CPU_McM_general(nPrimA,nPrimB,&
+           & nPrimP,IntPrint,lupri,&
+           & nContA,nContB,nContP,pexp,ACC,BCC,&
+           & nOrbCompA,nOrbCompB,nCartOrbCompA,nCartOrbCompB,&
+           & nCartOrbCompP,nOrbCompP,nTUVP,nTUV,&
+           & pcent,Ppreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+           & Aexp,Bexp,Psegmented,reducedExponents,integralPrefactor,&
+           & AngmomA,AngmomB,Pdistance12,PQorder,LOCALINTS,&
+           & Acenter,Bcenter,spherical,&
+           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_Seg
+  end subroutine IGI_OBS_Seg
   
-  subroutine IchorGabIntegral_OBS_general_sizeSeg(TMParray1maxsize,&
+  subroutine IGI_OBS_general_sizeSeg(TMParray1maxsize,&
          &TMParray2maxsize,BasisContmaxsize,AngmomA,AngmomB,nPrimP,nContP,nPrimB)
     implicit none
     integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize,BasisContmaxsize
@@ -598,9 +612,11 @@ CONTAINS
        TMParray1maxSize = MAX(TMParray1maxSize,900)
        TMParray2maxSize = MAX(TMParray2maxSize,625)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorGabIntegral_OBS_general_size',-1)
+      call IGI_CPU_McM_general_size(TMParray1maxsize,&
+          & TMParray2maxsize,AngmomA,AngmomB,&
+          & nPrimP,nContP,nPrimB,.TRUE.)
     END SELECT
-  end subroutine IchorGabIntegral_OBS_general_sizeSeg
+  end subroutine IGI_OBS_general_sizeSeg
   
   subroutine ExtractGabElmP1Seg(AUXarray,Output)
     implicit none

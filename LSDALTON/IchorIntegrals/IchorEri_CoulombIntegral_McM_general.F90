@@ -11,12 +11,8 @@ use IchorCommonModule
 use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
      & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
-private 
-public :: IchorCoulombIntegral_CPU_McM_general, &
-     & IchorCoulombIntegral_CPU_McM_general_size, &
-     & TmpArray3,TmpArray4,DetermineSizeTmpArray34, &
-     & PreCalciChorSPHMAT, FreeiChorSPHMAT
 
+public 
 !build from old IchorEri_CoulombIntegral_general.f90 in
 !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
 
@@ -33,21 +29,18 @@ real(realk),allocatable :: TmpArray3(:),TmpArray4(:)
 
 CONTAINS
   subroutine DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,nPasses,&
-       & AngmomA,AngmomB,AngmomC,AngmomD,AngmomP,AngmomQ,AngmomPQ,nTmpArray3o,nTmpArray4o)
+       & AngmomA,AngmomB,AngmomC,AngmomD,AngmomP,AngmomQ,AngmomPQ)
     implicit none
     integer,intent(in) :: nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,nPasses
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD,AngmomP,AngmomQ,AngmomPQ
-    integer,intent(inout) :: nTmpArray3o,nTmpArray4o
     !TmpArray3 used Ecoeff and Rpq
-    nTmpArray3o = MAX(nTUVQ*nCartOrbCompQ*nPrimQ,nTUVP*nCartOrbCompP*nPrimP*nPasses,nPrimQ*nPrimP*nPasses*3)
+    nTmpArray3 = MAX(nTUVQ*nCartOrbCompQ*nPrimQ,nTUVP*nCartOrbCompP*nPrimP*nPasses,nPrimQ*nPrimP*nPasses*3)
     !TmpArray4 used for RJ000 and ETIJ (tmp array in building Ecoeff)
-    nTmpArray4o = MAX(nPasses*nPrimQ*nPrimP*(AngmomPQ+1),nPrimQ*(AngmomQ+1)*(AngmomC+1)*(AngmomD+1)*3)
-    nTmpArray4o = MAX(nTmpArray4o,nPasses*nPrimP*(AngmomP+1)*(AngmomA+1)*(AngmomB+1)*3)
-    nTmpArray3 = nTmpArray3o
-    nTmpArray4 = nTmpArray4o
+    nTmpArray4 = MAX(nPasses*nPrimQ*nPrimP*(AngmomPQ+1),nPrimQ*(AngmomQ+1)*(AngmomC+1)*(AngmomD+1)*3)
+    nTmpArray4 = MAX(nTmpArray4,nPasses*nPrimP*(AngmomP+1)*(AngmomA+1)*(AngmomB+1)*3)
   end subroutine DetermineSizeTmpArray34
 
-  subroutine IchorCoulombIntegral_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_CPU_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -364,9 +357,9 @@ CONTAINS
     ELSE
        call reorderABCD(TmpArray1,CDAB,nContQ*nContP*nPasses,nOrbCompP*nOrbCompQ)
     ENDIF
-  end subroutine IchorCoulombIntegral_CPU_McM_general
+  end subroutine ICI_CPU_McM_general
 
-  subroutine IchorCoulombIntegral_CPU_McM_general_size(TMParray1maxsize,&
+  subroutine ICI_CPU_McM_general_size(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,Psegmented,Qsegmented)
     implicit none
@@ -482,7 +475,7 @@ CONTAINS
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
-  end subroutine IchorCoulombIntegral_CPU_McM_general_size
+  end subroutine ICI_CPU_McM_general_size
   
   subroutine reorderABCD(SCERECS,ABCD,ndim1,ndim2)
     implicit none

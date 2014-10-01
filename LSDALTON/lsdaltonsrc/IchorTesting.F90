@@ -58,12 +58,12 @@ TYPE(BASISINFO),pointer :: unittestBASIS(:)
 TYPE(BASISINFO),pointer :: originalBASIS
 CHARACTER(len=80)    :: BASISSETNAME
 CHARACTER(len=100)   :: filename
-CHARACTER(len=20)    :: BASISTYPE(10)
-integer              :: iBasisType(10)
+CHARACTER(len=20)    :: BASISTYPE(13)
+integer              :: iBasisType(13)
 real(realk)          :: Rxyz(3)
 type(lsmatrix)       :: FINALVALUE(2)
 logical      :: spherical,savedospherical,SpecialPass,LHS
-logical      :: FAIL(10,10,10,10),ALLPASS,SameMOL,TestScreening
+logical      :: FAIL(13,13,13,13),ALLPASS,SameMOL,TestScreening
 logical      :: MoTrans,NoSymmetry
 Character    :: intSpec(5)
 integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q,luoutput
@@ -211,6 +211,103 @@ CASE(6)
    iBasisC(1) = 1
    iBasisD(1) = 1
    TestScreening = .TRUE.
+CASE(7)
+   !Including F
+   !Special types
+   !   A          B          C          D          OVERALL
+   !Seg1Prim     Seg        Gen      Seg1Prim      SegP
+   nbasisA = 4; nbasisB = 4; nbasisC = 4; nbasisD = 4
+   IpassStart = 1; IpassEnd = 1
+   SpecialPass = .TRUE.
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   iBasisA(1) = 1; iBasisA(2) = 2; iBasisA(3) = 3; iBasisA(4) = 10  !Seg1Prim
+   iBasisB(1) = 4; iBasisB(2) = 5; iBasisB(3) = 6; iBasisB(4) = 11  !Seg
+   iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9; iBasisC(4) = 12  !Gen
+   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3; iBasisD(4) = 10  !Seg1Prim
+CASE(8)
+   !Including F
+   !Special types
+   !   A          B          C           D          OVERALL
+   !  Seg        Seg1Prim   Seg1Prim  Seg1Prim      Seg
+   nbasisA = 4; nbasisB = 1; nbasisC = 1; nbasisD = 4
+   IpassStart = 1; IpassEnd = 1
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   !Pure Seg (S,P,D ; S,P,D | S,P,D ; S,P,D)
+   iBasisA(1) = 4; iBasisA(2) = 5; iBasisA(3) = 6; iBasisA(4) = 11 
+   iBasisB(1) = 10
+   iBasisC(1) = 10
+   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3; iBasisD(4) = 10
+CASE(9)
+   !Including F
+   !Special types
+   !   A          B          C          D          OVERALL
+   !Seg1Prim   Seg1Prim   Seg1Prim   Seg1Prim      Seg1Prim 
+   nbasisA = 1; nbasisB = 4; nbasisC = 4; nbasisD = 4
+   IpassStart = 1; IpassEnd = 2
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   !Pure Seg1Prim (S,P,D ; S,P,D | S,P,D ; S,P,D)
+   iBasisA(1) = 10
+   iBasisB(1) = 1; iBasisB(2) = 2; iBasisB(3) = 3; iBasisB(4) = 10
+   iBasisC(1) = 1; iBasisC(2) = 2; iBasisC(3) = 3; iBasisC(4) = 10
+   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3; iBasisD(4) = 10
+CASE(10)
+   !Including F
+   !Special types
+   !   A          B          C          D          OVERALL
+   !Seg1Prim     Gen        Seg      Seg1Prim      SegQ
+   nbasisA = 1; nbasisB = 4; nbasisC = 4; nbasisD = 4
+   IpassStart = 1; IpassEnd = 1
+   SpecialPass = .TRUE.
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   iBasisA(1) = 10  !Seg1Prim
+   iBasisB(1) = 7; iBasisB(2) = 8; iBasisB(3) = 9; iBasisB(4) = 12  !Gen
+   iBasisC(1) = 4; iBasisC(2) = 5; iBasisC(3) = 6; iBasisC(4) = 11  !Seg
+   iBasisD(1) = 1; iBasisD(2) = 2; iBasisD(3) = 3; iBasisD(4) = 10  !Seg1Prim
+CASE(11)
+   !Including F
+   !Gen1
+   !Special types
+   !   A          B          C          D          OVERALL
+   !  Gen        Gen        Gen        Gen         Gen    
+   !Pure Gen (S,P,D ; S,P,D | S,P,D ; S,P,D)
+   nbasisA = 1; nbasisB = 1; nbasisC = 1; nbasisD = 4
+   IpassStart = 1; IpassEnd = 1
+   SpecialPass = .TRUE. !otherwise too expensive
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   iBasisA(1) = 12
+   iBasisB(1) = 12
+   iBasisC(1) = 12
+   iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9; iBasisD(4) = 12
+CASE(12)
+   !Including F in screening
+   nbasisA = 3; nbasisB = 12; nbasisC = 1; nbasisD = 1
+   IpassStart = 1; IpassEnd = 1
+   call mem_alloc(iBasisA,nBasisA)
+   call mem_alloc(iBasisB,nBasisB)
+   call mem_alloc(iBasisC,nBasisC)
+   call mem_alloc(iBasisD,nBasisD)
+   iBasisA(1) = 10; iBasisA(2) = 11; iBasisA(3) = 12;
+   do iBasis2Q=1,nbasisB
+      iBasisB(iBasis2Q) = iBasis2Q
+   enddo
+   iBasisC(1) = 1
+   iBasisD(1) = 1
+   TestScreening = .TRUE.
 CASE DEFAULT
    CALL LSQUIT('unknown option in Debug Ichor.',-1)
 END SELECT
@@ -230,7 +327,10 @@ BASISTYPE(6) = 'UnitTest_segD       '; iBASISTYPE(6) = 13
 BASISTYPE(7) = 'UnitTest_genS       '; iBASISTYPE(7) = 13
 BASISTYPE(8) = 'UnitTest_genP       '; iBASISTYPE(8) = 13
 BASISTYPE(9) = 'UnitTest_genD       '; iBASISTYPE(9) = 13
-BASISTYPE(10) = 'UnitTest_segSP      '; iBASISTYPE(10) = 14
+BASISTYPE(10) = 'UnitTest_segF1p     '; iBASISTYPE(10) = 15
+BASISTYPE(11) = 'UnitTest_segF       '; iBASISTYPE(11) = 13
+BASISTYPE(12) = 'UnitTest_genF       '; iBASISTYPE(12) = 13
+BASISTYPE(13) = 'UnitTest_segSP      '; iBASISTYPE(13) = 14
 !issues with SP in that 
 !       IF(dim2.GT.dim1)CYCLE
 !       IF(dim3.GT.dim1)CYCLE
@@ -543,19 +643,23 @@ do Ipass = IpassStart,IpassEnd
           savedospherical = setting%scheme%dospherical
           setting%scheme%dospherical = spherical
           SETTING%batchindex=0
+!          setting%scheme%intprint = 1000
           call II_get_2int_ScreenMat(LUPRI,LUERR,SETTING,GAB)
+!          setting%scheme%intprint = 0
           setting%scheme%dospherical = savedospherical
           Setting%sameFrag = .FALSE.
           Setting%sameMol = .FALSE.
-!          WRITE(lupri,*)'OUTPUT'
+!          WRITE(lupri,*)'OUTPUT THERMITE'
 !          call mat_print(GAB,1,dim1,1,dim2,lupri)
 
           SameMOL = .FALSE.       
+!          IPRINT = 1000
           call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
           LHS = .TRUE.
           call SCREEN_ICHORERI_RETRIEVE_GABDIM(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS)
           call mem_alloc(BATCHGAB,nBatchA,nBatchB)
           call SCREEN_ICHORERI_RETRIEVE_GAB(LUPRI,IPRINT,setting,nBatchA,nBatchB,LHS,BATCHGAB)
+!          IPRINT = 0
 !          WRITE(lupri,*)'The LHS BatchGab  DIM:',nBatchA,nBatchB,'atoms=',&
 !               & atomicmolecule(1)%nAtoms,atomicmolecule(2)%nAtoms
 !          call LS_OUTPUT(BATCHGAB,1,nBatchA,1,nBatchB,nBatchA,nBatchB,1,lupri)
@@ -581,6 +685,7 @@ do Ipass = IpassStart,IpassEnd
              ENDDO
           ENDDO
 
+          write(lupri,'(A,A,A,A,A,A,A,A,A)')'BASIS(',BASISTYPE(iBasis1),',',BASISTYPE(iBasis2),') SCREEN TESTING'
           FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
           DO JAtom = 1,atomicmolecule(2)%nAtoms
              DO IAtom = 1,atomicmolecule(1)%nAtoms

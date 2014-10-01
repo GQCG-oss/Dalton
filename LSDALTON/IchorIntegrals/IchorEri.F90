@@ -16,12 +16,12 @@ MODULE IchorErimodule
   use IchorCommonModule
   use IchorBatchToolsModule
   use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,DetermineSizeTmpArray34,&
-       & precalcichorsphmat, freeichorsphmat
-  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general, &
-       & IchorCoulombIntegral_CPU_OBS_general_size
-  use IchorEriCoulombintegralGPUOBSGeneralMod, only: IchorCoulombIntegral_GPU_OBS_general, &
-       & IchorCoulombIntegral_GPU_OBS_general_size
-  use IchorCoulombIntegral_seg_seg_SSSS_mod, only: IchorCoulombIntegral_seg_seg_SSSS
+       & precalcichorsphmat, freeichorsphmat,nTmpArray3,nTmpArray4
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general, &
+       & ICI_CPU_OBS_general_size
+  use IchorEriCoulombintegralGPUOBSGeneralMod, only: ICI_GPU_OBS_general, &
+       & ICI_GPU_OBS_general_size
+  use ICI_seg_seg_SSSS_mod, only: ICI_seg_seg_SSSS
   use IchorMemory
   use IchorGammaTabulationModule
   use IchorParametersModule
@@ -540,7 +540,6 @@ DO IAngmomTypes = 0,MaxTotalAngmom
 
    DO ItypeBnon=1,nTypesB
     ! TYPE B CALC ================================
-    ItypeB = OrderdListB(ItypeBnon)
     call ObtainTypeInfo(nTypesB,ItypeBnon,OrderdListB,nAtomsOfTypeB,AngmomOfTypeB,nPrimOfTypeB,&
          & nContOfTypeB,ExtentOfTypeB,ItypeB,nAtomsB,AngmomB,nPrimB,nContB,extentB,nOrbCompB,&
          & nOrbB,nDimB,nCartOrbCompB,spherical)
@@ -673,13 +672,13 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
-            call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
+            call ICI_CPU_OBS_general_size(TMParray1maxsize,&
                  & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
                  & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
                  & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
          ELSE !use GPU code
-            call IchorCoulombIntegral_GPU_OBS_general_size(TMParray1maxsize,&
+            call ICI_GPU_OBS_general_size(TMParray1maxsize,&
                  & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
                  & nContA,nContB,nContC,nContD,&
                  & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
@@ -1561,7 +1560,6 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
-  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -1589,7 +1587,15 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   CALL Mem_ichor_alloc(LocalIntPass1)
   allocate(LocalIntPass2(nLocalint*nAtomsA*nAtomsB))
   CALL Mem_ichor_alloc(LocalIntPass2)
-
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+  ENDIF
 !$OMP PARALLEL DEFAULT(none) &
 !$OMP PRIVATE(iAtomD,iAtomC,GABELM,startD,iBatchD,DcenterSpec,PermuteRHS,startC,&
 !$OMP         CcenterSpec,iOrbQ,I3,startB,I4,iOrbD,iOrbC,iAtomB) &
@@ -1613,18 +1619,6 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$OMP        startOrbitalA,OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputStorage,&
 !$OMP        nTUVQ,nCartOrbCompQ,nTUVP,nCartOrbCompP,TmpArray3,TmpArray4,nTUV,&
 !$OMP        nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,nOrbCompP,nOrbCompQ)
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
-    !$OMP MASTER
-     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
-          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
-     allocate(TmpArray3(nTmpArray3))
-     call mem_ichor_alloc(TmpArray3)
-     allocate(TmpArray4(nTmpArray4))
-     call mem_ichor_alloc(TmpArray4)
-     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
-     !$OMP END MASTER
-     !$OMP BARRIER 
-  ENDIF
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    startD = startOrbitalD(iAtomD)
@@ -1674,7 +1668,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -1703,19 +1697,14 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
     ENDIF !noscreenCD2
    ENDDO !IatomC
   ENDDO !iAtomD
+!$OMP END PARALLEL
   IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
-    !$OMP MASTER
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
     call mem_ichor_dealloc(TmpArray4)
     deallocate(TmpArray4)
-    !FIXME MUCH LATER
     call FreeIchorSPHMAT()
-    !$OMP END MASTER
-    !$OMP BARRIER 
   ENDIF
-!$OMP END PARALLEL
-
   call mem_ichor_dealloc(TmpArray1)
   deallocate(TmpArray1)
   call mem_ichor_dealloc(TmpArray2)
@@ -1948,7 +1937,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 !$ACC               iatomBPass(:,iCAH),nPasses(iCAH),Qcent(:,:,iCAH),&
 !$ACC               Qpreexpfac(:,iCAH),Qdistance12(:,iCAH)) ASYNC(iSync(iCAH))
 
-     call IchorCoulombIntegral_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call ICI_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
           & nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -2682,7 +2671,7 @@ subroutine IchorsegsegSSSSIntegralLoop(nAtomsA,nPrimA,startOrbitalA,&
      IF(nPasses.EQ.0)CYCLE
      CALL Build_seg_qcent_QpreExpFac(nPrimC,nPrimD,expC,expD,CcenterSpec,DcenterSpec,&
           & ContractCoeffC,ContractCoeffD,Qcent,QpreExpFac,INTPRINT)
-     call IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,nAtomsA,nAtomsB,&
+     call ICI_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,nAtomsA,nAtomsB,&
           & IatomAPass,iatomBPass,pcentPass,qcent,PpreexpfacPass,Qpreexpfac,TABFJW,&
           & reducedExponents,integralPrefactor,LocalIntPass)
      !symmetrize the LHS
@@ -3888,7 +3877,6 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   integer :: iOrbQ,iOrbB,iOrbA,iOrbD,iOrbC,I4,I3,I2
   integer :: startA,startB,ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
-  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -3922,12 +3910,12 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
     !$OMP MASTER
      call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
-          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
      allocate(TmpArray3(nTmpArray3))
      call mem_ichor_alloc(TmpArray3)
      allocate(TmpArray4(nTmpArray4))
      call mem_ichor_alloc(TmpArray4)
-     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
+     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
      !$OMP END MASTER
      !$OMP BARRIER 
   ENDIF
@@ -4015,7 +4003,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
     !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
     !IatomAPass,iatomBPass changes and 
     !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-    call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+    call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
          & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
          & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
          & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -4205,7 +4193,6 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   integer :: ndim,nOrbQ,MaxPasses
   integer :: TMParray1maxsizePass,TMParray2maxsizePass,nLocalIntPass
   integer :: nDimA,nDimB,nDimC,nDimD
-  integer :: nTmpArray3,nTmpArray4
 #ifdef VAR_OMP
   integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
@@ -4245,6 +4232,15 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   !is this necessary
   call ichorzero2(OutputCD,nCMO1*nCMO2,ndimC*nDimD)
 
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
+          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
+     allocate(TmpArray3(nTmpArray3))
+     call mem_ichor_alloc(TmpArray3)
+     allocate(TmpArray4(nTmpArray4))
+     call mem_ichor_alloc(TmpArray4)
+     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
+  ENDIF
 !$OMP PARALLEL DEFAULT(none) &
 !$OMP PRIVATE(iAtomD,iAtomC,GABELM,iBatchD,DcenterSpec,PermuteRHS,&
 !$OMP         CcenterSpec,iOrbQ,I3,I4,iOrbD,iOrbC,iAtomB) &
@@ -4270,18 +4266,6 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$OMP        OutputA,OutputCD,PermuteRHSTypes,nTmpArray3,nTmpArray4,&
 !$OMP        nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
 !$OMP        nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV)
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
-    !$OMP MASTER
-     call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
-          & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom,nTmpArray3,nTmpArray4)
-     allocate(TmpArray3(nTmpArray3))
-     call mem_ichor_alloc(TmpArray3)
-     allocate(TmpArray4(nTmpArray4))
-     call mem_ichor_alloc(TmpArray4)
-     CALL PreCalciChorSPHMAT(AngmomA+AngmomB+AngmomC+AngmomD)
-     !$OMP END MASTER
-     !$OMP BARRIER 
-  ENDIF
   DO IatomD = 1,nAtomsD
    GABELM = 0.0E0_realk 
    iBatchD = iBatchIndexOfTypeD + IatomD
@@ -4330,7 +4314,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
 
-     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
           & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
           & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
           & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -4377,18 +4361,14 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
     ENDIF !noscreenCD2
    ENDDO !IatomC
   ENDDO !iAtomD
+!$OMP END PARALLEL
   IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
-    !$OMP MASTER
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
     call mem_ichor_dealloc(TmpArray4)
     deallocate(TmpArray4)
-    !FIXME MUCH LATER
     call FreeIchorSPHMAT()
-    !$OMP END MASTER
-    !$OMP BARRIER 
   ENDIF
-!$OMP END PARALLEL
 
   !SYMMETRY 
   !(ndimA,ndimB,ndimC,ndimD) = (ndimC,ndimD,ndimA,ndimB) =

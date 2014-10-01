@@ -258,6 +258,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.F90
     LSDALTON/IchorIntegrals/IchorEri.F90
+    LSDALTON/IchorIntegrals/IchorEri_GabIntegral_McM_general.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Gen.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_GabIntegral_OBS_general.F90

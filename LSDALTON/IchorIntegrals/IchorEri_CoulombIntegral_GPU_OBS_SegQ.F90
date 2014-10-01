@@ -30,12 +30,12 @@ use AGC_GPU_OBS_Sphcontract1Mod
 use AGC_GPU_OBS_Sphcontract2Mod
   
 private   
-public :: IchorCoulombIntegral_GPU_OBS_SegQ,IchorCoulombIntegral_GPU_OBS_general_sizeSegQ  
+public :: ICI_GPU_OBS_SegQ,ICI_GPU_OBS_general_sizeSegQ  
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_GPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_GPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -5045,12 +5045,12 @@ CONTAINS
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(25,nContP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_GPU_OBS_SegQ',-1)
+        CALL ICHORQUIT('Unknown Case in ICI_GPU_OBS_SegQ',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_GPU_OBS_SegQ
+  end subroutine ICI_GPU_OBS_SegQ
   
   
-  subroutine IchorCoulombIntegral_GPU_OBS_general_sizeSegQ(TMParray1maxsize,&
+  subroutine ICI_GPU_OBS_general_sizeSegQ(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     implicit none
@@ -5684,9 +5684,9 @@ CONTAINS
        TMParray2maxSize = MAX(TMParray2maxSize,875*nContP)
        TMParray1maxSize = MAX(TMParray1maxSize,900*nContP)
     CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in IchorCoulombIntegral_OBS_general_size',-1)
+        CALL ICHORQUIT('Unknown Case in ICI_OBS_general_size',-1)
     END SELECT
-  end subroutine IchorCoulombIntegral_GPU_OBS_general_sizeSegQ
+  end subroutine ICI_GPU_OBS_general_sizeSegQ
 
    subroutine PrimitiveContractionAGPUSegQ(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
        & nContP,ACC,nPrimA,nContA,nPrimB,nContB,nTUVP,nTUVQ,iASync)
