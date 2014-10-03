@@ -1607,7 +1607,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    character(ARR_MSG_LEN) :: msg
    integer(kind=8)        :: o2v2
    real(realk)            :: mem_o2v2, MemFree
-   integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs
+   integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, w_cp, restart_from_converged,collective,use_singles
    character(4)           :: atype
 
@@ -1639,9 +1639,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    
    o2v2             = (i8*nv**2)*no**2
    mem_o2v2         = (8.0E0_realk*o2v2)/(1.024E3_realk**3)
-   !get segmenting for tensors
-   os               = no / 2
-   vs               = nv / 2
 
    call get_currently_available_memory(MemFree)
 
@@ -1656,7 +1653,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       saferun = .false.
    endif
-
 
    nnodes      = 1
 
@@ -1677,6 +1673,18 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
 #endif
+
+   !get segmenting for tensors, divide dimensions until tiles are less than
+   !100MB
+   vs = nv
+   os = no
+   counter = 1
+   do while((vs**2*os**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk.or.((nv/vs+mod(nv,vs))**2*(no/os+mod(no,os))**2<nnodes))
+      vs = nv - counter
+      os = no - counter
+      counter = counter + 1
+   enddo
+   print *,"I have segments",no,os,nv,vs
 
 
    ! Sanity check 1: Number of orbitals
@@ -1932,8 +1940,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       yv = array_minit( virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
-   !iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+   !iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
+   iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
    call array_zero(iajb)
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )

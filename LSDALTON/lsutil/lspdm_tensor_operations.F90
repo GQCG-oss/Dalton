@@ -2275,7 +2275,7 @@ module lspdm_tensor_operations_module
 
       if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-        print *,'WARINING(array_gather):Allocating internally'
+        print *,'WARNING(array_gather):Allocating internally'
 #endif
         tmps = arr%tsize
         call mem_alloc(tmp,tmps)
@@ -2417,7 +2417,7 @@ module lspdm_tensor_operations_module
 
     if(internal_alloc)then
 #ifdef VAR_LSDEBUG
-       print *,'WARINING(array_gather):Allocating internally'
+       print *,'WARNING(array_gather):Allocating internally'
 #endif
        tmps = arr%tsize
        call mem_alloc(tmp,tmps)
@@ -2749,8 +2749,6 @@ module lspdm_tensor_operations_module
        tl_max = (tl / cons_els) * cons_els
        tl_mod = mod(tl ,cons_els)
 
-       print *,infpar%lg_mynum,"has",diff_ord
-
        call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
 
        if(lock_outside) then
@@ -2798,7 +2796,6 @@ module lspdm_tensor_operations_module
              !IF MORE THAN ONE ELEMENT CAN BE TRANSFERRED AT A TIME
           else
 
-             print *,"tl",tl,"part1",part1,tl_max,cons_els
              do c1 = 1, tl_max, cons_els
                 call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
                 do for4 = 1, fordims(4)
@@ -3219,7 +3216,7 @@ module lspdm_tensor_operations_module
 
        !ONLY PRINT IF DEBUG IS NOT GIVEN, ELSE THE USER IS ASSUMED TO KNOW THAT
        !IT IS SLOWER
-       if(.not.deb)print *,"WARINING(array_two_dim_1batch):this is a slow fallback option"
+       if(.not.deb)print *,"WARNING(array_two_dim_1batch):this is a slow fallback option"
 
        do c2 = 1, comb2
           fx = 0
@@ -3435,7 +3432,7 @@ module lspdm_tensor_operations_module
 
     else
  
-      print *,"WARINING(array_two_dim_2batch):this is a slow fallback option"
+      print *,"WARNING(array_two_dim_2batch):this is a slow fallback option"
 
       do c1 = 1, comb1
         fx = 0
