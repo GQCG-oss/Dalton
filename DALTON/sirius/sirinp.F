@@ -1659,6 +1659,9 @@ C
       IF (QMMM .AND. ECP) THEN
          CALL QUIT('QMMM is not compatible with the use of ECPs')
       END IF
+      IF (PEQM .AND. DOCI) THEN
+         CALL QUIT('PEQM is currently not compatible with .CI')
+      END IF
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .OR. PEQM .OR.
      &            QMNPMM
 C
