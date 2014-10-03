@@ -2190,7 +2190,7 @@ module lspdm_tensor_operations_module
     integer               :: nelintile,fullfortdim(arr%mode)
     real(realk), pointer  :: tmp(:)
     integer               :: tmps, elms_sent,last_flush_i,j
-    logical               :: internal_alloc,lock_outside,so
+    logical               :: internal_alloc,lock_outside,so,consecutive,ff
     integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
   
@@ -2236,11 +2236,18 @@ module lspdm_tensor_operations_module
       fullfortdim(i) = arr%dims(o(i))
     enddo
 
+    consecutive = .true.
+    ff = .false.
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(o(i))
+      if( arr%dims(i) /= arr%tdim(i) .and. .not. ff) ff = .true.
+      if( arr%dims(i) /= arr%tdim(i) .and. arr%tdim(i) /= 1 .and. ff) consecutive = .false.
+    enddo
   
     elms_sent    = 0
     last_flush_i = 1
 
-    if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+    if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk.and.consecutive)then
 
       b=1
       do i=1,arr%ntiles
@@ -2720,9 +2727,9 @@ module lspdm_tensor_operations_module
        part2 = 1
        if(cons_el_rd<tl)then
           cons_els = cons_el_rd
-          do i = 1,min(diff_ord,2)
+          do i = 1,min(st_tiling,min(diff_ord,2))
              split_in = i
-             if(i==min(diff_ord,2))then
+             if(i==min(st_tiling,min(diff_ord,2)))then
                 part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
                 part2 = part2 * (idxt(i) - 1)
 
@@ -2741,6 +2748,8 @@ module lspdm_tensor_operations_module
 
        tl_max = (tl / cons_els) * cons_els
        tl_mod = mod(tl ,cons_els)
+
+       print *,infpar%lg_mynum,"has",diff_ord
 
        call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
 
@@ -2789,6 +2798,7 @@ module lspdm_tensor_operations_module
              !IF MORE THAN ONE ELEMENT CAN BE TRANSFERRED AT A TIME
           else
 
+             print *,"tl",tl,"part1",part1,tl_max,cons_els
              do c1 = 1, tl_max, cons_els
                 call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
                 do for4 = 1, fordims(4)
@@ -3052,7 +3062,6 @@ module lspdm_tensor_operations_module
                 endif
 
              else
-                print *,"should not right now"
 
                 do c1 = 1, tl
 
@@ -3165,7 +3174,7 @@ module lspdm_tensor_operations_module
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
                       call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
-                      call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                      call pgav(p_fort3(tl_max+1:tl_max+modp1,for3,for4),modp1,&
                          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                       call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                    enddo

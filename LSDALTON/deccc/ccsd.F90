@@ -898,8 +898,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=ls_mpik) :: hstatus, nctr,mode
      integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
      character*(MPI_MAX_PROCESSOR_NAME) :: hname
-     real(realk),pointer :: mpi_stuff(:)
+     real(realk),pointer :: buf1(:), buf2(:), buf3(:)
      !integer(kind=ls_mpik),pointer :: tasksw(:)
+     integer(kind=8) :: maxts,nbuff
 #endif
      logical :: lock_outside
 
@@ -933,7 +934,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
      integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
-     integer(kind=8) :: nb4,o2v2,no4
+     integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
@@ -1047,7 +1048,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         t2%access_type     = ALL_ACCESS
         call arr_lock_wins( t2, 's', mode )
         call memory_allocate_array_dense( t2 )
-        call array_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2)
+        print *,"here 1"
+        buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
+        call mem_alloc(buf1,buf_size)
+        call array_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+        call mem_dealloc(buf1)
         call arr_unlock_wins( t2, .true. )
      endif
 
@@ -1776,21 +1781,36 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
 #ifdef VAR_MPI
-     ! Finish the MPI part of the Residual calculation
-     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
+     call get_currently_available_memory(MemFree)
 
-     call lsmpi_barrier(infpar%lg_comm)
+     maxts=0
+     nbuff=0
+     if(((scheme==4.and.iter/=1).or.scheme==3).and.ccmodel > MODEL_CC2.and..not.local)then
+        maxts = max(govov%tsize,maxts)
+        nbuff=nbuff+1
+     endif
+     if(scheme==3)then
+        maxts = max(gvoova%tsize,maxts)
+        maxts = max(gvvooa%tsize,maxts)
+        nbuff=nbuff+1
+     endif
 
-     call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
-     max_wait_time = time_intloop_idle
-     min_wait_time = time_intloop_idle
+     if(nbuff /= 0)then
+        buf_size = max(1,min((int((MemFree * 1024.0E0_realk**3)/(8.0E0_realk)) - nbuff * o2v2) / maxts,5))*maxts
+     else
+        buf_size=0
+     endif
 
      if(((scheme==4.and.iter/=1).or.scheme==3).and.ccmodel > MODEL_CC2.and..not.local)then
+        call mem_alloc(buf1,buf_size)
         if(lock_outside)then
            call arr_lock_wins( govov  , 's', mode )
         endif
         call memory_allocate_array_dense( govov )
-        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2)
+        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2)!,wrk=buf1,iwrk=buf_size)
+        if(.not.lock_outside)then
+           call mem_dealloc(buf1)
+        endif
      endif
 
      if(scheme==3)then
@@ -1803,15 +1823,35 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc( gvvoo, o2v2, simple=.true. )
         call mem_alloc( gvoov, o2v2, simple=.true. )
 
+        call mem_alloc(buf2,buf_size)
+        call mem_alloc(buf3,buf_size)
+
         if( Ccmodel>MODEL_CC2 )then
-           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2)
-           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2)
+           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2)!,wrk=buf2,iwrk=buf_size)
+           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2)!,wrk=buf3,iwrk=buf_size)
+        endif
+
+        if(.not.lock_outside)then
+           call mem_dealloc(buf2)
+           call mem_dealloc(buf3)
         endif
 
      endif
 
+     ! Finish the MPI part of the Residual calculation
+     call time_start_phase(PHASE_IDLE, at = time_intloop_work )
+
+     call lsmpi_barrier(infpar%lg_comm)
+
+     call time_start_phase(PHASE_COMM, at = time_intloop_idle, twall = commtime )
+     max_wait_time = time_intloop_idle
+     min_wait_time = time_intloop_idle
 
 
+#endif
+
+
+#ifdef VAR_MPI
 
      !GET TIMING INFORMATION
 #ifdef VAR_LSDEBUG
@@ -1940,11 +1980,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !call print_tensor_unfolding_with_labels(sio4%d,&
         !   &[no,no],'kl',2,[nor],'i<j',1,'SIO4 FULL')
 
+        print *,infpar%lg_mynum,"start b"
+        call lsmpi_barrier(infpar%lg_comm)
+
         !get B2.2 contributions
         !**********************
         call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
+        print *,infpar%lg_mynum,"done"
+        call lsmpi_barrier(infpar%lg_comm)
 
 #ifdef VAR_MPI
         call lsmpi_win_free(sio4w)
@@ -1961,6 +2006,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if((scheme==4.and.iter/=1).or.scheme==3.and..not.local)then
 
            call arr_unlock_wins(govov, .true.)
+           if(lock_outside)call mem_dealloc(buf1)
 
         endif
         if(scheme==3)then
@@ -1968,6 +2014,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(lock_outside)then
               call arr_unlock_wins(gvoova,.true.)
               call arr_unlock_wins(gvvooa,.true.)
+              call mem_dealloc(buf2)
+              call mem_dealloc(buf3)
            endif
            gvoova%elm1 => gvoov%d
            gvvooa%elm1 => gvvoo%d
@@ -1981,9 +2029,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !Get the C2 and D2 terms
         !***********************
+        print *,infpar%lg_mynum,"start cnd"
+        call lsmpi_barrier(infpar%lg_comm)
 
         call get_cnd_terms_mo(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
            &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
+
+        print *,infpar%lg_mynum,"done cnd"
+        call lsmpi_barrier(infpar%lg_comm)
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
@@ -2250,7 +2303,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
- 
+
      if(print_debug)then
         write(msg,*)"NORM(omega1):"
         call print_norm(omega1,int((i8*no)*nv,kind=8),msg)
@@ -2383,7 +2436,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(lock_outside.and.traf1)then
            call time_start_phase(PHASE_COMM, at = tw)
            call arr_lock_wins(t2,'s',mode)
-           call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
+           call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside,debug=.true.)
            call time_start_phase(PHASE_WORK, at = tc)
         endif
 
@@ -2436,7 +2489,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !call arr_lock_wins(omega2,'s',mode)
               call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
               call time_start_phase(PHASE_COMM, at = tw)
-              call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.)
+              call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.,debug=.true.)
               call time_start_phase(PHASE_WORK, at = tc)
            endif
         endif
@@ -2704,9 +2757,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
+              print *,infpar%lg_mynum,"get first"
+              call lsmpi_barrier(infpar%lg_comm)
+
               !call arr_lock_wins(gvvoo,'s',mode)
-              call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,.false.)
+              call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,.false.,debug=.true.)
               !call arr_unlock_wins(gvvoo,.true.)
+
+              print *,infpar%lg_mynum,"done first"
+              call lsmpi_barrier(infpar%lg_comm)
 
               if(DECinfo%PL>3.and.master)then
                  call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -2756,9 +2815,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call arr_unlock_wins(omega2,.true.)
 
+           print *,infpar%lg_mynum,"get second"
+           call lsmpi_barrier(infpar%lg_comm)
+
            call arr_lock_wins(govov,'s',mode)
            call array_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
            call arr_unlock_wins(govov,.true.)
+
+           print *,infpar%lg_mynum,"done second"
+           call lsmpi_barrier(infpar%lg_comm)
 
            if(DECinfo%PL>3.and.master)then
               call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -2784,10 +2849,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
               call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
+              print *,infpar%lg_mynum,"get third",nv,nv/2
+              call lsmpi_barrier(infpar%lg_comm)
+
               call arr_lock_wins(t2,'s',mode)
-              call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside)
+              call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside,debug=.true.)
               call arr_unlock_wins(t2,.true.)
            
+              print *,infpar%lg_mynum,"done third"
+              call lsmpi_barrier(infpar%lg_comm)
+
               if(DECinfo%PL>3.and.master)then
                  call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
                     & labelttot = "CC comm time C3:" )
@@ -2876,9 +2947,15 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
+           print *,infpar%lg_mynum,"get fourth"
+           call lsmpi_barrier(infpar%lg_comm)
+
            if(lock_outside)call arr_lock_wins(t2,'s',mode)
            call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
            if(lock_outside)call arr_unlock_wins(t2,.true.)
+
+           print *,infpar%lg_mynum,"done fourth"
+           call lsmpi_barrier(infpar%lg_comm)
 
            if(DECinfo%PL>3.and.master)then
               call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -2905,7 +2982,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
            if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-           call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside)
+           call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
            if(lock_outside)call arr_unlock_wins(omega2,.true.)
 
            if(lock_outside)call arr_lock_wins(omega2,'s',mode)
@@ -2922,7 +2999,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
-           call array_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside)
+           call array_two_dim_1batch(omega2,[1,3,2,4],'a',w2,2,fai,tl,lock_outside,debug=.true.)
            if(lock_outside)call arr_unlock_wins(omega2,.true.)
 
            if(DECinfo%PL>3.and.master)then
@@ -2935,6 +3012,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
 
+        print *,infpar%lg_mynum,"done C"
+        call lsmpi_barrier(infpar%lg_comm)
+        call print_norm(omega2)
 
 
 
@@ -2955,8 +3035,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
-           call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,.false.)
-           call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,.false.)
+           call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,.false.,debug=.true.)
+           call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,.false.,debug=.true.)
 
            if(DECinfo%PL>3.and.master)then
               call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -3008,7 +3088,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
            !if(lock_outside)call arr_lock_wins(u2,'s',mode)
            call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,.false.,&
-              &mem=MemFree)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
+              &mem=MemFree,debug=.true.)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
            !if(lock_outside)call arr_unlock_wins(u2,.true.)
 
            if(DECinfo%PL>3.and.master)then
@@ -3079,7 +3159,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
            if(lock_outside)call arr_lock_wins(omega2,'s',mode)
-           call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside)
+           call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside,debug=.true.)
            if(lock_outside)call arr_unlock_wins(omega2,.true.)
 
            if(DECinfo%PL>3.and.master)then
@@ -3095,6 +3175,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_dealloc(w3)
 
      endif
+
+     print *,infpar%lg_mynum,"done D"
+     call lsmpi_barrier(infpar%lg_comm)
+     call print_norm(omega2)
 
      call time_start_phase(PHASE_WORK, at = tw )
   end subroutine get_cnd_terms_mo
