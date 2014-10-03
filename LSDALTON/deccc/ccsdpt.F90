@@ -131,9 +131,7 @@ contains
     ! vovv is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
     type(array) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
-#ifdef VAR_MPI
     integer :: nodtotal
-#endif
     integer :: tile_size
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
@@ -154,13 +152,29 @@ contains
     !> device type
     integer(acc_device_kind) :: acc_device_type
 #endif
+    real(realk) :: tcpu,twall
 
     call time_start_phase(PHASE_WORK)
 
     master = .true.
+    nodtotal = 1
 #ifdef VAR_MPI
-    master = (infpar%lg_mynum == infpar%master)
+    master = (infpar%lg_mynum .eq. infpar%master)
+    nodtotal = infpar%lg_nodtot
 #endif
+
+    if (master) then
+
+       call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) ''
+       write(DECinfo%output,*) '=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*'
+       write(DECinfo%output,*) '        Inside the CCSD(T) driver routine.        '
+       write(DECinfo%output,*) '*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*='
+       write(DECinfo%output,*) ''
+
+    endif
 
     ! init dimensions
     occdims     = [nocc,nocc]
@@ -171,9 +185,6 @@ contains
     dims_aaa    = [nvirt,nvirt,nvirt]
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
-
-!    tile_size = 1
-    tile_size = 2
 
     if (print_frags) then
 
@@ -233,9 +244,27 @@ contains
 
     end if
 
-#ifdef VAR_MPI
-    nodtotal = infpar%lg_nodtot
+    if (master) then
 
+       ! here: determine tile_size for abc == .true.
+       if(DECinfo%abc_tile_size .ne. 1) then
+
+          write(DECinfo%output,*) 'Tile size for ABC-CCSD(T) partitioning was set manually, use that value instead!'
+          write(DECinfo%output,*) ''
+          tile_size = DECinfo%abc_tile_size
+
+          ! sanity check
+          if (tile_size .gt. nvirt) call lsquit('manually set tile size (.ABC_TILE) .gt. nvirt - aborting...',DECinfo%output) 
+
+       else
+
+          tile_size = 1
+
+       end if
+
+    endif
+
+#ifdef VAR_MPI
     call time_start_phase(PHASE_COMM)
 
     ! bcast the JOB specifier and distribute data to all the slaves within local group
@@ -255,12 +284,13 @@ contains
     call ls_mpi_buffer(eivalvirt,nvirt,infpar%master)
     call ls_mpi_buffer(C_can_occ%val,nbasis,nocc,infpar%master)
     call ls_mpi_buffer(C_can_virt%val,nbasis,nvirt,infpar%master)
+    call ls_mpi_buffer(tile_size,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     call time_start_phase(PHASE_WORK)
 #endif
 
-    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size)
+    if (master) call print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
 
     ! ********************************************
     ! get vo³ and v³o integrals in proper sequence
@@ -528,6 +558,8 @@ contains
 
     endif
 
+    if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
   end subroutine ccsdpt_driver
 
 
@@ -574,6 +606,9 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
 
@@ -1162,6 +1197,8 @@ contains
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
 
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('IJK_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
   end subroutine ijk_loop_par
 #endif
 
@@ -1206,6 +1243,9 @@ contains
 #endif
     type(c_ptr) :: cublas_handle
     integer*4 :: stat
+    real(realk) :: tcpu,twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     full_no_frags = .false.
 
@@ -1631,6 +1671,8 @@ contains
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
 
+    call LSTIMER('IJK_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
+
   end subroutine ijk_loop_ser
 
 
@@ -1663,10 +1705,11 @@ contains
     real(realk), dimension(nvirt,nocc,nocc,nvirt) :: ccsdpt_doubles_2
     real(realk), dimension(nocc,nvirt) :: ccsdpt_singles
     !> orbital energiesi
-    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt)
+    real(realk), intent(inout)  :: eivalocc(nocc), eivalvirt(nvirt) 
     !> loop integers
     integer :: a,b,c,tuple_type,counter
-    integer :: a_tile,b_tile,c_tile,a_count,b_count,c_count,a_tile_num,b_tile_num,c_tile_num,total_num_tiles
+    integer :: a_tile,b_tile,c_tile,a_count,b_count,c_count,a_tile_num,b_tile_num,c_tile_num
+    integer :: total_num_tiles,nelms,tile_size_tmp_a,tile_size_tmp_b,tile_size_tmp_c
     !> async handles
 #ifdef VAR_OPENACC
     ! 9 is the unique number of handles
@@ -1674,6 +1717,9 @@ contains
 #else
     integer, dimension(9) :: async_id
 #endif
+    real(realk) :: tcpu,twall
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('START',tcpu,twall,DECinfo%output) 
 
     ! init pdm work arrays for vvvo integrals
     ! init ccsd_doubles_help_arrays
@@ -1740,40 +1786,49 @@ contains
 
        endif
 
+       call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile_num)
+       tile_size_tmp_a = nelms/(nocc*nvirt**2)
+
        call time_start_phase(PHASE_COMM)
-       call array_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size,flush_it = .true.)
+       call array_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
        call time_start_phase(PHASE_WORK)
    
-       call ass_D1to4(vovv_pdm_a,ptr_pdm_a,[nvirt,nocc,nvirt,tile_size])
+       call ass_D1to4(vovv_pdm_a,ptr_pdm_a,[nvirt,nocc,nvirt,tile_size_tmp_a])
 
        do b_tile = 1,a_tile,tile_size
 
           b_tile_num = b_tile_num + 1
 
+          call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile_num)
+          tile_size_tmp_b = nelms/(nocc*nvirt**2)
+
           call time_start_phase(PHASE_COMM)
-          call array_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size,flush_it = .true.)
+          call array_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
           call time_start_phase(PHASE_WORK)
 
-          call ass_D1to4(vovv_pdm_b,ptr_pdm_b,[nvirt,nocc,nvirt,tile_size])
+          call ass_D1to4(vovv_pdm_b,ptr_pdm_b,[nvirt,nocc,nvirt,tile_size_tmp_b])
 
           do c_tile = 1,b_tile,tile_size
 
              c_tile_num = c_tile_num + 1
 
+             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*c_tile_num)
+             tile_size_tmp_c = nelms/(nocc*nvirt**2)
+
              call time_start_phase(PHASE_COMM)
-             call array_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size,flush_it = .true.)
+             call array_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
              call time_start_phase(PHASE_WORK)
    
-             call ass_D1to4(vovv_pdm_c,ptr_pdm_c,[nvirt,nocc,nvirt,tile_size])
+             call ass_D1to4(vovv_pdm_c,ptr_pdm_c,[nvirt,nocc,nvirt,tile_size_tmp_c])
 
-             do a = a_tile,a_tile+tile_size-1
+             do a = a_tile,a_tile + tile_size_tmp_a - 1
 
                 a_count = a_count + 1
 
                 call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,a),nocc,nocc,&
                         & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_a)
          
-                do b = b_tile,b_tile+tile_size-1
+                do b = b_tile,b_tile + tile_size_tmp_b - 1
          
                    b_count = b_count + 1
 
@@ -1787,7 +1842,7 @@ contains
                    call array_reorder_3d(1.0E0_realk,ccsd_doubles(:,:,:,b),nocc,nocc,&
                            & nvirt,[3,2,1],0.0E0_realk,ccsd_doubles_portions_b)
          
-                   do c = c_tile,c_tile+tile_size-1
+                   do c = c_tile,c_tile + tile_size_tmp_c - 1
 
                       c_count = c_count + 1
 
@@ -1806,7 +1861,7 @@ contains
                          ! a == b == c
                          ! this always gives zero contribution
 
-                         if (c_count .eq. tile_size) c_count = 0
+                         if (c_count .eq. tile_size_tmp_c) c_count = 0
                          cycle
          
                       else if ((a .eq. b) .and. (b .gt. c)) then
@@ -1916,15 +1971,15 @@ contains
          
                       end select TypeOfTuple_ser_abc
 
-                      if (c_count .eq. tile_size) c_count = 0
+                      if (c_count .eq. tile_size_tmp_c) c_count = 0
  
                    end do
 
-                   if (b_count .eq. tile_size) b_count = 0
+                   if (b_count .eq. tile_size_tmp_b) b_count = 0
 
                 end do
           
-                if (a_count .eq. tile_size) a_count = 0
+                if (a_count .eq. tile_size_tmp_a) a_count = 0
 
              end do
 
@@ -1951,6 +2006,8 @@ contains
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
+
+    if (infpar%lg_mynum .eq. infpar%master) call LSTIMER('ABC_LOOP_PAR',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine abc_loop_par
 #endif
@@ -1991,6 +2048,9 @@ contains
 #else
     integer, dimension(9) :: async_id
 #endif
+    real(realk) :: tcpu,twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_a,nvirt,nocc,nocc)
@@ -2166,6 +2226,8 @@ contains
     ! release triples ampl structures
     call mem_dealloc(trip_ampl)
     call mem_dealloc(trip_tmp)
+
+    call LSTIMER('ABC_LOOP_SER',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine abc_loop_ser
 
@@ -7166,8 +7228,17 @@ contains
     o3v           = nocc*nocc*nocc*nvirt
     v3            = nvirt**3
 
-    ! Lots of timings
+#ifdef VAR_MPI
+
+    master = (infpar%lg_mynum .eq. infpar%master)
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#else
+
+    master = .true.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#endif
 
     ! Integral screening?
     doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
@@ -7186,7 +7257,6 @@ contains
     dims = [nvirt,nvirt,nvirt,nocc]
 #ifdef VAR_MPI
     mode   = MPI_MODE_NOCHECK
-    master = (infpar%lg_mynum == infpar%master)
 
     vvvo = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(vvvo)
@@ -7195,7 +7265,6 @@ contains
 
     vvvo = array_init(dims,4)
     call array_zero(vvvo)
-    master = .true.
 
 #endif
 
@@ -7525,7 +7594,7 @@ contains
     nullify(mylsitem%setting%LST_GAB_LHS)
     nullify(mylsitem%setting%LST_GAB_RHS)
 
-    call LSTIMER('CCSD(T) INT (IJK)',tcpu,twall,DECinfo%output)
+    if (master) call LSTIMER('CCSD(T) INT (IJK)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine get_CCSDpT_integrals_ijk
 
@@ -7572,7 +7641,7 @@ contains
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
-    integer :: myload,first_el_c_block
+    integer :: myload,first_el_c_block,nelms,tile_size_tmp,total_num_tiles
     logical :: master
     integer(kind=long) :: o3v,v3,ov2
     real(realk), pointer :: dummy2(:)
@@ -7583,8 +7652,17 @@ contains
     v3            = nvirt**3
     ov2           = nocc*nvirt**2
 
-    ! Lots of timings
+#ifdef VAR_MPI
+
+    master = (infpar%lg_mynum .eq. infpar%master)
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#else
+
+    master = .true.
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+#endif
 
     ! Integral screening?
     doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
@@ -7605,7 +7683,6 @@ contains
 #ifdef VAR_MPI
 
     mode   = MPI_MODE_NOCHECK
-    master = (infpar%lg_mynum == infpar%master)
 
     vovv   = array_init(dims,4,TILED_DIST,ALL_ACCESS,tdims=[nvirt,nocc,nvirt,tile_size])
     call array_zero_tiled_dist(vovv)
@@ -7614,7 +7691,6 @@ contains
 
     vovv = array_init(dims,4)
     call array_zero(vovv)
-    master = .true.
 
 #endif
 
@@ -7826,18 +7902,23 @@ contains
 
 #ifdef VAR_MPI
 
-          ! mpi   : 1) tmp2(B,I,A,c) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,c)
-          !         2) vovv(B,I,A,C) += sum_{c in CB} tmp2(B,I,A,c)
+          ! mpi   : 1) tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
+          !         2) vovv(B,I,A,C) += sum_{tile in CB} tmp2(B,I,A,tile)
           ! serial: vovv(B,I,A,C) += sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,C)
           m = nocc*nvirt**2
           k = dimAlpha
-          n = tile_size
 
+          total_num_tiles = vovv%ntiles
           tile = 0
 
           do c=1,nvirt,tile_size
 
              tile = tile + 1
+
+             call get_tileinfo_nels_fromarr8(nelms,vovv,i8*tile)
+             tile_size_tmp = nelms/(nocc*nvirt**2)
+
+             n = tile_size_tmp
 
              ! tmp2(B,I,A,tile) = sum_{alpha in alphaB} tmp1(B,I,A,alpha) Cvirt(alpha,tile)
              call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart,c),nbasis,0.0E0_realk,tmp2,m)
@@ -7848,14 +7929,14 @@ contains
 #endif
              dest = get_residence_of_tile(tile,vovv)
 
-             do first_el_c_block=1,ov2*tile_size,MAX_SIZE_ONE_SIDED
+             do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
                 call arr_lock_win(vovv,tile,'s',assert=mode)
 #endif
                 nel2t=MAX_SIZE_ONE_SIDED
-                if(((ov2*tile_size-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
-                   &(mod(ov2*tile_size-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
-                   &nel2t=int(mod(ov2*tile_size,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
+                if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
+                   &(mod(ov2*tile_size_tmp-first_el_c_block+1,i8*MAX_SIZE_ONE_SIDED)/=0))&
+                   &nel2t=int(mod(ov2*tile_size_tmp,i8*MAX_SIZE_ONE_SIDED),kind=ls_mpik)
 
                 call lsmpi_acc(tmp2(first_el_c_block:first_el_c_block+nel2t-1),nel2t,first_el_c_block,dest,vovv%wi(tile))
 
@@ -7937,7 +8018,7 @@ contains
     ! finally, reorder ooov(K,I,J,A) --> ooov(I,J,K,A)
     call array_reorder(ooov,[2,3,1,4])
 
-    call LSTIMER('CCSD(T) INT (ABC)',tcpu,twall,DECinfo%output)
+    if (master) call LSTIMER('CCSD(T) INT (ABC)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine get_CCSDpT_integrals_abc
 
@@ -8135,7 +8216,7 @@ contains
         write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9_realk
         write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9_realk
         write(DECinfo%output,*)
-
+        write(DECinfo%output,*)
 
      endif
 
@@ -8260,11 +8341,11 @@ contains
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
 
-  subroutine print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size)
+  subroutine print_pt_info(nocc,nvirt,nbasis,print_frags,abc,tile_size,nodtotal)
       implicit none
       integer, intent(in) :: nbasis,nocc,nvirt
       logical, intent(in) :: print_frags,abc
-      integer, intent(in) :: tile_size
+      integer, intent(in) :: tile_size,nodtotal
       logical :: ijk
 
       if (abc) then
@@ -8273,16 +8354,20 @@ contains
          ijk = .true.
       endif
 
-      write(DECinfo%output,'(/,a)') '-----------------------'
-      write(DECinfo%output,'(a)')   '  CCSD(T) information  '
-      write(DECinfo%output,'(a,/)') '-----------------------'
-      write(DECinfo%output,'(a,i4)')     'Num. b.f.           = ',nbasis
-      write(DECinfo%output,'(a,i4)')     'Num. occ. orb.      = ',nocc
-      write(DECinfo%output,'(a,i4)')     'Num. unocc. orb.    = ',nvirt
-      write(DECinfo%output,'(a,l4)')     'Print frag.energies = ',print_frags
-      write(DECinfo%output,'(a,l4)')     'IJK partitioning    = ',ijk
-      write(DECinfo%output,'(a,l4)')     'ABC partitioning    = ',abc
-      if (abc) write(DECinfo%output,'(a,i4)')     'Tile size for ABC   = ',tile_size
+      write(DECinfo%output,'(/,a)') '-----------------------------'
+      write(DECinfo%output,'(a)')   '      CCSD(T) information    '
+      write(DECinfo%output,'(a,/)') '-----------------------------'
+      write(DECinfo%output,'(a,i4)')     'Num. b.f.              = ',nbasis
+      write(DECinfo%output,'(a,i4)')     'Num. occ. orb.         = ',nocc
+      write(DECinfo%output,'(a,i4)')     'Num. unocc. orb.       = ',nvirt
+#ifdef VAR_MPI
+      write(DECinfo%output,'(a,i4)')     'Number of nodes in lg  = ',nodtotal
+#endif
+      write(DECinfo%output,'(a,l4)')     'Print frag.energies    = ',print_frags
+      write(DECinfo%output,'(a,l4)')     'IJK partitioning       = ',ijk
+      write(DECinfo%output,'(a,l4)')     'ABC partitioning       = ',abc
+      if (abc) write(DECinfo%output,'(a,i4)')     'Tile size for ABC      = ',tile_size
+      write(DECinfo%output,*)
       write(DECinfo%output,*)
 
   end subroutine print_pt_info
@@ -8396,7 +8481,7 @@ end module ccsdpt_module
     if (print_frags) then
 
        call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,vovo,ccsd_t2,&
-                               & ccsdpt_t1,print_frags,abc,ccsdpt_t2)
+                               & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
 
     else
 
