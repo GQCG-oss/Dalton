@@ -574,9 +574,11 @@ do Ipass = IpassStart,IpassEnd
              !            & BASISTYPE(iBasis3),',',BASISTYPE(iBasis4),')'
              SameMOL = .FALSE.       
              call SCREEN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,INTSPEC,SameMOL)
+!             IPRINT = 1000
              call MAIN_ICHORERI_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,&
                   & integralsIchor,intspec,.TRUE.,1,1,1,1,1,1,1,1,&
                   & MoTrans,dim1,dim2,dim3,dim4,NoSymmetry)
+!             IPRINT = 0
 
              IF(generateFiles)THEN
                 luoutput = -1

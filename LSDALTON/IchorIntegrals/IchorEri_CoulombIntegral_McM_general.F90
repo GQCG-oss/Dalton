@@ -172,9 +172,24 @@ CONTAINS
     ENDIF
 
     !builds Ecoeff(nPrimQ,nPasses,nTUVQ,nCartOrbCompQ)
-    !FOR NOW THIS IS NOT OpenMP parallized - unclear what the best method is. 
-    call Ichorbuild_Ecoeff_RHS(nPrimQ,nPrimC,nPrimD,AngmomQ,AngmomC,AngmomD,nTUVQ,&
-         & nCartOrbCompQ,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,TmpArray4)
+    IF(TMP1)THEN !use TmpArray2 to store some tmparrys in Ichorbuild_Ecoeff_RHS
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray2maxsize.LT.9*nPrimQ)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_RHS(nPrimQ,nPrimC,nPrimD,AngmomQ,AngmomC,AngmomD,nTUVQ,&
+            & nCartOrbCompQ,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,&
+            & TmpArray4,TmpArray2(1:3*nPrimQ),TmpArray2(3*nPrimQ+1:6*nPrimQ),&
+            & TmpArray2(6*nPrimQ+1:7*nPrimQ),TmpArray2(7*nPrimQ+1:8*nPrimQ),TmpArray2(8*nPrimQ+1:9*nPrimQ))
+    ELSE
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray1maxsize.LT.9*nPrimQ)call ichorquit('IchorTmp1G3QEE1R1',-1)
+#endif
+       call Ichorbuild_Ecoeff_RHS(nPrimQ,nPrimC,nPrimD,AngmomQ,AngmomC,AngmomD,nTUVQ,&
+            & nCartOrbCompQ,Cexp,Dexp,TmpArray3,Qdistance12,Qpreexpfac,intprint,lupri,&
+            & TmpArray4,TmpArray1(1:3*nPrimQ),TmpArray1(3*nPrimQ+1:6*nPrimQ),&
+            & TmpArray1(6*nPrimQ+1:7*nPrimQ),TmpArray1(7*nPrimQ+1:8*nPrimQ),TmpArray1(8*nPrimQ+1:9*nPrimQ))
+    ENDIF
+
 
     IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVQ,nCartOrbCompQ,nPrimQ,nPassQ,lupri)
 
@@ -261,9 +276,29 @@ CONTAINS
 
     !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
     !currently not OpenMP parallel 
-    call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
-         & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
-         & nAtomsA,nAtomsB,IatomApass,IatomBpass,MaxPasses,intprint,lupri,TmpArray4)
+    IF(TMP1)THEN !use TmpArray2 to store some tmparrys in Ichorbuild_Ecoeff_RHS
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray2maxsize.LT.6*nPasses*nPrimP+3*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
+            & nAtomsA,nAtomsB,IatomApass,IatomBpass,MaxPasses,intprint,lupri,TmpArray4,&
+            & TmpArray2(1:3*nPasses*nPrimP),TmpArray2(3*nPasses*nPrimP+1:6*nPasses*nPrimP),&
+            & TmpArray2(6*nPasses*nPrimP+1:6*nPasses*nPrimP+nPrimP),&
+            & TmpArray2(6*nPasses*nPrimP+nPrimP+1:6*nPasses*nPrimP+2*nPrimP),&
+            & TmpArray2(6*nPasses*nPrimP+2*nPrimP+1:6*nPasses*nPrimP+3*nPrimP))
+    ELSE
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray1maxsize.LT.6*nPasses*nPrimP+3*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
+            & nAtomsA,nAtomsB,IatomApass,IatomBpass,MaxPasses,intprint,lupri,TmpArray4,&
+            & TmpArray1(1:3*nPasses*nPrimP),TmpArray1(3*nPasses*nPrimP+1:6*nPasses*nPrimP),&
+            & TmpArray1(6*nPasses*nPrimP+1:6*nPasses*nPrimP+nPrimP),&
+            & TmpArray1(6*nPasses*nPrimP+nPrimP+1:6*nPasses*nPrimP+2*nPrimP),&
+            & TmpArray1(6*nPasses*nPrimP+2*nPrimP+1:6*nPasses*nPrimP+3*nPrimP))
+    ENDIF
 
     IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVP,nCartOrbCompP,nPrimP,nPasses,lupri)
     
