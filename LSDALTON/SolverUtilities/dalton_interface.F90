@@ -295,7 +295,7 @@ CONTAINS
       CALL DAXPY(3*natoms,1E0_realk,tmpGrad,1,Grad,1)
 
 !      WRITE(lupri,*)'The h1grad'
-!      call output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
+!      call ls_output(Grad,1,3,1,Natoms,3,natoms,1,lupri)
 
       do I=1,Natoms
          IF(ABS(mat_trAB(genh1x(3*(I-1)+1),D)-grad(1,I)).GT.1E-8_realk)THEN

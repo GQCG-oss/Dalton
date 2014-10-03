@@ -84,3 +84,15 @@ endif()
 if(ENABLE_ICHOR)
     add_definitions(-DVAR_ICHOR)
 endif()
+
+if(ENABLE_QMATRIX)
+    add_definitions(-DENABLE_QMATRIX)
+endif()
+
+if(ENABLE_OPENRSP)
+    add_definitions(-DENABLE_OPENRSP)
+endif()
+
+if(ENABLE_TDRSP)
+    add_definitions(-DENABLE_TDRSP)
+endif()

@@ -281,6 +281,7 @@ contains
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
+    logical :: print_frags,abc
 
     times_ccsd => null()
     times_pt   => null()
@@ -324,7 +325,7 @@ contains
        ! Extract EOS indices for integrals
        ! *********************************
        call array_extract_eos_indices(VOVO,MyFragment,Arr_occEOS=VOVOocc,Arr_virtEOS=VOVOvirt)
-       call array_free(VOVO)
+!       call array_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -357,17 +358,36 @@ contains
 
           call dec_fragment_time_init(times_pt)
 
+          print_frags = DECinfo%print_frags
+          abc = DECinfo%abc
+
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
-          ccsdpt_t1 = array_init([MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-          ccsdpt_t2 = array_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
-               &MyFragment%noccAOS,MyFragment%noccAOS],4)
+         if (abc) then
+
+            call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+
+            ccsdpt_t1 = array_init([MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+            ccsdpt_t2 = array_init([MyFragment%noccAOS,MyFragment%noccAOS,&
+                 &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
+
+         else
+
+            call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
+            ccsdpt_t1 = array_init([MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+            ccsdpt_t2 = array_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+                 &MyFragment%noccAOS,MyFragment%noccAOS],4)
+
+         endif
 
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%noccAOS,MyFragment%nunoccAOS,&
                              & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
-                             & t2,ccsdpt_t1,ccsdpt_t2)
+                             & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
@@ -380,6 +400,9 @@ contains
 
        end if
 #endif 
+
+       ! free vovo integrals
+       call array_free(VOVO)
 
        if(DECinfo%use_singles)then
           call array_free(t1)
@@ -420,6 +443,10 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file and FRAGMODEL_* definitions in dec_typedef.F90.
     
+    !> Memory Stats
+     WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
+    call stats_globalmem(DECinfo%output)
+
 #ifdef MOD_UNRELEASED
     if(DECinfo%F12) then    
        call get_f12_fragment_energy(MyFragment, t2occ%elm4)
@@ -928,6 +955,7 @@ contains
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
+    logical :: print_frags,abc
 
     times_ccsd => null()
     times_pt   => null()
@@ -973,7 +1001,7 @@ contains
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
-       call array_free(VOVO)
+!       call array_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -1064,17 +1092,36 @@ contains
 
        call dec_fragment_time_init(times_pt)
 
+       print_frags = DECinfo%print_frags
+       abc = DECinfo%abc
+
        ! init ccsd(t) singles and ccsd(t) doubles
-       ccsdpt_t1 = array_init([PairFragment%nunoccAOS,PairFragment%noccAOS],2)
-       ccsdpt_t2 = array_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
-            & PairFragment%noccAOS,PairFragment%noccAOS],4)
+       if (abc) then
+
+          call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+          call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+
+          ccsdpt_t1 = array_init([PairFragment%noccAOS,PairFragment%nunoccAOS],2)
+          ccsdpt_t2 = array_init([PairFragment%noccAOS,PairFragment%noccAOS,&
+               &PairFragment%nunoccAOS,PairFragment%nunoccAOS],4)
+
+       else
+
+          call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+
+          ccsdpt_t1 = array_init([PairFragment%nunoccAOS,PairFragment%noccAOS],2)
+          ccsdpt_t2 = array_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+               &PairFragment%noccAOS,PairFragment%noccAOS],4)
+
+       endif
 
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
                           & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
-                          & t2,ccsdpt_t1,ccsdpt_t2)
+                          & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
@@ -1086,6 +1133,9 @@ contains
 
     end if
 #endif
+
+    ! free vovo integrals
+    call array_free(VOVO)
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
        if(DECinfo%use_singles)then
@@ -2127,7 +2177,7 @@ contains
      logical :: BruteForce,FockMatrixOrdering
 
 
-     if (DECinfo%orb_based_fragopt) then
+     if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
             & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,&
             & MyMolecule,mylsitem,freebasisinfo)

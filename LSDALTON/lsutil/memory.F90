@@ -1186,7 +1186,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
@@ -1337,7 +1337,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
@@ -7201,56 +7201,59 @@ end subroutine mem_deallocated_mem_lattice_cell
 !> 1 GB be default.
 !> \author Kasper Kristensen, modified by Patrick Ettenhuber
 !> \date January 2012
-subroutine get_available_memory(lupri,MemoryAvailable,memfound)
+subroutine get_available_memory(lupri,MemoryAvailable,memfound,suppress_print)
    !> Logical unit number for output file
    integer,intent(in) :: lupri
    !> Available memory measured in GB (using 1GB = 1000000000 bytes)
    real(realk),intent(inout) :: MemoryAvailable
    !> Was the memory information found?
    logical,intent(inout) :: MemFound
+   logical,intent(in),optional :: suppress_print
    !> check for /proc/meminfo
-   logical :: meminfo_found
+   logical :: meminfo_found,sp
 
    ! If System will not be identified, use default values
    memfound=.false.
    MemoryAvailable=1.0E0_realk
+
+   sp = .false.
+   if(present(suppress_print))sp = suppress_print
 
    INQUIRE(FILE="/proc/meminfo", EXIST=meminfo_found)
 
    ! Is this a LINUX system?
    if(meminfo_found) then
       call get_available_memory_specific('MENFO',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! meminfo not found or mem in meminfo not found  --> Is this a MAC system?
    if((.not. meminfo_found).or.(.not.memfound)) then
       call get_available_memory_specific('MAC  ',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be MAC!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! Still no result --> Is this a LINUX system without a  readable /proc/memninfo?
    if(.not.memfound) then
       call get_available_memory_specific('LINUX',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!(using the top command)'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       endif
    endif
 
 
-   write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
-   write(lupri,*) 'get_available_memory: System type NOT identified!'
-   write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   if(.not.memfound)then
+      write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
+      write(lupri,*) 'get_available_memory: System type NOT identified!'
+      write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   endif
 
 
 end subroutine get_available_memory

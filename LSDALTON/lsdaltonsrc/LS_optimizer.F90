@@ -533,7 +533,7 @@ Endif
        call ATOM_INI(KTEMP1,Config%Molecule,config%optinfo,NAtoms,.TRUE.,lupri)
        call ls_GETINT(NAtoms,config%optinfo%NIntCoord,KTEMP1,config%optinfo%CoordInt,lupri,config%optinfo)
        call lsheader(lupri,'New internal coordinates') 
-       call output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
+       call ls_output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
        WRITE(LUPRI,'(//)')
     END IF
     !
@@ -766,7 +766,7 @@ Endif
           call ATOM_INI(KTEMP1,Config%Molecule,config%optinfo,NAtoms,.TRUE.,lupri)
           call ls_GETINT(NAtoms,config%optinfo%NIntCoord,KTEMP1,config%optinfo%CoordInt,lupri,config%optinfo)
           call lsheader(lupri,'New internal coordinates')
-          call output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
+          call ls_output(config%optinfo%CoordInt,1,1,1,config%optinfo%NIntCoord,1,config%optinfo%NIntCoord,1,LUPRI)
           WRITE(LUPRI,'(//)')
        END IF
 !
@@ -1642,7 +1642,7 @@ Do i = 2, optinfo%MaxIter+1
    call ATOM_INI(Atom_array,config%Molecule,optinfo,NAtoms,.TRUE.,lupri)
    call ls_GETINT(NAtoms,optinfo%NIntCoord,Atom_array,optinfo%CoordInt,lupri,optinfo)
    call lsheader(lupri,'New internal coordinates') 
-   call output(optinfo%CoordInt,1,1,1,optinfo%NIntCoord,1,optinfo%NIntCoord,1,LUPRI)
+   call ls_output(optinfo%CoordInt,1,1,1,optinfo%NIntCoord,1,optinfo%NIntCoord,1,LUPRI)
    ! Reference the data
    optinfo%energy = E(1)
    optinfo%Scan_info(i,1) = optinfo%coordinates(1,Active_atom)

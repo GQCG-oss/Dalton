@@ -88,6 +88,8 @@ module dec_typedef_module
      logical :: frozencore
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
+     !> Print fragment energies for full molecular cc
+     logical :: print_frags
      !> Enforce canonical orbitals in calculation 
      logical :: use_canonical
      !> Simulate full molecular calculation in DEC mode  (debug)
@@ -221,6 +223,10 @@ module dec_typedef_module
      !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
      logical :: v2o2_free_solver
 
+     !> ccsd(T) settings
+     !> *****************************
+     logical :: abc
+
      !> F12 settings
      !> ************
      !> Use F12 correction
@@ -351,7 +357,7 @@ module dec_typedef_module
      !> Model to use for fragment reduction
      integer :: fragopt_red_model
      !> Temporary keyword to use clean version of the frag opt
-     logical :: orb_based_fragopt
+     logical :: no_orb_based_fragopt
      !> Only consider occupied partitioning
      logical :: OnlyOccPart
      !> Only consider virtual partitioning

@@ -483,24 +483,24 @@ if (na_red>0) then
         !save on disk
     if (molcfg%solver%info_rsp_redspace) then
      write(molcfg%lupri,*) 'Reduced E1:'
-     call OUTPUT(E1, 1, ns_red+nxs_new, 1, ns_red+nxs_new, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(E1, 1, ns_red+nxs_new, 1, ns_red+nxs_new, max_red, max_red, 1, molcfg%lupri)
      write(molcfg%lupri,*) 'Reduced E2:'
-     call OUTPUT(E2, 1, na_red+nxa_new, 1, na_red+nxa_new, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(E2, 1, na_red+nxa_new, 1, na_red+nxa_new, max_red, max_red, 1, molcfg%lupri)
      
      write(molcfg%lupri,*) 'Reduced S1:'
-     call OUTPUT(S1, 1, ns_red+nxs_new, 1, na_red+nxa_new, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(S1, 1, ns_red+nxs_new, 1, na_red+nxa_new, max_red, max_red, 1, molcfg%lupri)
      write(molcfg%lupri,*) 'Reduced S2:'
-     call OUTPUT(S2, 1, na_red+nxa_new, 1, ns_red+nxs_new, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(S2, 1, na_red+nxa_new, 1, ns_red+nxs_new, max_red, max_red, 1, molcfg%lupri)
      
      write(molcfg%lupri,*) 'Reduced G1:'
-     call OUTPUT(G1, 1, ns_red+nxs_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(G1, 1, ns_red+nxs_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
      write(molcfg%lupri,*) 'Reduced G2:'
-     call OUTPUT(G2, 1, na_red+nxa_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+     call LS_OUTPUT(G2, 1, na_red+nxa_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
      if (gd_complex) then
         write(molcfg%lupri,*) 'Reduced G3:'
-        call OUTPUT(G3, 1, na_red+nxa_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+        call LS_OUTPUT(G3, 1, na_red+nxa_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
         write(molcfg%lupri,*) 'Reduced G4:'
-        call OUTPUT(G4, 1, ns_red+nxs_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
+        call LS_OUTPUT(G4, 1, ns_red+nxs_new, 1, ngd, max_red, max_red, 1, molcfg%lupri)
      endif
    endif
 
@@ -576,9 +576,9 @@ type(rsp_molcfg), intent(inout)    :: molcfg
 
       if (molcfg%solver%info_rsp_redspace) then
         write(molcfg%lupri,*) 'Reduced A:'
-        call OUTPUT(A, 1, n_red, 1, n_red, n_red, n_red, 1, molcfg%lupri)
+        call LS_OUTPUT(A, 1, n_red, 1, n_red, n_red, n_red, 1, molcfg%lupri)
         write(molcfg%lupri,*) 'Reduced RHS:'
-        call OUTPUT(KHS, 1, n_red, 1, 1, n_red, 1, 1, molcfg%lupri)
+        call LS_OUTPUT(KHS, 1, n_red, 1, 1, n_red, 1, 1, molcfg%lupri)
       endif
          
        !Solve set of linear equations Ax = b:
@@ -591,7 +591,7 @@ type(rsp_molcfg), intent(inout)    :: molcfg
        endif
       if (molcfg%solver%info_rsp_redspace) then
         write(molcfg%lupri,*) 'Reduced solution:'
-        call OUTPUT(KHS, 1, n_red, 1, 1, n_red, 1, 1, molcfg%lupri)
+        call LS_OUTPUT(KHS, 1, n_red, 1, 1, n_red, 1, 1, molcfg%lupri)
       endif
        
        red_X(1:ns_red,ifreq,igd) = KHS(1:ns_red)

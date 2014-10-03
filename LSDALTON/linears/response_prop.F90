@@ -325,6 +325,8 @@ Contains
 
     end do PrintFrequencyLoop
 
+    write(lupri,'(1X,A)') ' End of polarizability calculation'
+
 
     ! Deallocate stuff
     deallocate(rsp_results_vec)
@@ -4367,6 +4369,7 @@ enddo
 deallocate(NMST)
 deallocate(atomname)
 CALL LSTIMER('*SHIELD',TS,TE,LUPRI)
+WRITE(LUPRI,*) " Done with shielding tensor calculation"
 
 end subroutine NMRshieldresponse_driver
 
@@ -5157,15 +5160,15 @@ end subroutine write_transition_density_matrix
   enddo
   WRITE(lupri,'(A)')' '
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator XDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,1),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,1),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
 
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator YDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,2),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,2),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
 
   WRITE(lupri,'(A)')'The transition dipole moments between state X and Y for operator ZDIPLEN: <X | A - <A> | Y>'
-  call output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,3),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
+  call ls_output(DipoleMomentMatrix(2:nexci_max+1,2:nexci_max+1,3),1,nexci_max,1,nexci_max,nexci_max,nexci_max,1,lupri)
   WRITE(lupri,'(A)')' '
   WRITE(lupri,'(A)')'The Full Dipole Moment Matrix'
   WRITE(lupri,'(A)')' '
@@ -5176,7 +5179,7 @@ end subroutine write_transition_density_matrix
      WRITE(lupri,'(A,A12)')'Dipole Moment Matrix for ',Dir(J)
      WRITE(lupri,'(A)')' '
 
-!     call output(DipoleMomentMatrix(:,:,J),1,1+nexci_max,1,1+nexci_max,1+nexci_max,1+nexci_max,1,lupri)
+!     call ls_output(DipoleMomentMatrix(:,:,J),1,1+nexci_max,1,1+nexci_max,1+nexci_max,1+nexci_max,1,lupri)
 
      DO K = 1,nexci_max+1,4
         IF(K.LE.nexci_max+1-3)THEN

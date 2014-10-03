@@ -235,7 +235,7 @@ c
       end
 c
 c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
-      SUBROUTINE SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
+      SUBROUTINE LS_SQRTMT(A,NDIM,ITASK,ASQRT,AMSQRT,SCR)
 *
 * Calculate square root of positive definite symmetric matrix A
 * if(ITASK .EQ. 2 ) Inverted square root matrix is also calculated
@@ -269,16 +269,16 @@ c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
 *. Check for negative eigenvalues
       DO I = 1, NDIM
        IF(SCR(KLAVAL-1+I).LT.0.0D0) THEN
-         WRITE(6,*) ' SQRTMT : Negative eigenvalue ', SCR(KLAVAL-1+I)
-         WRITE(6,*) ' SQRTMT : I will STOP '
-         STOP       ' SQRTMT : Negative eigenvalue '
+         WRITE(6,*) ' LS_SQRTMT : Negative eigenvalue ', SCR(KLAVAL-1+I)
+         WRITE(6,*) ' LS_SQRTMT : I will STOP '
+         STOP       ' LS_SQRTMT : Negative eigenvalue '
        END IF
       END DO
 *
       DO 100 I = 1,NDIM
         SCR(KLAVAL-1+I) = SQRT(SCR(KLAVAL-1+I))
   100 CONTINUE
-      CALL XDIAXT(ASQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
+      CALL LS_XDIAXT(ASQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
 *
       IF(ITASK .EQ. 2 ) THEN
         DO 200 I = 1,NDIM
@@ -288,13 +288,13 @@ c  S^1/2 - S^-1/2 DECOMPOSITION (from Jeppe)
             SCR(KLAVAL-1+I) = SCR(KLAVAL-1+I)
           END IF
   200   CONTINUE
-        CALL XDIAXT(AMSQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
+        CALL LS_XDIAXT(AMSQRT,SCR(KLAVEC),SCR(KLAVAL),NDIM,SCR(KLFREE))
       END IF
 *
       IF( NTEST .GE. 1 ) THEN
-        WRITE(6,*) ' Info from SQRTMT '
-        WRITE(6,*) ' ================='
-        WRITE(6,*) ' Input matrix to SQRTMT '
+        WRITE(6,*) ' Info from LS_SQRTMT '
+        WRITE(6,*) ' ===================='
+        WRITE(6,*) ' Input matrix to LS_SQRTMT '
         CALL LS_WRTMAT(A,NDIM,NDIM,NDIM,NDIM,1)
         WRITE(6,*) ' Square root of matrix '
         CALL LS_WRTMAT(ASQRT,NDIM,NDIM,NDIM,NDIM,1)
