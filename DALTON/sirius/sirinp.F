@@ -1659,6 +1659,9 @@ C
       IF (QMMM .AND. ECP) THEN
          CALL QUIT('QMMM is not compatible with the use of ECPs')
       END IF
+      IF (QMMM .AND. DOCI) THEN
+         CALL QUIT('QMMM is currently not compatible with .CI')
+      END IF
       IF (PEQM .AND. DOCI) THEN
          CALL QUIT('PEQM is currently not compatible with .CI')
       END IF
