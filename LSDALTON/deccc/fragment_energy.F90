@@ -387,7 +387,7 @@ contains
                              & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
-                             & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
+                             & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
@@ -1121,7 +1121,7 @@ contains
                           & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
-                          & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
+                          & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 

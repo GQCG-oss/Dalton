@@ -74,6 +74,8 @@ contains
 
        else ! Simple Lowdin charge procedure to determine atomic extent
 
+          write(DECinfo%output,*)
+          write(DECinfo%output,*)
           write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
 
           call GenerateOrbitals_simple(nocc,nunocc,natoms, &

@@ -353,14 +353,14 @@ module crop_tools_module
             write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
             write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
             write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
-            write(DECinfo%output,'(a,l1)')     'Debug routine    = ',DECinfo%CCDEBUG
-            write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
+            write(DECinfo%output,'(a,l4)')     'Debug routine    = ',DECinfo%CCDEBUG
+            write(DECinfo%output,'(a,l4)')     'Debug mode       = ',DECinfo%cc_driver_debug
             write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
-            write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
+            write(DECinfo%output,'(a,l4)')     'Use CROP         = ',DECinfo%use_crop
             write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',maxsub
-            write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
-            write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
-            write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
+            write(DECinfo%output,'(a,l4)')     'Preconditioner   = ',DECinfo%use_preconditioner
+            write(DECinfo%output,'(a,l4)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
+            write(DECinfo%output,'(a,l4)')     'Singles          = ',DECinfo%use_singles
          else
             write(DECinfo%output,'(/,a)') '  Coupled-cluster energy  -> Fragment job '
             write(DECinfo%output,'(a)')   '------------------------------------------'
@@ -369,7 +369,7 @@ module crop_tools_module
             else
                write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
             endif
-            write(DECinfo%output,'(4x,a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
+            write(DECinfo%output,'(4x,a,l4)')     'Debug mode       = ',DECinfo%cc_driver_debug
             write(DECinfo%output,'(a,i4,$)')      'MaxIter          = ',DECinfo%ccMaxIter
             write(DECinfo%output,'(5x,a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
             write(DECinfo%output,'(a,i4,$)')      'Num. b.f.        = ',nbasis
@@ -377,7 +377,7 @@ module crop_tools_module
             write(DECinfo%output,'(a,i4,$)')      'Num. occ. orb.   = ',nocc
             write(DECinfo%output,'(5x,a,i4)')     'CROP subspace    = ',DECinfo%ccMaxDIIS
             write(DECinfo%output,'(a,i4,$)')      'Num. unocc. orb. = ',nvirt
-            write(DECinfo%output,'(5x,a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
+            write(DECinfo%output,'(5x,a,l4)')     'Preconditioner   = ',DECinfo%use_preconditioner
          end if
 
          ! cc parameters

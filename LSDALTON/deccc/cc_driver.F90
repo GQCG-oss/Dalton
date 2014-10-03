@@ -254,10 +254,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
-               & ccsdpt_t1,print_frags,abc,ccsdpt_t2)
+               & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,ccsdpt_t2)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          end if
   
          ! now, reorder amplitude and integral arrays

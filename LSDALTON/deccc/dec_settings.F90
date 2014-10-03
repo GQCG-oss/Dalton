@@ -66,7 +66,9 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
+#ifdef VAR_MPI
     DECinfo%dyn_load             = LSMPIASYNCP
+#endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
     DECinfo%array_test           = .false.
@@ -184,6 +186,7 @@ contains
 
     ! ccsd(t) settings
     DECinfo%abc = .false.
+    DECinfo%abc_tile_size = 1
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -336,7 +339,6 @@ contains
        case('.CCSD(T)') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
-       case('.PT_ABC'); DECinfo%abc=.true.
        case('.RPA')
           call find_model_number_from_input(word, DECinfo%ccModel)
 !#ifdef VAR_MPI
@@ -362,6 +364,10 @@ contains
           ! Number of residual vectors to save when solving CC amplitude equation
        case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
 
+          ! CCSD(T) INFO
+          ! ==============
+       case('.PT_ABC'); DECinfo%abc=.true.
+       case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
           ! CHOICE OF ORBITALS
           ! ==================
