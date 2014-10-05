@@ -33,7 +33,7 @@ all: libIchorIntegrals.a
 #F90            = ifort
 #FLNK           = ifort
 #RM             = rm -f
-#F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp -xHost
+#F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
 ##F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
 #INCLUDES       =  
 #LIBS           = #-openmp
@@ -218,6 +218,9 @@ F90_OBJS = \
         IchorGammaTabulation.o \
         IchorEri_CoulombIntegral_McM_general.o \
         IchorEri_CoulombIntegral_McM_Ecoeff_general.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specR.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL2.o \
         IchorEri_CoulombIntegral_McM_WTUV_general.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_CPU_OBS_Gen.o \
