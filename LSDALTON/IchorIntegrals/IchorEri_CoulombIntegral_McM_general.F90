@@ -12,7 +12,6 @@ use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
      & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 
-public 
 !build from old IchorEri_CoulombIntegral_general.f90 in
 !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
 
@@ -108,7 +107,7 @@ CONTAINS
     !Rpq(nPrimQ,nPrimP,nPasses,3)
     call build_Rpq(nPrimQ,nPasses,nPrimP,Qcent,Pcent,TmpArray3,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB)
 
-    IF(PQorder) call lsquit('PQorder CPU_McM general expect to get QP ordering',-1)
+    IF(PQorder) call ichorquit('PQorder CPU_McM general expect to get QP ordering',-1)
 
     !
     !      builds RJ000(0:AngmomPQ,nPrimQ,nPrimP,nPasses) Store in TmpArray4
@@ -900,7 +899,7 @@ CONTAINS
        WRITE (LUPRI,'(/,A,I10,/A)')&
             &         ' Argument less than zero in IchorFACULT:',N,&
             &         ' Program cannot continue.'
-       CALL LSQUIT('Illegal argument in IchorFACULT',lupri)
+       CALL ICHORQUIT('Illegal argument in IchorFACULT',lupri)
     ELSE
        IchorFACULT = D1
        DO I = 1, N
@@ -923,7 +922,7 @@ CONTAINS
           WRITE (LUPRI,'(/,A,I10,/A)')&
                &            ' Double factorial undefined for ',N,&
                &            ' Program cannot continue.'
-          CALL LSQUIT('Illegal argument in IchorFACUL2',lupri)
+          CALL ICHORQUIT('Illegal argument in IchorFACUL2',lupri)
        ELSE
           IchorFACUL2 = D1/IchorFACUL2
        END IF
@@ -945,7 +944,7 @@ CONTAINS
        WRITE (LUPRI,'(/,A,2I5,/A)')&
             &         ' Second argument larger than first argument in IchorBINOM:',&
             &         I,J,' Program cannot continue.'
-       CALL LSQUIT('Illegal arguments in IchorBINOM',lupri)
+       CALL ICHORQUIT('Illegal arguments in IchorBINOM',lupri)
     ELSE
        IchorBINOM = ICHORFACULT(LUPRI,I)/(ICHORFACULT(LUPRI,I-J)*ICHORFACULT(LUPRI,J))
     END IF
@@ -980,12 +979,12 @@ CONTAINS
     IF(L .EQ. 0)THEN ! S
        SCMAT(1,1)=1E0_realk
     ELSEIF(L .EQ. 1)THEN ! P
-       CALL LS_DZERO(SCMAT,9)
+       CALL ICHOR_DZERO(SCMAT,9)
        SCMAT(1,1)=1E0_realk
        SCMAT(2,2)=1E0_realk
        SCMAT(3,3)=1E0_realk
     ELSEIF(L .GT. 1)THEN
-       CALL LS_DZERO(SCMAT,nLM*nXYZ)
+       CALL ICHOR_DZERO(SCMAT,nLM*nXYZ)
        DO M1 = 0, 2*L 
           M = M1 - L
           IF (L.EQ. 1) THEN

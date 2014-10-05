@@ -5,11 +5,25 @@
 !> \date 2013 
 MODULE IchorCommonModule
 use IchorprecisionModule
-!public:: IchorQuit, ichor_tstamp, Ichor_gettim, ichor_get_walltime, &
-!     & ichor_timtxt, ichortimer, GenerateOrderdListOfTypes
-!private
-public
+
 CONTAINS
+subroutine ichor_dzero(dx, length)
+  implicit none
+  !Length of array
+  integer, intent(in)      :: length
+  !Array to be nullified
+  real(realk), intent(inout) :: dx(length)
+  integer                  :: i
+  
+  if (length < 0) then
+     !do nothing
+  else
+     do i = 1, length
+        dx(i) = 0.0E0_realk
+     enddo
+  endif
+end subroutine ichor_dzero
+
 subroutine ichor_tstamp(TEXT,LUPRIN)
   implicit none
   CHARACTER(*), intent(in) :: TEXT
@@ -48,36 +62,6 @@ subroutine ichor_tstamp(TEXT,LUPRIN)
 #endif
 end subroutine ichor_tstamp
 
-!Return elapsed CPU time and elapsed real time.
-subroutine Ichor_gettim(cputime,walltime)
-  implicit none
-  real(realk), intent(out) :: cputime, walltime  
-  real(realk),PARAMETER :: D0 = 0.0E0_realk
-  logical    :: first = .true.
-  real(realk), save :: TCPU0, twall0
-  real(realk)       :: tcpu1, twall1
-  integer           :: dateandtime0(8), dateandtime1(8)  
-  if (first) then
-     first = .false.
-     call cpu_time(TCPU0)
-     call date_and_time(values=dateandtime0)
-     call ichor_get_walltime(dateandtime0,twall0)
-  end if
-  call cpu_time(tcpu1)
-  call date_and_time(values=dateandtime1)
-  call ichor_get_walltime(dateandtime1,twall1)
-  cputime = tcpu1 - TCPU0
-  walltime = twall1 - twall0
-end subroutine Ichor_gettim
-
-!> \brief Get elapsed walltime in seconds since 1/1-2010 00:00:00
-!> \author S. Host
-!> \date October 2010
-!>
-!> Years that are evenly divisible by 4 are leap years. 
-!> Exception: Years that are evenly divisible by 100 are not leap years, 
-!> unless they are also evenly divisible by 400. Source: Wikipedia
-!>
 subroutine ichor_get_walltime(dateandtime,walltime)
 implicit none
 !> "values" output from fortran intrinsic subroutine date_and_time
@@ -1059,3 +1043,25 @@ subroutine ichorzero2(OutputStorage, Dim1,Dim2)
 end subroutine ichorzero2
 
 END MODULE IchorCommonModule
+
+!Return elapsed CPU time and elapsed real time.
+subroutine Ichor_gettim(cputime,walltime)
+  use IchorCommonModule
+  implicit none
+  real(8), intent(out) :: cputime, walltime  
+  logical    :: first = .true.
+  real(8), save :: TCPU0, twall0
+  real(8)       :: tcpu1, twall1
+  integer           :: dateandtime0(8), dateandtime1(8)  
+  if (first) then
+     first = .false.
+     call cpu_time(TCPU0)
+     call date_and_time(values=dateandtime0)
+     call ichor_get_walltime(dateandtime0,twall0)
+  end if
+  call cpu_time(tcpu1)
+  call date_and_time(values=dateandtime1)
+  call ichor_get_walltime(dateandtime1,twall1)
+  cputime = tcpu1 - TCPU0
+  walltime = twall1 - twall0
+end subroutine Ichor_gettim

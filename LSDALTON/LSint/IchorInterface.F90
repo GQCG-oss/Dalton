@@ -1407,12 +1407,13 @@ call mem_dealloc(MODELBATCHTYPES)
 #endif
 end Subroutine Build_TypeInfo2
 
-SUBROUTINE WRITE_ICHORERI_INFO(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,LUOUTPUT)
+SUBROUTINE WRITE_ICHORERI_INFO(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,profile,LUOUTPUT)
 implicit none
 TYPE(lssetting),intent(in):: setting
 integer,intent(in)        :: LUPRI,IPRINT,LUOUTPUT
 integer,intent(in)        :: dim1,dim2,dim3,dim4 
 real(realk),intent(inout) :: integrals(dim1,dim2,dim3,dim4)
+logical,intent(in)        :: profile
 #ifdef VAR_ICHOR
 !
 integer                :: nTypes
@@ -1437,7 +1438,7 @@ integer,pointer     :: nAtomsOfTypeD(:),nPrimOfTypeD(:)
 integer,pointer     :: nContOfTypeD(:),AngmomOfTypeD(:),startOrbitalOfTypeD(:,:)
 real(realk),pointer :: exponentsOfTypeD(:,:),Dcenters(:,:,:),ContractCoeffOfTypeD(:,:,:)
 logical :: spherical,FullBatch
-integer :: nbatchAstart2,nbatchAend2,nbatchAstart,nbatchAend
+integer :: nbatchAstart2,nbatchAend2,nbatchAstart,nbatchAend,I,J,K,L
 integer :: nbatchBstart2,nbatchBend2,nbatchBstart,nbatchBend
 integer :: nbatchCstart2,nbatchCend2,nbatchCstart,nbatchCend
 integer :: nbatchDstart2,nbatchDend2,nbatchDstart,nbatchDend
@@ -1500,9 +1501,33 @@ call FreeCenterAndTypeInfo(nAtomsOfTypeD,AngmomOfTypeD,&
      & nPrimOfTypeD,nContOfTypeD,startOrbitalOfTypeD,&
      & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
 
-WRITE(LUOUTPUT,*) dim1,dim2,dim3,dim4 
-WRITE(LUOUTPUT,*) integrals
-
+IF(.NOT.profile)THEN
+   WRITE(LUOUTPUT,*) dim1,dim2,dim3,dim4 
+   WRITE(LUOUTPUT,*) integrals
+ELSE
+   !dimensions huge so we only write a few elements.
+   WRITE(LUOUTPUT,*) dim1,dim2,dim3,dim4 
+   IF(MIN(dim1,dim2,dim3,dim4).LT.7)THEN
+    DO L=1,7
+     DO K=1,7
+      DO J=1,7
+       DO I=1,7
+        WRITE(LUOUTPUT,*) integrals(I,J,K,L)
+       ENDDO
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDIF
+   DO L=1,dim4,10
+    DO K=1,dim3,10
+     DO J=1,dim2,10
+      DO I=1,dim1,10
+       WRITE(LUOUTPUT,*) integrals(I,J,K,L)
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+ENDIF
 #else
 call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif

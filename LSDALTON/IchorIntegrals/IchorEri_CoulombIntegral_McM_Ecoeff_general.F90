@@ -6,6 +6,7 @@
 !> \date 2013 
 MODULE IchorEriCoulombintegralCPUMcMGeneralEcoeffMod
 use IchorPrecisionModule
+use IchorCommonModule
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 private 
 public :: Ichorbuild_Ecoeff_LHS,Ichorbuild_Ecoeff_RHS, printEcoeff
@@ -31,7 +32,7 @@ Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
   integer,parameter :: nPasses = 1
   real(realk) :: bexpo
 !$OMP MASTER
-  CALL LS_DZERO(Ecoeffn,nPrimP*nTUV*ijk)
+  CALL ICHOR_DZERO(Ecoeffn,nPrimP*nTUV*ijk)
   call build_auxiliary(nPrimA,nPrimB,Aexp,Bexp,PINV,APINV,BPINV,HPINV,TWOA,TWOB)
   !X DIST
   DO iPrimP=1,nPrimP
@@ -109,7 +110,7 @@ Subroutine Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nT
   !
   integer :: K,iPass,iPrimP,iAtomA,iAtomB
 !$OMP MASTER
-  CALL LS_DZERO(Ecoeffn,nPrimP*nPasses*nTUV*ijk)
+  CALL ICHOR_DZERO(Ecoeffn,nPrimP*nPasses*nTUV*ijk)
   call build_auxiliary(nPrimA,nPrimB,Aexp,Bexp,PINV,APINV,BPINV,HPINV,TWOA,TWOB)
   !X DIST
   do iPass=1,nPasses
@@ -1742,7 +1743,7 @@ ELSEIF(maxIJ.EQ.6 )THEN !FF
       ENDDO
    ENDIF
 ELSE
-   CALL lsquit('EXTEND ICHOR_HERM_ECOEFFS (MAIN2 IN etij)',-1)
+   CALL ichorquit('EXTEND ICHOR_HERM_ECOEFFS (MAIN2 IN etij)',-1)
 ENDIF
 END SUBROUTINE ICHOR_HERM_ECOEFFS
 
