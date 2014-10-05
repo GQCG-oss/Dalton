@@ -126,9 +126,26 @@ CONTAINS
     ENDIF
 
     !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
-    !FOR NOW THIS IS NOT OpenMP parallized - unclear what the best method is. 
-    call Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
-         & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,intprint,lupri,TmpArray4)
+    IF(TMP1)THEN !use TmpArray2 to store some tmp arrays in Ichorbuild_Ecoeff
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray2maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,intprint,lupri,TmpArray4,&
+            & TmpArray2(1:3*nPrimP),TmpArray2(3*nPrimP+1:6*nPrimP),&
+            & TmpArray2(6*nPrimP+1:7*nPrimP),TmpArray2(7*nPrimP+1:8*nPrimP),&
+            & TmpArray2(8*nPrimP+1:9*nPrimP))
+    ELSE
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray2maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,intprint,lupri,TmpArray4,&
+            & TmpArray1(1:3*nPrimP),TmpArray1(3*nPrimP+1:6*nPrimP),&
+            & TmpArray1(6*nPrimP+1:7*nPrimP),TmpArray1(7*nPrimP+1:8*nPrimP),&
+            & TmpArray1(8*nPrimP+1:9*nPrimP))
+
+    ENDIF
 
     IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVP,nCartOrbCompP,nPrimP,nPassQ,lupri)
 
@@ -214,10 +231,28 @@ CONTAINS
     ENDIF
 
     !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
-    !currently not OpenMP parallel 
-    call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
-         & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
-         & 1,1,IatomApass,IatomBpass,1,intprint,lupri,TmpArray4)
+    IF(TMP1)THEN
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray2maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
+            & 1,1,IatomApass,IatomBpass,1,intprint,lupri,TmpArray4,&
+            & TmpArray2(1:3*nPrimP),TmpArray2(3*nPrimP+1:6*nPrimP),&
+            & TmpArray2(6*nPrimP+1:7*nPrimP),TmpArray2(7*nPrimP+1:8*nPrimP),&
+            & TmpArray2(8*nPrimP+1:9*nPrimP))
+    ELSE
+#ifdef VAR_DEBUGICHOR
+       IF(TMParray1maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+#endif
+       call Ichorbuild_Ecoeff_LHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
+            & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,nPasses,&
+            & 1,1,IatomApass,IatomBpass,1,intprint,lupri,TmpArray4,&
+            & TmpArray1(1:3*nPrimP),TmpArray1(3*nPrimP+1:6*nPrimP),&
+            & TmpArray1(6*nPrimP+1:7*nPrimP),TmpArray1(7*nPrimP+1:8*nPrimP),&
+            & TmpArray1(8*nPrimP+1:9*nPrimP))
+    ENDIF
+
 
     IF (IntPrint .GE. 25)call printEcoeff(TmpArray3,nTUVP,nCartOrbCompP,nPrimP,nPasses,lupri)
     
@@ -244,68 +279,61 @@ CONTAINS
 
 
 
+    !builds CERECS(nContP,nCartOrbCompP,nOrbCompP)
     IF(.NOT.TMP1)THEN !current intermediate reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
        IF(TMParray1maxsize.LT.nContP*nContP*nCartOrbCompP*nOrbCompP)call ichorquit('IchorTmp1G7',-1)
 #endif
-       !builds CERECS(nContP,nContP,nPasses,nCartOrbCompP,nOrbCompP)
        IF(Psegmented)THEN
-          call contractBasisSegP(TmpArray2,TmpArray1,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB) 
+          call GabcontractBasisSegP(TmpArray2,TmpArray1,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB) 
        ELSE
-          call contractBasisGenP(TmpArray2,TmpArray1,ACC,BCC,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB,nContA,nContB) 
+          call GabcontractBasisGenP(TmpArray2,TmpArray1,ACC,BCC,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB,nContA,nContB) 
        ENDIF
-       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray1,nContP,nContP,nPasses,nCartOrbCompP,nOrbCompP,lupri)
     ELSE !current intermediate reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
        IF(TMParray2maxsize.LT.nContP*nContP*nPasses*nCartOrbCompP*nOrbCompP)call ichorquit('IchorTmp2G7',-1)
 #endif
-       !builds CERECS(nContP,nContP,nPasses,nCartOrbCompP,nOrbCompP)
        IF(Psegmented)THEN
-          call contractBasisSegP(TmpArray1,TmpArray2,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB) 
+          call GabcontractBasisSegP(TmpArray1,TmpArray2,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB) 
        ELSE
-          call contractBasisGenP(TmpArray1,TmpArray2,ACC,BCC,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB,nContA,nContB) 
+          call GabcontractBasisGenP(TmpArray1,TmpArray2,ACC,BCC,nContP,nCartOrbCompP*nOrbCompP,nPrimA,nPrimB,nContA,nContB) 
        ENDIF
-       IF (IntPrint .GE. 25) call PrintIchorTensorCERECS(TmpArray2,nContP,nContP,nPasses,nCartOrbCompP,nOrbCompP,lupri)
     ENDIF
     TMP1 = .NOT.TMP1
 
+    !builds SCEREC(nContP,nOrbCompP)
     IF(SphericalTransP)THEN
        IF(TMP1)THEN !current intermediate reside in TmpArray1
 #ifdef VAR_DEBUGICHOR
           IF(TMParray2maxsize.LT.nContP*nContP*nOrbCompP*nOrbCompP)call ichorquit('IchorTmp1G8',-1)
 #endif
-          !builds SCEREC(nContP,nContP,nPasses,nOrbCompP,nOrbCompP)
           IF(Sph1.AND.Sph2)THEN
-             call SphericalTransformGenPAB(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
+             call GabSphericalTransformGenPAB(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
                   & SPH_MAT(AngmomB)%elms,nCartOrbCompA,nOrbCompA,nCartOrbCompB,nOrbCompB,&
-                  & nContP*nContP,nOrbCompP)
+                  & nContP,nOrbCompP)
           ELSEIF(Sph1)THEN
-             call SphericalTransformGenPA(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
-                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContP*nContP,nOrbCompP)
+             call GabSphericalTransformGenPA(TmpArray1,TmpArray2,SPH_MAT(AngmomA)%elms,&
+                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContP,nOrbCompP)
           ELSE
-             call SphericalTransformGenPB(TmpArray1,TmpArray2,SPH_MAT(AngmomB)%elms,&
-                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContP*nContP,nOrbCompP)
+             call GabSphericalTransformGenPB(TmpArray1,TmpArray2,SPH_MAT(AngmomB)%elms,&
+                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContP,nOrbCompP)
           ENDIF
-          IF(IntPrint.GE.25)call PrintIchorTensorSCERECS(TmpArray2,&
-               & nContP,nContP,nPasses,nOrbCompP,nOrbCompP,lupri)
        ELSE !current intermediate reside in TmpArray2
 #ifdef VAR_DEBUGICHOR
           IF(TMParray1maxsize.LT.nContP*nContP*nOrbCompP*nOrbCompP)call ichorquit('IchorTmp2G8',-1)
 #endif
           !builds SCEREC(nContP,nContP,nPasses,nOrbCompP,nOrbCompP)
           IF(Sph1.AND.Sph2)THEN
-             call SphericalTransformGenPAB(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
+             call GabSphericalTransformGenPAB(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
                   & SPH_MAT(AngmomB)%elms,nCartOrbCompA,nOrbCompA,nCartOrbCompB,nOrbCompB,&
-                  & nContP*nContP,nOrbCompP)
+                  & nContP,nOrbCompP)
           ELSEIF(Sph1)THEN
-             call SphericalTransformGenPA(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
-                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContP*nContP,nOrbCompP)
+             call GabSphericalTransformGenPA(TmpArray2,TmpArray1,SPH_MAT(AngmomA)%elms,&
+                  & nCartOrbCompA,nOrbCompA,nOrbCompB,nContP,nOrbCompP)
           ELSE
-             call SphericalTransformGenPB(TmpArray2,TmpArray1,SPH_MAT(AngmomB)%elms,&
-                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContP*nContP,nOrbCompP)
+             call GabSphericalTransformGenPB(TmpArray2,TmpArray1,SPH_MAT(AngmomB)%elms,&
+                  & nOrbCompA,nCartOrbCompB,nOrbCompB,nContP,nOrbCompP)
           ENDIF          
-          IF(IntPrint.GE.25)call PrintIchorTensorSCERECS(TmpArray1,&
-               & nContP,nContP,nPasses,nOrbCompP,nOrbCompP,lupri)
        ENDIF
        TMP1 = .NOT.TMP1
     ENDIF
@@ -454,16 +482,16 @@ CONTAINS
   subroutine extractGabElmGen(TmpArray2,CDAB,nContP,nOrbCompP)
     implicit none
     integer,intent(in) :: nContP,nOrbCompP
-    real(realk),intent(in) :: TmpArray2(nContP,nContP,nOrbCompP,nOrbCompP)
+    real(realk),intent(in) :: TmpArray2(nContP,nOrbCompP)
     real(realk),intent(inout) :: CDAB(1)
     !
     integer :: iContP,iOrbP
     real(realk) :: TMP
     !$OMP MASTER
-    TMP = ABS(TmpArray2(1,1,1,1))
+    TMP = ABS(TmpArray2(1,1))
     do iOrbP = 1,nOrbCompP
        do iContP = 1,nContP
-          TMP = MAX(TMP,ABS(TmpArray2(iContP,iContP,iOrbP,iOrbP)))
+          TMP = MAX(TMP,ABS(TmpArray2(iContP,iOrbP)))
        enddo
     enddo
     CDAB(1) = SQRT(TMP)
@@ -472,5 +500,136 @@ CONTAINS
 
   end subroutine extractGabElmGen
 
+  Subroutine GabcontractBasisGenP(ERECS,CERECS,ACC,BCC,nContQ,ndim,nPrimA,nPrimB,nContA,nContB)
+    implicit none
+    integer,intent(in) :: nPrimA,nPrimB,ndim,nContA,nContB,nContQ
+    real(realk),intent(in) :: ACC(nPrimA,nContA),BCC(nPrimB,nContB)
+    real(realk),intent(in) :: ERECS(nContA,nContB,nPrimA,nPrimB,ndim)
+    real(realk),intent(inout) :: CERECS(nContA,nContB,ndim)
+    !
+    integer :: i,icA,icB,ipA,ipB,iQ
+    real(realk) :: TMP,TMPB,TMP2
+    !$OMP DO COLLAPSE(3) PRIVATE(i,icA,icB,ipA,ipB,iQ,TMP,TMPB,TMP2)
+    do i = 1,ndim
+       do icB = 1,nContB
+          do icA = 1,nContA
+             TMP2 = 0.0E0_realk
+             do ipB = 1,nPrimB
+                TMPB = BCC(ipB,icB)
+                do ipA = 1,nPrimA
+                   TMP = ACC(ipA,icA)*TMPB
+                   TMP2 = TMP2 + ERECS(icA,icB,ipA,ipB,i)*TMP                   
+                enddo
+             enddo
+             CERECS(icA,icB,i) = TMP2 
+          enddo
+       enddo
+    enddo
+    !$OMP END DO
+
+  end Subroutine GabcontractBasisGenP
+
+  Subroutine GabcontractBasisSegP(ERECS,CERECS,nContQ,ndim,nPrimA,nPrimB)
+    implicit none
+    integer,intent(in) :: nPrimA,nPrimB,ndim,nContQ
+    real(realk),intent(in) :: ERECS(nPrimA,nPrimB,ndim)
+    real(realk),intent(inout) :: CERECS(ndim)
+    !
+    integer :: i,ipA,ipB,iQ
+    !$OMP DO PRIVATE(i,ipA,ipB,iQ)
+    do i = 1,ndim
+       CERECS(i) = 0.0E0_realk
+       do ipB = 1,nPrimB
+          do ipA = 1,nPrimA
+             CERECS(i) = CERECS(i) + ERECS(ipA,ipB,i)
+          enddo
+       enddo
+    enddo
+    !$OMP END DO
+  end Subroutine GabcontractBasisSegP
+
+  subroutine GabSphericalTransformGenPAB(CERECS,SCERECS,SPHMATA,SPHMATB,&
+       & ijk1,ijk1s,ijk2,ijk2s,ndim,nOrbCompQ)
+    implicit none
+    integer,intent(in) :: ijk1,ijk1s,ijk2,ijk2s,ndim,nOrbCompQ
+    real(realk),intent(in) :: SPHMATA(ijk1,ijk1s),SPHMATB(ijk2,ijk2s)
+    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2,ijk1s,ijk2s)
+    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2s)
+    !
+    integer :: a,b,as,bs,i,ijkQ
+    real(realk) :: TMP,TMPB
+    !$OMP DO COLLAPSE(2) PRIVATE(a,b,as,bs,i,TMP,TMPB)
+     do as = 1,ijk1s
+      do bs = 1,ijk2s
+       do i = 1,ndim
+        SCERECS(i,as,bs) = 0.0E0_realk
+       enddo 
+       do b = 1,ijk2
+        TMPB = SPHMATB(b,bs)
+        do a = 1,ijk1
+         TMP = SPHMATA(a,as)*TMPB
+         do i = 1,ndim
+          SCERECS(i,as,bs) = SCERECS(i,as,bs) + CERECS(i,a,b,as,bs)*TMP
+         enddo
+        enddo
+       enddo
+      enddo
+     enddo
+    !$OMP END DO
+  end subroutine GabSphericalTransformGenPAB
+
+  subroutine GabSphericalTransformGenPA(CERECS,SCERECS,SPHMATA,&
+       & ijk1,ijk1s,ijk2,ndim,nOrbCompQ)
+    implicit none
+    integer,intent(in) :: ijk1,ijk1s,ijk2,ndim,nOrbCompQ
+    real(realk),intent(in) :: SPHMATA(ijk1,ijk1s)
+    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2,ijk1s,ijk2)
+    real(realk),intent(inout) :: SCERECS(ndim,ijk1s,ijk2)
+    !
+    integer :: a,as,i,b
+    real(realk) :: TMP
+    !$OMP DO COLLAPSE(2) PRIVATE(a,as,i,b,TMP)
+    do b = 1,ijk2
+       do as = 1,ijk1s
+          do i = 1,ndim
+             SCERECS(i,as,b) = 0.0E0_realk
+          enddo
+          do a = 1,ijk1
+             TMP = SPHMATA(a,as)
+             do i = 1,ndim
+                SCERECS(i,as,b) = SCERECS(i,as,b) + CERECS(i,a,b,as,b)*TMP
+             enddo
+          enddo
+       enddo
+    enddo
+    !$OMP END DO
+  end subroutine GabSphericalTransformGenPA
+
+  subroutine GabSphericalTransformGenPB(CERECS,SCERECS,SPHMATB,&
+       & ijk1,ijk2,ijk2s,ndim,nOrbCompQ)
+    implicit none
+    integer,intent(in) :: ijk1,ijk2,ijk2s,ndim,nOrbCompQ
+    real(realk),intent(in) :: SPHMATB(ijk2,ijk2s)
+    real(realk),intent(in) :: CERECS(ndim,ijk1,ijk2,ijk1,ijk2s)
+    real(realk),intent(inout) :: SCERECS(ndim,ijk1,ijk2s)
+    !
+    integer :: b,bs,i,a
+    real(realk) :: TMP
+    !$OMP DO COLLAPSE(2) PRIVATE(b,bs,i,a,TMP)
+    do bs = 1,ijk2s
+       do a = 1,ijk1
+          do i = 1,ndim
+             SCERECS(i,a,bs) = 0.0E0_realk
+          enddo
+          do b = 1,ijk2
+             TMP = SPHMATB(b,bs)
+             do i = 1,ndim
+                SCERECS(i,a,bs) = SCERECS(i,a,bs) + CERECS(i,a,b,a,bs)*TMP
+             enddo
+          enddo
+       enddo
+    enddo
+    !$OMP END DO
+  end subroutine GabSphericalTransformGenPB
 
 end MODULE IchorEriGabintegralCPUMcMGeneralMod
