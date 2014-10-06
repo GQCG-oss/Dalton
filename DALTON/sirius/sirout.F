@@ -55,7 +55,7 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
 #endif
 #include "implicit.h"

@@ -94,6 +94,9 @@ macro(add_PCMSOLVER)
 	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
 	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
 	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
+        -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
+        -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
+        -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
         )
     add_external(pcmsolver)
 endmacro()

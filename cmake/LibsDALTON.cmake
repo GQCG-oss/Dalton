@@ -97,12 +97,8 @@ if(ENABLE_PCMSOLVER)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
     endif()
     add_dependencies(dalton pcmsolver)
-    add_definitions(-DPCM_MODULE)
     set(DALTON_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
-	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
-	stdc++
-        z
+        ${PCMSOLVER_LIBS}
         ${DALTON_LIBS}
         )
 endif()

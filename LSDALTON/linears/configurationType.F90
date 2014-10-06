@@ -23,7 +23,7 @@ use decompMod, only: DecompItem
 use lattice_type, only: lvec_list_t
 use davidson_settings, only: RedSpaceItem
 use arhDensity, only: solveritem
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
 use ls_pcm_config, only: pcmtype
 #endif
 use precision
@@ -116,7 +116,7 @@ type ConfigItem
    type(profileinput) :: prof
    !> Memory monitor for MPI calculations
    logical            :: mpi_mem_monitor
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
    !> Used to store info about Polarizable Continuum Model calculation
    type(pcmtype)      :: pcm
 #endif

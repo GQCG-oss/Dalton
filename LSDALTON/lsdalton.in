@@ -249,7 +249,6 @@ if [ -d "$DALTON_SCRATCH" -a -w "$DALTON_SCRATCH" ]; then
    if [ "x$pcmfil" != "x" ]; then 
      if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
         cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
-	python $PCMSOLVER_PARSE_DALTON
      else
         echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
         ierr=1

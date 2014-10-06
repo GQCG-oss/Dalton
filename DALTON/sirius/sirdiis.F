@@ -320,7 +320,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       use pcm_scf
       use pcmmod_cfg
 #endif
@@ -333,7 +333,7 @@ C
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
       DIMENSION RCPMAT(*), RMMMAT(*)
 
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       real(8), allocatable :: density_ao(:), density_ao_symm(:)
       real(8), allocatable :: fock_pcm_ao(:), fock_pcm_ao_symm(:)
 #endif
@@ -429,7 +429,7 @@ CAMT  If requested calculate the DFT-D energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM .OR.
      &    pcmmod_is_pcm_calculation) THEN
 #else              
@@ -553,7 +553,7 @@ C------------------
      &     .AND. .NOT. use_efs
 #endif
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       if (pcmmod_is_pcm_calculation) then
               dodifden = .false.
       end if
@@ -1032,7 +1032,7 @@ C
 #endif
          END IF
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
          if (pcmmod_is_pcm_calculation) then
 ! Allocate scratch space for the PCM Fock matrix contribution in AO basis.
            allocate(fock_pcm_ao(nnbasx))
@@ -1139,7 +1139,7 @@ C
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
             IF (EMBEDDING .or. pcmmod_is_pcm_calculation) then
 #else                
             IF (EMBEDDING) THEN

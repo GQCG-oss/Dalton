@@ -57,12 +57,18 @@ module pcm_scf
    contains 
       
       subroutine pcm_scf_initialize(print_unit)                              
+      
+      use pcmmod_cfg, only: pcmmod_host_provides_input
      
       integer, intent(in) :: print_unit
+      
+      integer :: host_provides_input = 0
 
       global_print_unit = print_unit 
 
-      call set_up_pcm
+      if (pcmmod_host_provides_input) host_provides_input = 1 
+
+      call set_up_pcm(host_provides_input)
       call print_pcm
 
       call get_cavity_size(nr_points, nr_points_irr)

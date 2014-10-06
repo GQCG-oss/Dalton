@@ -40,6 +40,8 @@ contains
 !> This subroutine initializes various global objects internal to this
 !> module.
 subroutine ls_pcm_scf_initialize(setting, print_unit, err_unit)                              
+     
+   use ls_pcm_config, only: pcmtype, pcm_config
 
    type(lssetting), intent(in) :: setting
    integer,         intent(in) :: print_unit
@@ -48,12 +50,15 @@ subroutine ls_pcm_scf_initialize(setting, print_unit, err_unit)
    ! by symmetry. We won't be using symmetry but we need to preserve
    ! consistency with the API!
    integer(c_int)      :: nr_points_irr
+   integer :: host_provides_input = 0
    
    global_print_unit = print_unit 
    global_error_unit = err_unit
    integral_settings = setting
    
-   call set_up_pcm
+   if (pcm_config%host_provides_input) host_provides_input = 1 
+
+   call set_up_pcm(host_provides_input)
    call print_pcm
    
    call get_cavity_size(nr_points, nr_points_irr)

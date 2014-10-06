@@ -112,7 +112,7 @@ C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       use pcmmod_cfg
       use pcm_linear_response
 #endif 
@@ -373,7 +373,7 @@ C
      &                 EVECS(NCSIM*KZYVAR+1), WRK(KFREE), LFREE)
 #endif
       END IF
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       if (pcmmod_is_pcm_calculation) then
         call hello_world
       end if

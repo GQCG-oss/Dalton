@@ -7,7 +7,7 @@
 MODULE scf_stats
    !FIXME:       Without the stat_tab information, the computation crashes
    use opttype
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
    use ls_pcm_scf, only: get_pcm_energy
    use ls_pcm_config
 #endif
@@ -300,7 +300,7 @@ MODULE scf_stats
       else
          call lsquit('Calculation type has not been set',opt%lupri)
       endif
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (pcm_config%do_pcm) then
          WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f20.12)') get_pcm_energy()
          WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc                                          

@@ -67,7 +67,7 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
 use ls_pcm_config, only: pcmtype, ls_pcm_init, ls_pcm_input
 #endif
 private
@@ -134,7 +134,7 @@ implicit none
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
   call LS_dynamics_init(config%dynamics)
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
   ! Polarizable Continuum Model
   call ls_pcm_init(config%pcm)
 #endif
@@ -758,7 +758,7 @@ DO
 !
 ! Find PCM input section
 !
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
    IF (WORD(1:5) .EQ. '**PCM') THEN
       config%pcm%do_pcm = .true.
       call ls_pcm_input(config%pcm,readword,word,&
@@ -3614,7 +3614,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       call scf_stats_arh_header(config%lupri)
    endif
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
 ! Cross-check for polarizable continuum model
 !=================================================
    if (config%pcm%do_pcm .and. config%optinfo%optimize) then

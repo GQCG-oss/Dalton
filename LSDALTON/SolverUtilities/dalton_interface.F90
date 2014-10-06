@@ -2130,7 +2130,7 @@ CONTAINS
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
    use ls_pcm_config
    use ls_pcm_scf, only: ls_pcm_energy_driver, ls_pcm_oper_ao_driver
 #endif
@@ -2146,7 +2146,7 @@ CONTAINS
       logical :: Dsym,ADMMexchange
       TYPE(Matrix) :: K(ndmat),dXC(ndmat)
       logical :: PRINT_EK3
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       type(matrix) :: fockPCM(ndmat)
       real(realk)  :: Epol
 #endif      
@@ -2234,7 +2234,7 @@ ENDIF
             Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
          enddo
       ENDIF
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
       if (pcm_config%do_pcm) then
          ! ndmat is 1
          ! Calculate polarization energy and update Etotal

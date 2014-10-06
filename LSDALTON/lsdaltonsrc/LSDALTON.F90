@@ -104,7 +104,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   use ls_qmatrix, only: ls_qmatrix_test, &
                         ls_qmatrix_finalize
 #endif
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
   use ls_pcm_utils, only: init_molecule
   use ls_pcm_scf, only: ls_pcm_scf_initialize, ls_pcm_scf_finalize
 #endif
@@ -144,7 +144,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
         !
         ! Polarizable continuum model calculation
         !
@@ -735,7 +735,7 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
   end if
   call config_free(config)
 
-#ifdef PCM_MODULE
+#ifdef HAS_PCMSOLVER
   if (config%pcm%do_pcm) then
      ! Now finalize PCM
      call ls_pcm_scf_finalize

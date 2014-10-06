@@ -138,12 +138,6 @@ add_library(
 target_link_libraries(matrixulib matrixolib)
 
 if(ENABLE_PCMSOLVER)
-    add_definitions(-DPCM_MODULE)
-    set(PCMSOLVER_LIBS
-        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
-	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
-	stdc++
-        z)
     set(EXTERNAL_LIBS ${PCMSOLVER_LIBS} ${EXTERNAL_LIBS})
     add_library(
         lspcm

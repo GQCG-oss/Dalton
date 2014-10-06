@@ -4670,7 +4670,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       use pcm_scf, only: pcm_scf_initialize
       use pcmmod_cfg
 #endif
@@ -4858,7 +4858,7 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-#if defined (PCM_MODULE)
+#if defined (HAS_PCMSOLVER)
       if (pcmmod_is_pcm_calculation) then
         call pcm_scf_initialize(lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
