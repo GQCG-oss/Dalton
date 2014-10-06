@@ -143,6 +143,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_GET_MP2_ENERGY      = 26
   integer,parameter :: JOB_GET_RPA_ENERGY      = 27
   integer,parameter :: JOB_GET_SOS_ENERGY      = 28
+  integer,parameter :: JOB_ARR_CONTRACT_SIMPLE = 29
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -1396,10 +1397,10 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date January 2013
   !> \brief initialized a replicated matrix on each node
-  function array_init_replicated(dims,nmodes,pdm)result(arr)
+  subroutine array_init_replicated(arr,dims,nmodes,pdm)
     implicit none
     !> array to be initialilzed
-    type(array) :: arr
+    type(array),intent(inout) :: arr
     !> number of modes and the dimensions of the array
     integer,intent(in) :: nmodes,dims(nmodes)
     !> integer specifying the access_type of the array
@@ -1525,7 +1526,7 @@ module lspdm_tensor_operations_module
 
     if(parent)call mem_dealloc(lg_buf)
     if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
-  end function array_init_replicated
+  end subroutine array_init_replicated
 
 
   !> \brief print the norm of a replicated array from each node, just a
@@ -1670,14 +1671,13 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  function array_init_tiled(dims,nmodes,at,it,pdm,tdims,zeros_in_tiles,ps_d)result(arr)
+  subroutine array_init_tiled(arr,dims,nmodes,at,it,pdm,tdims,ps_d)
     implicit none
-    type(array) :: arr
+    type(array),intent(inout) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
     character(4) :: at
     integer :: it, pdm
     integer,optional :: tdims(nmodes)
-    logical, optional :: zeros_in_tiles
     logical, optional :: ps_d
     integer(kind=long) :: i,j
     integer ::addr,pdmt,k,div
@@ -1688,6 +1688,7 @@ module lspdm_tensor_operations_module
     logical :: master,defdims, pseudo_dense
     logical :: pc_master,lg_master,child,parent
     integer :: infobuf(2)
+    logical,parameter :: zeros_in_tiles=.false.
    
     !set the initial values and overwrite them later
     pc_nnodes               = 1
@@ -1730,7 +1731,7 @@ module lspdm_tensor_operations_module
     !INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
     !there
     defdims = .false.
-    if(present(zeros_in_tiles)) p_arr%a(addr)%zeros = zeros_in_tiles
+    p_arr%a(addr)%zeros = zeros_in_tiles
 
     !SET MODE
     p_arr%a(addr)%mode = nmodes
@@ -1799,10 +1800,6 @@ module lspdm_tensor_operations_module
       call mem_alloc(lg_buf,2*lg_nnodes)
       lg_buf = 0
     endif
-    if( lspdm_use_comm_proc )then
-      call mem_alloc(pc_buf,pc_nnodes)
-      pc_buf = 0
-    endif
     
     !if master init only master has to get addresses
     if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS.and.parent)then
@@ -1811,19 +1808,7 @@ module lspdm_tensor_operations_module
       call pdm_array_sync(infpar%lg_comm,JOB_INIT_ARR_TILED,p_arr%a(addr))
 #endif
     endif
-    ! get child processes
-    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
-      call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
 #ifdef VAR_MPI
-      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_TILED,p_arr%a(addr),loc_addr=.true.)
-#endif
-    endif
-#ifdef VAR_MPI
-    if( lspdm_use_comm_proc ) then
-       infobuf(1) = lg_me; infobuf(2) = 0; if(pseudo_dense) infobuf(2) = 1
-       call ls_mpibcast(infobuf,2,infpar%master,infpar%pc_comm)
-       lg_me = infobuf(1); pseudo_dense = (infobuf(2) == 1)
-    endif
     call ls_mpibcast(p_arr%a(addr)%itype,infpar%master,infpar%lg_comm)
     call ls_mpibcast(p_arr%a(addr)%atype,4,infpar%master,infpar%lg_comm)
 #endif
@@ -1856,7 +1841,7 @@ module lspdm_tensor_operations_module
     call arr_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
 
-    if(pseudo_dense .and. lg_master)then
+    if(pseudo_dense .and. (lg_master.or.p_arr%a(addr)%access_type==ALL_ACCESS))then
       call memory_allocate_array_dense(p_arr%a(addr))
     endif
 
@@ -1865,8 +1850,275 @@ module lspdm_tensor_operations_module
 
     if(parent)call mem_dealloc(lg_buf)
     if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
-  end function array_init_tiled
+  end subroutine array_init_tiled
   
+  subroutine lspdm_array_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+     implicit none
+     real(realk), intent(in)    :: pre1,pre2
+     type(array), intent(in)    :: A,B
+     integer, intent(in)        :: nmodes2c
+     integer, intent(in)        :: m2cA(nmodes2c),m2cB(nmodes2c)
+     type(array), intent(inout) :: C
+     integer, intent(inout)     :: order(C%mode)
+     real(realk), intent(in),    optional :: mem !in GB
+     real(realk), intent(inout), target, optional :: wrk(:)
+     integer, intent(in),        optional :: iwrk
+     !internal variables
+     logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode
+     real(realk), pointer :: buffA(:,:),buffB(:,:),wA(:),wB(:),wC(:),tA(:),tB(:),tC(:)
+     integer :: ibufA, ibufB, nbuffsA,nbuffsB
+     integer :: gc, gm(C%mode), ro(C%mode), locC
+     integer :: mA(A%mode), mB(B%mode), tdimA(A%mode), tdimB(B%mode), ordA(A%mode), ordB(B%mode)
+     integer :: tdimC(C%mode)
+     integer :: nelmsTA, nelmsTB
+     integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
+     integer :: m_gemm, n_gemm, k_gemm
+
+     master = (infpar%lg_mynum == infpar%master)
+
+     test_all_master_access = (A%access_type == MASTER_ACCESS).or.&
+        &(B%access_type == MASTER_ACCESS).or.&
+        &(C%access_type == MASTER_ACCESS)
+     test_all_all_access = (A%access_type == ALL_ACCESS).or.&
+        &(B%access_type == ALL_ACCESS).or.&
+        &(C%access_type == ALL_ACCESS)
+
+     if(.not.test_all_master_access.and..not.test_all_all_access)then
+        call lsquit("ERROR(lspdm_array_contract_simple):: All arrays need the same access_type",-1)
+     endif
+
+     if(test_all_master_access.and.(present(wrk).or.present(iwrk)))then
+        print *,"WARNING(lspdm_array_contract_simple): in master access ignoring, wrk and iwrk"
+     endif
+
+     !calculate the combined contraction index by looping over the contraction
+     !modes and the respective number of tiles in these
+     cci = 1
+     max_mode_ci = 0
+     do cm=1,nmodes2c
+        if(A%ntpm(m2cA(cm))/=B%ntpm(m2cB(cm)))then
+           call lsquit("ERROR(lspdm_array_contract_simple):: A and B do not have the same &
+              &ntpm in the given contraction modes",-1)
+        else
+           cci = cci * A%ntpm(m2cA(cm))
+           max_mode_ci(cm) = A%ntpm(m2cA(cm))
+        endif
+     enddo
+
+
+     do i = 1, C%mode
+        ro(order(i)) = i
+     enddo
+
+     if(master.and.test_all_master_access)then
+        call pdm_array_sync(infpar%lg_comm,JOB_ARR_CONTRACT_SIMPLE,A,B,C)
+        call time_start_phase(PHASE_COMM)
+        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call ls_mpi_buffer(nmodes2c,infpar%master)
+        call ls_mpi_buffer(m2cA,nmodes2c,infpar%master)
+        call ls_mpi_buffer(m2cB,nmodes2c,infpar%master)
+        call ls_mpi_buffer(order,C%mode,infpar%master)
+        call ls_mpi_buffer(pre1,infpar%master)
+        call ls_mpi_buffer(pre2,infpar%master)
+        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call time_start_phase(PHASE_WORK)
+     endif
+
+     if(infpar%lg_mynum==1)call lsmpi_barrier(infpar%lg_comm)
+
+     if(test_all_master_access)then
+        if(present(mem))then
+           !use provided memory information to allcate space
+           nbuffsA = (int(mem*1024.0E0**3)/16-(A%tsize + B%tsize + C%tsize))/A%tsize
+           nbuffsB = (int(mem*1024.0E0**3)/16-(A%tsize + B%tsize + C%tsize))/B%tsize
+           use_wrk_space = .false.
+        else if(present(wrk).and.present(iwrk))then
+           !just assoctiate pointers to work space provided
+           nbuffsA = ((iwrk-(A%tsize + B%tsize + C%tsize))/2)/A%tsize
+           nbuffsB = ((iwrk-(A%tsize + B%tsize + C%tsize))/2)/B%tsize
+           use_wrk_space = .true.
+        else
+           !assume we can hold at least 5 tiles in local mem
+           nbuffsA = 2
+           nbuffsB = 2
+           use_wrk_space = .false.
+        endif
+     else
+        !assume we can hold at least 5 tiles in local mem
+        nbuffsA = 2
+        nbuffsB = 2
+        use_wrk_space = .false.
+     endif
+
+     if(use_wrk_space)then
+        call ass_D1to2(wrk,buffA,[A%tsize,nbuffsA])
+        call ass_D1to2(wrk(nbuffsA*A%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize-1),buffB,[B%tsize,nbuffsB])
+        wA => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize-1)
+        wB => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize-1)
+        wC => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize+C%tsize-1)
+     else
+        call mem_alloc(buffA,A%tsize,nbuffsA)
+        call mem_alloc(buffB,B%tsize,nbuffsB)
+        call mem_alloc(wA,A%tsize)
+        call mem_alloc(wB,B%tsize)
+        call mem_alloc(wC,C%tsize)
+     endif
+
+     !loop over local tiles of C and contract corresponding 
+     LocalTiles: do locC = 1, C%nlti
+        !get the global combined and global mode indices of the current C tile
+        gc = C%ti(locC)%gt
+        call get_midx(gc,gm,C%ntpm,C%mode)
+
+        !determine gemm parameters m and n
+        m_gemm = 1
+        n_gemm = 1
+
+        mA = -1
+        mB = -1
+
+        !get the uncontracted mode indices of the A and B arrays
+        k = 1
+        do i = 1, A%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cA(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              mA(i)   = gm(ro(k))
+              ordA(k) = i
+              m_gemm  = m_gemm * C%ti(locC)%d(ro(k))
+              k=k+1
+           endif
+        enddo
+
+        if(k-1/=A%mode-nmodes2c)then
+            call lsquit("ERROR(lspdm_array_contract_simple): something wrong in ordering",-1)
+        endif
+
+        do i = 1,nmodes2c
+           ordA(k-1+i) = m2cA(i)
+           ordB(i)     = m2cB(i)
+           k_gemm = k_gemm * tdimA(m2cA(i))
+        end do
+
+        l = 1
+        do i = 1, B%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cB(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              mB(i)            = gm(ro(k))
+              ordB(nmodes2c+l) = i
+              n_gemm           = n_gemm * C%ti(locC)%d(ro(k))
+              k=k+1
+              l=l+1
+           endif
+        enddo
+
+        !zero local wC and accumulate all contributions therein
+#ifdef VAR_LSDEBUG
+        wA = 0.0E0_realk
+        wB = 0.0E0_realk
+#endif
+        wC = 0.0E0_realk
+
+        !loop over all tiles in the contraction modes via a combined contraction index
+        do cm = 1, cci
+           !build full mode index for A and B
+           call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
+           do i=1,nmodes2c
+              mA(m2cA(i)) = current_mode(i)
+              mB(m2cB(i)) = current_mode(i)
+           enddo
+
+           !get number of elements in tiles for A and B
+           call get_tile_dim(tdimA,A,mA)
+           call get_tile_dim(tdimB,B,mB)
+           nelmsTA = 1
+           do i = 1, A%mode
+              nelmsTA = nelmsTA * tdimA(i)
+           end do
+           nelmsTB = 1
+           do i = 1, B%mode
+              nelmsTB = nelmsTB * tdimB(i)
+           end do
+
+           !get the tiles into the local buffer, insert multiple buffering here
+           ibufA = 1
+           ibufB = 1
+           call array_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.false.,flush_it=.true.)
+           call array_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.false.,flush_it=.true.)
+
+           ! sort for the contraction such that in gemm the arguments are always 'n' and 'n', 
+           ! always sort such, that the contraction modes are in the order of m2CA, something smarter could be done here!!
+           ! > determine the dgemm parameter k_gemm
+
+           k_gemm = 1
+           do i = 1,nmodes2c
+              k_gemm = k_gemm * tdimA(m2cA(i))
+           end do
+
+           select case (A%mode)
+           case(2)
+              call array_reorder_2d(1.0E0_realk,buffA(:,ibufA),tdimA(1),tdimA(2),ordA,0.0E0_realk,wA)
+           case(3)
+              call array_reorder_3d(1.0E0_realk,buffA(:,ibufA),tdimA(1),tdimA(2),tdimA(3),ordA,0.0E0_realk,wA)
+           case(4)
+              call array_reorder_4d(1.0E0_realk,buffA(:,ibufA),tdimA(1),tdimA(2),tdimA(3),tdimA(4),ordA,0.0E0_realk,wA)
+           case default
+               call lsquit("ERROR(lspdm_array_contract_simple): sorting A not implemented",-1)
+           end select
+
+           select case (B%mode)
+           case(2)
+              call array_reorder_2d(1.0E0_realk,buffB(:,ibufB),tdimB(1),tdimB(2),ordB,0.0E0_realk,wB)
+           case(3)
+              call array_reorder_3d(1.0E0_realk,buffB(:,ibufB),tdimB(1),tdimB(2),tdimB(3),ordB,0.0E0_realk,wB)
+           case(4)
+              call array_reorder_4d(1.0E0_realk,buffB(:,ibufB),tdimB(1),tdimB(2),tdimB(3),tdimB(4),ordB,0.0E0_realk,wB)
+           case default
+               call lsquit("ERROR(lspdm_array_contract_simple): sorting B not implemented",-1)
+           end select
+
+
+           !carry out the contraction
+           call dgemm('n','n',m_gemm,n_gemm,k_gemm,1.0E0_realk,wA,m_gemm,wB,k_gemm,1.0E0_realk,wC,m_gemm)
+
+        end do
+
+        call get_tile_dim(tdimC,C,gm)
+        !ADD THE FINALIZED TILE TO THE LOCAL TILE IN THE CORRECT ORDER
+        select case (C%mode)
+        case(2)
+           call array_reorder_2d(pre1,wC,tdimC(1),tdimC(2),order,pre2,C%ti(locC)%t)
+        case(3)
+           call array_reorder_3d(pre1,wC,tdimC(1),tdimC(2),tdimC(3),order,pre2,C%ti(locC)%t)
+        case(4)
+           call array_reorder_4d(pre1,wC,tdimC(1),tdimC(2),tdimC(3),tdimC(4),order,pre2,C%ti(locC)%t)
+        case default
+            call lsquit("ERROR(lspdm_array_contract_simple): sorting C not implemented",-1)
+        end select
+
+     enddo LocalTiles
+
+
+     if(infpar%lg_mynum==0)call lsmpi_barrier(infpar%lg_comm)
+
+     if(use_wrk_space)then
+        buffA => null()
+        buffB => null()
+        wC    => null()
+     else
+        call mem_dealloc(buffA)
+        call mem_dealloc(buffB)
+        call mem_dealloc(wA)
+        call mem_dealloc(wB)
+        call mem_dealloc(wC)
+     endif
+  end subroutine lspdm_array_contract_simple
+
   !> \brief add tiled distributed data to a basic fortran type array
   !> \author Patrick Ettenhuber
   !> date march 2013

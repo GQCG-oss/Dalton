@@ -5220,7 +5220,7 @@ end function max_batch_dimension
 
      if(t2%itype == DENSE)then
         ! Init combined amplitudes
-        u = array_init(t2%dims,4)
+        call array_init(u,t2%dims,4)
 
         if(DECinfo%use_singles)then
            do j=1,nocc
@@ -5328,7 +5328,7 @@ end function max_batch_dimension
     dims(4) = MyFragment%noccAOS
 
     if( A%itype == DENSE )then
-       B = array_init(dims,4) 
+       call array_init(B, dims,4) 
 
        ! Copy elements from A to B, but only valence for last index
        do l=1,B%dims(4)

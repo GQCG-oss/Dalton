@@ -367,8 +367,8 @@ contains
             call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
             call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-            ccsdpt_t1 = array_init([MyFragment%noccAOS,MyFragment%nunoccAOS],2)
-            ccsdpt_t2 = array_init([MyFragment%noccAOS,MyFragment%noccAOS,&
+            call array_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+            call array_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
 
          else
@@ -376,8 +376,8 @@ contains
             call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
             call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-            ccsdpt_t1 = array_init([MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-            ccsdpt_t2 = array_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+            call array_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+            call array_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
 
          endif
@@ -1101,8 +1101,8 @@ contains
           call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
           call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-          ccsdpt_t1 = array_init([PairFragment%noccAOS,PairFragment%nunoccAOS],2)
-          ccsdpt_t2 = array_init([PairFragment%noccAOS,PairFragment%noccAOS,&
+          call array_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
+          call array_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
                &PairFragment%nunoccAOS,PairFragment%nunoccAOS],4)
 
        else
@@ -1110,8 +1110,8 @@ contains
           call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
           call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-          ccsdpt_t1 = array_init([PairFragment%nunoccAOS,PairFragment%noccAOS],2)
-          ccsdpt_t2 = array_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+          call array_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
+          call array_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
                &PairFragment%noccAOS,PairFragment%noccAOS],4)
 
        endif

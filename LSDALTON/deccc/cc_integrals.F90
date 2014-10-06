@@ -1693,13 +1693,13 @@ contains
 
     ! Declare one array for the diagonal batches:
     pgmo_dims = ntot*(ntot+1)*dimMO*(dimMO+1)/4
-    pgmo_diag = array_minit([pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
+    call array_minit(pgmo_diag,[pgmo_dims,Nbat],2,local=mpi,atype=at,tdims=[pgmo_dims,1])
     call array_zero(pgmo_diag)
      
     ! Declare one array for the upper diagonal batches if necesarry
     if (Nbat>1) then
       pgmo_dims = ntot*(ntot+1)*dimMO*dimMO/2
-      pgmo_up   = array_minit([pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
+      call array_minit(pgmo_up,[pgmo_dims,Nbat*(Nbat-1)/2],2,local=mpi,atype=at, &
                 & tdims=[pgmo_dims,1])
       call array_zero(pgmo_up)
     end if

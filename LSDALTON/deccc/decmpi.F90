@@ -2304,8 +2304,8 @@ contains
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+      call array_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+      call array_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
     !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
     !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)

@@ -339,11 +339,11 @@ contains
 
        if (abc) then
 
-          ccsdpt_doubles_2 = array_init([nvirt,nocc,nocc,nvirt],4)
+          call array_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
 
        else
 
-          ccsdpt_doubles_2 = array_init([nocc,nvirt,nvirt,nocc],4)
+          call array_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
  
        endif
 
@@ -7250,7 +7250,7 @@ contains
 
     ! Integrals (AI|KJ) in the order (J,A,I,K)
     dims = [nocc,nvirt,nocc,nocc]
-    ovoo = array_init(dims,4)
+    call array_init(ovoo, dims,4)
     call array_zero(ovoo)
 
     ! Integrals (AB|IC) in the order (C,B,A,I)
@@ -7258,12 +7258,12 @@ contains
 #ifdef VAR_MPI
     mode   = MPI_MODE_NOCHECK
 
-    vvvo = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
+    call array_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
     call array_zero_tiled_dist(vvvo)
 
 #else
 
-    vvvo = array_init(dims,4)
+    call array_init(vvvo, dims,4)
     call array_zero(vvvo)
 
 #endif
@@ -7674,7 +7674,7 @@ contains
 
     ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
     dims = [nocc,nocc,nocc,nvirt]
-    ooov = array_init(dims,4)
+    call array_init(ooov, dims,4)
     call array_zero(ooov)
 
     ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
@@ -7684,12 +7684,12 @@ contains
 
     mode   = MPI_MODE_NOCHECK
 
-    vovv   = array_init(dims,4,TILED_DIST,ALL_ACCESS,tdims=[nvirt,nocc,nvirt,tile_size])
+    call array_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
     call array_zero_tiled_dist(vovv)
 
 #else
 
-    vovv = array_init(dims,4)
+    call array_init(vovv, dims,4)
     call array_zero(vovv)
 
 #endif
@@ -8428,16 +8428,16 @@ end module ccsdpt_module
     ! init and receive vovo and ccsd_doubles array structures
     if (abc) then
 
-       vovo = array_init([nocc,nocc,nvirt,nvirt],4)
-       ccsd_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
+       call array_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+       call array_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
 
        call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
     else
 
-       vovo = array_init([nvirt,nvirt,nocc,nocc],4)
-       ccsd_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+       call array_init(vovo, [nvirt,nvirt,nocc,nocc],4)
+       call array_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
 
        call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
@@ -8449,13 +8449,13 @@ end module ccsdpt_module
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          ccsdpt_t1 = array_init([nocc,nvirt],2)
-          ccsdpt_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
-
+          call array_init(ccsdpt_t1, [nocc,nvirt],2)
+          call array_init(ccsdpt_t2, [nocc,nocc,nvirt,nvirt],4)
+          
        else
 
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
-          ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+          call array_init(ccsdpt_t1, [nvirt,nocc],2)
+          call array_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
 
        endif
 
@@ -8464,11 +8464,11 @@ end module ccsdpt_module
        ! init ccsd(t) singles
        if (abc) then
 
-          ccsdpt_t1 = array_init([nocc,nvirt],2)
+          call array_init(ccsdpt_t1, [nocc,nvirt],2)
 
        else
 
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
+          call array_init(ccsdpt_t1, [nvirt,nocc],2)
 
        endif
        ccsdpt_e4 = 0.0E0_realk
