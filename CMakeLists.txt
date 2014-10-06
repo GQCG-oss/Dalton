@@ -10,6 +10,10 @@ if("${CMAKE_MAJOR_VERSION}" GREATER 2)
    MESSAGE(STATUS "Changed cmake policy to version 3.0, except for policy CMP037")
 endif("${CMAKE_MAJOR_VERSION}" GREATER 2)
 
+# set not CYGWIN_WIN32, to quench warning messages from CYGWIN cmake
+# will do no harm if not CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
+
 # set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 

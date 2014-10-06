@@ -30,6 +30,10 @@ contains
     integer, intent(in) :: output
 
     DECinfo%doDEC                  = .false.
+
+    ! Orbital-based DEC scheme 
+    DECinfo%DECCO = .false.
+
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory                 = 2.0E0_realk
     DECinfo%memory_defined         = .false.
@@ -123,7 +127,8 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Exp_Scheme        = 1
-    DECinfo%Frag_Red_Scheme        = 1
+    DECinfo%Frag_RedOcc_Scheme        = 1
+    DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
@@ -312,6 +317,11 @@ contains
 
           ! GENERAL INFO
           ! ============
+
+
+          ! DEC orbital-based
+       case('.DECCO')
+          DECinfo%DECCO=.true.
 
           ! CC model
        case('.MP2') 
@@ -583,7 +593,8 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
@@ -640,8 +651,49 @@ contains
     nodtot = infpar%nodtot
 #endif
 
-    ! Check that array4OnFile is only called for the cases where it is implemented
 
+    ! DEC orbital-based - currently limited to occupied partitioning scheme
+    ! and several options are not possible
+    DoDECCO: if(DECinfo%DECCO) then
+
+       ! Occupied partitioning scheme
+!!$       if(.not. DECinfo%OnlyOccPart) then
+!!$          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
+!!$          print *, '--> I will only use occupied partitioning scheme.'
+!!$          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
+!!$          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
+!!$          DECinfo%OnlyOccPart=.true.
+!!$          DECinfo%OnlyVirtPart=.false.
+!!$       end if
+
+       ! Not simulate full
+       if(DECinfo%simulate_full) then
+          call lsquit('DECCO not implemented for SIMULATEFULL',-1)
+       end if
+
+!!$       ! Not working for first-order properties
+!!$       if(DECinfo%first_order) then
+!!$          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
+!!$       end if
+
+
+       ! No stress test implemented
+       if( DECinfo%StressTest ) then
+          call lsquit('DECCO is not implemented for stress test!',DECinfo%output)
+       end if
+
+       if(DECinfo%SinglesPolari) then
+          call lsquit('DECCO is not implemented for singles polarization effects!',DECinfo%output)
+       end if
+
+       if(DECinfo%InteractionEnergy) then
+          call lsquit('DECCO is not implemented for interaction energies!',DECinfo%output)
+       end if
+
+    end if DoDECCO
+
+
+    ! Check that array4OnFile is only called for the cases where it is implemented
     ArraysOnFile: if(DECinfo%array4OnFile) then
 
        ! Only for MP2 so far
@@ -727,7 +779,7 @@ contains
     end if
 
     if((.not. (DECinfo%memory_defined .or.  DECinfo%use_system_memory_info ) )&
-       & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
+         & .or. (DECinfo%memory_defined .and. DECinfo%use_system_memory_info ) ) then
 
        write(DECinfo%output,*) 'Memory not or multiply defined for **DEC or **CC calculation!'
        write(DECinfo%output,*) 'Please specify using EITHER .MEMORY keyword (in gigabytes) OR .USE_SYS_MEM_INFO'
@@ -757,28 +809,28 @@ contains
     endif
 
     if( (.not.DECinfo%full_molecular_cc) .and. DECinfo%ccmodel == MODEL_MP2 .and. &
-      &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
-      &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
-      &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
-      &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
-      &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
-      &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
-         call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
+         &(    DECinfo%fragopt_exp_model == MODEL_CC2 &
+         &.or. DECinfo%fragopt_red_model == MODEL_CC2 &
+         &.or. DECinfo%fragopt_exp_model == MODEL_CCSD &
+         &.or. DECinfo%fragopt_red_model == MODEL_CCSD &
+         &.or. DECinfo%fragopt_exp_model == MODEL_CCSDpT &
+         &.or. DECinfo%fragopt_red_model == MODEL_CCSDpT )                          ) then
+       call lsquit('The specification of .MP2 and .FRAGEXPMODEL > .MP2 or .FRAGREDMODEL > .MP2&
             & does not make sense, please change input!',-1)
 
     endif
 
-   if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
-      call lsquit("ERROR(check_dec_input):Do not use &
-         &.CCSDforce_scheme in a DEC calculation",-1)
-   endif
+    if((.not.DECinfo%full_molecular_cc).and.DECinfo%force_scheme)then
+       call lsquit("ERROR(check_dec_input):Do not use &
+            &.CCSDforce_scheme in a DEC calculation",-1)
+    endif
 
-   if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==1.or.&
-      &DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
-      call lsquit("ERROR(check_dec_input):You forced a scheme in &
-      &the CCSD part which is dependent on running at least 2 &
-      &MPI processes with only one process",-1)
-   endif
+    if((DECinfo%full_molecular_cc).and.DECinfo%force_scheme.and.(DECinfo%en_mem==1.or.&
+         &DECinfo%en_mem==2.or.DECinfo%en_mem==3).and.nodtot==1)then
+       call lsquit("ERROR(check_dec_input):You forced a scheme in &
+            &the CCSD part which is dependent on running at least 2 &
+            &MPI processes with only one process",-1)
+    endif
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -920,7 +972,8 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
-    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
+    write(lupri,*) 'Frag_RedOcc_Scheme ', DECitem%Frag_RedOcc_Scheme
+    write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr

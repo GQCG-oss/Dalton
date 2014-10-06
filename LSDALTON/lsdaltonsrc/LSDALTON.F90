@@ -861,6 +861,10 @@ implicit none
   endif
 
   call lsmpi_finalize(lupri,.false.)
+#else
+  WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+       &- Should be zero - otherwise a leakage is present")') 0
+  WRITE(LUPRI,'(A)')'  This is a non MPI calculation so naturally no memory is allocated on slaves!'
 #endif
 
   if(OnMaster)then

@@ -294,23 +294,23 @@ MODULE scf_stats
       WRITE(opt%LUPRI,*)
       WRITE(opt%LUPRI,*) 
       if (opt%calctype == opt%dftcalc) then
-         WRITE(opt%LUPRI,'("      Final DFT energy:              ",f20.12)') stat_energy(stat_current_iteration)
+         WRITE(opt%LUPRI,'("      Final DFT energy:              ",f24.12)') stat_energy(stat_current_iteration)
       else if (opt%calctype == opt%hfcalc) then
-         WRITE(opt%LUPRI,'("      Final HF energy:               ",f20.12)') stat_energy(stat_current_iteration)
+         WRITE(opt%LUPRI,'("      Final HF energy:               ",f24.12)') stat_energy(stat_current_iteration)
       else
          call lsquit('Calculation type has not been set',opt%lupri)
       endif
 #ifdef HAS_PCMSOLVER
       if (pcm_config%do_pcm) then
-         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f20.12)') get_pcm_energy()
-         WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc                                          
-         WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') &
+         WRITE(opt%LUPRI,'("      PCM polarization energy:       ",f24.12)') get_pcm_energy()
+         WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc                                          
+         WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') &
                                                 stat_energy(stat_current_iteration)-opt%potnuc-get_pcm_energy()
          WRITE(opt%LUPRI,*)
       end if              
 #else      
-      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f20.12)') opt%potnuc      
-      WRITE(opt%LUPRI,'("      Electronic energy:             ",f20.12)') stat_energy(stat_current_iteration)-opt%potnuc
+      WRITE(opt%LUPRI,'("      Nuclear repulsion:             ",f24.12)') opt%potnuc      
+      WRITE(opt%LUPRI,'("      Electronic energy:             ",f24.12)') stat_energy(stat_current_iteration)-opt%potnuc
       WRITE(opt%LUPRI,*)
 #endif      
 

@@ -1186,7 +1186,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
@@ -1337,7 +1337,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
@@ -1816,46 +1816,46 @@ subroutine debug_mem_stats(lupri)
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
         ELSEIF (error_size.LT.1000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E0," B "
+        write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
         ELSEIF (error_size.LT.1000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+        write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
         ELSEIF (error_size.LT.1000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+        write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
         ELSEIF (error_size.LT.1000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
         ELSEIF (error_size.LT.1000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+        write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
         ELSEIF (error_size.LT.1000000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+        write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
-        write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+        write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
   ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
   ENDIF
 #endif
 
   IF (max_mem_used_global.LT.0) THEN
      write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
   ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
   ENDIF
 #else
 ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
 ENDIF
 #endif
 

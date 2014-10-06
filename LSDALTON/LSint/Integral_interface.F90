@@ -65,11 +65,11 @@ MODULE IntegralInterfaceMOD
        & II_get_magderivOverlapL,II_get_ep_integrals,II_get_ep_integrals2,&
        & II_get_ep_integrals3,II_get_ep_ab,II_GET_MOLECULAR_GRADIENT,&
        & II_get_twoElectron_gradient,II_get_K_gradient,II_get_K_gradientfull,&
-       & II_get_regular_K_gradient,II_get_J_gradient,&
+       & II_get_regular_K_gradient,II_get_J_gradient,II_get_pso_spec_expval,&
        & II_get_J_gradient_regular,II_get_oneElectron_gradient,&
        & II_get_ne_gradient,II_get_kinetic_gradient,II_get_nucpot,&
        & II_get_nn_gradient,II_get_nuc_Quad,II_get_carmom,&
-       & II_get_single_carmom,II_get_nucdip,II_get_prop,&
+       & II_get_single_carmom,II_get_nucdip,II_get_prop,II_get_pso_spec,&
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_2center_mixed_eri,II_get_4center_eri,&
@@ -2030,6 +2030,39 @@ call time_II_operations2(JOB_II_get_prop)
 
 END SUBROUTINE II_get_prop
 
+!Get specific nuclei moment derivative 
+recursive SUBROUTINE II_get_PSO_spec(LUPRI,LUERR,SETTING,MatArray,iAtom)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR,IATOM
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: MatArray(3)
+!
+integer :: nbast,I,Operparam
+Character(len=7)     :: Oper2
+TYPE(MATRIX),pointer :: TMPMatArray(:)
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+call param_oper_paramfromString('PSO    ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+nbast = MatArray(1)%nrow
+!PROVIDE IATOM
+call initIntegralOutputDims(setting%output,nbast,nbast,1,1,3)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,MatArray,setting%IntegralTransformGC)   
+
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('PSOspec',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop)
+
+END SUBROUTINE II_get_PSO_spec
+
 !> \brief General routine for calculation of expectation value of property integrals
 !> So in Other words does dotproduct(PropIntegral,D)
 !> \author T. Kjaergaard
@@ -2104,6 +2137,62 @@ CALL LSTIMER('Propval:'//Oper,TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_prop_expval)
 
 END SUBROUTINE II_get_prop_expval
+
+!> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
+!> So in Other words does dotproduct(PSOIntegral,D)
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param expval the matrices of property integrals
+!> \param Dmat the matrices the should be contracted with the property integral
+!> \param nOperatorComp the number of matrices 
+!> \param Oper the label of property integral
+recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: DMat(ndmat)
+real(realk)          :: expval(3*ndmat)
+!
+TYPE(MATRIX)         :: DMat_AO(ndmat)
+integer :: I,ndmat,J,operparam
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+real(realk),pointer :: TMPexpval(:)
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!set threshold 
+call param_oper_paramfromString('PSO    ',Operparam)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+
+IF(setting%IntegralTransformGC)THEN
+   DO I=1,ndmat
+      CALL mat_init(Dmat_AO(I),Dmat(1)%nrow,Dmat(1)%ncol)
+      call GCAO2AO_transform_matrixD2(Dmat(I),Dmat_AO(I),setting,lupri)
+   ENDDO
+   CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ENDIF
+call initIntegralOutputDims(setting%output,1,1,1,1,3*ndmat)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,expval,setting%IntegralTransformGC)   
+CALL ls_freeDmatFromSetting(setting)
+IF(setting%IntegralTransformGC)THEN
+   DO I=1,ndmat
+      CALL mat_free(Dmat_AO(I))
+   ENDDO
+ENDIF
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('PSOSpecExpVal:',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop_expval)
+
+END SUBROUTINE II_get_pso_spec_expval
 
 !> \brief Calculates property integrals
 !> \author T. Kjaergaard

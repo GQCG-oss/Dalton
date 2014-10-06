@@ -15,5 +15,4 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-#add_external(cgto-diff-eri)
 add_dependencies(cgto_diff_eri_interface_host cgto-diff-eri)

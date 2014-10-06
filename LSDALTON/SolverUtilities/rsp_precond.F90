@@ -173,7 +173,7 @@ contains
       !Convergence?
       err = SQRT(mat_sqnorm2(res))
       !if (INFO_RSP) then
-         write (decomp%LUPRI, '("          Preconditioning: Error of red space iteration", i3, ":  ", E16.10)') i-1, err
+         write (decomp%LUPRI, '("          Preconditioning: Error of red space iteration", i3, ":  ", E18.10)') i-1, err
       !endif
       if (err < thresh) then
          !if (INFO_RSP) then

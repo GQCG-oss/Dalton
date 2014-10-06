@@ -49,7 +49,7 @@ MODULE ls_Integral_Interface
   use MBIEintegraldriver, only: mbie_integral_driver
   use BUILDAOBATCH, only: build_empty_ao, build_empty_nuclear_ao,&
        & build_empty_pcharge_ao, build_ao, build_shellbatch_ao, &
-       & BUILD_EMPTY_ELFIELD_AO
+       & BUILD_EMPTY_ELFIELD_AO, build_empty_single_nuclear_ao
   use lstiming, only: lstimer, print_timers
   use io, only: io_get_filename, io_get_csidentifier
   use screen_mod, only: determine_lst_in_screenlist, screen_associate,&
@@ -3725,7 +3725,7 @@ Integer,intent(IN)                :: LUPRI,LUERR
 !
 TYPE(BASISSETINFO),pointer :: AObasis
 Logical :: uncont,intnrm,emptyAO
-integer :: AObatchdim
+integer :: AObatchdim,iATOM
 Character(len=8)     :: AOstring
 uncont = scheme%uncont
 IF (intType.EQ.Primitiveinttype) THEN
@@ -3758,6 +3758,12 @@ CASE (AOEmpty)
 CASE (AONuclear)
    emptyAO = .true.
    CALL BUILD_EMPTY_NUCLEAR_AO(AObatch,Molecule,LUPRI)
+   nDim = 1
+CASE (AONuclearSpec)
+   !specific nuclei 
+   emptyAO = .true.
+   IATOM = 1 !FIXME
+   CALL BUILD_EMPTY_SINGLE_NUCLEAR_AO(AObatch,Molecule,LUPRI,IATOM)
    nDim = 1
 CASE (AOpCharge)
    emptyAO = .true.
@@ -5641,9 +5647,9 @@ integer                       :: AO1,AO2,AO3,AO4,Oper,intType,Spec
 TYPE(LSTENSOR),pointer        :: result_tensor,result_tensor_other,dmat_lhs,dmat_rhs
 TYPE(LSTENSOR),pointer        :: CS_rhs_full,CS_lhs_full
 INTEGER,intent(IN)            :: lupri,luerr
-Logical,intent(OUT)           :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
-Logical,intent(OUT)           :: rhsCS_created,lhsCS_created
-Logical,intent(OUT)           :: PermuteResultTensor,doscreen
+Logical,intent(INOUT)         :: lhs_created,rhs_created,ForceRHSsymDMAT,ForceLHSsymDMAT
+Logical,intent(INOUT)         :: rhsCS_created,lhsCS_created
+Logical,intent(INOUT)         :: PermuteResultTensor,doscreen
 Logical,intent(IN)            :: LHSpartioning,RHSpartioning,BOTHpartioning
 !
 #ifdef VAR_MPI

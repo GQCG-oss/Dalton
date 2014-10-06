@@ -5,11 +5,25 @@
 !> \date 2013 
 MODULE IchorCommonModule
 use IchorprecisionModule
-!public:: IchorQuit, ichor_tstamp, Ichor_gettim, ichor_get_walltime, &
-!     & ichor_timtxt, ichortimer, GenerateOrderdListOfTypes
-!private
-public
+
 CONTAINS
+subroutine ichor_dzero(dx, length)
+  implicit none
+  !Length of array
+  integer, intent(in)      :: length
+  !Array to be nullified
+  real(realk), intent(inout) :: dx(length)
+  integer                  :: i
+  
+  if (length < 0) then
+     !do nothing
+  else
+     do i = 1, length
+        dx(i) = 0.0E0_realk
+     enddo
+  endif
+end subroutine ichor_dzero
+
 subroutine ichor_tstamp(TEXT,LUPRIN)
   implicit none
   CHARACTER(*), intent(in) :: TEXT
@@ -48,36 +62,6 @@ subroutine ichor_tstamp(TEXT,LUPRIN)
 #endif
 end subroutine ichor_tstamp
 
-!Return elapsed CPU time and elapsed real time.
-subroutine Ichor_gettim(cputime,walltime)
-  implicit none
-  real(realk), intent(out) :: cputime, walltime  
-  real(realk),PARAMETER :: D0 = 0.0E0_realk
-  logical    :: first = .true.
-  real(realk), save :: TCPU0, twall0
-  real(realk)       :: tcpu1, twall1
-  integer           :: dateandtime0(8), dateandtime1(8)  
-  if (first) then
-     first = .false.
-     call cpu_time(TCPU0)
-     call date_and_time(values=dateandtime0)
-     call ichor_get_walltime(dateandtime0,twall0)
-  end if
-  call cpu_time(tcpu1)
-  call date_and_time(values=dateandtime1)
-  call ichor_get_walltime(dateandtime1,twall1)
-  cputime = tcpu1 - TCPU0
-  walltime = twall1 - twall0
-end subroutine Ichor_gettim
-
-!> \brief Get elapsed walltime in seconds since 1/1-2010 00:00:00
-!> \author S. Host
-!> \date October 2010
-!>
-!> Years that are evenly divisible by 4 are leap years. 
-!> Exception: Years that are evenly divisible by 100 are not leap years, 
-!> unless they are also evenly divisible by 400. Source: Wikipedia
-!>
 subroutine ichor_get_walltime(dateandtime,walltime)
 implicit none
 !> "values" output from fortran intrinsic subroutine date_and_time
@@ -595,6 +579,71 @@ subroutine Build_qcent_Qdistance12_QpreExpFac(nPrimC,nPrimD,nContC,nContD,&
   END IF
 end subroutine Build_qcent_Qdistance12_QpreExpFac
 
+subroutine Build_qcent_Qdistance12_QpreExpFacGPU(nPrimC,nPrimD,nContC,nContD,&
+     & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,Segmented,&
+     & qcent,Qdistance12,QpreExpFac,INTPRINT)
+  implicit none
+  integer,intent(in) :: nPrimC,nPrimD,nContC,nContD,INTPRINT
+  real(realk),intent(in) :: expC(nPrimC),expD(nPrimD)
+  real(realk),intent(in) :: Ccenter(3),Dcenter(3)
+  real(realk),intent(in) :: ContractCoeffC(nPrimC,nContC)
+  real(realk),intent(in) :: ContractCoeffD(nPrimD,nContD)
+  logical,intent(in) :: Segmented
+  real(realk),intent(inout) :: qcent(3,nPrimC,nPrimD),Qdistance12(3)
+  real(realk),intent(inout) :: QpreExpFac(nPrimC,nPrimD)
+  !local variables
+  integer :: i12,i2,i1,offset
+  real(realk) :: e2,e1,X,Y,Z,d2,eDX,eDY,eDZ,TMPCCD
+  IF (Segmented) THEN
+!$ACC KERNELS &
+!$ACC PRESENT(QpreExpFac,Qcent,Qdistance12,nPrimC,nPrimD,nContC,nContD,&
+!$ACC         expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD)
+     d2 = 0.0E0_realk
+     DO I1=1,3
+        Qdistance12(I1) = Ccenter(I1) - Dcenter(I1)
+        d2 = d2 + Qdistance12(I1)*Qdistance12(I1)
+     ENDDO
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
+        TMPCCD = ContractCoeffD(i2,1)
+        DO i1=1,nPrimC
+           e1  = expC(i1)
+           qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
+           Qcent(2,i1,i2) = (e1*Ccenter(2) + eDY)/(e1+e2)
+           Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
+           QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)*ContractCoeffC(i1,1)*TMPCCD
+        ENDDO
+     ENDDO
+!$ACC END KERNELS
+  ELSE
+!$ACC KERNELS &
+!$ACC PRESENT(QpreExpFac,Qcent,Qdistance12,nPrimC,nPrimD,nContC,nContD,&
+!$ACC         expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD)
+     d2 = 0.0E0_realk
+     DO I1=1,3
+        Qdistance12(I1) = Ccenter(I1) - Dcenter(I1)
+        d2 = d2 + Qdistance12(I1)*Qdistance12(I1)
+     ENDDO
+     DO i2=1,nPrimD
+        e2  = expD(i2)       
+        eDX = e2*Dcenter(1)
+        eDY = e2*Dcenter(2)
+        eDZ = e2*Dcenter(3)
+        DO i1=1,nPrimC
+           e1  = expC(i1)
+           qcent(1,i1,i2) = (e1*Ccenter(1) + eDX)/(e1+e2)
+           Qcent(2,i1,i2) = (e1*Ccenter(2) + eDY)/(e1+e2)
+           Qcent(3,i1,i2) = (e1*Ccenter(3) + eDZ)/(e1+e2)
+           QpreExpFac(i1,i2) = exp(-e1*e2/(e1+e2)*d2)
+        ENDDO
+     ENDDO
+!$ACC END KERNELS
+  END IF
+end subroutine Build_qcent_Qdistance12_QpreExpFacGPU
+
 subroutine Build_Seg_qcent_QpreExpFac(nPrimC,nPrimD,&
      & expC,expD,Ccenter,Dcenter,ContractCoeffC,ContractCoeffD,&
      & qcent,QpreExpFac,INTPRINT)
@@ -994,3 +1043,25 @@ subroutine ichorzero2(OutputStorage, Dim1,Dim2)
 end subroutine ichorzero2
 
 END MODULE IchorCommonModule
+
+!Return elapsed CPU time and elapsed real time.
+subroutine Ichor_gettim(cputime,walltime)
+  use IchorCommonModule
+  implicit none
+  real(8), intent(out) :: cputime, walltime  
+  logical    :: first = .true.
+  real(8), save :: TCPU0, twall0
+  real(8)       :: tcpu1, twall1
+  integer           :: dateandtime0(8), dateandtime1(8)  
+  if (first) then
+     first = .false.
+     call cpu_time(TCPU0)
+     call date_and_time(values=dateandtime0)
+     call ichor_get_walltime(dateandtime0,twall0)
+  end if
+  call cpu_time(tcpu1)
+  call date_and_time(values=dateandtime1)
+  call ichor_get_walltime(dateandtime1,twall1)
+  cputime = tcpu1 - TCPU0
+  walltime = twall1 - twall0
+end subroutine Ichor_gettim
