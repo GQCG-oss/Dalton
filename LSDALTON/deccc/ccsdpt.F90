@@ -216,6 +216,13 @@ contains
 
     end if
 
+    ! now, reorder ccsd_doubles as ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
+#ifdef VAR_MPI
+    if (master) call array_reorder(ccsd_doubles,[3,1,4,2])
+#else
+    call array_reorder(ccsd_doubles,[3,1,4,2])
+#endif
+
 #ifdef VAR_MPI
     nodtotal = infpar%lg_nodtot
 
@@ -228,7 +235,7 @@ contains
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
 
        ! distribute ccsd doubles and fragment or full molecule quantities to the slaves
-       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_doubles%elm4,mylsitem)
+       call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_doubles%elm4,mylsitem,print_frags)
 
     end if waking_the_slaves
 
@@ -283,9 +290,6 @@ contains
        ccsdpt_doubles_2 = array4_init_standard(dims_iaai)
 
     endif
-
-    ! initially, reorder ccsd_doubles
-    call array_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
     !**********************************************************
     ! here: the main ijk-loop: this is where the magic happens!
@@ -369,11 +373,7 @@ contains
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       if (print_frags) then
-
-       call array4_free(ccsdpt_doubles_2) 
-
-       endif
+       if (print_frags) call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
        call array4_free(abij)
@@ -1770,7 +1770,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     !> temp e4 energy
     real(realk) :: e4_tmp
     !> ddot
@@ -1783,12 +1783,12 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o1,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o1,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_12,&
-                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
@@ -1798,7 +1798,7 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
@@ -1808,42 +1808,12 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o3,o1,o1,nv,no,vvoo_tile_12,vvoo_tile_12,&
-                 & ccsdpt_singles_3,trip_ampl,.true.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.true.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
-                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
 
     e4 = e4 + e4_tmp
 
@@ -1874,7 +1844,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     !> temp e4 energy
     real(realk) :: e4_tmp
     !> ddot
@@ -1887,12 +1857,12 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o1,o2,o2,nv,no,vvoo_tile_23,vvoo_tile_23,&
-                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o1,o2,o2,nv,no,vvoo_tile_21,vvoo_tile_12,&
-                 & ccsdpt_singles_2,trip_ampl,.true.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.true.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
@@ -1902,12 +1872,12 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o2,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
-                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o2,o1,nv,no,vvoo_tile_23,vvoo_tile_23,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
@@ -1917,37 +1887,7 @@ contains
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
-    e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
-
-#ifdef VAR_OPENACC
-    call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl,async_idx)
-#else
-    call array_reorder_3d(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl)
-#endif
-
-    call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
-
-    e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
+    e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     e4 = e4 + e4_tmp
 
@@ -1979,14 +1919,14 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     !> temp e4 energy
     real(realk) :: e4_tmp
     !> ddot
     real(realk), external :: ddot
 
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
-    ! see the ccsdpt_driver_ijk_case2 routine 
+    ! see the ccsdpt_driver_ijk_case3 routine 
 
     trip_tmp = trip_ampl
 
@@ -1995,9 +1935,9 @@ contains
     e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o1,o2,o3,nv,no,vvoo_tile_23,vvoo_tile_32,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o1,o2,o3,nv,no,vvoo_tile_21,vvoo_tile_12,&
-                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,3,1],0.0E0_realk,trip_ampl,async_idx)
@@ -2010,9 +1950,9 @@ contains
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o2,o3,o1,nv,no,vvoo_tile_31,vvoo_tile_13,&
-                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o3,o1,nv,no,vvoo_tile_32,vvoo_tile_23,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,1,2],0.0E0_realk,trip_ampl,async_idx)
@@ -2025,9 +1965,9 @@ contains
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o3,o1,o2,nv,no,vvoo_tile_12,vvoo_tile_21,&
-                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o1,o2,nv,no,vvoo_tile_13,vvoo_tile_31,&
-                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[3,2,1],0.0E0_realk,trip_ampl,async_idx)
@@ -2040,9 +1980,9 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o3,o2,o1,nv,no,vvoo_tile_21,vvoo_tile_12,&
-                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o3,o2,o1,nv,no,vvoo_tile_23,vvoo_tile_32,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[1,3,2],0.0E0_realk,trip_ampl,async_idx)
@@ -2055,9 +1995,9 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o1,o3,o2,nv,no,vvoo_tile_32,vvoo_tile_23,&
-                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_1,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o1,o3,o2,nv,no,vvoo_tile_31,vvoo_tile_13,&
-                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
 
 #ifdef VAR_OPENACC
     call array_reorder_3d_acc(1.0E0_realk,trip_tmp,nv,nv,nv,[2,1,3],0.0E0_realk,trip_ampl,async_idx)
@@ -2070,9 +2010,9 @@ contains
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
 
     call ccsdpt_contract_ijk_11(o2,o1,o3,nv,no,vvoo_tile_13,vvoo_tile_31,&
-                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_2,trip_ampl,.false.,async_idx,cublas_handle)
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
-                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx)
+                 & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
 
     e4 = e4 + 2.0E0_realk * e4_tmp
 
@@ -2312,7 +2252,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! iik,iki
     call trip_amplitudes_ijk_virt(oindex1,oindex1,oindex3,no,nv,ccsd_doubles_11,&
@@ -2491,7 +2431,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! ijj.jji
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex2,no,nv,ccsd_doubles_21,&
@@ -2674,7 +2614,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! ijk.jki
     call trip_amplitudes_ijk_virt(oindex1,oindex2,oindex3,no,nv,ccsd_doubles_21,&
@@ -2895,7 +2835,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
@@ -3177,7 +3117,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
@@ -3475,7 +3415,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
     ! we implicitly do a [2,3,1] reordering. 
@@ -4200,7 +4140,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     !> temporary quantities
     integer :: nv2
 
@@ -4297,7 +4237,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     !> temporary quantities
     integer :: nv2
 
@@ -4521,7 +4461,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -4708,7 +4648,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -4900,7 +4840,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -5168,7 +5108,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -5272,7 +5212,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -5513,7 +5453,7 @@ contains
 #else
     integer :: async_idx
 #endif
-    type(c_ptr), optional :: cublas_handle
+    type(c_ptr) :: cublas_handle
     integer*4 :: stat
 
     nv2 = nv**2
@@ -6282,7 +6222,7 @@ contains
   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
+  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
 
     implicit none
@@ -6290,12 +6230,12 @@ contains
     !> ccsd and ccsd(t) doubles amplitudes
     type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -6370,8 +6310,8 @@ contains
     ! for the e4 pair fragment energy matrix,
     ! we only consider pairs IJ where J>I; thus, move contributions
 
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
+    do AtomJ=1,nfrags
+       do AtomI=AtomJ+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -6446,7 +6386,7 @@ contains
           ! write increments only if pair interaction energy is nonzero
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
+             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
                   & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
@@ -6462,7 +6402,7 @@ contains
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e5_full(nocc,nvirt,natoms,offset,ccsd_singles,ccsdpt_singles,&
+  subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
                              & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
 
     implicit none
@@ -6470,14 +6410,14 @@ contains
     !> ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
     type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
     !> integers
     integer :: i,a,AtomI,AtomA
     !> tmp energy real
@@ -6558,12 +6498,12 @@ contains
           if( orbitals_assigned(i) .and. orbitals_assigned(a) ) then
 
              if (i .eq. a) then
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',a,i,&
                      &0.000, e5_matrix(a,i)
 
              else
 
-                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',a,i,&
+                write(DECinfo%output,'(1X,a,i7,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',a,i,&
                      &bohr_to_angstrom*distancetable(a,i), e5_matrix(a,i)
 
              end if
@@ -7339,62 +7279,46 @@ end module ccsdpt_module
     type(array) :: ccsd_t2, ccsdpt_t2
     real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
+    logical :: print_frags
+
+    print_frags = .false.
 
     call time_start_phase(PHASE_COMM)
 
     ! call ccsd(t) data routine in order to receive data from master
-    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2%elm4,mylsitem)
+    call mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2%elm4,mylsitem,print_frags)
 
     !FIXME: split MPI messages!!!!!!!!!!
     ! init and receive ccsd_doubles array4 structure
-    ccsd_t2 = array_init([nvirt,nocc,nvirt,nocc],4)
-    call ls_mpibcast(ccsd_t2%elm4,nvirt,nocc,nvirt,nocc,infpar%master,infpar%lg_comm)
+    ccsd_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+    call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
 
-    if (DECinfo%full_molecular_cc) then
-
-       if (DECinfo%print_frags) then
-
-          ! init ccsd(t) singles and ccsd(t) doubles
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
-          ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
-
-       else
-
-          ! init ccsd(t) singles
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
-          ccsdpt_e4 = 0.0E0_realk
-
-       endif
-
-    else
-
+    if (print_frags) then
+ 
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array_init([nvirt,nocc],2)
        ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+
+    else
+
+       ! init ccsd(t) singles
+       ccsdpt_t1 = array_init([nvirt,nocc],2)
+       ccsdpt_e4 = 0.0E0_realk
 
     endif
 
     call time_start_phase(PHASE_WORK)
 
     ! now enter the ccsd(t) driver routine
-    if (DECinfo%full_molecular_cc) then
+    if (print_frags) then
 
-       if (DECinfo%print_frags) then
-
-          call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
+       call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
                                & ccsdpt_t1,ccsdpt_t2)
-
-       else
-
-          call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
-                               & ccsdpt_t1,e4=ccsdpt_e4)
-
-       endif
 
     else
 
        call ccsdpt_driver(nocc,nvirt,nbasis,ppfock,qqfock,Co,Cv,mylsitem,ccsd_t2,&
-                            & ccsdpt_t1,ccsdpt_t2)
+                               & ccsdpt_t1,e4=ccsdpt_e4)
 
     endif
 
@@ -7402,25 +7326,17 @@ end module ccsdpt_module
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
     call array_free(ccsd_t2)
-    if (DECinfo%full_molecular_cc) then
-
-       if (DECinfo%print_frags) then
-
-          call array_free(ccsdpt_t1)
-          call array_free(ccsdpt_t2)
-
-       else
-
-          call array_free(ccsdpt_t1)
-
-       endif
-
-    else
+    if (print_frags) then
 
        call array_free(ccsdpt_t1)
        call array_free(ccsdpt_t2)
 
+    else
+
+       call array_free(ccsdpt_t1)
+
     endif
+    call ls_free(mylsitem)
 
   end subroutine ccsdpt_slave
 

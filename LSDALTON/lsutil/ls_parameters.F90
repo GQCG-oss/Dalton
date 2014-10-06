@@ -12,6 +12,7 @@ MODULE Integralparameters
   integer,parameter :: AOVAL = 8
   integer,parameter :: AOelField = 9
   integer,parameter :: AOadmm = 10  !ADMM basis
+  integer,parameter :: AONuclearSpec = 11 !single Nuclei
 ! THESE ARE STRING SPECIFIERS FOR THE Operator
   integer,parameter :: CoulombOperator = 1
   integer,parameter :: OverlapOperator = 2

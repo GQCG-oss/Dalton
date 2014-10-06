@@ -10,7 +10,6 @@ module lsmpi_op
   use basis_typetype, only: BASISSETINFO,nBasisBasParam,nullifyMainBasis,&
        & nullifyBasisset
   use basis_type, only: lsmpi_alloc_basissetinfo
-  use lstiming, only: lstimer
   use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
        & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
   use integralparameters

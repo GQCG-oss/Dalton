@@ -731,7 +731,7 @@ SUBROUTINE pbc_get_fock_mat(lattice,g_2,f_1,ndim,realcut,numrealvec,diismats,lup
 	TYPE(matrix),target,intent(inout) :: f_1(numrealvec)
 	TYPE(matrix),target,intent(inout) :: g_2(numrealvec)
 	CHARACTER(LEN=12) :: diismats
-	INTEGER,intent(OUT) :: realcut(3)
+	INTEGER,intent(INOUT) :: realcut(3)
 	! local
 	INTEGER :: i,j
 	REAL(realk) :: focknorm !for finding time usage

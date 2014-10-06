@@ -4195,7 +4195,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Currently, only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsd_energy_full_occ(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
+  subroutine ccsd_energy_full_occ(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
 
     implicit none
@@ -4205,11 +4205,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> ccsd singles amplitudes
     type(array), intent(inout) :: ccsd_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -4292,8 +4292,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
     ! (must be consistent with printout in print_pair_fragment_energies)
 
-    do AtomI=1,natoms
-       do AtomJ=AtomI+1,natoms
+    do AtomI=1,nfrags
+       do AtomJ=AtomI+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -4313,43 +4313,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distancetable)
+  subroutine print_ccsd_full_occ(nfrags,ccsd_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
-    integer, intent(in) :: natoms
+    integer, intent(in) :: nfrags
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: ccsd_matrix, distancetable
+    real(realk), dimension(nfrags,nfrags), intent(in) :: ccsd_matrix, distancetable
     !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+    logical, dimension(nfrags), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,j
 
 
     if(.not.DECinfo%CCDhack)then
        if( DECinfo%ccmodel == MODEL_MP2)then
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'MP2 occupied single energies','AF_MP2_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'MP2 occupied pair energies','PF_MP2_OCC')
        else if( DECinfo%ccmodel == MODEL_CC2 )then
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'CC2 occupied single energies','AF_CC2_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'CC2 occupied pair energies','PF_CC2_OCC')
        else if( DECinfo%ccmodel == MODEL_CCSD .or. DECinfo%ccmodel == MODEL_CCSDpT )then 
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'CCSD occupied single energies','AF_CCSD_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
        else
           call lsquit("ERROR(print_ccsd_full_occ) model not implemented",-1)
        endif
     else
-       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+       call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
           & 'CCD occupied single energies','AF_CCD_OCC')
-       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+       call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
           & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 

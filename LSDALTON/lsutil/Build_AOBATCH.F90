@@ -663,6 +663,92 @@ AO%maxJ = 0
 
 END SUBROUTINE BUILD_EMPTY_NUCLEAR_AO
 
+!> \brief builds an empty single nuclear AOitem
+!> \author T. Kjaergaard
+!> \date 2008
+!>
+!> build an empty nuclear AOitem, used for nuclear attraction integrals
+!>
+SUBROUTINE BUILD_EMPTY_SINGLE_NUCLEAR_AO(AO,MOLECULE,LUPRI,IATOM)
+use molecule_type
+implicit none
+!> contains all info about the molecule (atoms, charge,...)
+TYPE(MOLECULEINFO)        :: MOLECULE
+!> the AOitem to be build
+TYPE(AOITEM)              :: AO
+!> the logical unit number for the output file
+INTEGER                   :: LUPRI
+!> which atom to choose
+INTEGER                   :: IATOM
+!
+INTEGER                   :: aobatches,I,ncharges,J,NEWCHARGE,nAtoms,K
+REAL(REALK),pointer       :: CHARGES(:)
+
+IF(MOLECULE%ATOM(IATOM)%phantom)THEN
+   CALL LSQUIT('BUILD_EMPTY_SINGLE_NUCLEAR_AO: Error Phantom atom',-1)
+ENDIF
+nAtoms = 1
+AO%natoms = 1                            
+CALL MEM_ALLOC(AO%ATOMICnORB,AO%natoms)       
+CALL MEM_ALLOC(AO%ATOMICnBATCH,AO%natoms)     
+AO%ATOMICnORB(1)=0                       
+AO%ATOMICnBATCH(1)=1                     
+AO%nbast = 1                     
+
+AO%empty=.TRUE.
+aobatches=nAtoms  ! = 1
+AO%nbatches=aobatches
+!AO%nCC=1
+AO%nExp=1
+
+CALL MEM_ALLOC(AO%BATCH,aobatches)
+call nullifyAOBATCH(AO)
+CALL MEM_ALLOC(AO%Exponents,1)
+CALL lsmat_dense_init(AO%Exponents(1),1,1)
+AO%nCC=1
+CALL MEM_ALLOC(AO%CC,1)
+CALL MEM_ALLOC(AO%angmom,1)
+CALL lsmat_dense_init(AO%CC(1),1,1)
+AO%CC(1)%elms(1)=-MOLECULE%ATOM(IATOM)%Charge
+AO%angmom(1) = 0
+
+AO%BATCH(1)%pCC(1)%p => AO%CC(1)
+AO%BATCH(1)%CCindex(1) = 1
+AO%Exponents(1)%elms(1)=0E0_realk
+
+I=1
+AO%BATCH(I)%itype = I
+AO%BATCH(I)%redtype = 1
+AO%BATCH(I)%type_Nucleus = .TRUE.
+AO%BATCH(I)%type_elField = .FALSE.
+AO%BATCH(I)%type_pCharge = .FALSE.
+AO%BATCH(I)%TYPE_Empty = .FALSE.
+AO%BATCH(I)%spherical=.false.
+AO%BATCH(I)%atom=IATOM
+AO%BATCH(I)%molecularIndex=MOLECULE%ATOM(IATOM)%molecularIndex
+AO%BATCH(I)%batch=1
+AO%BATCH(I)%CENTER(1)=MOLECULE%ATOM(IATOM)%CENTER(1)
+AO%BATCH(I)%CENTER(2)=MOLECULE%ATOM(IATOM)%CENTER(2)
+AO%BATCH(I)%CENTER(3)=MOLECULE%ATOM(IATOM)%CENTER(3)
+AO%BATCH(I)%nPrimitives=1
+AO%BATCH(I)%maxContracted=1
+AO%BATCH(I)%maxAngmom=0
+AO%BATCH(I)%pExponents => AO%Exponents(1)
+AO%BATCH(I)%nAngmom=1
+AO%BATCH(I)%extent=0E0_realk
+AO%BATCH(I)%ANGMOM(1)=0
+AO%BATCH(I)%nContracted(1)=1
+AO%BATCH(I)%startOrbital(1)=1
+AO%BATCH(I)%startprimOrbital(1)=I
+AO%BATCH(I)%nOrbComp(1)=1
+AO%BATCH(I)%nPrimOrbComp(1)=1
+AO%BATCH(I)%nOrbitals(1)=1
+AO%ntype = 1
+AO%nredtype = 1
+AO%maxJ = 0
+
+END SUBROUTINE BUILD_EMPTY_SINGLE_NUCLEAR_AO
+
 !> \brief builds an empty electric-field AOitem
 !> \author S. Reine
 !> \date 2014
