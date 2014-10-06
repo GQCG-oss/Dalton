@@ -39,6 +39,11 @@ Integer,parameter :: MaxSpecialAngmom = 2
 !     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
 !     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, Ichor!PermuteFFF, IchorNofilestorage
 !private
+#ifdef VAR_OPENACC
+  integer,parameter :: maxnAsyncHandles=4
+#else
+  integer,parameter :: maxnAsyncHandles=1
+#endif
 CONTAINS
 subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
   implicit none

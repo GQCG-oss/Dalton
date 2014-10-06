@@ -8,6 +8,8 @@ MODULE IchorMemory
    public stats_ichor_mem
    public mem_ichor_alloc
    public mem_ichor_dealloc
+   public mem_ichor_alloc_dryrun
+   public mem_ichor_dealloc_dryrun
    public ADD_OMP_MEM
    public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
@@ -28,6 +30,17 @@ MODULE IchorMemory
    integer(KIND=long),parameter :: mem_intsize=4_long
 #endif
 !Interfaces for counting memory 
+INTERFACE mem_ichor_alloc_dryrun
+  MODULE PROCEDURE alloc_dryrun_1dim, alloc_dryrun_2dim, &
+       & alloc_dryrun_3dim, alloc_dryrun_4dim
+
+END INTERFACE
+!
+INTERFACE mem_ichor_dealloc_dryrun
+  MODULE PROCEDURE dealloc_dryrun_1dim, dealloc_dryrun_2dim, &
+       & dealloc_dryrun_3dim, dealloc_dryrun_4dim
+END INTERFACE
+
 INTERFACE mem_ichor_alloc
   MODULE PROCEDURE real_allocate_1dim, real_allocate_2dim, &
        & real_allocate_3dim, real_allocate_4dim, real_allocate_5dim, &
@@ -118,6 +131,70 @@ subroutine print_ichor_maxmem(lupri,max_mem_used,STRING)
           & max_mem_used/(1000.0E0_realk*1000.0E0_realk*1000.0E0_realk)
   endif
 end subroutine print_ichor_maxmem
+
+SUBROUTINE alloc_dryrun_1dim(n1)
+  implicit none
+  integer :: n1
+  integer (kind=long) :: nsize
+  nsize = n1*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_1DIM
+
+SUBROUTINE alloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_2DIM
+
+SUBROUTINE alloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_3DIM
+
+SUBROUTINE alloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_allocated_ichor_mem_real(nsize)
+END SUBROUTINE ALLOC_DRYRUN_4DIM
+
+SUBROUTINE dealloc_dryrun_1dim(n1)
+  implicit none
+  integer :: n1
+  integer (kind=long) :: nsize
+  nsize = n1*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_1DIM
+
+SUBROUTINE dealloc_dryrun_2dim(n1,n2)
+  implicit none
+  integer :: n1,n2
+  integer (kind=long) :: nsize
+  nsize = n1*n2*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_2DIM
+
+SUBROUTINE dealloc_dryrun_3dim(n1,n2,n3)
+  implicit none
+  integer :: n1,n2,n3
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_3DIM
+
+SUBROUTINE dealloc_dryrun_4dim(n1,n2,n3,n4)
+  implicit none
+  integer :: n1,n2,n3,n4
+  integer (kind=long) :: nsize
+  nsize = n1*n2*n3*n4*mem_realsize
+  call mem_deallocated_ichor_mem_real(nsize)
+END SUBROUTINE DEALLOC_DRYRUN_4DIM
 
 SUBROUTINE real_allocate_1dim(A)
   implicit none
