@@ -1924,7 +1924,6 @@ module lspdm_tensor_operations_module
         call time_start_phase(PHASE_WORK)
      endif
 
-     if(infpar%lg_mynum==1)call lsmpi_barrier(infpar%lg_comm)
 
      if(test_all_master_access)then
         if(present(mem))then
@@ -2103,8 +2102,6 @@ module lspdm_tensor_operations_module
 
      enddo LocalTiles
 
-
-     if(infpar%lg_mynum==0)call lsmpi_barrier(infpar%lg_comm)
 
      if(use_wrk_space)then
         buffA => null()
