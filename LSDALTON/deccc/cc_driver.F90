@@ -508,8 +508,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
          end if
 
-         ! free integrals
-         call array_free(VOVO)
 
          if (abc) call array_reorder(ccsdpt_t1,[2,1])
          call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccsdpt_e5)
@@ -526,6 +524,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       endif
 
    endif
+
+   ! free integrals
+   call array_free(VOVO)
 
    !MODIFY FOR NEW MODEL
    write(DECinfo%output,*)
@@ -1796,11 +1797,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
+   print *,"FIRST ALLOCS"
    call array_minit(Co  , occ_dims, 2, local=local, atype="REAR" )
    call array_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
    call array_minit(Co2 , occ_dims, 2, local=local, atype=atype )
    call array_minit(Cv2 , virt_dims,2, local=local, atype=atype )
    call array_minit(fock, ao2_dims, 2, local=local, atype=atype )
+   print *,"FIRST DONE"
 
    call array_convert( Co_d,   Co   )
    call array_convert( Cv_d,   Cv   )
@@ -1827,6 +1830,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(dens,nb,nb)
    call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
+   print *,"ALLOCS2"
    call array_minit(ifock, ao2_dims, 2, local=local, atype='LDAR' )
 
    if(fragment_job) then ! fragment: calculate correction
@@ -1868,6 +1872,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
    end if
 
+   print *,"ALLOCS2 DONE"
 
 
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
@@ -1881,6 +1886,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_minit(qqfock_prec, [nv,nv], 2, local=local, atype='REPD' )
    call array_minit(qpfock_prec, [nv,no], 2, local=local, atype='REPD' )
 
+   print *,"ALLOCS3 DONE"
+
    call array_change_atype_to_rep( ppfock_prec, local )
    call array_change_atype_to_rep( qqfock_prec, local )
 
@@ -1889,17 +1896,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_convert( qqfock_d, qqfock_prec )
       call array_zero(qpfock_prec)
    else
+      print *,"initing 1",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR' )
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
       call array_free(tmp)
 
+      print *,"initing 2",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
       call array_free(tmp)
 
+      print *,"initing 3",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR'  )
+      print *,"initing done"
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qpfock_prec)
       call array_free(tmp)
@@ -1921,6 +1932,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc( ppfock_d )
    call mem_dealloc( qqfock_d )
 
+   print *,"ALLOCS4 DONE"
+
    ! allocate things
    if(use_singles) then
       call mem_alloc( t1,     DECinfo%ccMaxIter )
@@ -1941,9 +1954,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
+   print *,"ALLOCS5 DONE"
    !iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
    call array_zero(iajb)
+   print *,"ALLOCS6 DONE"
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )

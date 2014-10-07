@@ -139,11 +139,10 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_CHANGE_ACCESS_TYPE  = 22
   integer,parameter :: JOB_ARRAY_SCALE         = 23
   integer,parameter :: JOB_INIT_ARR_PC         = 24
-  integer,parameter :: JOB_TEST_ARRAY          = 25
-  integer,parameter :: JOB_GET_MP2_ENERGY      = 26
-  integer,parameter :: JOB_GET_RPA_ENERGY      = 27
-  integer,parameter :: JOB_GET_SOS_ENERGY      = 28
-  integer,parameter :: JOB_ARR_CONTRACT_SIMPLE = 29
+  integer,parameter :: JOB_GET_MP2_ENERGY      = 25
+  integer,parameter :: JOB_GET_RPA_ENERGY      = 26
+  integer,parameter :: JOB_GET_SOS_ENERGY      = 27
+  integer,parameter :: JOB_ARR_CONTRACT_SIMPLE = 28
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -322,6 +321,7 @@ module lspdm_tensor_operations_module
 
     loc = .false.
     if(present(loc_addr))loc = loc_addr
+    if(loc) call lsquit("ERROR(pdm_array_sync): this feature has been deactivated",-1)
 
     IF( me == root) then
       !**************************************************************************************
@@ -393,16 +393,16 @@ module lspdm_tensor_operations_module
 
       if(counter/=basic)call lsquit("ERROR(pdm_arr_sync):different number of&
       & elements for MASTER",DECinfo%output)
-      if(loc)then
-        if(nn>1.and.present(A).and..not.associated(A%addr_loc))&
-        &call lsquit("ERROR(pdm_arr_sync):addr_loc for array A not associated",DECinfo%output)
-        if(nn>1.and.present(B).and..not.associated(B%addr_loc))&
-        &call lsquit("ERROR(pdm_arr_sync):addr_loc for array B not associated",DECinfo%output)
-        if(nn>1.and.present(C).and..not.associated(C%addr_loc))&
-        &call lsquit("ERROR(pdm_arr_sync):addr_loc for array C not associated",DECinfo%output)
-        if(nn>1.and.present(D).and..not.associated(D%addr_loc))&
-        &call lsquit("ERROR(pdm_arr_sync):addr_loc for array D not associated",DECinfo%output)
-      else
+      !if(loc)then
+        !if(nn>1.and.present(A).and..not.associated(A%addr_loc))&
+        !&call lsquit("ERROR(pdm_arr_sync):addr_loc for array A not associated",DECinfo%output)
+        !if(nn>1.and.present(B).and..not.associated(B%addr_loc))&
+        !&call lsquit("ERROR(pdm_arr_sync):addr_loc for array B not associated",DECinfo%output)
+        !if(nn>1.and.present(C).and..not.associated(C%addr_loc))&
+        !&call lsquit("ERROR(pdm_arr_sync):addr_loc for array C not associated",DECinfo%output)
+        !if(nn>1.and.present(D).and..not.associated(D%addr_loc))&
+        !&call lsquit("ERROR(pdm_arr_sync):addr_loc for array D not associated",DECinfo%output)
+      !else
         if(nn>1.and.present(A).and..not.associated(A%addr_p_arr))&
         &call lsquit("ERROR(pdm_arr_sync):addr_p_arr for array A not associated",DECinfo%output)
         if(nn>1.and.present(B).and..not.associated(B%addr_p_arr))&
@@ -411,21 +411,21 @@ module lspdm_tensor_operations_module
         &call lsquit("ERROR(pdm_arr_sync):addr_p_arr for array C not associated",DECinfo%output)
         if(nn>1.and.present(D).and..not.associated(D%addr_p_arr))&
         &call lsquit("ERROR(pdm_arr_sync):addr_p_arr for array D not associated",DECinfo%output)
-      endif
+      !endif
       
 
       do sendctr=1,nn-1
-        if(loc)then
-          IF (PRESENT(A)) TMPI(2)  = A%addr_loc(sendctr+1)
-          IF (PRESENT(B)) TMPI(3)  = B%addr_loc(sendctr+1)
-          IF (PRESENT(C)) TMPI(4)  = C%addr_loc(sendctr+1)
-          IF (PRESENT(D)) TMPI(5)  = D%addr_loc(sendctr+1)
-        else
+        !if(loc)then
+          !IF (PRESENT(A)) TMPI(2)  = A%addr_loc(sendctr+1)
+          !IF (PRESENT(B)) TMPI(3)  = B%addr_loc(sendctr+1)
+          !IF (PRESENT(C)) TMPI(4)  = C%addr_loc(sendctr+1)
+          !IF (PRESENT(D)) TMPI(5)  = D%addr_loc(sendctr+1)
+        !else
           IF (PRESENT(A)) TMPI(2)  = A%addr_p_arr(sendctr+1)
           IF (PRESENT(B)) TMPI(3)  = B%addr_p_arr(sendctr+1)
           IF (PRESENT(C)) TMPI(4)  = C%addr_p_arr(sendctr+1)
           IF (PRESENT(D)) TMPI(5)  = D%addr_p_arr(sendctr+1)
-        endif
+        !endif
         call ls_mpisendrecv( TMPI, counter, comm, root, sendctr)
       enddo
       call mem_dealloc(TMPI)
@@ -526,17 +526,6 @@ module lspdm_tensor_operations_module
 #endif      
     rankofnode=mod(globaltilenumber-1+arr%offset,nnod)
   end function get_residence_of_tile
-
-
-  subroutine test_array(arr)
-    type(array), intent(inout) :: arr
-#ifdef VAR_MPI
-    if(infpar%pc_mynum==0)then
-      call pdm_array_sync(infpar%pc_comm,JOB_TEST_ARRAY,arr,loc_addr=.true.)
-    endif
-    print *,infpar%pc_mynum,"has da test",associated(arr%elm1),associated(arr%elm4),arr%addr_loc
-#endif      
-  end subroutine test_array
 
 
   !> \author Patrick Ettenhuber
@@ -1427,11 +1416,11 @@ module lspdm_tensor_operations_module
     parent    = .not.child
 
     !assign if master and the number of nodes in the local group
-    if( lspdm_use_comm_proc ) then
-      pc_me        = infpar%pc_mynum
-      pc_nnodes    = infpar%pc_nodtot
-      pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
-    endif
+    !if( lspdm_use_comm_proc ) then
+    !  pc_me        = infpar%pc_mynum
+    !  pc_nnodes    = infpar%pc_nodtot
+    !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
+    !endif
 
     if( parent )then
       lg_master = (infpar%lg_mynum==infpar%master)
@@ -1444,9 +1433,10 @@ module lspdm_tensor_operations_module
 
     !allocate all pdm in p_arr therefore get free address and associate it with
     !the array, and increment the array counter
-    p_arr%curr_addr_on_node = get_free_address(.true.)
-    addr                    = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
+    p_arr%curr_addr_on_node  = get_free_address(.true.)
+    addr                     = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr = addr
 
     p_arr%a(addr)%access_type = pdm
 
@@ -1477,10 +1467,10 @@ module lspdm_tensor_operations_module
       call mem_alloc(lg_buf,lg_nnodes)
       lg_buf = 0
     endif
-    if( lspdm_use_comm_proc )then
-      call mem_alloc(pc_buf,pc_nnodes)
-      pc_buf = 0
-    endif
+    !if( lspdm_use_comm_proc )then
+    !  call mem_alloc(pc_buf,pc_nnodes)
+    !  pc_buf = 0
+    !endif
     
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
@@ -1491,17 +1481,17 @@ module lspdm_tensor_operations_module
 #endif
     endif
 
-    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
-      call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
-#ifdef VAR_MPI
-      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_REPLICATED,p_arr%a(addr),loc_addr=.true.)
-#endif
-    endif
+!    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
+!      call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
+!#ifdef VAR_MPI
+!      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_REPLICATED,p_arr%a(addr),loc_addr=.true.)
+!#endif
+!    endif
 
     !if ALL_ACCESS all have to have the addresses allocated
     if(p_arr%a(addr)%access_type==ALL_ACCESS)then
       if(parent)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
-      if(lspdm_use_comm_proc)call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
+      !if(lspdm_use_comm_proc)call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
     endif
 
 #ifdef VAR_MPI
@@ -1509,13 +1499,13 @@ module lspdm_tensor_operations_module
     if( parent )then
       lg_buf(infpar%lg_mynum+1)=addr 
       call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
-      call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes,.false.)
+      call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     endif
-    if( lspdm_use_comm_proc )then
-      pc_buf(infpar%pc_mynum+1)=addr 
-      call lsmpi_allreduce(pc_buf,pc_nnodes,infpar%pc_comm)
-      call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
-    endif
+    !if( lspdm_use_comm_proc )then
+    !  pc_buf(infpar%pc_mynum+1)=addr 
+    !  call lsmpi_allreduce(pc_buf,pc_nnodes,infpar%pc_comm)
+    !  call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
+    !endif
 #endif
   
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
@@ -1525,7 +1515,7 @@ module lspdm_tensor_operations_module
     arr=p_arr%a(addr)
 
     if(parent)call mem_dealloc(lg_buf)
-    if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
+    !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine array_init_replicated
 
 
@@ -1704,11 +1694,11 @@ module lspdm_tensor_operations_module
     parent    = .not.child
 
     !assign if master and the number of nodes in the local group
-    if( lspdm_use_comm_proc ) then
-      pc_me        = infpar%pc_mynum
-      pc_nnodes    = infpar%pc_nodtot
-      pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
-    endif
+    !if( lspdm_use_comm_proc ) then
+    !  pc_me        = infpar%pc_mynum
+    !  pc_nnodes    = infpar%pc_nodtot
+    !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
+    !endif
 
     if( parent )then
       lg_master = (infpar%lg_mynum==infpar%master)
@@ -1722,9 +1712,10 @@ module lspdm_tensor_operations_module
     master = (pc_master.and.lg_master)
 
     !allocate all tiled arrays in p_arr, get free
-    p_arr%curr_addr_on_node = get_free_address(.true.)
-    addr                    = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
+    p_arr%curr_addr_on_node  = get_free_address(.true.)
+    addr                     = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr = addr
 
     p_arr%a(addr)%access_type=pdm
 
@@ -1831,11 +1822,6 @@ module lspdm_tensor_operations_module
         endif
       enddo
     endif
-    if( lspdm_use_comm_proc )then
-      pc_buf(infpar%pc_mynum+1)=addr 
-      call lsmpi_allreduce(pc_buf,pc_nnodes,infpar%pc_comm)
-      call arr_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
-    endif
 #endif
  
     call arr_init_lock_set(p_arr%a(addr))
@@ -1849,7 +1835,7 @@ module lspdm_tensor_operations_module
     !print *,infpar%lg_mynum,associated(arr%wi),"peristent",associated(p_arr%a(addr)%wi)
 
     if(parent)call mem_dealloc(lg_buf)
-    if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
+    !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine array_init_tiled
   
   subroutine lspdm_array_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
@@ -4616,19 +4602,13 @@ module lspdm_tensor_operations_module
 
     endif
 
-    if( parent .and. lspdm_use_comm_proc ) then
-      call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_PDM,arr,loc_addr=.true.)
-    endif
+    !if( parent .and. lspdm_use_comm_proc ) then
+    !  call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_PDM,arr,loc_addr=.true.)
+    !endif
 
-    if( parent )then
-      p_arr%free_addr_on_node(arr%addr_p_arr(infpar%lg_mynum+1))=.true.
-      p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
-      call array_free_basic(p_arr%a(arr%addr_p_arr(infpar%lg_mynum+1))) 
-    else
-      p_arr%free_addr_on_node(arr%addr_loc(infpar%lg_mynum+1))=.true.
-      p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
-      call array_free_basic(p_arr%a(arr%addr_loc(infpar%lg_mynum+1))) 
-    endif
+    p_arr%free_addr_on_node(arr%local_addr)=.true.
+    p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
+    call array_free_basic(p_arr%a(arr%local_addr)) 
     call array_nullify_pointers(arr)
 #endif
   end subroutine array_free_pdm
@@ -4642,15 +4622,15 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     lg_me   = infpar%lg_mynum
     lg_nnod = infpar%lg_nodtot
-    if( lspdm_use_comm_proc ) then
-      pc_me   = infpar%pc_mynum
-      pc_nnod = infpar%pc_nodtot
-      buf(1)  = lg_me 
-      buf(2)  = lg_nnod
-      call ls_mpibcast(buf,2,infpar%master,infpar%pc_comm)
-      lg_me   = buf(1)
-      lg_nnod = buf(2)
-    endif
+    !if( lspdm_use_comm_proc ) then
+    !  pc_me   = infpar%pc_mynum
+    !  pc_nnod = infpar%pc_nodtot
+    !  buf(1)  = lg_me 
+    !  buf(2)  = lg_nnod
+    !  call ls_mpibcast(buf,2,infpar%master,infpar%pc_comm)
+    !  lg_me   = buf(1)
+    !  lg_nnod = buf(2)
+    !endif
  
     if(arr%access_type==NO_PDM_ACCESS.or.arr%itype==TILED)then
       arr%offset       = 0
@@ -5414,9 +5394,9 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
-        call pdm_array_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
-      endif
+      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
+      !  call pdm_array_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
+      !endif
 #endif
       call memory_allocate_array_dense(arr)
   end subroutine memory_allocate_array_dense_pc
@@ -5427,9 +5407,9 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
-        call pdm_array_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
-      endif
+      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
+      !  call pdm_array_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
+      !endif
 #endif
       call arr_deallocate_dense(arr)
   end subroutine memory_deallocate_array_dense_pc

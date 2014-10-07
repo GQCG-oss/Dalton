@@ -1006,6 +1006,8 @@ contains
     at  = 'LDAR'
     if(present(atype)) at  = atype
 
+    print *,"allocating",loc,arr%initialized,at
+
     !Default is to check at, but forcable with local
     if(present(local))then
        loc = local
@@ -1241,19 +1243,20 @@ contains
     pc_nnodes = 1
     master    = .true.
     me        = 0
-#ifdef VAR_MPI
-    if( lspdm_use_comm_proc ) then
-      me        = infpar%pc_mynum
-      pc_nnodes = infpar%pc_nodtot
-      master    = (infpar%parent_comm == MPI_COMM_NULL)
-    endif
-#endif
+!#ifdef VAR_MPI
+!    if( lspdm_use_comm_proc ) then
+!      me        = infpar%pc_mynum
+!      pc_nnodes = infpar%pc_nodtot
+!      master    = (infpar%parent_comm == MPI_COMM_NULL)
+!    endif
+!#endif
     
     
     !find space in the persistent array
-    p_arr%curr_addr_on_node = get_free_address(.true.)
-    addr                    = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use     = p_arr%arrays_in_use + 1
+    p_arr%curr_addr_on_node  = get_free_address(.true.)
+    addr                     = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr = addr
 
     !SET MODE
     p_arr%a(addr)%mode      = nmodes
@@ -1268,13 +1271,13 @@ contains
     !default
     p_arr%a(addr)%access_type = NO_PDM_ACCESS
     !if one uses comm threads the following replace the access_type
-    if( pdm == MASTER_ACCESS .and. lspdm_use_comm_proc )&
-    & p_arr%a(addr)%access_type = MASTER_ACCESS
-    if( pdm == ALL_ACCESS .and. lspdm_use_comm_proc )&
-    & p_arr%a(addr)%access_type = ALL_ACCESS
+    !if( pdm == MASTER_ACCESS .and. lspdm_use_comm_proc )&
+    !& p_arr%a(addr)%access_type = MASTER_ACCESS
+    !if( pdm == ALL_ACCESS .and. lspdm_use_comm_proc )&
+    !& p_arr%a(addr)%access_type = ALL_ACCESS
 
     !SET IF ALLOCATED WITH COMM PROCS
-    p_arr%a(addr)%allocd_w_c_p = lspdm_use_comm_proc
+    !p_arr%a(addr)%allocd_w_c_p = lspdm_use_comm_proc
 
     !SET NELMS
     nelms=1
@@ -1287,33 +1290,33 @@ contains
     tdimdummy=0
     call arr_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
 
-    call mem_alloc(buf,pc_nnodes)
-    buf = 0
+    !call mem_alloc(buf,pc_nnodes)
+    !buf = 0
 
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-    if(master .and. p_arr%a(addr)%access_type==MASTER_ACCESS .and. lspdm_use_comm_proc)then
-      call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
-#ifdef VAR_MPI
-      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr),loc_addr=.true.)
-#endif
-    endif
+!    if(master .and. p_arr%a(addr)%access_type==MASTER_ACCESS .and. lspdm_use_comm_proc)then
+!      call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+!#ifdef VAR_MPI
+!      call pdm_array_sync(infpar%pc_comm,JOB_INIT_ARR_PC,p_arr%a(addr),loc_addr=.true.)
+!#endif
+!    endif
 
 
 
     !if ALL_ACCESS all have to have the addresses allocated
-    if(p_arr%a(addr)%access_type==ALL_ACCESS.and. lspdm_use_comm_proc)&
-       &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+    !if(p_arr%a(addr)%access_type==ALL_ACCESS.and. lspdm_use_comm_proc)&
+    !   &call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
     !SET THE ADDRESSES ON ALL NODES     
-    buf(me+1)=addr 
-#ifdef VAR_MPI
-    if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
-#endif
+    !buf(me+1)=addr 
+!#ifdef VAR_MPI
+!    if( lspdm_use_comm_proc )call lsmpi_allreduce(buf,pc_nnodes,infpar%pc_comm)
+!#endif
 
-    call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
+    !call arr_set_addr(p_arr%a(addr),buf,pc_nnodes,.true.)
 
-    call mem_dealloc(buf)
+    !call mem_dealloc(buf)
 
     !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_array_dense(p_arr%a(addr))
@@ -1333,15 +1336,15 @@ contains
  
     me     = 0
     parent = .true.
-#ifdef VAR_MPI
-    if( lspdm_use_comm_proc )then
-      me = infpar%pc_mynum
-      if(parent) call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_STD,arr,loc_addr=.true.)
-    endif
-#endif
-    p_arr%free_addr_on_node(arr%addr_loc(me+1))=.true.
+!#ifdef VAR_MPI
+!    if( lspdm_use_comm_proc )then
+!      me = infpar%pc_mynum
+!      if(parent) call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_STD,arr,loc_addr=.true.)
+!    endif
+!#endif
+    p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
-    call array_free_basic(p_arr%a(arr%addr_loc(me+1))) 
+    call array_free_basic(p_arr%a(arr%local_addr)) 
     call array_nullify_pointers(arr)
 
   end subroutine array_free_standard
@@ -2622,7 +2625,6 @@ contains
     call print_norm(test2)
 
     call mem_alloc(ord,3)
-    !works with 312, and 231 later
     ord = [2,1,3]
     call array_contract_simple(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
     call lsmpi_barrier(infpar%lg_comm)
@@ -2636,10 +2638,8 @@ contains
     endif
     !element-by-element comparison
     call mem_alloc(buf2,nv*no*nv)
-    call mem_alloc(buf1,nv*no*nv)
     buf2 = 0.0E0_realk
-    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf1,test3%nelms)
-    call array_reorder_3d(1.0E0_realk,buf1,nv,no,nv,[2,1,3],0.0E0_realk,buf2)
+    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,1,3])
     call lsmpi_barrier(infpar%lg_comm)
     if(master)then
        do i=1,test3%nelms

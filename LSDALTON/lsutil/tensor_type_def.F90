@@ -48,8 +48,8 @@ module tensor_type_def_module
      integer,pointer       :: ntpm(:)              => null()       !dimensions in the modes, number of tiles per mode, 
      integer,pointer       :: tdim(:)              => null()       !dimension of the tiles per mode(per def symmetric, but needed)
      integer,pointer       :: addr_p_arr(:)        => null()       !address of array in persistent array "p_arr" on each compute node
-     integer,pointer       :: addr_loc(:)          => null()       !address of array in persistent array "p_arr" on local process
      logical,pointer       :: lock_set(:)          => null()
+     integer               :: local_addr           = -1            !local address in p_arr
      !global tile information
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles

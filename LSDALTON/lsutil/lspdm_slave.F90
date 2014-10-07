@@ -34,8 +34,6 @@ subroutine pdm_array_slave(comm)
    call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
-   CASE(JOB_TEST_ARRAY)
-      call test_array(A)
    CASE(JOB_PC_DEALLOC_DENSE)
       call memory_deallocate_array_dense_pc(A)
    CASE(JOB_PC_ALLOC_DENSE)
