@@ -178,28 +178,46 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date May 2013
   subroutine init_persistent_array()
-    implicit none
-    call mem_alloc(p_arr%a,n_arrays)
-    call mem_alloc(p_arr%free_addr_on_node,n_arrays)
-    p_arr%free_addr_on_node=.true.
-    !if( lspdm_use_comm_proc ) call lsquit("ERROR(init_persistent_array)&
-    !& lspdm_use_comm_proc cannot be true at startup",-1)
-    lspdm_use_comm_proc = .false.
+     implicit none
+     integer :: i
+     call mem_alloc(p_arr%a,n_arrays)
+     call mem_alloc(p_arr%free_addr_on_node,n_arrays)
+
+     p_arr%free_addr_on_node=.true.
+
+     do i = 1, n_arrays
+        call array_reset_value_defaults(p_arr%a(i)) 
+        call array_nullify_pointers(p_arr%a(i)) 
+     end do
+
+     !if( lspdm_use_comm_proc ) call lsquit("ERROR(init_persistent_array)&
+     !& lspdm_use_comm_proc cannot be true at startup",-1)
+     lspdm_use_comm_proc = .false.
   end subroutine init_persistent_array
   !>  \brief free storage room for the tiled distributed arrays
   !> \author Patrick Ettenhuber
   !> \date May 2013
   subroutine free_persistent_array()
-    implicit none
-    if(associated(p_arr%a))then
-      call mem_dealloc(p_arr%a)
-    endif
-    if(associated(p_arr%free_addr_on_node))then
-      call mem_dealloc(p_arr%free_addr_on_node)
-    endif
-    if( lspdm_use_comm_proc ) call lsquit("ERROR(free_persistent_array) &
-    & lspdm_use_comm_proc has to be disabled at shutdown, otherwise there &
-    & still might be processes running",-1)
+     implicit none
+     integer :: i
+     if(associated(p_arr%a))then
+
+        do i = 1, n_arrays
+           call array_reset_value_defaults(p_arr%a(i)) 
+           call array_nullify_pointers(p_arr%a(i)) 
+        end do
+
+        call mem_dealloc(p_arr%a)
+
+     endif
+
+     if(associated(p_arr%free_addr_on_node))then
+        call mem_dealloc(p_arr%free_addr_on_node)
+     endif
+
+     if( lspdm_use_comm_proc ) call lsquit("ERROR(free_persistent_array) &
+        & lspdm_use_comm_proc has to be disabled at shutdown, otherwise there &
+        & still might be processes running",-1)
   end subroutine free_persistent_array
 
   subroutine new_group_reset_persistent_array
@@ -1433,10 +1451,11 @@ module lspdm_tensor_operations_module
 
     !allocate all pdm in p_arr therefore get free address and associate it with
     !the array, and increment the array counter
-    p_arr%curr_addr_on_node  = get_free_address(.true.)
-    addr                     = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
-    p_arr%a(addr)%local_addr = addr
+    p_arr%curr_addr_on_node   = get_free_address(.true.)
+    addr                      = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr  = addr
+    p_arr%a(addr)%initialized = .true.
 
     p_arr%a(addr)%access_type = pdm
 
@@ -1712,12 +1731,12 @@ module lspdm_tensor_operations_module
     master = (pc_master.and.lg_master)
 
     !allocate all tiled arrays in p_arr, get free
-    p_arr%curr_addr_on_node  = get_free_address(.true.)
-    addr                     = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
-    p_arr%a(addr)%local_addr = addr
-
-    p_arr%a(addr)%access_type=pdm
+    p_arr%curr_addr_on_node   = get_free_address(.true.)
+    addr                      = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr  = addr
+    p_arr%a(addr)%initialized = .true.
+    p_arr%a(addr)%access_type = pdm
 
     !INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
     !there
@@ -4609,6 +4628,7 @@ module lspdm_tensor_operations_module
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
     call array_free_basic(p_arr%a(arr%local_addr)) 
+    call array_reset_value_defaults(p_arr%a(arr%local_addr)) 
     call array_nullify_pointers(arr)
 #endif
   end subroutine array_free_pdm

@@ -2728,7 +2728,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !call arr_lock_wins(gvvoo,'s',mode)
               call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,.false.)
               !call arr_unlock_wins(gvvoo,.true.)
-              print *,"w2",norm2(w2)
               if(DECinfo%PL>3.and.master)then
                  call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
                  & labelttot = "CC comm time C1:" )
@@ -2780,7 +2779,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call arr_lock_wins(govov,'s',mode)
            call array_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
            call arr_unlock_wins(govov,.true.)
-           print *,"w1",norm2(w1)
 
            if(DECinfo%PL>3.and.master)then
               call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -2804,7 +2802,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
            enddo
-           print *,infpar%lg_mynum,"w3",norm2(w3),fai,tl,traf
         else if(s==2)then
 #ifdef VAR_MPI
 
@@ -2815,7 +2812,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call arr_lock_wins(t2,'s',mode)
               call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside)
               call arr_unlock_wins(t2,.true.)
-              print *,infpar%lg_mynum,"w3",norm2(w3),fai,tl,traf
            
               if(DECinfo%PL>3.and.master)then
                  call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -2965,9 +2961,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
 
-        print *,infpar%lg_mynum,"done C"
-        call lsmpi_barrier(infpar%lg_comm)
-        call print_norm(omega2)
+        !print *,infpar%lg_mynum,"done C"
+        !call lsmpi_barrier(infpar%lg_comm)
+        !call print_norm(omega2)
 
 
 
@@ -3126,9 +3122,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      endif
 
-     print *,infpar%lg_mynum,"done D"
-     call lsmpi_barrier(infpar%lg_comm)
-     call print_norm(omega2)
+     !print *,infpar%lg_mynum,"done D"
+     !call lsmpi_barrier(infpar%lg_comm)
+     !call print_norm(omega2)
 
      call time_start_phase(PHASE_WORK, at = tw )
   end subroutine get_cnd_terms_mo_3n4

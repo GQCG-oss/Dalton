@@ -491,6 +491,22 @@ module tensor_basic_module
   end subroutine array_free_basic
 
   !> \author Patrick Ettenhuber
+  !> \date October 2014
+  !> \brief set all values to invalid
+  subroutine array_reset_value_defaults(arr)
+     implicit none
+     type(array) :: arr
+     arr%local_addr  = -1
+     arr%ntiles      = -1
+     arr%nlti        = -1
+     arr%tsize       = -1
+     arr%offset      = -1
+     arr%access_type = -1
+     arr%zeros       = .false.
+     arr%initialized = .false.
+  end subroutine array_reset_value_defaults
+
+  !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief nullify all pointers in the array
   subroutine array_nullify_pointers(arr)
@@ -510,6 +526,7 @@ module tensor_basic_module
     NULLIFY(arr%ntpm)     
     NULLIFY(arr%tdim)     
     NULLIFY(arr%addr_p_arr)
+    arr%dummyc = c_null_ptr
   end subroutine array_nullify_pointers
 
 end module  tensor_basic_module

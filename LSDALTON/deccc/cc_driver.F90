@@ -342,7 +342,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call array_free(ccsd_mat_tot)
    
       ! free integrals
-      call array_free(VOVO)
+      !call array_free(VOVO)
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
@@ -1677,17 +1677,18 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
    !get segmenting for tensors, divide dimensions until tiles are less than
-   !100MB
+   !100MB and/or until enough tiles are available such that each node gets at
+   !least one and as long as os>=2 and vs>=2
    vs = nv
    os = no
    counter = 1
-   do while((vs**2*os**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk.or.((nv/vs+mod(nv,vs))**2*(no/os+mod(no,os))**2<nnodes))
-      vs = nv - counter
-      os = no - counter
+   do while(   ( ( vs**2*os**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk&
+         &  .or. ((nv/vs+mod(nv,vs))**2*(no/os+mod(no,os))**2<nnodes)      )&
+         & .and. (vs>=2.or.os>=2)   )
+      if(nv - counter >= 1) vs = nv - counter
+      if(no - counter >= 1) os = no - counter
       counter = counter + 1
    enddo
-   print *,"I have segments",no,os,nv,vs
-
 
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
@@ -1797,13 +1798,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ampl2_dims = [nv,no]
 
    ! create transformation matrices in array form
-   print *,"FIRST ALLOCS"
    call array_minit(Co  , occ_dims, 2, local=local, atype="REAR" )
    call array_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
    call array_minit(Co2 , occ_dims, 2, local=local, atype=atype )
    call array_minit(Cv2 , virt_dims,2, local=local, atype=atype )
    call array_minit(fock, ao2_dims, 2, local=local, atype=atype )
-   print *,"FIRST DONE"
 
    call array_convert( Co_d,   Co   )
    call array_convert( Cv_d,   Cv   )
@@ -1830,7 +1829,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc(dens,nb,nb)
    call get_density_from_occ_orbitals(nb,no,Co%elm2,dens)
 
-   print *,"ALLOCS2"
    call array_minit(ifock, ao2_dims, 2, local=local, atype='LDAR' )
 
    if(fragment_job) then ! fragment: calculate correction
@@ -1872,12 +1870,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
    end if
 
-   print *,"ALLOCS2 DONE"
-
-
    if(DECinfo%PL>1)call time_start_phase(PHASE_work, at = time_work, ttot = time_fock_mat, &
       &twall = time_prec1 , labelttot = 'CCSOL: AO FOCK MATRIX :', output = DECinfo%output)
-
 
 
    ! get fock matrices, used in Preconditioning and MP2
@@ -1885,8 +1879,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call array_minit(ppfock_prec, [no,no], 2, local=local, atype='REPD' )
    call array_minit(qqfock_prec, [nv,nv], 2, local=local, atype='REPD' )
    call array_minit(qpfock_prec, [nv,no], 2, local=local, atype='REPD' )
-
-   print *,"ALLOCS3 DONE"
 
    call array_change_atype_to_rep( ppfock_prec, local )
    call array_change_atype_to_rep( qqfock_prec, local )
@@ -1896,21 +1888,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_convert( qqfock_d, qqfock_prec )
       call array_zero(qpfock_prec)
    else
-      print *,"initing 1",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR' )
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
       call array_free(tmp)
 
-      print *,"initing 2",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
       call array_free(tmp)
 
-      print *,"initing 3",tmp%initialized,associated(tmp%elm1)
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR'  )
-      print *,"initing done"
       call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
       call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qpfock_prec)
       call array_free(tmp)
@@ -1932,8 +1920,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc( ppfock_d )
    call mem_dealloc( qqfock_d )
 
-   print *,"ALLOCS4 DONE"
-
    ! allocate things
    if(use_singles) then
       call mem_alloc( t1,     DECinfo%ccMaxIter )
@@ -1954,11 +1940,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   print *,"ALLOCS5 DONE"
-   !iajb=array_minit( [no,nv,no,nv], 4, local=local, atype='TDAR' )
-   call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+   !call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+   call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_zero(iajb)
-   print *,"ALLOCS6 DONE"
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
@@ -1973,7 +1957,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(use_singles)then
 
       call array_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
-      call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+      !call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+      call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR' )
 
       call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
@@ -1982,7 +1967,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       !if MP2, just zero the array, and keep it in PDM all the time
       atype = 'TDAR'
-      call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
+      !call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
+      call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype )
       if(ccmodel == MODEL_MP2 )then
          old_iter = 0
       else
@@ -2129,7 +2115,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_minit(omega1(iter), ampl2_dims, 2 , local=local, atype='LDAR' )
             call array_zero(omega1(iter))
          endif
-         call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         !call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR')
          call array_zero(omega2(iter))
 
 
@@ -2243,8 +2230,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_zero(omega1_opt)
          end if
 
-         call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         !call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         !call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR')
+         call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
          call array_zero( omega2_opt )
          call array_zero( t2_opt     )
 
@@ -2362,7 +2351,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
                call array_free(omega2_prec)
@@ -2372,7 +2362,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_cp_data(t1_opt,t1(iter+1))
                   call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
                endif
-               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if

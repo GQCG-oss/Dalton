@@ -1006,8 +1006,6 @@ contains
     at  = 'LDAR'
     if(present(atype)) at  = atype
 
-    print *,"allocating",loc,arr%initialized,at
-
     !Default is to check at, but forcable with local
     if(present(local))then
        loc = local
@@ -1253,10 +1251,11 @@ contains
     
     
     !find space in the persistent array
-    p_arr%curr_addr_on_node  = get_free_address(.true.)
-    addr                     = p_arr%curr_addr_on_node
-    p_arr%arrays_in_use      = p_arr%arrays_in_use + 1
-    p_arr%a(addr)%local_addr = addr
+    p_arr%curr_addr_on_node   = get_free_address(.true.)
+    addr                      = p_arr%curr_addr_on_node
+    p_arr%arrays_in_use       = p_arr%arrays_in_use + 1
+    p_arr%a(addr)%local_addr  = addr
+    p_arr%a(addr)%initialized = .true.
 
     !SET MODE
     p_arr%a(addr)%mode      = nmodes
@@ -1345,6 +1344,7 @@ contains
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
     call array_free_basic(p_arr%a(arr%local_addr)) 
+    call array_reset_value_defaults(p_arr%a(arr%local_addr)) 
     call array_nullify_pointers(arr)
 
   end subroutine array_free_standard
