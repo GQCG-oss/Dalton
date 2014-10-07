@@ -2622,7 +2622,8 @@ contains
     call print_norm(test2)
 
     call mem_alloc(ord,3)
-    ord = [3,1,2]
+    !works with 312, and 231 later
+    ord = [2,1,3]
     call array_contract_simple(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
     call lsmpi_barrier(infpar%lg_comm)
     call mem_dealloc(ord)
@@ -2635,8 +2636,10 @@ contains
     endif
     !element-by-element comparison
     call mem_alloc(buf2,nv*no*nv)
+    call mem_alloc(buf1,nv*no*nv)
     buf2 = 0.0E0_realk
-    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,3,1])
+    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf1,test3%nelms)
+    call array_reorder_3d(1.0E0_realk,buf1,nv,no,nv,[2,1,3],0.0E0_realk,buf2)
     call lsmpi_barrier(infpar%lg_comm)
     if(master)then
        do i=1,test3%nelms

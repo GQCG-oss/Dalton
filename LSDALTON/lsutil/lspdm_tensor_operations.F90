@@ -1869,7 +1869,7 @@ module lspdm_tensor_operations_module
      integer :: ibufA, ibufB, nbuffsA,nbuffsB
      integer :: gc, gm(C%mode), ro(C%mode), locC
      integer :: mA(A%mode), mB(B%mode), tdimA(A%mode), tdimB(B%mode), ordA(A%mode), ordB(B%mode)
-     integer :: tdimC(C%mode)
+     integer :: tdimC(C%mode),tdim_product(C%mode)
      integer :: nelmsTA, nelmsTB
      integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
@@ -1998,7 +1998,6 @@ module lspdm_tensor_operations_module
         do i = 1,nmodes2c
            ordA(k-1+i) = m2cA(i)
            ordB(i)     = m2cB(i)
-           k_gemm = k_gemm * tdimA(m2cA(i))
         end do
 
         l = 1
@@ -2016,6 +2015,7 @@ module lspdm_tensor_operations_module
            endif
         enddo
 
+        print *,infpar%lg_mynum,"ordA",ordA,"ordB",ordB
         !zero local wC and accumulate all contributions therein
 #ifdef VAR_LSDEBUG
         wA = 0.0E0_realk
@@ -2088,14 +2088,19 @@ module lspdm_tensor_operations_module
         end do
 
         call get_tile_dim(tdimC,C,gm)
+
+        do i=1,C%mode
+           tdim_product(i) = tdimC(ro(i))
+        enddo
+
         !ADD THE FINALIZED TILE TO THE LOCAL TILE IN THE CORRECT ORDER
         select case (C%mode)
         case(2)
-           call array_reorder_2d(pre1,wC,tdimC(1),tdimC(2),order,pre2,C%ti(locC)%t)
+           call array_reorder_2d(pre1,wC,tdim_product(1),tdim_product(2),order,pre2,C%ti(locC)%t)
         case(3)
-           call array_reorder_3d(pre1,wC,tdimC(1),tdimC(2),tdimC(3),order,pre2,C%ti(locC)%t)
+           call array_reorder_3d(pre1,wC,tdim_product(1),tdim_product(2),tdim_product(3),order,pre2,C%ti(locC)%t)
         case(4)
-           call array_reorder_4d(pre1,wC,tdimC(1),tdimC(2),tdimC(3),tdimC(4),order,pre2,C%ti(locC)%t)
+           call array_reorder_4d(pre1,wC,tdim_product(1),tdim_product(2),tdim_product(3),tdim_product(4),order,pre2,C%ti(locC)%t)
         case default
             call lsquit("ERROR(lspdm_array_contract_simple): sorting C not implemented",-1)
         end select

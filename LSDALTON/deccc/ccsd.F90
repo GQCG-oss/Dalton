@@ -1772,7 +1772,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      maxts=0
      nbuff=0
-     if(((scheme==4.and.iter/=1).or.scheme==3).and.ccmodel > MODEL_CC2.and..not.local)then
+     if(((scheme==4.and.iter/=1).or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
         maxts = max(govov%tsize,maxts)
         nbuff=nbuff+1
      endif
@@ -1788,13 +1788,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         buf_size=0
      endif
 
-     if(((scheme==4.and.iter/=1).or.scheme==3).and.ccmodel > MODEL_CC2.and..not.local)then
+     if(((scheme==4.and.iter/=1).or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
         call mem_alloc(buf1,buf_size)
         if(lock_outside)then
            call arr_lock_wins( govov  , 's', mode )
         endif
         call memory_allocate_array_dense( govov )
-        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2)!,wrk=buf1,iwrk=buf_size)
+        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2,wrk=buf1,iwrk=buf_size)
         if(.not.lock_outside)then
            call mem_dealloc(buf1)
         endif
@@ -1814,8 +1814,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc(buf3,buf_size)
 
         if( Ccmodel>MODEL_CC2 )then
-           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2)!,wrk=buf2,iwrk=buf_size)
-           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2)!,wrk=buf3,iwrk=buf_size)
+           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2,wrk=buf2,iwrk=buf_size)
+           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2,wrk=buf3,iwrk=buf_size)
         endif
 
         if(.not.lock_outside)then
@@ -1965,14 +1965,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
         call mem_dealloc(sio4)
 
-
         call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
 
-
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_Bcnd_work )
-        if((scheme==4.and.iter/=1).or.scheme==3.and..not.local)then
+        if(((scheme==4.and.iter/=1).or.(scheme==3)).and..not.local)then
 
            call arr_unlock_wins(govov, .true.)
            if(lock_outside)call mem_dealloc(buf1)
@@ -2008,7 +2006,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
-
 
         !DEALLOCATE STUFF
         if(scheme==4)then
