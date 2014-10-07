@@ -1879,6 +1879,7 @@ module lspdm_tensor_operations_module
      integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
 
+#ifdef VAR_MPI
      master = (infpar%lg_mynum == infpar%master)
 
      test_all_master_access = (A%access_type == MASTER_ACCESS).or.&
@@ -2124,6 +2125,9 @@ module lspdm_tensor_operations_module
         call mem_dealloc(wB)
         call mem_dealloc(wC)
      endif
+#else
+     call lsquit("ERROR(lspdm_array_contract_simple): cannot be called without MPI",-1)
+#endif
   end subroutine lspdm_array_contract_simple
 
   !> \brief add tiled distributed data to a basic fortran type array
