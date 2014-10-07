@@ -15,6 +15,7 @@ MODULE DEC_settings_mod
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_type, only: LSMPIASYNCP
 #endif
 
 contains
@@ -69,7 +70,9 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
-    DECinfo%dyn_load             = .false.
+#ifdef VAR_MPI
+    DECinfo%dyn_load             = LSMPIASYNCP
+#endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
     DECinfo%array_test           = .false.
@@ -186,6 +189,9 @@ contains
     DECinfo%array4OnFile            = .false.
     DECinfo%array4OnFile_specified  = .false.
 
+    ! ccsd(t) settings
+    DECinfo%abc = .false.
+    DECinfo%abc_tile_size = 1
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -368,6 +374,10 @@ contains
           ! Number of residual vectors to save when solving CC amplitude equation
        case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
 
+          ! CCSD(T) INFO
+          ! ==============
+       case('.PT_ABC'); DECinfo%abc=.true.
+       case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
           ! CHOICE OF ORBITALS
           ! ==================
@@ -494,6 +504,7 @@ contains
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
