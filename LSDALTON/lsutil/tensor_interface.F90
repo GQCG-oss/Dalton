@@ -105,78 +105,104 @@ contains
   end subroutine copy_array
 
 
-  ! x = x + b * y
+  ! x = (a *) x + b * y
   !> \brief add a scaled array to another array. The data may have different
   !distributions in the two arrays to be added
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_normal(x,b,y)
-    implicit none
-    !> array input, this is the result array with overwritten data
-    type(array),intent(inout) :: x
-    !> array to add
-    type(array),intent(in) :: y
-    !> scaling factor for array y
-    real(realk),intent(in) :: b
-    real(realk),pointer :: buffer(:)
-    integer :: ti,i,nel,o(x%mode)
-    do i=1,x%mode
-      o(i) = i
-    enddo
+  subroutine array_add_normal(x,b,y,a,order)
+     implicit none
+     !> array input, this is the result array with overwritten data
+     type(array),intent(inout) :: x
+     !> array to add
+     type(array),intent(in) :: y
+     !> scaling factor for array y
+     real(realk),intent(in) :: b
+     !> order the second array such that it fits the first
+     integer, intent(in), optional :: order(x%mode)
+     !> optional argument to scale x on the fly
+     real(realk), intent(in), optional :: a
+     real(realk),pointer :: buffer(:)
+     real(realk) :: pre2
+     integer :: ti,i,nel,o(x%mode)
+     pre2 = 1.0E0_realk
+     if(present(a))pre2 = a
 
-    select case(x%itype)
-    case(DENSE)
-      select case(y%itype)
-      case(DENSE)
-        call daxpy(int(x%nelms),b,y%elm1,1,x%elm1,1)
-      case(REPLICATED)
-        call daxpy(int(x%nelms),b,y%elm1,1,x%elm1,1)
-        call array_sync_replicated(x)
-      case(TILED_DIST)
-        call mem_alloc(buffer,y%tsize)
-        do ti=1,y%ntiles
-          call get_tile_dim(nel,y,ti)
-          call array_get_tile(y,ti,buffer,nel)
-          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
-        enddo
-        call mem_dealloc(buffer)
-      case default
-        print *,x%itype,y%itype
-        call lsquit("ERROR(array_add):not yet implemented",DECinfo%output)
-      end select
-    case(REPLICATED)
-      select case(y%itype)
-      case(DENSE)
-        call daxpy(int(x%nelms),b,y%elm1,1,x%elm1,1)
-        call array_sync_replicated(x)
-      case(REPLICATED)
-        call daxpy(int(x%nelms),b,y%elm1,1,x%elm1,1)
-        call array_sync_replicated(x)
-      case(TILED_DIST)
-        call mem_alloc(buffer,y%tsize)
-        do ti=1,y%ntiles
-          call get_tile_dim(nel,y,ti)
-          call array_get_tile(y,ti,buffer,nel)
-          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
-        enddo
-        call mem_dealloc(buffer)
-        call array_sync_replicated(x)
-      case default
-        print *,x%itype,y%itype
-        call lsquit("ERROR(array_add):not yet implemented",DECinfo%output)
-      end select
-    case(TILED_DIST)
-      select case(y%itype)
-      case(TILED_DIST)
-        call array_add_par(x,b,y)
-      case default
-        print *,x%itype,y%itype
-        call lsquit("ERROR(array_add):not yet implemented",DECinfo%output)
-      end select
-    case default
-      print *,x%itype,y%itype
-      call lsquit("ERROR(array_add):not yet implemented",DECinfo%output)
-    end select
+     if(x%mode/=y%mode)call lsquit("ERROR(array_add_normal): modes of arrays not compatible",-1)
+
+     do i=1,x%mode
+        if(present(order))then
+           o(i) = order(i)
+        else
+           o(i) = i
+        endif
+        if(x%dims(i) /= y%dims(o(i)))call lsquit("ERROR(array_add_normal): dims of arrays not &
+           &compatible (with the given order)",-1)
+     enddo
+
+     select case(x%itype)
+
+     case(DENSE,REPLICATED)
+
+        select case(y%itype)
+        case(DENSE,REPLICATED)
+
+           if( x%mode == 1 .or. .not.present(order))then
+              if(present(a))then
+                 if(a==0.0E0_realk)then
+                    x%elm1 = 0.0E0_realk
+                 else if(a/=1.0E0_realk)then
+                    call dscal(int(x%nelms),a,x%elm1,1)
+                 endif
+              endif
+              call daxpy(int(x%nelms),b,y%elm1,1,x%elm1,1)
+           else
+              select case(x%mode)
+              case(2)
+                 call array_reorder_2d(b,y%elm1,y%dims(1),y%dims(2),o,pre2,x%elm1)
+              case(3)
+                 call array_reorder_3d(b,y%elm1,y%dims(1),y%dims(2),y%dims(3),o,pre2,x%elm1)
+              case(4)
+                 call array_reorder_4d(b,y%elm1,y%dims(1),y%dims(2),y%dims(3),y%dims(4),o,pre2,x%elm1)
+              case default
+                 call lsquit("ERROR(array_add_normal): mode not implemented",-1)
+              end select
+           end if
+
+           if(x%itype==REPLICATED)call array_sync_replicated(x)
+
+        case(TILED_DIST)
+
+           call mem_alloc(buffer,y%tsize)
+           !TODO:IMPLEMENT MULTIPLE BUFFERING
+           do ti=1,y%ntiles
+              call get_tile_dim(nel,y,ti)
+              call array_get_tile(y,ti,buffer,nel)
+              call tile_in_fort(b,buffer,ti,y%tdim,pre2,x%elm1,x%dims,x%mode,o)
+           enddo
+           call mem_dealloc(buffer)
+
+           if(x%itype==REPLICATED)call array_sync_replicated(x)
+
+        case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(array_add):not yet implemented y%itype",DECinfo%output)
+        end select
+
+     case(TILED_DIST)
+
+        select case(y%itype)
+        case(TILED_DIST)
+           call array_add_par(pre2,x,b,y,o)
+        case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(array_add):not yet implemented y%itype",DECinfo%output)
+        end select
+
+     case default
+           print *,x%itype,y%itype
+           call lsquit("ERROR(array_add_normal):not yet implemented x%itype",DECinfo%output)
+     end select
   end subroutine array_add_normal
 
   ! x = x + b * y
@@ -259,7 +285,7 @@ contains
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
   !> \author Patrick Ettenhuber
-  subroutine array_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+  subroutine array_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
      implicit none
      real(realk), intent(in)    :: pre1,pre2
      type(array), intent(in)    :: A,B
@@ -276,7 +302,7 @@ contains
      integer :: rorder(C%mode)
 
      if( (A%mode-nmodes2c) + (B%mode-nmodes2c) /= C%mode)then
-        call lsquit("ERROR(array_contract_simple): invalid contraction pattern",-1)
+        call lsquit("ERROR(array_contract): invalid contraction pattern",-1)
      endif
 
      do i = 1,C%mode
@@ -285,7 +311,7 @@ contains
 
      do i = 1,nmodes2c
         if(A%dims(m2cA(i))/=B%dims(m2cB(i)))then
-           call lsquit("ERROR(array_contract_simple): Contracted modes in A and B incompatible",-1)
+           call lsquit("ERROR(array_contract): Contracted modes in A and B incompatible",-1)
         endif
      enddo
      k = 1
@@ -296,7 +322,7 @@ contains
         enddo
         if(.not.contraction_mode)then
            if(A%dims(i) /= C%dims(rorder(k)))then
-              call lsquit("ERROR(array_contract_simple): Uncontracted modes in A and C incompatible",-1)
+              call lsquit("ERROR(array_contract): Uncontracted modes in A and C incompatible",-1)
            endif
            k=k+1
         endif
@@ -308,14 +334,14 @@ contains
         enddo
         if(.not.contraction_mode)then
            if(B%dims(i) /= C%dims(rorder(k)))then
-              call lsquit("ERROR(array_contract_simple): Uncontracted modes in B and C incompatible",-1)
+              call lsquit("ERROR(array_contract): Uncontracted modes in B and C incompatible",-1)
            endif
            k=k+1
         endif
      enddo
 
      if(k-1/=C%mode)then
-        call lsquit("ERROR(array_contract_simple): this should have resulted in a seg fault earlier",-1)  
+        call lsquit("ERROR(array_contract): this should have resulted in a seg fault earlier",-1)  
      end if
 
      select case(A%itype)
@@ -336,7 +362,7 @@ contains
      end select
 
 
-  end subroutine array_contract_simple
+  end subroutine array_contract
 
 
   !> \brief perform a contraction of the outer indices of two arrays, r means
@@ -983,7 +1009,7 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_minit(arr, dims, nmodes, local, atype, tdims)
+  subroutine array_minit(arr, dims, nmodes, local, atype, tdims, fo)
     !> the output array
     type(array),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
@@ -991,6 +1017,7 @@ contains
     integer, intent(in),optional     :: tdims(nmodes)
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
+    integer,intent(in),optional :: fo
     character(4)  :: at
     integer       :: it
     logical :: loc
@@ -1039,12 +1066,12 @@ contains
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TILED_DIST
-        call array_init_tiled(arr, dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims)
+        call array_init_tiled(arr, dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('RTAR')
         !INITIALIZE a Replicated Tiled ARray (all nodes have all tiles)
         it               = TILED
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims)
+        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,force_offset = fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
@@ -1055,7 +1082,7 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TILED_DIST ! for array_init_tiled routine
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,ps_d=.true.)
+        call array_init_tiled(arr,dims,nmodes,at,it,pdm=MASTER_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
@@ -1075,7 +1102,7 @@ contains
     arr%initialized=.true.
   end subroutine array_minit
 
-  subroutine array_ainit(arr, dims, nmodes, local, atype, tdims )
+  subroutine array_ainit(arr, dims, nmodes, local, atype, tdims, fo )
     !> the output array
     type(array),intent(inout) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
@@ -1083,6 +1110,7 @@ contains
     integer, intent(in),optional     :: tdims(nmodes)
     logical, intent(in),optional     :: local
     character(4),intent(in),optional :: atype
+    integer,intent(in),optional :: fo
     character(4)  :: at
     integer       :: it
     logical :: loc
@@ -1132,7 +1160,7 @@ contains
       case('TDAR')
         !INITIALIZE a Tiled Distributed ARray
         it               = TILED_DIST
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims)
+        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REAR')
         !INITIALIZE a REplicated ARray
@@ -1143,7 +1171,7 @@ contains
       case('TDPD')
         !INITIALIZE a Tiled Distributed Pseudo Dense array
         it               = TILED_DIST ! for array_init_tiled routine
-        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,ps_d=.true.)
+        call array_init_tiled(arr,dims,nmodes,at,it,pdm=ALL_ACCESS,tdims=tdims,ps_d=.true.,force_offset=fo)
         arr%itype        = DENSE ! back to dense after init
         CreatedPDMArrays = CreatedPDMArrays+1
       case('REPD')
@@ -1166,7 +1194,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief MAIN ARRAY INITIALIZATION ROUTINE
-  subroutine  array_init(arr,dims,nmodes,arr_type,pdm,tdims)
+  subroutine  array_init(arr,dims,nmodes,arr_type,pdm,tdims,fo)
     implicit none
     !> output array
     type(array),intent(inout) :: arr
@@ -1178,7 +1206,7 @@ contains
     !> if tiled then the size of the tile in each mode can be specified explicitly 
     integer, optional :: tdims(nmodes)
     !> specifies the type of access to the array (NO_PDM_ACCESS,MASTER_ACCESS,ALL_ACCESS)
-    integer, optional :: pdm
+    integer, optional :: pdm,fo
     integer :: sel_type,pdmtype,it
     logical :: zeros_in_tiles,wcps
     !choose which kind of array
@@ -1213,9 +1241,9 @@ contains
         arr%atype = 'REAR'
         CreatedPDMArrays = CreatedPDMArrays+1
       case(TILED)
-        call array_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,tdims=tdims)
+        call array_init_tiled(arr,dims,nmodes,'TIAR',it,pdmtype,tdims=tdims,force_offset=fo)
       case(TILED_DIST)
-        call array_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,tdims=tdims)
+        call array_init_tiled(arr,dims,nmodes,'TDAR',it,pdmtype,tdims=tdims,force_offset=fo)
         CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%access_type   = pdmtype
@@ -1885,7 +1913,7 @@ contains
   end subroutine array_print_norm_nrm
   subroutine array_print_norm_customprint(arr,msg,returnsquared)
     implicit none
-    character(ARR_MSG_LEN),intent(in) :: msg
+    character*(*),intent(in) :: msg
     type(array),intent(in) :: arr
     logical,intent(in),optional :: returnsquared
     real(realk)::norm
@@ -2625,22 +2653,24 @@ contains
     call print_norm(test2)
 
     call mem_alloc(ord,3)
+    call mem_alloc(buf2,nv*no*nv)
+
     ord = [2,1,3]
-    call array_contract_simple(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
-    call lsmpi_barrier(infpar%lg_comm)
+    buf2 = 0.0E0_realk
+
+    call arr_lock_local_wins(test3,'e')
+    call array_contract(1.0E0_realk,test1,test2,[2,3],[3,2],2,0.0E0_realk,test3,ord)
+    call arr_unlock_wins(test3,.true.)
+
     call mem_dealloc(ord)
 
-    call print_norm(test3,normher)
+    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,1,3])
+    call print_norm(buf2,test3%nelms,normher)
     if(master)then
        write(DECinfo%output,'("PDM CONTRACTION: ",f20.15)') normher
        if(abs(normher-ref)>1.0E-10_realk) teststatus=" FAILED"
        write (DECinfo%output,'("PDCONTR : NORM, TEST STATUS: ",f19.10," : ",A7)') ref,teststatus
     endif
-    !element-by-element comparison
-    call mem_alloc(buf2,nv*no*nv)
-    buf2 = 0.0E0_realk
-    call array_gather(1.0E0_realk,test3,0.0E0_realk,buf2,test3%nelms,oo=[2,1,3])
-    call lsmpi_barrier(infpar%lg_comm)
     if(master)then
        do i=1,test3%nelms
           if(abs(buf2(i)-buf3(i))>1.0E-10_realk)then

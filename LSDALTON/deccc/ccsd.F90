@@ -30,13 +30,7 @@ module ccsd_module
 #endif
 
   use integralparameters!, only: AORdefault
-  use tensor_interface_module!, only: precondition_doubles_parallel
-  use lspdm_tensor_operations_module!, only: array_init, array_change_atype_to_rep,&
-  use tensor_basic_module!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
-!         & NO_PDM,MASTER_ACCESS,REPLICATED,ALL_ACCESS,ass_1to3,ass_1to2,&
-!         & ass_1to4,ass_2to1,&
-!         & ass_4to1,ARR_MSG_LEN
-  use tensor_type_def_module
+  use tensor_interface_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -935,7 +929,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      TYPE(DECscreenITEM)    :: DecScreen
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
-     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
+     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os
      integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
@@ -1005,6 +999,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      o2v2                     = int((i8*nv2)*no2,kind=long)
      nor                      = no*(no+1)/2
      nvr                      = nv*(nv+1)/2
+     vs                       = t2%tdim(1)
+     os                       = t2%tdim(3)
      
      ! Memory info
      ! ***********
@@ -1280,7 +1276,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
-        call array_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR' )
+        call array_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
         call array_zero( u2 )
         if(master)then 
            call array_add( u2,  2.0E0_realk, t2%elm1, order=[2,1,3,4] )
@@ -1318,8 +1314,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         else if(scheme==2.or.scheme==3)then
            write(def_atype,'(A4)')'TDAR'
         endif
-        call array_ainit(gvvooa, [nv,no,no,nv],4, local=local, atype=def_atype )
-        call array_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype )
+        call array_ainit(gvvooa, [nv,no,no,nv],4, local=local, atype=def_atype, tdims=[vs,os,os,vs])
+        call array_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os])
         call array_zero(gvvooa)
         call array_zero(gvoova)
      endif
@@ -1996,12 +1992,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !Get the C2 and D2 terms
         !***********************
-        if(scheme==4.or.scheme==3.or.scheme==2)then
+        if(scheme==4.or.scheme==3)then
            call get_cnd_terms_mo_3n4(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
               &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
-        !else if(scheme==2)then
-        !   call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-        !      &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
+        else if(scheme==2)then
+           call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
+              &scheme,lock_outside)
         endif
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
@@ -2616,9 +2612,168 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
        call lsmpi_poke()
   end subroutine check_job
-  
+
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
   !using a simple mpi-parallelization
+  !> \author Patrick Ettenhuber
+  !> \Date January 2013 
+  subroutine get_cnd_terms_mo_2(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
+        &no,nv,omega2,s,lock_outside)
+     implicit none
+     !> input some empty workspace of zise v^2*o^2 
+     real(realk), intent(inout) :: w1(:)
+     real(realk),pointer :: w2(:),w3(:)
+     !> the t1-transformed integrals
+     type(array), intent(inout) :: govov,gvvoo,gvoov
+     !> number of occupied orbitals 
+     integer, intent(in) :: no
+     !> nuber of virtual orbitals
+     integer, intent(in) :: nv
+     !> ampitudes on input ordered as abij
+     !real(realk), intent(in) :: t2(:)
+     type(array), intent(inout) :: t2
+     !> u on input u{aibj}=2t{aibj}-t{ajbi} ordered as abij
+     type(array), intent(inout) :: u2
+     !> the residual to add the contribution
+     type(array), intent(inout) :: omega2
+     !> integer specifying the scheme
+     integer, intent(in) :: s
+     !> specifiaction if lock stuff
+     logical, intent(in) :: lock_outside
+
+     !INTERNAL VARIABLES:
+     type(array) :: Dvoov, Lovov, Coovv, O_pre
+     integer :: fdim1(4), sdim1(4), fdim2(4), sdim2(4),ord(4)
+     integer :: os, vs
+     integer(kind=ls_mpik) :: me, nnod, mode
+     integer(kind=8) :: o2v2
+     logical :: master
+     character(4) :: atype
+
+     call time_start_phase(PHASE_WORK)
+
+     me     = 0_ls_mpik
+     nnod   = 1_ls_mpik
+#ifdef VAR_MPI
+     nnod   = infpar%lg_nodtot
+     me     = infpar%lg_mynum
+     mode   = MPI_MODE_NOCHECK
+#endif
+     o2v2   = int((i8*no)*no*nv*nv,kind=8)
+     master = ( me == 0_ls_mpik )
+     os     = govov%tdim(1)
+     vs     = govov%tdim(2)
+     atype  = "TDAR"
+
+
+     !Cterm
+     fdim1 = [no,no,nv,nv]
+     sdim1 = [os,os,vs,vs]
+     call array_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype)
+     call arr_lock_local_wins(Coovv,'e',mode)
+
+     !Build C intermediate
+     ord = [2,3,1,4]
+     call array_add(Coovv,1.0E0_realk,gvvoo, a = 0.0E0_realk, order = ord)
+     ord = [3,2,1,4]
+     call array_contract(-0.5E0_realk,t2,govov,[2,3],[2,3],2,1.0E0_realk,Coovv,ord)
+
+     !Inser synchronizatipn point
+     fdim1 = [nv,nv,no,no]
+     sdim1 = [vs,vs,os,os]
+     call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call arr_lock_local_wins(O_pre,'e',mode)
+
+     !now allow for access to the completed tiles
+     call arr_unlock_wins(Coovv,.true.)
+
+     ord = [4,1,2,3]
+     call array_contract(-1.0E0_realk,t2,Coovv,[2,3],[4,1],2,0.0E0_realk,O_pre,ord)
+     
+     !synchronize
+     call array_free(Coovv)
+
+     call arr_unlock_wins(O_pre,.true.)
+
+     call lsmpi_barrier(infpar%lg_comm)
+     call print_norm(O_pre,'NORM: O_pre: ')
+
+     !add in permutations (1+0.5P_ij)
+     call arr_lock_local_wins(omega2,'e',mode)
+     call array_add(omega2,1.0E0_realk,O_pre)
+     ord = [1,2,4,3]
+     call array_add(omega2,0.5E0_realk,O_pre,order=ord)
+
+     !synchronize
+     call array_free(O_pre)
+
+     call arr_unlock_wins(omega2,.true.)
+
+     !call print_norm(omega2)
+
+
+     !Dterm
+     !Calculate intermediates needed in D2 term
+     fdim1  = [nv,no,no,nv]
+     sdim1  = [vs,os,os,vs]
+     fdim2  = govov%dims
+     sdim2  = govov%tdim
+     call array_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype)
+     call array_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype)
+     call arr_lock_local_wins(Dvoov,'e',mode)
+     call arr_lock_local_wins(Lovov,'e',mode)
+
+     !careful gvvoo is ordered as (aijb) and gvoov is ordered as (ajbi) 
+     ord = [1,4,2,3]
+     call array_add(Dvoov, 2.0E0_realk,gvoov, a = 0.0E0_realk, order = ord)
+     ord = [1,3,2,4]
+     call array_add(Dvoov,-1.0E0_realk,gvvoo, order = ord)
+     call arr_unlock_wins(Dvoov,.true.)
+
+     ord = [1,4,3,2]
+     call array_add(Lovov, 2.0E0_realk,govov, a = 0.0E0_realk)
+     call array_add(Lovov,-1.0E0_realk,govov,order = ord )
+     call arr_unlock_wins(Lovov,.true.)
+
+     !u2 is saved as (baij) 
+     ord = [1,2,3,4]
+     call array_contract(0.5E0_realk,u2,Lovov,[4,1],[1,2],2,1.0E0_realk,Dvoov,ord)
+
+     !Inser synchronizatipn point
+     fdim1 = [nv,nv,no,no]
+     sdim1 = [vs,vs,os,os]
+     call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call arr_lock_local_wins(O_pre,'e',mode)
+
+     call arr_unlock_wins(Dvoov,.true.)
+
+     !synchronization point
+     call array_free(Lovov)
+
+     !u2 is saved as (baij) 
+     ord = [3,1,4,2]
+     call array_contract(0.5E0_realk,u2,Dvoov,[1,4],[4,3],2,0.0E0_realk,O_pre,ord)
+
+     !synchronization point
+     call array_free(Dvoov)
+
+     call arr_unlock_wins(O_pre,.true.)
+
+     !add in permutations P_ij^ab (1+0.5P_ij)
+     call arr_lock_local_wins(omega2,'e',mode)
+     call array_add(omega2,1.0E0_realk,O_pre)
+
+     call array_free(O_pre)
+
+     call arr_unlock_wins(omega2,.true.)
+
+     !call print_norm(omega2)
+
+  end subroutine get_cnd_terms_mo_2
+  
+  !> \brief Routine to get the c and the d terms from t1 tranformed integrals
+  !using a simple mpi-parallelization, only for schemes 4 and 3, 2 is also
+  !possible, but some functions seem to be buggy.
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
   subroutine get_cnd_terms_mo_3n4(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
@@ -2974,6 +3129,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==4)then
            call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
            call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w2)
+           print  *,"Lvoov norm scheme 4",norm2(w2(1:o2v2))
         else if(s==3)then
            call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w1)
            call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w1)
@@ -3053,6 +3209,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==3.or.s==4)then
            call array_reorder_4d(2.0E0_realk,govov%elm1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,w1)
            call array_reorder_4d(-1.0E0_realk,govov%elm1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,w1)
+           print  *,"Lovov norm scheme 4",norm2(w1(1:o2v2))
         endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

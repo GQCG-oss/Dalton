@@ -1283,20 +1283,27 @@ module lspdm_tensor_operations_module
 #endif
   end function array_ddot_par
 
+  !> x = a * x + b * y
   !> \brief array addition routine for TILED_DIST arrays
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine array_add_par(x,b,y)
+  subroutine array_add_par(a,x,b,y,order)
     implicit none
     !> array to collect the result in
     type(array), intent(inout) :: x
     !> array to add to x
     type(array), intent(in) :: y
     !> scale factor without intent, because it might be overwiritten for the slaves
-    real(realk) :: b
+    real(realk),intent(in) :: a,b
+    !> order y to adapt to dims of b
+    integer, intent(in) :: order(x%mode)
     real(realk),pointer :: buffer(:)
-    integer :: lt
+    real(realk) :: prex, prey
+    integer :: i,lt
+    integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
 #ifdef VAR_MPI
+    prex = a
+    prey = b
 
     !check if the access_types are the same
     if(x%access_type/=y%access_type)then
@@ -1308,34 +1315,73 @@ module lspdm_tensor_operations_module
     !broadcasted here
     if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
-      call ls_mpibcast(b,infpar%master,infpar%lg_comm)
-    else if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum/=infpar%master)then
-      call ls_mpibcast(b,infpar%master,infpar%lg_comm)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call ls_mpi_buffer(order,x%mode,infpar%master)
+      call ls_mpi_buffer(prex,infpar%master)
+      call ls_mpi_buffer(prey,infpar%master)
+      call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
     endif
 
-    !check for the same distribution of the arrays
-    if(x%tdim(1)==y%tdim(1).and.x%tdim(2)==y%tdim(2).and.&
-      &x%tdim(3)==y%tdim(3).and.y%tdim(4)==y%tdim(4))then
+    do i=1,x%mode
+       if(x%tdim(i) /= y%tdim(order(i)))call lsquit("ERROR(array_add_par): tdims of arrays not &
+          &compatible (with the given order)",-1)
+    enddo
       
-      !allocate buffer for the tiles
-      call mem_alloc(buffer,x%tsize)
+    !allocate buffer for the tiles
+    call mem_alloc(buffer,x%tsize)
   
-      !lsoop over local tiles of array x
-      do lt=1,x%nlti
-        call array_get_tile(y,x%ti(lt)%gt,buffer,x%ti(lt)%e)
-        call daxpy(x%ti(lt)%e,b,buffer,1,x%ti(lt)%t,1)
-      enddo
+    !lsoop over local tiles of array x
+    do lt=1,x%nlti
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
 
-      call mem_dealloc(buffer)
-    else
-      call lsquit("ERROR(array_add_par):NOT YET IMPLEMENTED, if the arrays have&
-      & different distributions",DECinfo%output)
-    endif
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(array_add_par): #elements in tiles mismatch",-1)
+
+       call array_get_tile(y,ymidx,buffer,ynels)
+
+       select case(x%mode)
+       case(1)
+          if(prex==0.0E0_realk)then
+
+             x%ti(lt)%t = 0.0E0_realk
+
+          else if(prex /= 1.0E0_realk) then
+
+             call dscal(x%ti(lt)%e,prex,x%ti(lt)%t,1)
+
+          endif
+
+          call daxpy(x%ti(lt)%e,prey,buffer,1,x%ti(lt)%t,1)
+
+       case(2)
+          call array_reorder_2d(prey,buffer,ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
+       case(3)
+          call array_reorder_3d(prey,buffer,ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
+       case(4)
+          call array_reorder_4d(prey,buffer,ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
+       case default
+          call lsquit("ERROR(array_add_par): mode>4 not yet implemented",-1)
+       end select
+    enddo
+
+    call mem_dealloc(buffer)
 
     !crucial barrier, because direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
 #endif
-  end subroutine array_add_par
+ end subroutine array_add_par
 
 
   !> \brief array copying routine for TILED_DIST arrays
@@ -1680,7 +1726,7 @@ module lspdm_tensor_operations_module
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief initialized a distributed tiled array
-  subroutine array_init_tiled(arr,dims,nmodes,at,it,pdm,tdims,ps_d)
+  subroutine array_init_tiled(arr,dims,nmodes,at,it,pdm,tdims,ps_d,force_offset)
     implicit none
     type(array),intent(inout) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
@@ -1688,6 +1734,7 @@ module lspdm_tensor_operations_module
     integer :: it, pdm
     integer,optional :: tdims(nmodes)
     logical, optional :: ps_d
+    integer,intent(in), optional :: force_offset
     integer(kind=long) :: i,j
     integer ::addr,pdmt,k,div
     integer :: dflt(nmodes),cdims
@@ -1826,7 +1873,8 @@ module lspdm_tensor_operations_module
     !if ALL_ACCESS only all have to know the addresses
     if(p_arr%a(addr)%access_type==ALL_ACCESS)call arr_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 
-    call get_distribution_info(p_arr%a(addr))
+    call get_distribution_info(p_arr%a(addr),force_offset = force_offset)
+
 #ifdef VAR_MPI
     if( parent )then
       lg_buf(infpar%lg_mynum+1)=addr 
@@ -4553,6 +4601,23 @@ module lspdm_tensor_operations_module
 
   end subroutine arr_lock_wins
 
+  subroutine arr_lock_local_wins(arr,locktype,assert)
+    implicit none
+    type(array) :: arr
+    character, intent(in) :: locktype
+    integer(kind=ls_mpik), optional,intent(in) :: assert
+    integer(kind=ls_mpik) :: node
+    integer :: i,gt
+    node = infpar%lg_mynum
+
+    do i=1,arr%nlti
+       gt = arr%ti(i)%gt
+       call lsmpi_win_lock(node,arr%wi(gt),locktype,ass=assert)
+       arr%lock_set(gt) = .true.
+    enddo
+
+  end subroutine arr_lock_local_wins
+
   !\> \brief unlock all windows of a tensor 
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
@@ -4639,6 +4704,7 @@ module lspdm_tensor_operations_module
     !if( parent .and. lspdm_use_comm_proc ) then
     !  call pdm_array_sync(infpar%pc_comm,JOB_FREE_ARR_PDM,arr,loc_addr=.true.)
     !endif
+    call lsmpi_barrier(infpar%lg_comm)
 
     p_arr%free_addr_on_node(arr%local_addr)=.true.
     p_arr%arrays_in_use = p_arr%arrays_in_use - 1 
@@ -4648,9 +4714,10 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine array_free_pdm
 
-  subroutine get_distribution_info(arr)
+  subroutine get_distribution_info(arr,force_offset)
     implicit none
     type(array),intent(inout) :: arr
+    integer, intent(in), optional :: force_offset
     integer :: i,ntiles2dis
     logical :: parent
     integer(kind=ls_mpik) :: lg_me,lg_nnod,pc_me,pc_nnod,buf(2)
@@ -4668,14 +4735,21 @@ module lspdm_tensor_operations_module
     !endif
  
     if(arr%access_type==NO_PDM_ACCESS.or.arr%itype==TILED)then
-      arr%offset       = 0
-      p_arr%new_offset = 0
-      arr%nlti         = arr%ntiles
+       arr%offset       = 0
+       p_arr%new_offset = 0
+       arr%nlti         = arr%ntiles
     else
-      arr%offset       = p_arr%new_offset
-      p_arr%new_offset = mod(p_arr%new_offset+arr%ntiles,lg_nnod)
-      arr%nlti         = arr%ntiles/lg_nnod
-      if(mod(arr%ntiles,lg_nnod)>mod(lg_me+lg_nnod-arr%offset,lg_nnod))arr%nlti=arr%nlti+1
+
+       if(present(force_offset))then
+          arr%offset       = force_offset
+       else
+          arr%offset       = p_arr%new_offset
+          p_arr%new_offset = mod(p_arr%new_offset+arr%ntiles,lg_nnod)
+       endif
+
+       arr%nlti         = arr%ntiles/lg_nnod
+       if(mod(arr%ntiles,lg_nnod)>mod(lg_me+lg_nnod-arr%offset,lg_nnod))arr%nlti=arr%nlti+1
+
     endif
 #endif
   end subroutine get_distribution_info

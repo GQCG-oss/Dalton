@@ -1944,8 +1944,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
-   !call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
-   call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR' )
+   call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
+   !call array_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR' )
    call array_zero(iajb)
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -1961,8 +1961,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    if(use_singles)then
 
       call array_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
-      !call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-      call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR' )
+      call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+      !call array_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR' )
 
       call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
@@ -1971,8 +1971,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       !if MP2, just zero the array, and keep it in PDM all the time
       atype = 'TDAR'
-      !call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
-      call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype )
+      call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
+      !call array_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype )
       if(ccmodel == MODEL_MP2 )then
          old_iter = 0
       else
@@ -2119,8 +2119,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_minit(omega1(iter), ampl2_dims, 2 , local=local, atype='LDAR' )
             call array_zero(omega1(iter))
          endif
-         !call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR')
+         call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         !call array_minit(omega2(iter), ampl4_dims, 4, local=local, atype='TDAR')
          call array_zero(omega2(iter))
 
 
@@ -2234,10 +2234,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_zero(omega1_opt)
          end if
 
-         !call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         !call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-         call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR')
-         call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
+         call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+         !call array_minit(omega2_opt, ampl4_dims, 4, local=local, atype='TDAR')
+         !call array_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
          call array_zero( omega2_opt )
          call array_zero( t2_opt     )
 
@@ -2355,8 +2355,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
-               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
+               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_prec)
                call array_free(omega2_prec)
@@ -2366,8 +2366,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call array_cp_data(t1_opt,t1(iter+1))
                   call array_add(t1(iter+1),1.0E0_realk,omega1_opt)
                endif
-               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
+               call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+               !call array_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call array_cp_data(t2_opt,t2(iter+1))
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
