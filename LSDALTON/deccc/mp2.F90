@@ -1883,6 +1883,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   integer :: IDIAG,JDIAG,ADIAG,BDIAG,ALPHAAUX,myload,nb2
   integer :: ILOC,JLOC,ALOC,BLOC,M,N,K,nAtoms,nbasis2,nbasisAux
   logical :: fc,ForcePrint,first_order_integrals,master,wakeslave,MessageRecieved
+  logical :: CollaborateWithSlaves
   real(realk),pointer :: AlphaBeta(:,:),AlphaBeta_inv(:,:)
   real(realk),pointer :: AlphaCD2(:,:,:),AlphaCD3(:,:,:),AlphaCD4(:,:,:)
   real(realk),pointer :: AlphaCD(:,:,:),Calpha(:,:,:)
@@ -2023,8 +2024,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   ! Only use slave helper if there is at least one local slave available.
   if(infpar%lg_nodtot.GT.1) then
      wakeslave=.true.
+     CollaborateWithSlaves=.true.
   else
      wakeslave=.false.
+     CollaborateWithSlaves=.false.
   end if
 
   ! Master starts up slave
@@ -2064,9 +2067,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   mynum = 0
   numnodes = 1
   wakeslave = .false.
+  CollaborateWithSlaves = .false.
 #endif
 
-  IF(infpar%lg_nodtot.GT.1)then 
+  IF(CollaborateWithSlaves)then 
      !all nodes have info about all nodes 
      call mem_alloc(nbasisAuxMPI,numnodes)        !number of Aux basis func assigned to rank
      call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
@@ -2116,7 +2120,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 #endif
   ENDIF
 
-  IF(infpar%lg_nodtot.GT.1)then 
+  IF(CollaborateWithSlaves)then 
      !We wish to build
      !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
      !where alpha runs over the Aux basis functions allocated for this rank
@@ -2153,7 +2157,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   call mem_dealloc(Cvirt)
 
 #ifdef VAR_MPI
-  if(infpar%lg_nodtot.GT.1) then !START BY SENDING MY OWN PACKAGE alphaCD3
+  if(CollaborateWithSlaves) then !START BY SENDING MY OWN PACKAGE alphaCD3
      !A given rank always recieve a package from the same node 
      !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
      Receiver = MOD(1+mynum,numnodes)
@@ -2174,7 +2178,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   !               so that you only need 1 3dim quantity      
   !=====================================================================================
 
-  if(infpar%lg_nodtot.GT.1) then         
+  if(CollaborateWithSlaves) then         
      IF(MynbasisAuxMPI.GT.0)THEN 
         !consider 
         !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
@@ -2353,7 +2357,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END CRITICAL
      !$OMP END PARALLEL
 #ifdef VAR_MPI
-     if(infpar%lg_nodtot.GT.1) then         
+     if(CollaborateWithSlaves) then         
 !        call lsmpi_reduction(tocc,nvirt,nvirt,noccEOS*noccEOS,infpar%master,infpar%lg_comm)
         call lsmpi_allreduce(tocc,nvirt,nvirt,noccEOS,noccEOS,infpar%lg_comm)
      endif
@@ -2541,7 +2545,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(EVvirt)
 
 #ifdef VAR_MPI
-     if(infpar%lg_nodtot.GT.1) then         
+     if(CollaborateWithSlaves) then         
         call lsmpi_allreduce(tvirt,nocc,nocc,nvirtEOS,nvirtEOS,infpar%lg_comm)
      endif
 #endif
