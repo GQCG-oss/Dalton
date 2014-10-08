@@ -84,7 +84,7 @@ subroutine pdm_array_slave(comm)
        call mem_dealloc(dummy)
      CASE(JOB_GET_TILE_SEND)
        !i,dummy and j are just dummy arguments
-       call array_get_tile(A,i,dummy,j)
+       call array_get_tile(A,i,dummy,j,flush_it=.true.)
      CASE(JOB_PRINT_TI_NRM)
        call array_tiled_pdm_print_ti_nrm(A,0)
      CASE(JOB_SYNC_REPLICATED)

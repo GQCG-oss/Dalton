@@ -73,21 +73,22 @@ module ccsd_module
          & wrapper_get_ccsd_batch_sizes
     private
 
-  interface Get_AOt1Fock
-    module procedure Get_AOt1Fock_arraywrapper,Get_AOt1Fock_oa
-  end interface Get_AOt1Fock
-  interface get_fock_matrix_for_dec
-    module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
-  end interface get_fock_matrix_for_dec
+    interface Get_AOt1Fock
+       module procedure Get_AOt1Fock_arraywrapper,Get_AOt1Fock_oa
+    end interface Get_AOt1Fock
 
-  interface precondition_singles
-    module procedure precondition_singles_newarr,&
-                    &precondition_singles_oldarr
-  end interface precondition_singles
+    interface get_fock_matrix_for_dec
+       module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
+    end interface get_fock_matrix_for_dec
+
+    interface precondition_singles
+       module procedure precondition_singles_newarr,&
+          &precondition_singles_oldarr
+    end interface precondition_singles
 
     interface precondition_doubles
-      module procedure precondition_doubles_newarr,&
-                      &precondition_doubles_oldarr
+       module procedure precondition_doubles_newarr,&
+          &precondition_doubles_oldarr
     end interface precondition_doubles
     
 
@@ -1329,16 +1330,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      ! allocate working arrays depending on the batch sizes
      w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w0, w0size , simple = .true. )
+     call mem_alloc( w0, w0size , simple = .false. )
 
      w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w1, w1size , simple = .true.)
+     call mem_alloc( w1, w1size , simple = .false.)
 
      w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w2, w2size , simple = .true. )
+     call mem_alloc( w2, w2size , simple = .false. )
 
      w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w3, w3size , simple = .true. )
+     call mem_alloc( w3, w3size , simple = .false. )
 
 
      !allocate semi-permanent storage arrays for loop
@@ -2032,10 +2033,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
-     !call get_currently_available_memory(MemFree2)
-     !call get_available_memory(6,MemFree3,memfound,.true.)
-     !print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
-     !call lsmpi_barrier(infpar%lg_comm)
+     call get_currently_available_memory(MemFree2)
+     call get_available_memory(6,MemFree3,memfound,.true.)
+     print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
+     call lsmpi_barrier(infpar%lg_comm)
 
      ! slaves should exit the subroutine after the main work is done
      if(.not. master) then
@@ -2353,6 +2354,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(DECinfo%PL>3.and.me==0)then
            write(DECinfo%output,'("Trafolength in striped E1:",I7," ",I7)')tl1,tl2
         endif
+        print *,"foo1"
 
         w3size = max(tl1*no,tl2*nv)
         if(nnod>1)w3size = max(w3size,2*omega2%tsize)
@@ -2367,6 +2369,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, at = tc)
         endif
 
+        print *,"foo2"
         !calculate first part of doubles E term and its permutation
         ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
         call dcopy(no2,ppf,1,w2,1)
@@ -2421,6 +2424,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            endif
         endif
 
+        print *,"foo3"
 
         !DO ALL THINGS DEPENDING ON 2
         if(lock_outside.and.traf2)then
@@ -2430,6 +2434,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call time_start_phase(PHASE_WORK, at = tc)
         endif
 
+        print *,"foo4"
         !calculate second part of doubles E term
         ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
         call dcopy(nv2,qqf,1,w2,1)
@@ -2468,6 +2473,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               call time_start_phase(PHASE_WORK, at = tc)
            endif
         endif
+        print *,"foo5"
 
 
         if(.not.lock_outside.and.traf2)then
@@ -2493,6 +2499,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
 
+        print *,"foo6"
         call mem_dealloc(w2)
 
         !INTRODUCE PERMUTATION
@@ -2518,6 +2525,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            endif
         endif
 
+        print *,"foo7"
         call mem_dealloc(w3)
         lock_outside     = lock_safe
 #endif
@@ -3595,10 +3603,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-    memrq = memrq * 1.8E0_realk
-#endif
-
+    if(LSMPIASYNCP)then
+       memrq = 1.5*memrq
+    endif
 
   end function get_min_mem_req
 
@@ -6089,6 +6096,8 @@ subroutine calculate_E2_and_permute_slave()
 
   call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
 
+  print *,"slaves here!"
+
   call time_start_phase(PHASE_WORK)
 
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
@@ -6105,6 +6114,8 @@ subroutine calculate_E2_and_permute_slave()
   call mem_alloc(w1,o2v2)
   call calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
      &omega2,o2v2,s,.false.,lo,time_E2_work,time_E2_comm)
+
+  print *,"slaves done!"
 
   call mem_dealloc(ppf)
   call mem_dealloc(qqf)
