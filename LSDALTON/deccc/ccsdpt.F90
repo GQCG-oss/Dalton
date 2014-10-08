@@ -339,11 +339,11 @@ contains
 
        if (abc) then
 
-          ccsdpt_doubles_2 = array_init([nvirt,nocc,nocc,nvirt],4)
+          call array_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
 
        else
 
-          ccsdpt_doubles_2 = array_init([nocc,nvirt,nvirt,nocc],4)
+          call array_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
  
        endif
 
@@ -7445,7 +7445,7 @@ contains
   !> \brief: calculate E[4] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e4_full(nocc,nvirt,natoms,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
+  subroutine ccsdpt_energy_e4_full(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsdpt_doubles,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc,ccsdpt_e4)
 
     implicit none
@@ -7453,12 +7453,12 @@ contains
     !> ccsd and ccsd(t) doubles amplitudes
     type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e4
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -7533,8 +7533,8 @@ contains
     ! for the e4 pair fragment energy matrix,
     ! we only consider pairs IJ where J>I; thus, move contributions
 
-    do AtomJ=1,natoms
-       do AtomI=AtomJ+1,natoms
+    do AtomJ=1,nfrags
+       do AtomI=AtomJ+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -7609,7 +7609,7 @@ contains
           ! write increments only if pair interaction energy is nonzero
           if( orbitals_assigned(i) .and. orbitals_assigned(j) ) then
 
-             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g10.4,4X,g20.10)') '#PAIR#',j,i,&
+             write(DECinfo%output,'(1X,a,i6,4X,i6,4X,g11.4,4X,g20.10)') '#PAIR#',j,i,&
                   & bohr_to_angstrom*distancetable(i,j), e4_matrix(i,j)
 
           end if
@@ -7625,7 +7625,7 @@ contains
   !> \brief: calculate E[5] contribution to ccsd(t) energy correction for full molecule calculation
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsdpt_energy_e5_full(nocc,nvirt,natoms,offset,ccsd_singles,ccsdpt_singles,&
+  subroutine ccsdpt_energy_e5_full(nocc,nvirt,nfrags,offset,ccsd_singles,ccsdpt_singles,&
                              & occ_orbitals,unocc_orbitals,e5_matrix,ccsdpt_e5)
 
     implicit none
@@ -7633,14 +7633,14 @@ contains
     !> ccsd and ccsd(t) singles amplitudes
     type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> virtual orbital information
     type(decorbital), dimension(nvirt), intent(inout) :: unocc_orbitals
     !> etot
     real(realk), intent(inout) :: ccsdpt_e5
-    real(realk), dimension(natoms,natoms), intent(inout) :: e5_matrix
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: e5_matrix
     !> integers
     integer :: i,a,AtomI,AtomA
     !> tmp energy real
@@ -7812,7 +7812,7 @@ contains
 
     ! Integrals (AI|KJ) in the order (J,A,I,K)
     dims = [nocc,nvirt,nocc,nocc]
-    ovoo = array_init(dims,4)
+    call array_init(ovoo, dims,4)
     call array_zero(ovoo)
 
     ! Integrals (AB|IC) in the order (C,B,A,I)
@@ -7820,12 +7820,12 @@ contains
 #ifdef VAR_MPI
     mode   = MPI_MODE_NOCHECK
 
-    vvvo = array_init(dims,4,TILED_DIST,ALL_ACCESS,[nvirt,nvirt,nvirt,1])
+    call array_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
     call array_zero_tiled_dist(vvvo)
 
 #else
 
-    vvvo = array_init(dims,4)
+    call array_init(vvvo, dims,4)
     call array_zero(vvvo)
 
 #endif
@@ -8236,7 +8236,7 @@ contains
 
     ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
     dims = [nocc,nocc,nocc,nvirt]
-    ooov = array_init(dims,4)
+    call array_init(ooov, dims,4)
     call array_zero(ooov)
 
     ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
@@ -8246,12 +8246,12 @@ contains
 
     mode   = MPI_MODE_NOCHECK
 
-    vovv   = array_init(dims,4,TILED_DIST,ALL_ACCESS,tdims=[nvirt,nocc,nvirt,tile_size])
+    call array_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
     call array_zero_tiled_dist(vovv)
 
 #else
 
-    vovv = array_init(dims,4)
+    call array_init(vovv, dims,4)
     call array_zero(vovv)
 
 #endif
@@ -8990,16 +8990,16 @@ end module ccsdpt_module
     ! init and receive vovo and ccsd_doubles array structures
     if (abc) then
 
-       vovo = array_init([nocc,nocc,nvirt,nvirt],4)
-       ccsd_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
+       call array_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+       call array_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
 
        call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
     else
 
-       vovo = array_init([nvirt,nvirt,nocc,nocc],4)
-       ccsd_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+       call array_init(vovo, [nvirt,nvirt,nocc,nocc],4)
+       call array_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
 
        call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
@@ -9011,13 +9011,13 @@ end module ccsdpt_module
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          ccsdpt_t1 = array_init([nocc,nvirt],2)
-          ccsdpt_t2 = array_init([nocc,nocc,nvirt,nvirt],4)
-
+          call array_init(ccsdpt_t1, [nocc,nvirt],2)
+          call array_init(ccsdpt_t2, [nocc,nocc,nvirt,nvirt],4)
+          
        else
 
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
-          ccsdpt_t2 = array_init([nvirt,nvirt,nocc,nocc],4)
+          call array_init(ccsdpt_t1, [nvirt,nocc],2)
+          call array_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
 
        endif
 
@@ -9026,11 +9026,11 @@ end module ccsdpt_module
        ! init ccsd(t) singles
        if (abc) then
 
-          ccsdpt_t1 = array_init([nocc,nvirt],2)
+          call array_init(ccsdpt_t1, [nocc,nvirt],2)
 
        else
 
-          ccsdpt_t1 = array_init([nvirt,nocc],2)
+          call array_init(ccsdpt_t1, [nvirt,nocc],2)
 
        endif
        ccsdpt_e4 = 0.0E0_realk

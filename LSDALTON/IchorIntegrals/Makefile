@@ -152,6 +152,9 @@ F90_OBJS = \
 	IchorSaveGab.o \
         IchorGammaTabulation.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
+        IchorEri_CoulombIntegral_McM_general.o \
+        IchorEri_CoulombIntegral_McM_WTUV_general.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_general.o \
         IchorEri_CoulombIntegral_CPU_OBS_Gen.o \
         IchorEri_CoulombIntegral_CPU_OBS_SegQ.o \
         IchorEri_CoulombIntegral_CPU_OBS_SegP.o \
@@ -164,6 +167,7 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
         IchorEri_CoulombIntegral_GPU_OBS_general.o \
+        IchorEri_GabIntegral_McM_general.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \

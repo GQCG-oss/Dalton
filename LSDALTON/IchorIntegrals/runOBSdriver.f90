@@ -81,6 +81,12 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg'
   WRITE(LUMOD2,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'OBSGeneralModSeg1Prim'
 
+  IF(CPU)THEN
+     DO ILUMOD=2,7
+        WRITE(ILUMOD,'(A)')'use IchorEriCoulombintegral'//ARCSTRING//'McMGeneralMod'
+     ENDDO
+  ENDIF
+
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
      WRITE(ILUMOD,'(A)')'use IchorCommonModule'
@@ -168,12 +174,12 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'private   '
   ENDDO
-  WRITE(LUMOD2,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_general,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size  '
-  WRITE(LUMOD3,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen  '
-  WRITE(LUMOD4,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ  '
-  WRITE(LUMOD5,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP  '
-  WRITE(LUMOD6,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg  '
-  WRITE(LUMOD7,'(A)')'public :: IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim,IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim  '
+  WRITE(LUMOD2,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_general,ICI_'//ARCSTRING//'_OBS_general_size  '
+  WRITE(LUMOD3,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_Gen,ICI_'//ARCSTRING//'_OBS_general_sizeGen  '
+  WRITE(LUMOD4,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_SegQ,ICI_'//ARCSTRING//'_OBS_general_sizeSegQ  '
+  WRITE(LUMOD5,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_SegP,ICI_'//ARCSTRING//'_OBS_general_sizeSegP  '
+  WRITE(LUMOD6,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_Seg,ICI_'//ARCSTRING//'_OBS_general_sizeSeg  '
+  WRITE(LUMOD7,'(A)')'public :: ICI_'//ARCSTRING//'_OBS_Seg1Prim,ICI_'//ARCSTRING//'_OBS_general_sizeSeg1Prim  '
 
   DO ILUMOD=2,7
      WRITE(ILUMOD,'(A)')'  '
@@ -181,9 +187,12 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'  '
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
-  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -202,6 +211,9 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD'
+  WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)'
   WRITE(LUMOD2,'(A)')'    logical,intent(in)     :: Qsegmented,Psegmented'
   WRITE(LUMOD2,'(A)')'    real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)'
@@ -288,9 +300,12 @@ DO GPUrun=1,2
 
 
   WRITE(LUMOD2,'(A)')'   IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call ICI_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -303,9 +318,12 @@ DO GPUrun=1,2
      WRITE(LUMOD2,'(A)')'       & IatomAPass,iatomBPass,iASync)' 
   ENDIF
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented.AND.Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call ICI_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -318,9 +336,12 @@ DO GPUrun=1,2
      WRITE(LUMOD2,'(A)')'       & IatomAPass,iatomBPass,iASync)' 
   ENDIF
   WRITE(LUMOD2,'(A)')'   ELSEIF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call ICI_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -333,9 +354,12 @@ DO GPUrun=1,2
      WRITE(LUMOD2,'(A)')'       & IatomAPass,iatomBPass,iASync)' 
   ENDIF
   WRITE(LUMOD2,'(A)')'   ELSEIF(Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call ICI_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -349,9 +373,12 @@ DO GPUrun=1,2
   ENDIF
 
   WRITE(LUMOD2,'(A)')'   ELSE'
-  WRITE(LUMOD2,'(A)')'    call IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
+  WRITE(LUMOD2,'(A)')'    call ICI_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
   WRITE(LUMOD2,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+  WRITE(LUMOD2,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+  WRITE(LUMOD2,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
   WRITE(LUMOD2,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
   WRITE(LUMOD2,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
   WRITE(LUMOD2,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -365,7 +392,7 @@ DO GPUrun=1,2
   ENDIF
 
   WRITE(LUMOD2,'(A)')'   ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general'
+  WRITE(LUMOD2,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general'
   WRITE(LUMOD2,'(A)')'  '
 
   DO ISEG = 1,5
@@ -383,23 +410,26 @@ DO GPUrun=1,2
      ENDIF
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD3,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD4,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD5,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD6,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(LUMOD7,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&'
         ILUMOD = 7
      ENDIF
      WRITE(ILUMOD,'(A)')'       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
      WRITE(ILUMOD,'(A)')'       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+     WRITE(ILUMOD,'(A)')'       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+     WRITE(ILUMOD,'(A)')'       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+     WRITE(ILUMOD,'(A)')'       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
      WRITE(ILUMOD,'(A)')'       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
      WRITE(ILUMOD,'(A)')'       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
      WRITE(ILUMOD,'(A)')'       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
@@ -418,6 +448,9 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nAtomsA,nAtomsB'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)'
      WRITE(ILUMOD,'(A)')'    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD'
+     WRITE(ILUMOD,'(A)')'    integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)'
      WRITE(ILUMOD,'(A)')'    logical,intent(in)     :: Qsegmented,Psegmented'
      WRITE(ILUMOD,'(A)')'    real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)'
@@ -632,36 +665,55 @@ DO GPUrun=1,2
            ENDDO
         ENDDO
      ENDDO
-     WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-
-     IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'',-1)'
-     ELSEIF(SegQ)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'',-1)'
-     ELSEIF(SegP)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'',-1)'
-     ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'',-1)'
-     ELSEIF(Seg1Prim)THEN
-        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'',-1)'
+        WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
+     IF(CPU)THEN
+        WRITE(ILUMOD,'(A)')'        call ICI_'//ARCSTRING//'_McM_general(nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(ILUMOD,'(A)')'           & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&'
+        WRITE(ILUMOD,'(A)')'           & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&'
+        WRITE(ILUMOD,'(A)')'           & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&'
+        WRITE(ILUMOD,'(A)')'           & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&'
+        WRITE(ILUMOD,'(A)')'           & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&'
+        WRITE(ILUMOD,'(A)')'           & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&'
+        WRITE(ILUMOD,'(A)')'           & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&'
+        WRITE(ILUMOD,'(A)')'           & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&'
+        WRITE(ILUMOD,'(A)')'           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&'
+        WRITE(ILUMOD,'(A)')'           & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&'
+        WRITE(ILUMOD,'(A)')'           & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&'
+        IF(CPU)THEN
+           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass)' 
+        ELSE
+           WRITE(ILUMOD,'(A)')'           & IatomAPass,iatomBPass,iASync)' 
+        ENDIF
+     ELSE
+        IF(Gen)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_Gen'',-1)'
+        ELSEIF(SegQ)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_SegQ'',-1)'
+        ELSEIF(SegP)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_SegP'',-1)'
+        ELSEIF(Seg)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_Seg'',-1)'
+        ELSEIF(Seg1Prim)THEN
+           WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_'//ARCSTRING//'_OBS_Seg1Prim'',-1)'
+        ENDIF
      ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
      IF(Gen)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Gen'
+        WRITE(ILUMOD,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_Gen'
      ELSEIF(SegQ)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegQ'
+        WRITE(ILUMOD,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_SegQ'
      ELSEIF(SegP)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_SegP'
+        WRITE(ILUMOD,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_SegP'
      ELSEIF(Seg)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg'
+        WRITE(ILUMOD,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_Seg'
      ELSEIF(Seg1Prim)THEN
-        WRITE(ILUMOD,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_Seg1Prim'
+        WRITE(ILUMOD,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_Seg1Prim'
      ENDIF
      WRITE(ILUMOD,'(A)')'  '
   ENDDO
 
   WRITE(LUMOD2,'(A)')'  '
-  WRITE(LUMOD2,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_size(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&'
@@ -674,37 +726,37 @@ DO GPUrun=1,2
   WRITE(LUMOD2,'(A)')'    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD'
   WRITE(LUMOD2,'(A)')'    logical,intent(in) :: Psegmented,Qsegmented'
   WRITE(LUMOD2,'(A)')'    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented.AND.Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Psegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSEIF(Qsegmented)THEN'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ELSE'
-  WRITE(LUMOD2,'(A)')'     call IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
+  WRITE(LUMOD2,'(A)')'     call ICI_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
   WRITE(LUMOD2,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
   WRITE(LUMOD2,'(A)')'         & nContA,nContB,nContC,nContD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
   WRITE(LUMOD2,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)'
   WRITE(LUMOD2,'(A)')'    ENDIF'
-  WRITE(LUMOD2,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_size'
+  WRITE(LUMOD2,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_size'
   WRITE(LUMOD2,'(A)')'  '
 
 
@@ -724,19 +776,19 @@ DO GPUrun=1,2
 
      WRITE(ISEG+2,'(A)')'  '
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
+        WRITE(LUMOD3,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_sizeGen(TMParray1maxsize,&'
         ILUMOD = LUMOD3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
+        WRITE(LUMOD4,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSegQ(TMParray1maxsize,&'
         ILUMOD = LUMOD4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
+        WRITE(LUMOD5,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSegP(TMParray1maxsize,&'
         ILUMOD = LUMOD5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
+        WRITE(LUMOD6,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSeg(TMParray1maxsize,&'
         ILUMOD = LUMOD6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
+        WRITE(LUMOD7,'(A)')'  subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSeg1Prim(TMParray1maxsize,&'
         ILUMOD = LUMOD7
      ENDIF
      WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&'
@@ -794,23 +846,40 @@ DO GPUrun=1,2
         ENDDO
      ENDDO
      WRITE(ILUMOD,'(A)')'    CASE DEFAULT'
-     WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in IchorCoulombIntegral_OBS_general_size'',-1)'
+     IF(CPU)THEN
+        WRITE(ILUMOD,'(A)')'     call ICI_'//ARCSTRING//'_McM_general_size(TMParray1maxsize,&'
+        WRITE(ILUMOD,'(A)')'         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&'
+        WRITE(ILUMOD,'(A)')'         & nContA,nContB,nContC,nContD,&'
+        WRITE(ILUMOD,'(A)')'         & nPrimA,nPrimB,nPrimC,nPrimD,&'
+        WRITE(ILUMOD,'(A)')'         & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP,&'
+        IF(Gen)THEN
+           WRITE(ILUMOD,'(A)')'         & .FALSE.,.FALSE.)'
+        ELSEIF(SegQ)THEN
+           WRITE(ILUMOD,'(A)')'         & .FALSE.,.TRUE.)'
+        ELSEIF(SegP)THEN
+           WRITE(ILUMOD,'(A)')'         & .TRUE.,.FALSE.)'
+        ELSE !Seg or Seg1Prim
+           WRITE(ILUMOD,'(A)')'         & .TRUE.,.TRUE.)'
+        ENDIF
+     ELSE
+        WRITE(ILUMOD,'(A)')'        CALL ICHORQUIT(''Unknown Case in ICI_OBS_general_size'',-1)'
+     ENDIF
      WRITE(ILUMOD,'(A)')'    END SELECT'
 
      IF(Gen)THEN
-        WRITE(LUMOD3,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeGen'
+        WRITE(LUMOD3,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_sizeGen'
         ILUMOD = LUMOD3
      ELSEIF(SegQ)THEN
-        WRITE(LUMOD4,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegQ'
+        WRITE(LUMOD4,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSegQ'
         ILUMOD = LUMOD4
      ELSEIF(SegP)THEN
-        WRITE(LUMOD5,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSegP'
+        WRITE(LUMOD5,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSegP'
         ILUMOD = LUMOD5
      ELSEIF(Seg)THEN
-        WRITE(LUMOD6,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg'
+        WRITE(LUMOD6,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSeg'
         ILUMOD = LUMOD6
      ELSEIF(Seg1Prim)THEN
-        WRITE(LUMOD7,'(A)')'  end subroutine IchorCoulombIntegral_'//ARCSTRING//'_OBS_general_sizeSeg1Prim'
+        WRITE(LUMOD7,'(A)')'  end subroutine ICI_'//ARCSTRING//'_OBS_general_sizeSeg1Prim'
         ILUMOD = LUMOD7
      ENDIF
   ENDDO

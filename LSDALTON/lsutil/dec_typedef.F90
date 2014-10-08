@@ -106,6 +106,9 @@ module dec_typedef_module
      logical :: use_singles
      !> is the density and other matrices in the grand-canonical basis?
      logical :: gcbasis
+     !> DEC-CC orbital-based (DECCO)
+     logical :: DECCO
+
 
 
      !> Restart options
@@ -345,8 +348,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
-     !> Which Fragment Reduction Scheme should be used
-     integer :: Frag_Red_Scheme
+     !> Which Fragment Reduction Scheme should be used for the occ space
+     integer :: Frag_RedOcc_Scheme
+     !> Which Fragment Reduction Scheme should be used for the vir space
+     integer :: Frag_RedVir_Scheme
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion
@@ -562,6 +567,9 @@ module dec_typedef_module
      integer :: nCabsAO
      !> Number of cabs MO orbitals
      integer :: nCabsMO
+     !> Number of possible fragments
+     integer :: nfrags
+     
 
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()

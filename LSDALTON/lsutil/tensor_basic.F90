@@ -118,95 +118,68 @@ module tensor_basic_module
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
     subroutine arr_set_ntpm(arr,ntpm,mode)
-      implicit none
-      type(array),intent(inout) :: arr
-      integer,intent(in) :: ntpm(*)
-      integer, optional :: mode
-      real(realk) :: vector_size
-      integer :: i
-      if (present(mode))then
-        if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
-          print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of arr_set_ntpm",lspdm_errout)
-        else
-          arr%mode=mode
-        endif
-      endif
-      if (associated(arr%ntpm))then
-!$OMP CRITICAL
-        vector_size = dble(size(arr%ntpm))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
-        call mem_dealloc(arr%ntpm)
-      endif
-      if(.not.associated(arr%ntpm))then
-        call mem_alloc(arr%ntpm,arr%mode)
-!$OMP CRITICAL
-        vector_size = dble(size(arr%ntpm))
-        array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-        array_memory_in_use  = array_memory_in_use  + vector_size
-!$OMP END CRITICAL
-      endif
-      do i=1,arr%mode
-        arr%ntpm(i)=ntpm(i)
-      enddo
+       implicit none
+       type(array),intent(inout) :: arr
+       integer,intent(in) :: ntpm(*)
+       integer, optional :: mode
+       real(realk) :: vector_size
+       integer :: i
+       if (present(mode))then
+          if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
+             print *,"mode",mode,"arr%mode",arr%mode      
+             call lsquit("wrong use of arr_set_ntpm",lspdm_errout)
+          else
+             arr%mode=mode
+          endif
+       endif
+       if (associated(arr%ntpm))then
+          !$OMP CRITICAL
+          vector_size = dble(size(arr%ntpm))
+          array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
+          array_memory_in_use    = array_memory_in_use  - vector_size
+          !$OMP END CRITICAL
+          call mem_dealloc(arr%ntpm)
+       endif
+       if(.not.associated(arr%ntpm))then
+          call mem_alloc(arr%ntpm,arr%mode)
+          !$OMP CRITICAL
+          vector_size = dble(size(arr%ntpm))
+          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
+          array_memory_in_use  = array_memory_in_use  + vector_size
+          !$OMP END CRITICAL
+       endif
+       do i=1,arr%mode
+          arr%ntpm(i)=ntpm(i)
+       enddo
     end subroutine arr_set_ntpm
 
-    subroutine arr_set_addr(arr,addr,nnodes,loc_addr)
+    subroutine arr_set_addr(arr,addr,nnodes)
       implicit none
       type(array),intent(inout) :: arr
       integer,intent(in) :: addr(*)
       integer(kind=ls_mpik) :: nnodes
-      logical,intent(in),optional :: loc_addr
       real(realk) :: vector_size
       integer :: i
-      logical :: loc
 
-      loc=.false.
-      if(present(loc_addr)) loc = loc_addr
-   
-      if(loc)then
-        if (associated(arr%addr_loc))then
-!$OMP CRITICAL
-          vector_size = dble(size(arr%addr_loc))
-          array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
-          call mem_dealloc(arr%addr_loc)
-        endif
-        if(.not.associated(arr%addr_loc))then
-          call mem_alloc(arr%addr_loc,nnodes)
-!$OMP CRITICAL
-          vector_size = dble(size(arr%addr_loc))
-          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-          array_memory_in_use  = array_memory_in_use  + vector_size
-!$OMP END CRITICAL
-        endif
-        do i=1,nnodes
-          arr%addr_loc(i)=addr(i)
-        enddo
-      else
-        if (associated(arr%addr_p_arr))then
-!$OMP CRITICAL
-          vector_size = dble(size(arr%addr_p_arr))
-          array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
-          call mem_dealloc(arr%addr_p_arr)
-        endif
-        if(.not.associated(arr%addr_p_arr))then
-          call mem_alloc(arr%addr_p_arr,nnodes)
-!$OMP CRITICAL
-          vector_size = dble(size(arr%addr_p_arr))
-          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-          array_memory_in_use  = array_memory_in_use  + vector_size
-!$OMP END CRITICAL
-        endif
-        do i=1,nnodes
-          arr%addr_p_arr(i)=addr(i)
-        enddo
+      if (associated(arr%addr_p_arr))then
+         !$OMP CRITICAL
+         vector_size = dble(size(arr%addr_p_arr))
+         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
+         array_memory_in_use    = array_memory_in_use  - vector_size
+         !$OMP END CRITICAL
+         call mem_dealloc(arr%addr_p_arr)
       endif
+      if(.not.associated(arr%addr_p_arr))then
+         call mem_alloc(arr%addr_p_arr,nnodes)
+         !$OMP CRITICAL
+         vector_size = dble(size(arr%addr_p_arr))
+         array_aux_allocd_mem = array_aux_allocd_mem + vector_size
+         array_memory_in_use  = array_memory_in_use  + vector_size
+         !$OMP END CRITICAL
+      endif
+      do i=1,nnodes
+         arr%addr_p_arr(i)=addr(i)
+      enddo
     end subroutine arr_set_addr
 
 
@@ -233,17 +206,17 @@ module tensor_basic_module
       endif
       vector_size = dble(arr%nelms)*realk
 
-      if( lspdm_use_comm_proc )then
-#ifdef VAR_MPI
-        ne = 0_long
-        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
-        call mem_alloc(arr%elm1,arr%e1c,ne,arr%w1,infpar%pc_comm,arr%nelms)
-#else
-        call lsquit("ERROR(memory_allocate_array_dense) not possible without MPI",-1)
-#endif
-      else
+!      if( lspdm_use_comm_proc )then
+!#ifdef VAR_MPI
+!        ne = 0_long
+!        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
+!        call mem_alloc(arr%elm1,arr%e1c,ne,arr%w1,infpar%pc_comm,arr%nelms)
+!#else
+!        call lsquit("ERROR(memory_allocate_array_dense) not possible without MPI",-1)
+!#endif
+!      else
         call mem_alloc(arr%elm1,arr%nelms)
-      endif
+!      endif
 
       if( array_debug_mode )then
          arr%elm1 = 0.0E0_realk
@@ -277,11 +250,11 @@ module tensor_basic_module
          dim1 = dble(size(arr%elm1(:)))
          vector_size = dim1*realk
          call deassoc_ptr_arr(arr)
-         if( lspdm_use_comm_proc )then
-           call mem_dealloc(arr%elm1,arr%e1c,arr%w1)
-         else
+         !if( lspdm_use_comm_proc )then
+         !  call mem_dealloc(arr%elm1,arr%e1c,arr%w1)
+         !else
            call mem_dealloc(arr%elm1)
-         endif
+         !endif
          arr%elm1 => null()
 !$OMP CRITICAL
          array_dense_deallocd_mem = array_dense_deallocd_mem + vector_size
@@ -458,60 +431,52 @@ module tensor_basic_module
 
 
   subroutine arr_free_aux(arr)
-      implicit none
-      type(array),intent(inout) :: arr
-      real(realk) :: vector_size
-      if (associated(arr%dims))then
-!$OMP CRITICAL
+     implicit none
+     type(array),intent(inout) :: arr
+     real(realk) :: vector_size
+     if (associated(arr%dims))then
+        !$OMP CRITICAL
         vector_size = dble(size(arr%dims))
         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
         array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
+        !$OMP END CRITICAL
         call mem_dealloc(arr%dims)
-      endif
-      if (associated(arr%tdim))then
-!$OMP CRITICAL
+     endif
+     if (associated(arr%tdim))then
+        !$OMP CRITICAL
         vector_size = dble(size(arr%tdim))
         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
         array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
+        !$OMP END CRITICAL
         call mem_dealloc(arr%tdim)
-      endif
-      if (associated(arr%ntpm))then
-!$OMP CRITICAL
+     endif
+     if (associated(arr%ntpm))then
+        !$OMP CRITICAL
         vector_size = dble(size(arr%ntpm))
         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
         array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
+        !$OMP END CRITICAL
         call mem_dealloc(arr%ntpm)
-      endif
-      if (associated(arr%addr_loc))then
-!$OMP CRITICAL
-        vector_size = dble(size(arr%addr_loc))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
-        call mem_dealloc(arr%addr_loc)
-      endif
-      if (associated(arr%addr_p_arr))then
-!$OMP CRITICAL
+     endif
+     if (associated(arr%addr_p_arr))then
+        !$OMP CRITICAL
         vector_size = dble(size(arr%addr_p_arr))
         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
         array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
+        !$OMP END CRITICAL
         call mem_dealloc(arr%addr_p_arr)
-      endif
-      if (associated(arr%lock_set))then
-!$OMP CRITICAL
+     endif
+     if (associated(arr%lock_set))then
+        !$OMP CRITICAL
         vector_size = dble(size(arr%lock_set))
         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
         array_memory_in_use    = array_memory_in_use  - vector_size
-!$OMP END CRITICAL
+        !$OMP END CRITICAL
         call mem_dealloc(arr%lock_set)
-      endif
-      if(array_aux_deallocd_mem > array_aux_allocd_mem) &
-      &print *,"WARNING(arr_free_aux)more memory deallocated than allocated"
-      call array_pdm_free_special_aux(arr)
+     endif
+     if(array_aux_deallocd_mem > array_aux_allocd_mem) &
+        &print *,"WARNING(arr_free_aux)more memory deallocated than allocated"
+     call array_pdm_free_special_aux(arr)
   end subroutine arr_free_aux
   
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
@@ -524,6 +489,22 @@ module tensor_basic_module
     if(associated(arr%elm1))call memory_deallocate_array_dense(arr)
     if(associated(arr%ti))  call memory_deallocate_tile(arr)
   end subroutine array_free_basic
+
+  !> \author Patrick Ettenhuber
+  !> \date October 2014
+  !> \brief set all values to invalid
+  subroutine array_reset_value_defaults(arr)
+     implicit none
+     type(array) :: arr
+     arr%local_addr  = -1
+     arr%ntiles      = -1
+     arr%nlti        = -1
+     arr%tsize       = -1
+     arr%offset      = -1
+     arr%access_type = -1
+     arr%zeros       = .false.
+     arr%initialized = .false.
+  end subroutine array_reset_value_defaults
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
@@ -544,8 +525,8 @@ module tensor_basic_module
     NULLIFY(arr%wi)       
     NULLIFY(arr%ntpm)     
     NULLIFY(arr%tdim)     
-    NULLIFY(arr%addr_loc)
     NULLIFY(arr%addr_p_arr)
+    arr%dummyc = c_null_ptr
   end subroutine array_nullify_pointers
 
 end module  tensor_basic_module
