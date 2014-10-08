@@ -522,6 +522,7 @@ contains
     ! ---------------
     call ls_mpibcast(MyMolecule%nelectrons,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nauxbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%nocc,master,MPI_COMM_LSDALTON)
@@ -569,8 +570,8 @@ contains
           call mem_alloc(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis)
        ENDIF
        call mem_alloc(MyMolecule%SubSystemIndex,MyMolecule%nAtoms)
-       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms)
-       call mem_alloc(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms)
+       call mem_alloc(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags)
+       call mem_alloc(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags)
     end if
 
 
@@ -615,8 +616,8 @@ contains
        call ls_mpibcast(MyMolecule%Fcp,MyMolecule%nCabsAO,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     ENDIF
     call ls_mpibcast(MyMolecule%SubSystemIndex,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%natoms,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%DistanceTable,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%ccmodel,MyMolecule%nfrags,MyMolecule%nfrags,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -1115,30 +1116,40 @@ contains
   !> \brief mpi communcation where ccsd(t) data is transferred
   !> \author Janus Juul Eriksen
   !> \date February 2013
-  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,ccsd_t2,mylsitem,print_frags)
+  subroutine mpi_communicate_ccsdpt_calcdata(nocc,nvirt,nbasis,vovo,ccsd_t2,mylsitem,print_frags,abc)
 
     implicit none
 
     integer            :: nocc,nvirt,nbasis,ierr
-    real(realk)        :: ccsd_t2(:,:,:,:)
+    real(realk)        :: vovo(:,:,:,:),ccsd_t2(:,:,:,:)
     type(lsitem)       :: mylsitem
-    logical            :: print_frags
+    logical            :: print_frags,abc
 
     ! communicate mylsitem and integers
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-!    call ls_mpi_buffer(DECinfo%ccModel,infpar%master)
     call ls_mpi_buffer(DECinfo%memory,infpar%master)
     call ls_mpi_buffer(nbasis,infpar%master)
     call ls_mpi_buffer(nocc,infpar%master)
     call ls_mpi_buffer(nvirt,infpar%master)
     call ls_mpi_buffer(print_frags,infpar%master)
+    call ls_mpi_buffer(abc,infpar%master)
     call mpicopy_lsitem(mylsitem,infpar%lg_comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
 
     ! communicate rest of the quantities, master here, slaves back in the slave
     ! routine, due to crappy pointer/non-pointer issues (->allocations)
     if (infpar%lg_mynum .eq. infpar%master) then
-       call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+       if (abc) then
+
+          call ls_mpibcast(vovo,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+          call ls_mpibcast(ccsd_t2,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
+
+       else
+
+          call ls_mpibcast(vovo,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+          call ls_mpibcast(ccsd_t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
+
+       endif
     endif
 
   end subroutine mpi_communicate_ccsdpt_calcdata
@@ -2109,6 +2120,7 @@ contains
     master = 0
 
     call ls_mpi_buffer(DECitem%doDEC,Master)
+    call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
@@ -2136,6 +2148,7 @@ contains
     call ls_mpi_buffer(DECitem%solver_par,Master)
     call ls_mpi_buffer(DECitem%force_scheme,Master)
     call ls_mpi_buffer(DECitem%dyn_load,Master)
+    call ls_mpi_buffer(DECitem%print_frags,Master)
     call ls_mpi_buffer(DECitem%CCDEBUG,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
     call ls_mpi_buffer(DECitem%CCSD_NO_DEBUG_COMM,Master)
@@ -2207,7 +2220,8 @@ contains
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
     call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%Frag_Exp_Scheme,Master)
-    call ls_mpi_buffer(DECitem%Frag_Red_Scheme,Master)
+    call ls_mpi_buffer(DECitem%Frag_RedOcc_Scheme,Master)
+    call ls_mpi_buffer(DECitem%Frag_RedVir_Scheme,Master)
     call ls_mpi_buffer(DECitem%Frag_Init_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_Exp_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_red_occ_thr,Master)
@@ -2294,8 +2308,8 @@ contains
       !t2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array4_init([nvirt,nocc,nvirt,nocc])
       !omega2=array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
-      gmo=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
-      t2=array_ainit([nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+      call array_ainit(gmo,[nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
+      call array_ainit(t2, [nvirt,nvirt,nocc,nocc],4,local =.true.,atype='TDAR')
     endif
     !call ls_mpi_buffer(gmo,nvirt*nocc*nocc*nvirt,infpar%master)
     !call ls_mpibcast(t2,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)

@@ -34,11 +34,16 @@ Integer,parameter :: IchorPermuteTTF = 3 !(SameLHSaos=.TRUE. , SameRHSaos=.TRUE.
 Integer,parameter :: IchorPermuteTFF = 4 !(SameLHSaos=.TRUE. , SameRHSaos=.FALSE., SameODs=.FALSE.) 
 Integer,parameter :: IchorPermuteFTF = 5 !(SameLHSaos=.FALSE., SameRHSaos=.TRUE. , SameODs=.FALSE.) 
 Integer,parameter :: IchorPermuteFFF = 6 !(SameLHSaos=.FALSE., SameRHSaos=.FALSE., SameODs=.FALSE.) 
-
+Integer,parameter :: MaxSpecialAngmom = 2
 !public:: SphericalParam, IcorJobEri, IcorInputNoInput, IchorParNone,&
 !     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
 !     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, Ichor!PermuteFFF, IchorNofilestorage
 !private
+#ifdef VAR_OPENACC
+  integer,parameter :: maxnAsyncHandles=4
+#else
+  integer,parameter :: maxnAsyncHandles=1
+#endif
 CONTAINS
 subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
   implicit none

@@ -23,7 +23,7 @@ module xcfun_host
     implicit none
     integer :: lupri
     character(len=80),intent(in)  :: DFTfuncString
-    real(realk),intent(out) :: hfweight
+    real(realk),intent(inout) :: hfweight
     !
 #ifdef VAR_XCFUN
     character(len=80),pointer  :: DFTfuncStringSingle(:)

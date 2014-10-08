@@ -30,13 +30,7 @@ module ccsd_module
 #endif
 
   use integralparameters!, only: AORdefault
-  use tensor_interface_module!, only: precondition_doubles_parallel
-  use lspdm_tensor_operations_module!, only: array_init, array_change_atype_to_rep,&
-  use tensor_basic_module!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
-!         & NO_PDM,MASTER_ACCESS,REPLICATED,ALL_ACCESS,ass_1to3,ass_1to2,&
-!         & ass_1to4,ass_2to1,&
-!         & ass_4to1,ARR_MSG_LEN
-  use tensor_type_def_module
+  use tensor_interface_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -69,7 +63,7 @@ module ccsd_module
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
          & gett1transformation, fullmolecular_get_aot1fock,calculate_E2_and_permute, &
          & get_max_batch_sizes, ccsd_energy_full_occ, print_ccsd_full_occ, &
-         & get_cnd_terms_mo, mo_work_dist, check_job, get_mo_ccsd_residual, &
+         & mo_work_dist, check_job, get_mo_ccsd_residual, &
          & wrapper_get_ccsd_batch_sizes
     private
 
@@ -116,7 +110,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
    !make sure all data is local
    if(loc)then
-      prec = array_init(dims,4)
+      call array_init(prec,dims,4)
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
       !$OMP PRIVATE(i,j,a,b)
@@ -142,7 +136,7 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
       !make sure all data is in the correct for this routine, that is omega2 is
       !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      prec = array_init(dims,4,TILED_DIST,MASTER_ACCESS,omega2%tdim)
+      call array_init(prec,dims,4,TILED_DIST,MASTER_ACCESS,omega2%tdim)
       call array_change_atype_to_rep(ppfock,loc)
       call array_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -899,8 +893,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=ls_mpik) :: hstatus, nctr,mode
      integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
      character*(MPI_MAX_PROCESSOR_NAME) :: hname
-     real(realk),pointer :: mpi_stuff(:)
+     real(realk),pointer :: buf1(:), buf2(:), buf3(:)
      !integer(kind=ls_mpik),pointer :: tasksw(:)
+     integer(kind=8) :: maxts,nbuff
 #endif
      logical :: lock_outside
 
@@ -935,8 +930,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      TYPE(DECscreenITEM)    :: DecScreen
 
      integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
-     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
-     integer(kind=8) :: nb4,o2v2,no4
+     integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3,vs,os
+     integer(kind=8) :: nb4,o2v2,no4,buf_size
      integer :: tlen,tred,nor,nvr,goffs,aoffs
      integer :: prev_alphaB,mpi_buf,ccmodel_copy
      logical :: jobtodo,first_round,dynamic_load,restart,print_debug
@@ -1005,6 +1000,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      o2v2                     = int((i8*nv2)*no2,kind=long)
      nor                      = no*(no+1)/2
      nvr                      = nv*(nv+1)/2
+     vs                       = t2%tdim(1)
+     os                       = t2%tdim(3)
      
      ! Memory info
      ! ***********
@@ -1050,7 +1047,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         t2%access_type     = ALL_ACCESS
         call arr_lock_wins( t2, 's', mode )
         call memory_allocate_array_dense( t2 )
-        call array_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2)
+        buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
+        call mem_alloc(buf1,buf_size)
+        call array_gather(1.0E0_realk,t2,0.0E0_realk,t2%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+        call mem_dealloc(buf1)
         call arr_unlock_wins( t2, .true. )
      endif
 
@@ -1277,7 +1277,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
-        u2 =  array_ainit( [nv,nv,no,no], 4, local=local, atype='TDAR' )
+        call array_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
         call array_zero( u2 )
         if(master)then 
            call array_add( u2,  2.0E0_realk, t2%elm1, order=[2,1,3,4] )
@@ -1288,7 +1288,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call time_start_phase(PHASE_WORK, at = time_init_comm )
 
      else
-        u2 = array_ainit( [nv,nv,no,no], 4, local=local, atype='LDAR' )
+        call array_ainit(u2, [nv,nv,no,no], 4, local=local, atype='LDAR' )
         !calculate u matrix: t[c d i j] -> t[d c i j], 2t[d c i j] - t[d c j i] = u [d c i j]
         call array_reorder_4d(  2.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,3,4],0.0E0_realk,u2%elm1)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
@@ -1315,8 +1315,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         else if(scheme==2.or.scheme==3)then
            write(def_atype,'(A4)')'TDAR'
         endif
-        gvvooa = array_ainit( [nv,no,no,nv],4, local=local, atype=def_atype )
-        gvoova = array_ainit( [nv,no,nv,no],4, local=local, atype=def_atype )
+        call array_ainit(gvvooa, [nv,no,no,nv],4, local=local, atype=def_atype, tdims=[vs,os,os,vs])
+        call array_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os])
         call array_zero(gvvooa)
         call array_zero(gvoova)
      endif
@@ -1755,6 +1755,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call mem_dealloc(w3)
 
 #ifdef VAR_MPI
+     call get_currently_available_memory(MemFree)
+
      ! Finish the MPI part of the Residual calculation
      call time_start_phase(PHASE_IDLE, at = time_intloop_work )
 
@@ -1764,12 +1766,35 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      max_wait_time = time_intloop_idle
      min_wait_time = time_intloop_idle
 
-     if(((scheme==4.and.iter/=1).or.scheme==3).and.ccmodel > MODEL_CC2.and..not.local)then
+
+     maxts=0
+     nbuff=0
+     if(((scheme==4.and.iter/=1).or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
+        maxts = max(govov%tsize,maxts)
+        nbuff=nbuff+1
+     endif
+     if(scheme==3)then
+        maxts = max(gvoova%tsize,maxts)
+        maxts = max(gvvooa%tsize,maxts)
+        nbuff=nbuff+1
+     endif
+
+     if(nbuff /= 0)then
+        buf_size = max(1,min((int((MemFree * 1024.0E0_realk**3)/(8.0E0_realk)) - nbuff * o2v2) / maxts,5))*maxts
+     else
+        buf_size=0
+     endif
+
+     if(((scheme==4.and.iter/=1).or.scheme==3).and.(ccmodel > MODEL_CC2).and.(.not.local))then
+        call mem_alloc(buf1,buf_size)
         if(lock_outside)then
            call arr_lock_wins( govov  , 's', mode )
         endif
         call memory_allocate_array_dense( govov )
-        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2)
+        call array_gather(1.0E0_realk,govov,0.0E0_realk,govov%elm1,o2v2,wrk=buf1,iwrk=buf_size)
+        if(.not.lock_outside)then
+           call mem_dealloc(buf1)
+        endif
      endif
 
      if(scheme==3)then
@@ -1782,15 +1807,25 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call mem_alloc( gvvoo, o2v2, simple=.true. )
         call mem_alloc( gvoov, o2v2, simple=.true. )
 
+        call mem_alloc(buf2,buf_size)
+        call mem_alloc(buf3,buf_size)
+
         if( Ccmodel>MODEL_CC2 )then
-           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2)
-           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2)
+           call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov%d,o2v2,wrk=buf2,iwrk=buf_size)
+           call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo%d,o2v2,wrk=buf3,iwrk=buf_size)
+        endif
+
+        if(.not.lock_outside)then
+           call mem_dealloc(buf2)
+           call mem_dealloc(buf3)
         endif
 
      endif
 
+#endif
 
 
+#ifdef VAR_MPI
 
      !GET TIMING INFORMATION
 #ifdef VAR_LSDEBUG
@@ -1922,22 +1957,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
-
 #ifdef VAR_MPI
         call lsmpi_win_free(sio4w)
 #endif
         call mem_dealloc(sio4)
 
-
         call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
 
-
 #ifdef VAR_MPI
         call time_start_phase(PHASE_COMM, at = time_Bcnd_work )
-        if((scheme==4.and.iter/=1).or.scheme==3.and..not.local)then
+        if(((scheme==4.and.iter/=1).or.(scheme==3)).and..not.local)then
 
            call arr_unlock_wins(govov, .true.)
+           if(lock_outside)call mem_dealloc(buf1)
 
         endif
         if(scheme==3)then
@@ -1945,6 +1978,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(lock_outside)then
               call arr_unlock_wins(gvoova,.true.)
               call arr_unlock_wins(gvvooa,.true.)
+              call mem_dealloc(buf2)
+              call mem_dealloc(buf3)
            endif
            gvoova%elm1 => gvoov%d
            gvvooa%elm1 => gvvoo%d
@@ -1958,13 +1993,16 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !Get the C2 and D2 terms
         !***********************
-
-        call get_cnd_terms_mo(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
-           &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
+        if(scheme==4.or.scheme==3)then
+           call get_cnd_terms_mo_3n4(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
+              &scheme,lock_outside,els2add,time_cnd_work,time_cnd_comm)
+        else if(scheme==2)then
+           call get_cnd_terms_mo_2(w1%d,w2%d,w3%d,t2,u2,govov,gvoova,gvvooa,no,nv,omega2,&
+              &scheme,lock_outside)
+        endif
 
         call ccsd_debug_print(ccmodel,3,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
-
 
         !DEALLOCATE STUFF
         if(scheme==4)then
@@ -2231,7 +2269,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
- 
+
      if(print_debug)then
         write(msg,*)"NORM(omega1):"
         call print_norm(omega1,int((i8*no)*nv,kind=8),msg)
@@ -2419,7 +2457,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
               !call arr_lock_wins(omega2,'s',mode)
               call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
               call time_start_phase(PHASE_COMM, at = tw)
-              call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.)
+              call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.,debug=.false.)
               call time_start_phase(PHASE_WORK, at = tc)
            endif
         endif
@@ -2582,12 +2620,165 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
        call lsmpi_poke()
   end subroutine check_job
-  
+
   !> \brief Routine to get the c and the d terms from t1 tranformed integrals
   !using a simple mpi-parallelization
   !> \author Patrick Ettenhuber
   !> \Date January 2013 
-  subroutine get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
+  subroutine get_cnd_terms_mo_2(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
+        &no,nv,omega2,s,lock_outside)
+     implicit none
+     !> input some empty workspace of zise v^2*o^2 
+     real(realk), intent(inout) :: w1(:)
+     real(realk),pointer :: w2(:),w3(:)
+     !> the t1-transformed integrals
+     type(array), intent(inout) :: govov,gvvoo,gvoov
+     !> number of occupied orbitals 
+     integer, intent(in) :: no
+     !> nuber of virtual orbitals
+     integer, intent(in) :: nv
+     !> ampitudes on input ordered as abij
+     !real(realk), intent(in) :: t2(:)
+     type(array), intent(inout) :: t2
+     !> u on input u{aibj}=2t{aibj}-t{ajbi} ordered as abij
+     type(array), intent(inout) :: u2
+     !> the residual to add the contribution
+     type(array), intent(inout) :: omega2
+     !> integer specifying the scheme
+     integer, intent(in) :: s
+     !> specifiaction if lock stuff
+     logical, intent(in) :: lock_outside
+
+     !INTERNAL VARIABLES:
+     type(array) :: Dvoov, Lovov, Coovv, O_pre
+     integer :: fdim1(4), sdim1(4), fdim2(4), sdim2(4),ord(4)
+     integer :: os, vs
+     integer(kind=ls_mpik) :: me, nnod, mode
+     integer(kind=8) :: o2v2
+     logical :: master
+     character(4) :: atype
+
+     call time_start_phase(PHASE_WORK)
+
+     me     = 0_ls_mpik
+     nnod   = 1_ls_mpik
+#ifdef VAR_MPI
+     nnod   = infpar%lg_nodtot
+     me     = infpar%lg_mynum
+     mode   = MPI_MODE_NOCHECK
+#endif
+     o2v2   = int((i8*no)*no*nv*nv,kind=8)
+     master = ( me == 0_ls_mpik )
+     os     = govov%tdim(1)
+     vs     = govov%tdim(2)
+     atype  = "TDAR"
+
+     call arr_unlock_wins(omega2,.true.)
+     !call arr_lock_local_wins(omega2,'e',mode)
+
+     !Cterm
+     fdim1 = [no,no,nv,nv]
+     sdim1 = [os,os,vs,vs]
+     call array_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype)
+     call arr_lock_local_wins(Coovv,'e',mode)
+
+     !Build C intermediate
+     ord = [2,3,1,4]
+     call array_add(Coovv,1.0E0_realk,gvvoo, a = 0.0E0_realk, order = ord)
+     ord = [3,2,1,4]
+     call array_contract(-0.5E0_realk,t2,govov,[2,3],[2,3],2,1.0E0_realk,Coovv,ord)
+
+     !Inser synchronizatipn point
+     fdim1 = [nv,nv,no,no]
+     sdim1 = [vs,vs,os,os]
+     call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call arr_lock_local_wins(O_pre,'e',mode)
+
+     !now allow for access to the completed tiles
+     call arr_unlock_wins(Coovv,.true.)
+
+     ord = [4,1,2,3]
+     call array_contract(-1.0E0_realk,t2,Coovv,[2,3],[4,1],2,0.0E0_realk,O_pre,ord)
+     
+     !synchronize
+     call array_free(Coovv)
+
+     call arr_unlock_wins(O_pre,.true.)
+
+
+     !add in permutations (1+0.5P_ij)
+     call array_add(omega2,1.0E0_realk,O_pre)
+     ord = [1,2,4,3]
+     call array_add(omega2,0.5E0_realk,O_pre,order=ord)
+
+     !synchronize
+     call array_free(O_pre)
+
+
+     !Dterm
+     !Calculate intermediates needed in D2 term
+     fdim1  = [nv,no,no,nv]
+     sdim1  = [vs,os,os,vs]
+     fdim2  = govov%dims
+     sdim2  = govov%tdim
+     call array_ainit(Dvoov,fdim1,4,tdims=sdim1,atype=atype)
+     call array_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype)
+     call arr_lock_local_wins(Dvoov,'e',mode)
+     call arr_lock_local_wins(Lovov,'e',mode)
+
+     !careful gvvoo is ordered as (aijb) and gvoov is ordered as (ajbi) 
+     ord = [1,4,2,3]
+     call array_add(Dvoov, 2.0E0_realk,gvoov, a = 0.0E0_realk, order = ord)
+     ord = [1,3,2,4]
+     call array_add(Dvoov,-1.0E0_realk,gvvoo, order = ord)
+     call arr_unlock_wins(Dvoov,.true.)
+
+     ord = [1,4,3,2]
+     call array_add(Lovov, 2.0E0_realk,govov, a = 0.0E0_realk)
+     call array_add(Lovov,-1.0E0_realk,govov,order = ord )
+     call arr_unlock_wins(Lovov,.true.)
+
+     !u2 is saved as (baij) 
+     ord = [1,2,3,4]
+     call array_contract(0.5E0_realk,u2,Lovov,[4,1],[1,2],2,1.0E0_realk,Dvoov,ord)
+
+     !Inser synchronizatipn point
+     fdim1 = [nv,nv,no,no]
+     sdim1 = [vs,vs,os,os]
+     call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
+     call arr_lock_local_wins(O_pre,'e',mode)
+
+     call arr_unlock_wins(Dvoov,.true.)
+
+     !synchronization point
+     call array_free(Lovov)
+
+     !u2 is saved as (baij) 
+     ord = [3,1,4,2]
+     call array_contract(0.5E0_realk,u2,Dvoov,[1,4],[4,3],2,0.0E0_realk,O_pre,ord)
+
+     !synchronization point
+     call array_free(Dvoov)
+
+     call arr_unlock_wins(O_pre,.true.)
+
+     !add in permutations P_ij^ab (1+0.5P_ij)
+     call array_add(omega2,1.0E0_realk,O_pre)
+
+
+     !call arr_unlock_wins(omega2,.true.)
+     call array_free(O_pre)
+
+     !call print_norm(omega2)
+
+  end subroutine get_cnd_terms_mo_2
+  
+  !> \brief Routine to get the c and the d terms from t1 tranformed integrals
+  !using a simple mpi-parallelization, only for schemes 4 and 3, 2 is also
+  !possible, but some functions seem to be buggy.
+  !> \author Patrick Ettenhuber
+  !> \Date January 2013 
+  subroutine get_cnd_terms_mo_3n4(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,&
         &no,nv,omega2,s,lock_outside,els2add,tw,tc)
      implicit none
      !> input some empty workspace of zise v^2*o^2 
@@ -2663,7 +2854,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            w2size  = tlov
            w3size  = min(o2v2,tlov + els2add)
         else
-           call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
+           call lsquit("ERROR(get_cnd_terms_mo_3n4):no valid scheme",-1)
         endif
 
         if(me==0.and.DECinfo%PL>3)then
@@ -2691,11 +2882,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if(lock_outside)then
 
               call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
-
               !call arr_lock_wins(gvvoo,'s',mode)
               call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,.false.)
               !call arr_unlock_wins(gvvoo,.true.)
-
               if(DECinfo%PL>3.and.master)then
                  call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
                  & labelttot = "CC comm time C1:" )
@@ -2760,6 +2949,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Reorder t [a d l i] -> t [a i d l]
         if(s==4)then
            call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w3)
+           !w3 = 0.0E0_realk
+           !call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
+           !do i=1,tl
+           !   call dcopy(no*nv,w1(fai+i-1),no*nv,w3(fai+i-1),no*nv)
+           !enddo
         else if(s==3)then
            call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[1,4,2,3],0.0E0_realk,w1)
            do i=1,tl
@@ -2860,6 +3054,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            do i=1,tl
               call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
            enddo
+           !print *,infpar%lg_mynum,"DGEMM2 -- out",norm2(w1),norm2(w3)
         else if(s==2)then
 #ifdef VAR_MPI
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
@@ -2923,6 +3118,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         endif
 
 
+        !print *,infpar%lg_mynum,"done C"
+        !call lsmpi_barrier(infpar%lg_comm)
+        !call print_norm(omega2)
 
 
 
@@ -2990,10 +3188,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call get_currently_available_memory(MemFree)
            call time_start_phase(PHASE_COMM, at = tw , twall = t_comm_b )
 
+           w3 = 0.0E0_realk
            !if(lock_outside)call arr_lock_wins(u2,'s',mode)
            call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,.false.,&
-              &mem=MemFree)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
+              &mem=MemFree,debug=.false.)!,wrk=w3(o2v2+1:w3size),iwrk=(w3size-o2v2))
            !if(lock_outside)call arr_unlock_wins(u2,.true.)
+
+           !print *,infpar%lg_mynum,"w3",norm2(w3),fai,tl
 
            if(DECinfo%PL>3.and.master)then
               call time_start_phase(PHASE_WORK, at = tc , ttot = t_comm_b ,&
@@ -3016,7 +3217,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! (0.5) * u [a i l d] * L [l d k c] + L [a i k c] = D [a i k c]
         call dgemm('n','n',tl,nv*no,nv*no,0.5E0_realk,w3(faif),lead,w1,nv*no,1.0E0_realk,w2(faif),lead)
-
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!       CENTRAL GEMM 2         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3048,7 +3248,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            endif
 
            call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
-
 #endif
         endif
 
@@ -3080,8 +3279,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      endif
 
+     !print *,infpar%lg_mynum,"done D"
+     !call lsmpi_barrier(infpar%lg_comm)
+     !call print_norm(omega2)
+
      call time_start_phase(PHASE_WORK, at = tw )
-  end subroutine get_cnd_terms_mo
+  end subroutine get_cnd_terms_mo_3n4
 
 
 
@@ -3627,7 +3830,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
 
     dims = omega1%dims
-    prec = array_init(dims,2)
+    call array_init(prec, dims,2)
 
     do a=1,dims(1)
       do i=1,dims(2)
@@ -4189,7 +4392,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Currently, only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine ccsd_energy_full_occ(nocc,nvirt,natoms,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
+  subroutine ccsd_energy_full_occ(nocc,nvirt,nfrags,offset,ccsd_doubles,ccsd_singles,integral,occ_orbitals,&
                            & eccsdpt_matrix_cou,eccsdpt_matrix_exc)
 
     implicit none
@@ -4199,11 +4402,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !> ccsd singles amplitudes
     type(array), intent(inout) :: ccsd_singles
     !> dimensions
-    integer, intent(in) :: nocc, nvirt, natoms, offset
+    integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
     type(decorbital), dimension(nocc+offset), intent(inout) :: occ_orbitals
     !> etot
-    real(realk), dimension(natoms,natoms), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
+    real(realk), dimension(nfrags,nfrags), intent(inout) :: eccsdpt_matrix_cou, eccsdpt_matrix_exc
     !> integers
     integer :: i,j,a,b,atomI,atomJ
     !> energy reals
@@ -4286,8 +4489,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! we only consider pairs IJ where J>I; thus, move contributions and set J<I contribs to zero.
     ! (must be consistent with printout in print_pair_fragment_energies)
 
-    do AtomI=1,natoms
-       do AtomJ=AtomI+1,natoms
+    do AtomI=1,nfrags
+       do AtomJ=AtomI+1,nfrags
 
           eccsdpt_matrix_cou(AtomI,AtomJ) = eccsdpt_matrix_cou(AtomI,AtomJ) &
                                               & + eccsdpt_matrix_cou(AtomJ,AtomI)
@@ -4307,43 +4510,43 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> Only for occupied partitioning scheme.
   !> \author: Janus Juul Eriksen
   !> \date: February 2013
-  subroutine print_ccsd_full_occ(natoms,ccsd_matrix,orbitals_assigned,distancetable)
+  subroutine print_ccsd_full_occ(nfrags,ccsd_matrix,orbitals_assigned,distancetable)
 
     implicit none
 
     !> number of atoms in molecule
-    integer, intent(in) :: natoms
+    integer, intent(in) :: nfrags
     !> matrices containing E[4] energies and interatomic distances
-    real(realk), dimension(natoms,natoms), intent(in) :: ccsd_matrix, distancetable
+    real(realk), dimension(nfrags,nfrags), intent(in) :: ccsd_matrix, distancetable
     !> vector handling how the orbitals are assigned?
-    logical, dimension(natoms), intent(inout) :: orbitals_assigned
+    logical, dimension(nfrags), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,j
 
 
     if(.not.DECinfo%CCDhack)then
        if( DECinfo%ccmodel == MODEL_MP2)then
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'MP2 occupied single energies','AF_MP2_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'MP2 occupied pair energies','PF_MP2_OCC')
        else if( DECinfo%ccmodel == MODEL_CC2 )then
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'CC2 occupied single energies','AF_CC2_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'CC2 occupied pair energies','PF_CC2_OCC')
        else if( DECinfo%ccmodel == MODEL_CCSD .or. DECinfo%ccmodel == MODEL_CCSDpT )then 
-          call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & 'CCSD occupied single energies','AF_CCSD_OCC')
-          call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+          call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
              & Distancetable, 'CCSD occupied pair energies','PF_CCSD_OCC')
        else
           call lsquit("ERROR(print_ccsd_full_occ) model not implemented",-1)
        endif
     else
-       call print_atomic_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+       call print_atomic_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
           & 'CCD occupied single energies','AF_CCD_OCC')
-       call print_pair_fragment_energies(natoms,ccsd_matrix,orbitals_assigned,&
+       call print_pair_fragment_energies(nfrags,ccsd_matrix,orbitals_assigned,&
           & Distancetable, 'CCD occupied pair energies','PF_CCD_OCC')
     endif
 
@@ -5538,18 +5741,18 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     time_CND_work = 0.0E0_realk
     time_CND_comm = 0.0E0_realk
 
-    u2a = array_init([nv,nv,no,no],4)
+    call array_init(u2a, [nv,nv,no,no],4)
     call array_reorder_3d(1.0E0_realk,u2,nv,nv,no*no,[2,1,3],0.0E0_realk,u2a%elm1)
 
     ! gvoov [aijb] must be ordered as [ajbi]:
-    gvoova = array_init([nv,no,nv,no],4)
+    call array_init(gvoova,[nv,no,nv,no],4)
     call array_reorder_4d(1.0E0_realk,gvoov,nv,no,no,nv,[1,3,4,2],0.0E0_realk,gvoova%elm1)
 
     ! gvvoo [abij] must be ordered as [aijb]:
-    gvvooa = array_init([nv,no,no,nv],4)
+    call array_init(gvvooa,[nv,no,no,nv],4)
     call array_reorder_4d(1.0E0_realk,gvvoo,nv,nv,no,no,[1,3,4,2],0.0E0_realk,gvvooa%elm1)
 
-    call get_cnd_terms_mo(tmp0,tmp1,tmp2,t2,u2a,govov,gvoova,gvvooa, &
+    call get_cnd_terms_mo_3n4(tmp0,tmp1,tmp2,t2,u2a,govov,gvoova,gvvooa, &
        & no,nv,omega2,4,.false.,0_long,time_CND_work,time_CND_comm)
 
     call array_free(u2a)
@@ -5874,6 +6077,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
            else
               call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1%d,o2v2)
+              call print_norm(omega2)
            endif
            if(master)call print_norm(w1%d,o2v2,msg)
         endif
@@ -5990,9 +6194,9 @@ subroutine ccsd_data_preparation()
      &MyLsItem,nbas,nvirt,nocc,iter,local)
 
   if(local)then
-      t2     = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
-      govov  = array_ainit( [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
-      om2    = array_ainit( [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      call array_ainit(t2,    [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
+      call array_ainit(govov, [nocc,nvirt,nocc,nvirt], 4, local=local, atype='LDAR' )
+      call array_ainit(om2,   [nvirt,nvirt,nocc,nocc], 4, local=local, atype='LDAR' )
   endif
   
   ! Quantities, that need to be defined and setset
@@ -6192,10 +6396,10 @@ subroutine moccsd_data_slave()
   !==============================================================================
   ! Initialize arrays:
   if (local) then 
-    t1     = array_ainit( [nvir,nocc], 2, local=local, atype='LDAR' )
-    t2     = array_ainit( [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    omega2 = array_ainit( [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
-    govov  = array_ainit( [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
+    call array_ainit(t1    , [nvir,nocc],           2, local=local, atype='LDAR' )
+    call array_ainit(t2    , [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
+    call array_ainit(omega2, [nvir,nvir,nocc,nocc], 4, local=local, atype='LDAR' )
+    call array_ainit(govov , [nocc,nvir,nocc,nvir], 4, local=local, atype='LDAR' )
   else
     call memory_allocate_array_dense(t2)
     call memory_allocate_array_dense(govov)

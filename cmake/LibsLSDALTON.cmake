@@ -354,7 +354,7 @@ if(ENABLE_QMATRIX)
         )
     include(LibsQMatrix)
     add_dependencies(ls_qmatrix_interface matrixulib)
-    add_dependencies(ls_qmatrix_interface ${LIB_QMATRIX})
+    add_dependencies(ls_qmatrix_interface qmatrix)
     add_dependencies(linearslib ls_qmatrix_interface)
 endif()
 

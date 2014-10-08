@@ -4,7 +4,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  CONTAINS
  subroutine TransferRecurrenceGPUP1Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -14,6 +14,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   10)
   real(realk),intent(inout) :: Aux2(nPasses,    4,    4)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0(  4,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -31,7 +32,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -98,7 +99,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  end subroutine TransferRecurrenceGPUP1Q1BtoCSeg1Prim
  subroutine TransferRecurrenceGPUP2Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -108,6 +109,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   20)
   real(realk),intent(inout) :: Aux2(nPasses,   10,    4)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 10,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -125,7 +127,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -219,7 +221,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  end subroutine TransferRecurrenceGPUP2Q1BtoCSeg1Prim
  subroutine TransferRecurrenceGPUP2Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -229,6 +231,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   35)
   real(realk),intent(inout) :: Aux2(nPasses,   10,   10)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 10, 10)
   real(realk) :: Tmp1( 11: 20,  2:  4)
@@ -248,7 +251,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -511,7 +514,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  end subroutine TransferRecurrenceGPUP2Q2BtoCSeg1Prim
  subroutine TransferRecurrenceGPUP3Q1BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -521,6 +524,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   35)
   real(realk),intent(inout) :: Aux2(nPasses,   20,    4)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 20,  4)
 !  real(realk) :: Tmp(nTUVP,nTUVQ) ordering
@@ -538,7 +542,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -680,7 +684,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  end subroutine TransferRecurrenceGPUP3Q1BtoCSeg1Prim
  subroutine TransferRecurrenceGPUP3Q2BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -690,6 +694,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   56)
   real(realk),intent(inout) :: Aux2(nPasses,   20,   10)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 20, 10)
   real(realk) :: Tmp1( 21: 35,  2:  4)
@@ -730,7 +735,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1
@@ -969,7 +974,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
  end subroutine TransferRecurrenceGPUP3Q2BtoCSeg1Prim
  subroutine TransferRecurrenceGPUP3Q3BtoCSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&
          & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2)
+         & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,Aux,Aux2,iASync)
   implicit none
   integer,intent(in) :: nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,nAtomsA,nAtomsB,MaxPasses
   real(realk),intent(in) :: reducedExponents(1,1),Pexp(1),Qexp(1)
@@ -979,6 +984,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
   real(realk),intent(in) :: Aux(nPasses,   84)
   real(realk),intent(inout) :: Aux2(nPasses,   20,   20)
 !  real(realk),intent(inout) :: Aux2(nPrimQ,nPrimP,nPasses,nTUVP,nTUVQ)
+  integer(kind=acckind),intent(in) :: iASync
   !Local variables
   real(realk) :: Tmp0( 20, 20)
   real(realk) :: Tmp1( 21: 56,  2:  4)
@@ -1027,7 +1033,7 @@ MODULE AGC_GPU_OBS_TRMODBtoCSeg1Prim
 !$ACC PRESENT(nPasses,nPrimP,nPrimQ,nPrimA,nPrimB,nPrimC,nPrimD,&
 !$ACC        reducedExponents,Pexp,Qexp,Pdistance12,Qdistance12,&
 !$ACC       Aexp,Dexp,&
-!$ACC        IatomApass,IatomBpass,Aux2,Aux)
+!$ACC        IatomApass,IatomBpass,Aux2,Aux) ASYNC(iASync)
   DO iP = 1,nPasses
    iPassP = iP
    iPrimP=1

@@ -17,7 +17,7 @@ f.add(string = 'Nuclear repulsion',
 f.add(from_string = 'POLARIZABILITY',
       to_string   = 'End of polarizability calculation',
       ignore_below = 1.0e-7,
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-7)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

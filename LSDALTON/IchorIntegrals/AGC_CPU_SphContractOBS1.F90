@@ -4,7 +4,7 @@ use IchorPrecisionModule
   
  CONTAINS
   
-subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
@@ -27,7 +27,7 @@ subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2(ijkQcart,nContPasses,IN,O
 end subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA2 
   
   
-subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN(  6,ijkQcart*nContPasses)
@@ -50,7 +50,7 @@ subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0(ijkQcart,nContPasses,IN,O
 end subroutine SphericalContractOBS1_CPU_maxAngP2_maxAngA0 
   
   
-subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
@@ -83,7 +83,7 @@ subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2(ijkQcart,nContPasses,IN,O
 end subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA2 
   
   
-subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 18,ijkQcart*nContPasses)
@@ -116,7 +116,7 @@ subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1(ijkQcart,nContPasses,IN,O
 end subroutine SphericalContractOBS1_CPU_maxAngP3_maxAngA1 
   
   
-subroutine SphericalContractOBS1_CPU_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
+ subroutine SphericalContractOBS1_CPU_maxAngP4_maxAngA2(ijkQcart,nContPasses,IN,OUT)
   implicit none
   integer,intent(in)        :: ijkQcart,nContPasses
   real(realk),intent(in)    :: IN( 36,ijkQcart*nContPasses)

@@ -8,7 +8,7 @@ module localityMeasureMod
   use typedeftype
   use matrix_module, only: matrix
   use matrix_operations 
-  use matrix_util, only: matrix_exponential
+  use matrix_util!, only: matrix_exponential
   use memory_handling
   use decompMod
 

@@ -11,14 +11,14 @@ module ls_qmatrix
     ! type of QMatrix interface information
     type, public :: LSQMat
         private
-        integer :: stdin = 5
-        integer :: stdout = 6
-        logical :: do_test = .false.
-        logical :: do_scf = .false.
-        integer :: num_alpha_occ = 0
-        integer, pointer :: alpha_occ_num(:,:)
-        integer :: num_beta_occ = 0
-        integer, pointer :: beta_occ_num(:,:)
+        integer(kind=4) :: stdin = 5
+        integer(kind=4) :: stdout = 6
+        logical(kind=4) :: do_test = .false.
+        logical(kind=4) :: do_scf = .false.
+        integer(kind=4) :: num_alpha_occ = 0
+        integer(kind=4), pointer :: alpha_occ_num(:,:)
+        integer(kind=4) :: num_beta_occ = 0
+        integer(kind=4), pointer :: beta_occ_num(:,:)
     end type LSQMat
 
     public :: ls_qmatrix_init
@@ -50,13 +50,14 @@ module ls_qmatrix
     !> \date 2014-06-15
     subroutine ls_qmatrix_input(ls_qmat, io_input, io_output, readword, word)
         type(LSQMat), intent(inout) :: ls_qmat
+!FIXME: uses (kind=4) for integers and logicals
         integer, intent(in) :: io_input
         integer, intent(in) :: io_output
         logical, intent(inout) :: readword
         character(80), intent(inout) :: word
         character(2) prompt
-        ls_qmat%stdin = io_input
-        ls_qmat%stdout = io_output
+        ls_qmat%stdin = int(io_input, 4)
+        ls_qmat%stdout = int(io_output, 4)
         do while (readword)
             read(io_input,100,err=200,end=200) word
             prompt = word(1:2)
