@@ -77,7 +77,7 @@ contains
        converged = testx .le.  1.0E-7_realk 
        call ls_gettim(dummy,tend)
 
-       write(*,'(I2,A,E10.4,A,F6.4,A,F6.4,A,E10.4,A,F8.1,A)')&
+       write(*,'(I2,A,E12.4,A,F12.4,A,F12.4,A,E12.4,A,F8.1,A)')&
       &iter,    " Norm= ", testx, " l2= ", l2," emax= ", emax," emin= ",&
       &emin, " time= ", tend-tstart, " sec"
        if (converged) exit
@@ -297,7 +297,7 @@ contains
 
      do i=1,n
         if (eigen_sqrt(i).le. 0E0_realk) then
-           write(msg,'(A,1X,I4,A,1X,E12.6)') &
+           write(msg,'(A,1X,I4,A,1X,E14.6)') &
                 &'Matrix not positive definite! Eigenvalue(',i,') =',&
                 &eigen_sqrt(i)
            call lsquit(msg,lupri)

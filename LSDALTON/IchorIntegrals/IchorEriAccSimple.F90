@@ -15,11 +15,11 @@ MODULE IchorErimodule
   use IchorprecisionModule
   use IchorCommonModule
   use IchorBatchToolsModule
-  use IchorEriCoulombintegralCPUOBSGeneralMod, only: IchorCoulombIntegral_CPU_OBS_general, &
-       & IchorCoulombIntegral_CPU_OBS_general_size
-  use IchorEriCoulombintegralGPUOBSGeneralMod, only: IchorCoulombIntegral_GPU_OBS_general, &
-       & IchorCoulombIntegral_GPU_OBS_general_size
-  use IchorCoulombIntegral_seg_seg_SSSS_mod, only: IchorCoulombIntegral_seg_seg_SSSS
+  use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general, &
+       & ICI_CPU_OBS_general_size
+  use IchorEriCoulombintegralGPUOBSGeneralMod, only: ICI_GPU_OBS_general, &
+       & ICI_GPU_OBS_general_size
+  use ICI_seg_seg_SSSS_mod, only: ICI_seg_seg_SSSS
   use IchorMemory
   use IchorGammaTabulationModule
   use IchorParametersModule
@@ -573,13 +573,13 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
 #ifdef VAR_OPENACC
-         call IchorCoulombIntegral_GPU_OBS_general_size(TMParray1maxsize,&
+         call ICI_GPU_OBS_general_size(TMParray1maxsize,&
               & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
               & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
               & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
               & nContQ,nPrimQ*nPrimP,nContQ*nContP,Psegmented,Qsegmented)
 #else
-         call IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
+         call ICI_CPU_OBS_general_size(TMParray1maxsize,&
               & TMParray2maxsize,BasisCont1maxsize,BasisCont2maxsize,&
               & BasisCont3maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
               & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,&
@@ -1067,7 +1067,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
 !$ACC             BasisCont3maxsizePass,BasisCont1,BasisCont2,BasisCont3,&
 !$ACC             IatomAPass,iatomBPass) &
 !$ACC COPYOUT(LocalIntPass1)
-     call IchorCoulombIntegral_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call ICI_GPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
              & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
              & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
              & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -1231,7 +1231,7 @@ subroutine IchorTypeIntegralLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
      !LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,MaxPasses)
      !IatomAPass,iatomBPass changes and 
 !     IF(iAtomC.EQ.1.AND.iAtomD.EQ.1)INTPRINT=1000
-     call IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+     call ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
              & nPrimQ,nPrimP*nPrimQ,nPasses,MaxPasses,intprint,lupri,&
              & nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
              & ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
@@ -1772,7 +1772,7 @@ subroutine IchorsegsegSSSSIntegralLoop(nAtomsA,nPrimA,startOrbitalA,&
      IF(nPasses.EQ.0)CYCLE
      CALL Build_seg_qcent_QpreExpFac(nPrimC,nPrimD,expC,expD,CcenterSpec,DcenterSpec,&
           & ContractCoeffC,ContractCoeffD,Qcent,QpreExpFac,INTPRINT)
-     call IchorCoulombIntegral_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,nAtomsA,nAtomsB,&
+     call ICI_seg_seg_SSSS(nPrimP,nPrimQ,nPasses,nAtomsA,nAtomsB,&
           & IatomAPass,iatomBPass,pcentPass,qcent,PpreexpfacPass,Qpreexpfac,TABFJW,&
           & reducedExponents,integralPrefactor,LocalIntPass)
      !symmetrize the LHS

@@ -163,7 +163,7 @@ contains
     character(ARR_MSG_LEN) :: msg
 
     dim1 = nocc*nvirt
-    Sckdl = array_minit([nocc,nvirt,nocc,nvirt],4,atype='TDAR')
+    call array_minit(Sckdl, [nocc,nvirt,nocc,nvirt],4,atype='TDAR')
 
     call array_reorder_4d(1.0E0_realk,t2%elm4,nvirt,nvirt,nocc,nocc,&
       & [3,1,4,2],0.0E0_realk,Sckdl%elm4)
@@ -899,7 +899,7 @@ contains
 
     call cpu_time(starttime)
 
-    t_par = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call array_minit(t_par, [nvirt,nvirt,nocc,nocc],4,atype='TDAR')
 
     call array4_reorder(t2,[1,3,2,4])
     call array_convert(t2%val,t_par)
@@ -920,7 +920,7 @@ contains
     !call array4_reorder(omega2,[1,3,2,4])
 
 
-    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,atype='TDAR')
+    call array_minit(Sckdl, [nvirt,nvirt,nocc,nocc],4,atype='TDAR')
     !call copy_array(t2,Sckdl)
     call array4_reorder(t2,[1,3,2,4])
     call array_convert(t2%val,Sckdl)
@@ -1005,7 +1005,7 @@ contains
     !call mem_alloc(w2,nvirt,nvirt,nocc,nocc)
     !w2=0._realk
 
-    Sckdl = array_minit([nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
+    call array_minit(Sckdl, [nvirt,nvirt,nocc,nocc],4,local=.true.,atype='TDAR')
     call array_convert(t2,Sckdl%elm1)
 
     do a=1,nvirt
@@ -1177,7 +1177,7 @@ contains
 
     call mo_work_dist(nvirt*nocc,fai,tl,trafo)
 
-    t_par = array_ainit([nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
+    call array_ainit(t_par, [nvirt,nvirt,nocc,nocc],4,atype='TDAR',local=.false.)
     call array_convert(u2%elm4,t_par)
     call array_free(u2)
     call mem_alloc(w2,tl*nocc*nvirt)

@@ -70,6 +70,8 @@
        of compiled QMatrix library. They will be dal_qmatrix and ls_qmatrix for DALTON
        and LSDALTON.
 
+       Radovan: This feature got removed in 5d4f4387efc2b8d511c963e3efcc06a5f9b2952b.
+
    (2) Another problem is the use of QMatrix library module which is always qmatrix.mod.
        That can not be saved into ${CMAKE_Fortran_MODULE_DIRECTORY} since this file is
        different for DALTON and LSDALTON. Instead, I leave them into their own build

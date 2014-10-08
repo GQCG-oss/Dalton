@@ -367,8 +367,8 @@ contains
             call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
             call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-            ccsdpt_t1 = array_init([MyFragment%noccAOS,MyFragment%nunoccAOS],2)
-            ccsdpt_t2 = array_init([MyFragment%noccAOS,MyFragment%noccAOS,&
+            call array_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+            call array_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
 
          else
@@ -376,8 +376,8 @@ contains
             call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
             call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-            ccsdpt_t1 = array_init([MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-            ccsdpt_t2 = array_init([MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+            call array_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+            call array_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
 
          endif
@@ -997,12 +997,14 @@ contains
 #ifdef MOD_UNRELEASED
        endif
 #endif
+       print *,"CCSD DONE"
 
        ! Extract EOS indices for integrals 
        ! *********************************
        call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
 !       call array_free(VOVO)
 
+       print *,"free first order"
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
           !construct RHS for pairs
@@ -1016,6 +1018,7 @@ contains
        ! u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j) 
        call get_combined_SingleDouble_amplitudes(t1,t2,u)
 
+       print *,"energy adn free crap"
 
        ! Extract EOS indices for amplitudes
        ! **********************************
@@ -1081,6 +1084,7 @@ contains
        call array_free(VOVV)
     end if
 
+    print *,"DOING(T)"
 #ifdef MOD_UNRELEASED
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
@@ -1101,8 +1105,8 @@ contains
           call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
           call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-          ccsdpt_t1 = array_init([PairFragment%noccAOS,PairFragment%nunoccAOS],2)
-          ccsdpt_t2 = array_init([PairFragment%noccAOS,PairFragment%noccAOS,&
+          call array_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
+          call array_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
                &PairFragment%nunoccAOS,PairFragment%nunoccAOS],4)
 
        else
@@ -1110,11 +1114,12 @@ contains
           call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
           call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-          ccsdpt_t1 = array_init([PairFragment%nunoccAOS,PairFragment%noccAOS],2)
-          ccsdpt_t2 = array_init([PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+          call array_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
+          call array_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
                &PairFragment%noccAOS,PairFragment%noccAOS],4)
 
        endif
+       print *,"DONE(T) -- PRINTING"
 
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%noccAOS,PairFragment%nunoccAOS,&
@@ -1126,6 +1131,7 @@ contains
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
+       print *,"freeing ccsdpt crap",ccsdpt_t1%initialized,ccsdpt_t2%initialized
        call array_free(ccsdpt_t1)
        call array_free(ccsdpt_t2)
 
@@ -1134,8 +1140,12 @@ contains
     end if
 #endif
 
+    print *,"test vovo dealloc",VOVO%initialized
     ! free vovo integrals
-    call array_free(VOVO)
+    if (PairFragment%CCModel == MODEL_RPA  .or. &
+       &PairFragment%CCModel == MODEL_CC2  .or. &
+       &PairFragment%CCModel == MODEL_CCSD .or. &
+       &PairFragment%CCModel == MODEL_CCSDpT ) call array_free(VOVO)
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
        if(DECinfo%use_singles)then
@@ -1150,10 +1160,12 @@ contains
     endif
 
     ! Free remaining arrays
+    print *,"test rest"
     call array_free(VOVOocc)
     call array_free(t2occ)
     call array_free(t2virt)
     call array_free(VOVOvirt)
+    print *,"test done"
 
     !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)

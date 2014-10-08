@@ -1832,14 +1832,14 @@ module pno_ccsd_module
 
         if(cv(nn)%allocd)then
 
-           o2(nn) = array_init([pnv,rpd,pnv,rpd],4)
+           call array_init(o2(nn), [pnv,rpd,pnv,rpd],4)
            call array_zero(o2(nn))
 
 
            if( cv(nn)%PS )then
-              sio4(nn) = array_init([no,no],2)
+              call array_init(sio4(nn),[no,no],2)
            else
-              sio4(nn) = array_init([no,no,pno,pno],4)
+              call array_init(sio4(nn),[no,no,pno,pno],4)
            endif
 
            call array_zero(sio4(nn))
@@ -1871,7 +1871,7 @@ module pno_ccsd_module
 
         if(cv(nn)%allocd)then
 
-           pno_t2(nn) = array_init([pnv,rpd,pnv,rpd],4)
+           call array_init(pno_t2(nn), [pnv,rpd,pnv,rpd],4)
 
            call ass_D1to4(tmp1,w1,[nv,rpd,nv,rpd])
 
@@ -2035,7 +2035,9 @@ module pno_ccsd_module
      real(realk), pointer :: dummy1(:), dummy2(:,:)
      integer(kind=8) :: nelms
      integer :: edit,max_nthreads,max_w_per_thr(5,nloops),loop,thread
-     !$ integer, external :: omp_get_num_threads, omp_get_max_threads
+#ifdef VAR_OMP
+     integer, external :: omp_get_num_threads, omp_get_max_threads
+#endif
 
      !this should coincide with the basic number of arrays (offset_for_omp) in pno_residual_integral_direct_loop
      basic = 11

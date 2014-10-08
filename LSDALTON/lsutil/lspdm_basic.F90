@@ -19,6 +19,10 @@ module lspdm_basic_module
                     &get_tileinfo_nelspmode_frombas,&
                     &get_tileinfo_nels_fromarr8,&
                     &get_tileinfo_nels_fromarr4,&
+                    &get_tileinfo_nels_fromarr8mode,&
+                    &get_tileinfo_nels_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr8mode,&
                     &get_tileinfo_nelspermode_fromarr4,&
                     &get_tileinfo_nelspermode_fromarr8
   end interface get_tile_dim
@@ -55,6 +59,45 @@ module lspdm_basic_module
       endif
     enddo
   end subroutine get_tileinfo_nels_frombas
+
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr8mode
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr4mode
 
   !> \brief this function returns the number of elements of a tile where the tile index is
   ! a global tile index
@@ -119,6 +162,42 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nelspermode_fromarr8
 
+  subroutine get_tileinfo_nelspermode_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr4mode
+  subroutine get_tileinfo_nelspermode_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr8mode
   subroutine get_tileinfo_nelspermode_fromarr4(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated

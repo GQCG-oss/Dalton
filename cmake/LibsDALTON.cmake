@@ -46,7 +46,7 @@ if(ENABLE_QMATRIX)
         )
     add_dependencies(dal_qmatrix_interface pdpacklib)
     add_dependencies(dal_qmatrix_interface matrixulib)
-    add_dependencies(dal_qmatrix_interface ${LIB_QMATRIX})
+    add_dependencies(dal_qmatrix_interface qmatrix)
     add_dependencies(dalton dal_qmatrix_interface)
     target_link_libraries(dal_qmatrix_interface
                           ${LIB_LS_QMATRIX}

@@ -33,8 +33,8 @@ all: libIchorIntegrals.a
 #F90            = ifort
 #FLNK           = ifort
 #RM             = rm -f
-##F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
-#F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
+#F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
+##F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
 #INCLUDES       =  
 #LIBS           = #-openmp
 #AR             = ar
@@ -44,18 +44,18 @@ all: libIchorIntegrals.a
 #
 #ARCH        = linux
 #FMMDIR      = mm
-##
-##
-#CPPFLAGS      = -DVAR_ICHOR
+#
+#
+#CPPFLAGS      = -DVAR_ICHOR -DVAR_OPENACC -DVAR_PGF90
 #F90            = pgf90
 #FLNK           = pgf90
 #RM             = rm -f
-#F90OPTFLAGS    = -acc #-Minfo=accel
+#F90OPTFLAGS    = -mp -Mconcur -acc #-Minfo=accel
 #INCLUDES       =  
 #LIBS           = 
 #AR             = ar
 #ARFLAGS        =  rvs
-##
+#
 #########################################################
 #
 # END OF COMPILER SECTION 
@@ -216,6 +216,12 @@ F90_OBJS = \
         IchorMem.o \
 	IchorSaveGab.o \
         IchorGammaTabulation.o \
+        IchorEri_CoulombIntegral_McM_general.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_general.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specR.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL.o \
+        IchorEri_CoulombIntegral_McM_Ecoeff_specL2.o \
+        IchorEri_CoulombIntegral_McM_WTUV_general.o \
         IchorEri_CoulombIntegral_McM_seg_seg_SSSS.o \
         IchorEri_CoulombIntegral_CPU_OBS_Gen.o \
         IchorEri_CoulombIntegral_CPU_OBS_SegQ.o \
@@ -229,19 +235,21 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
         IchorEri_CoulombIntegral_GPU_OBS_general.o \
+        IchorEri_GabIntegral_McM_general.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \
         IchorEri.o \
         IchorGab.o \
         MainIchorInterface.o\
+        IchorProfileMain.o\
         IchorTestingMain.o
 
 libIchorIntegrals.a: $(F90_OBJS) 
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD *.x
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90)
@@ -257,6 +265,10 @@ include Makefile.depend
 
 #the above code makes the libIchorIntegrals.a now you just have to link using
 
-test.x: $(F90_OBJS) 
+test.x: $(F90_OBJS) libIchorIntegrals.a
 	@echo "---------------> Linking test.x ..."
 	$(F90) $(F90OPTFLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a
+
+prof.x: $(F90_OBJS) libIchorIntegrals.a
+	@echo "---------------> Linking prof.x ..."
+	$(F90) $(F90OPTFLAGS) -o prof.x IchorProfileMain.F90 libIchorIntegrals.a
