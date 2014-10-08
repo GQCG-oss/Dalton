@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
      & check_cc_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -895,6 +895,8 @@ subroutine DEC_meaningful_input(config)
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
+
+     if(DECinfo%ccmodel == MODEL_CCSDpT) DECinfo%print_frags = .true.
 
      ! CCSD does not work for SCALAPACK, Hubi please fix!
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
