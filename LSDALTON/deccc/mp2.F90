@@ -1767,12 +1767,17 @@ end if
 
 end subroutine MP2_integrals_and_amplitudes_workhorse
 
+!TEST What happens when 1 or some (MynbasisAuxMPI.EQ.0)
+
 #ifdef MOD_UNRELEASED
-!> \brief Calculating MP2 Energy using RI (resolution of identity)
+!> \brief Calculating MP2 Energy using RI (resolution of identity) RIMP2
 !> both for occupied and virtual partitioning schemes.
 !> \author Thomas Kjaergaard
 !> \date Marts 2014
-subroutine MP2_RI_EnergyContribution(MyFragment)
+
+! Memory Usage 
+! nAux distribution better - for better load balancing - split atoms
+subroutine MP2_RI_EnergyContribution(MyFragment) 
   implicit none
   !> Atomic fragment (or pair fragment)
   type(decfrag), intent(inout) :: MyFragment
@@ -1802,12 +1807,12 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA
   integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
   Integer :: OriginalRanknbasisAuxMPI,NBA
-  real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:)
-  real(realk),pointer :: occ_tmp(:),virt_tmp(:)
+  real(realk),pointer :: OccContribsFull(:),VirtContribsFull(:),Calpha_debug(:,:,:)
+  real(realk),pointer :: occ_tmp(:),virt_tmp(:),AlphaCD3_debug(:,:,:)
   integer,pointer :: IPVT(:)
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-  real(realk), pointer   :: work1(:)
+  real(realk), pointer   :: work1(:),Etmp2222(:)
   real(realk)            :: RCOND
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
 #ifdef VAR_MPI
@@ -1916,7 +1921,6 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   call array2_free(Uvirt)
 
   call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
-  
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
   ! *************************************************************
@@ -1924,7 +1928,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 #ifdef VAR_MPI
 
   ! Only use slave helper if there is at least one local slave available.
-  if(infpar%lg_nodtot>1) then
+  if(infpar%lg_nodtot.GT.1) then
      wakeslave=.true.
   else
      wakeslave=.false.
@@ -1949,7 +1953,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 
      call time_start_phase( PHASE_COMM )
 
-     ! Wake up slaves to do the job: MP2 - integrals and amplitudes  (MP2INAMP)
+     ! Wake up slaves to do the job: slaves awoken up with (MP2INAMPRI)
+     ! and call MP2_RI_EnergyContribution_slave which calls
+     ! mpi_communicate_mp2_int_and_amp and then MP2_RI_EnergyContribution.
      call ls_mpibcast(MP2INAMPRI,infpar%master,infpar%lg_comm)
 
      ! Communicate fragment information to slaves
@@ -1967,9 +1973,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   wakeslave = .false.
 #endif
 
-  IF(wakeslave)then
-     call mem_alloc(nbasisAuxMPI,numnodes)!dimension for all ranks
-     call mem_alloc(nAtomsMPI,numnodes)   !atoms assign to mynum
+  IF(infpar%lg_nodtot.GT.1)then 
+     !all nodes have info about all nodes 
+     call mem_alloc(nbasisAuxMPI,numnodes)        !number of Aux basis func assigned to rank
+     call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
      call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (nbasisAux)
      call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
      call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
@@ -1982,15 +1989,68 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      MynbasisAuxMPI = nbasisAux
   ENDIF
 
+  call mem_alloc(AlphaBeta_inv,nbasisAux,nbasisAux)
+  IF(master)THEN
+     !=====================================================================================
+     ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+     !=====================================================================================
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+     !this should naturally be changed      
+
+     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+          & AlphaBeta_inv,MyFragment%mylsitem%setting,nbasisAux)
+
+     !=====================================================================================
+     ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
+     !=====================================================================================
+     ! Warning the inverse is not unique so in order to make sure all slaves have the same
+     ! inverse matrix we calculate it on the master a BCAST to slaves
+     
+     !Create the inverse AlphaBeta = (alpha|beta)^-1
+     call mem_alloc(work1,nbasisAux)
+     call mem_alloc(IPVT,nbasisAux)
+     IPVT = 0 ; RCOND = 0.0E0_realk  
+     call DGECO(AlphaBeta_inv,nbasisAux,nbasisAux,IPVT,RCOND,work1)
+     call DGEDI(AlphaBeta_inv,nbasisAux,nbasisAux,IPVT,dummy,work1,01)
+     call mem_dealloc(work1)
+     call mem_dealloc(IPVT)
+#ifdef VAR_MPI
+     call ls_mpibcast(AlphaBeta_inv,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
+#endif
+  ELSE
+#ifdef VAR_MPI
+     call ls_mpibcast(AlphaBeta_inv,nbasisAux,nbasisAux,infpar%master,infpar%lg_comm)
+#endif
+  ENDIF
+
+  IF(infpar%lg_nodtot.GT.1)then 
+     !We wish to build
+     !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
+     !where alpha runs over the Aux basis functions allocated for this rank
+     !and beta run over the full set of nbasisAux
+     call mem_alloc(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux)
+     do BETA = 1,nbasisAux
+        startA2 = 0
+        DO iAtomA=1,nAtomsMPI(mynum+1)
+           StartA = startAuxMPI(iAtomA,mynum+1)
+           do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
+              TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = &
+                   & AlphaBeta_inv(startA + ALPHA,BETA)
+           enddo
+           startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
+        enddo
+     enddo
+     call mem_dealloc(AlphaBeta_inv)
+  ENDIF
   !=====================================================================================
-  ! Major Step 1: Obtain 3 center RI integrals (alpha,a,i) 
+  ! Major Step 3: Obtain 3 center RI integrals (alpha,a,i) 
   !=====================================================================================
   IF(MynbasisAuxMPI.GT.0)THEN
      !call mem_alloc(AlphaCD3,nbasisAux,nvirt,nocc)
      !It is very annoying but I allocated AlphaCD3 inside 
      !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
      !This Part of the Code is MPI/OpenMP parallel and AlphaCD3 will have the dimensions
-     !(nbasisAuxMPI,nvirt,nocc) 
+     !(MynbasisAuxMPI,nvirt,nocc) 
      !nbasisAuxMPI is nbasisAux divided out on the nodes so roughly nbasisAuxMPI = nbasisAux/numnodes
      call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
           & AlphaCD3,MyFragment%mylsitem%setting,nbasisAux,nbasis,&
@@ -2000,79 +2060,36 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   call mem_dealloc(Cvirt)
 
 #ifdef VAR_MPI
-  if(wakeslave) then    !START BY SENDING MY OWN PACKAGE alphaCD3
+  if(infpar%lg_nodtot.GT.1) then !START BY SENDING MY OWN PACKAGE alphaCD3
      !A given rank always recieve a package from the same node 
      !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
      Receiver = MOD(1+mynum,numnodes)
      !A given rank always send to the same node 
      !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
      Sender = MOD(mynum-1+numnodes,numnodes)
-     COUNT = MynbasisAuxMPI*nocc*nvirt !size 
-     IF(MynbasisAuxMPI.GT.0)THEN
-!        print*,'MYNUM',MYNUM,' SEND TO SENDER:',Sender
+     COUNT = MynbasisAuxMPI*nocc*nvirt !size of alphaCD3
+     IF(MynbasisAuxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
         call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request,ierr)        
         call MPI_Request_free(request,ierr)
-
-!        print*,'AlphaCD  MYNUM',MYNUM
-!        call ls_output(AlphaCD3,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
-
      ENDIF
   endif
 #endif
 
   !=====================================================================================
-  ! Major Step 2: Obtain Overlap (alpha|beta) in Auxiliary Basis 
-  !=====================================================================================
-
-  call mem_alloc(AlphaBeta_inv,nbasisAux,nbasisAux)
-  IF(MynbasisAuxMPI.GT.0)THEN
-     !This part of the Code is MPI/OpenMP parallel 
-     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
-          & AlphaBeta_inv,MyFragment%mylsitem%setting,nbasisAux)
-  ENDIF
-  !=====================================================================================
-  ! Major Step 3: Obtain C_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+  ! Major Step 4: Obtain C_(alpha,ai) = (alpha|beta)^(-1) (beta|ai)
   !               consider  c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
   !               so that you only need 1 3dim quantity      
   !=====================================================================================
 
-  if(wakeslave) then    !START BY SENDING MY OWN PACKAGE alphaCD3
-     IF(MynbasisAuxMPI.GT.0)THEN
-        !Create the inverse AlphaBeta = (alpha|beta)^-1
-        call mem_alloc(work1,nbasisAux)
-        call mem_alloc(IPVT,nbasisAux)
-        IPVT = 0 ; RCOND = 0.0E0_realk  
-        call DGECO(AlphaBeta_inv,nbasisAux,nbasisAux,IPVT,RCOND,work1)
-        call DGEDI(AlphaBeta_inv,nbasisAux,nbasisAux,IPVT,dummy,work1,01)
-        call mem_dealloc(work1)
-        call mem_dealloc(IPVT)
-
+  if(infpar%lg_nodtot.GT.1) then         
+     IF(MynbasisAuxMPI.GT.0)THEN 
         !consider 
         !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
         !so that you only need 1 3dim quantity      
-
-        !We wish to build
-        !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
-        !where alpha runs over the Aux basis functions allocated for this rank
-        !and beta run over the full set of nbasisAux
-        call mem_alloc(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux)
-        do BETA = 1,nbasisAux
-           startA2 = 0
-           DO iAtomA=1,nAtomsMPI(mynum+1)
-              StartA = startAuxMPI(iAtomA,mynum+1)
-              do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
-                 TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = &
-                      & AlphaBeta_inv(startA + ALPHA,BETA)
-              enddo
-              startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
-           enddo
-        enddo
-        call mem_dealloc(AlphaBeta_inv)
-
         call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
         !Use own AlphaCD3 to obtain part of Calpha
-        do B = 1,nvirt
-           do I = 1,nocc
+        do I = 1,nocc
+           do B = 1,nvirt
               do ALPHA = 1,MynbasisAuxMPI
                  Calpha(ALPHA,B,I) = 0.0E0_realk
               enddo
@@ -2091,8 +2108,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
            enddo
         enddo
      ENDIF
-!     print*,'Calpha OWN contribtuion',MYNUM
-!     call ls_output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
+
      !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
      !alphaCD(nbasisAuxMPI,nvirt,nocc) contributions from all ranks
      !so we do:
@@ -2104,13 +2120,13 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      ! 3. MPI send the recieved alphaCD to 'Sender' 
      ! 4. Repeat untill all contributions have been added
 
-     DO node=1,numnodes-1 
+     DO node=1,numnodes-1 !should recieve numnodes-1 packages 
         !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
         !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
         ! ...
         !myOriginalRank therefore determine the size of NodenbasisAuxMPI
         myOriginalRank = MOD(mynum+node,numnodes)         
-        OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1)
+        OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
         IF(OriginalRanknbasisAuxMPI.GT.0)THEN
            !Step 1 : MPI recieve a alphaCD from 'Receiver' 
            call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
@@ -2119,14 +2135,12 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 #ifdef VAR_MPI
            !USE RECV instead of IRECV
            DO WHILE(.NOT.MessageRecieved)
-!              print*,'MYNUM',MYNUM,' IPROBE'
               call MPI_IPROBE(MPI_ANY_SOURCE,TAG,infpar%lg_comm,MessageRecieved,status,ierr)
               IF(MessageRecieved)THEN
                  j = status(MPI_SOURCE)
                  call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
                  IF(J.NE.Receiver)CALL LSQUIT('Receiver WRONG IN QQQQQQQQ ',-1)
                  IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN QQQQQQQQ ',-1)
-!                 print*,'MYNUM',MYNUM,' IRECV'
                  call MPI_IRECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,J,TAG,infpar%lg_comm,request,ierr)
                  call MPI_Request_free(request,ierr) 
               ENDIF
@@ -2134,8 +2148,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 #endif
            IF(MynbasisAuxMPI.GT.0)THEN
               !Step 2: Obtain part of Calpha from this contribution
-              do B = 1,nvirt
-                 do I = 1,nocc
+              do I = 1,nocc
+                 do B = 1,nvirt
                     startB2 = 0
                     DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
                        StartB = startAuxMPI(iAtomB,myOriginalRank+1)
@@ -2152,20 +2166,16 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
            ENDIF
            !Step 3: MPI send the recieved alphaCD to 'Sender' 
            IF(node.NE.numnodes-1)THEN
+              !No need to send the Final package 
 #ifdef VAR_MPI
-!              print*,'MYNUM',MYNUM,' SEND TO ',Sender
               call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request,ierr)
               call MPI_Request_free(request,ierr)
 #endif
               !ELSE
-              !Final package 
            ENDIF
            call mem_dealloc(AlphaCD5)
         ENDIF
      ENDDO
-!     print*,'FINAL Calpha  MYNUM',MYNUM
-!     call ls_output(Calpha,1,MynbasisAuxMPI,1,nvirt*nocc,MynbasisAuxMPI,nvirt*nocc,1,6)
-
      call mem_dealloc(nbasisAuxMPI)
      call mem_dealloc(startAuxMPI)
      call mem_dealloc(nAtomsMPI)
@@ -2174,29 +2184,40 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         call mem_dealloc(TMPAlphaBeta_inv)
      ENDIF
      NBA = MynbasisAuxMPI
-  else
-     !  Make Choleksy-factorization (OpenMP hopefully)
-     call DPOTRF('U',nbasisaux,AlphaBeta_inv,nbasisaux,INFO)
-     !  c_alpha = (alpha|beta)^-1 (beta|bj)
-     call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
-     !  Warning possible issue with 32 bit integers
-     call DCOPY(nBasisaux*nvirt*nocc,AlphaCD3,1,Calpha,1)
-     !  c_(alpha,aB) = (alpha|beta)^-1 (beta|aB)
-     !  Solve the system A*X = B, overwriting B with X.
-     !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)     OpenMP hopefully
-     CALL DPOTRS('U',nbasisAux,nvirt*nocc,AlphaBeta_inv,nbasisaux,Calpha,nbasisaux,info)
-     call mem_dealloc(AlphaBeta_inv)
 
+  else
+!     !  Make Choleksy-factorization (OpenMP hopefully)
+!     call DPOTRF('U',nbasisaux,AlphaBeta_inv,nbasisaux,INFO)
+!     !  c_alpha = (alpha|beta)^-1 (beta|bj)
+     call mem_alloc(Calpha,nBasisaux,nvirt,nocc)
+!     !  Warning possible issue with 32 bit integers
+!     call DCOPY(nBasisaux*nvirt*nocc,AlphaCD3,1,Calpha,1)
+!     !  c_(alpha,aB) = (alpha|beta)^-1 (beta|aB)
+!     !  Solve the system A*X = B, overwriting B with X.
+!     !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)     OpenMP hopefully
+!     CALL DPOTRS('U',nbasisAux,nvirt*nocc,AlphaBeta_inv,nbasisaux,Calpha,nbasisaux,info)
+     do I = 1,nocc
+        do B = 1,nvirt
+           do ALPHA = 1,nBasisaux
+              Calpha(ALPHA,B,I) = 0.0E0_realk
+           enddo
+           do BETA = 1,nBasisaux
+              TMP = AlphaCD3(BETA,B,I)
+              do ALPHA = 1,nBasisaux
+                 Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + AlphaBeta_inv(ALPHA,BETA)*TMP
+              enddo
+           enddo
+        enddo
+     enddo
+     call mem_dealloc(AlphaBeta_inv)
      NBA = nbasisAux
   endif
 
   !=====================================================================================
-  !  Major Step 4: Occupied Partitioning Use UoccEOST,UvirtT: allocated Calpha,AlphaCD3
+  !  Major Step 5: Occupied Partitioning Use UoccEOST,UvirtT: allocated Calpha,AlphaCD3
   !                t(a,i,b,j) = alphaCD3(ALPHA,a,i)*Calpha(ALPHA,b,j)/(deltaEpsilon)
   !                t(a,i,b,j) dim: tocc(nvirt,nvirt,noccEOS,noccEOS)
   !=====================================================================================
-!  call lsmpi_barrier(infpar%lg_comm)
-!  call sleep(mynum*12)
 !  print*,'MYNUM START tocc  MYNUM ',MYNUM
   IF(NBA.GT.0)THEN
      Eocc = 0.0E0_realk
@@ -2228,7 +2249,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
                        TMP = TMP + toccTMP(IDIAG,JDIAG)*UoccEOST(iDIAG,iLOC)*UoccEOST(jDIAG,jLOC)
                     enddo
                  enddo
-                 tocc(ADIAG,BDIAG,ILOC,JLOC) = TMP
+                 tocc(ADIAG,BDIAG,ILOC,JLOC) = TMP 
               enddo
            enddo
         enddo
@@ -2238,14 +2259,22 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(toccTMP)
      !$OMP END CRITICAL
      !$OMP END PARALLEL
-
-!     print*,'tocc  MYNUM',MYNUM
-!     call ls_output(tocc,1,nvirt*nvirt,1,noccEOS*noccEOS,nvirt*nvirt,noccEOS*noccEOS,1,6)
+#ifdef VAR_MPI
+     if(infpar%lg_nodtot.GT.1) then         
+!        call lsmpi_reduction(tocc,nvirt,nvirt,noccEOS*noccEOS,infpar%master,infpar%lg_comm)
+        call lsmpi_allreduce(tocc,nvirt,nvirt,noccEOS,noccEOS,infpar%lg_comm)
+     endif
+#endif
 
      !     IF(DECinfo%onlyoccpart)THEN
      !        call mem_dealloc(EVocc)
      !        call mem_dealloc(EVvirt)
      !     ENDIF
+
+     !=====================================================================================
+     !  Major Step 6: Transform alphaCD3(ALPHA,a,i) to local occupied index and local Virt
+     !=====================================================================================
+
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
      M = nba*nvirt  !rows of Output Matrix
@@ -2273,6 +2302,10 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END PARALLEL DO
 
      call mem_dealloc(AlphaCD4)
+
+     !=====================================================================================
+     !  Major Step 7: Transform Calpha(ALPHA,a,i) to local occupied index and local Virt
+     !=====================================================================================
 
      ! Transform index delta to local occupied index 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
@@ -2302,7 +2335,13 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END PARALLEL DO
      call mem_dealloc(Calpha2)
 
-     !make t(a,i,b,j) and contract with g(a,i,b,j) to get E
+     !=====================================================================================
+     !  Major Step 8: make t(a,i,b,j) and contract with g(a,i,b,j) to get E
+     !=====================================================================================
+
+     !=====================================================================================
+     !  Occupied Partitioning
+     !=====================================================================================
      Eocc = 0.0E0_realk
      call mem_alloc(VirtContribsFull,nvirt)
      do aLoc=1,nvirt
@@ -2324,6 +2363,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
                  do BDIAG=1,nvirt
                     TMP1 = 0.0E0_realk
                     do ADIAG=1,nvirt
+                       !THIS SCALES AS V**4*Oeos**2 it should max scale like V**3*Oeos**2
                        TMP1 = TMP1 + tocc(ADIAG,BDIAG,ILOC,JLOC)*UvirtT(ADIAG,aLOC)
                     enddo
                     TMP = TMP + TMP1*UvirtT(BDIAG,bLOC)
@@ -2338,7 +2378,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
                  enddo
                  !TMP is now t(a,i,b,j)
                  Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
-                 Etmp = TMP * Gtmp
+                 Etmp = TMP * Gtmp 
                  Eocc2 = Eocc2 + Etmp
                  virt_tmp(aLoc) = virt_tmp(aLoc) + Etmp
                  if(aLOC/=bLOC) virt_tmp(bLoc) = virt_tmp(bLoc) + Etmp
@@ -2348,6 +2388,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      enddo
      !$OMP END DO NOWAIT
      !$OMP CRITICAL
+
      Eocc = Eocc + Eocc2
      do aLoc=1,nvirt
         VirtContribsFull(aLoc) = VirtContribsFull(aLoc) + virt_tmp(aLoc)
@@ -2405,6 +2446,12 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END PARALLEL
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
+
+#ifdef VAR_MPI
+     if(infpar%lg_nodtot.GT.1) then         
+        call lsmpi_allreduce(tvirt,nocc,nocc,nvirtEOS,nvirtEOS,infpar%lg_comm)
+     endif
+#endif
 
      !(alphaAux;gamma,Jloc) = (alphaAux;gamma,J)*U(J,Jloc)     UoccEOST(iDIAG,iLOC)
      M = nba*nvirt  !rows of Output Matrix
@@ -2538,8 +2585,6 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   MPIcollect: if(wakeslave) then
      EnergyMPI(1) = Eocc
      EnergyMPI(2) = Evirt
-!     print*,'Eocc ',Eocc,'   mynum',mynum
-!     print*,'Evirt',Evirt,'   mynum',mynum
      N = 2
      ! Add up contibutions to Energies using MPI reduce
      ! each node have energy contributions from different 
@@ -2603,7 +2648,6 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 
   call mem_dealloc(VirtContribsFull)
   call mem_dealloc(OccContribsFull)
-
 end subroutine MP2_RI_EnergyContribution
 #endif
 
