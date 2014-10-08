@@ -1297,9 +1297,9 @@ module lspdm_tensor_operations_module
     real(realk),intent(in) :: a,b
     !> order y to adapt to dims of b
     integer, intent(in) :: order(x%mode)
-    real(realk),pointer :: buffer(:)
+    real(realk),pointer :: buffer(:,:)
     real(realk) :: prex, prey
-    integer :: i,lt
+    integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
     integer :: xmidx(x%mode), ymidx(y%mode), ytdim(y%mode), ynels
 #ifdef VAR_MPI
     prex = a
@@ -1328,12 +1328,16 @@ module lspdm_tensor_operations_module
        if(x%tdim(i) /= y%tdim(order(i)))call lsquit("ERROR(array_add_par): tdims of arrays not &
           &compatible (with the given order)",-1)
     enddo
+
+    ! now set to two and that ought to be enough, but should work with any
+    ! number >0
+    nbuffs = 2
       
     !allocate buffer for the tiles
-    call mem_alloc(buffer,x%tsize)
-  
-    !lsoop over local tiles of array x
-    do lt=1,x%nlti
+    call mem_alloc(buffer,x%tsize,nbuffs)
+    !fill buffer
+    do lt=1,min(nbuffs-1,x%nlti)
+
        call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
 
        do i=1,x%mode
@@ -1349,7 +1353,63 @@ module lspdm_tensor_operations_module
 
        if(ynels /= x%ti(lt)%e)call lsquit("ERROR(array_add_par): #elements in tiles mismatch",-1)
 
-       call array_get_tile(y,ymidx,buffer,ynels)
+       ibuf = mod(lt-1,nbuffs)+1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+       call arr_lock_win(y,cmidy,'s')
+       call array_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=.true.)
+    enddo
+  
+    !lsoop over local tiles of array x
+    do lt=1,x%nlti
+
+       !buffer last element
+       buffer_lt = lt + nbuffs - 1
+       if(buffer_lt <= x%nlti)then
+          call get_midx(x%ti(buffer_lt)%gt,xmidx,x%ntpm,x%mode)
+
+          do i=1,x%mode
+             ymidx(order(i)) = xmidx(i)
+          enddo
+
+          call get_tile_dim(ytdim,y,ymidx)
+
+          ynels = 1
+          do i=1,y%mode
+             ynels = ynels * ytdim(i)
+          enddo
+
+          if(ynels /= x%ti(buffer_lt)%e)call lsquit("ERROR(array_add_par): #elements in tiles mismatch",-1)
+
+          ibuf = mod(buffer_lt-1,nbuffs)+1
+
+          cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+
+          call arr_lock_win(y,cmidy,'s')
+          call array_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=.true.)
+       endif
+
+       call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
+
+       do i=1,x%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,y,ymidx)
+
+       ynels = 1
+       do i=1,y%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= x%ti(lt)%e)call lsquit("ERROR(array_add_par): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)+1
+
+       cmidy = get_cidx(ymidx,y%ntpm,y%mode)
+       !call array_get_tile(y,ymidx,buffer(:,ibuf),ynels)
+       call arr_unlock_win(y,cmidy)
 
        select case(x%mode)
        case(1)
@@ -1363,14 +1423,14 @@ module lspdm_tensor_operations_module
 
           endif
 
-          call daxpy(x%ti(lt)%e,prey,buffer,1,x%ti(lt)%t,1)
+          call daxpy(x%ti(lt)%e,prey,buffer(:,ibuf),1,x%ti(lt)%t,1)
 
        case(2)
-          call array_reorder_2d(prey,buffer,ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
+          call array_reorder_2d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),order,prex,x%ti(lt)%t)
        case(3)
-          call array_reorder_3d(prey,buffer,ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
+          call array_reorder_3d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),order,prex,x%ti(lt)%t)
        case(4)
-          call array_reorder_4d(prey,buffer,ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
+          call array_reorder_4d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,x%ti(lt)%t)
        case default
           call lsquit("ERROR(array_add_par): mode>4 not yet implemented",-1)
        end select
@@ -1919,9 +1979,10 @@ module lspdm_tensor_operations_module
      !internal variables
      logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode
      real(realk), pointer :: buffA(:,:),buffB(:,:),wA(:),wB(:),wC(:),tA(:),tB(:),tC(:)
-     integer :: ibufA, ibufB, nbuffsA,nbuffsB
+     integer :: ibufA, ibufB, nbuffsA,nbuffsB, nbuffs, buffer_cm
      integer :: gc, gm(C%mode), ro(C%mode), locC
      integer :: mA(A%mode), mB(B%mode), tdimA(A%mode), tdimB(B%mode), ordA(A%mode), ordB(B%mode)
+     integer :: cmidA, cmidB
      integer :: tdimC(C%mode),tdim_product(C%mode)
      integer :: nelmsTA, nelmsTB
      integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
@@ -1984,12 +2045,24 @@ module lspdm_tensor_operations_module
            !use provided memory information to allcate space
            nbuffsA = (int(mem*1024.0E0**3)/16-(A%tsize + B%tsize + C%tsize))/A%tsize
            nbuffsB = (int(mem*1024.0E0**3)/16-(A%tsize + B%tsize + C%tsize))/B%tsize
+           if(nbuffsA==0.or.nbuffsB==0)then
+              print *,"WARNING(array_contract_par): the specified memory is not enough"
+              nbuffsA = 1
+              nbuffsB = 1
+           endif
            use_wrk_space = .false.
         else if(present(wrk).and.present(iwrk))then
            !just assoctiate pointers to work space provided
            nbuffsA = ((iwrk-(A%tsize + B%tsize + C%tsize))/2)/A%tsize
            nbuffsB = ((iwrk-(A%tsize + B%tsize + C%tsize))/2)/B%tsize
-           use_wrk_space = .true.
+           if(nbuffsA==0.or.nbuffsB==0)then
+              print *,"WARNING(array_contract_par): the specified work space is too small, switching to allocations"
+              use_wrk_space = .false.
+              nbuffsA = 2
+              nbuffsB = 2
+           else
+              use_wrk_space = .true.
+           endif
         else
            !assume we can hold at least 5 tiles in local mem
            nbuffsA = 2
@@ -2003,19 +2076,22 @@ module lspdm_tensor_operations_module
         use_wrk_space = .false.
      endif
 
+     nbuffs = min(1,min(nbuffsA, nbuffsB))
+
      if(use_wrk_space)then
-        call ass_D1to2(wrk,buffA,[A%tsize,nbuffsA])
-        call ass_D1to2(wrk(nbuffsA*A%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize-1),buffB,[B%tsize,nbuffsB])
-        wA => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize-1)
-        wB => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize-1)
-        wC => wrk(nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize:nbuffsA*A%tsize+nbuffsB*B%tsize+A%tsize+B%tsize+C%tsize-1)
+        call ass_D1to2(wrk,buffA,[A%tsize,nbuffs])
+        call ass_D1to2(wrk(nbuffs*A%tsize:nbuffs*A%tsize+nbuffs*B%tsize-1),buffB,[B%tsize,nbuffs])
+        wA => wrk(nbuffs*A%tsize+nbuffs*B%tsize:nbuffs*A%tsize+nbuffs*B%tsize+A%tsize-1)
+        wB => wrk(nbuffs*A%tsize+nbuffs*B%tsize+A%tsize:nbuffs*A%tsize+nbuffs*B%tsize+A%tsize+B%tsize-1)
+        wC => wrk(nbuffs*A%tsize+nbuffs*B%tsize+A%tsize+B%tsize:nbuffs*A%tsize+nbuffs*B%tsize+A%tsize+B%tsize+C%tsize-1)
      else
-        call mem_alloc(buffA,A%tsize,nbuffsA)
-        call mem_alloc(buffB,B%tsize,nbuffsB)
+        call mem_alloc(buffA,A%tsize,nbuffs)
+        call mem_alloc(buffB,B%tsize,nbuffs)
         call mem_alloc(wA,A%tsize)
         call mem_alloc(wB,B%tsize)
         call mem_alloc(wC,C%tsize)
      endif
+
 
      !loop over local tiles of C and contract corresponding 
      LocalTiles: do locC = 1, C%nlti
@@ -2069,7 +2145,6 @@ module lspdm_tensor_operations_module
            endif
         enddo
 
-        print *,infpar%lg_mynum,"ordA",ordA,"ordB",ordB
         !zero local wC and accumulate all contributions therein
 #ifdef VAR_LSDEBUG
         wA = 0.0E0_realk
@@ -2077,8 +2152,64 @@ module lspdm_tensor_operations_module
 #endif
         wC = 0.0E0_realk
 
+        !TODO:fill buffers also after changing the C tile
+        do cm=1, min(nbuffs-1,cci)
+           !build full mode index for A and B
+           call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
+           do i=1,nmodes2c
+              mA(m2cA(i)) = current_mode(i)
+              mB(m2cB(i)) = current_mode(i)
+           enddo
+
+           !get number of elements in tiles for A and B
+           call get_tile_dim(nelmsTA,A,mA)
+           call get_tile_dim(nelmsTB,B,mB)
+
+           !get the tiles into the local buffer, insert multiple buffering here
+           ibufA = mod(cm-1,nbuffs)+1
+           ibufB = mod(cm-1,nbuffs)+1
+
+           cmidA = get_cidx(mA,A%ntpm,A%mode)
+           cmidB = get_cidx(mB,B%ntpm,B%mode)
+
+           call arr_lock_win(A,cmidA,'s')
+           call array_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=.true.)
+           call arr_lock_win(B,cmidB,'s')
+           call array_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=.true.)
+
+        enddo
+
         !loop over all tiles in the contraction modes via a combined contraction index
         do cm = 1, cci
+
+           !fill last buffer space
+           !TODO:fill buffers also after changing the C tile
+           buffer_cm = cm + nbuffs - 1
+           if(buffer_cm<= cci)then
+              !build full mode index for A and B
+              call get_midx( buffer_cm ,current_mode,max_mode_ci,nmodes2c)
+              do i=1,nmodes2c
+                 mA(m2cA(i)) = current_mode(i)
+                 mB(m2cB(i)) = current_mode(i)
+              enddo
+
+              !get number of elements in tiles for A and B
+              call get_tile_dim(nelmsTA,A,mA)
+              call get_tile_dim(nelmsTB,B,mB)
+
+              !get the tiles into the local buffer, insert multiple buffering here
+              ibufA = mod(buffer_cm-1,nbuffs)+1
+              ibufB = mod(buffer_cm-1,nbuffs)+1
+
+              cmidA = get_cidx(mA,A%ntpm,A%mode)
+              cmidB = get_cidx(mB,B%ntpm,B%mode)
+
+              call arr_lock_win(A,cmidA,'s')
+              call array_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=.true.)
+              call arr_lock_win(B,cmidB,'s')
+              call array_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=.true.)
+           endif
+
            !build full mode index for A and B
            call get_midx(cm,current_mode,max_mode_ci,nmodes2c)
            do i=1,nmodes2c
@@ -2099,10 +2230,14 @@ module lspdm_tensor_operations_module
            end do
 
            !get the tiles into the local buffer, insert multiple buffering here
-           ibufA = 1
-           ibufB = 1
-           call array_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.false.,flush_it=.true.)
-           call array_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.false.,flush_it=.true.)
+           ibufA = mod(cm-1,nbuffs)+1
+           ibufB = mod(cm-1,nbuffs)+1
+           cmidA = get_cidx(mA,A%ntpm,A%mode)
+           cmidB = get_cidx(mB,B%ntpm,B%mode)
+           !call array_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.false.,flush_it=.true.)
+           !call array_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.false.,flush_it=.true.)
+           call arr_unlock_win(A,cmidA)
+           call arr_unlock_win(B,cmidB)
 
            ! sort for the contraction such that in gemm the arguments are always 'n' and 'n', 
            ! always sort such, that the contraction modes are in the order of m2CA, something smarter could be done here!!

@@ -2665,6 +2665,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      vs     = govov%tdim(2)
      atype  = "TDAR"
 
+     call arr_unlock_wins(omega2,.true.)
+     !call arr_lock_local_wins(omega2,'e',mode)
 
      !Cterm
      fdim1 = [no,no,nv,nv]
@@ -2695,21 +2697,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
      call arr_unlock_wins(O_pre,.true.)
 
-     call lsmpi_barrier(infpar%lg_comm)
-     call print_norm(O_pre,'NORM: O_pre: ')
 
      !add in permutations (1+0.5P_ij)
-     call arr_lock_local_wins(omega2,'e',mode)
      call array_add(omega2,1.0E0_realk,O_pre)
      ord = [1,2,4,3]
      call array_add(omega2,0.5E0_realk,O_pre,order=ord)
 
      !synchronize
      call array_free(O_pre)
-
-     call arr_unlock_wins(omega2,.true.)
-
-     !call print_norm(omega2)
 
 
      !Dterm
@@ -2760,12 +2755,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call arr_unlock_wins(O_pre,.true.)
 
      !add in permutations P_ij^ab (1+0.5P_ij)
-     call arr_lock_local_wins(omega2,'e',mode)
      call array_add(omega2,1.0E0_realk,O_pre)
 
-     call array_free(O_pre)
 
-     call arr_unlock_wins(omega2,.true.)
+     !call arr_unlock_wins(omega2,.true.)
+     call array_free(O_pre)
 
      !call print_norm(omega2)
 
@@ -3129,7 +3123,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==4)then
            call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w2)
            call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w2)
-           print  *,"Lvoov norm scheme 4",norm2(w2(1:o2v2))
         else if(s==3)then
            call array_reorder_4d(2.0E0_realk,gvoov%elm1,nv,no,nv,no,[1,4,2,3],0.0E0_realk,w1)
            call array_reorder_4d(-1.0E0_realk,gvvoo%elm1,nv,no,no,nv,[1,3,2,4],1.0E0_realk,w1)
@@ -3209,7 +3202,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(s==3.or.s==4)then
            call array_reorder_4d(2.0E0_realk,govov%elm1,no,nv,no,nv,[1,2,3,4],0.0E0_realk,w1)
            call array_reorder_4d(-1.0E0_realk,govov%elm1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,w1)
-           print  *,"Lovov norm scheme 4",norm2(w1(1:o2v2))
         endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
