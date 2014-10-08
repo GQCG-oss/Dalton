@@ -2312,6 +2312,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=8) :: w3size
      integer(kind=ls_mpik) :: mode
      logical :: lock_safe,traf1,traf2,trafi
+     type(array) :: E1,E2, Pijab_om2
+     integer :: os, vs, ord(4)
 
      call time_start_phase(PHASE_WORK)
 
@@ -2371,6 +2373,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
 
 
+        call print_norm(omega2,'OM 2:')
 
 #ifdef VAR_MPI
         !THE INTENSIVE SCHEMES
@@ -2380,184 +2383,234 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         nnod             = infpar%lg_nodtot
         me               = infpar%lg_mynum
         mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
-        lock_safe        = lock_outside
-        lock_outside     = .false.
+        vs               = t2%tdim(1)
+        os               = t2%tdim(3)
 
-        !Setting transformation variables for each rank
-        !**********************************************
-        call mo_work_dist(nv*nv*no,fai1,tl1,traf1)
-        call mo_work_dist(nv*no*no,fai2,tl2,traf2)
+        if(.not..false.)then
 
-        if(DECinfo%PL>3.and.me==0)then
-           write(DECinfo%output,'("Trafolength in striped E1:",I7," ",I7)')tl1,tl2
-        endif
+           !Prepare the E2 term by transforming Had and Cbi and move them in
+           !PDM, here rendundand work is performed, but only O^3, so cheap
+           call array_ainit(E1,[nv,nv],2,tdims=[vs,vs],atype="TDPD")
+           E1%itype = TILED_DIST
+           call dcopy(nv2,qqf,1,E1%elm1,1)
+           call arr_lock_local_wins(E1,'e',mode)
+           if (Ccmodel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,E1%elm1,nv)
+           call array_mv_dense2tiled(E1,.true.)
 
-        w3size = max(tl1*no,tl2*nv)
-        if(nnod>1)w3size = max(w3size,2*omega2%tsize)
-        call mem_alloc(w3,w3size)
-        call mem_alloc(w2,max(nv2,no2))
 
-        !DO ALL THINGS DEPENDING ON 1
-        if(lock_outside.and.traf1)then
-           call time_start_phase(PHASE_COMM, at = tw)
-           call arr_lock_wins(t2,'s',mode)
-           call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
-           call time_start_phase(PHASE_WORK, at = tc)
-        endif
 
-        !calculate first part of doubles E term and its permutation
-        ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
-        call dcopy(no2,ppf,1,w2,1)
-        if (ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
-        ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
-        !if(me==0) call array_convert(t2,w1,t2%nelms)
-        if(.not.lock_outside)then
-           call time_start_phase(PHASE_COMM, at = tw)
-           call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
-           do nod=1,nnod-1
-              call mo_work_dist(nv*nv*no,fri,tri,trafi,nod)
-              if(trafi)then
-                 if(me==0)then
-                    do i=1,no
-                       call dcopy(tri,w1(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
-                    enddo
+           call array_ainit(E2,[no,no],2,tdims=[os,os],atype="TDPD")
+           call arr_lock_local_wins(E2,'e',mode)
+           E2%itype = TILED_DIST
+           call dcopy(no2,ppf,1,E2%elm1,1)
+           if (Ccmodel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,E2%elm1,no)
+           call array_mv_dense2tiled(E2,.true.)
+           call arr_unlock_wins(E1,.true.)
+           call arr_unlock_wins(E2,.true.)
+
+
+           ord = [1,4,2,3]
+           call array_contract( 1.0E0_realk,t2,E1,[2],[2],1,1.0E0_realk,omega2,ord)
+           ord = [1,2,3,4]
+           call array_contract(-1.0E0_realk,t2,E2,[4],[1],1,1.0E0_realk,omega2,ord)
+
+           call array_ainit(Pijab_om2,omega2%dims,4,tdims=omega2%tdim,atype="TDAR")
+           call arr_lock_local_wins(Pijab_om2,'e',mode)
+
+           call array_free(E1)
+           call array_free(E2)
+
+           !INTRODUCE PERMUTATION
+           ord = [2,1,4,3]
+           call array_add(Pijab_om2,1.0E0_realk,omega2, a = 0.0E0_realk, order = ord )
+           call arr_unlock_wins(Pijab_om2,.true.)
+           call array_add(omega2,1.0E0_realk,Pijab_om2)
+           
+           call array_free(Pijab_om2)
+
+           omega2%access_type = MASTER_ACCESS
+           t2%access_type     = MASTER_ACCESS
+
+        else
+           !lock_safe        = lock_outside
+           !lock_outside     = .false.
+
+           !Setting transformation variables for each rank
+           !**********************************************
+           call mo_work_dist(nv*nv*no,fai1,tl1,traf1)
+           call mo_work_dist(nv*no*no,fai2,tl2,traf2)
+
+           if(DECinfo%PL>3.and.me==0)then
+              write(DECinfo%output,'("Trafolength in striped E1:",I7," ",I7)')tl1,tl2
+           endif
+
+           w3size = max(tl1*no,tl2*nv)
+           if(nnod>1)w3size = max(w3size,2*omega2%tsize)
+           call mem_alloc(w3,w3size)
+           call mem_alloc(w2,max(nv2,no2))
+
+           !DO ALL THINGS DEPENDING ON 1
+           if(lock_outside.and.traf1)then
+              call time_start_phase(PHASE_COMM, at = tw)
+              call arr_lock_wins(t2,'s',mode)
+              call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
+              call time_start_phase(PHASE_WORK, at = tc)
+           endif
+
+           !calculate first part of doubles E term and its permutation
+           ! F [k j] + Lambda^p [alpha k]^T * Gbi [alpha j] = G' [k j]
+           call dcopy(no2,ppf,1,w2,1)
+           if (ccModel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
+           ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
+           !if(me==0) call array_convert(t2,w1,t2%nelms)
+           if(.not.lock_outside)then
+              call time_start_phase(PHASE_COMM, at = tw)
+              call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
+              do nod=1,nnod-1
+                 call mo_work_dist(nv*nv*no,fri,tri,trafi,nod)
+                 if(trafi)then
+                    if(me==0)then
+                       do i=1,no
+                          call dcopy(tri,w1(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
+                       enddo
+                    endif
+                    if(me==0.or.me==nod)then
+                       call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+                    endif
                  endif
-                 if(me==0.or.me==nod)then
-                    call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-                 endif
-              endif
-           enddo
-           if(me==0.and.traf1)then
-              do i=1,no
-                 call dcopy(tl1,w1(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
               enddo
-           endif
-           w1=0.0E0_realk
-           call time_start_phase(PHASE_WORK, at = tc)
-        else
-
-           if(traf1)then
-              call time_start_phase(PHASE_COMM, at = tw)
-              call arr_unlock_wins(t2)
-              call time_start_phase(PHASE_WORK, at = tc)
-           endif
-        endif
-
-        if(.not.lock_outside.and.traf1)then
-           call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
-           call time_start_phase(PHASE_COMM, at = tw)
-           call lsmpi_local_reduction(w1,o2v2,infpar%master)
-           call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
-           call time_start_phase(PHASE_WORK, at = tc)
-        else
-           if(traf1)then
-              !call arr_lock_wins(omega2,'s',mode)
-              call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
-              call time_start_phase(PHASE_COMM, at = tw)
-              call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.,debug=.false.)
-              call time_start_phase(PHASE_WORK, at = tc)
-           endif
-        endif
-
-
-        !DO ALL THINGS DEPENDING ON 2
-        if(lock_outside.and.traf2)then
-           call time_start_phase(PHASE_COMM, at = tw)
-           call arr_lock_wins(t2,'s',mode)
-           call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
-           call time_start_phase(PHASE_WORK, at = tc)
-        endif
-
-        !calculate second part of doubles E term
-        ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
-        call dcopy(nv2,qqf,1,w2,1)
-        if (ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
-
-        ! H'[a c] * t [c b i j] =+ Omega [a b i j]
-        if(.not.lock_outside)then
-           call time_start_phase(PHASE_COMM, at = tw)
-           call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
-           call time_start_phase(PHASE_WORK, at = tc)
-           do nod=1,nnod-1
-              call mo_work_dist(nv*no*no,fri,tri,trafi,nod)
-              if(trafi)then
-                 if(me==0)then
-                    do i=1,tri
-                       call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
-                    enddo
-                 endif
-                 if(me==0.or.me==nod)then
-                    call time_start_phase(PHASE_COMM, at = tw)
-                    call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-                    call time_start_phase(PHASE_WORK, at = tc)
-                 endif
+              if(me==0.and.traf1)then
+                 do i=1,no
+                    call dcopy(tl1,w1(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
+                 enddo
               endif
-           enddo
-           if(me==0.and.traf2)then
-              do i=1,tl2
-                 call dcopy(nv,w1(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
+              w1=0.0E0_realk
+              call time_start_phase(PHASE_WORK, at = tc)
+           else
+
+              if(traf1)then
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call arr_unlock_wins(t2)
+                 call time_start_phase(PHASE_WORK, at = tc)
+              endif
+           endif
+
+           if(.not.lock_outside.and.traf1)then
+              call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
+              call time_start_phase(PHASE_COMM, at = tw)
+              call lsmpi_local_reduction(w1,o2v2,infpar%master)
+              call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
+              call time_start_phase(PHASE_WORK, at = tc)
+           else
+              if(traf1)then
+                 !call arr_lock_wins(omega2,'s',mode)
+                 call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,.false.,debug=.false.)
+                 call time_start_phase(PHASE_WORK, at = tc)
+              endif
+           endif
+
+
+           !DO ALL THINGS DEPENDING ON 2
+           if(lock_outside.and.traf2)then
+              call time_start_phase(PHASE_COMM, at = tw)
+              call arr_lock_wins(t2,'s',mode)
+              call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
+              call time_start_phase(PHASE_WORK, at = tc)
+           endif
+
+           !calculate second part of doubles E term
+           ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
+           call dcopy(nv2,qqf,1,w2,1)
+           if (ccModel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+
+           ! H'[a c] * t [c b i j] =+ Omega [a b i j]
+           if(.not.lock_outside)then
+              call time_start_phase(PHASE_COMM, at = tw)
+              call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
+              call time_start_phase(PHASE_WORK, at = tc)
+              do nod=1,nnod-1
+                 call mo_work_dist(nv*no*no,fri,tri,trafi,nod)
+                 if(trafi)then
+                    if(me==0)then
+                       do i=1,tri
+                          call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
+                       enddo
+                    endif
+                    if(me==0.or.me==nod)then
+                       call time_start_phase(PHASE_COMM, at = tw)
+                       call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+                       call time_start_phase(PHASE_WORK, at = tc)
+                    endif
+                 endif
               enddo
+              if(me==0.and.traf2)then
+                 do i=1,tl2
+                    call dcopy(nv,w1(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
+                 enddo
+              endif
+              w1=0.0E0_realk
+           else
+              if(traf2)then
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call arr_unlock_wins(t2)
+                 call time_start_phase(PHASE_WORK, at = tc)
+              endif
            endif
-           w1=0.0E0_realk
-        else
-           if(traf2)then
+
+
+           if(.not.lock_outside.and.traf2)then
+              call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1(1+(fai2-1)*nv),nv)
               call time_start_phase(PHASE_COMM, at = tw)
-              call arr_unlock_wins(t2)
+              call lsmpi_local_reduction(w1,o2v2,infpar%master)
+              call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
               call time_start_phase(PHASE_WORK, at = tc)
+           else
+              if(traf2)then
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call arr_unlock_wins(omega2,.true.)
+                 call arr_lock_wins(omega2,'s',mode)
+                 call time_start_phase(PHASE_WORK, at = tc)
+                 call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1,nv)
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call array_two_dim_2batch(omega2,[1,2,3,4],'a',w1,3,fai2,tl2,lock_outside)
+                 call arr_unlock_wins(omega2)
+                 call time_start_phase(PHASE_IDLE, at = tc)
+                 call lsmpi_barrier(infpar%lg_comm)
+                 call time_start_phase(PHASE_WORK, at = tc)
+              endif
            endif
+
+
+           call mem_dealloc(w2)
+
+           !INTRODUCE PERMUTATION
+           omega2%access_type = MASTER_ACCESS
+           t2%access_type     = MASTER_ACCESS
+
+           if(.not.lock_outside)then
+              call time_start_phase(PHASE_COMM, at = tw)
+              call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
+              call array_gather(1.0E0_realk,omega2,1.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+              call array_scatter_densetotiled(omega2,w1,o2v2,infpar%master)
+              call time_start_phase(PHASE_WORK, at = tc)
+           else
+              if(me==0)then
+                 call time_start_phase(PHASE_COMM, at = tw)
+                 call arr_lock_wins(omega2,'s',mode)
+                 call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+                 call arr_unlock_wins(omega2,.true.)
+                 call arr_lock_wins(omega2,'s',mode)
+                 call array_scatter(1.0E0_realk,w1,1.0E0_realk,omega2,o2v2,wrk=w3,iwrk=w3size)
+                 call arr_unlock_wins(omega2,.true.)
+                 call time_start_phase(PHASE_WORK, at = tc)
+              endif
+           endif
+
+           call mem_dealloc(w3)
+           lock_outside     = lock_safe
         endif
-
-
-        if(.not.lock_outside.and.traf2)then
-           call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1(1+(fai2-1)*nv),nv)
-           call time_start_phase(PHASE_COMM, at = tw)
-           call lsmpi_local_reduction(w1,o2v2,infpar%master)
-           call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
-           call time_start_phase(PHASE_WORK, at = tc)
-        else
-           if(traf2)then
-              call time_start_phase(PHASE_COMM, at = tw)
-              call arr_unlock_wins(omega2,.true.)
-              call arr_lock_wins(omega2,'s',mode)
-              call time_start_phase(PHASE_WORK, at = tc)
-              call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1,nv)
-              call time_start_phase(PHASE_COMM, at = tw)
-              call array_two_dim_2batch(omega2,[1,2,3,4],'a',w1,3,fai2,tl2,lock_outside)
-              call arr_unlock_wins(omega2)
-              call time_start_phase(PHASE_IDLE, at = tc)
-              call lsmpi_barrier(infpar%lg_comm)
-              call time_start_phase(PHASE_WORK, at = tc)
-           endif
-        endif
-
-
-        call mem_dealloc(w2)
-
-        !INTRODUCE PERMUTATION
-        omega2%access_type = MASTER_ACCESS
-        t2%access_type     = MASTER_ACCESS
-
-        if(.not.lock_outside)then
-           call time_start_phase(PHASE_COMM, at = tw)
-           call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
-           call array_gather(1.0E0_realk,omega2,1.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-           call array_scatter_densetotiled(omega2,w1,o2v2,infpar%master)
-           call time_start_phase(PHASE_WORK, at = tc)
-        else
-           if(me==0)then
-              call time_start_phase(PHASE_COMM, at = tw)
-              call arr_lock_wins(omega2,'s',mode)
-              call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-              call arr_unlock_wins(omega2,.true.)
-              call arr_lock_wins(omega2,'s',mode)
-              call array_scatter(1.0E0_realk,w1,1.0E0_realk,omega2,o2v2,wrk=w3,iwrk=w3size)
-              call arr_unlock_wins(omega2,.true.)
-              call time_start_phase(PHASE_WORK, at = tc)
-           endif
-        endif
-
-        call mem_dealloc(w3)
-        lock_outside     = lock_safe
 #endif
      endif
 
