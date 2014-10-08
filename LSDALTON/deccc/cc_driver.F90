@@ -94,7 +94,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
    logical :: local,print_frags,abc
-   real(realk) :: InteractionE,InteractionECCSDPT4,InteractionECCSDPT5
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
@@ -329,17 +328,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call array_free(ccsd_mat_tmp)
    
       call print_ccsd_full_occ(nfrags,ccsd_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
-   
-   
-      if(DECinfo%InteractionEnergy)then
-         call lsquit('InteractionEnergy not implemented in full ccsd_pt',-1)
-      endif
-      if(DECinfo%PrintInteractionEnergy)then
-         call lsquit('InteractionEnergy not supported anymore',-1)
-         !call add_dec_interactionenergies(natoms,ccsd_mat_tot%elm1,orbitals_assigned,&
-         !   & interactionE,MyMolecule%SubSystemIndex,2)
-      endif
-   
+      
       ! release ccsd stuff
       call array_free(ccsd_mat_tot)
    
@@ -377,45 +366,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          !call print_e4_full(nfrags,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
    
          !call print_e5_full(nfrags,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
-   
-   
-         if(DECinfo%PrintInteractionEnergy)then
-            call lsquit('InteractionEnergy not supported anymore',-1)
-            !call add_dec_interactionenergies(natoms,e4_mat_tot%elm1,orbitals_assigned,&
-            !   & InteractionECCSDPT4,MyMolecule%SubSystemIndex)
-            !write(DECinfo%output,'(A)') ' '
-            !write(DECinfo%output,'(A)') ' '
-            !write(DECinfo%output,'(A)') 'Interaction Energies '
-            !write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-            !   & interactionE
-            !write(DECinfo%output,'(1X,a,g20.10)') '(fourth order) CCSD(T) Interaction correlation energy:',&
-            !   & InteractionECCSDPT4
-            !call add_dec_interactionenergies(natoms,e5_mat_tot%elm1,orbitals_assigned,&
-            !   & InteractionECCSDPT5,MyMolecule%SubSystemIndex)
-            !write(DECinfo%output,'(1X,a,g20.10)') '(fifth order) CCSD(T) Interaction correlation energy :',&
-            !   & InteractionECCSDPT5
-            !write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) Interaction correlation energy         :',&
-            !   & InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
-            !write(DECinfo%output,'(A)') ' '
-            !interactionE = InteractionECCSDPT4 + InteractionECCSDPT5 + InteractionE
-         endif
-   
+      
          ! release stuff
          call array_free(e4_mat_tot)
          call array_free(e4_mat_tmp)
          call array_free(e5_mat_tot)
-      else
-         if(DECinfo%PrintInteractionEnergy)then
-            call lsquit('InteractionEnergy not supported anymore',-1)
-            !write(DECinfo%output,'(A)') ' '
-            !if (ccmodel == MODEL_CCSD ) then
-            !   write(DECinfo%output,'(1X,a,g20.10)') 'CCSD Interaction correlation energy                  :',&
-            !        & interactionE
-            !else if (ccmodel == MODEL_MP2 ) then
-            !   write(DECinfo%output,'(1X,a,g20.10)') 'MP2 Interaction correlation energy                  :',&
-            !        & interactionE
-            !endif
-         endif
       endif
    
    
@@ -557,11 +512,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
    write(DECinfo%output,*)
    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   if(DECinfo%PrintInteractionEnergy)then
-    write(DECinfo%output,'(1X,a,g20.10)')'Total CC interaction correlation energy =', interactionE
-    write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   endif
    write(DECinfo%output,*)
 
    ! now update ccenergy with ccsd(t) correction

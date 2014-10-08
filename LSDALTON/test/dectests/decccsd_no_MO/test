@@ -21,10 +21,6 @@ f.add(from_string = 'CCSD occupied single energies',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'I: Interaction Correlation energy  :',
-      abs_tolerance = 1.0e-8)
-
-
 # to ignore sign set                      ignore_sign = True   
 # to ignore numbers below 1.0e-4 set      ignore_below = 1.0e-4
 
