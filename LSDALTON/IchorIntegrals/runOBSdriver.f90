@@ -94,6 +94,9 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000ModGen'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000ModSeg1Prim'
   ENDDO
+  DO ILUMOD=3,7
+     WRITE(ILUMOD,'(A)')'use IchorGaussianGeminalMod, only: GGemOperatorCalc'
+  ENDDO
   WRITE(LUMOD3,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODAGen'
   WRITE(LUMOD4,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegQ'
   WRITE(LUMOD5,'(A)')'use AGC_'//ARCSTRING//'_OBS_VERTICALRECURRENCEMODASegP'
@@ -512,6 +515,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'!    nlmC = 2*AngmomC+1'
      WRITE(ILUMOD,'(A)')'!    nlmD = 2*AngmomD+1'
      WRITE(ILUMOD,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
+     WRITE(ILUMOD,'(A)')'    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'
 
      DO AngmomA = 0,2
@@ -803,6 +807,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
+     WRITE(ILUMOD,'(A)')'    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
 

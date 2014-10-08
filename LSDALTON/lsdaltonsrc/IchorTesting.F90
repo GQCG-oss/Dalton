@@ -24,6 +24,7 @@ MODULE IntegralInterfaceIchorMod
   use memory_handling, only: mem_alloc, mem_dealloc, debug_mem_stats
   use IntegralInterfaceMOD, only: II_get_4center_eri, ii_get_2int_screenmat,&
        & II_get_exchange_mat
+  use IntegralInterfaceDEC, only: II_GET_DECPACKED4CENTER_J_ERI
   use IchorErimoduleHost!,only: MAIN_ICHORERI_DRIVER
   use lsmatrix_operations_dense
   use LSmatrix_type
@@ -71,7 +72,7 @@ CONTAINS
     integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
     real(realk),pointer :: IIBATCHGAB(:,:),BATCHGAB(:,:),Dmat(:,:,:)
     integer :: nBatchA,nBatchB,iAO,iatom,jatom,i,j,idx,jdx,nDmat,idmat,ifilename
-    integer :: nKK,KK,DebugIchorOption2
+    integer :: nKK,KK,DebugIchorOption2,nOperator,iOper
     type(matrix) :: GAB
     logical:: generateFiles,Profile
     generateFiles = .FALSE.
@@ -571,7 +572,7 @@ CONTAINS
                setting%scheme%CS_SCREEN = .FALSE.
                setting%scheme%PS_SCREEN = .FALSE.
                !       WRITE(lupri,*)'ThermiteDriver'
-               call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+               call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,intspec,dirac)
                !   print*,'integralsII',integralsII
                setting%scheme%dospherical = savedospherical
                setting%scheme%OD_SCREEN = .TRUE.
@@ -634,6 +635,15 @@ CONTAINS
                   WRITE(lupri,'(A)')'LINK CALC FAILED'
                ENDIF
             ELSE
+             nOperator = 1
+             IF(Ipass.EQ.1.AND.DebugIchorOption2.EQ.5)nOperator = 5
+             do iOper=1,nOperator
+               iF(iOper.EQ.1)intSpec(5) = 'C' 
+               iF(iOper.EQ.2)intSpec(5) = 'G' 
+               iF(iOper.EQ.3)intSpec(5) = 'F' 
+               iF(iOper.EQ.4)intSpec(5) = 'D' 
+               iF(iOper.EQ.5)intSpec(5) = '2' 
+               
                if(associated(integralsII))THEN
                   call mem_dealloc(integralsII)
                ENDIF
@@ -645,7 +655,10 @@ CONTAINS
                setting%scheme%OD_SCREEN = .FALSE.
                setting%scheme%CS_SCREEN = .FALSE.
                setting%scheme%PS_SCREEN = .FALSE.
-               call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+
+               call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,&
+                    & dim1,dim2,dim3,dim4,intspec,dirac)
+
                !   print*,'integralsII',integralsII
                setting%scheme%dospherical = savedospherical
                setting%scheme%OD_SCREEN = .TRUE.
@@ -723,10 +736,16 @@ CONTAINS
                ENDDO
                IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
                   WRITE(lupri,'(A)')'CALC FAILED'
+               ELSE                  
+                  iF(iOper.EQ.1)WRITE(lupri,'(A)')'COULOMB INTEGRALS SUCCESSFUL'
+                  iF(iOper.EQ.2)WRITE(lupri,'(A)')'G F12 INTEGRALS SUCCESSFUL'
+                  iF(iOper.EQ.3)WRITE(lupri,'(A)')'F F12 INTEGRALS SUCCESSFUL'
+                  iF(iOper.EQ.4)WRITE(lupri,'(A)')'D F12 INTEGRALS SUCCESSFUL'
+                  iF(iOper.EQ.5)WRITE(lupri,'(A)')'2 F12 INTEGRALS SUCCESSFUL'
                ENDIF
                call mem_dealloc(integralsII)
                call mem_dealloc(integralsIchor)
-               
+             enddo   
             ENDIF
          ELSE
             !test screening integrals

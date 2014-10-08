@@ -7,6 +7,7 @@ use IchorCommonModule
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000ModGen
 use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
+use IchorGaussianGeminalMod, only: GGemOperatorCalc
 use AGC_CPU_OBS_VERTICALRECURRENCEMODASeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODBSeg
 use AGC_CPU_OBS_VERTICALRECURRENCEMODDSeg
@@ -103,6 +104,7 @@ CONTAINS
 !    nlmC = 2*AngmomC+1
 !    nlmD = 2*AngmomD+1
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
+    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -4026,6 +4028,7 @@ CONTAINS
     integer :: AngmomID
     
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
+    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code
     TMParray2maxSize = 1
     TMParray1maxSize = 1
     SELECT CASE(AngmomID)
