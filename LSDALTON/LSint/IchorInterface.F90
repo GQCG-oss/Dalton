@@ -543,6 +543,7 @@ subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   implicit none
   character :: intspec 
   integer,intent(inout) :: IchorOperatorSpec
+#ifdef VAR_ICHOR
   IF (intSpec.EQ.'C') THEN
      ! Regular Coulomb operator 1/r12
      call GetIchorOpererator('Coulomb',IchorOperatorSpec)
@@ -561,6 +562,9 @@ subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   ELSE
      call lsquit('Error in specification of operator in GetIchorOpereratorIntSpec',-1)
   ENDIF
+#else
+call lsquit('GetIchorOpereratorIntSpec requires -DVAR_ICHOR',-1)
+#endif
 end subroutine GetIchorOpereratorIntSpec
 
 SUBROUTINE MAIN_ICHORERIMEM_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
