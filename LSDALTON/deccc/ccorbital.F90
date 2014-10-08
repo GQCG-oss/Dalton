@@ -3246,12 +3246,6 @@ contains
     IF(DECinfo%FragmentExpansionRI)THEN
        DECinfo%RepeatAF=.true.
     ENDIF
-    IF(DECinfo%InteractionEnergy)THEN
-       IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
-          !turn of recalculation of Atomic fragment calculations
-          DECinfo%RepeatAF = .FALSE.
-       ENDIF
-    ENDIF
 
   end subroutine dec_orbital_sanity_check
 

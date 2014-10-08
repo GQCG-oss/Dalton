@@ -774,12 +774,7 @@ end function max_batch_dimension
     integer, intent(inout) :: SubSystemIndex(nAtoms)
     ! local variables
     integer :: i
-    IF(DECinfo%InteractionEnergy.OR.DECinfo%PrintInteractionEnergy)THEN
-       IF(mylsitem%input%molecule%nSubSystems.NE.2)THEN
-          print*,'The .INTERACTIONENEGY requires 2 subsystem labels you have ',&
-               & mylsitem%input%molecule%nSubSystems
-          call lsquit('The .INTERACTIONENEGY requires 2 subsystem labels',-1)
-       ENDIF
+    IF(mylsitem%input%molecule%nSubSystems.EQ.2)THEN
        do i=1,nAtoms
           SubSystemIndex(i)=mylsitem%input%molecule%ATOM(I)%SubSystemIndex
        end do
@@ -3772,69 +3767,6 @@ end function max_batch_dimension
 
   end subroutine add_dec_energies
 
-  !> Add DEC interaction energies: E = sum_{P>Q} dE_PQ for P and Q on
-  !> different SubSystems
-  !> taking into account that not all atoms have orbitals assigned.
-  !> \author Thomas Kjaergaard
-  !> \date March 2014
-  subroutine add_dec_interactionenergies(natoms,FragEnergies,orbitals_assigned,interactionE,SubSystemIndex,option)
-    implicit none
-    !> Transposition option
-    integer,intent(in),optional :: option
-    !> Number of atoms in molecule
-    integer,intent(in) :: natoms
-    !> Fragment energies (E_P on diagonal, dE_PQ on off-diagonal)
-    real(realk),dimension(natoms,natoms),intent(in) :: FragEnergies
-    !> Which atoms have orbitals assigned?
-    logical,dimension(natoms) :: orbitals_assigned
-    !> Total energy E = sum_P E_P  +  sum_{P>Q} dE_PQ 
-    real(realk),intent(inout) :: interactionE
-    !> Subsystem Index
-    integer,dimension(natoms) :: SubSystemIndex
-    !
-    integer :: P,Q
-    logical :: Trans
-    IF(present(option))THEN
-       IF(option.EQ.2)THEN
-          Trans = .TRUE.
-       ELSE
-          Trans = .FALSE.
-       ENDIF
-    ELSE
-       Trans = .FALSE.
-    ENDIF
-
-    IF(Trans)THEN
-       interactionE = 0.0_realk
-       do P=1,natoms
-          if(orbitals_assigned(P)) then
-             do Q=P+1,natoms
-                if(orbitals_assigned(Q)) then
-                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
-                      interactionE = interactionE + FragEnergies(P,Q)
-                   ENDIF
-                end if
-             end do
-          end if
-       end do
-    ELSE !default
-       interactionE = 0.0_realk
-       do P=1,natoms
-          if(orbitals_assigned(P)) then
-             do Q=1,P-1
-                if(orbitals_assigned(Q)) then
-                   IF(SubSystemIndex(P).NE.SubSystemIndex(Q))THEN
-                      interactionE = interactionE + FragEnergies(P,Q)
-                   ENDIF
-                end if
-             end do
-          end if
-       end do
-    ENDIF
-  end subroutine add_dec_interactionenergies
-
-
-
   !> Add estimated DEC energies for pairs which are skipped from the calculation
   !> to estimate the associated error.
   !> \author Kasper Kristensen
@@ -4110,20 +4042,6 @@ end function max_batch_dimension
 
   end subroutine print_total_energy_summary
 
-  !> \brief Print energy summary for CC calculation to both standard output and LSDALTON.OUT.
-  subroutine print_Interaction_energy(Ecorr,Eerr)
-    implicit none
-    !> Interaction Correlation energy
-    real(realk),intent(in) :: Ecorr
-    !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
-    integer :: lupri
-    lupri=6
-    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
-    lupri=DECinfo%output
-    call print_Interaction_energy_lupri(Ecorr,Eerr,lupri)
-  end subroutine print_Interaction_energy
-
   !> \brief Print short energy summary (both HF and correlation) to specific logical unit number.
   !> (Necessary to place here because it is used both for DEC and for full calculation).
   !> \author Kasper Kristensen
@@ -4153,9 +4071,6 @@ end function max_batch_dimension
     write(lupri,'(13X,a)') '**********************************************************'
     write(lupri,*)
     if(DECinfo%first_order) then
-       IF(DECinfo%InteractionEnergy)THEN
-          call lsquit('InteractionEnergy and first_order not implemented',-1)
-       ENDIF
        IF(.NOT.DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
        ENDIF
@@ -4187,86 +4102,48 @@ end function max_batch_dimension
          endif
        end if
     else
-       IF(DECinfo%InteractionEnergy)THEN
-#ifdef MOD_UNRELEASED
-          write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
-          ! skip error print for full calculation (0 by definition)
-          if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
-          end if
-#endif
-       ELSE
-          IF(.NOT.DECinfo%DFTreference)THEN
-             write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-          ENDIF
+       IF(.NOT.DECinfo%DFTreference)THEN
+          write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+       ENDIF
        IF(DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)') 'E: DFT energy :', Ehf
        ENDIF
-          write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-          ! skip error print for full calculation (0 by definition)
-          if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-          end if
-       ENDIF
-       IF(.NOT.DECinfo%InteractionEnergy)THEN
-          if(DECinfo%ccmodel==MODEL_MP2) then
-             if (DECinfo%F12) then
-                write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-             else          
-                write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
-             endif
-          elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
+       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
+          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==MODEL_MP2) then
+          if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-          elseif(DECinfo%ccmodel==MODEL_CC2) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-          elseif(DECinfo%ccmodel==MODEL_CCSD) then
-             if (DECinfo%F12) then
-                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
-             else          
-                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-             endif
-          elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-          elseif(DECinfo%ccmodel==MODEL_RPA) then
-             if(.not. DECinfo%SOS) then
-               write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy:', Ehf+Ecorr
-             else
-               write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy:', Ehf+Ecorr
-             endif
-          end if
-       ENDIF
+          else          
+             write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
+          endif
+       elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CC2) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_CCSD) then
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+          else          
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+          endif
+       elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
+          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==MODEL_RPA) then
+          if(.not. DECinfo%SOS) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy:', Ehf+Ecorr
+          else
+             write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy:', Ehf+Ecorr
+          endif
+       end if
     end if
     write(lupri,*)
     write(lupri,*)
 
 
   end subroutine print_total_energy_summary_lupri
-
-  !> \brief Print short interaction energy to specific logical unit number.
-  !> \author Thomas Kjaergaard
-  !> \date Marts 2014
-  subroutine print_interaction_energy_lupri(Ecorr,Eerr,lupri)
-    implicit none
-    !> Interaction Correlation energy
-    real(realk),intent(in) :: Ecorr
-    !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
-    !> Logical unit number to print to
-    integer,intent(in) :: lupri
-    write(lupri,*)
-    if(DECinfo%first_order) then
-       IF(DECinfo%PrintInteractionEnergy)THEN
-          call lsquit('InteractionEnergy and first_order not implemented',-1)
-       ENDIF
-    else
-#ifdef MOD_UNRELEASED
-       write(lupri,'(15X,a,f20.10)') 'I: Interaction Correlation energy  :', Ecorr
-       write(lupri,'(15X,a,f20.10)') 'I: Estimated Interaction DEC error :', Eerr
-#endif
-    end if
-    write(lupri,*)
-  end subroutine print_interaction_energy_lupri
-
 
   !> \brief Print all fragment energies for given CC model.
   !> \author Kasper Kristensen
@@ -4291,17 +4168,8 @@ end function max_batch_dimension
     write(DECinfo%output,*)
     write(DECinfo%output,*) '============================================================================='
 
-    IF(DECinfo%InteractionEnergy)THEN
-#ifdef MOD_UNRELEASED
-       CorrEnergyString = 'interaction correlation energy'
-       iCorrLen = 30
-#else
-       call lsquit('interaction correlation energy feature not released',-1)
-#endif
-    ELSE
-       CorrEnergyString = 'correlation energy            '
-       iCorrLen = 18
-    ENDIF
+    CorrEnergyString = 'correlation energy            '
+    iCorrLen = 18
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4538,31 +4406,16 @@ end function max_batch_dimension
        end if
 
        write(DECinfo%output,*)
-       IF(DECinfo%InteractionEnergy)THEN
-#ifdef MOD_UNRELEASED
-          if(.not.DECinfo%onlyvirtpart) then  
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied Interaction correlation energy : ', energies(FRAGMODEL_OCCpT)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order Interaction energy   : ', energies(FRAGMODEL_OCCpT4)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order Interaction energy   : ', energies(FRAGMODEL_OCCpT5)
-          endif
-          if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  Interaction correlation energy : ', energies(FRAGMODEL_VIRTpT)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT4)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order Interaction energy   : ', energies(FRAGMODEL_VIRTpT5)
-          end if
-#endif
-       ELSE
-          if(.not.DECinfo%onlyvirtpart) then  
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
-          endif
-          if(.not.DECinfo%onlyoccpart) then
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
-             write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
-          end if
-       ENDIF
+       if(.not.DECinfo%onlyvirtpart) then  
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
+       endif
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
+       end if
        write(DECinfo%output,*)
        if(.not.DECinfo%onlyvirtpart) then  
           write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) occupied ',CorrEnergyString(1:iCorrLen),' : ', &
@@ -4680,23 +4533,17 @@ end function max_batch_dimension
           write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
        end do
     ELSE
-       IF(.NOT.DECinfo%InteractionEnergy)THEN !default
-          write(DECinfo%output,*)
-          write(DECinfo%output,*)
-          write(DECinfo%output,*) '================================================================='
-          write(DECinfo%output,*) trim(headline)
-          write(DECinfo%output,*) '================================================================='
-          write(DECinfo%output,*)
-          write(DECinfo%output,*) 'Fragment       Energy'
-          do i=1,natoms
-             if(.not. dofrag(i)) cycle
-             write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
-          end do
-!         ELSE
-          !DECinfo%InteractionEnergy sets the RepeatAF to FALSE 
-          !so the FragEnergies might be the MP2 energy used for the fragment optimization
-          !to avoid confusion we do not print the energy
-       ENDIF
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*) trim(headline)
+       write(DECinfo%output,*) '================================================================='
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) 'Fragment       Energy'
+       do i=1,natoms
+          if(.not. dofrag(i)) cycle
+          write(DECinfo%output,'(I6,3X,g20.10,2a)') i,FragEnergies(i,i), "    ",greplabel
+       end do
     ENDIF
 
   end subroutine print_atomic_fragment_energies

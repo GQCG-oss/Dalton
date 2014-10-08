@@ -7011,18 +7011,6 @@ contains
        ! Sanity precaution: Atomic fragment energies should always use input CC model
        MyMolecule%ccmodel(P,P) = DECinfo%ccmodel
 
-       ! Step 4 above: In case that we are calculating Interaction Energies we skip
-       !               all pairs which have same SubSystem index on P and Q. 
-       ! ********************************************
-       IF(DecInfo%InteractionEnergy)THEN
-          Qloop4: do Q=1,natoms
-             if(MyMolecule%SubSystemIndex(Q).EQ.MyMolecule%SubSystemIndex(P)) then
-                ! SubSystem index is the same on both P and Q --> (P,Qidx) can be skipped!
-                MyMolecule%ccmodel(P,Q)=MODEL_NONE
-             end if
-          end do Qloop4
-       ENDIF
-
     end do Ploop
 
     ! Fix inconsistencies which may arise if MyMolecule%ccmodel(P,Q) is not
