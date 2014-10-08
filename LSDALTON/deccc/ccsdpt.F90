@@ -1611,7 +1611,7 @@ contains
                  if (j .eq. i) then
 
 !$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))k
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))
 !$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j))&
 !$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
@@ -1805,7 +1805,7 @@ contains
        endif
 
        call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile_num)
-       tile_size_tmp_a = nelms/(nocc*nvirt**2)
+       tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
 
        call time_start_phase(PHASE_COMM)
        call array_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
@@ -1818,7 +1818,7 @@ contains
           b_tile_num = b_tile_num + 1
 
           call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile_num)
-          tile_size_tmp_b = nelms/(nocc*nvirt**2)
+          tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
           call time_start_phase(PHASE_COMM)
           call array_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
@@ -1831,7 +1831,7 @@ contains
              c_tile_num = c_tile_num + 1
 
              call get_tileinfo_nels_fromarr8(nelms,vovv,i8*c_tile_num)
-             tile_size_tmp_c = nelms/(nocc*nvirt**2)
+             tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
 
              call time_start_phase(PHASE_COMM)
              call array_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
@@ -3341,14 +3341,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,index_array,jobs)
 
     implicit none
 
     !> batch size (without remainder contribution) and njobs 
     integer, intent(in) :: b_size,njobs
-    !> ij_array
-    integer, dimension(njobs), intent(inout) :: ij_array
+    !> index_array
+    integer, dimension(njobs), intent(inout) :: index_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -3358,8 +3358,8 @@ contains
 
     nodtotal = infpar%lg_nodtot
 
-    ! fill the jobs array with values of ij stored in ij_array.
-    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
+    ! fill the jobs array with composite index values stored in index_array.
+    ! there are njobs jobs in total.
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -3369,11 +3369,11 @@ contains
 
        if (fill_sum .le. njobs) then
 
-          jobs(fill + 1) = ij_array(fill_sum) 
+          jobs(fill + 1) = index_array(fill_sum) 
 
        else
 
-          ! fill jobs array with negative number such that this number won't appear for any value of ij
+          ! fill jobs array with negative number such that this number won't appear for any value of the composite index
           jobs(fill + 1) = -1
 
        end if
