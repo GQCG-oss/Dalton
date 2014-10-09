@@ -474,6 +474,7 @@ contains
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
+       ! release o^3v and v^3o integrals
        if (abc) then
 
           call array_free(ooov)
@@ -511,9 +512,22 @@ contains
 
     endif
 
-       ! *************************************************
-       ! ***** do canonical --> local transformation *****
-       ! *************************************************
+    ! release o^3v and v^3o integrals
+    if (abc) then
+
+       call array_free(ooov)
+       call array_free(vovv)
+
+    else
+
+       call array_free(ovoo)
+       call array_free(vvvo)
+
+    endif
+
+    ! *************************************************
+    ! ***** do canonical --> local transformation *****
+    ! *************************************************
 
     if (print_frags) then
 
@@ -521,11 +535,13 @@ contains
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
        else
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
 
@@ -550,18 +566,6 @@ contains
     ! clean up
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
-
-    if (abc) then
-
-       call array_free(ooov)
-       call array_free(vovv)
-
-    else
-
-       call array_free(ovoo)
-       call array_free(vvvo)
-
-    endif
 
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
