@@ -896,7 +896,9 @@ subroutine DEC_meaningful_input(config)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
-     if(DECinfo%ccmodel == MODEL_CCSDpT) DECinfo%print_frags = .true.
+     if(DECinfo%ccmodel == MODEL_CCSDpT) then
+        if (.not. DECinfo%full_molecular_cc) DECinfo%print_frags = .true.
+     endif
 
      ! CCSD does not work for SCALAPACK, Hubi please fix!
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
