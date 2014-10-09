@@ -2872,11 +2872,11 @@ module pno_ccsd_module
                  endif
 
                  if( PS )then
-                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
                        &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
                        &rest_occ_om2=.true., act_no = no, query = this_is_query )  
                  else
-                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns)%elm1,nor,tlen,tred,fa,fg,la,lg,&
+                    call combine_and_transform_sigma(pno_o2(ns),my_w1,my_w2,my_w3,h3,h1,sio4(ns),nor,tlen,tred,fa,fg,la,lg,&
                        &rpd,pnv,nb,goffs,aoffs,4,var_inp(1:3),.false.,tw,tc, &
                        &order=[1,3,2,4], act_no = no, sio4_ilej = .false., query = this_is_query )
                  endif

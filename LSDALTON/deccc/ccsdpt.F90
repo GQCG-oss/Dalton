@@ -474,6 +474,7 @@ contains
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
+       ! release o^3v and v^3o integrals
        if (abc) then
 
           call array_free(ooov)
@@ -511,9 +512,22 @@ contains
 
     endif
 
-       ! *************************************************
-       ! ***** do canonical --> local transformation *****
-       ! *************************************************
+    ! release o^3v and v^3o integrals
+    if (abc) then
+
+       call array_free(ooov)
+       call array_free(vovv)
+
+    else
+
+       call array_free(ovoo)
+       call array_free(vvvo)
+
+    endif
+
+    ! *************************************************
+    ! ***** do canonical --> local transformation *****
+    ! *************************************************
 
     if (print_frags) then
 
@@ -521,11 +535,13 @@ contains
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
        else
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
 
@@ -551,18 +567,6 @@ contains
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
 
-    if (abc) then
-
-       call array_free(ooov)
-       call array_free(vovv)
-
-    else
-
-       call array_free(ovoo)
-       call array_free(vvvo)
-
-    endif
-
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ccsdpt_driver
@@ -584,6 +588,7 @@ contains
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -602,7 +607,19 @@ contains
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
-    integer :: i,j,k,idx,ij_type,tuple_type
+    integer :: i,j,k,idx,ij_type,tuple_type,ij_count_test, ij_test
+    !> ij loop buffer handling
+    integer ::  k_test,nbuffs
+    integer ::  ibuf_ll, ibuf_ul, ibc, ipp, ibuf, i_test
+    integer ::  jbuf_ll, jbuf_ul, jbc, jpp, jbuf, j_test
+    integer ::  ibuf_test, jbuf_test
+    !> k loop buffer handling
+    integer ::  kbc, kpp, kbuf
+    integer ::  kbuf_test
+    integer,pointer :: tiles_in_buf(:)
+    integer :: printrnk, i_search_buf
+    logical :: is_in_buf, new_i_needed, new_j_needed, new_k_needed, ij_done, keep_looping
+    logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(6) :: async_id
@@ -621,11 +638,19 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    ! init pdm work arrays for vvvo integrals
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(vvvo_pdm_i,nvirt**3)
-    call mem_alloc(vvvo_pdm_j,nvirt**3)
-    call mem_alloc(vvvo_pdm_k,nvirt**3)
+    !init multiple buffering for mpi
+    !this should not be set below 3
+    nbuffs = 8
+    if(nbuffs < 6) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
+    call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
+    call mem_alloc(needed,nbuffs)
+    call mem_alloc(tiles_in_buf, nbuffs)
+
+!    ! init pdm work arrays for vvvo integrals
+!    ! init ccsd_doubles_help_arrays
+!    call mem_alloc(vvvo_pdm_i,nvirt**3)
+!    call mem_alloc(vvvo_pdm_j,nvirt**3)
+!    call mem_alloc(vvvo_pdm_k,nvirt**3)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -669,6 +694,117 @@ contains
     i_old = 0
     j_old = 0
     ij_type = 0
+
+    ! precalculate loading sequence
+    ! and preload the first nbuff tiles
+
+    ! get first value of ij from job distribution list to preload the necessary
+    ! tiles for the first round
+    ij           = jobs(1)
+    needed       = .false.
+    tiles_in_buf = -1
+
+    ! no more jobs to be done? otherwise leave the loop
+    if (ij .gt. 0)then
+
+       ! calculate i and j from composite ij value
+       call calc_i_and_j(ij,nocc,i,j)
+
+       is_in_buf = .false.
+       !this should never be true here
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==i)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                ibuf = i_search_buf
+
+                call arr_lock_win(vvvo,i,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,i,vvvo_pdm_buff(:,ibuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(ibuf) = i
+                needed(ibuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       is_in_buf = .false.
+       !this may happen if i == j
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==j)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                jbuf = i_search_buf
+
+                call arr_lock_win(vvvo,j,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,j,vvvo_pdm_buff(:,jbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(jbuf) = j
+                needed(jbuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       do k=1,j
+
+          if ((i .eq. j) .and. (j .eq. k)) then
+
+             cycle
+
+          else
+
+             is_in_buf = .false.
+             !this may happen if i == k or j == k
+             do i_search_buf = 1,nbuffs
+                if(tiles_in_buf(i_search_buf)==k)then
+                   is_in_buf = .true.
+                   exit
+                endif
+             enddo
+
+             if(.not. is_in_buf)then
+                do i_search_buf = 1,nbuffs
+                   if(.not.needed(i_search_buf))then
+
+                      kbuf = i_search_buf
+
+                      call arr_lock_win(vvvo,k,'s',assert=MPI_MODE_NOCHECK)
+                      call array_get_tile(vvvo,k,vvvo_pdm_buff(:,kbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                      tiles_in_buf(kbuf) = k
+                      needed(kbuf) = .true.
+
+                      exit
+
+                   endif
+                enddo
+             endif
+
+             exit
+
+          endif
+
+       end do
+    end if
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
@@ -735,6 +871,38 @@ contains
 
                end if
 
+               !FIND i in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==i)then
+                     ibuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_i => vvvo_pdm_buff(:,ibuf)
+               else
+                  print *,infpar%lg_mynum,"i",i,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):i not found in buf",-1)
+               endif
+
+               !FIND j in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==j)then
+                     jbuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_j => vvvo_pdm_buff(:,jbuf)
+               else
+                  print *,infpar%lg_mynum,"j",j,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):j not found in buf",-1)
+               endif
+
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
@@ -754,8 +922,15 @@ contains
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                  ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                  if(vvvo%lock_set(j))then
+
+                     call arr_unlock_win(vvvo,j)
+
+                  endif
+
                   call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -785,11 +960,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
-#else
-                     vvvo_pdm_i = vvvo_pdm_j
-#endif
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
+!#else
+!                     vvvo_pdm_i = vvvo_pdm_j
+!#endif
+
+                     call time_start_phase(PHASE_COMM)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j),&
@@ -813,8 +998,16 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile only
+
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -846,8 +1039,15 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
@@ -876,9 +1076,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                     ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     if(vvvo%lock_set(j))then
+
+                        call arr_unlock_win(vvvo,j)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -897,10 +1109,29 @@ contains
 
                end select TypeOf_ij_combi
 
+               needed(ibuf) = .true.
+               needed(jbuf) = .true.
+
         krun_par: do k=1,j
 
                      ! select type of tuple
                      tuple_type = -1
+
+                     !FIND k in buffer
+                     is_in_buf = .false.
+                     do i_search_buf=1,nbuffs
+                        if(tiles_in_buf(i_search_buf)==k)then
+                           kbuf = i_search_buf
+                           is_in_buf = .true.
+                           exit
+                        endif
+                     enddo
+                     if(is_in_buf)then
+                        vvvo_pdm_k => vvvo_pdm_buff(:,kbuf)
+                     else
+                        print *,infpar%lg_mynum,"k",k,"tiles",tiles_in_buf
+                        call lsquit("ERROR(ijk_loop_par):k not found in buf",-1)
+                     endif
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -926,8 +1157,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -965,8 +1203,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -978,6 +1223,157 @@ contains
 !$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
 
                      end if
+
+                     needed(kbuf) = .true.
+
+                     !set testing integers
+                     i_test        = i
+                     j_test        = j
+                     k_test        = k
+                     ij_count_test = ij_count
+                     ij_done       = .false.
+                     keep_looping  = (count(needed)<nbuffs)
+
+                     !load next bunch of tiles needed
+                     fill_buffer: do while(keep_looping)
+
+                        !break condition
+                        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
+
+                        if(k_test<=j_test)then
+
+                           !Load the next k tile
+
+                           new_k_needed = .true.
+                           do i_search_buf=1,nbuffs
+                              if(tiles_in_buf(i_search_buf) == k_test)then
+
+                                 needed(i_search_buf) = .true.
+                                 new_k_needed         = .false.
+
+                                 exit
+
+                              endif
+
+                           enddo
+
+                           !load k
+                           if( new_k_needed )then
+                              !find pos in buff
+                              do i_search_buf = 1, nbuffs
+                                 if(.not.needed(i_search_buf))then
+                                    kbuf_test = i_search_buf
+                                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
+                                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),nvirt**3,&
+                                       &lock_set=.true.,flush_it=.true.)
+                                    needed(kbuf_test)       = .true.
+                                    tiles_in_buf(kbuf_test) = k_test
+
+                                    exit
+
+                                 endif
+                              enddo
+
+                           endif
+
+                        else
+
+                           !Load the next i and j tiles
+
+                           ij_count_test = ij_count_test + 1
+
+                           if(ij_count_test<=b_size)then
+
+                              !is incremented by one at the end of the loop
+                              !therefore we set it to 0 here
+                              k_test = 0
+
+                              ij_test = jobs(ij_count_test)
+
+                              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+
+                              !check for i
+                              new_i_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == i_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_i_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !check for j
+                              new_j_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == j_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_j_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !load new j
+                              if( new_j_needed )then
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+                                       jbuf_test = i_search_buf
+                                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+                                       needed(jbuf_test)       = .true.
+                                       tiles_in_buf(jbuf_test) = j_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                              !load new i
+                              if( new_i_needed )then
+
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+
+                                       ibuf_test = i_search_buf
+
+                                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+
+                                       needed(ibuf_test)       = .true.
+                                       tiles_in_buf(ibuf_test) = i_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                           else
+
+                              ij_done = .true.
+
+                           endif
+
+
+                        endif
+
+                        k_test = k_test + 1
+
+                     enddo fill_buffer
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1139,7 +1535,12 @@ contains
 
                      end select TypeOfTuple_par_ijk
 
+                     needed(kbuf) = .false.
+
                   end do krun_par
+
+                  needed(ibuf) = .false.
+                  needed(jbuf) = .false.
 
                if (j .eq. i) then
 
@@ -1193,9 +1594,12 @@ contains
     call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release pdm work arrays and job list
-    call mem_dealloc(vvvo_pdm_i)
-    call mem_dealloc(vvvo_pdm_j)
-    call mem_dealloc(vvvo_pdm_k)
+!    call mem_dealloc(vvvo_pdm_i)
+!    call mem_dealloc(vvvo_pdm_j)
+!    call mem_dealloc(vvvo_pdm_k)
+    call mem_dealloc(vvvo_pdm_buff)
+    call mem_dealloc(needed)
+    call mem_dealloc(tiles_in_buf)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
@@ -1296,11 +1700,11 @@ contains
 !
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalocc,eivalvirt) if(.not. full_no_frags)
+!$acc& copyin(eivalvirt) if(.not. full_no_frags)
 ! 
 !$acc enter data create(trip_tmp,trip_ampl,&
 !$acc& ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k)&
-!$acc& copyin(eivalocc,eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
+!$acc& copyin(eivalvirt,ccsdpt_singles,e4) if(full_no_frags)
 
 !$acc wait
 
@@ -1614,7 +2018,7 @@ contains
                  if (j .eq. i) then
 
 !$acc wait(async_id(4)) async(async_id(2))
-!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))k
+!$acc exit data delete(ovoo(:,:,i,j)) async(async_id(2))
 !$acc wait(async_id(4)) async(async_id(3))
 !$acc exit data delete(vvoo(:,:,i,j))&
 !$acc& copyout(ccsdpt_doubles(:,:,i,j)) async(async_id(3)) if(.not. full_no_frags)
@@ -1657,10 +2061,10 @@ contains
 !$acc wait 
 
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalocc,eivalvirt) if(.not. full_no_frags)
+!$acc& eivalvirt) if(.not. full_no_frags)
 !
 !$acc exit data delete(trip_tmp,trip_ampl,ccsd_doubles_portions_i,ccsd_doubles_portions_j,ccsd_doubles_portions_k,&
-!$acc& eivalocc,eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
+!$acc& eivalvirt) copyout(ccsdpt_singles,e4) if(full_no_frags)
 
 #ifdef VAR_CUBLAS
     ! Destroy the CUBLAS context
@@ -1808,7 +2212,7 @@ contains
        endif
 
        call get_tileinfo_nels_fromarr8(nelms,vovv,i8*a_tile_num)
-       tile_size_tmp_a = nelms/(nocc*nvirt**2)
+       tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
 
        call time_start_phase(PHASE_COMM)
        call array_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
@@ -1821,7 +2225,7 @@ contains
           b_tile_num = b_tile_num + 1
 
           call get_tileinfo_nels_fromarr8(nelms,vovv,i8*b_tile_num)
-          tile_size_tmp_b = nelms/(nocc*nvirt**2)
+          tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
           call time_start_phase(PHASE_COMM)
           call array_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
@@ -1834,7 +2238,7 @@ contains
              c_tile_num = c_tile_num + 1
 
              call get_tileinfo_nels_fromarr8(nelms,vovv,i8*c_tile_num)
-             tile_size_tmp_c = nelms/(nocc*nvirt**2)
+             tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
 
              call time_start_phase(PHASE_COMM)
              call array_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
@@ -2374,21 +2778,30 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case1 routine 
 
-!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
-
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case1 - 1) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2409,13 +2822,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case1 - 2) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2431,13 +2853,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case1 - 3) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2448,15 +2879,11 @@ contains
     call ccsdpt_contract_ijk_12(o3,o1,o1,nv,no,vvoo_tile_13,vvoo_tile_31,&
                  & ccsdpt_singles_1,trip_ampl,.true.,async_idx,cublas_handle)
 
-#ifdef VAR_OPENACC
-!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
-!$acc end kernels
-#else
+#ifndef VAR_OPENACC
     e4 = e4 + e4_tmp
 #endif
 
-!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
+!!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case1
 
@@ -2494,9 +2921,9 @@ contains
     ! for explanations on the calls to ccsdpt_contract_abc_11/12,
     ! see the ccsdpt_driver_abc_case1 routine 
 
-!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
-
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
@@ -2614,21 +3041,30 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case2 routine 
 
-!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
-
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case2 - 1) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2649,13 +3085,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case2 - 2) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2676,27 +3121,30 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-1.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -1.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case2 - 3) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - ddot(nv**3,trip_tmp,1,trip_ampl,1)
 #endif
 
-#ifdef VAR_OPENACC
-!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
-    e4 = e4 + 2.0E0_realk * e4_tmp1 - e4_tmp2 - e4_tmp3
-!$acc end kernels
-#else
+#ifndef VAR_OPENACC
     e4 = e4 + e4_tmp
 #endif
-
-!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case2
 
@@ -2736,7 +3184,9 @@ contains
 
 !$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3) async(async_idx)
 
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
@@ -2855,21 +3305,30 @@ contains
     ! for explanations on the calls to ccsdpt_contract_ijk_11/12,
     ! see the ccsdpt_driver_ijk_case3 routine 
 
-!$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
-
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_ijk(o1,o2,o3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp1)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,8.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp1,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp1)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 8.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 1) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = 4.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2890,13 +3349,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp2)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp2,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp2)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 2) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2917,13 +3385,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp3)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,2.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp3,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp3)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & 2.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 3) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp + ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2944,13 +3421,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp4,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp4)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp4,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp4)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 4) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2971,13 +3457,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp5,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp5)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp5,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp5)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 5) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -2998,13 +3493,22 @@ contains
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && !defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp6,trip_tmp,trip_ampl)
-    call ddot_acc_openacc_async(async_idx,nv**3,trip_tmp,1,trip_ampl,1,e4_tmp6)
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    call dgemm_acc_openacc_async(async_idx,'n','n',1,1,nv**3,-4.0E0_realk,trip_tmp,1,trip_ampl,nv**3,1.0E0_realk,e4,1)
 !$acc end host_data
 #elif defined(VAR_CRAY) && defined(VAR_CUBLAS)
-!$acc host_data use_device(e4_tmp6,trip_tmp,trip_ampl)
-    stat = cublasDdot_v2(cublas_handle,int(nv**3,kind=4),c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(1,kind=4),e4_tmp6)
+
+!$acc host_data use_device(trip_tmp,trip_ampl,e4)
+    stat = cublasDgemm_v2(cublas_handle,int(0,kind=4),int(0,kind=4),int(1,kind=4),int(1,kind=4),int(nv**3,kind=4),&
+                          & -4.0E0_realk,c_loc(trip_tmp),int(1,kind=4),c_loc(trip_ampl),int(nv**3,kind=4),&
+                          & 1.0E0_realk,c_loc(e4),int(1,kind=4))
 !$acc end host_data
+
+    if (stat .ne. 0 ) then
+       print *, "stat (ccsdpt_energy_full_ijk_case3 - 6) = ",stat
+       stop
+    end if
+
 #endif
 #else
     e4_tmp = e4_tmp - 2.0E0_realk * ddot(nv**3,trip_tmp,1,trip_ampl,1)
@@ -3015,16 +3519,9 @@ contains
     call ccsdpt_contract_ijk_12(o2,o1,o3,nv,no,vvoo_tile_12,vvoo_tile_21,&
                  & ccsdpt_singles_3,trip_ampl,.false.,async_idx,cublas_handle)
 
-#ifdef VAR_OPENACC
-!$acc kernels present(e4,e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
-    e4 = e4 + 8.0E0_realk * e4_tmp1 + 2.0E0_realk * e4_tmp2 + 2.0E0_realk * e4_tmp3 &
-          & - 4.0E0_realk * e4_tmp4 - 4.0E0_realk * e4_tmp5 - 4.0E0_realk * e4_tmp6
-!$acc end kernels
-#else
+#ifndef VAR_OPENACC
     e4 = e4 + 2.0E0_realk * e4_tmp
 #endif
-
-!$acc exit data delete(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
 
   end subroutine ccsdpt_energy_full_ijk_case3
 
@@ -3065,7 +3562,9 @@ contains
 
 !$acc enter data create(e4_tmp1,e4_tmp2,e4_tmp3,e4_tmp4,e4_tmp5,e4_tmp6) async(async_idx)
 
+!$acc kernels present(trip_tmp,trip_ampl) async(async_idx)
     trip_tmp = trip_ampl
+!$acc end kernels
 
     call trip_denom_abc(v1,v2,v3,no,nv,eigenocc,eigenvirt,trip_ampl,async_idx)
 
@@ -3344,14 +3843,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
+  subroutine job_distrib_ccsdpt(b_size,njobs,index_array,jobs)
 
     implicit none
 
     !> batch size (without remainder contribution) and njobs 
     integer, intent(in) :: b_size,njobs
-    !> ij_array
-    integer, dimension(njobs), intent(inout) :: ij_array
+    !> index_array
+    integer, dimension(njobs), intent(inout) :: index_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -3361,8 +3860,8 @@ contains
 
     nodtotal = infpar%lg_nodtot
 
-    ! fill the jobs array with values of ij stored in ij_array.
-    ! there are (nocc**2 + nocc)/2 jobs in total (njobs)
+    ! fill the jobs array with composite index values stored in index_array.
+    ! there are njobs jobs in total.
 
     ! the below algorithm distributes the jobs evenly among the nodes.
 
@@ -3372,11 +3871,11 @@ contains
 
        if (fill_sum .le. njobs) then
 
-          jobs(fill + 1) = ij_array(fill_sum) 
+          jobs(fill + 1) = index_array(fill_sum) 
 
        else
 
-          ! fill jobs array with negative number such that this number won't appear for any value of ij
+          ! fill jobs array with negative number such that this number won't appear for any value of the composite index
           jobs(fill + 1) = -1
 
        end if
