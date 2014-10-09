@@ -2578,16 +2578,18 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   TMParray2maxsizePass = TMParray2maxsize*MaxPasses
 
   !Determine number of Async handles (related to size of memory required)
-  !put into subroutine!
 #ifdef VAR_OPENACC
-  nAsyncHandles = maxnAsyncHandles
+  MaxGPUmemory = 2_long*1000_long*1000_long !2 GB change to input keyword
+  call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
+       & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
+       & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
+  IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
 #else
   nAsyncHandles = 1
 #endif
   DO iAsyncHandles=1,maxnAsyncHandles
      iSync(iAsyncHandles) = 0          !All Async handles are not in use (set to zero) 
   ENDDO
-  IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
 
   ndim = nOrbA*nOrbB*nAtomsA*nAtomsB
   nOrbQ = nOrbC*nOrbD
@@ -2618,17 +2620,22 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   allocate(LocalIntPass1(nLocalIntPass,nAsyncHandles))
   CALL Mem_ichor_alloc(LocalIntPass1)
 
-!$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,MaxPasses,intprint,lupri,&
+
+!$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
+!$ACC             nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
 !$ACC             ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
-!$ACC             pcentPass,PpreexpfacPass,nTABFJW1,nTABFJW2,TABFJW,&
-!$ACC             Qiprim1,Qiprim2,expA,expB,expC,expD,&
+!$ACC             nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+!$ACC             nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+!$ACC             nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+!$ACC             pcentPass,Qcent,PpreexpfacPass,Qpreexpfac,&
+!$ACC             nTABFJW1,nTABFJW2,TABFJW,Qiprim1,Qiprim2,expA,expB,expC,expD,&
 !$ACC             Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
-!$ACC             AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,PQorder,&
-!$ACC             nLocalIntPass,Acenter,Bcenter,nAtomsA,nAtomsB,Spherical,&
+!$ACC             AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
+!$ACC             nLocalIntPass,Acenter,Bcenter,&
+!$ACC             CcenterSpec,DcenterSpec,nAtomsA,nAtomsB,Spherical,&
 !$ACC             TMParray1maxsizePass,TMParray2maxsizePass,&
-!$ACC             CcenterSpec,DcenterSpec,IatomAPass,iatomBPass,nPasses,&
-!$ACC             Qcent,Qpreexpfac,Qdistance12) &
+!$ACC             IatomAPass,iatomBPass) &
 !$ACC CREATE(LocalIntPass1) &
 !$ACC CREATE(TmpArray1,TmpArray2)
 
@@ -2812,6 +2819,69 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   CALL Mem_ichor_dealloc(LocalIntPass2)
   deallocate(LocalIntPass2)
 end subroutine IchorTypeIntegralLoopGPU
+
+!  GPU OpenACC Memory calculation 
+subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
+     & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
+     & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
+  implicit none
+  integer(kind=long),intent(in) :: MaxGPUmemory
+  integer,intent(in) :: maxnAsyncHandles,nPrimP,nPrimQ,nPrimA,nContA,nPrimB,nContB
+  integer,intent(in) :: nPrimC,nContC,nPrimD,nContD,nTABFJW1,nTABFJW2,natomsA
+  integer,intent(in) :: natomsB,TMParray1maxsize,MaxPasses,nLocalIntPass
+  integer,intent(in) :: TMParray2maxsize
+  integer,intent(inout) :: nAsyncHandles
+  !local variables
+  integer(kind=long) :: nSizeStatic,nSizeAsync
+  integer :: iAsyncHandles
+
+  !Calculate the size of the memory independent on the number of streams
+  !                                                                     
+  ! ACC DATA COPYIN OF                                                
+  ! nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,                               
+  nSizeStatic = mem_intsize*5
+  ! nPrimQ,nPasses,MaxPasses,intprint,lupri,                          
+  nSizeStatic = nSizeStatic + mem_intsize*(4 + maxnAsyncHandles)  !nPasses is static allocated
+  ! nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,              
+  nSizeStatic = nSizeStatic + mem_intsize*6 + mem_realsize*(nPrimP+nPrimQ)
+  ! ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,      
+  nSizeStatic = nSizeStatic + mem_realsize*(nPrimA*nContA+nPrimB*nContB+nPrimC*nContC+nPrimD*nContD)
+  ! nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,                          
+  nSizeStatic = nSizeStatic + mem_intsize*4
+  ! nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,          
+  nSizeStatic = nSizeStatic + mem_intsize*4
+  ! nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV, 
+  nSizeStatic = nSizeStatic + mem_intsize*7
+  ! pcentPass,Qcent,PpreexpfacPass,Qpreexpfac,
+  nSizeAsync = mem_realsize*4*nPrimQ   !Qcent,Qpreexpfac is nAsyncDependent
+  ! nTABFJW1,nTABFJW2,TABFJW,Qiprim1,Qiprim2
+  nSizeStatic = nSizeStatic + mem_intsize*(2+2*nPrimQ) + mem_realsize*(nTABFJW1+1)*(nTABFJW2+1) 
+  ! expA,expB,expC,expD,     
+  nSizeStatic = nSizeStatic + mem_realsize*(nPrimA+nPrimB+nPrimC+nPrimD) 
+  ! Qsegmented,Psegmented,reducedExponents,integralPrefactor,         
+  nSizeStatic = nSizeStatic + mem_intsize*2 + mem_realsize*nPrimQ*nPrimP
+  ! AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,
+  nSizeStatic = nSizeStatic + mem_intsize*5 + mem_realsize*3*natomsA*natomsB
+  nSizeAsync = nSizeAsync + mem_realsize*3   !Qdistance12 is nAsyncDependent
+  ! nLocalIntPass,Acenter,Bcenter,                                      
+  nSizeStatic = nSizeStatic + mem_intsize + mem_realsize*3*(nAtomsA+nAtomsB)
+  ! CcenterSpec,DcenterSpec,nAtomsA,nAtomsB,Spherical,                  
+  nSizeStatic = nSizeStatic + mem_intsize*3 + mem_realsize*2*3*maxnAsyncHandles
+  ! TMParray1maxsizePass,TMParray2maxsizePass,                          
+  nSizeStatic = nSizeStatic + mem_intsize*2 + mem_realsize*2*3*maxnAsyncHandles
+  ! IatomAPass,iatomBPass                                               
+  nSizeAsync = nSizeAsync + mem_intsize*2*MaxPasses   !IatomAPass,iatomBPass is nAsyncDependent
+  !ACC CREATE(LocalIntPass1)                                            
+  nSizeAsync = nSizeAsync + mem_realsize*nLocalIntPass !LocalIntPass1 is nAsyncDependent
+    !ACC CREATE(TmpArray1,TmpArray2)                                      
+  nSizeAsync = nSizeAsync + mem_realsize*(TMParray1maxsize*MaxPasses+TMParray2maxsize*MaxPasses)
+  
+  DO iAsyncHandles=1,maxnAsyncHandles
+     IF(nSizeStatic+iAsyncHandles*nSizeAsync.LT.MaxGPUmemory)THEN
+        nAsyncHandles = iAsyncHandles
+     ENDIF
+  ENDDO
+END subroutine DeterminenAsyncHandles
 
 subroutine DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
      & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&

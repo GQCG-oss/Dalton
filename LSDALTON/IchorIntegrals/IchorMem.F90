@@ -3,13 +3,13 @@ MODULE IchorMemory
   use IchorCommonModule
   use IchorprecisionModule
    private
-   public set_ichor_memvar
-   public retrieve_ichor_memvar
+   public set_ichor_memvar, retrieve_ichor_memvar
    public stats_ichor_mem
    public mem_ichor_alloc
    public mem_ichor_dealloc
    public mem_ichor_alloc_dryrun
    public mem_ichor_dealloc_dryrun
+   public mem_realsize,mem_intsize
    public ADD_OMP_MEM
    public REMOVE_OMP_MEM
 !GLOBAL VARIABLES
@@ -22,8 +22,8 @@ MODULE IchorMemory
    !Count 'logical' memory, integral code
    integer(KIND=long),save :: mem_allocated_logical, max_mem_used_logical
 ! sizes
-   integer(KIND=long),parameter :: mem_realsize=8
-   integer(KIND=long),parameter :: mem_logicalsize=4
+   integer(KIND=long),parameter :: mem_realsize=8_long
+   integer(KIND=long),parameter :: mem_logicalsize=4_long
 #if VAR_INT64
    integer(KIND=long),parameter :: mem_intsize=8_long
 #else
