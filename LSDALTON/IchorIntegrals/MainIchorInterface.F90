@@ -15,8 +15,8 @@ Subroutine IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -92,6 +92,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -158,8 +160,8 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -186,8 +188,8 @@ Subroutine IchorEriMemInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -263,6 +265,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -329,8 +333,8 @@ call IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -347,8 +351,8 @@ subroutine IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -399,6 +403,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -444,8 +450,8 @@ call IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -572,6 +578,14 @@ subroutine GetIchorDebugIdentifier(Identifier,iprint)
   integer,intent(in)    :: IPRINT
   Identifier = Iprint
 end subroutine GetIchorDebugIdentifier
+
+subroutine GetIchorOpererator(Oper,IchorOperatorSpec)
+  use IchorParametersModule
+  implicit none
+  Character(len=7),intent(in)     :: Oper
+  integer,intent(inout)     :: IchorOperatorSpec
+  call determine_OpereratorSpec(Oper,IchorOperatorSpec)
+end subroutine GetIchorOpererator
 
 subroutine GetIchorAlgorithmSpecIdentifier(Identifier)
   use IchorParametersModule

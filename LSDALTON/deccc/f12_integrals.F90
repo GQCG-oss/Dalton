@@ -32,7 +32,7 @@ module f12_integrals_module
   use Integralparameters!, only: MP2INAMP
   use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
-  !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
+  !       & II_getBatchOrbitalScreen
 
   use ccintegrals!, only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
 

@@ -12,18 +12,23 @@ f = Filter()
 f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Interaction Correlation energy',
-      rel_tolerance = 1.0e-3)
+f.add(string = 'Correlation energy',
+      rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'CCSD occupied pair energies',
-      to_string   = 'CCSD virtual    interaction correlation energy',
-      abs_tolerance = 1.0e-8)
+f.add(string = 'Total MP2 energy',
+      rel_tolerance = 1.0e-8)
+
+f.add(string = 'Use RI for Expansion step')
+
+f.add(from_string = 'MP2 occupied single energies',
+      to_string   = 'MP2 Lagrangian correlation energy',
+      rel_tolerance = 1.0e-6)
 
 f.add(string = 'Allocated memory (TOTAL)')
 
 f.add(string = 'Memory in use for array4',
       rel_tolerance = 1.0e-9)
 
-test.run(['decccsd_Bind.dal'], ['BH3.mol'], {'out': f})
+test.run(['decmp2_RI.dal'], ['CO2H2.mol'], {'out': f})
 
 sys.exit(test.return_code)
