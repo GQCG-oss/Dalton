@@ -162,11 +162,7 @@ contains
     type(decfrag),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
     !real(realk) :: energies(ndecenergies)
-    !real(realk) :: Interactionenergies(ndecenergies)
     real(realk),pointer :: energies(:)!(ndecenergies)
-    real(realk),pointer :: Interactionenergies(:)!(ndecenergies)
-    real(realk) :: InteractionEcorr
-    real(realk) :: InteractionEerr
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
@@ -323,15 +319,6 @@ contains
     ! Now all atomic fragment energies have been calculated and the
     ! fragment information has been stored in AtomicFragments.
 
-    IF(DECinfo%InteractionEnergy)THEN
-       if(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model) then
-          !the energies was calculated with a wrong wave function and
-          !should be recalculated but they are not needed for 
-          !interaction energies so we set the energy to zero to avoid 
-          !confusion. 
-          FragEnergies = 0.0E0_realk
-       endif
-    ENDIF
     ! ************************************************************************
     ! *             Construct job list for remaining fragments               *
     ! ************************************************************************
@@ -490,39 +477,17 @@ contains
 #endif
 
     call mem_alloc(energies,ndecenergies)
-    IF(DECinfo%InteractionEnergy)THEN
-       ! Interaction correlation energy 
-       do j=1,ndecenergies
-          call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
-               & energies(j),mymolecule%SubSystemIndex)
-       end do
-    ELSE
-       ! Total correlation energy 
-       do j=1,ndecenergies
-          call add_dec_energies(nfrags,FragEnergies(:,:,j),dofrag,energies(j))
-       end do
-       if(DECinfo%PrintInteractionEnergy)then
-         call mem_alloc(Interactionenergies,ndecenergies)
-          do j=1,ndecenergies
-             call add_dec_Interactionenergies(natoms,FragEnergies(:,:,j),dofrag,&
-                  & Interactionenergies(j),mymolecule%SubSystemIndex)
-          end do
-       endif
-    endif
+    ! Total correlation energy 
+    do j=1,ndecenergies
+       call add_dec_energies(nfrags,FragEnergies(:,:,j),dofrag,energies(j))
+    end do
 
     ! Print all fragment energies
     call print_all_fragment_energies(nfrags,FragEnergies,dofrag,&
          & mymolecule%DistanceTable,energies)
      call mem_dealloc(FragEnergies)
     !Obtain The Correlation Energy from the list energies
-    InteractionEcorr = 0.0E0_realk
     call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,energies,Ecorr)
-    IF(DECinfo%InteractionEnergy)THEN
-       InteractionEcorr = Ecorr
-    ENDIF
-    IF(DECinfo%PrintInteractionEnergy)THEN
-       call ObtainModelEnergyFromEnergies(DECinfo%ccmodel,interactionenergies,InteractionEcorr)
-    ENDIF
     ! If singles polarization was considered, we need to
     ! ensure that the fullmolecule structure contains the standard
     ! (NOT T1 transformed) Fock matrix at output
@@ -566,11 +531,6 @@ contains
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
-    IF(DECinfo%PrintInteractionEnergy)THEN
-       call get_estimated_energy_error(natoms,Interactionenergies,InteractionEerr)
-       call print_Interaction_energy(InteractionEcorr,InteractionEerr)   
-       call mem_dealloc(Interactionenergies)
-    ENDIF
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output,ForcePrintTime)
 
   end subroutine main_fragment_driver
@@ -687,8 +647,6 @@ subroutine print_dec_info()
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))
-   write(LU,'(a,A5)')    'Calculate Interaction Energies                      =           ',&
-        & LogicString(Log2It(DECinfo%InteractionEnergy))
    write(LU,'(a,A5)')    'Fit Molecular Orbitals                              =           ',&
         & LogicString(Log2It(DECinfo%FitOrbitals))
    !Oribtal Assignment 
@@ -1309,18 +1267,6 @@ subroutine print_dec_info()
              MyMolecule%ccmodel(j,i) = MODEL_MP2
           end do
        end do
-       IF(DECinfo%InteractionEnergy)THEN
-          !We are only intrested in certain fragments.
-          !So we only do estimates on those we are 
-          !intrested in. 
-          do i=1,nfrags
-             do j=1,nfrags
-                if(MyMolecule%SubSystemIndex(i).EQ.MyMolecule%SubSystemIndex(j))then
-                   MyMolecule%ccmodel(i,j) = MODEL_NONE
-                endif
-             end do
-          end do
-       endif
 
        !
        ! Init estimated atomic fragments by including orbitals assigned to neighbour atoms

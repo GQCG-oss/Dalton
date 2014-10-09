@@ -136,6 +136,9 @@ call loop1(nbatchesofAOS,nBatches,OrbSizeOfBatches,&
      & MaxOrbitalDimOfAObatch,MinOrbitalDimOfAObatch,&
      & RequestedOrbitalDimOfAObatch)
 
+call mem_dealloc(ratio2)
+call mem_dealloc(MaxOrbitalDimOfAObatch2)
+call mem_dealloc(OrbSizeOfBatches)
 #endif
 end SUBROUTINE determine_Ichor_nbatchesofAOS
 
@@ -282,6 +285,7 @@ ELSE
 ENDIF
 MaxOrbitalDimOfAObatch = MAX(MaxOrbitalDimOfAObatch,DIM)
 MinOrbitalDimOfAObatch = MIN(MinOrbitalDimOfAObatch,DIM)
+call mem_dealloc(OrbSizeOfBatches)
 
 #endif
 end SUBROUTINE determine_Ichor_batchesofAOS
@@ -379,10 +383,10 @@ logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
 integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
+integer :: IchorOperatorSpec
 logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
 !FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 spherical = .TRUE.
-IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 
 !A
 Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
@@ -455,6 +459,7 @@ IF(NoSymmetry)THEN
 ENDIF
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 call GetIchorFileStorageIdentifier(filestorageIdentifier)
+call GetIchorOpereratorIntSpec(intSpec(5),IchorOperatorSpec)
 
 MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
 MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
@@ -500,8 +505,8 @@ call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & nbatchDstart2,nbatchDend2,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-     & IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
      & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
@@ -533,6 +538,34 @@ call lsquit('IchorEri requires -DVAR_ICHOR',-1)
 #endif
 
 END SUBROUTINE MAIN_ICHORERI_DRIVER
+
+subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
+  implicit none
+  character :: intspec 
+  integer,intent(inout) :: IchorOperatorSpec
+#ifdef VAR_ICHOR
+  IF (intSpec.EQ.'C') THEN
+     ! Regular Coulomb operator 1/r12
+     call GetIchorOpererator('Coulomb',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'G') THEN
+     ! The Gaussian geminal operator g
+     call GetIchorOpererator('GGem   ',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'F') THEN
+     ! The Gaussian geminal divided by the Coulomb operator g/r12
+     call GetIchorOpererator('GGemCou',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'D') THEN
+     ! The double commutator [[T,g],g]
+     call GetIchorOpererator('GGemGrd',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'2') THEN
+     ! The Gaussian geminal operator squared g^2
+     call GetIchorOpererator('GGemSq ',IchorOperatorSpec)
+  ELSE
+     call lsquit('Error in specification of operator in GetIchorOpereratorIntSpec',-1)
+  ENDIF
+#else
+call lsquit('GetIchorOpereratorIntSpec requires -DVAR_ICHOR',-1)
+#endif
+end subroutine GetIchorOpereratorIntSpec
 
 SUBROUTINE MAIN_ICHORERIMEM_DRIVER(LUPRI,IPRINT,setting,dim1,dim2,dim3,dim4,integrals,intspec,FullBatch,&
      & nbatchAstart,nbatchAend,nbatchBstart,nbatchBend,nbatchCstart,nbatchCend,nbatchDstart,nbatchDend,&
@@ -583,7 +616,7 @@ real(realk) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
 real(realk),pointer :: InputStorage(:)
 real(realk),pointer :: BATCHGAB(:),BATCHGCD(:)
 Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
-Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
+Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD,IchorOperatorSpec
 logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
@@ -592,7 +625,7 @@ logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat,CRIT5
 integer(kind=long) :: mem_allocated_global_current
 !FULLABATCH,FULLBBATCH,FULLCBATCH,FULLDBATCH
 spherical = .TRUE.
-IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+!IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 mem_allocated_global_current = mem_allocated_global
 !A
 Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
@@ -665,6 +698,7 @@ IF(NoSymmetry)THEN
 ENDIF
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 call GetIchorFileStorageIdentifier(filestorageIdentifier)
+call GetIchorOpereratorIntSpec(intSpec(5),IchorOperatorSpec)
 
 MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
 MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
@@ -710,8 +744,8 @@ call IchorEriMemInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & nbatchDstart2,nbatchDend2,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-     & IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
      & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
@@ -868,7 +902,7 @@ integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpe
 Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
 integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
 Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
-Integer :: GabIdentifier, IchorGabID1, IchorGabID2
+Integer :: GabIdentifier, IchorGabID1, IchorGabID2,IchorOperatorSpec
 logical :: SameLHSaos
 real(realk) :: THRESHOLD_CS,THRESHOLD_QQR
 real(realk),pointer :: InputStorage(:)
@@ -885,7 +919,7 @@ call InitIchorSaveGabModuleInterface
 FullBatch = .TRUE.
 
 spherical = .TRUE.
-IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+!IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 
 IF(SETTING%SCHEME%CS_SCREEN)THEN
    !A
@@ -904,6 +938,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    call GetIchorJobEriIdentifier(IchorJobSpec,doLink)
    rhsDmat = .FALSE. !no rhs density matrix supplied as input 
    call GetIchorInputIdentifier(IchorInputSpec,rhsDmat)
+   call GetIchorOpereratorIntSpec(intSpec(5),IchorOperatorSpec)
    IchorInputDim1=1                 !not used since   IcorInputNoInput
    IchorInputDim2=1                 !not used since   IcorInputNoInput
    IchorInputDim3=1                 !not used since   IcorInputNoInput
@@ -937,8 +972,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
         & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
         & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
         & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-        & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-        & IchorInputDim3,&
+        & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+        & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
         & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
         & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
         & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -949,6 +984,11 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    CALL GenerateIdentifier(INTSPEC,GabIdentifier)
    call AddGabToIchorSaveGabModuleInterface(nBatchesA,nBatchesB,&
         & GabIdentifier,BATCHGAB)
+
+   IF(IPRINT.GT.2)THEN
+      WRITE(lupri,*)'The LHS Ichor GAB Matrix with Identifier:',GabIdentifier
+      call LS_Output(BATCHGAB,1,nBatchesA,1,nBatchesB,nBatchesA,nBatchesB,1,lupri)
+   ENDIF
    call mem_dealloc(BATCHGAB)   
    IchorGabID1=GabIdentifier !screening Matrix Identifier
    
@@ -994,8 +1034,8 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
            & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
            & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
-           & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-           & IchorInputDim3,&
+           & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+           & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
            & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
            & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
            & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -1008,6 +1048,11 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
          GabIdentifier = GabIdentifier + 53210
       ENDIF
       call AddGabToIchorSaveGabModuleInterface(nBatchesC,nBatchesD,GabIdentifier,BATCHGCD)
+
+      IF(IPRINT.GT.2)THEN
+         WRITE(lupri,*)'The RHS Ichor GAB Matrix with Identifier:',GabIdentifier
+         call LS_Output(BATCHGCD,1,nBatchesC,1,nBatchesD,nBatchesC,nBatchesD,1,lupri)
+      ENDIF
       call mem_dealloc(BATCHGCD)
       IchorGabID2=GabIdentifier !screening Matrix Identifier   
 
@@ -1020,6 +1065,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
            & exponentsOfTypeD,ContractCoeffOfTypeD,Dcenters)
    ENDIF
    call GetIchorScreeningParameter(IchorScreenSpec,.TRUE.,.FALSE.,.FALSE.)
+   call mem_dealloc(InputStorage)
 ELSE   
    call GetIchorScreeningParameter(IchorScreenSpec,.FALSE.,.FALSE.,.FALSE.)
    IchorGabID1=0 !screening Matrix Identifier, not used if IchorScreenNone
@@ -1078,7 +1124,7 @@ real(realk) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
 !real(realk),pointer :: InputStorage(:)
 real(realk),pointer :: BATCHGAB(:),BATCHGCD(:)
 Integer(kind=long) :: MaxMem,MaxMemAllocated,MemAllocated
-Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD
+Integer :: nBatchesA,nBatchesB,nBatchesC,nBatchesD,IchorOperatorSpec
 logical :: spherical
 TYPE(BASISSETINFO),pointer :: AObasis
 integer :: nbatchAstart2,nbatchAend2,nbatchBstart2,nbatchBend2
@@ -1086,7 +1132,7 @@ integer :: nbatchCstart2,nbatchCend2,nbatchDstart2,nbatchDend2
 logical :: SameRHSaos,SameODs,CRIT1,CRIT2,CRIT3,CRIT4,doLink,rhsDmat
 
 spherical = .TRUE.
-IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_LINK_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
+!IF (intSpec(5).NE.'C') CALL LSQUIT('MAIN_LINK_ICHORERI_DRIVER limited to Coulomb Integrals for now',-1)
 !A
 Call BuildCenterAndTypeInfo(1,intSpec(1),setting,ntypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
      & nPrimOfTypeA,nContOfTypeA,nbatchAstart2,nbatchAend2,MaxnAtomsA,MaxnPrimA,MaxnContA,&
@@ -1142,6 +1188,7 @@ SameODs = .FALSE.!(intSpec(1).EQ.intSpec(3)).AND.(intSpec(2).EQ.intSpec(4)).AND.
 
 call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
 call GetIchorFileStorageIdentifier(filestorageIdentifier)
+call GetIchorOpereratorIntSpec(intSpec(5),IchorOperatorSpec)
 
 MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
 MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
@@ -1187,8 +1234,8 @@ call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & nbatchDstart2,nbatchDend2,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-     & IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & Dmat,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
      & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
      & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
@@ -1293,6 +1340,14 @@ SUBROUTINE GenerateIdentifier(INTSPEC,GabIdentifier)
   GabIdentifier = 0 
   IF(intSpec(5).EQ.'C')THEN
      GabIdentifier = GabIdentifier+100000         
+  ELSEIF(intSpec(5).EQ.'G')THEN
+     GabIdentifier = GabIdentifier+200000         
+  ELSEIF(intSpec(5).EQ.'F')THEN
+     GabIdentifier = GabIdentifier+300000         
+  ELSEIF(intSpec(5).EQ.'D')THEN
+     GabIdentifier = GabIdentifier+400000         
+  ELSEIF(intSpec(5).EQ.'2')THEN
+     GabIdentifier = GabIdentifier+500000         
   ELSE
      call lsquit('unknown spec in GENERATEIDENTIFIER',-1)
   ENDIF

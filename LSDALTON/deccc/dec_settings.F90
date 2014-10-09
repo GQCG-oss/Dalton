@@ -176,8 +176,6 @@ contains
     DECinfo%F12debug                = .false.
     DECinfo%SOS                     = .false.
     DECinfo%PureHydrogenDebug       = .false.
-    DECinfo%InteractionEnergy       = .false.
-    DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
     DECinfo%DFTreference            = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5_realk
@@ -551,12 +549,6 @@ contains
           doF12 = .TRUE.
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-       case('.INTERACTIONENERGY')     
-          !Calculate the Interaction energy (add ref to article) 
-          DECinfo%InteractionEnergy       = .true.
-       case('.PRINTINTERACTIONENERGY')     
-          !Print the Interaction energy (see .INTERACTIONENERGY) 
-          DECinfo%PrintInteractionEnergy  = .true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
@@ -695,10 +687,6 @@ contains
 
        if(DECinfo%SinglesPolari) then
           call lsquit('DECCO is not implemented for singles polarization effects!',DECinfo%output)
-       end if
-
-       if(DECinfo%InteractionEnergy) then
-          call lsquit('DECCO is not implemented for interaction energies!',DECinfo%output)
        end if
 
     end if DoDECCO

@@ -1430,6 +1430,13 @@ CONTAINS
       real(realk),parameter :: CS13=1E-13_REALK,CS14=1E-14_REALK,CS15=1E-15_REALK  
       logical :: CS_screenSAVE, PS_screenSAVE, OE_screenSAVE, PARI_screenSAVE
       logical :: OD_screenSAVE, MBIE_screenSAVE,SAVEReCalcGab
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
+
       print*,'di_screen_test(setting,nbast,lupri,luerr)',nbast
       CS(7)=CS7; CS(8)=CS8; CS(9)=CS9; CS(10)=CS10; CS(11)=CS11; CS(12)=CS12;
       CS(13)=CS13; CS(14)=CS14; CS(15)=CS15;
@@ -1449,7 +1456,8 @@ CONTAINS
       setting%scheme%OD_screen = .FALSE.
       setting%scheme%MBIE_screen = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LUERR,setting,integrals,&
+           & nbast,nbast,nbast,nbast,intspec)
       n(7:15)=0
       DO iD=1,nbast
          DO iC=1,nbast
@@ -1483,7 +1491,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1524,7 +1533,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -1564,7 +1574,8 @@ CONTAINS
          WRITE(lupri,*)'Testing threshold = ',CS(I)
          setting%scheme%threshold = CS(I)/setting%scheme%J_THR
          WRITE(lupri,*)'Testing setting%scheme%threshold = ',setting%scheme%threshold
-         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,nbast,nbast,nbast,nbast)
+         call II_get_4center_eri(LUPRI,LUERR,setting,integrals2,&
+              & nbast,nbast,nbast,nbast,intspec)
          test(7:15)=0;
          DO iD=1,nbast
             DO iC=1,nbast
@@ -2762,6 +2773,12 @@ ENDIF
         real(realk) :: JFAC,KFAC
         real(realk),pointer :: g(:,:,:,:),LmatFull(:,:),GmatFull(:,:)
         real(realk),pointer :: LmatFull2(:,:),GmatFull2(:,:)
+        character :: intspec(5)
+        intspec(1) = 'R'
+        intspec(2) = 'R'
+        intspec(3) = 'R'
+        intspec(4) = 'R'
+        intspec(5) = 'C'
         nbast = Lmat%nrow
         IF(.FALSE.)THEN
            call mat_init(TEMP2,Gmat%nrow,Gmat%ncol)
@@ -2791,7 +2808,7 @@ ENDIF
               ENDDO
            ELSE
               call II_get_4center_eri(lsint_fock_data%LUPRI,lsint_fock_data%LUERR,&
-                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast)
+                   & lsint_fock_data%ls%SETTING,g,nbast,nbast,nbast,nbast,intspec)
               LUINT = -1
               call LSOPEN(LUINT,'ERI.Integrals','UNKNOWN','UNFORMATTED')
               do D=1,nbast
@@ -3100,7 +3117,7 @@ ENDIF
       SameMOL = .TRUE.
       MoTrans = .FALSE.
       call LSTIMER('START',t1,t2,LUPRI)
-      call SCREEN_ICHORERI_DRIVER(lupri,luerr,ls%setting,INTSPEC,SameMOL)
+      call SCREEN_ICHORERI_DRIVER(lupri,iprint,ls%setting,INTSPEC,SameMOL)
       call LSTIMER('SCREENDECJ',t1,t2,LUPRI,ForcePrint)
 
       !step 1 Orbital to Batch information
@@ -3207,6 +3224,7 @@ ENDIF
       call mat_free(J)
       call mat_free(Jdec)
       call mat_free(tempm3)
+      call FREE_SCREEN_ICHORERI()
 
     END SUBROUTINE DI_DECPACKEDJ
 
@@ -3389,12 +3407,18 @@ ENDIF
       real(realk),pointer   :: integrals(:,:,:,:)
       real(realk),pointer   :: integrals2(:,:,:,:)
       integer :: iB,iA,iC,iD
+      character :: intspec(5)
+      intspec(1) = 'R'
+      intspec(2) = 'R'
+      intspec(3) = 'R'
+      intspec(4) = 'R'
+      intspec(5) = 'C'
       call mem_alloc(integrals2,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals2,nbast,nbast,nbast,nbast,intspec)
 
       ls%setting%scheme%interest = .FALSE.
       call mem_alloc(integrals,nbast,nbast,nbast,nbast)
-      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast)
+      call II_get_4center_eri(LUPRI,LU_ERR,ls%setting,integrals,nbast,nbast,nbast,nbast,intspec)
       do iD=1,nbast
          do iC=1,nbast
             do iB=1,nbast
