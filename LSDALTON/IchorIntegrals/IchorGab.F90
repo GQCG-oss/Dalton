@@ -190,7 +190,9 @@ ENDIF
 !call ichorzero2(OutputStorage,OutputDim1*OutputDim2,OutputDim3*OutputDim4*OutputDim5)
 !INTRODUCE iAngmomType Loop Like IchorEri.F90 !!!
 MaxTotalAngmomAB = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB)
+UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
 call set_GGem(IchorOperatorSpec,2*MaxTotalAngmomAB)
+IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
 
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25

@@ -419,8 +419,9 @@ oldmaxangmomABCD = -25
 
 MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
      & + MAXVAL(AngmomOfTypeC) + MAXVAL(AngmomOfTypeD)
+UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
 call set_GGem(IchorOperatorSpec,MaxTotalAngmom)
-
+IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
 !we loop over Total angmom in order to ensure that we first do all
 !SSSS integrals then PSSS,SPSS,SSPS,SSSP, ...
 !this mean we call GAMMATABULATION a limited number of times and
@@ -673,7 +674,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(DoLink) NOTDoSSSS=.TRUE.
       IF(DoMoTrans) NOTDoSSSS=.TRUE.
       IF(GGemOperatorCalc)NOTDoSSSS = .TRUE.
-      
+      IF(UseGeneralCode)NOTDoSSSS = .TRUE.
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
@@ -823,7 +824,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          iBatchIndexOfTypeD = BatchIndexOfTypeD(ItypeD)
          iBatchIndexOfTypeC = BatchIndexOfTypeC(ItypeC)
       ENDIF
-      call IchorTimer('START',TSTART,TEND,LUPRI)
+!      call IchorTimer('START',TSTART,TEND,LUPRI)
       IF(NOTDoSSSS)THEN
          allocate(Pdistance12Pass(3,nAtomsA*nAtomsB))
          call mem_ichor_alloc(Pdistance12Pass)
@@ -965,9 +966,9 @@ DO IAngmomTypes = 0,MaxTotalAngmom
          CALL MEM_ICHOR_deALLOC(LocalIntPass)
          deallocate(LocalIntPass)
       ENDIF
-      call build_TYPESTRING(TYPESTRING,AngmomA,AngmomB,AngmomC,AngmomD,&
-           & nTypesA,nTypesB,nTypesC,nTypesD,ItypeA,ItypeB,ItypeC,ItypeD)
-      call IchorTimer(TYPESTRING,TSTART,TEND,LUPRI)
+!      call build_TYPESTRING(TYPESTRING,AngmomA,AngmomB,AngmomC,AngmomD,&
+!           & nTypesA,nTypesB,nTypesC,nTypesD,ItypeA,ItypeB,ItypeC,ItypeD)
+!      call IchorTimer(TYPESTRING,TSTART,TEND,LUPRI)
 
       IF(NOTDoSSSS)THEN !FIXME A MESS
          IF(DoLink)THEN         
@@ -3168,6 +3169,7 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
   integer,intent(inout) :: nPasses
   integer,intent(inout) :: IatomAPass(MaxPasses),IatomBPass(MaxPasses)
   !local variables
+  integer :: IatomAPass2(MaxPasses),IatomBPass2(MaxPasses),iPass2
   integer :: iBatchA,IatomA,iBatchB,IatomB,iPass,IatomAstart,IatomBend
   iPass=0
 !  IF(TriangularODAtomLoop)THEN
@@ -3186,8 +3188,8 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
        IF(noScreenABin(IatomA,IatomB))THEN
         IF(GABELM*BATCHGAB(iBatchA,iBatchIndexOfTypeB + IatomB).GT.THRESHOLD_CS)THEN
            iPass = iPass + 1
-           IatomAPass(iPass) = IatomA
-           IatomBPass(iPass) = IatomB
+           IatomAPass2(iPass) = IatomA
+           IatomBPass2(iPass) = IatomB
         ENDIF
        ENDIF
       ENDIF
@@ -3195,8 +3197,8 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
       IF(noScreenABin(IatomA,IatomB))THEN
        IF(GABELM*BATCHGAB(iBatchA,iBatchIndexOfTypeB + IatomB).GT.THRESHOLD_CS)THEN
           iPass = iPass + 1
-          IatomAPass(iPass) = IatomA
-          IatomBPass(iPass) = IatomB
+          IatomAPass2(iPass) = IatomA
+          IatomBPass2(iPass) = IatomB
        ENDIF
       ENDIF
      ENDIF
@@ -3210,21 +3212,30 @@ SUBROUTINE BUILD_noScreen2(CSscreen,nAtomsA,nAtomsB,&
       IF(IatomA.GT.iAtomC.OR.((IatomA.EQ.iAtomC).AND.(IatomB.GE.IatomD)))THEN
        IF(noScreenABin(IatomA,IatomB))THEN
           iPass = iPass + 1
-          IatomAPass(iPass) = IatomA
-          IatomBPass(iPass) = IatomB
+          IatomAPass2(iPass) = IatomA
+          IatomBPass2(iPass) = IatomB
        ENDIF
       ENDIF
      ELSE
       IF(noScreenABin(IatomA,IatomB))THEN
          iPass = iPass + 1
-         IatomAPass(iPass) = IatomA
-         IatomBPass(iPass) = IatomB
+         IatomAPass2(iPass) = IatomA
+         IatomBPass2(iPass) = IatomB
       ENDIF
      ENDIF
     ENDDO
    ENDDO
   ENDIF
   nPasses = iPass
+  !sort IatomAPass,IatomBPass so that it is the same as 
+  !Do iatomB = 1,nAtomsB
+  ! Do iatomA = 1,nAtomsA   !which is how everything else is stored. 
+  iPass2 = 1
+  DO iPass = iPass,1,-1     
+     IatomAPass(iPass2) = IatomAPass2(iPass)
+     iAtomBPass(iPass2) = IatomBPass2(iPass)
+     iPass2 = iPass2 + 1
+  ENDDO
 END SUBROUTINE BUILD_NOSCREEN2
 
 SUBROUTINE BUILD_noScreenRed(CSscreen,nAtomsA,nAtomsB,&

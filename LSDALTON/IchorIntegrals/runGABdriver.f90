@@ -57,9 +57,6 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODSeg1Prim'
      WRITE(ILUMOD,'(A)')'use IchorEriGabintegral'//ARCSTRING//'McMGeneralMod'
   ENDDO
-  DO ILUMOD=3,4
-     WRITE(ILUMOD,'(A)')'use IchorGaussianGeminalMod, only: GGemOperatorCalc'
-  ENDDO
   !Since we need primitivecontractiongenXXX
   WRITE(LUMOD3,'(A)')'use IchorEriCoulombintegralCPUOBSGeneralModGen'
 
@@ -248,7 +245,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'!    nlmA = 2*AngmomA+1'
      WRITE(ILUMOD,'(A)')'!    nlmB = 2*AngmomB+1'
      WRITE(ILUMOD,'(A)')'    AngmomID = 10*AngmomA+AngmomB'
-     WRITE(ILUMOD,'(A)')'    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'
 
      DO AngmomA = 0,2
@@ -409,7 +406,7 @@ PROGRAM TUV
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    AngmomID = 10*AngmomA+AngmomB'
-     WRITE(ILUMOD,'(A)')'    IF(GGemOperatorCalc) AngmomID = AngmomID + 10000 !force to use general code'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
      WRITE(ILUMOD,'(A)')'    BasisContmaxsize = 1'
