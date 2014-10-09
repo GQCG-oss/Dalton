@@ -588,6 +588,7 @@ contains
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -606,7 +607,19 @@ contains
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
-    integer :: i,j,k,idx,ij_type,tuple_type
+    integer :: i,j,k,idx,ij_type,tuple_type,ij_count_test, ij_test
+    !> ij loop buffer handling
+    integer ::  k_test,nbuffs
+    integer ::  ibuf_ll, ibuf_ul, ibc, ipp, ibuf, i_test
+    integer ::  jbuf_ll, jbuf_ul, jbc, jpp, jbuf, j_test
+    integer ::  ibuf_test, jbuf_test
+    !> k loop buffer handling
+    integer ::  kbc, kpp, kbuf
+    integer ::  kbuf_test
+    integer,pointer :: tiles_in_buf(:)
+    integer :: printrnk, i_search_buf
+    logical :: is_in_buf, new_i_needed, new_j_needed, new_k_needed, ij_done, keep_looping
+    logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(6) :: async_id
@@ -625,11 +638,19 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    ! init pdm work arrays for vvvo integrals
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(vvvo_pdm_i,nvirt**3)
-    call mem_alloc(vvvo_pdm_j,nvirt**3)
-    call mem_alloc(vvvo_pdm_k,nvirt**3)
+    !init multiple buffering for mpi
+    !this should not be set below 3
+    nbuffs = 8
+    if(nbuffs < 6) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
+    call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
+    call mem_alloc(needed,nbuffs)
+    call mem_alloc(tiles_in_buf, nbuffs)
+
+!    ! init pdm work arrays for vvvo integrals
+!    ! init ccsd_doubles_help_arrays
+!    call mem_alloc(vvvo_pdm_i,nvirt**3)
+!    call mem_alloc(vvvo_pdm_j,nvirt**3)
+!    call mem_alloc(vvvo_pdm_k,nvirt**3)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -673,6 +694,117 @@ contains
     i_old = 0
     j_old = 0
     ij_type = 0
+
+    ! precalculate loading sequence
+    ! and preload the first nbuff tiles
+
+    ! get first value of ij from job distribution list to preload the necessary
+    ! tiles for the first round
+    ij           = jobs(1)
+    needed       = .false.
+    tiles_in_buf = -1
+
+    ! no more jobs to be done? otherwise leave the loop
+    if (ij .gt. 0)then
+
+       ! calculate i and j from composite ij value
+       call calc_i_and_j(ij,nocc,i,j)
+
+       is_in_buf = .false.
+       !this should never be true here
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==i)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                ibuf = i_search_buf
+
+                call arr_lock_win(vvvo,i,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,i,vvvo_pdm_buff(:,ibuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(ibuf) = i
+                needed(ibuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       is_in_buf = .false.
+       !this may happen if i == j
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==j)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                jbuf = i_search_buf
+
+                call arr_lock_win(vvvo,j,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,j,vvvo_pdm_buff(:,jbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(jbuf) = j
+                needed(jbuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       do k=1,j
+
+          if ((i .eq. j) .and. (j .eq. k)) then
+
+             cycle
+
+          else
+
+             is_in_buf = .false.
+             !this may happen if i == k or j == k
+             do i_search_buf = 1,nbuffs
+                if(tiles_in_buf(i_search_buf)==k)then
+                   is_in_buf = .true.
+                   exit
+                endif
+             enddo
+
+             if(.not. is_in_buf)then
+                do i_search_buf = 1,nbuffs
+                   if(.not.needed(i_search_buf))then
+
+                      kbuf = i_search_buf
+
+                      call arr_lock_win(vvvo,k,'s',assert=MPI_MODE_NOCHECK)
+                      call array_get_tile(vvvo,k,vvvo_pdm_buff(:,kbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                      tiles_in_buf(kbuf) = k
+                      needed(kbuf) = .true.
+
+                      exit
+
+                   endif
+                enddo
+             endif
+
+             exit
+
+          endif
+
+       end do
+    end if
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
@@ -739,6 +871,38 @@ contains
 
                end if
 
+               !FIND i in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==i)then
+                     ibuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_i => vvvo_pdm_buff(:,ibuf)
+               else
+                  print *,infpar%lg_mynum,"i",i,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):i not found in buf",-1)
+               endif
+
+               !FIND j in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==j)then
+                     jbuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_j => vvvo_pdm_buff(:,jbuf)
+               else
+                  print *,infpar%lg_mynum,"j",j,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):j not found in buf",-1)
+               endif
+
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
@@ -758,8 +922,15 @@ contains
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                  ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                  if(vvvo%lock_set(j))then
+
+                     call arr_unlock_win(vvvo,j)
+
+                  endif
+
                   call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -789,11 +960,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
-#else
-                     vvvo_pdm_i = vvvo_pdm_j
-#endif
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
+!#else
+!                     vvvo_pdm_i = vvvo_pdm_j
+!#endif
+
+                     call time_start_phase(PHASE_COMM)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j),&
@@ -817,8 +998,16 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile only
+
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -850,8 +1039,15 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
@@ -880,9 +1076,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                     ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     if(vvvo%lock_set(j))then
+
+                        call arr_unlock_win(vvvo,j)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -901,10 +1109,29 @@ contains
 
                end select TypeOf_ij_combi
 
+               needed(ibuf) = .true.
+               needed(jbuf) = .true.
+
         krun_par: do k=1,j
 
                      ! select type of tuple
                      tuple_type = -1
+
+                     !FIND k in buffer
+                     is_in_buf = .false.
+                     do i_search_buf=1,nbuffs
+                        if(tiles_in_buf(i_search_buf)==k)then
+                           kbuf = i_search_buf
+                           is_in_buf = .true.
+                           exit
+                        endif
+                     enddo
+                     if(is_in_buf)then
+                        vvvo_pdm_k => vvvo_pdm_buff(:,kbuf)
+                     else
+                        print *,infpar%lg_mynum,"k",k,"tiles",tiles_in_buf
+                        call lsquit("ERROR(ijk_loop_par):k not found in buf",-1)
+                     endif
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -930,8 +1157,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -969,8 +1203,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -982,6 +1223,157 @@ contains
 !$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
 
                      end if
+
+                     needed(kbuf) = .true.
+
+                     !set testing integers
+                     i_test        = i
+                     j_test        = j
+                     k_test        = k
+                     ij_count_test = ij_count
+                     ij_done       = .false.
+                     keep_looping  = (count(needed)<nbuffs)
+
+                     !load next bunch of tiles needed
+                     fill_buffer: do while(keep_looping)
+
+                        !break condition
+                        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
+
+                        if(k_test<=j_test)then
+
+                           !Load the next k tile
+
+                           new_k_needed = .true.
+                           do i_search_buf=1,nbuffs
+                              if(tiles_in_buf(i_search_buf) == k_test)then
+
+                                 needed(i_search_buf) = .true.
+                                 new_k_needed         = .false.
+
+                                 exit
+
+                              endif
+
+                           enddo
+
+                           !load k
+                           if( new_k_needed )then
+                              !find pos in buff
+                              do i_search_buf = 1, nbuffs
+                                 if(.not.needed(i_search_buf))then
+                                    kbuf_test = i_search_buf
+                                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
+                                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),nvirt**3,&
+                                       &lock_set=.true.,flush_it=.true.)
+                                    needed(kbuf_test)       = .true.
+                                    tiles_in_buf(kbuf_test) = k_test
+
+                                    exit
+
+                                 endif
+                              enddo
+
+                           endif
+
+                        else
+
+                           !Load the next i and j tiles
+
+                           ij_count_test = ij_count_test + 1
+
+                           if(ij_count_test<=b_size)then
+
+                              !is incremented by one at the end of the loop
+                              !therefore we set it to 0 here
+                              k_test = 0
+
+                              ij_test = jobs(ij_count_test)
+
+                              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+
+                              !check for i
+                              new_i_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == i_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_i_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !check for j
+                              new_j_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == j_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_j_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !load new j
+                              if( new_j_needed )then
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+                                       jbuf_test = i_search_buf
+                                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+                                       needed(jbuf_test)       = .true.
+                                       tiles_in_buf(jbuf_test) = j_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                              !load new i
+                              if( new_i_needed )then
+
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+
+                                       ibuf_test = i_search_buf
+
+                                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+
+                                       needed(ibuf_test)       = .true.
+                                       tiles_in_buf(ibuf_test) = i_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                           else
+
+                              ij_done = .true.
+
+                           endif
+
+
+                        endif
+
+                        k_test = k_test + 1
+
+                     enddo fill_buffer
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1143,7 +1535,12 @@ contains
 
                      end select TypeOfTuple_par_ijk
 
+                     needed(kbuf) = .false.
+
                   end do krun_par
+
+                  needed(ibuf) = .false.
+                  needed(jbuf) = .false.
 
                if (j .eq. i) then
 
@@ -1197,9 +1594,12 @@ contains
     call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release pdm work arrays and job list
-    call mem_dealloc(vvvo_pdm_i)
-    call mem_dealloc(vvvo_pdm_j)
-    call mem_dealloc(vvvo_pdm_k)
+!    call mem_dealloc(vvvo_pdm_i)
+!    call mem_dealloc(vvvo_pdm_j)
+!    call mem_dealloc(vvvo_pdm_k)
+    call mem_dealloc(vvvo_pdm_buff)
+    call mem_dealloc(needed)
+    call mem_dealloc(tiles_in_buf)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
