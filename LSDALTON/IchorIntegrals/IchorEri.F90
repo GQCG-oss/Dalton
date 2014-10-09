@@ -31,6 +31,7 @@ MODULE IchorErimodule
   !OpenACC libary routines  
   use openacc, only: acc_async_test
 #endif
+  use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 
   public:: IchorEri,IchorEriMem
   private
@@ -54,8 +55,8 @@ subroutine IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -129,6 +130,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -345,7 +348,6 @@ IF(CSScreen)THEN
         & nAtomsOfTypeB,BatchIndexOfTypeA,BatchIndexOfTypeB,BATCHGAB,&
         & nBatchA,nBatchB)
    MaxGabLHS = MAXVAL(MaxGabForTypeAB)
-
    allocate(BatchIndexOfTypeC(nTypesC))
    call mem_ichor_alloc(BatchIndexOfTypeC)
    allocate(BatchIndexOfTypeD(nTypesD))
@@ -372,7 +374,7 @@ IF(CSScreen)THEN
          !WARNING BATCHCALC NOT FULL INTEGRAL IS CALCULATED
          allocate(BATCHGCD2(nBatchCGCD,nBatchDGCD))
          call mem_ichor_alloc(BATCHGCD2)
-         call RetrieveGabFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID1,BATCHGCD2)
+         call RetrieveGabFromIchorSaveGabModule(nBatchCGCD,nBatchDGCD,IchorGabID2,BATCHGCD2)
          call ExtractBatchGabFromFullGab(nBatchC,nBatchD,BATCHGCD,nBatchCGCD,nBatchDGCD,&
               & BATCHGCD2,startBatchC,endBatchC,startBatchD,endBatchD)
          call mem_ichor_dealloc(BATCHGCD2)
@@ -417,6 +419,7 @@ oldmaxangmomABCD = -25
 
 MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
      & + MAXVAL(AngmomOfTypeC) + MAXVAL(AngmomOfTypeD)
+call set_GGem(IchorOperatorSpec,MaxTotalAngmom)
 
 !we loop over Total angmom in order to ensure that we first do all
 !SSSS integrals then PSSS,SPSS,SSPS,SSSP, ...
@@ -669,6 +672,8 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       NOTDoSSSS = .NOT.(TotalAngmom.EQ.0.AND.(Psegmented.AND.Qsegmented))
       IF(DoLink) NOTDoSSSS=.TRUE.
       IF(DoMoTrans) NOTDoSSSS=.TRUE.
+      IF(GGemOperatorCalc)NOTDoSSSS = .TRUE.
+      
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
@@ -1174,6 +1179,8 @@ call mem_ichor_dealloc(OrderdListC)
 deallocate(OrderdListC)
 call mem_ichor_dealloc(OrderdListD)
 deallocate(OrderdListD)
+call free_GGem()
+
 call retrieve_ichor_memvar(MaxMemAllocated,MemAllocated)
 IF(INTPRINT.GT.3)THEN
    call stats_ichor_mem(lupri)
@@ -1182,6 +1189,7 @@ IF(doMOtrans)THEN
    call stats_ichor_mem(lupri)
 ENDIF
 IF(MemAllocated.NE.0)THEN
+   call stats_ichor_mem(lupri)
    call ichorquit('MemoryLeak in IchorEri',lupri)
 ENDIF
 
@@ -1203,8 +1211,8 @@ subroutine IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -1278,6 +1286,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -1667,7 +1677,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
             call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
             call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
             call mem_ichor_alloc_dryrun(nAtomsA*nAtomsB) !DoINT
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
                     & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
                     & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
@@ -1676,7 +1686,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
             ENDIF
             !call IchorTypeLinKLoop
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
                call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
             ENDIF
@@ -1696,7 +1706,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
             call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
             call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
             call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
                     & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
                     & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
@@ -1707,7 +1717,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
             call mem_ichor_alloc_dryrun(nCMO1,MAX(ndimA,ndimB),nOrbC*nOrbD) !OutputA
             call mem_ichor_alloc_dryrun(nCMO1,nCMO2,ndimC*nDimD) !OutputCD
             !call IchorTypeMOtransLoop
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
                call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
             ENDIF
@@ -1736,7 +1746,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
             call mem_ichor_alloc_dryrun(MaxPasses) !IatomBPass
             call mem_ichor_alloc_dryrun(nLocalint*MaxPasses) !LocalIntPass1
             call mem_ichor_alloc_dryrun(nLocalInt*nAtomsA*nAtomsB) !LocalIntPass2
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,&
                     & nPrimP,MaxPasses,AngmomA,AngmomB,AngmomC,AngmomD,&
                     & AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
@@ -1745,7 +1755,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
                !     CALL PreCalciChorSPHMAT(MAX(AngmomA,AngmomB,AngmomC,AngmomD))
             ENDIF
             !IchorTypeIntegralLoopCPU
-            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+            IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
                call mem_ichor_dealloc_dryrun(nTmpArray3) !TmpArray3
                call mem_ichor_dealloc_dryrun(nTmpArray4) !TmpArray4
             ENDIF
@@ -2336,7 +2346,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   CALL Mem_ichor_alloc(LocalIntPass1)
   allocate(LocalIntPass2(nLocalint*nAtomsA*nAtomsB))
   CALL Mem_ichor_alloc(LocalIntPass2)
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
      call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
           & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
      allocate(TmpArray3(nTmpArray3))
@@ -2447,7 +2457,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
    ENDDO !IatomC
   ENDDO !iAtomD
 !$OMP END PARALLEL
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
     call mem_ichor_dealloc(TmpArray4)
@@ -4650,7 +4660,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
   allocate(DoINT(nAtomsA,nAtomsB))
   CALL Mem_ichor_alloc(DoINT)
   !Link Procedure
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
     !$OMP MASTER
      call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
           & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
@@ -4792,7 +4802,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
 
    ENDDO !IatomC
   ENDDO !iAtomD
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
     !$OMP MASTER
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
@@ -4975,7 +4985,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
   !is this necessary
   call ichorzero2(OutputCD,nCMO1*nCMO2,ndimC*nDimD)
 
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
      call DetermineSizeTmpArray34(nTUVQ,nCartOrbCompQ,nPrimQ,nTUVP,nCartOrbCompP,nPrimP,MaxPasses,&
           & AngmomA,AngmomB,AngmomC,AngmomD,AngmomA+AngmomB,AngmomC+AngmomD,TotalAngmom)
      allocate(TmpArray3(nTmpArray3))
@@ -5105,7 +5115,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
    ENDDO !IatomC
   ENDDO !iAtomD
 !$OMP END PARALLEL
-  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
     call mem_ichor_dealloc(TmpArray4)

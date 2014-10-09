@@ -121,7 +121,7 @@ IF(config%prof%IchorProfDoThermite)THEN
       !   setting%scheme%CS_SCREEN = .FALSE.
       !   setting%scheme%PS_SCREEN = .FALSE.
       CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
-      call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,dirac)
+      call II_get_4center_eri(LUPRI,LUERR,SETTING,integralsII,dim1,dim2,dim3,dim4,intspec,dirac)
       CALL LSTIMER('Thermite4Center',TIMSTR,TIMEND,lupri,ForcePrint)
       call determine_norm(IntegralsII,normII,dim1,dim2,dim3,dim4)
       WRITE(lupri,*)'Norm of Thermite:',normII

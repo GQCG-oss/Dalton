@@ -1332,6 +1332,7 @@ contains
        call mat_set_from_full(MyMolecule%fock(1:nbasis,1:nbasis), 1E0_realk, F)
 
        ! Reorthonormalization matrix W
+       call util_get_symm_part(rho)
        call get_mp2_reorthonormalization_matrix(F,D,Phi,rho,C,MyLsitem,W)
        call mat_free(C)
 
@@ -3174,6 +3175,7 @@ call mem_TurnOffThread_Memory()
     ! ***********************************************************************
 
     call mat_init(FockM_AO,nbasis,nbasis)
+    call util_get_symm_part(M)
     call dec_fock_transformation(FockM_AO,M,MyLsitem,.true.)
     call mat_free(M)
 
@@ -3860,6 +3862,7 @@ call mem_TurnOffThread_Memory()
 
     ! GkappabarAO = 2*J(kappabar_sym) - K(kappabar_sym)
     call mat_init(GkappabarAO,nbasis,nbasis)
+    call util_get_symm_part(kappabar_sym)
     call dec_fock_transformation(GkappabarAO,kappabar_sym,MyLsitem,.true.)
 
     ! Done with kappabar_sym

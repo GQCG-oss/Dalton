@@ -2183,8 +2183,6 @@ contains
     call ls_mpi_buffer(DECitem%F12,Master)
     call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%PureHydrogenDebug,Master)
-    call ls_mpi_buffer(DECitem%InteractionEnergy,Master)
-    call ls_mpi_buffer(DECitem%PrintInteractionEnergy,Master)
     call ls_mpi_buffer(DECitem%StressTest,Master)
     call ls_mpi_buffer(DECitem%DFTreference,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)

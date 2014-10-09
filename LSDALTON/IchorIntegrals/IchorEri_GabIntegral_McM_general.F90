@@ -12,6 +12,8 @@ use IchorCommonModule
 use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
      & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
+use IchorGaussianGeminalMod
+use IchorParametersModule
 
 CONTAINS
   subroutine IGI_CPU_McM_general(nPrimA,nPrimB,&
@@ -70,8 +72,21 @@ CONTAINS
 #ifdef VAR_DEBUGICHOR
     IF(nTmpArray4.LT.nPrimP*nPrimP*(AngmomPP+1))call ichorquit('IchorTmp1G1',-1)
 #endif
-    call buildRJ000_general(nPasses,nPrimP,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
-         & TABFJW,TmpArray4,AngmomPP,integralPrefactor,TmpArray3)
+    IF(.NOT.GGemOperatorCalc)THEN
+       call buildRJ000_general(nPasses,nPrimP,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+            & TABFJW,TmpArray4,AngmomPP,integralPrefactor,TmpArray3)
+    ELSE
+       IF(GGemOperatorSpec.EQ.GGemOperator.OR.GGemOperatorSpec.EQ.GGemSqOperator)THEN
+          call buildGJ000_general(nPasses,nPrimP,nPrimP,reducedExponents,&
+               & TmpArray4,AngmomPP,integralPrefactor,TmpArray3)
+       ELSEIF(GGemOperatorSpec.EQ.GGemGrdOperator)THEN
+          call buildGJ000Grad_general(nPasses,nPrimP,nPrimP,reducedExponents,&
+               & TmpArray4,AngmomPP,integralPrefactor,TmpArray3)
+       ELSEIF(GGemOperatorSpec.EQ.GGemCouOperator)THEN
+          call buildGJ000Coulomb_general(nPasses,nPrimP,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+               & TABFJW,TmpArray4,AngmomPP,integralPrefactor,TmpArray3)
+       ENDIF
+    ENDIF
     IF (INTPRINT .GE. 10) CALL PrintRJ000(TmpArray4,AngmomPP,nPrimP*nPrimP,nPasses,lupri)    
     !
     !     Build WTUV(nPrimP,nPrimP,nPasses,nTUV) RJ000 = TmpArray4, Rpq = TmpArray3
@@ -137,7 +152,7 @@ CONTAINS
             & TmpArray2(8*nPrimP+1:9*nPrimP))
     ELSE
 #ifdef VAR_DEBUGICHOR
-       IF(TMParray2maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
+       IF(TMParray1maxsize.LT.9*nPrimP)call ichorquit('IchorTmp1G3QEE1R2',-1)
 #endif
        call Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,AngmomP,AngmomA,AngmomB,nTUVP,&
             & nCartOrbCompP,Aexp,Bexp,TmpArray3,Pdistance12,Ppreexpfac,intprint,lupri,TmpArray4,&
@@ -391,7 +406,7 @@ CONTAINS
     Sph4 = Sph2
     SphericalTransP = Sph1.OR.Sph2
     SphericalTransQ = Sph3.OR.Sph4
-
+    !angmomPP
     TMP1 = .TRUE.
     IF (AngmomPQ.EQ. 0) THEN
        TMParray1maxsize = MAX(TMParray1maxsize,nPrimP*nPrimP*ntuv)
@@ -414,20 +429,28 @@ CONTAINS
              TMP1 = .TRUE.
           ENDIF
        ENDDO
-    ENDIF    
+    ENDIF  
+    !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
+    IF(TMP1)THEN !use TmpArray2 to store some tmp arrays in Ichorbuild_Ecoeff
+       TMParray2maxsize = MAX(TMParray2maxsize,9*nPrimP)
+    ELSE
+       TMParray1maxsize = MAX(TMParray1maxsize,9*nPrimP)
+    ENDIF
+    !DirectcontractEQgen  
     IF(TMP1)THEN 
        TMParray2maxsize = MAX(TMParray2maxsize,nPrimP*nPrimP*ntuvP*nCartOrbCompQ)
     ELSE 
        TMParray1maxsize = MAX(TMParray1maxsize,nPrimP*nPrimP*ntuvP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
+    !contractBasis
     IF(TMP1)THEN 
        TMParray2maxsize = MAX(TMParray2maxsize,nContP*nPrimP*nTUVP*nCartOrbCompQ)
     ELSE 
        TMParray1maxsize = MAX(TMParray1maxsize,nContP*nPrimP*nTUVP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
-
+    !SphericalTrans
     IF(SphericalTransQ)THEN
        IF(TMP1)THEN 
           TMParray2maxsize = MAX(TMParray2maxsize,nContP*nPrimP*nTUVP*nOrbCompQ)
@@ -437,6 +460,14 @@ CONTAINS
        TMP1 = .NOT.TMP1
     ENDIF
 
+    !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
+    IF(TMP1)THEN
+       TMParray2maxsize = MAX(TMParray2maxsize,9*nPrimP)
+    ELSE
+       TMParray1maxsize = MAX(TMParray1maxsize,9*nPrimP)
+    ENDIF
+
+    !contractEcoeff
     IF(TMP1)THEN
        TMParray2maxsize = MAX(TMParray2maxsize,nContP*nPrimP*nCartOrbCompP*nOrbCompQ)
     ELSE

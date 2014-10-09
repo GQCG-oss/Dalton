@@ -20,6 +20,9 @@ module ccsdpt_module
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceMOD
+#ifdef VAR_ICHOR
+   use IchorErimoduleHost
+#endif
   use Fundamental, only: bohr_to_angstrom
   use tensor_interface_module
   use ptr_assoc_module 
@@ -461,6 +464,7 @@ contains
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
+       ! release o^3v and v^3o integrals
        if (abc) then
 
           call array_free(ooov)
@@ -498,9 +502,22 @@ contains
 
     endif
 
-       ! *************************************************
-       ! ***** do canonical --> local transformation *****
-       ! *************************************************
+    ! release o^3v and v^3o integrals
+    if (abc) then
+
+       call array_free(ooov)
+       call array_free(vovv)
+
+    else
+
+       call array_free(ovoo)
+       call array_free(vvvo)
+
+    endif
+
+    ! *************************************************
+    ! ***** do canonical --> local transformation *****
+    ! *************************************************
 
     if (print_frags) then
 
@@ -508,11 +525,13 @@ contains
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsdpt_doubles%elm1,ov=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,oovv=vovo%elm1)
 
        else
 
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsdpt_doubles%elm1,vo=ccsdpt_singles%elm1)
           call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=ccsd_doubles%elm1)
+          call can_local_trans(nocc,nvirt,nbasis,Uocc%val,Uvirt%val,vvoo=vovo%elm1)
 
        endif
 
@@ -538,18 +557,6 @@ contains
     call mem_dealloc(eivalocc)
     call mem_dealloc(eivalvirt)
 
-    if (abc) then
-
-       call array_free(ooov)
-       call array_free(vovv)
-
-    else
-
-       call array_free(ovoo)
-       call array_free(vvvo)
-
-    endif
-
     if (master) call LSTIMER('CCSDPT_DRIVER (TOTAL)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
   end subroutine ccsdpt_driver
@@ -571,6 +578,7 @@ contains
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
     type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
+    real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     !> ccsd doubles amplitudes
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: ccsd_doubles
     ! o*v^2 portions of ccsd_doubles
@@ -589,7 +597,19 @@ contains
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
-    integer :: i,j,k,idx,ij_type,tuple_type
+    integer :: i,j,k,idx,ij_type,tuple_type,ij_count_test, ij_test
+    !> ij loop buffer handling
+    integer ::  k_test,nbuffs
+    integer ::  ibuf_ll, ibuf_ul, ibc, ipp, ibuf, i_test
+    integer ::  jbuf_ll, jbuf_ul, jbc, jpp, jbuf, j_test
+    integer ::  ibuf_test, jbuf_test
+    !> k loop buffer handling
+    integer ::  kbc, kpp, kbuf
+    integer ::  kbuf_test
+    integer,pointer :: tiles_in_buf(:)
+    integer :: printrnk, i_search_buf
+    logical :: is_in_buf, new_i_needed, new_j_needed, new_k_needed, ij_done, keep_looping
+    logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
     integer(kind=acc_handle_kind), dimension(6) :: async_id
@@ -608,11 +628,19 @@ contains
 
     call time_start_phase(PHASE_WORK)
 
-    ! init pdm work arrays for vvvo integrals
-    ! init ccsd_doubles_help_arrays
-    call mem_alloc(vvvo_pdm_i,nvirt**3)
-    call mem_alloc(vvvo_pdm_j,nvirt**3)
-    call mem_alloc(vvvo_pdm_k,nvirt**3)
+    !init multiple buffering for mpi
+    !this should not be set below 3
+    nbuffs = 8
+    if(nbuffs < 6) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
+    call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
+    call mem_alloc(needed,nbuffs)
+    call mem_alloc(tiles_in_buf, nbuffs)
+
+!    ! init pdm work arrays for vvvo integrals
+!    ! init ccsd_doubles_help_arrays
+!    call mem_alloc(vvvo_pdm_i,nvirt**3)
+!    call mem_alloc(vvvo_pdm_j,nvirt**3)
+!    call mem_alloc(vvvo_pdm_k,nvirt**3)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -656,6 +684,117 @@ contains
     i_old = 0
     j_old = 0
     ij_type = 0
+
+    ! precalculate loading sequence
+    ! and preload the first nbuff tiles
+
+    ! get first value of ij from job distribution list to preload the necessary
+    ! tiles for the first round
+    ij           = jobs(1)
+    needed       = .false.
+    tiles_in_buf = -1
+
+    ! no more jobs to be done? otherwise leave the loop
+    if (ij .gt. 0)then
+
+       ! calculate i and j from composite ij value
+       call calc_i_and_j(ij,nocc,i,j)
+
+       is_in_buf = .false.
+       !this should never be true here
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==i)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                ibuf = i_search_buf
+
+                call arr_lock_win(vvvo,i,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,i,vvvo_pdm_buff(:,ibuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(ibuf) = i
+                needed(ibuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       is_in_buf = .false.
+       !this may happen if i == j
+       do i_search_buf = 1,nbuffs
+          if(tiles_in_buf(i_search_buf)==j)then
+             is_in_buf = .true.
+             exit
+          endif
+       enddo
+
+       if(.not. is_in_buf)then
+          do i_search_buf = 1,nbuffs
+             if(.not.needed(i_search_buf))then
+
+                jbuf = i_search_buf
+
+                call arr_lock_win(vvvo,j,'s',assert=MPI_MODE_NOCHECK)
+                call array_get_tile(vvvo,j,vvvo_pdm_buff(:,jbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                tiles_in_buf(jbuf) = j
+                needed(jbuf)       = .true.
+
+                exit
+
+             endif
+          enddo
+       endif
+
+       do k=1,j
+
+          if ((i .eq. j) .and. (j .eq. k)) then
+
+             cycle
+
+          else
+
+             is_in_buf = .false.
+             !this may happen if i == k or j == k
+             do i_search_buf = 1,nbuffs
+                if(tiles_in_buf(i_search_buf)==k)then
+                   is_in_buf = .true.
+                   exit
+                endif
+             enddo
+
+             if(.not. is_in_buf)then
+                do i_search_buf = 1,nbuffs
+                   if(.not.needed(i_search_buf))then
+
+                      kbuf = i_search_buf
+
+                      call arr_lock_win(vvvo,k,'s',assert=MPI_MODE_NOCHECK)
+                      call array_get_tile(vvvo,k,vvvo_pdm_buff(:,kbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
+
+                      tiles_in_buf(kbuf) = k
+                      needed(kbuf) = .true.
+
+                      exit
+
+                   endif
+                enddo
+             endif
+
+             exit
+
+          endif
+
+       end do
+    end if
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
@@ -722,6 +861,38 @@ contains
 
                end if
 
+               !FIND i in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==i)then
+                     ibuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_i => vvvo_pdm_buff(:,ibuf)
+               else
+                  print *,infpar%lg_mynum,"i",i,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):i not found in buf",-1)
+               endif
+
+               !FIND j in buffer
+               is_in_buf = .false.
+               do i_search_buf=1,nbuffs
+                  if(tiles_in_buf(i_search_buf)==j)then
+                     jbuf = i_search_buf
+                     is_in_buf = .true.
+                     exit
+                  endif
+               enddo
+               if(is_in_buf)then
+                  vvvo_pdm_j => vvvo_pdm_buff(:,jbuf)
+               else
+                  print *,infpar%lg_mynum,"j",j,"tiles",tiles_in_buf
+                  call lsquit("ERROR(ijk_loop_par):j not found in buf",-1)
+               endif
+
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
 
@@ -741,8 +912,15 @@ contains
                           & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                  ! get the j'th v^3 tile only
                   call time_start_phase(PHASE_COMM)
-                  call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                  if(vvvo%lock_set(j))then
+
+                     call arr_unlock_win(vvvo,j)
+
+                  endif
+
                   call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -772,11 +950,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
-#else
-                     vvvo_pdm_i = vvvo_pdm_j
-#endif
+!#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+!                     call assign_in_subblocks(vvvo_pdm_i,'=',vvvo_pdm_j,i8*nvirt**3)
+!#else
+!                     vvvo_pdm_i = vvvo_pdm_j
+!#endif
+
+                     call time_start_phase(PHASE_COMM)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
 !$acc& ovoo(:,:,i,j),&
@@ -800,8 +988,16 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile only
+
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -833,8 +1029,15 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_i)
 #endif
 
+                     ! get the i'th v^3 tile
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,&
@@ -863,9 +1066,21 @@ contains
                              & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_j)
 #endif
 
+                     ! get the i'th and j'th v^3 tiles
                      call time_start_phase(PHASE_COMM)
-                     call array_get_tile(vvvo,i,vvvo_pdm_i,nvirt**3,flush_it = .true.)
-                     call array_get_tile(vvvo,j,vvvo_pdm_j,nvirt**3,flush_it = .true.)
+
+                     if(vvvo%lock_set(i))then
+
+                        call arr_unlock_win(vvvo,i)
+
+                     endif
+
+                     if(vvvo%lock_set(j))then
+
+                        call arr_unlock_win(vvvo,j)
+
+                     endif
+
                      call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_i,vvvo_pdm_j,&
@@ -884,10 +1099,29 @@ contains
 
                end select TypeOf_ij_combi
 
+               needed(ibuf) = .true.
+               needed(jbuf) = .true.
+
         krun_par: do k=1,j
 
                      ! select type of tuple
                      tuple_type = -1
+
+                     !FIND k in buffer
+                     is_in_buf = .false.
+                     do i_search_buf=1,nbuffs
+                        if(tiles_in_buf(i_search_buf)==k)then
+                           kbuf = i_search_buf
+                           is_in_buf = .true.
+                           exit
+                        endif
+                     enddo
+                     if(is_in_buf)then
+                        vvvo_pdm_k => vvvo_pdm_buff(:,kbuf)
+                     else
+                        print *,infpar%lg_mynum,"k",k,"tiles",tiles_in_buf
+                        call lsquit("ERROR(ijk_loop_par):k not found in buf",-1)
+                     endif
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -913,8 +1147,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -952,8 +1193,15 @@ contains
                                 & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions_k)
 #endif
 
+                        ! get the k'th tile
                         call time_start_phase(PHASE_COMM)
-                        call array_get_tile(vvvo,k,vvvo_pdm_k,nvirt**3,flush_it = .true.)
+
+                        if(vvvo%lock_set(k))then
+
+                           call arr_unlock_win(vvvo,k)
+
+                        endif
+
                         call time_start_phase(PHASE_WORK)
 
 !$acc enter data copyin(vvvo_pdm_k,&
@@ -965,6 +1213,157 @@ contains
 !$acc& ccsdpt_doubles_2(:,:,:,k)) async(async_id(3))
 
                      end if
+
+                     needed(kbuf) = .true.
+
+                     !set testing integers
+                     i_test        = i
+                     j_test        = j
+                     k_test        = k
+                     ij_count_test = ij_count
+                     ij_done       = .false.
+                     keep_looping  = (count(needed)<nbuffs)
+
+                     !load next bunch of tiles needed
+                     fill_buffer: do while(keep_looping)
+
+                        !break condition
+                        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
+
+                        if(k_test<=j_test)then
+
+                           !Load the next k tile
+
+                           new_k_needed = .true.
+                           do i_search_buf=1,nbuffs
+                              if(tiles_in_buf(i_search_buf) == k_test)then
+
+                                 needed(i_search_buf) = .true.
+                                 new_k_needed         = .false.
+
+                                 exit
+
+                              endif
+
+                           enddo
+
+                           !load k
+                           if( new_k_needed )then
+                              !find pos in buff
+                              do i_search_buf = 1, nbuffs
+                                 if(.not.needed(i_search_buf))then
+                                    kbuf_test = i_search_buf
+                                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
+                                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),nvirt**3,&
+                                       &lock_set=.true.,flush_it=.true.)
+                                    needed(kbuf_test)       = .true.
+                                    tiles_in_buf(kbuf_test) = k_test
+
+                                    exit
+
+                                 endif
+                              enddo
+
+                           endif
+
+                        else
+
+                           !Load the next i and j tiles
+
+                           ij_count_test = ij_count_test + 1
+
+                           if(ij_count_test<=b_size)then
+
+                              !is incremented by one at the end of the loop
+                              !therefore we set it to 0 here
+                              k_test = 0
+
+                              ij_test = jobs(ij_count_test)
+
+                              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+
+                              !check for i
+                              new_i_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == i_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_i_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !check for j
+                              new_j_needed = .true.
+                              do i_search_buf=1,nbuffs
+                                 if(tiles_in_buf(i_search_buf) == j_test)then
+
+                                    needed(i_search_buf) = .true.
+                                    new_j_needed         = .false.
+
+                                    exit
+
+                                 endif
+
+                              enddo
+
+                              !load new j
+                              if( new_j_needed )then
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+                                       jbuf_test = i_search_buf
+                                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+                                       needed(jbuf_test)       = .true.
+                                       tiles_in_buf(jbuf_test) = j_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                              !load new i
+                              if( new_i_needed )then
+
+                                 !find pos in buff
+                                 do i_search_buf = 1, nbuffs
+                                    if(.not.needed(i_search_buf))then
+
+                                       ibuf_test = i_search_buf
+
+                                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
+                                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),nvirt**3,&
+                                          &lock_set=.true.,flush_it=.true.)
+
+                                       needed(ibuf_test)       = .true.
+                                       tiles_in_buf(ibuf_test) = i_test
+
+                                       exit
+
+                                    endif
+                                 enddo
+
+                              endif
+
+                           else
+
+                              ij_done = .true.
+
+                           endif
+
+
+                        endif
+
+                        k_test = k_test + 1
+
+                     enddo fill_buffer
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1126,7 +1525,12 @@ contains
 
                      end select TypeOfTuple_par_ijk
 
+                     needed(kbuf) = .false.
+
                   end do krun_par
+
+                  needed(ibuf) = .false.
+                  needed(jbuf) = .false.
 
                if (j .eq. i) then
 
@@ -1180,9 +1584,12 @@ contains
     call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release pdm work arrays and job list
-    call mem_dealloc(vvvo_pdm_i)
-    call mem_dealloc(vvvo_pdm_j)
-    call mem_dealloc(vvvo_pdm_k)
+!    call mem_dealloc(vvvo_pdm_i)
+!    call mem_dealloc(vvvo_pdm_j)
+!    call mem_dealloc(vvvo_pdm_k)
+    call mem_dealloc(vvvo_pdm_buff)
+    call mem_dealloc(needed)
+    call mem_dealloc(tiles_in_buf)
     call mem_dealloc(jobs)
 
     ! release triples ampl structures
@@ -8819,11 +9226,18 @@ contains
     real(realk),pointer :: CoccT(:,:), CvirtT(:,:)
     integer :: MaxActualDimAlpha,nbatchesAlpha
     integer :: MaxActualDimGamma,nbatchesGamma
+#ifdef VAR_ICHOR
+    type(DecAObatchinfo),pointer :: AOGammabatchinfo(:)
+    type(DecAObatchinfo),pointer :: AOAlphabatchinfo(:)
+    integer :: iAO,nAObatches,AOGammaStart,AOGammaEnd,AOAlphaStart,AOAlphaEnd,iprint
+    logical :: MoTrans, NoSymmetry,SameMol
+#else
     type(batchtoorb), pointer :: batch2orbAlpha(:)
     type(batchtoorb), pointer :: batch2orbGamma(:)
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     TYPE(DECscreenITEM)   :: DecScreen
+#endif
     ! distribution stuff needed for mpi parallelization
     integer, pointer :: distribution(:)
     Character            :: intSpec(5)
@@ -8850,8 +9264,26 @@ contains
 
 #endif
 
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='C' !C = Coulomb operator
+#ifdef VAR_ICHOR
+    iprint = 0           !print level for Ichor Integral code
+    MoTrans = .FALSE.    !Do not transform to MO basis! 
+    NoSymmetry = .FALSE. !Use Permutational Symmetry! 
+    SameMol = .TRUE.     !Same molecule on all centers of the 4 center 2 electron integral
+    !Determine the full number of AO batches - not to be confused with the batches of AOs
+    !Required by the MAIN_ICHORERI_DRIVER unless all four dimensions are batched
+    iAO = 1
+    call determine_Ichor_nAObatches(mylsitem%setting,iAO,'R',nAObatches,DECinfo%output)
+#else
     ! Integral screening?
     doscreen = mylsitem%setting%scheme%cs_screen .or. mylsitem%setting%scheme%ps_screen
+#endif
 
     ! allocate arrays to update during integral loop 
     ! **********************************************
@@ -8894,16 +9326,33 @@ contains
     ! ************************************************
     ! * Determine batch information for Gamma batch  *
     ! ************************************************
-
+#ifdef VAR_ICHOR
+    iAO = 4 !Gamma is the 4. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the gammadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,DECinfo%output)
+    call mem_alloc(AOGammabatchinfo,nbatchesGamma)
+    !Construct the batches of AOS based on the gammadim, the requested
+    !size of the AO batches - gammadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimGamma is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimGamma must be less og equal to gammadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',gammadim,&
+         & nbatchesGamma,AOGammabatchinfo,MaxActualDimGamma,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
          & nbatchesGamma,orb2BatchGamma,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbGamma,nbatchesGamma)
@@ -8924,20 +9373,38 @@ contains
        batch2orbGamma(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
     ! ************************************************
     ! * Determine batch information for Alpha batch  *
     ! ************************************************
-
+#ifdef VAR_ICHOR
+    iAO = 3 !Alpha is the 3. Center of the 4 center two electron coulomb integral
+    !Determine how many batches of AOS based on the alphadim, the requested
+    !size of the AO batches. iAO is the center that the batching should occur on. 
+    !'R'  !Specifies that it is the Regular AO basis that should be batched 
+    call determine_Ichor_nbatchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,DECinfo%output)
+    call mem_alloc(AOAlphabatchinfo,nbatchesAlpha)
+    !Construct the batches of AOS based on the alphadim, the requested
+    !size of the AO batches - alphadim must be unchanged since the call 
+    !to determine_Ichor_nbatchesofAOS
+    !MaxActualDimAlpha is an output parameter indicating How big the biggest batch was, 
+    !So MaxActualDimAlpha must be less og equal to alphadim
+    call determine_Ichor_batchesofAOS(mylsitem%setting,iAO,'R',alphadim,&
+         & nbatchesAlpha,AOAlphabatchinfo,MaxActualDimAlpha,DECinfo%output)
+#else
     ! Orbital to batch information
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
          & nbatchesAlpha,orb2BatchAlpha,'R')
+#endif
 
     if(master.and.DECinfo%PL>1)write(*,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
+#ifndef VAR_ICHOR
     ! Translate batchindex to orbital index
     ! -------------------------------------
     call mem_alloc(batch2orbAlpha,nbatchesAlpha)
@@ -8958,14 +9425,13 @@ contains
        batch2orbAlpha(idx)%orbindex(K) = iorb
 
     end do
+#endif
 
-    ! Set integral info
-    ! *****************
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
+#ifdef VAR_ICHOR
+     !Calculate Screening integrals 
+     SameMOL = .TRUE. !Specifies same molecule on all centers 
+     call SCREEN_ICHORERI_DRIVER(DECinfo%output,iprint,mylsitem%setting,INTSPEC,SameMOL)
+#else
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mylsitem%setting,&
             & nbatchesAlpha,nbatchesGamma,INTSPEC)
 
@@ -8977,6 +9443,7 @@ contains
             & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
+#endif
 
     FullRHS = (nbatchesGamma .eq. 1) .and. (nbatchesAlpha .eq. 1)
 
@@ -9005,16 +9472,30 @@ contains
     ! ******************************************************************
 
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+#ifdef VAR_ICHOR
+       dimGamma = AOGammabatchinfo(gammaB)%dim         ! Dimension of gamma batch
+       GammaStart = AOGammabatchinfo(gammaB)%orbstart  ! First orbital index in gamma batch
+       GammaEnd = AOGammabatchinfo(gammaB)%orbEnd      ! Last orbital index in gamma batch
+       AOGammaStart = AOGammabatchinfo(gammaB)%AOstart ! First AO batch index in gamma batch
+       AOGammaEnd = AOGammabatchinfo(gammaB)%AOEnd     ! Last AO batch index in gamma batch
+#else
        dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
        GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
-
+#endif
 
        BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+#ifdef VAR_ICHOR
+          dimAlpha = AOAlphabatchinfo(alphaB)%dim         ! Dimension of alpha batch
+          AlphaStart = AOAlphabatchinfo(alphaB)%orbstart  ! First orbital index in alpha batch
+          AlphaEnd = AOAlphabatchinfo(alphaB)%orbEnd      ! Last orbital index in alpha batch
+          AOAlphaStart = AOAlphabatchinfo(alphaB)%AOstart ! First AO batch index in alpha batch
+          AOAlphaEnd = AOAlphabatchinfo(alphaB)%AOEnd     ! Last AO batch index in alpha batch
+#else
           dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
+#endif
 #ifdef VAR_MPI
 
           ! distribute tasks
@@ -9029,6 +9510,11 @@ contains
 
 #endif
 
+#ifdef VAR_ICHOR
+          call MAIN_ICHORERI_DRIVER(DECinfo%output,iprint,Mylsitem%setting,nbasis,nbasis,dimAlpha,dimGamma,&
+               & tmp1,INTSPEC,FULLRHS,1,nAObatches,1,nAObatches,AOAlphaStart,AOAlphaEnd,&
+               & AOGammaStart,AOGammaEnd,MoTrans,nbasis,nbasis,dimAlpha,dimGamma,NoSymmetry)
+#else
           if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
           if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
@@ -9039,7 +9525,7 @@ contains
                & mylsitem%setting,tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
                & FullRHS,INTSPEC)
-
+#endif
           ! tmp2(delta,alphaB,gammaB;I) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cocc(beta,I)
           m = nbasis*dimGamma*dimAlpha
           k = nbasis
@@ -9178,9 +9664,13 @@ contains
     call mem_dealloc(tmp1)
     call mem_dealloc(tmp2)
     call mem_dealloc(tmp3)
+
+#ifdef VAR_ICHOR
+    call FREE_SCREEN_ICHORERI()
+    call mem_dealloc(AOGammabatchinfo)
+    call mem_dealloc(AOAlphabatchinfo)
+#else
     call free_decscreen(DECSCREEN)
-    call mem_dealloc(CoccT)
-    call mem_dealloc(CvirtT)
     call mem_dealloc(orb2batchGamma)
     call mem_dealloc(batchdimGamma)
     call mem_dealloc(batchsizeGamma)
@@ -9200,6 +9690,9 @@ contains
     call mem_dealloc(batch2orbAlpha)
     nullify(mylsitem%setting%LST_GAB_LHS)
     nullify(mylsitem%setting%LST_GAB_RHS)
+#endif
+    call mem_dealloc(CoccT)
+    call mem_dealloc(CvirtT)
 
     ! finally, reorder ooov(K,I,J,A) --> ooov(I,J,K,A)
     call array_reorder(ooov,[2,3,1,4])
@@ -9244,7 +9737,7 @@ contains
      integer, intent(in) :: tile_size
      !> memory reals
      real(realk) :: MemoryNeeded, MemoryAvailable
-     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma
+     integer :: MaxAObatch, MinAOBatch, AlphaOpt, GammaOpt,alpha,gamma,iAO
      integer(kind=ls_mpik) :: nnod,me
      logical :: master
      ! Memory currently available
@@ -9276,8 +9769,17 @@ contains
         ! The smallest possible AO batch depends on the basis set
         ! (More precisely, if all batches are made as small as possible, then the
         !  call below determines the largest of these small batches).
+#ifdef VAR_ICHOR
+        !Determine the minimum allowed AObatch size MinAObatch
+        !In case of pure Helium atoms in cc-pVDZ ((4s,1p) -> [2s,1p]) MinAObatch = 3 (Px,Py,Pz)
+        !In case of pure Carbon atoms in cc-pVDZ ((9s,4p,1d) -> [3s,2p,1d]) MinAObatch = 6 (the 2*(Px,Py,Pz))
+        !In case of pure Carbon atoms in 6-31G   ((10s,4p) -> [3s,2p]) MinAObatch = 3 (Px,Py,Pz) 
+        !'R'  !Specifies that it is the Regular AO basis that should be batched
+        iAO = 1 !the center that the batching should occur on.  
+        call determine_MinimumAllowedAObatchSize(MyLsItem%setting,iAO,'R',MinAObatch)
+#else
         call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
-
+#endif
 
         ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
         AlphaDim=MinAObatch

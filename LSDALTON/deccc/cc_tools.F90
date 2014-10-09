@@ -131,7 +131,7 @@ module cc_tools_module
       !> the lambda transformation matrices
       real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
       !> the sio4 matrix to calculate the b2.2 contribution
-      real(realk),intent(inout) ::sio4(:)
+      type(array),intent(inout) ::sio4
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lo
@@ -221,7 +221,7 @@ module cc_tools_module
       wszes3 = [wszes(1),wszes(3),wszes(4)]
       call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal)  
+         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s/=2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -244,7 +244,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w3(:)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
-      real(realk),intent(inout) :: sio4(:)
+      type(array),intent(inout) :: sio4
       !> Lambda p virutal part
       real(realk),intent(in) :: xvirt(:)
       !> Lambda p occupied part
@@ -744,9 +744,13 @@ module cc_tools_module
 #endif
                   endif
                else if(s==2)then
+#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
+                  call assign_in_subblocks(w2,'=',w2,o2v2,scal2=scaleitby)
+#else
                   !$OMP WORKSHARE
                   w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                   !$OMP END WORKSHARE
+#endif
                   call time_start_phase(PHASE_COMM, at=twork)
                   call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                   call time_start_phase(PHASE_WORK, at=tcomm)
@@ -779,20 +783,58 @@ module cc_tools_module
          call dgemm('t','n',no2,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no2)
          !transform alpha -> a , order is now sigma [ k l i j]
          if( rest_sio4 )then
-            call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+            call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
          else
-
             call dgemm('t','t',no2,no2*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-            call ass_D1to3(w2,t1,[no2,no2,nor])
-            call ass_D1to4(sio4,h1,[no,no,no2,no2])
-            do j=no,1,-1
-               do i=j,1,-1
-                  call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
-                  if(i /= j)then
-                     h1(j,i,:,:) =h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
-                  endif
+
+            if(s==2)then
+               !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,no2)&
+               !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
+               do j=no,1,-1
+                  !$OMP DO 
+                  do i=j,1,-1
+                     pos1=1+((i+j*(j-1)/2)-1)*no*no
+                     pos2=1+(i-1)*no*no+(j-1)*no*no*no
+                     if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+                  enddo
+                  !$OMP END DO
                enddo
-            enddo
+               !$OMP BARRIER
+               !$OMP DO 
+               do j=no,1,-1
+                  do i=j,1,-1
+                     pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                     pos2=1+(j-1)*no*no+(i-1)*no*no*no
+                     if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+                  enddo
+               enddo
+               !$OMP END DO
+               !$OMP END PARALLEL
+
+               do j=no,1,-1
+                  do i=j,1,-1
+                     pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                     call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(nv*nv)/2,st)
+                  enddo
+               enddo
+#ifdef VAR_MPI
+               if( lock_outside )call arr_lock_wins(sio4,'s',mode)
+               call time_start_phase(PHASE_COMM, at=twork)
+               call array_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call time_start_phase(PHASE_WORK, at=tcomm)
+               if( lock_outside )call arr_unlock_wins(sio4,.true.)
+#endif
+            else
+               call ass_D1to3(w2,t1,[no2,no2,nor])
+               do j=no,1,-1
+                  do i=j,1,-1
+                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,sio4%elm4(i,j,:,:))
+                     if(i /= j)then
+                        sio4%elm4(j,i,:,:) =sio4%elm4(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
+                     endif
+                  enddo
+               enddo
+            endif
          endif
 
 
@@ -817,19 +859,58 @@ module cc_tools_module
             call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
             !transform alpha -> k, order is now sigma[k l i j]
             if( rest_sio4 )then
-               call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
+               call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4%elm1,no2)
             else
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,0.0E0_realk,w2,no2)
-               call ass_D1to3(w2,t1,[no2,no2,nor])
-               call ass_D1to4(sio4,h1,[no,no,no2,no2])
-               do j=no,1,-1
-                  do i=j,1,-1
-                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
-                     if(i /= j)then
-                        h1(j,i,:,:) =h1(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
-                     endif
+               if(s==2)then
+                  !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,no2)&
+                  !$OMP PRIVATE(i,j,pos1,pos2) IF( no > 2 )
+                  do j=no,1,-1
+                     !$OMP DO 
+                     do i=j,1,-1
+                        pos1=1+((i+j*(j-1)/2)-1)*no*no
+                        pos2=1+(i-1)*no*no+(j-1)*no*no*no
+                        if(j/=1) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+                     enddo
+                     !$OMP END DO
                   enddo
-               enddo
+                  !$OMP BARRIER
+                  !$OMP DO 
+                  do j=no,1,-1
+                     do i=j,1,-1
+                        pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                        pos2=1+(j-1)*no*no+(i-1)*no*no*no
+                        if(i/=j) w2(pos2:pos2+no*no-1) = w2(pos1:pos1+no*no-1)
+                     enddo
+                  enddo
+                  !$OMP END DO
+                  !$OMP END PARALLEL
+
+                  do j=no,1,-1
+                     do i=j,1,-1
+                        pos1=1+(i-1)*no*no+(j-1)*no*no*no
+                        call alg513(w2(pos1:no*no+pos1-1),no,no,no*no,mv,(nv*nv)/2,st)
+                     enddo
+                  enddo
+#ifdef VAR_MPI
+                  if( lock_outside )call arr_lock_wins(sio4,'s',mode)
+                  call time_start_phase(PHASE_COMM, at=twork)
+                  call array_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call time_start_phase(PHASE_WORK, at=tcomm)
+                  if( lock_outside )call arr_unlock_wins(sio4,.true.)
+#endif
+               else
+
+                  call ass_D1to3(w2,t1,[no2,no2,nor])
+                  do j=no,1,-1
+                     do i=j,1,-1
+                        call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,sio4%elm4(i,j,:,:))
+                        if(i /= j)then
+                           sio4%elm4(j,i,:,:) = sio4%elm4(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
+                        endif
+                     enddo
+                  enddo
+               endif
             endif
 
          endif
@@ -1175,11 +1256,11 @@ module cc_tools_module
             w3(pos1:pos1+la*lg-1) = w2(pos2:pos2+la*lg-1)
          enddo
       enddo
-      ! (w3):I[ gamma i <= j alpha] <- (w2):I[alpha gamma i <= j]
+      ! (w3):I[ alpha i <= j gamma] <- (w2):I[alpha gamma i <= j]
       call array_reorder_3d(1.0E0_realk,w3,lg,la,nor,[2,3,1],0.0E0_realk,w2)
-      ! (w2):I[ l i <= j alpha] <- (w3):Lambda^p [gamma l ]^T I[gamma i <= j alpha]
+      ! (w2):I[ l i <= j gamma] <- (w3):Lambda^p [alpha l ]^T I[alpha i <= j gamma]
       call dgemm('t','n',no2,nor*lg,la,1.0E0_realk,xo(fa),nb,w2,la,0.0E0_realk,w3,no2)
-      ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [alpha k ]^T I[l i <= j alpha]^T
+      ! (sio4):I[ k l i <= j] <-+ (w2):Lambda^p [gamma k ]^T I[l i <= j , gamma]^T
       call dgemm('t','t',no2,nor*no2,lg,1.0E0_realk,xo(fg),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
 
    end subroutine add_int_to_sio4
@@ -1190,7 +1271,7 @@ module cc_tools_module
    subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order)
       implicit none
       !> the sio4 matrix from the kobayashi terms on input
-      real(realk), intent(in) :: sio4(:)
+      type(array), intent(in) :: sio4
       !> amplitudes
       !real(realk), intent(in) :: t2(*)
       type(array), intent(inout) :: t2
@@ -1257,82 +1338,57 @@ module cc_tools_module
 
 
          w1=0.0E0_realk
-         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-
-
-      else if(s==2.and.traf)then
-
-#ifdef VAR_MPI
-         call mem_alloc(w2,tl*no*no)
-
-         call time_start_phase(PHASE_COMM, at = tw )
-
-         !if(lock_outside)call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,.false.,debug=.true.)
-         !if(lock_outside)call arr_unlock_wins(t2,.true.)
-
-         call time_start_phase(PHASE_WORK, at = tc )
-
-         w1=0.0E0_realk
-         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,w2,tl,sio4,no*no,0.0E0_realk,w1(fai),nv*nv)
-         call mem_dealloc(w2)
-#endif
-
-      endif
-
-
-      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-      !$OMP PRIVATE(i,j,pos1,pos2)
-      do j=no,1,-1
+         call dgemm('n','n',tl,nor,no*no,0.5E0_realk,t2%elm1(fai),nv*nv,sio4%elm1,no*no,0.0E0_realk,w1(fai),nv*nv)
+         !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+         !$OMP PRIVATE(i,j,pos1,pos2)
+         do j=no,1,-1
+            !$OMP DO 
+            do i=j,1,-1
+               pos1=1+((i+j*(j-1)/2)-1)*nv*nv
+               pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+               if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+            enddo
+            !$OMP END DO
+         enddo
+         !$OMP BARRIER
          !$OMP DO 
-         do i=j,1,-1
-            pos1=1+((i+j*(j-1)/2)-1)*nv*nv
-            pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+         do j=no,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+               pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+               if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+            enddo
          enddo
          !$OMP END DO
-      enddo
-      !$OMP BARRIER
-      !$OMP DO 
-      do j=no,1,-1
-         do i=j,1,-1
-            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-         enddo
-      enddo
-      !$OMP END DO
-      !$OMP END PARALLEL
+         !$OMP END PARALLEL
 
-      do j=no,1,-1
-         do i=j,1,-1
-            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-            call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+         do j=no,1,-1
+            do i=j,1,-1
+               pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+               call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+            enddo
          enddo
-      enddo
 
-      if((s==4.or.s==3).and.traf)then
 
          if(present(order))then
             call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,order,1.0E0_realk,om2%elm1)
          else
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-         call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
+            call assign_in_subblocks(om2%elm1,'+',w1,o2v2)
 #else
-         !$OMP WORKSHARE
-         om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
-         !$OMP END WORKSHARE
+            !$OMP WORKSHARE
+            om2%elm1(1:o2v2) = om2%elm1(1:o2v2) + w1(1:o2v2)
+            !$OMP END WORKSHARE
 #endif
          endif
+
 
       else if(s==2.and.traf)then
 
 #ifdef VAR_MPI
-         call time_start_phase(PHASE_COMM, at = tw )
-
-         if(lock_outside)call arr_lock_wins(om2,'s',mode)
-         call array_two_dim_1batch(om2,o,'a',w1,2,1,nv*nv,lock_outside,debug=.true.) 
-         call time_start_phase(PHASE_WORK, at = tc )
+         o = [1,2,3,4]
+         if(lock_outside)call arr_lock_local_wins(om2,'e',mode)
+         call array_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
 #endif
 
       endif
