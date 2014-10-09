@@ -826,11 +826,13 @@ module cc_tools_module
 #endif
             else
                call ass_D1to3(w2,t1,[no2,no2,nor])
+               call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
                do j=no,1,-1
                   do i=j,1,-1
-                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,sio4%elm4(i,j,:,:))
+                     print *,i+j*(j-1)/2
+                     call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
                      if(i /= j)then
-                        sio4%elm4(j,i,:,:) =sio4%elm4(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
+                        h1(j,i,:,:) = h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)
                      endif
                   enddo
                enddo
@@ -902,11 +904,12 @@ module cc_tools_module
                else
 
                   call ass_D1to3(w2,t1,[no2,no2,nor])
+                  call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
                   do j=no,1,-1
                      do i=j,1,-1
-                        call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,sio4%elm4(i,j,:,:))
+                        call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
                         if(i /= j)then
-                           sio4%elm4(j,i,:,:) = sio4%elm4(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
+                           h1(j,i,:,:) = h1(j,i,:,:) + t1(:,:,i+j*(j-1)/2)
                         endif
                      enddo
                   enddo
