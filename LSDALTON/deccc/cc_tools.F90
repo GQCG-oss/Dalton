@@ -221,7 +221,7 @@ module cc_tools_module
       wszes3 = [wszes(1),wszes(3),wszes(4)]
       call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,tlen,tred,fa,fg,la,lg,&
          &no,nv,nb,goffs,aoffs,s,wszes3,lo,twork,tcomm,order=order, &
-         &rest_occ_om2=rest_occ_om2,scal=scal)  
+         &rest_occ_om2=rest_occ_om2,scal=scal,sio4_ilej = (s==2))  
 
       call time_start_phase(PHASE_WORK, at=twork)
    end subroutine get_a22_and_prepb22_terms_ex
@@ -816,6 +816,7 @@ module cc_tools_module
             !transform gamma -> l
             call dgemm('t','n',no2,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no2)
             !transform alpha -> k, order is now sigma[k l i j]
+            print *,infpar%lg_mynum,"rest_sio4",rest_sio4
             if( rest_sio4 )then
                call dgemm('t','t',no2,no2*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no2,1.0E0_realk,sio4,no2)
             else

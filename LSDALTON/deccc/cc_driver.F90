@@ -1680,19 +1680,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #endif
 
-   !get segmenting for tensors, divide dimensions until tiles are less than
-   !100MB and/or until enough tiles are available such that each node gets at
-   !least one and as long as os>=2 and vs>=2
-   vs = nv
-   os = no
-   counter = 1
-   do while(   ( ( vs**2*os**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk&
-         &  .or. ((nv/vs+mod(nv,vs))**2*(no/os+mod(no,os))**2<nnodes)      )&
-         & .and. (vs>=2.or.os>=2)   )
-      if(nv - counter >= 1) vs = nv - counter
-      if(no - counter >= 1) os = no - counter
-      counter = counter + 1
-   enddo
+   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
