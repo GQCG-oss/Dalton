@@ -69,21 +69,22 @@ module ccsd_module
          & wrapper_get_ccsd_batch_sizes
     private
 
-  interface Get_AOt1Fock
-    module procedure Get_AOt1Fock_arraywrapper,Get_AOt1Fock_oa
-  end interface Get_AOt1Fock
-  interface get_fock_matrix_for_dec
-    module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
-  end interface get_fock_matrix_for_dec
+    interface Get_AOt1Fock
+       module procedure Get_AOt1Fock_arraywrapper,Get_AOt1Fock_oa
+    end interface Get_AOt1Fock
 
-  interface precondition_singles
-    module procedure precondition_singles_newarr,&
-                    &precondition_singles_oldarr
-  end interface precondition_singles
+    interface get_fock_matrix_for_dec
+       module procedure get_fock_matrix_for_dec_oa,get_fock_matrix_for_dec_arraywrapper
+    end interface get_fock_matrix_for_dec
+
+    interface precondition_singles
+       module procedure precondition_singles_newarr,&
+          &precondition_singles_oldarr
+    end interface precondition_singles
 
     interface precondition_doubles
-      module procedure precondition_doubles_newarr,&
-                      &precondition_doubles_oldarr
+       module procedure precondition_doubles_newarr,&
+          &precondition_doubles_oldarr
     end interface precondition_doubles
     
 
@@ -862,10 +863,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      logical, optional, intent(inout) :: rest
 
      ! elementary types needed for the calculation
-     type(mpi_realk)      :: gvvoo,gvoov,tpl,tmi,w0,w1,w2,w3,uigcj,sio4
+     type(mpi_realk)      :: gvvoo,gvoov,tpl,tmi,w0,w1,w2,w3,uigcj
      real(realk), pointer :: Had(:), t2_d(:,:,:,:), Gbi(:)
      type(c_ptr) :: Hadc,t2_dc, Gbic
-     integer(kind=ls_mpik) :: Hadw,t2_dw,Gbiw,sio4w,gvvoow,gvoovw
+     integer(kind=ls_mpik) :: Hadw,t2_dw,Gbiw,gvvoow,gvoovw
 
      integer(kind=8) :: w0size,w1size,w2size,w3size,neloc
 
@@ -875,7 +876,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      integer(kind=ls_mpik) :: nnod
      real(realk) :: startt, stopp
 
-     type(array) :: u2
+     integer :: sio4_mode, sio4_dims(4),sio4_tdim(4) 
+     type(array) :: u2, sio4
      type(array) :: gvoova,gvvooa
      !special arrays for scheme=1
      type(array) :: t2jabi,u2kcjb
@@ -890,7 +892,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      real(realk)       :: inf(inflen)
 #ifdef VAR_MPI
      ! stuff for direct communication
-     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
+     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w
      integer(kind=ls_mpik) :: hstatus, nctr,mode
      integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
      character*(MPI_MAX_PROCESSOR_NAME) :: hname
@@ -1133,7 +1135,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #else
         call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
 #endif
-        call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
+        call get_max_batch_sizes(scheme,nb,nv,vs,no,os,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
         &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add,local,.false.)
 
         !SOME WORDS ABOUT THE CHOSEN SCHEME:
@@ -1309,11 +1311,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         if(scheme==3) write(DECinfo%output,'("Using memory intensive scheme with direct updates")')
         if(scheme==2) write(DECinfo%output,'("Using memory intensive scheme only 1x V^2O^2")')
         if(scheme==1) write(DECinfo%output,'("Using Dmitry s scheme")')
-        ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,3,scheme,.false.)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,2,scheme,.false.)
         write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
-        ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.)
+        ActuallyUsed=get_min_mem_req(no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,iter,4,scheme,.true.)
      endif
 
      ! Use the dense amplitudes
@@ -1337,24 +1339,20 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call get_tpl_and_tmi(t2%elm1,nv,no,tpl%d,tmi%d)
 
      if(master.and.print_debug)then
-        write(msg,*)"NORM(tpl)   :"
-        call print_norm(tpl%d,int(nor*nvr,kind=8),msg)
-        write(msg,*)"NORM(tmi)    :"
-        call print_norm(tmi%d,int(nor*nvr,kind=8),msg)
+        call print_norm(tpl%d,int(nor*nvr,kind=8)," NORM(tpl)   :")
+        call print_norm(tmi%d,int(nor*nvr,kind=8)," NORM(tmi)    :")
      endif
+
 
      !get u2 in pdm or local
      if(scheme==2)then
+        call memory_deallocate_array_dense(t2)
 
         call time_start_phase(PHASE_COMM, at = time_init_work )
 
         call array_ainit( u2, [nv,nv,no,no], 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-        call array_zero( u2 )
-        if(master)then 
-           call array_add( u2,  2.0E0_realk, t2%elm1, order=[2,1,3,4] )
-           call array_add( u2, -1.0E0_realk, t2%elm1, order=[2,1,4,3] )
-        endif
-        call array_mv_dense2tiled( t2, .true. )
+        call array_add( u2,  2.0E0_realk, t2, a = 0.0E0_realk, order=[2,1,3,4] )
+        call array_add( u2, -1.0E0_realk, t2, order=[2,1,4,3] )
 
         call time_start_phase(PHASE_WORK, at = time_init_comm )
 
@@ -1365,22 +1363,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_reorder_4d( -1.0E0_realk, t2%elm1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,u2%elm1)
      endif
 
-     if(master.and.print_debug.and.scheme/=2)then
-        write(msg,*)"NORM(u2)    :"
-        call print_norm(u2%elm1,int(nor*nvr,kind=8),msg)
-     endif
+     if(print_debug) call print_norm(u2," NORM(u2)    :")
 
      call mem_alloc(Had,nv*nb)
      call mem_alloc(Gbi,nb*no)
 
 
-
      if( CCmodel > MODEL_CC2 )then
 
-        call mem_alloc(sio4,int(i8*nor*no2,kind=long))
-#ifdef VAR_MPI
-        call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
-#endif
         if(scheme==4)then
            write(def_atype,'(A4)')'LDAR'
         else if(scheme==2.or.scheme==3)then
@@ -1390,6 +1380,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call array_ainit(gvoova, [nv,no,nv,no],4, local=local, atype=def_atype, tdims=[vs,os,vs,os])
         call array_zero(gvvooa)
         call array_zero(gvoova)
+!        call mem_alloc(sio4,int(i8*nor*no2,kind=long))
+!#ifdef VAR_MPI
+!        call lsmpi_win_create(sio4%d,sio4w,int(i8*nor*no2,kind=long),infpar%lg_comm)
+!#endif
+        if(scheme == 4 .or. scheme == 3)then
+           sio4_mode = 3
+           sio4_dims(1:sio4_mode) = [no,no,nor]
+           sio4_tdim(1:sio4_mode) = [os,os,nor]
+           write(def_atype,'(A4)')'LDAR'
+        else if(scheme == 2)then
+           sio4_mode = 4
+           sio4_dims(1:sio4_mode) = [no,no,no,no]
+           sio4_tdim(1:sio4_mode) = [os,os,os,os]
+           write(def_atype,'(A4)')'TDPD'
+        endif
+        call array_ainit(sio4,sio4_dims(1:sio4_mode),sio4_mode,local=local,atype=def_atype,tdims = sio4_tdim(1:sio4_mode))
+        call array_zero(sio4)
+
      endif
 
      !zero the matrix
@@ -1398,31 +1406,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      Gbi = 0.0E0_realk
      !$OMP END WORKSHARE
 
+     print *,"work"
 
      ! allocate working arrays depending on the batch sizes
-     w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w0, w0size , simple = .true. )
+     w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     call mem_alloc( w0, w0size , simple = .false. )
 
-     w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w1, w1size , simple = .true.)
+     w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     call mem_alloc( w1, w1size , simple = .false.)
 
-     w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w2, w2size , simple = .true. )
+     w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     call mem_alloc( w2, w2size , simple = .false. )
 
-     w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
-     call mem_alloc( w3, w3size , simple = .true. )
+     w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,MaxActualDimAlpha,MaxActualDimGamma,scheme)
+     call mem_alloc( w3, w3size , simple = .false. )
 
+     print *,"work allocd"
 
      !allocate semi-permanent storage arrays for loop
      !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
      !      &(8.0E0_realk*o2v*MaxActualDimGamma*2)/(1024.0E0_realk*1024.0E0_realk*1024.0E0_realk)
      call mem_alloc( uigcj, int((i8*o2v)*MaxActualDimGamma,kind=8))
 
-     if( Ccmodel > MODEL_CC2 )then
-        !$OMP WORKSHARE
-        sio4%d=0.0E0_realk
-        !$OMP END WORKSHARE
-     endif
 
 #ifdef VAR_ICHOR
      !Calculate Screening integrals 
@@ -1766,7 +1771,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
                  !and the difference between first element of alpha batch and last element
                  !of gamma batch
                  call get_a22_and_prepb22_terms_ex(w0%d,w1%d,w2%d,w3%d,tpl%d,tmi%d,no,nv,nb,fa,fg,la,lg,&
-                    &xo,yo,xv,yv,omega2,sio4%d,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
+                    &xo,yo,xv,yv,omega2,sio4%elm1,scheme,[w0%n,w1%n,w2%n,w3%n],lock_outside,&
                     &time_intloop_B1work, time_intloop_B1comm, scal=0.5E0_realk  )
 
                  !start a new timing phase after these terms
@@ -1786,7 +1791,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2%d,no*lg*la,yo,nb,0.0E0_realk,w0%d,no*lg*la)
            call lsmpi_poke()
            ! (w3%d):I[alpha gamma i j] <- (w0%d):I[i gamma alpha j]
-           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%d)
+           if( Ccmodel > MODEL_CC2 )call add_int_to_sio4(w0%d,w2%d,w3%d,nor,no,nv,nb,fa,fg,la,lg,xo,sio4%elm1)
            call lsmpi_poke()
 
 
@@ -1967,7 +1972,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !***********************************************************************
         if(Ccmodel > MODEL_CC2)then
 
-           call lsmpi_allreduce(sio4%d,int((i8*nor)*no2,kind=8),infpar%lg_comm,SPLIT_MSG_REC)
+           call lsmpi_allreduce(sio4%elm1,int((i8*nor)*no2,kind=8),infpar%lg_comm,SPLIT_MSG_REC)
 
            if(scheme==4)then
 
@@ -2065,13 +2070,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         !get B2.2 contributions
         !**********************
-        call get_B22_contrib_mo(sio4%d,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
+        call get_B22_contrib_mo(sio4%elm1,t2,w1%d,w2%d,no,nv,omega2,scheme,lock_outside,&
            &time_Bcnd_work,time_Bcnd_comm)
 
-#ifdef VAR_MPI
-        call lsmpi_win_free(sio4w)
-#endif
-        call mem_dealloc(sio4)
+        call array_free(sio4)
 
         call ccsd_debug_print(ccmodel,2,master,local,scheme,print_debug,o2v2,w1,&
            &omega2,govov,gvvooa,gvoova)
@@ -2182,10 +2184,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #endif
 
 
-     !call get_currently_available_memory(MemFree2)
-     !call get_available_memory(6,MemFree3,memfound,.true.)
-     !print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
-     !call lsmpi_barrier(infpar%lg_comm)
+     call get_currently_available_memory(MemFree2)
+     call get_available_memory(6,MemFree3,memfound,.true.)
+     print *,infpar%lg_mynum,"slaves return",MemFree2,MemFree3
+     call lsmpi_barrier(infpar%lg_comm)
 
      ! slaves should exit the subroutine after the main work is done
      if(.not. master) then
@@ -2509,8 +2511,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            if (Ccmodel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,E1%elm1,nv)
            call array_mv_dense2tiled(E1,.true.)
 
-
-
            call array_ainit(E2,[no,no],2,tdims=[os,os],atype="TDPD")
            call arr_lock_local_wins(E2,'e',mode)
            E2%itype = TILED_DIST
@@ -2544,8 +2544,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
            t2%access_type     = MASTER_ACCESS
 
         else
-           !lock_safe        = lock_outside
-           !lock_outside     = .false.
+           lock_safe        = lock_outside
+           lock_outside     = .false.
 
            !Setting transformation variables for each rank
            !**********************************************
@@ -2833,34 +2833,41 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call arr_unlock_wins(omega2,.true.)
      !call arr_lock_local_wins(omega2,'e',mode)
 
+     print *,infpar%lg_mynum,"unlock"
+
      !Cterm
      fdim1 = [no,no,nv,nv]
      sdim1 = [os,os,vs,vs]
      call array_ainit(Coovv,fdim1,4,tdims=sdim1,atype=atype)
      call arr_lock_local_wins(Coovv,'e',mode)
 
+     print *,infpar%lg_mynum,"Coovv"
      !Build C intermediate
      ord = [2,3,1,4]
      call array_add(Coovv,1.0E0_realk,gvvoo, a = 0.0E0_realk, order = ord)
      ord = [3,2,1,4]
      call array_contract(-0.5E0_realk,t2,govov,[2,3],[2,3],2,1.0E0_realk,Coovv,ord)
+     print *,infpar%lg_mynum,"Coovv done"
 
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
      call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
      call arr_lock_local_wins(O_pre,'e',mode)
+     print *,infpar%lg_mynum,"O_pre initied"
 
      !now allow for access to the completed tiles
      call arr_unlock_wins(Coovv,.true.)
 
      ord = [4,1,2,3]
      call array_contract(-1.0E0_realk,t2,Coovv,[2,3],[4,1],2,0.0E0_realk,O_pre,ord)
+     print *,infpar%lg_mynum,"O_pre contracted"
      
      !synchronize
      call array_free(Coovv)
 
      call arr_unlock_wins(O_pre,.true.)
+     print *,infpar%lg_mynum," C2 add to om2"
 
 
      !add in permutations (1+0.5P_ij)
@@ -2871,6 +2878,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !synchronize
      call array_free(O_pre)
 
+     print *,infpar%lg_mynum," C2 done"
 
      !Dterm
      !Calculate intermediates needed in D2 term
@@ -2882,6 +2890,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call array_ainit(Lovov,fdim2,4,tdims=sdim2,atype=atype)
      call arr_lock_local_wins(Dvoov,'e',mode)
      call arr_lock_local_wins(Lovov,'e',mode)
+     print *,infpar%lg_mynum," alloc Dvoov and Lovov"
 
      !careful gvvoo is ordered as (aijb) and gvoov is ordered as (ajbi) 
      ord = [1,4,2,3]
@@ -2889,31 +2898,37 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      ord = [1,3,2,4]
      call array_add(Dvoov,-1.0E0_realk,gvvoo, order = ord)
      call arr_unlock_wins(Dvoov,.true.)
+     print *,infpar%lg_mynum," alloc gvvoo"
 
      ord = [1,4,3,2]
      call array_add(Lovov, 2.0E0_realk,govov, a = 0.0E0_realk)
      call array_add(Lovov,-1.0E0_realk,govov,order = ord )
      call arr_unlock_wins(Lovov,.true.)
+     print *,infpar%lg_mynum," bla 1"
 
      !u2 is saved as (baij) 
      ord = [1,2,3,4]
      call array_contract(0.5E0_realk,u2,Lovov,[4,1],[1,2],2,1.0E0_realk,Dvoov,ord)
+     print *,infpar%lg_mynum," bla 2"
 
      !Inser synchronizatipn point
      fdim1 = [nv,nv,no,no]
      sdim1 = [vs,vs,os,os]
      call array_ainit(O_pre,fdim1,4,tdims=sdim1,atype=atype,fo = omega2%offset)
      call arr_lock_local_wins(O_pre,'e',mode)
+     print *,infpar%lg_mynum," bla 3"
 
      call arr_unlock_wins(Dvoov,.true.)
 
      !synchronization point
      call array_free(Lovov)
 
+     print *,infpar%lg_mynum," bla 4"
      !u2 is saved as (baij) 
      ord = [3,1,4,2]
      call array_contract(0.5E0_realk,u2,Dvoov,[1,4],[4,3],2,0.0E0_realk,O_pre,ord)
 
+     print *,infpar%lg_mynum," bla 5"
      !synchronization point
      call array_free(Dvoov)
 
@@ -2923,9 +2938,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      call array_add(omega2,1.0E0_realk,O_pre)
 
 
+     print *,infpar%lg_mynum," bla 6"
      !call arr_unlock_wins(omega2,.true.)
      call array_free(O_pre)
 
+     print *,infpar%lg_mynum," bla 7"
      !call print_norm(omega2)
 
   end subroutine get_cnd_terms_mo_2
@@ -3464,7 +3481,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     real(realk) :: MemFree
     integer :: scheme, nbas, nocc, nvir, MinAObatch, iter
-    integer :: dimMO, nMObatch, ntot
+    integer :: dimMO, nMObatch, ntot,os,vs
     integer(kind=8) :: dummy
     logical :: mo_ccsd, local_moccsd, mpi_split
 
@@ -3505,9 +3522,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     if (.not.mo_ccsd) then 
       iter=1
+      call get_symm_tensor_segmenting_simple(nocc,nvir,os,vs)
       call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
-      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,nocc,bat%MaxAllowedDimAlpha, &
+      call get_max_batch_sizes(scheme,MyFragment%nbasis,nvir,vs,nocc,os,bat%MaxAllowedDimAlpha, &
            & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree, &
            & .true.,dummy,(.not.DECinfo%solver_par),mpi_split)
     end if
@@ -3517,11 +3535,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !> \brief calculate batch sizes automatically-->dirty but better than nothing
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine get_max_batch_sizes(scheme,nb,nv,no,nba,nbg,&
+  subroutine get_max_batch_sizes(scheme,nb,nv,vs,no,os,nba,nbg,&
   &minbsize,manual,iter,MemFree,first,e2a,local,mpi_split)
     implicit none
     integer, intent(inout) :: scheme
-    integer, intent(in)    :: nb,nv,no
+    integer, intent(in)    :: nb,nv,vs,no,os
     integer :: iter
     integer, intent(inout) :: nba,nbg,minbsize
     real(realK),intent(in) :: MemFree
@@ -3545,24 +3563,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     magic = 2
     !test for scheme with highest reqirements --> fastest
     scheme=4
-    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
     if (mem_used>frac_of_total_mem*MemFree)then
 #ifdef VAR_MPI
         !test for scheme with medium requirements
         scheme=3
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
         if (mem_used>frac_of_total_mem*MemFree)then
           !test for scheme with low requirements
           scheme=2
-          mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
+          mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
           if (mem_used>frac_of_total_mem*MemFree)then
             write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
             write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
             &frac_of_total_mem*MemFree
             write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,3,.false.)
+            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,3,.false.)
             write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
-            mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,4,.false.)
+            mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,4,.false.)
             write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
             call lsquit("ERROR(CCSD): there is just not enough memory&
             & available",DECinfo%output)
@@ -3623,7 +3641,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       if( nbg>=nb )       nbg = nb
       if( nba>=nb )       nba = nb
 
-      mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
+      mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
 
       if (frac_of_total_mem*MemFree<mem_used) then
         print *, "ATTENTION your chosen batch sizes might be too large!!!"
@@ -3637,7 +3655,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nbg))
 
         nbg=nbg+1
-        mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
 
       enddo
 
@@ -3654,7 +3672,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
       do while ((frac_of_total_mem*MemFree>mem_used) .and. (nb>=nba))
         nba      = nba+1
-        mem_used = get_min_mem_req(no,nv,nb,nba,nbg,iter,3,scheme,.false.)
+        mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,3,scheme,.false.)
       enddo
 
       if (nba>=nb)then
@@ -3689,7 +3707,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
     endif
-    mem_used=get_min_mem_req(no,nv,nb,nba,nbg,iter,4,scheme,.false.)
+    mem_used=get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,4,scheme,.false.)
 
     ! mpi_split should be true when we want to estimate the workload associated
     ! to a DEC fragment and eventually split the slots. In this case, the next
@@ -3715,7 +3733,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end if
 
     if(scheme==2)then
-      mem_used = get_min_mem_req(no,nv,nb,nba,nbg,iter,2,scheme,.false.)
+      mem_used = get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,2,scheme,.false.)
       e2a = min(v2o2,int(((frac_of_total_mem*MemFree - mem_used)*1E9_realk*0.5E0_realk/8E0_realk),kind=8))
     endif
   end subroutine get_max_batch_sizes
@@ -3725,9 +3743,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,nv,nb,nba,nbg,iter,choice,s,print_stuff) result (memrq)
+  function get_min_mem_req(no,os,nv,vs,nb,nba,nbg,iter,choice,s,print_stuff) result (memrq)
     implicit none
-    integer, intent(in) :: no,nv,nb
+    integer, intent(in) :: no,os,nv,vs,nb
     integer, intent(in) :: nba,nbg
     integer, intent(in) :: iter,choice
     real(realk) :: memrq, memin, memout
@@ -3811,10 +3829,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     endif
     tl4 = tl4 * no
 
-    w0size = get_wsize_for_ccsd_int_direct(0,no,nv,nb,nba,nbg,s)
-    w1size = get_wsize_for_ccsd_int_direct(1,no,nv,nb,nba,nbg,s)
-    w2size = get_wsize_for_ccsd_int_direct(2,no,nv,nb,nba,nbg,s)
-    w3size = get_wsize_for_ccsd_int_direct(3,no,nv,nb,nba,nbg,s)
+    w0size = get_wsize_for_ccsd_int_direct(0,no,os,nv,vs,nb,nba,nbg,s)
+    w1size = get_wsize_for_ccsd_int_direct(1,no,os,nv,vs,nb,nba,nbg,s)
+    w2size = get_wsize_for_ccsd_int_direct(2,no,os,nv,vs,nb,nba,nbg,s)
+    w3size = get_wsize_for_ccsd_int_direct(3,no,os,nv,vs,nb,nba,nbg,s)
     !w0
     memin = 1.0E0_realk * w0size
     !w1
@@ -3963,10 +3981,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-    memrq = memrq * 1.8E0_realk
-#endif
-
+    if(LSMPIASYNCP)then
+       memrq = 1.5*memrq
+    endif
 
   end function get_min_mem_req
 
@@ -6248,9 +6265,9 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   end subroutine ccsd_debug_print
 
 
-  function get_wsize_for_ccsd_int_direct(wnr,no,nv,nb,nba,nbg,s) result(wsize)
+  function get_wsize_for_ccsd_int_direct(wnr,no,os,nv,vs,nb,nba,nbg,s) result(wsize)
      implicit none
-     integer, intent(in) :: wnr,no,nv,nb,nba,nbg,s
+     integer, intent(in) :: wnr,no,os,nv,vs,nb,nba,nbg,s
      integer(kind=long) :: wsize
      integer(kind=long) :: maxsize64,nor,nvr
      nor = (i8*(no*(no+1))/2)
@@ -6258,10 +6275,12 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      select case(wnr)
      case(0)
         maxsize64 = int((i8*nb*nb)*nba*nbg,kind=8)
+        if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
      case(1)
         maxsize64 = max(int((i8*nb*nb)*nba*nbg,kind=8),int((i8*nv*nv*no)*nba,kind=8))
         maxsize64 = max(maxsize64,int((i8*no*no*nv)*nbg,kind=8))
         if(s==4.or.s==3) maxsize64 = max(maxsize64,int((i8*no*no*nv)*nba,kind=8))
+        if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
      case(2)
         maxsize64 = max(int((i8*nb)*nb*nba*nbg,kind=8),(i8*no*no)*nv*nv)
         maxsize64 = max(maxsize64,int(nor*no*no,kind=8))
@@ -6273,6 +6292,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         maxsize64 = max(maxsize64,int((i8*nor)*nv*nbg,kind=8)) 
         maxsize64 = max(maxsize64,int((i8*no)*nor*nba,kind=8)) 
         maxsize64 = max(maxsize64,int((i8*no)*nor*nbg,kind=8)) 
+        if(s==2) maxsize64 = max(maxsize64,int((2*vs*vs*os)*os,kind=8))
      case default
         call lsquit("ERROR(get_wsize_for_ccsd_int_direct):unknown identifier",-1)
      end select
@@ -6460,6 +6480,8 @@ subroutine calculate_E2_and_permute_slave()
 
   call share_E2_with_slaves(ccmodel,ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
 
+  print *,"slaves here!"
+
   call time_start_phase(PHASE_WORK)
 
   o2v2 = int((i8*no)*no*nv*nv,kind=8)
@@ -6476,6 +6498,8 @@ subroutine calculate_E2_and_permute_slave()
   call mem_alloc(w1,o2v2)
   call calculate_E2_and_permute(ccmodel,ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
      &omega2,o2v2,s,.false.,lo,time_E2_work,time_E2_comm)
+
+  print *,"slaves done!"
 
   call mem_dealloc(ppf)
   call mem_dealloc(qqf)

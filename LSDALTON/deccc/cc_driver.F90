@@ -1630,19 +1630,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #endif
 
-   !get segmenting for tensors, divide dimensions until tiles are less than
-   !100MB and/or until enough tiles are available such that each node gets at
-   !least one and as long as os>=2 and vs>=2
-   vs = nv
-   os = no
-   counter = 1
-   do while(   ( ( vs**2*os**2)*8.0E0_realk/(1024.0E0_realk**3)>1.0E2_realk&
-         &  .or. ((nv/vs+mod(nv,vs))**2*(no/os+mod(no,os))**2<nnodes)      )&
-         & .and. (vs>=2.or.os>=2)   )
-      if(nv - counter >= 1) vs = nv - counter
-      if(no - counter >= 1) os = no - counter
-      counter = counter + 1
-   enddo
+   call get_symm_tensor_segmenting_simple(no,nv,os,vs)
 
    ! Sanity check 1: Number of orbitals
    if( (nv < 1) .or. (no < 1) ) then
@@ -2129,6 +2117,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
             &labelttot= 'CCIT: RESIDUAL        :', output = DECinfo%output, twall = time_crop_mat ) 
+         print*,"res done"
 
          ! calculate crop/diis matrix
          B=0.0E0_realk
@@ -2163,6 +2152,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          !msg="DIIS mat, new"
          !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
+         print*,"B done"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_crop_mat, &
             &labelttot= 'CCIT: CROP MATRIX     :', output = DECinfo%output, twall = time_solve_crop ) 
@@ -2171,6 +2161,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
+         print*,"DIIS done"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_solve_crop, &
             &labelttot= 'CCIT: SOLVE CROP      :', output = DECinfo%output, twall = time_mixing ) 
@@ -2191,6 +2182,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call array_zero( omega2_opt )
          call array_zero( t2_opt     )
 
+         print*,"opt init done"
+
          do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
 
             ! mix singles
@@ -2205,6 +2198,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          end do
 
+         print*,"opt done"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_mixing, &
             &labelttot= 'CCIT: MIXING          :', output = DECinfo%output, twall = time_copy_opt ) 
@@ -2218,6 +2212,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call array_cp_data( omega2_opt, omega2(iter) )
             call array_cp_data( t2_opt,     t2(iter)     )
          end if
+
+         print*,"cp done"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_copy_opt, &
             &labelttot= 'CCIT: COPY OPTIMALS   :', output = DECinfo%output, twall = time_norm ) 
@@ -2291,6 +2287,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          end select EnergyForCCmodel
 
+         print*,"energy done"
+
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_energy, &
             &labelttot= 'CCIT: GET ENERGY      :', output = DECinfo%output, twall = time_new_guess) 
 
@@ -2322,6 +2320,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                call array_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
          end if
+
+         print*,"new vecs done"
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
             &labelttot= 'CCIT: NEW GUESS VEC.  :', output = DECinfo%output ) 

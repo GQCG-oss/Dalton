@@ -1164,7 +1164,7 @@ module lspdm_tensor_operations_module
 
       call time_start_phase(PHASE_COMM)
 
-      call array_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e)
+      call array_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e,flush_it=.true.)
 
       call time_start_phase(PHASE_WORK)
 
@@ -1262,7 +1262,7 @@ module lspdm_tensor_operations_module
       !loop over local tiles of array2  and get the corresponding tiles of
       !array1
       do lt=1,arr2%nlti
-        call array_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e)
+        call array_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e,flush_it=.true.)
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
       call mem_dealloc(buffer)
@@ -1472,7 +1472,7 @@ module lspdm_tensor_operations_module
     if(from%tdim(1)==to_ar%tdim(1).and.from%tdim(2)==to_ar%tdim(2).and.&
       &from%tdim(3)==to_ar%tdim(3).and.to_ar%tdim(4)==to_ar%tdim(4))then
       do lt=1,to_ar%nlti
-        call array_get_tile(from,to_ar%ti(lt)%gt,to_ar%ti(lt)%t,to_ar%ti(lt)%e)
+        call array_get_tile(from,to_ar%ti(lt)%gt,to_ar%ti(lt)%t,to_ar%ti(lt)%e,flush_it=.true.)
       enddo
     else
       call lsquit("ERROR(array_cp_tiled):NOT YET IMPLEMENTED, if the arrato_ars have&
@@ -2357,7 +2357,7 @@ module lspdm_tensor_operations_module
       call get_midx(i,tmdidx,arr%ntpm,arr%mode)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
       if(pdm)then
-        call array_get_tile(arr,i,tmp,nelintile)
+        call array_get_tile(arr,i,tmp,nelintile,flush_it=.true.)
       else
         tmp => arr%ti(i)%t
       endif
@@ -2402,7 +2402,7 @@ module lspdm_tensor_operations_module
       call get_tile_dim(l,i,arr%dims,arr%tdim,arr%mode,2)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
       if(pdm)then
-        call array_get_tile(arr,i,tmp,nelintile)
+        call array_get_tile(arr,i,tmp,nelintile,flush_it=.true.)
       else
         tmp => arr%ti(i)%t
       endif
@@ -2587,7 +2587,7 @@ module lspdm_tensor_operations_module
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
            do j=last_flush_i,i
-              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
+              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
@@ -2707,7 +2707,7 @@ module lspdm_tensor_operations_module
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
            do j=last_flush_i,i
-              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
+              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
@@ -2754,7 +2754,7 @@ module lspdm_tensor_operations_module
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
            do j=last_flush_i,i
-              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
+              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
@@ -2897,7 +2897,7 @@ module lspdm_tensor_operations_module
        if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
           do j=last_flush_i,i
-             call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.true.)
+             call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
           enddo
 
           last_flush_i = i
@@ -3085,7 +3085,7 @@ module lspdm_tensor_operations_module
                 if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                    do j=1,arr%ntiles
-                      call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                      call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                    enddo
 
                    elms_sent    = 0
@@ -3228,7 +3228,7 @@ module lspdm_tensor_operations_module
                       if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                          do j=1,arr%ntiles
-                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                          enddo
 
                          elms_sent    = 0
@@ -3268,7 +3268,7 @@ module lspdm_tensor_operations_module
                       if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                          do j=1,arr%ntiles
-                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                          enddo
 
                          elms_sent    = 0
@@ -3306,7 +3306,7 @@ module lspdm_tensor_operations_module
                          if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                             do j=1,arr%ntiles
-                               call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                               call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                             enddo
 
                             elms_sent    = 0
@@ -3347,7 +3347,7 @@ module lspdm_tensor_operations_module
                       if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                          do j=1,arr%ntiles
-                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                            call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                          enddo
 
                          elms_sent    = 0
@@ -3383,7 +3383,7 @@ module lspdm_tensor_operations_module
                          if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
                             do j=1,arr%ntiles
-                               call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.true.)
+                               call lsmpi_win_flush(arr%wi(j),int(tinfo(j,1),kind=ls_mpik),local=.false.)
                             enddo
 
                             elms_sent    = 0
@@ -4508,7 +4508,7 @@ module lspdm_tensor_operations_module
       call get_tile_dim(nelmsit,arr,i)
       !copy data to the identified places
 #ifdef VAR_MPI
-      call array_put_tile(arr,i,buf,nelmsit)
+      call array_put_tile(arr,i,buf,nelmsit,flush_it=.true.)
 #endif
     enddo
     call mem_dealloc(buf)
