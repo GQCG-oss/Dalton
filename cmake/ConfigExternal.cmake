@@ -78,7 +78,7 @@ macro(add_external _project)
 endmacro()
 
 macro(add_PCMSOLVER)
-    set(PCMSOLVER_TESTS OFF)
+    set(PCMSOLVER_TESTS ON)
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
