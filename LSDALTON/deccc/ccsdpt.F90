@@ -1319,6 +1319,10 @@ contains
      integer, intent(out):: pos
      integer :: i_search_buf,ts
      logical :: found
+     integer(kind=ls_mpik) :: mode
+#ifdef VAR_MPI
+     mode = MPI_MODE_NOCHECK
+
 
      call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
 
@@ -1332,7 +1336,7 @@ contains
 
               pos          = i_search_buf
 
-              call arr_lock_win(arr,tilenr,'s',assert=MPI_MODE_NOCHECK)
+              call arr_lock_win(arr,tilenr,'s',assert=mode)
 
               call get_tile_dim(ts,arr,tilenr)
 
@@ -1356,6 +1360,7 @@ contains
         endif
 
      endif
+#endif
   end subroutine assoc_ptr_to_buf
 
   subroutine find_tile_pos_in_buf(tilenr,buf,nbuffs,pos,found)
@@ -1389,6 +1394,9 @@ contains
      integer :: ibuf_test, jbuf_test, kbuf_test, ij_count_test, ij_test
      logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed
      integer :: ts
+     integer(kind=ls_mpik) :: mode
+#ifdef VAR_MPI
+     mode = MPI_MODE_NOCHECK
 
      !set testing integers
      i_test        = current_i
@@ -1427,7 +1435,7 @@ contains
               do i_search_buf = 1, nbuffs
                  if(.not.needed(i_search_buf))then
                     kbuf_test = i_search_buf
-                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
+                    call arr_lock_win(vvvo,k_test,'s',assert=mode)
                     call get_tile_dim(ts,vvvo,k_test)
                     call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
                        &lock_set=.true.,flush_it=.true.)
@@ -1491,7 +1499,7 @@ contains
                  do i_search_buf = 1, nbuffs
                     if(.not.needed(i_search_buf))then
                        jbuf_test = i_search_buf
-                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
+                       call arr_lock_win(vvvo,j_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,j_test)
                        call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
                           &lock_set=.true.,flush_it=.true.)
@@ -1514,7 +1522,7 @@ contains
 
                        ibuf_test = i_search_buf
 
-                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
+                       call arr_lock_win(vvvo,i_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,i_test)
                        call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
                           &lock_set=.true.,flush_it=.true.)
@@ -1541,6 +1549,7 @@ contains
         k_test = k_test + 1
 
      enddo fill_buffer
+#endif
   end subroutine preload_tiles_in_bg_buf
 
 
