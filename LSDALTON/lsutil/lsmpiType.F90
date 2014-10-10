@@ -189,7 +189,7 @@ module lsmpi_type
 !General MPI vars, aka junkbox!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
-  logical               :: LSMPIASYNCP
+  logical               :: LSMPIASYNCP                !contains environment value of async progress
   logical               :: lsmpi_enabled_comm_procs 
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
@@ -5082,7 +5082,7 @@ contains
         call lsmpi_put_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
 
@@ -5118,7 +5118,7 @@ contains
       call lsmpi_put_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo
@@ -5274,7 +5274,7 @@ contains
         newpos = pos+j-1
         call lsmpi_get_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
     endif
@@ -5309,7 +5309,7 @@ contains
       call lsmpi_get_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo
@@ -5508,7 +5508,7 @@ contains
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
     endif
@@ -5543,7 +5543,7 @@ contains
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo

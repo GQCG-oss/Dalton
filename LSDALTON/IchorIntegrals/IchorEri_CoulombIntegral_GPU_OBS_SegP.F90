@@ -103,6 +103,7 @@ CONTAINS
 !    nlmC = 2*AngmomC+1
 !    nlmD = 2*AngmomD+1
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
 #ifdef VAR_DEBUGICHOR
@@ -5063,6 +5064,7 @@ CONTAINS
     integer :: AngmomID
     
     AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
+    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     TMParray2maxSize = 1
     TMParray1maxSize = 1
     SELECT CASE(AngmomID)

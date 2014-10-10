@@ -5,6 +5,7 @@
 !> \date 2013 
 MODULE IchorCommonModule
 use IchorprecisionModule
+logical :: UseGeneralCode
 
 CONTAINS
 subroutine ichor_dzero(dx, length)
