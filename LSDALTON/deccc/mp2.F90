@@ -2126,17 +2126,21 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !where alpha runs over the Aux basis functions allocated for this rank
      !and beta run over the full set of nbasisAux
      call mem_alloc(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux)
+     !$OMP PARALLEL DO DEFAULT(NONE) &
+     !$OMP PRIVATE(BETA,startA2,iatomA,startA,ALPHA) &
+     !$OMP SHARED(nbasisAux,nAtomsMPI,mynum,startAuxMPI,nAuxMPI,&
+     !$OMP TMPAlphaBeta_inv,AlphaBeta_inv)
      do BETA = 1,nbasisAux
-        startA2 = 0
-        DO iAtomA=1,nAtomsMPI(mynum+1)
-           StartA = startAuxMPI(iAtomA,mynum+1)
-           do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
-              TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = &
-                   & AlphaBeta_inv(startA + ALPHA,BETA)
-           enddo
-           startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
-        enddo
+      startA2 = 0
+      DO iAtomA=1,nAtomsMPI(mynum+1)
+       StartA = startAuxMPI(iAtomA,mynum+1)
+       do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
+        TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = AlphaBeta_inv(startA + ALPHA,BETA)
+       enddo
+       startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
+      enddo
      enddo
+     !$OMP END PARALLEL DO
      call mem_dealloc(AlphaBeta_inv)
   ENDIF
   !=====================================================================================
@@ -2185,25 +2189,8 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         !so that you only need 1 3dim quantity      
         call mem_alloc(Calpha,MynbasisAuxMPI,nvirt,nocc)
         !Use own AlphaCD3 to obtain part of Calpha
-        do I = 1,nocc
-           do B = 1,nvirt
-              do ALPHA = 1,MynbasisAuxMPI
-                 Calpha(ALPHA,B,I) = 0.0E0_realk
-              enddo
-              startB2 = 0
-              DO iAtomB=1,nAtomsMPI(mynum+1)
-                 StartB = startAuxMPI(iAtomB,mynum+1)
-                 do BETA = 1,nAuxMPI(iAtomB,mynum+1)
-                    TMP = AlphaCD3(startB2 + BETA,B,I)
-                    do ALPHA = 1,MynbasisAuxMPI
-                       Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + &
-                            & TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
-                    enddo
-                 enddo
-                 startB2 = startB2 + nAuxMPI(iAtomB,mynum+1)
-              ENDDO
-           enddo
-        enddo
+        call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
+             & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,Calpha,TMPAlphaBeta_inv,nbasisAux)
      ENDIF
 
      !To complete construction of  c_(nbasisAuxMPI,nvirt,nocc) we need all
@@ -2234,21 +2221,9 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 #endif
            IF(MynbasisAuxMPI.GT.0)THEN
               !Step 2: Obtain part of Calpha from this contribution
-              do I = 1,nocc
-                 do B = 1,nvirt
-                    startB2 = 0
-                    DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
-                       StartB = startAuxMPI(iAtomB,myOriginalRank+1)
-                       do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
-                          TMP = AlphaCD5(startB2 + BETA,B,I)
-                          do ALPHA = 1,MynbasisAuxMPI
-                             Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
-                          enddo
-                       enddo
-                       startB2 = startB2 + nAuxMPI(iAtomB,myOriginalRank+1)
-                    ENDDO
-                 enddo
-              enddo
+              call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                   & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+                   & Calpha,TMPAlphaBeta_inv,nbasisAux)
            ENDIF
            !Step 3: MPI send the recieved alphaCD to 'Sender' 
 #ifdef VAR_MPI
@@ -2279,19 +2254,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
 !     !  Solve the system A*X = B, overwriting B with X.
 !     !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)     OpenMP hopefully
 !     CALL DPOTRS('U',nbasisAux,nvirt*nocc,AlphaBeta_inv,nbasisaux,Calpha,nbasisaux,info)
-     do I = 1,nocc
-        do B = 1,nvirt
-           do ALPHA = 1,nBasisaux
-              Calpha(ALPHA,B,I) = 0.0E0_realk
-           enddo
-           do BETA = 1,nBasisaux
-              TMP = AlphaCD3(BETA,B,I)
-              do ALPHA = 1,nBasisaux
-                 Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + AlphaBeta_inv(ALPHA,BETA)*TMP
-              enddo
-           enddo
-        enddo
-     enddo
+     call RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
      call mem_dealloc(AlphaBeta_inv)
      NBA = nbasisAux
   endif
@@ -2305,43 +2268,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   IF(NBA.GT.0)THEN
      Eocc = 0.0E0_realk
      call mem_alloc(tocc,nvirt,nvirt,noccEOS,noccEOS)
-     !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
-     !$OMP         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP)
-     !$OMP CRITICAL
-     call mem_alloc(toccTMP,nocc,nocc)
-     !$OMP END CRITICAL
-     !$OMP DO COLLAPSE(2) 
-     do BDIAG=1,nvirt
-        do ADIAG=1,nvirt
-           do IDIAG=1,nocc
-              do JDIAG=1,nocc
-                 gmocont = 0.0E0_realk  
-                 do ALPHAAUX=1,nba  
-                    gmocont = gmocont + alphaCD3(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,BDIAG,JDIAG)
-                 enddo
-                 deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
-                 toccTMP(IDIAG,JDIAG)=gmocont/deltaEPS                
-              enddo
-           enddo
-           do jLOC=1,noccEOS
-              do iLOC=1,noccEOS
-                 TMP = 0.0E0_realk
-                 do IDIAG=1,nocc ! only run over valence for frozen core 
-                    do JDIAG=1,nocc
-                       TMP = TMP + toccTMP(IDIAG,JDIAG)*UoccEOST(iDIAG,iLOC)*UoccEOST(jDIAG,jLOC)
-                    enddo
-                 enddo
-                 tocc(ADIAG,BDIAG,ILOC,JLOC) = TMP 
-              enddo
-           enddo
-        enddo
-     enddo
-     !$OMP END DO NOWAIT
-     !$OMP CRITICAL
-     call mem_dealloc(toccTMP)
-     !$OMP END CRITICAL
-     !$OMP END PARALLEL
+     call RIMP2_calc_tocc(nvirt,nocc,noccEOS,NBA,alphaCD3,Calpha,EVocc,EVvirt,tocc,UoccEOST)
 #ifdef VAR_MPI
      if(CollaborateWithSlaves) then         
 !        call lsmpi_reduction(tocc,nvirt,nvirt,noccEOS*noccEOS,infpar%master,infpar%lg_comm)
@@ -2368,22 +2295,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD3,M,UoccEOST,nocc,0.0E0_realk,AlphaCD4,M)
 
      call mem_alloc(AlphaCD5,nba,nvirt,noccEOS)
-     !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP)
-     do BLOC = 1,nvirt
-        do JLOC = 1,noccEOS
-           do ALPHAAUX = 1,nba
-              TMP = 0.0E0_realk
-              do BDIAG = 1,nvirt
-                 TMP = TMP + UvirtT(BDIAG,BLOC)*AlphaCD4(ALPHAAUX,BDIAG,JLOC)
-              enddo
-              AlphaCD5(ALPHAAUX,BLOC,JLOC) = TMP
-           enddo
-        enddo
-     enddo
-     !$OMP END PARALLEL DO
-
+     call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
      call mem_dealloc(AlphaCD4)
 
      !=====================================================================================
@@ -2401,21 +2313,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      call mem_dealloc(UoccEOST)
 
      call mem_alloc(Calpha3,nba,nvirt,noccEOS)
-     !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-     !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP)
-     do JLOC = 1,noccEOS
-        do BLOC = 1,nvirt
-           do ALPHAAUX = 1,nba
-              TMP = 0.0E0_realk
-              do BDIAG = 1,nvirt
-                 TMP = TMP + UvirtT(BDIAG,BLOC)*Calpha2(ALPHAAUX,BDIAG,JLOC)
-              enddo
-              Calpha3(ALPHAAUX,BLOC,JLOC) = TMP
-           enddo
-        enddo
-     enddo
-     !$OMP END PARALLEL DO
+     call RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,Calpha2,Calpha3)
      call mem_dealloc(Calpha2)
 
      !=====================================================================================
@@ -2427,58 +2325,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !=====================================================================================
      Eocc = 0.0E0_realk
      call mem_alloc(VirtContribsFull,nvirt)
-     do aLoc=1,nvirt
-        VirtContribsFull(aLoc) = 0.0E0_realk
-     end do
-     !$OMP PARALLEL DEFAULT(shared) &
-     !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1,virt_tmp)
-     Eocc2 = 0.0E0_realk
-     call mem_alloc(virt_tmp,nvirt)
-     do aLoc=1,nvirt
-        virt_tmp(aLoc) = 0.0E0_realk
-     end do
-     !$OMP DO COLLAPSE(3) 
-     do bLOC=1,nvirt
-        do aLOC=1,nvirt
-           do iLOC=1,noccEOS
-              do jLOC=1,noccEOS
-                 TMP = 0.0E0_realk
-                 do BDIAG=1,nvirt
-                    TMP1 = 0.0E0_realk
-                    do ADIAG=1,nvirt
-                       !THIS SCALES AS V**4*Oeos**2 it should max scale like V**3*Oeos**2
-                       TMP1 = TMP1 + tocc(ADIAG,BDIAG,ILOC,JLOC)*UvirtT(ADIAG,aLOC)
-                    enddo
-                    TMP = TMP + TMP1*UvirtT(BDIAG,bLOC)
-                 enddo
-                 Gtmp1 = 0.0E0_realk
-                 do ALPHAAUX = 1,nba
-                    Gtmp1 = Gtmp1 + Calpha3(alphaAUX,ALOC,ILOC)*alphaCD5(alphaAUX,BLOC,JLOC) 
-                 enddo
-                 Gtmp2 = 0.0E0_realk
-                 do ALPHAAUX = 1,nba
-                    Gtmp2 = Gtmp2 + Calpha3(alphaAUX,BLOC,ILOC)*alphaCD5(alphaAUX,ALOC,JLOC) 
-                 enddo
-                 !TMP is now t(a,i,b,j)
-                 Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
-                 Etmp = TMP * Gtmp 
-                 Eocc2 = Eocc2 + Etmp
-                 virt_tmp(aLoc) = virt_tmp(aLoc) + Etmp
-                 if(aLOC/=bLOC) virt_tmp(bLoc) = virt_tmp(bLoc) + Etmp
-              enddo
-           enddo
-        enddo
-     enddo
-     !$OMP END DO NOWAIT
-     !$OMP CRITICAL
-
-     Eocc = Eocc + Eocc2
-     do aLoc=1,nvirt
-        VirtContribsFull(aLoc) = VirtContribsFull(aLoc) + virt_tmp(aLoc)
-     end do
-     !$OMP END CRITICAL
-     call mem_dealloc(virt_tmp)
-     !$OMP END PARALLEL
+     call RIMP2_calc_Eocc(nvirt,noccEOS,NBA,alphaCD5,Calpha3,tocc,UvirtT,VirtContribsFull,Eocc)
      call mem_dealloc(UvirtT) 
      call mem_dealloc(tocc)
      call mem_dealloc(Calpha3)
@@ -2733,6 +2580,238 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   call mem_dealloc(OccContribsFull)
 end subroutine MP2_RI_EnergyContribution
 #endif
+
+subroutine RIMP2_calc_Eocc(nvirt,noccEOS,NBA,alphaCD5,Calpha3,tocc,UvirtT,VirtContribsFull,Eocc)
+  implicit none
+  integer,intent(in) :: nvirt,noccEOS,NBA
+  real(realk),intent(in) :: alphaCD5(NBA,nvirt,noccEOS),Calpha3(NBA,nvirt,noccEOS)
+  real(realk),intent(in) :: tocc(nvirt,nvirt,noccEOS,noccEOS),UvirtT(nvirt,nvirt)
+  real(realk),intent(inout) :: VirtContribsFull(nvirt),Eocc
+  !local variables
+  integer :: BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG
+  real(realk) :: TMP,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1,Gtmp
+  real(realk) :: virt_tmp(nvirt)
+  do aLoc=1,nvirt
+     VirtContribsFull(aLoc) = 0.0E0_realk
+  end do
+  !$OMP PARALLEL DEFAULT(none) &
+  !$OMP PRIVATE(BLOC,JLOC,ILOC,ALOC,ALPHAAUX,BDIAG,ADIAG,TMP,Gtmp,Gtmp1,Gtmp2,Etmp,Eocc2,TMP1,virt_tmp) &
+  !$OMP SHARED(nvirt,noccEOS,NBA,alphaCD5,Calpha3,tocc,UvirtT,VirtContribsFull,Eocc)
+  Eocc2 = 0.0E0_realk
+  do aLoc=1,nvirt
+     virt_tmp(aLoc) = 0.0E0_realk
+  end do
+  !$OMP DO COLLAPSE(3) 
+  do bLOC=1,nvirt
+     do aLOC=1,nvirt
+        do iLOC=1,noccEOS
+           do jLOC=1,noccEOS
+              TMP = 0.0E0_realk
+              do BDIAG=1,nvirt
+                 TMP1 = 0.0E0_realk
+                 do ADIAG=1,nvirt
+                    !THIS SCALES AS V**4*Oeos**2 it should max scale like V**3*Oeos**2
+                    TMP1 = TMP1 + tocc(ADIAG,BDIAG,ILOC,JLOC)*UvirtT(ADIAG,aLOC)
+                 enddo
+                 TMP = TMP + TMP1*UvirtT(BDIAG,bLOC)
+              enddo
+              Gtmp1 = 0.0E0_realk
+              do ALPHAAUX = 1,nba
+                 Gtmp1 = Gtmp1 + Calpha3(alphaAUX,ALOC,ILOC)*alphaCD5(alphaAUX,BLOC,JLOC) 
+              enddo
+              Gtmp2 = 0.0E0_realk
+              do ALPHAAUX = 1,nba
+                 Gtmp2 = Gtmp2 + Calpha3(alphaAUX,BLOC,ILOC)*alphaCD5(alphaAUX,ALOC,JLOC) 
+              enddo
+              !TMP is now t(a,i,b,j)
+              Gtmp = (2.0E0_realk*Gtmp1 - Gtmp2)
+              Etmp = TMP * Gtmp 
+              Eocc2 = Eocc2 + Etmp
+              virt_tmp(aLoc) = virt_tmp(aLoc) + Etmp
+              if(aLOC/=bLOC) virt_tmp(bLoc) = virt_tmp(bLoc) + Etmp
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END DO NOWAIT
+  !$OMP CRITICAL
+  Eocc = Eocc + Eocc2
+  do aLoc=1,nvirt
+     VirtContribsFull(aLoc) = VirtContribsFull(aLoc) + virt_tmp(aLoc)
+  end do
+  !$OMP END CRITICAL
+  !$OMP END PARALLEL
+end subroutine RIMP2_calc_Eocc
+
+subroutine RIMP2_TransAlpha1(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
+  implicit none
+  integer,intent(in) :: nvirt,noccEOS,nba
+  real(realk),intent(in) :: UvirtT(nvirt,nvirt),AlphaCD4(nba,nvirt,noccEOS) 
+  real(realk),intent(inout) :: AlphaCD5(nba,nvirt,noccEOS)
+  !local variables
+  integer :: BLOC,JLOC,BDIAG,ALPHAAUX
+  real(realk) :: TMP
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(BLOC,JLOC,BDIAG,ALPHAAUX,TMP) &
+  !$OMP SHARED(nvirt,noccEOS,nba,UvirtT,AlphaCD4,AlphaCD5)
+  do JLOC = 1,noccEOS
+     do BLOC = 1,nvirt
+        do ALPHAAUX = 1,nba
+           TMP = 0.0E0_realk
+           do BDIAG = 1,nvirt
+              TMP = TMP + UvirtT(BDIAG,BLOC)*AlphaCD4(ALPHAAUX,BDIAG,JLOC)
+           enddo
+           AlphaCD5(ALPHAAUX,BLOC,JLOC) = TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine RIMP2_TransAlpha1
+
+subroutine RIMP2_calc_tocc(nvirt,nocc,noccEOS,NBA,alphaCD3,Calpha,EVocc,EVvirt,tocc,UoccEOST)
+  implicit none
+  integer,intent(in) :: nvirt,nocc,noccEOS,NBA
+  real(realk),intent(in) :: alphaCD3(NBA,nvirt,nocc),Calpha(NBA,nvirt,nocc)
+  real(realk),intent(in) :: EVocc(nocc),EVvirt(nvirt),UoccEOST(nocc,noccEOS)
+  real(realk),intent(inout) :: tocc(nvirt,nvirt,noccEOS,noccEOS)
+  !
+  integer :: BDIAG,ADIAG,IDIAG,JDIAG,ALPHAAUX,ILOC,JLOC
+  real(realk) :: gmocont,deltaEPS,TMP
+  real(realk),pointer :: toccTMP(:,:)
+  !$OMP PARALLEL DEFAULT(none) &
+  !$OMP PRIVATE(BDIAG,ADIAG,IDIAG,JDIAG,&
+  !$OMP         ALPHAAUX,ILOC,JLOC,gmocont,deltaEPS,toccTMP,TMP) &
+  !$OMP SHARED(nvirt,nocc,noccEOS,NBA,alphaCD3,Calpha,EVocc,EVvirt,tocc,UoccEOST)
+  call mem_alloc(toccTMP,nocc,nocc)
+  !$OMP DO COLLAPSE(2) 
+  do BDIAG=1,nvirt
+     do ADIAG=1,nvirt
+        do IDIAG=1,nocc
+           do JDIAG=1,nocc
+              gmocont = 0.0E0_realk  
+              do ALPHAAUX=1,nba  
+                 gmocont = gmocont + alphaCD3(ALPHAAUX,ADIAG,IDIAG)*Calpha(ALPHAAUX,BDIAG,JDIAG)
+              enddo
+              deltaEPS = EVocc(IDIAG)+EVocc(JDIAG)-EVvirt(BDIAG)-EVvirt(ADIAG)
+              toccTMP(IDIAG,JDIAG)=gmocont/deltaEPS                
+           enddo
+        enddo
+        do jLOC=1,noccEOS
+           do iLOC=1,noccEOS
+              TMP = 0.0E0_realk
+              do IDIAG=1,nocc ! only run over valence for frozen core 
+                 do JDIAG=1,nocc
+                    TMP = TMP + toccTMP(IDIAG,JDIAG)*UoccEOST(iDIAG,iLOC)*UoccEOST(jDIAG,jLOC)
+                 enddo
+              enddo
+              tocc(ADIAG,BDIAG,ILOC,JLOC) = TMP 
+           enddo
+        enddo
+     enddo
+  enddo
+  !$OMP END DO NOWAIT
+  call mem_dealloc(toccTMP)
+  !$OMP END PARALLEL
+END subroutine RIMP2_calc_tocc
+
+subroutine RIMP2_buildCalpha(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,nBasisaux
+  real(realk),intent(in) :: AlphaBeta_inv(nBasisaux,nBasisaux),AlphaCD3(nBasisaux,nvirt*nocc)
+  real(realk),intent(inout) :: Calpha(nBasisaux,nvirt*nocc)       
+  !
+  integer :: IB,ALPHA,BETA
+  real(realk) :: TMP       
+  !$OMP PARALLEL DO DEFAULT(none) PRIVATE(IB,ALPHA,BETA,TMP) &
+  !$OMP SHARED(nocc,nvirt,nBasisaux,AlphaBeta_inv,AlphaCD3,Calpha)
+  do IB = 1,nocc*nvirt
+     do ALPHA = 1,nBasisaux
+        Calpha(ALPHA,IB) = 0.0E0_realk
+     enddo
+     do BETA = 1,nBasisaux
+        TMP = AlphaCD3(BETA,IB)
+        do ALPHA = 1,nBasisaux
+           Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + AlphaBeta_inv(ALPHA,BETA)*TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine RIMP2_buildCalpha
+
+subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+     & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+     & Calpha,TMPAlphaBeta_inv,nbasisAux)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms
+  integer,intent(in) :: OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nbasisAux
+  integer,intent(in) :: nAtomsMPI(numnodes)
+  integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+  real(realk),intent(in) :: AlphaCD5(OriginalRanknbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
+  !
+  integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
+  real(realk) :: TMP
+  !Step 2: Obtain part of Calpha from this contribution
+!$OMP PARALLEL DO DEFAULT(NONE) &
+!$OMP PRIVATE(IB,startB2,iAtomB,startB,TMP,ALPHA,BETA) &
+!$OMP SHARED(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+!$OMP        OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+!$OMP        Calpha,TMPAlphaBeta_inv,nbasisAux)
+  do IB = 1,nocc*nvirt
+     startB2 = 0
+     DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
+        StartB = startAuxMPI(iAtomB,myOriginalRank+1)
+        do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
+           TMP = AlphaCD5(startB2 + BETA,IB)
+           do ALPHA = 1,MynbasisAuxMPI
+              Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
+           enddo
+        enddo
+        startB2 = startB2 + nAuxMPI(iAtomB,myOriginalRank+1)
+     ENDDO
+  enddo
+!$OMP END PARALLEL DO
+end subroutine RIMP2_buildCalphaContFromAlphaCD
+
+subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
+     & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_inv,nbasisAux)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,mynum,numnodes,natoms
+  integer,intent(in) :: MynbasisAuxMPI,nbasisAux
+  integer,intent(in) :: nAtomsMPI(numnodes)
+  integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+  real(realk),intent(in) :: AlphaCD3(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt*nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
+  !
+  integer :: IB,startB2,iAtomB,StartB,BETA,ALPHA
+  real(realk) :: TMP
+!$OMP PARALLEL DO DEFAULT(NONE) &
+!$OMP PRIVATE(IB,startB2,iAtomB,StartB,BETA,ALPHA,TMP) &
+!$OMP SHARED(nocc,nvirt,nAtomsMPI,startAuxMPI,mynum,&
+!$OMP        nAuxMPI,AlphaCD3,Calpha,TMPAlphaBeta_inv,MynbasisAuxMPI) 
+  do IB = 1,nocc*nvirt
+     do ALPHA = 1,MynbasisAuxMPI
+        Calpha(ALPHA,IB) = 0.0E0_realk
+     enddo
+     startB2 = 0
+     DO iAtomB=1,nAtomsMPI(mynum+1)
+        StartB = startAuxMPI(iAtomB,mynum+1)
+        do BETA = 1,nAuxMPI(iAtomB,mynum+1)
+           TMP = AlphaCD3(startB2 + BETA,IB)
+           do ALPHA = 1,MynbasisAuxMPI
+              Calpha(ALPHA,IB) = Calpha(ALPHA,IB) + &
+                   & TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
+           enddo
+        enddo
+        startB2 = startB2 + nAuxMPI(iAtomB,mynum+1)
+     ENDDO
+  enddo
+!$OMP END PARALLEL DO
+end subroutine RIMP2_buildOwnCalphaFromAlphaCD
 
   !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen
