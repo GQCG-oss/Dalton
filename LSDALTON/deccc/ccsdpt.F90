@@ -630,8 +630,8 @@ contains
 
     !init multiple buffering for mpi
     !this should not be set below 3
-    nbuffs = 8
-    if(nbuffs < 6) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
+    nbuffs = 4
+    if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
     call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
     call mem_alloc(needed,nbuffs)
     call mem_alloc(tiles_in_buf, nbuffs)
@@ -680,121 +680,13 @@ contains
     ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
     ! init ij and i_old/j_old
-    ij = 0
-    i_old = 0
-    j_old = 0
-    ij_type = 0
-
-    ! precalculate loading sequence
-    ! and preload the first nbuff tiles
-
-    ! get first value of ij from job distribution list to preload the necessary
-    ! tiles for the first round
-    ij           = jobs(1)
+    ij           = 0
+    i_old        = 0
+    j_old        = 0
+    ij_type      = 0
     needed       = .false.
     tiles_in_buf = -1
 
-    ! no more jobs to be done? otherwise leave the loop
-    if (ij .gt. 0)then
-
-       ! calculate i and j from composite ij value
-       call calc_i_and_j(ij,nocc,i,j)
-
-       is_in_buf = .false.
-       !this should never be true here
-       do i_search_buf = 1,nbuffs
-          if(tiles_in_buf(i_search_buf)==i)then
-             is_in_buf = .true.
-             exit
-          endif
-       enddo
-
-       if(.not. is_in_buf)then
-          do i_search_buf = 1,nbuffs
-             if(.not.needed(i_search_buf))then
-
-                ibuf = i_search_buf
-
-                call arr_lock_win(vvvo,i,'s',assert=MPI_MODE_NOCHECK)
-                call array_get_tile(vvvo,i,vvvo_pdm_buff(:,ibuf),nvirt**3,lock_set=.true.,flush_it=.true.)
-
-                tiles_in_buf(ibuf) = i
-                needed(ibuf)       = .true.
-
-                exit
-
-             endif
-          enddo
-       endif
-
-       is_in_buf = .false.
-       !this may happen if i == j
-       do i_search_buf = 1,nbuffs
-          if(tiles_in_buf(i_search_buf)==j)then
-             is_in_buf = .true.
-             exit
-          endif
-       enddo
-
-       if(.not. is_in_buf)then
-          do i_search_buf = 1,nbuffs
-             if(.not.needed(i_search_buf))then
-
-                jbuf = i_search_buf
-
-                call arr_lock_win(vvvo,j,'s',assert=MPI_MODE_NOCHECK)
-                call array_get_tile(vvvo,j,vvvo_pdm_buff(:,jbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
-
-                tiles_in_buf(jbuf) = j
-                needed(jbuf)       = .true.
-
-                exit
-
-             endif
-          enddo
-       endif
-
-       do k=1,j
-
-          if ((i .eq. j) .and. (j .eq. k)) then
-
-             cycle
-
-          else
-
-             is_in_buf = .false.
-             !this may happen if i == k or j == k
-             do i_search_buf = 1,nbuffs
-                if(tiles_in_buf(i_search_buf)==k)then
-                   is_in_buf = .true.
-                   exit
-                endif
-             enddo
-
-             if(.not. is_in_buf)then
-                do i_search_buf = 1,nbuffs
-                   if(.not.needed(i_search_buf))then
-
-                      kbuf = i_search_buf
-
-                      call arr_lock_win(vvvo,k,'s',assert=MPI_MODE_NOCHECK)
-                      call array_get_tile(vvvo,k,vvvo_pdm_buff(:,kbuf),nvirt**3,lock_set=.true.,flush_it=.true.)
-
-                      tiles_in_buf(kbuf) = k
-                      needed(kbuf) = .true.
-
-                      exit
-
-                   endif
-                enddo
-             endif
-
-             exit
-
-          endif
-
-       end do
-    end if
 
     ! set async handles. if we are not using gpus, just set them to arbitrary negative numbers
 #ifdef VAR_OPENACC
@@ -862,36 +754,10 @@ contains
                end if
 
                !FIND i in buffer
-               is_in_buf = .false.
-               do i_search_buf=1,nbuffs
-                  if(tiles_in_buf(i_search_buf)==i)then
-                     ibuf = i_search_buf
-                     is_in_buf = .true.
-                     exit
-                  endif
-               enddo
-               if(is_in_buf)then
-                  vvvo_pdm_i => vvvo_pdm_buff(:,ibuf)
-               else
-                  print *,infpar%lg_mynum,"i",i,"tiles",tiles_in_buf
-                  call lsquit("ERROR(ijk_loop_par):i not found in buf",-1)
-               endif
+               call assoc_ptr_to_buf(i,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_i,vvvo_pdm_buff,ibuf)
 
                !FIND j in buffer
-               is_in_buf = .false.
-               do i_search_buf=1,nbuffs
-                  if(tiles_in_buf(i_search_buf)==j)then
-                     jbuf = i_search_buf
-                     is_in_buf = .true.
-                     exit
-                  endif
-               enddo
-               if(is_in_buf)then
-                  vvvo_pdm_j => vvvo_pdm_buff(:,jbuf)
-               else
-                  print *,infpar%lg_mynum,"j",j,"tiles",tiles_in_buf
-                  call lsquit("ERROR(ijk_loop_par):j not found in buf",-1)
-               endif
+               call assoc_ptr_to_buf(j,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_j,vvvo_pdm_buff,jbuf)
 
                ! select ij combination
                TypeOf_ij_combi: select case(ij_type)
@@ -1108,20 +974,7 @@ contains
                      tuple_type = -1
 
                      !FIND k in buffer
-                     is_in_buf = .false.
-                     do i_search_buf=1,nbuffs
-                        if(tiles_in_buf(i_search_buf)==k)then
-                           kbuf = i_search_buf
-                           is_in_buf = .true.
-                           exit
-                        endif
-                     enddo
-                     if(is_in_buf)then
-                        vvvo_pdm_k => vvvo_pdm_buff(:,kbuf)
-                     else
-                        print *,infpar%lg_mynum,"k",k,"tiles",tiles_in_buf
-                        call lsquit("ERROR(ijk_loop_par):k not found in buf",-1)
-                     endif
+                     call assoc_ptr_to_buf(k,vvvo,nbuffs,tiles_in_buf,needed,vvvo_pdm_k,vvvo_pdm_buff,kbuf)
 
                      if ((i .eq. j) .and. (j .eq. k)) then
 
@@ -1214,156 +1067,10 @@ contains
 
                      end if
 
+
                      needed(kbuf) = .true.
 
-                     !set testing integers
-                     i_test        = i
-                     j_test        = j
-                     k_test        = k
-                     ij_count_test = ij_count
-                     ij_done       = .false.
-                     keep_looping  = (count(needed)<nbuffs)
-
-                     !load next bunch of tiles needed
-                     fill_buffer: do while(keep_looping)
-
-                        !break condition
-                        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
-
-                        if(k_test<=j_test)then
-
-                           !Load the next k tile
-
-                           new_k_needed = .true.
-                           do i_search_buf=1,nbuffs
-                              if(tiles_in_buf(i_search_buf) == k_test)then
-
-                                 needed(i_search_buf) = .true.
-                                 new_k_needed         = .false.
-
-                                 exit
-
-                              endif
-
-                           enddo
-
-                           !load k
-                           if( new_k_needed )then
-                              !find pos in buff
-                              do i_search_buf = 1, nbuffs
-                                 if(.not.needed(i_search_buf))then
-                                    kbuf_test = i_search_buf
-                                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
-                                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),nvirt**3,&
-                                       &lock_set=.true.,flush_it=.true.)
-                                    needed(kbuf_test)       = .true.
-                                    tiles_in_buf(kbuf_test) = k_test
-
-                                    exit
-
-                                 endif
-                              enddo
-
-                           endif
-
-                        else
-
-                           !Load the next i and j tiles
-
-                           ij_count_test = ij_count_test + 1
-
-                           if(ij_count_test<=b_size)then
-
-                              !is incremented by one at the end of the loop
-                              !therefore we set it to 0 here
-                              k_test = 0
-
-                              ij_test = jobs(ij_count_test)
-
-                              call calc_i_and_j(ij_test,nocc,i_test,j_test)
-
-                              !check for i
-                              new_i_needed = .true.
-                              do i_search_buf=1,nbuffs
-                                 if(tiles_in_buf(i_search_buf) == i_test)then
-
-                                    needed(i_search_buf) = .true.
-                                    new_i_needed         = .false.
-
-                                    exit
-
-                                 endif
-
-                              enddo
-
-                              !check for j
-                              new_j_needed = .true.
-                              do i_search_buf=1,nbuffs
-                                 if(tiles_in_buf(i_search_buf) == j_test)then
-
-                                    needed(i_search_buf) = .true.
-                                    new_j_needed         = .false.
-
-                                    exit
-
-                                 endif
-
-                              enddo
-
-                              !load new j
-                              if( new_j_needed )then
-                                 !find pos in buff
-                                 do i_search_buf = 1, nbuffs
-                                    if(.not.needed(i_search_buf))then
-                                       jbuf_test = i_search_buf
-                                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
-                                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),nvirt**3,&
-                                          &lock_set=.true.,flush_it=.true.)
-                                       needed(jbuf_test)       = .true.
-                                       tiles_in_buf(jbuf_test) = j_test
-
-                                       exit
-
-                                    endif
-                                 enddo
-
-                              endif
-
-                              !load new i
-                              if( new_i_needed )then
-
-                                 !find pos in buff
-                                 do i_search_buf = 1, nbuffs
-                                    if(.not.needed(i_search_buf))then
-
-                                       ibuf_test = i_search_buf
-
-                                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
-                                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),nvirt**3,&
-                                          &lock_set=.true.,flush_it=.true.)
-
-                                       needed(ibuf_test)       = .true.
-                                       tiles_in_buf(ibuf_test) = i_test
-
-                                       exit
-
-                                    endif
-                                 enddo
-
-                              endif
-
-                           else
-
-                              ij_done = .true.
-
-                           endif
-
-
-                        endif
-
-                        k_test = k_test + 1
-
-                     enddo fill_buffer
+                     call preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,i,j,k,ij_count,nbuffs,needed,tiles_in_buf,vvvo_pdm_buff)
 
                      ! generate tuple(s)
                      TypeOfTuple_par_ijk: select case(tuple_type)
@@ -1600,6 +1307,241 @@ contains
 
   end subroutine ijk_loop_par
 #endif
+
+  subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos)
+     implicit none
+     integer, intent(in):: tilenr,nbuffs
+     type(array), intent(inout) :: arr
+     integer, intent(inout):: buf_pos(nbuffs)
+     logical, intent(inout):: buf_log(nbuffs)
+     real(realk), intent(out),   pointer :: ptr(:)
+     real(realk), intent(inout), pointer :: bg_buf(:,:)
+     integer, intent(out):: pos
+     integer :: i_search_buf,ts
+     logical :: found
+
+     call find_tile_pos_in_buf(tilenr,buf_pos,nbuffs,pos,found)
+
+     if(found)then
+
+        ptr => bg_buf(:,pos)
+
+     else
+        do i_search_buf = 1,nbuffs
+           if(.not.buf_log(i_search_buf))then
+
+              pos          = i_search_buf
+
+              call arr_lock_win(arr,tilenr,'s',assert=MPI_MODE_NOCHECK)
+
+              call get_tile_dim(ts,arr,tilenr)
+
+              call array_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+
+              buf_pos(pos) = tilenr
+              buf_log(pos) = .true.
+              found        = .true.
+              ptr          => bg_buf(:,pos)
+
+              exit
+
+           endif
+        enddo
+
+        if( .not. found)then
+
+           call lsquit("ERROR(assoc_ptr_to_buf):tile not found in buf and no&
+              & free position available to load",-1)
+
+        endif
+
+     endif
+  end subroutine assoc_ptr_to_buf
+
+  subroutine find_tile_pos_in_buf(tilenr,buf,nbuffs,pos,found)
+     implicit none
+     integer, intent(in):: tilenr,nbuffs
+     integer, intent(in):: buf(nbuffs)
+     logical, intent(out):: found
+     integer, intent(out):: pos
+     integer :: i
+     found = .false.
+     do i=1,nbuffs
+        if(buf(i)==tilenr)then
+           pos   = i
+           found = .true.
+           exit
+        endif
+     enddo
+  end subroutine find_tile_pos_in_buf
+
+  subroutine preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
+        &tiles_in_buf,vvvo_pdm_buff)
+     implicit none
+     type(array), intent(inout) :: vvvo
+     integer, intent(in) :: b_size,current_i, current_j, current_k, current_ij_count, nbuffs,nocc
+     integer, intent(in) :: jobs(b_size+1)
+     logical, intent(inout) :: needed(nbuffs)
+     integer, intent(inout) :: tiles_in_buf(nbuffs)
+     real(realk), pointer, intent(inout) :: vvvo_pdm_buff(:,:)
+
+     integer :: i_test,j_test,k_test,i_search_buf
+     integer :: ibuf_test, jbuf_test, kbuf_test, ij_count_test, ij_test
+     logical :: keep_looping,ij_done, new_i_needed, new_j_needed, new_k_needed
+     integer :: ts
+
+     !set testing integers
+     i_test        = current_i
+     j_test        = current_j
+     k_test        = current_k
+     ij_count_test = current_ij_count
+     ij_done       = .false.
+     keep_looping  = (count(needed)<nbuffs)
+
+     !load next bunch of tiles needed
+     fill_buffer: do while(keep_looping)
+
+        !break condition
+        keep_looping = (count(needed)<nbuffs.and..not.(ij_done .and. .not. k_test<=j_test))
+
+        if(k_test<=j_test)then
+
+           !Load the next k tile
+
+           new_k_needed = .true.
+           do i_search_buf=1,nbuffs
+              if(tiles_in_buf(i_search_buf) == k_test)then
+
+                 needed(i_search_buf) = .true.
+                 new_k_needed         = .false.
+
+                 exit
+
+              endif
+
+           enddo
+
+           !load k
+           if( new_k_needed )then
+              !find pos in buff
+              do i_search_buf = 1, nbuffs
+                 if(.not.needed(i_search_buf))then
+                    kbuf_test = i_search_buf
+                    call arr_lock_win(vvvo,k_test,'s',assert=MPI_MODE_NOCHECK)
+                    call get_tile_dim(ts,vvvo,k_test)
+                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                       &lock_set=.true.,flush_it=.true.)
+                    needed(kbuf_test)       = .true.
+                    tiles_in_buf(kbuf_test) = k_test
+
+                    exit
+
+                 endif
+              enddo
+
+           endif
+
+        else
+
+           !Load the next i and j tiles
+
+           ij_count_test = ij_count_test + 1
+
+           if(ij_count_test<=b_size)then
+
+              !is incremented by one at the end of the loop
+              !therefore we set it to 0 here
+              k_test = 0
+
+              ij_test = jobs(ij_count_test)
+
+              call calc_i_and_j(ij_test,nocc,i_test,j_test)
+
+              !check for i
+              new_i_needed = .true.
+              do i_search_buf=1,nbuffs
+                 if(tiles_in_buf(i_search_buf) == i_test)then
+
+                    needed(i_search_buf) = .true.
+                    new_i_needed         = .false.
+
+                    exit
+
+                 endif
+
+              enddo
+
+              !check for j
+              new_j_needed = .true.
+              do i_search_buf=1,nbuffs
+                 if(tiles_in_buf(i_search_buf) == j_test)then
+
+                    needed(i_search_buf) = .true.
+                    new_j_needed         = .false.
+
+                    exit
+
+                 endif
+
+              enddo
+
+              !load new j
+              if( new_j_needed )then
+                 !find pos in buff
+                 do i_search_buf = 1, nbuffs
+                    if(.not.needed(i_search_buf))then
+                       jbuf_test = i_search_buf
+                       call arr_lock_win(vvvo,j_test,'s',assert=MPI_MODE_NOCHECK)
+                       call get_tile_dim(ts,vvvo,j_test)
+                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
+                       needed(jbuf_test)       = .true.
+                       tiles_in_buf(jbuf_test) = j_test
+
+                       exit
+
+                    endif
+                 enddo
+
+              endif
+
+              !load new i
+              if( new_i_needed )then
+
+                 !find pos in buff
+                 do i_search_buf = 1, nbuffs
+                    if(.not.needed(i_search_buf))then
+
+                       ibuf_test = i_search_buf
+
+                       call arr_lock_win(vvvo,i_test,'s',assert=MPI_MODE_NOCHECK)
+                       call get_tile_dim(ts,vvvo,i_test)
+                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                          &lock_set=.true.,flush_it=.true.)
+
+                       needed(ibuf_test)       = .true.
+                       tiles_in_buf(ibuf_test) = i_test
+
+                       exit
+
+                    endif
+                 enddo
+
+              endif
+
+           else
+
+              ij_done = .true.
+
+           endif
+
+
+        endif
+
+        k_test = k_test + 1
+
+     enddo fill_buffer
+  end subroutine preload_tiles_in_bg_buf
 
 
   !> \brief: main ijk-loop (serial version)
