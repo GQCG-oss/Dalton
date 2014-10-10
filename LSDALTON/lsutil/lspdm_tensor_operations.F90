@@ -690,136 +690,217 @@ module lspdm_tensor_operations_module
     type(array), intent(in) :: t2
     !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
-    real(realk),pointer :: t2tile(:,:,:,:)
-    real(realk),pointer :: t1tile(:), g_iajb(:), g_ibja(:)
-    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj
-
-    integer :: glob_mode_idx(gmo%mode), idx
+    real(realk),pointer :: t2tile(:,:,:,:),gmotile(:,:,:,:),gmotile1d(:)
+    real(realk),pointer :: gmo_tile(:)
+    integer :: lt,i,j,a,b,o(t2%mode),da,db,di,dj,gmo_ts
+    integer :: order_c(gmo%mode), gmo_ctidx(gmo%mode), gmo_ctdim(gmo%mode), cbuf, gmo_ccidx
+    real(realk), pointer :: gmo_ctile_buf(:,:),gmo_ctile(:,:,:,:)
+    integer :: order_e(gmo%mode), gmo_etidx(gmo%mode), gmo_etdim(gmo%mode), ebuf, gmo_ecidx
+    real(realk), pointer :: gmo_etile_buf(:,:),gmo_etile(:,:,:,:)
+    real(realk), pointer :: gmo_tile_buf(:,:)
+    integer :: nt,nbuffs,nbuffs_c, nbuffs_e
     integer(kind=ls_mpik) :: mode
     integer(kind=long) :: tiledim
     real(realk), external :: ddot
     integer, pointer :: table_iajb(:,:), table_ibja(:,:)
-    logical :: nomem
-
-  nomem = .false.
-  if(DECinfo%v2o2_free_solver)  nomem = .true.
 #ifdef VAR_MPI
-  mode  = MPI_MODE_NOCHECK
-  if (nomem) then
+
+    mode = MPI_MODE_NOCHECK
+
+    !reorder gmo to have the same order as t2 - both coulomb and exchange parts
+    order_c   = [2,4,1,3]
+    order_e   = [4,2,1,3]
+
+    do i=1,gmo%mode
+       if(gmo%dims(order_c(i)) /= t2%dims(i))then
+          call lsquit("ERROR(get_cc_energy_parallel):the assumed sorting of the gmos and t2 amplitudes is incorrect",-1)
+       endif
+    enddo
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
-      call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
+       call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
     endif
 
-    tiledim = t2%tdim(1)*t2%tdim(2)*t2%tdim(3)*t2%tdim(4)
-    call mem_alloc(g_iajb,tiledim)
-    call mem_alloc(g_ibja,tiledim)
-    call mem_alloc(t1tile,tiledim)
-    call mem_alloc(table_iajb,tiledim,3_long)
-    call mem_alloc(table_ibja,tiledim,3_long)
-    g_iajb = 0.0E0_realk
-    g_ibja = 0.0E0_realk
+    nbuffs = 6
+    if(mod(nbuffs,2)/=0)call lsquit("ERROR(get_cc_energy_parallel): nbuffs must be an even number",-1)
+    nbuffs_c = nbuffs/2
+    nbuffs_e = nbuffs/2
+
+    call mem_alloc(gmo_tile_buf,gmo%tsize,nbuffs)
+
     E1=0.0E0_realk
     E2=0.0E0_realk
     Ec=0.0E0_realk
-    do lt=1,t2%nlti
-      !get offset for global indices
-      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
-      do j=1,t2%mode
-        o(j)=(o(j)-1)*t2%tdim(j)
-      enddo
 
-      ! Here we get the info needed to (mpi) get the int. tiles correponding
-      ! to the amplitude tile. at the same time we reorder the single amplitudes:*
-      ! t1(a,i)*t1(b,j) => t1tile[ab,ij]
-      call get_info_for_mpi_get_and_reorder_t1(gmo,table_iajb,table_ibja, &
-           & t2%ti(lt)%d,o,t1,t1tile)
+    !Preload nbuffs_c tiles
+    do lt=1,min(nbuffs_c-1,t2%nlti)
 
-      ! Communication epoch: build a local int. tile corresponding to the t2:
-      call time_start_phase(PHASE_COMM)
-      call arr_lock_wins(gmo,'s',mode)
-      do i=1,t2%ti(lt)%e
-        call lsmpi_get(g_iajb(i),table_iajb(i,1),int(table_iajb(i,2),kind=ls_mpik), &
-             & gmo%wi(table_iajb(i,3)))  
-        call lsmpi_get(g_ibja(i),table_ibja(i,1),int(table_ibja(i,2),kind=ls_mpik), &
-             & gmo%wi(table_ibja(i,3)))   
-      end do
-      call arr_unlock_wins(gmo)
-      call time_start_phase(PHASE_WORK)
+       !get offset for global indices and tile indices for gmo
+       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+       do j=1,t2%mode
+          gmo_ctidx(order_c(j)) = o(j)
+          gmo_etidx(order_e(j)) = o(j)
+       enddo
 
-      ! Actual calculation of the energy.
-      E2 = E2 + ddot(t2%ti(lt)%e,t2%ti(lt)%t,1,2.0E0_realk*g_iajb,1)
-      E2 = E2 - ddot(t2%ti(lt)%e,t2%ti(lt)%t,1,g_ibja,1)
-      E1 = E1 + ddot(t2%ti(lt)%e,t1tile,1,2.0E0_realk*g_iajb,1)
-      E1 = E1 - ddot(t2%ti(lt)%e,t1tile,1,g_ibja,1)
+       call get_tile_dim(gmo_ctdim,gmo,gmo_ctidx)
+       call get_tile_dim(gmo_etdim,gmo,gmo_etidx)
+
+
+       gmo_ts = 1
+       do j=1,gmo%mode
+#ifdef VAR_LSDEBUG
+          if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
+             print *,infpar%lg_mynum,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
+             call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+          endif
+#endif
+          gmo_ts = gmo_ts * gmo_ctdim(j)
+       enddo
+
+       cbuf = mod(lt,nbuffs_c) + 1
+
+       gmo_ccidx = get_cidx(gmo_ctidx,gmo%ntpm,gmo%mode)
+       gmo_ecidx = get_cidx(gmo_etidx,gmo%ntpm,gmo%mode)
+
+       !GET COULOMB TILE
+       call arr_lock_win(gmo,gmo_ccidx,'s',assert = mode)
+       call array_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+
+       !GET EXCHANGE TILE
+       if(gmo_ccidx/=gmo_ecidx)then
+          ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
+          call arr_lock_win(gmo,gmo_ecidx,'s',assert = mode)
+          call array_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+       else
+          ebuf = cbuf
+       endif
+
+
     enddo
 
-    call mem_dealloc(g_iajb)
-    call mem_dealloc(g_ibja)
-    call mem_dealloc(t1tile)
-    call mem_dealloc(table_iajb)
-    call mem_dealloc(table_ibja)
-    nullify(g_iajb)
-    nullify(g_ibja)
-    nullify(table_iajb)
-    nullify(table_ibja)
-    nullify(t1tile)
 
-    call lsmpi_local_reduction(E1,infpar%master)
-    call lsmpi_local_reduction(E2,infpar%master)
-
-    Ec=E1+E2
-  else 
-    !Get the slaves to this routine
-    if(infpar%lg_mynum==infpar%master)then
-      call pdm_array_sync(infpar%lg_comm,JOB_GET_CC_ENERGY,t1,t2,gmo)
-    endif
-    call memory_allocate_array_dense(gmo)
-    call cp_tileddata2fort(gmo,gmo%elm1,gmo%nelms,.true.)
-
-    E1=0.0E0_realk
-    E2=0.0E0_realk
-    Ec=0.0E0_realk
+    !DO LOOP OVER LOCAL TILES OF T2
     do lt=1,t2%nlti
-      call ass_D1to4(t2%ti(lt)%t,t2tile,t2%ti(lt)%d)
-      !get offset for global indices
-      call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
-      do j=1,t2%mode
-        o(j)=(o(j)-1)*t2%tdim(j)
-      enddo
 
-      da = t2%ti(lt)%d(1)
-      db = t2%ti(lt)%d(2)
-      di = t2%ti(lt)%d(3)
-      dj = t2%ti(lt)%d(4)
-      !count over local indices
-      !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(gmo,o,t1,t2tile,&
-      !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
-      do j=1,dj
-        do i=1,di
-          do b=1,db
-            do a=1,da
-     
-              E2 = E2 + t2tile(a,b,i,j)*&
-              & (2.0E0_realk*  gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
-              E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
-                   (2.0E0_realk*gmo%elm4(i+o(3),a+o(1),j+o(4),b+o(2))-gmo%elm4(i+o(3),b+o(2),j+o(4),a+o(1)))
-   
-            enddo 
+
+       !PREFETCH TILES
+       nt = lt + nbuffs_c - 1
+       if( nt <= t2%nlti )then
+          !get offset for global indices and tile indices for gmo
+          call get_midx(t2%ti(nt)%gt,o,t2%ntpm,t2%mode)
+          do j=1,t2%mode
+             gmo_ctidx(order_c(j)) = o(j)
+             gmo_etidx(order_e(j)) = o(j)
           enddo
-        enddo
-      enddo
-      !$OMP END PARALLEL DO
-      nullify(t2tile)
+
+          call get_tile_dim(gmo_ctdim,gmo,gmo_ctidx)
+          call get_tile_dim(gmo_etdim,gmo,gmo_etidx)
+
+
+          gmo_ts = 1
+          do j=1,gmo%mode
+#ifdef VAR_LSDEBUG
+             if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
+                print *,infpar%lg_mynum,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
+                call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+             endif
+#endif
+             gmo_ts = gmo_ts * gmo_ctdim(j)
+          enddo
+
+          cbuf = mod(nt,nbuffs_c) + 1
+
+          gmo_ccidx = get_cidx(gmo_ctidx,gmo%ntpm,gmo%mode)
+          gmo_ecidx = get_cidx(gmo_etidx,gmo%ntpm,gmo%mode)
+
+          !GET COULOMB TILE
+          call arr_lock_win(gmo,gmo_ccidx,'s',assert = mode)
+          call array_get_tile(gmo,gmo_ccidx,gmo_tile_buf(:,cbuf),gmo_ts,lock_set=.true.)
+
+          !GET EXCHANGE TILE
+          if(gmo_ccidx/=gmo_ecidx)then
+             ebuf = nbuffs_c + mod(nt,nbuffs_c) + 1
+             call arr_lock_win(gmo,gmo_ecidx,'s',assert = mode)
+             call array_get_tile(gmo,gmo_ecidx,gmo_tile_buf(:,ebuf),gmo_ts,lock_set=.true.)
+          else
+             ebuf = cbuf
+          endif
+
+       endif
+
+       !get offset for global indices and tile indices for gmo
+       call get_midx(t2%ti(lt)%gt,o,t2%ntpm,t2%mode)
+       do j=1,t2%mode
+          gmo_ctidx(order_c(j)) = o(j)
+          gmo_etidx(order_e(j)) = o(j)
+          o(j)=(o(j)-1)*t2%tdim(j)
+       enddo
+
+       call get_tile_dim(gmo_ctdim,gmo,gmo_ctidx)
+       call get_tile_dim(gmo_etdim,gmo,gmo_etidx)
+
+
+       gmo_ts = 1
+       do j=1,gmo%mode
+#ifdef VAR_LSDEBUG
+          if(gmo_ctdim(order_c(j)) /= gmo_etdim(order_e(j)))then
+             print *,infpar%lg_mynum,j,"wrong",gmo_ctdim(order_c(j)),gmo_etdim(order_e(j)),"tdim",gmo_ctdim,",",gmo_etdim
+             call lsquit("ERROR(get_cc_energy_parallel): something wrong with the gmo tiles",-1)
+          endif
+#endif
+          gmo_ts = gmo_ts * gmo_ctdim(j)
+       enddo
+
+       cbuf = mod(lt,nbuffs_c) + 1
+
+       gmo_ccidx = get_cidx(gmo_ctidx,gmo%ntpm,gmo%mode)
+       gmo_ecidx = get_cidx(gmo_etidx,gmo%ntpm,gmo%mode)
+
+       call arr_unlock_win(gmo,gmo_ccidx)
+       if(gmo_ccidx/=gmo_ecidx)then
+          ebuf = nbuffs_c + mod(lt,nbuffs_c) + 1
+          call arr_unlock_win(gmo,gmo_ecidx)
+       else
+          ebuf = cbuf
+       endif
+
+       call ass_D1to4(gmo_tile_buf(:,cbuf),gmo_ctile,gmo_ctdim)
+       call ass_D1to4(gmo_tile_buf(:,ebuf),gmo_etile,gmo_etdim)
+       call ass_D1to4(t2%ti(lt)%t,t2tile,t2%ti(lt)%d)
+
+       da = t2%ti(lt)%d(1)
+       db = t2%ti(lt)%d(2)
+       di = t2%ti(lt)%d(3)
+       dj = t2%ti(lt)%d(4)
+       !count over local indices
+       !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(o,t1,t2tile,gmo_ctile,gmo_etile,&
+       !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) REDUCTION(+:E1,E2) COLLAPSE(3)
+       do j=1,dj
+          do i=1,di
+             do b=1,db
+                do a=1,da
+
+                   E2 = E2 + t2tile(a,b,i,j)*&
+                      & (2.0E0_realk*  gmo_ctile(i,a,j,b) - gmo_etile(i,b,j,a))
+                   E1 = E1 + ( t1%elm2(a+o(1),i+o(3))*t1%elm2(b+o(2),j+o(4)) ) * &
+                      (2.0E0_realk*gmo_ctile(i,a,j,b)-gmo_etile(i,b,j,a))
+
+                enddo 
+             enddo
+          enddo
+       enddo
+       !$OMP END PARALLEL DO
+       t2tile    => null()
+       gmo_ctile => null()
+       gmo_etile => null()
     enddo
 
-    call arr_deallocate_dense(gmo)
-    
     call lsmpi_local_reduction(E1,infpar%master)
     call lsmpi_local_reduction(E2,infpar%master)
 
     Ec=E1+E2
-  end if
+
+    call mem_dealloc(gmo_tile_buf)
 #else
     Ec = 0.0E0_realk
 #endif

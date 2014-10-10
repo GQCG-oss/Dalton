@@ -597,18 +597,10 @@ contains
     integer :: b_size,njobs,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
     !> loop integers
-    integer :: i,j,k,idx,ij_type,tuple_type,ij_count_test, ij_test
-    !> ij loop buffer handling
-    integer ::  k_test,nbuffs
-    integer ::  ibuf_ll, ibuf_ul, ibc, ipp, ibuf, i_test
-    integer ::  jbuf_ll, jbuf_ul, jbc, jpp, jbuf, j_test
-    integer ::  ibuf_test, jbuf_test
-    !> k loop buffer handling
-    integer ::  kbc, kpp, kbuf
-    integer ::  kbuf_test
+    integer :: i,j,k,idx,ij_type,tuple_type
+    !> ij loop and k loop buffer handling
+    integer ::  nbuffs, ibuf, jbuf, kbuf
     integer,pointer :: tiles_in_buf(:)
-    integer :: printrnk, i_search_buf
-    logical :: is_in_buf, new_i_needed, new_j_needed, new_k_needed, ij_done, keep_looping
     logical,pointer :: needed(:)
 #ifdef VAR_OPENACC
     ! 6 is the unique number of handles
@@ -631,16 +623,10 @@ contains
     !init multiple buffering for mpi
     !this should not be set below 3
     nbuffs = 4
-    if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 6",-1)
+    if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 3",-1)
     call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
     call mem_alloc(needed,nbuffs)
     call mem_alloc(tiles_in_buf, nbuffs)
-
-!    ! init pdm work arrays for vvvo integrals
-!    ! init ccsd_doubles_help_arrays
-!    call mem_alloc(vvvo_pdm_i,nvirt**3)
-!    call mem_alloc(vvvo_pdm_j,nvirt**3)
-!    call mem_alloc(vvvo_pdm_k,nvirt**3)
 
     ! init ccsd_doubles_help_arrays
     call mem_alloc(ccsd_doubles_portions_i,nocc,nvirt,nvirt)
@@ -1291,9 +1277,6 @@ contains
     call mem_dealloc(ccsd_doubles_portions_k)
 
     ! release pdm work arrays and job list
-!    call mem_dealloc(vvvo_pdm_i)
-!    call mem_dealloc(vvvo_pdm_j)
-!    call mem_dealloc(vvvo_pdm_k)
     call mem_dealloc(vvvo_pdm_buff)
     call mem_dealloc(needed)
     call mem_dealloc(tiles_in_buf)
