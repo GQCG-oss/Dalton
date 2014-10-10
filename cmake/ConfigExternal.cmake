@@ -34,17 +34,37 @@ macro(add_external _project)
                        ${PROJECT_BINARY_DIR}/external/${_project}-stamp
                        ${PROJECT_SOURCE_DIR}/external/${_project}
     )
-
-    ExternalProject_Add(${_project}
-        DOWNLOAD_COMMAND ${UPDATE_COMMAND}
-        DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
-        BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
-        STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
-        TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
-        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
-        CMAKE_ARGS ${ExternalProjectCMakeArgs}
-        )
+    
+    set(_testing_command "${ARGV1}")
+    
+    if("${_testing_command}" STREQUAL "")
+       ExternalProject_Add(${_project}                                 
+           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+           CMAKE_ARGS ${ExternalProjectCMakeArgs}
+           )
+    else()
+       # For unfathomable reasons, CMake expects the TEST_COMMAND to be ;-separated list...
+       separate_arguments(_testing_command)
+       ExternalProject_Add(${_project}                                 
+           DOWNLOAD_COMMAND ${UPDATE_COMMAND}
+           DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}
+           SOURCE_DIR ${PROJECT_SOURCE_DIR}/external/${_project}
+           BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
+           STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
+           TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
+           INSTALL_DIR ${PROJECT_BINARY_DIR}/external
+           CMAKE_ARGS ${ExternalProjectCMakeArgs}
+	   TEST_BEFORE_INSTALL 1
+	   TEST_COMMAND "${_testing_command}"
+	   LOG_TEST 1
+           )
+    endif()	    
 
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
@@ -58,6 +78,7 @@ macro(add_external _project)
 endmacro()
 
 macro(add_PCMSOLVER)
+    set(PCMSOLVER_TESTS OFF)
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -75,9 +96,16 @@ macro(add_PCMSOLVER)
 	-DENABLE_EIGEN_MKL=${ENABLE_EIGEN_MKL}
 	-DBOOST_INCLUDEDIR=${BOOST_INCLUDEDIR}
 	-DBOOST_LIBRARYDIR=${BOOST_LIBRARYDIR}
-        -DPYTHON_LIBRARY=${PYTHON_LIBRARY} # location of the .so version of libpython
-        -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}   # location of Python.h
-        -DPYTHON_INCLUDE_DIR2=${PYTHON_INCLUDE_DIR2} # location of pyconfig.h
+	-DPYTHON_LIBRARY=${pyLibs} # location of the .so version of libpython
+	-DPYTHON_INCLUDE_DIR=${pyInclude}   # location of Python.h
+	-DPYTHON_INCLUDE_DIR2=${pyInclude2} # location of pyconfig.h
+	-DENABLE_TESTS=${PCMSOLVER_TESTS}
         )
-    add_external(pcmsolver)
+
+    if(PCMSOLVER_TESTS)
+	    set(testing_command "make test")
+	    add_external(pcmsolver ${testing_command})
+    else()
+	    add_external(pcmsolver)
+    endif()
 endmacro()
