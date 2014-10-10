@@ -2586,12 +2586,12 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i,i-1
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
-           elms_sent    = 0
+           elms_sent    = nelintile
 
         endif
      enddo
@@ -2706,12 +2706,12 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i,i-1
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
-           elms_sent    = 0
+           elms_sent    = nelintile
 
         endif
 
@@ -2753,12 +2753,12 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i,i-1
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
            last_flush_i = i
-           elms_sent    = 0
+           elms_sent    = nelintile
 
         endif
       enddo
@@ -2896,12 +2896,12 @@ module lspdm_tensor_operations_module
 
        if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-          do j=last_flush_i,i
+          do j=last_flush_i,i-1
              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
           enddo
 
           last_flush_i = i
-          elms_sent    = 0
+          elms_sent    = nelintile
 
        endif
     enddo
