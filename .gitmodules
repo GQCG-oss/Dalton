@@ -21,5 +21,4 @@
 	url = git://repo.ctcc.no/qmatrix.git
 [submodule "external/pcmsolver"]
 	path = external/pcmsolver
-	url = git@repo.ctcc.no:pcmsolver.git
-	branch = master
+	url = https://github.com/PCMSolver/pcmsolver.git
