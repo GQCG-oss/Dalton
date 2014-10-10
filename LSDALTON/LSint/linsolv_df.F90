@@ -51,6 +51,7 @@ IntegralTransformGC = .FALSE.
 iterative_minushalf=.false.
 !set threshold
 SETTING%SCHEME%intTHRESHOLD = SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+call Test_if_64bit_integer_required(naux,naux)
 call mem_alloc(alphabeta,naux,1,naux,1,1)
 ! Solver based on a Lowdin decomposition, c = A^{-0.5} A^{-0.5} b
 IF(ITERATIVE_MINUSHALF) THEN

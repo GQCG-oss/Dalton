@@ -1407,6 +1407,7 @@ CONTAINS
 
           !============================================================================================================
           !         BuildRj000 angmom > 2 only for center A and seg1prim and Gen 
+          !         because RJ000 do not depend on any center so we place it in center A files.  
           !============================================================================================================
           IF(center.EQ.1)THEN
              IF(Gen.OR.Seg1Prim)THEN
@@ -1703,6 +1704,267 @@ WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      RJ000Array(iPrimQ,iPrimP,iPas
                    IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
 !                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
                    WRITE(LUFILE,'(A)')' end subroutine'
+
+!!$                   WRITE(LUFILE,'(A)')''
+!!$                   IF(JMAX.LT.10)THEN
+!!$                      WRITE(LUFILE,'(A,A,I1,A)')'subroutine BuildGJ000'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,'(nPassP,nPrimP,nPrimQ,reducedExponents,&'
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A,A,I2,A)')'subroutine BuildGJ000'//ARCSTRING,SegLabel(1:iSegLabel),JMAX,'(nPassP,nPrimP,nPrimQ,reducedExponents,&'
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'         & Coeff,GGemexponent,n,Pcent,Qcent,IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&'
+!!$                   IF(DoOpenACC)THEN
+!!$                      WRITE(LUFILE,'(A)')'         & GJ000array,iASync)'
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A)')'         & GJ000array)'
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'  implicit none'
+!!$                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: nPassP,nPrimP,nPrimQ,n'
+!!$                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: MaxPasses,nAtomsA,nAtomsB'
+!!$                   WRITE(LUFILE,'(A)')'  integer,intent(in) :: IatomApass(MaxPasses),IatomBpass(MaxPasses)'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Coeff(n),GGemexponent(n)'
+!!$                   IF(.NOT.Seg1Prim)THEN
+!!$                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(nPrimQ,nPrimP)'
+!!$                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nPrimP,nAtomsA,nAtomsB),Qcent(3,nPrimQ)'
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: reducedExponents(1)'
+!!$                      WRITE(LUFILE,'(A)')'  real(realk),intent(in) :: Pcent(3,nAtomsA,nAtomsB),Qcent(3)'
+!!$                   ENDIF
+!!$                   IF(nPrimLast)THEN
+!!$                      IF(.NOT.Seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: GJ000array(0:',JMAX,',nPrimQ*nPrimP*nPassP)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: GJ000array(0:',JMAX,',nPassP)'
+!!$                      ENDIF
+!!$                   ELSE
+!!$                      IF(.NOT.Seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: GJ000array(nPrimQ*nPrimP*nPassP,0:',JMAX,')'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A,I2,A)')'  real(realk),intent(inout) :: GJ000array(nPassP,0:',JMAX,')'
+!!$                      ENDIF
+!!$                   ENDIF
+!!$                   IF(DoOpenACC)WRITE(LUFILE,'(A)')'  integer(kind=acckind),intent(in) :: iASync'
+!!$                   WRITE(LUFILE,'(A)')'  !local variables'
+!!$                   IF(COLLAPSE)THEN
+!!$                      IF(Seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A)')'  integer :: iP,iPassP,ipnt,iAtomA,iAtomB'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'  integer :: iP,iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB'
+!!$                      ENDIF
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A)')'  integer :: iPrimQ,iPrimP,iPassP,ipnt,iAtomA,iAtomB' 
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'  real(realk) :: mPX,mPY,mPZ,Xpq,Ypq,Zpq'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk) :: squaredDistance,WVAL,WDIFF,W2,W3,REXPW,RWVAL,GVAL' 
+!!$                   WRITE(LUFILE,'(A,I2,A)')'  real(realk) :: GJ000(0:',JMAX,')'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: TENTH = 0.01E0_realk,D05 =0.5E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),parameter :: D2=2.0E0_realk'
+!!$                   WRITE(LUFILE,'(A,ES24.16,A)')'  real(realk),PARAMETER :: D2JP36=',2.d0*JMAX + 36.d0,'_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),parameter :: D1=1.0E0_realk,D03333=1.0E0_realk/3.0E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: D4 = 4E0_realk, D100=100E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk),PARAMETER :: SMALL = 1E-15_realk,D12 = 12.0E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), parameter :: PI=3.14159265358979323846E0_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: SQRPIH = SQRTPI/D2'
+!!$                   WRITE(LUFILE,'(A)')'  real(realk), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI'
+!!$                   IF(DoOpenMP)THEN
+!!$                      !OPENMP
+!!$                      WRITE(LUFILE,'(A)')  '!$OMP DO &'
+!!$!                      WRITE(LUFILE,'(A)')  '!$OMP PARALLEL DO DEFAULT(none) &'
+!!$                      WRITE(LUFILE,'(A)')  '!$OMP PRIVATE(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+!!$                      IF(COLLAPSE)THEN
+!!$                       IF(Seg1Prim)THEN
+!!$                        WRITE(LUFILE,'(A)')'!$OMP         iP,iPassP,&'
+!!$                       ELSE
+!!$                        WRITE(LUFILE,'(A)')'!$OMP         iP,iPrimQ,iPrimP,iPassP,&'
+!!$                       ENDIF
+!!$                      ELSE
+!!$                       WRITE(LUFILE,'(A)') '!$OMP         iPrimQ,iPrimP,iPassP,&'
+!!$                      ENDIF
+!!$                      WRITE(LUFILE,'(A)')  '!$OMP         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,GJ000,REXPW,&'
+!!$                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) '
+!!$!                      WRITE(LUFILE,'(A)')  '!$OMP         mPX,mPY,mPZ,RWVAL,GVAL) &'
+!!$!                      WRITE(LUFILE,'(A)')  '!$OMP SHARED(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+!!$!                      WRITE(LUFILE,'(A)')  '!$OMP        TABFJW,reducedExponents,Pcent,Qcent,GJ000array)'
+!!$                   ENDIF
+!!$                   IF(DoOpenACC)THEN
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC parallel loop &'
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC present(nPassP,nPrimP,nPrimQ,IatomApass,IatomBpass,&'
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC         TABFJW,reducedExponents,Pcent,Qcent,GJ000array)       &'
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC private(iAtomA,iAtomB,Xpq,Ypq,Zpq,&'
+!!$                      IF(COLLAPSE)THEN
+!!$                       IF(Seg1Prim)THEN
+!!$                        WRITE(LUFILE,'(A)')'!$ACC         iP,iPassP,&'
+!!$                       ELSE
+!!$                        WRITE(LUFILE,'(A)')'!$ACC         iP,iPrimQ,iPrimP,iPassP,&'
+!!$                       ENDIF
+!!$                      ELSE
+!!$                       WRITE(LUFILE,'(A)') '!$ACC         iPrimQ,iPrimP,iPassP,&'
+!!$                      ENDIF
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC         squaredDistance,WVAL,IPNT,WDIFF,W2,W3,GJ000,REXPW,&'
+!!$                      WRITE(LUFILE,'(A)')  '!$ACC         mPX,mPY,mPZ,RWVAL,GVAL) ASYNC(iASync)'
+!!$                   ENDIF
+!!$                   IF(Collapse)THEN
+!!$                      IF(Seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPassP'
+!!$                         WRITE(LUFILE,'(A)')'   iPassP = iP'
+!!$                      ELSE !gen
+!!$                         WRITE(LUFILE,'(A)')'  DO iP = 1,nPrimQ*nPrimP*nPassP'
+!!$                         WRITE(LUFILE,'(A)')'   iPrimQ = mod(IP-1,nPrimQ)+1'
+!!$                         WRITE(LUFILE,'(A)')'   iPrimP = mod((IP-(mod(IP-1,nPrimQ)+1))/nPrimQ,nPrimP)+1'
+!!$                         WRITE(LUFILE,'(A)')'   iPassP = (IP-1)/(nPrimQ*nPrimP) + 1'
+!!$                      ENDIF
+!!$                      WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+!!$                      WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+!!$                      IF(.NOT.seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+!!$                         WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+!!$                         WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+!!$                      ENDIF
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A)')'  DO iPassP = 1,nPassP'
+!!$                      WRITE(LUFILE,'(A)')'   iAtomA = iAtomApass(iPassP)'
+!!$                      WRITE(LUFILE,'(A)')'   iAtomB = iAtomBpass(iPassP)'
+!!$                      IF(.NOT.seg1Prim)THEN
+!!$                         WRITE(LUFILE,'(A)')'   DO iPrimP=1, nPrimP'
+!!$                         WRITE(LUFILE,'(A)')'    mPX = -Pcent(1,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'    mPY = -Pcent(2,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'    mPZ = -Pcent(3,iPrimP,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'    DO iPrimQ=1, nPrimQ'
+!!$                         WRITE(LUFILE,'(A)')'     Xpq = mPX + Qcent(1,iPrimQ)'
+!!$                         WRITE(LUFILE,'(A)')'     Ypq = mPY + Qcent(2,iPrimQ)'
+!!$                         WRITE(LUFILE,'(A)')'     Zpq = mPZ + Qcent(3,iPrimQ)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'     Xpq = Qcent(1)-Pcent(1,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'     Ypq = Qcent(2)-Pcent(2,iAtomA,iAtomB)'
+!!$                         WRITE(LUFILE,'(A)')'     Zpq = Qcent(3)-Pcent(3,iAtomA,iAtomB)'
+!!$                      ENDIF
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'     squaredDistance = Xpq*Xpq+Ypq*Ypq+Zpq*Zpq'
+!!$                   IF(.NOT.seg1Prim)THEN
+!!$                      WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(iPrimQ,iPrimP)*squaredDistance'
+!!$                   ELSE
+!!$                      WRITE(LUFILE,'(A)')'     WVAL = reducedExponents(1)*squaredDistance'
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'     !  0 < WVAL < 12 '
+!!$                   WRITE(LUFILE,'(A)')'     IF (WVAL .LT. D12) THEN'
+!!$                   WRITE(LUFILE,'(A)')'      IPNT = NINT(D100*WVAL)'
+!!$                   WRITE(LUFILE,'(A)')'      WDIFF = WVAL - TENTH*IPNT'
+!!$                   WRITE(LUFILE,'(A)')'      W2    = WDIFF*WDIFF'
+!!$                   WRITE(LUFILE,'(A)')'      W3    = W2*WDIFF'
+!!$                   WRITE(LUFILE,'(A)')'      W2    = W2*D05'
+!!$                   WRITE(LUFILE,'(A)')'      W3    = W3*COEF3'
+!!$                   DO J=0,JMAX
+!!$                      IF(COLLAPSE)THEN
+!!$                         IF(nPrimLAST)THEN
+!!$WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      GJ000Array(',J,',iP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+!!$                         ELSE
+!!$WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      GJ000Array(iP,',J,') = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+!!$                         ENDIF
+!!$                      ELSE
+!!$                         IF(nPrimLAST)THEN
+!!$WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      GJ000Array(',J,',iPrimQ,iPrimP,iPassP) = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+!!$                         ELSE
+!!$WRITE(LUFILE,'(A,I2,A,I2,A,I2,A,I2,A,I2,A)')'      GJ000Array(iPrimQ,iPrimP,iPassP,',J,') = TABFJW(',J,',IPNT)-TABFJW(',J+1,',IPNT)*WDIFF+TABFJW(',J+2,',IPNT)*W2+TABFJW(',J+3,',IPNT)*W3'
+!!$                         ENDIF
+!!$                      ENDIF
+!!$                   ENDDO
+!!$                   WRITE(LUFILE,'(A)')'     !  12 < WVAL <= (2J+36) '
+!!$                   WRITE(LUFILE,'(A)')'     ELSE IF (WVAL.LE.D2JP36) THEN'
+!!$                   WRITE(LUFILE,'(A)')'      REXPW = D05*EXP(-WVAL)'
+!!$                   WRITE(LUFILE,'(A)')'      RWVAL = D1/WVAL'
+!!$                   WRITE(LUFILE,'(A)')'      GVAL  = GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3))'
+!!$                   WRITE(LUFILE,'(A)')'      GJ000(0) = SQRPIH*SQRT(RWVAL) - REXPW*GVAL*RWVAL'
+!!$                   DO J=1,JMAX
+!!$                      WRITE(LUFILE,'(A,I2,A,I2,A,I2,A)')'      GJ000(',J,') = RWVAL*((',J,' - D05)*GJ000(',J-1,')-REXPW)'          
+!!$                   ENDDO
+!!$                   IF(nPrimLast)THEN
+!!$                      IF(COLLAPSE)THEN
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array( 0,iP) = GJ000(0)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array( 0,iPrimQ,iPrimP,iPassP) = GJ000(0)'
+!!$                      ENDIF
+!!$                   ELSE
+!!$                      IF(COLLAPSE)THEN
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array(iP,0) = GJ000(0)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array(iPrimQ,iPrimP,iPassP,0) = GJ000(0)'
+!!$                      ENDIF
+!!$                   ENDIF
+!!$                   DO J=1,JMAX
+!!$                      IF(nPrimLast)THEN
+!!$                         IF(COLLAPSE)THEN
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(',J,',iP) = GJ000(',J,')'
+!!$                         ELSE
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(',J,',iPrimQ,iPrimP,iPassP) = GJ000(',J,')'
+!!$                         ENDIF
+!!$                      ELSE
+!!$                         IF(COLLAPSE)THEN
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(iP,',J,') = GJ000(',J,')'
+!!$                         ELSE
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(iPrimQ,iPrimP,iPassP,',J,') = GJ000(',J,')'
+!!$                         ENDIF                         
+!!$                      ENDIF
+!!$                   ENDDO
+!!$                   WRITE(LUFILE,'(A)')'     !  (2J+36) < WVAL '
+!!$                   WRITE(LUFILE,'(A)')'     ELSE'
+!!$                   WRITE(LUFILE,'(A)')'      RWVAL = PID4/WVAL'
+!!$                   WRITE(LUFILE,'(A)')'      GJ000(0) = SQRT(RWVAL)'
+!!$                   !        WRITE(LUFILE,'(A)')'        GJ000(0,ipq,ipassq) = SQRT(RWVAL)'
+!!$                   WRITE(LUFILE,'(A)')'      RWVAL = RWVAL*PID4I'
+!!$                   DO J=1,JMAX
+!!$                      WRITE(LUFILE,'(A,I2,A,I2,A,I2,A)')'      GJ000(',J,') = RWVAL*(',J,' - D05)*GJ000(',J-1,')'
+!!$                   ENDDO
+!!$                   IF(nPrimLast)THEN
+!!$                      IF(COLLAPSE)THEN
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array( 0,iP) = GJ000(0)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array( 0,iPrimQ,iPrimP,iPassP) = GJ000(0)'
+!!$                      ENDIF
+!!$                   ELSE
+!!$                      IF(COLLAPSE)THEN
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array(iP, 0) = GJ000(0)'
+!!$                      ELSE
+!!$                         WRITE(LUFILE,'(A)')'      GJ000Array(iPrimQ,iPrimP,iPassP, 0) = GJ000(0)'
+!!$                      ENDIF
+!!$                   ENDIF
+!!$                   DO J=1,JMAX
+!!$                      IF(nPrimLast)THEN
+!!$                         IF(COLLAPSE)THEN
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(',J,',iP) = GJ000(',J,')'
+!!$                         ELSE
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(',J,',iPrimQ,iPrimP,iPassP) = GJ000(',J,')'
+!!$                         ENDIF
+!!$                      ELSE
+!!$                         IF(COLLAPSE)THEN
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(iP,',J,') = GJ000(',J,')'
+!!$                         ELSE
+!!$                            WRITE(LUFILE,'(A,I2,A,I2,A)')'      GJ000Array(iPrimQ,iPrimP,iPassP,',J,') = GJ000(',J,')'
+!!$                         ENDIF
+!!$                      ENDIF
+!!$                   ENDDO
+!!$                   WRITE(LUFILE,'(A)')'     ENDIF'
+!!$                   IF(.NOT.seg1Prim)THEN
+!!$                      IF(.NOT.COLLAPSE)THEN
+!!$                         WRITE(LUFILE,'(A)')'    ENDDO'
+!!$                         WRITE(LUFILE,'(A)')'   ENDDO'
+!!$                      ENDIF
+!!$                   ENDIF
+!!$                   WRITE(LUFILE,'(A)')'  ENDDO'
+!!$                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END DO'
+!!$!                   IF(DoOpenMP)WRITE(LUFILE,'(A)')'!$OMP END PARALLEL DO'
+!!$                   WRITE(LUFILE,'(A)')' end subroutine'
                    deallocate(TUVINDEX)
                    deallocate(TINDEX)
                    deallocate(UINDEX)

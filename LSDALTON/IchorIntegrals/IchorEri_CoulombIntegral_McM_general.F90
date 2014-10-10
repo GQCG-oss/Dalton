@@ -11,7 +11,8 @@ use IchorCommonModule
 use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
      & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
-
+use IchorGaussianGeminalMod
+use IchorParametersModule
 !build from old IchorEri_CoulombIntegral_general.f90 in
 !/home/tkjaer/DaltonDevelopment/ExplicitIntegrals/LSint
 
@@ -115,8 +116,21 @@ CONTAINS
 #ifdef VAR_DEBUGICHOR
     IF(nTmpArray4.LT.nPasses*nPrimQ*nPrimP*(AngmomPQ+1))call ichorquit('IchorTmp1G1',-1)
 #endif
-    call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
-         & TABFJW,TmpArray4,AngmomPQ,integralPrefactor,TmpArray3)
+    IF(.NOT.GGemOperatorCalc)THEN
+       call buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+            & TABFJW,TmpArray4,AngmomPQ,integralPrefactor,TmpArray3)
+    ELSE
+       IF(GGemOperatorSpec.EQ.GGemOperator.OR.GGemOperatorSpec.EQ.GGemSqOperator)THEN
+          call buildGJ000_general(nPasses,nPrimQ,nPrimP,reducedExponents,&
+               & TmpArray4,AngmomPQ,integralPrefactor,TmpArray3)
+       ELSEIF(GGemOperatorSpec.EQ.GGemGrdOperator)THEN
+          call buildGJ000Grad_general(nPasses,nPrimQ,nPrimP,reducedExponents,&
+               & TmpArray4,AngmomPQ,integralPrefactor,TmpArray3)
+       ELSEIF(GGemOperatorSpec.EQ.GGemCouOperator)THEN
+          call buildGJ000Coulomb_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+               & TABFJW,TmpArray4,AngmomPQ,integralPrefactor,TmpArray3)
+       ENDIF
+    ENDIF
     IF (INTPRINT .GE. 10) CALL PrintRJ000(TmpArray4,AngmomPQ,nPrimQ*nPrimP,nPasses,lupri)    
     !
     !     Build WTUV(nPrimQ,nPrimP,nPasses,nTUV) RJ000 = TmpArray4, Rpq = TmpArray3
@@ -465,12 +479,23 @@ CONTAINS
           ENDIF
        ENDDO
     ENDIF    
+
+    !builds Ecoeff(nPrimQ,nPasses,nTUVQ,nCartOrbCompQ)
+    IF(TMP1)THEN !use TmpArray2 to store some tmparrys in Ichorbuild_Ecoeff_RHS
+       TMParray2maxsize = MAX(TMParray2maxsize,9*nPrimQ)
+    ELSE
+       TMParray1maxsize = MAX(TMParray1maxsize,9*nPrimQ)
+    ENDIF
+
+    !DirectContractEcoeff
     IF(TMP1)THEN 
        TMParray2maxsize = MAX(TMParray2maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
     ELSE 
        TMParray1maxsize = MAX(TMParray1maxsize,nPrimQP*ntuvP*nCartOrbCompQ)
     ENDIF
     TMP1 = .NOT.TMP1
+
+    !ContractBasis
     IF(TMP1)THEN 
        TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*nCartOrbCompQ)
     ELSE 
@@ -478,6 +503,7 @@ CONTAINS
     ENDIF
     TMP1 = .NOT.TMP1
 
+    !SphericalTrans
     IF(SphericalTransQ)THEN
        IF(TMP1)THEN 
           TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nTUVP*nOrbCompQ)
@@ -487,6 +513,16 @@ CONTAINS
        TMP1 = .NOT.TMP1
     ENDIF
 
+    !builds Ecoeff(nPrimP,nPasses,nTUVP,nCartOrbCompP)
+    IF(TMP1)THEN !use TmpArray2 to store some tmparrys in Ichorbuild_Ecoeff_RHS
+!       TMParray2maxsize = MAX(TMParray2maxsize,6*nPasses*nPrimP+3*nPrimP)
+       TMParray2maxsize = MAX(TMParray2maxsize,9*nPrimP)
+    ELSE
+!       TMParray1maxsize = MAX(TMParray1maxsize,6*nPasses*nPrimP+3*nPrimP)
+       TMParray1maxsize = MAX(TMParray1maxsize,9*nPrimP)
+    ENDIF
+
+    !contractEcoeff
     IF(TMP1)THEN
        TMParray2maxsize = MAX(TMParray2maxsize,nContQ*nPrimP*nCartOrbCompP*nOrbCompQ)
     ELSE
@@ -494,6 +530,7 @@ CONTAINS
     ENDIF
     TMP1 = .NOT.TMP1
 
+    !contractbasis
     IF(.NOT.TMP1)THEN
        TMParray1maxsize = MAX(TMParray1maxsize,nContQ*nContP*nCartOrbCompP*nOrbCompQ)
     ELSE
@@ -1286,89 +1323,397 @@ subroutine build_Rpq(nPrimQ,nPassP,nPrimP,Qcent,Pcent,Rpq,&
 !$OMP END DO
 end subroutine build_Rpq
 
-  SUBROUTINE buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
-       & TABFJW,RJ000,JMAX,integralPrefactor,Rpq)
-    IMPLICIT NONE
-    INTEGER,intent(in)         :: nPrimQ,nPrimP,Jmax,nTABFJW1,nTABFJW2,nPasses
-    REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
-    REAL(REALK),intent(in)     :: integralPrefactor(nPrimQ*nPrimP)
-    REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)
-    real(realk),intent(in)     :: Rpq(nPrimQ*nPrimP*nPasses,3)     
-    REAL(REALK),intent(inout)  :: RJ000(0:Jmax,nPrimQ*nPrimP*nPasses)
-    !local variables
-    REAL(REALK)     :: D2JP36,WVAL
-    REAL(REALK),PARAMETER :: HALF =0.5E0_realk,D1=1E0_realk,D2 = 2E0_realk, D4 = 4E0_realk, D100=100E0_realk
-    Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
-    REAL(REALK), PARAMETER :: COEF2 = HALF,  COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
-    REAL(REALK), PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
-    Real(realk) :: WDIFF,RWVAL,REXPW,PREF,D2MALPHA
-    REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
-    REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
-    REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
-    REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
-    Real(realk), parameter :: PI=3.14159265358979323846E0_realk
-    REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
-    REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
-    REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
-    Real(realk) :: W2,W3,R,pqx,pqy,pqz
-    REAL(REALK), PARAMETER :: SMALL = 1E-15_realk
-    Integer :: IPNT,J,iP,iPrimQP
-!$OMP DO PRIVATE(iP,iPrimQP,WVAL,IPNT,WDIFF,W2,W3,R,J,REXPW,RWVAL,PREF,D2MALPHA,D2JP36)
-    DO iP = 1,nPrimQ*nPrimP*nPasses
-       D2JP36 = 2*JMAX + 36
-       iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
-       !(nPrimP,nPrimQ)*(nPrimP,nPrimQ,nPasses)        squaredDistance
-       WVAL = reducedExponents(iPrimQP)*(Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3))
-       !  0 < WVAL < 0.000001
-       IF (ABS(WVAL) .LT. SMALL) THEN         
-          RJ000(0,iP) = D1
-          DO J=1,JMAX
-             RJ000(J,iP)= D1/(2*J + 1) !THE BOYS FUNCTION FOR ZERO ARGUMENT
-          ENDDO
-          !  0 < WVAL < 12 
-       ELSE IF (WVAL .LT. D12) THEN
-          IPNT = NINT(D100*WVAL)
-          WDIFF = WVAL - TENTH*IPNT
-          W2    = WDIFF*WDIFF
-          W3    = W2*WDIFF
-          W2    = W2*COEF2
-          W3    = W3*COEF3
-          DO J=0,JMAX
-             R = TABFJW(J,IPNT)
-             R = R -TABFJW(J+1,IPNT)*WDIFF
-             R = R + TABFJW(J+2,IPNT)*W2
-             R = R + TABFJW(J+3,IPNT)*W3
-             RJ000(J,iP) = R
-          ENDDO
-          !  12 < WVAL <= (2J+36) 
-       ELSE IF (WVAL.LE.D2JP36) THEN
-          REXPW = HALF*EXP(-WVAL)
-          RWVAL = D1/WVAL
-          RJ000(0,iP) = SQRPIH*SQRT(RWVAL) - &
-               & REXPW*(GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3)))*RWVAL
-          DO J=1,JMAX
-             RJ000(J,iP) = RWVAL*((J - HALF)*RJ000(J-1,iP)-REXPW)
-          ENDDO
-          !  (2J+36) < WVAL 
-       ELSE
-          RWVAL = PID4/WVAL
-          RJ000(0,iP) = SQRT(RWVAL)
-          RWVAL = RWVAL*PID4I
-          DO J = 1, JMAX
-             RJ000(J,iP) = RWVAL*(J - HALF)*RJ000(J-1,iP)
-          ENDDO
-       ENDIF
-       ! Scaling
-       PREF = integralPrefactor(iPrimQP)
-       RJ000(0,IP) = PREF*RJ000(0,IP)
-       D2MALPHA = -D2*reducedExponents(iPrimQP)
-       DO j=1,jmax
-          PREF = PREF*D2MALPHA
-          RJ000(J,IP) = PREF*RJ000(J,IP)
-       ENDDO
-    ENDDO
-!$OMP END DO
-  END SUBROUTINE buildRJ000_general
+SUBROUTINE buildRJ000_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+     & TABFJW,RJ000,JMAX,integralPrefactor,Rpq)
+  IMPLICIT NONE
+  INTEGER,intent(in)         :: nPrimQ,nPrimP,Jmax,nTABFJW1,nTABFJW2,nPasses
+  REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: integralPrefactor(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)
+  real(realk),intent(in)     :: Rpq(nPrimQ*nPrimP*nPasses,3)     
+  REAL(REALK),intent(inout)  :: RJ000(0:Jmax,nPrimQ*nPrimP*nPasses)
+  !local variables
+  REAL(REALK)     :: D2JP36,WVAL
+  REAL(REALK),PARAMETER :: HALF =0.5E0_realk,D1=1E0_realk,D2 = 2E0_realk, D4 = 4E0_realk, D100=100E0_realk
+  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
+  REAL(REALK), PARAMETER :: COEF2 = HALF,  COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK), PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
+  Real(realk) :: WDIFF,RWVAL,REXPW,PREF,D2MALPHA
+  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  Real(realk) :: W2,W3,R,pqx,pqy,pqz
+  REAL(REALK), PARAMETER :: SMALL = 1E-15_realk
+  Integer :: IPNT,J,iP,iPrimQP
+  !$OMP DO PRIVATE(iP,iPrimQP,WVAL,IPNT,WDIFF,W2,W3,R,J,REXPW,RWVAL,PREF,D2MALPHA,D2JP36)
+  DO iP = 1,nPrimQ*nPrimP*nPasses
+     D2JP36 = 2*JMAX + 36
+     iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
+     !(nPrimP,nPrimQ)*(nPrimP,nPrimQ,nPasses)        squaredDistance
+     WVAL = reducedExponents(iPrimQP)*(Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3))
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN         
+        RJ000(0,iP) = D1
+        DO J=1,JMAX
+           RJ000(J,iP)= D1/(2*J + 1) !THE BOYS FUNCTION FOR ZERO ARGUMENT
+        ENDDO
+        !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+        IPNT = NINT(D100*WVAL)
+        WDIFF = WVAL - TENTH*IPNT
+        W2    = WDIFF*WDIFF
+        W3    = W2*WDIFF
+        W2    = W2*COEF2
+        W3    = W3*COEF3
+        DO J=0,JMAX
+           R = TABFJW(J,IPNT)
+           R = R -TABFJW(J+1,IPNT)*WDIFF
+           R = R + TABFJW(J+2,IPNT)*W2
+           R = R + TABFJW(J+3,IPNT)*W3
+           RJ000(J,iP) = R
+        ENDDO
+        !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+        REXPW = HALF*EXP(-WVAL)
+        RWVAL = D1/WVAL
+        RJ000(0,iP) = SQRPIH*SQRT(RWVAL) - &
+             & REXPW*(GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3)))*RWVAL
+        DO J=1,JMAX
+           RJ000(J,iP) = RWVAL*((J - HALF)*RJ000(J-1,iP)-REXPW)
+        ENDDO
+        !  (2J+36) < WVAL 
+     ELSE
+        RWVAL = PID4/WVAL
+        RJ000(0,iP) = SQRT(RWVAL)
+        RWVAL = RWVAL*PID4I
+        DO J = 1, JMAX
+           RJ000(J,iP) = RWVAL*(J - HALF)*RJ000(J-1,iP)
+        ENDDO
+     ENDIF
+     ! Scaling
+     PREF = integralPrefactor(iPrimQP)
+     RJ000(0,IP) = PREF*RJ000(0,IP)
+     D2MALPHA = -D2*reducedExponents(iPrimQP)
+     DO j=1,jmax
+        PREF = PREF*D2MALPHA
+        RJ000(J,IP) = PREF*RJ000(J,IP)
+     ENDDO
+  ENDDO
+  !$OMP END DO
+END SUBROUTINE buildRJ000_general
+
+!> \brief Gaussian geminal overlap  (GGemOperator or GGemSqOperator)
+!> \author Thomas Kjaergaard
+!> \date 2014
+!> Based on the buildGJ000 originaly implemented in LSDALTON W. Klopper and S. Reine
+SUBROUTINE buildGJ000_general(nPasses,nPrimQ,nPrimP,reducedExponents,&
+     & GJ000,JMAX,integralPrefactor,Rpq)
+  IMPLICIT NONE
+  INTEGER,intent(in)         :: nPrimQ,nPrimP,Jmax,nPasses
+  REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: integralPrefactor(nPrimQ*nPrimP)
+  real(realk),intent(in)     :: Rpq(nPrimQ*nPrimP*nPasses,3)     
+  REAL(REALK),intent(inout)  :: GJ000(0:Jmax,nPrimQ*nPrimP*nPasses)
+  !local variables
+  Real(realk),PARAMETER :: One = 1.0E0_realk, MinusTwo = -2.0E0_realk
+  REAL(REALK),PARAMETER :: PI=3.14159265358979323846E0_realk
+  REAL(REALK),PARAMETER :: OneOverTwoPi=0.159154943091895335768883763372514E0_realk
+  INTEGER :: iP,iPrimQP,K,J
+  REAL(REALK) :: DumFact,Ooor,RhoTilde,TEMP3,TEMP1,TEMP2,R2
+
+  !$OMP DO PRIVATE(DumFact,Ooor,RhoTilde,TEMP3,TEMP1,TEMP2,R2,iP,iPrimQP,K,J)
+  DO iP = 1,nPrimQ*nPrimP*nPasses
+     iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
+     K = 1
+     DumFact = GGemCoeff(K)*OneOverTwoPi
+     Ooor = One/(reducedExponents(iPrimQP)+GGemexponent(K))
+     RhoTilde = GGemexponent(K)*Ooor
+     TEMP3 = reducedExponents(iPrimQP)*RhoTilde
+     R2 = Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3)
+     TEMP1 = -R2*TEMP3
+     TEMP3 = TEMP3*MinusTwo
+     Ooor = PI*Ooor
+     TEMP2 = Ooor * SQRT(Ooor) * EXP(TEMP1)
+     GJ000(0,iP) = DumFact*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+     DO J=1,Jmax
+        TEMP2 = TEMP2*TEMP3
+        GJ000(J,iP) = DumFact*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+     ENDDO
+     DO K=2,nGGem
+        DumFact = GGemCoeff(K)*OneOverTwoPi
+        Ooor = One/(reducedExponents(iPrimQP)+GGemexponent(K))
+        RhoTilde = GGemexponent(K)*Ooor
+        TEMP3 = reducedExponents(iPrimQP)*RhoTilde
+        TEMP1 = -R2*TEMP3
+        TEMP3 = TEMP3*MinusTwo
+        Ooor = PI*Ooor
+        TEMP2 = Ooor * SQRT(Ooor) * EXP(TEMP1)
+        GJ000(0,iP)=GJ000(0,iP)+DumFact*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+        DO J=1,Jmax
+           TEMP2 = TEMP2*TEMP3
+           GJ000(J,iP)=GJ000(J,iP)+DumFact*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END DO
+END SUBROUTINE buildGJ000_general
+
+!> \brief Gaussian geminal integral over double commutator with kinetic energy (GGemGrdOperator)
+!> \author Thomas Kjaergaard
+!> \date 2014
+!> Based on the buildGJ000Grad originaly implemented in LSDALTON W. Klopper and S. Reine
+SUBROUTINE buildGJ000Grad_general(nPasses,nPrimQ,nPrimP,reducedExponents,&
+     & GJ000,JMAX,integralPrefactor,Rpq)
+  IMPLICIT NONE
+  INTEGER,intent(in)         :: nPrimQ,nPrimP,Jmax,nPasses
+  REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: integralPrefactor(nPrimQ*nPrimP)
+  real(realk),intent(in)     :: Rpq(nPrimQ*nPrimP*nPasses,3)     
+  REAL(REALK),intent(inout)  :: GJ000(0:Jmax,nPrimQ*nPrimP*nPasses)
+  !local variables
+  Real(realk),PARAMETER :: TwoSqrtPi=3.54490770181103205459633496668229E0_realk
+  REAL(REALK),PARAMETER :: Anderthalb = 1.5E0_realk, One = 1.0E0_realk
+  REAL(REALK),PARAMETER :: MinusTwo = -2.0E0_realk
+  INTEGER :: iP,iPrimQP,K,J
+  REAL(REALK) :: DumFact,Ooor,RhoTilde,TEMP3,TEMP1,TEMP2,R2
+  real(realk) :: InvGGemexponent,RhoHat
+  !$OMP DO PRIVATE(InvGGemexponent,RhoHat,DumFact,Ooor,RhoTilde,TEMP3,TEMP1,&
+  !$OMP            TEMP2,R2,iP,iPrimQP,K,J)
+  DO iP = 1,nPrimQ*nPrimP*nPasses
+     iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
+     K = 1
+     DumFact = TwoSqrtPi*GGemCoeff(K)*GGemprodexponent(K)
+     InvGGemexponent = One/GGemexponent(K)
+     Ooor = One/(ReducedExponents(IPrimQP)+GGemexponent(K))
+     RhoHat = ReducedExponents(IPrimQP)*Ooor
+     RhoTilde = GGemexponent(K)*Ooor
+     TEMP3 = ReducedExponents(IPrimQP)*RhoTilde
+     R2 = Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3)
+     TEMP1 = -R2*TEMP3
+     TEMP3 = TEMP3*MinusTwo
+     TEMP2 = Ooor**2 * SQRT(Ooor) * EXP(TEMP1)
+     Ooor = ReducedExponents(IPrimQP)*R2
+     TEMP1 = Anderthalb + RhoHat*Ooor
+     GJ000(0,iP) = DumFact*TEMP1*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+     DO J=1,Jmax
+        TEMP1 = TEMP1 - ReducedExponents(IPrimQP)*InvGGemexponent
+        TEMP2 = TEMP2*TEMP3
+        GJ000(J,iP) = DumFact*TEMP1*TEMP2*reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+     ENDDO
+     DO K=2,nGGem
+        DumFact = TwoSqrtPi*GGemCoeff(K)*GGemprodexponent(K)
+        InvGGemexponent = One/GGemexponent(K)
+        Ooor = One/(ReducedExponents(IPrimQP)+GGemexponent(K))
+        RhoHat = ReducedExponents(IPrimQP)*Ooor
+        RhoTilde = GGemexponent(K)*Ooor
+        TEMP3 = ReducedExponents(IPrimQP)*RhoTilde
+        TEMP1 = -R2*TEMP3
+        TEMP3 = TEMP3*MinusTwo
+        TEMP2 = Ooor**2 * SQRT(Ooor) * EXP(TEMP1)
+        Ooor = ReducedExponents(IPrimQP)*R2
+        TEMP1 = Anderthalb + RhoHat*Ooor
+        GJ000(0,iP) = GJ000(0,iP) + DumFact*TEMP1*TEMP2*&
+             & reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+        DO J=1,Jmax
+           TEMP1 = TEMP1 - ReducedExponents(IPrimQP)*InvGGemexponent
+           TEMP2 = TEMP2*TEMP3
+           GJ000(J,iP) = GJ000(J,iP) + DumFact*TEMP1*TEMP2*&
+                & reducedExponents(iPrimQP)*integralPrefactor(iPrimQP)
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END DO
+END SUBROUTINE buildGJ000Grad_general
+
+!> \brief Gaussian geminal Coulomb integrals (GGemCouOperator)
+!> \author Thomas Kjaergaard
+!> \date 2014
+!> Based on the buildGJ000Coulomb originaly implemented in LSDALTON W. Klopper and S. Reine
+SUBROUTINE buildGJ000Coulomb_general(nPasses,nPrimQ,nPrimP,nTABFJW1,nTABFJW2,reducedExponents,&
+     & TABFJW,GJ000,JMAX,integralPrefactor,Rpq)
+  IMPLICIT NONE
+  INTEGER,intent(in)         :: nPrimQ,nPrimP,Jmax,nTABFJW1,nTABFJW2,nPasses
+  REAL(REALK),intent(in)     :: reducedExponents(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: integralPrefactor(nPrimQ*nPrimP)
+  REAL(REALK),intent(in)     :: TABFJW(0:nTABFJW1,0:nTABFJW2)
+  real(realk),intent(in)     :: Rpq(nPrimQ*nPrimP*nPasses,3)     
+  REAL(REALK),intent(inout)  :: GJ000(0:Jmax,nPrimQ*nPrimP*nPasses)
+  !local variables
+  REAL(REALK),PARAMETER :: HALF =0.5E0_realk,D1=1E0_realk,D2 = 2E0_realk, D4 = 4E0_realk
+  REAL(REALK),PARAMETER :: D100=100E0_realk
+  Real(realk),parameter :: D12 = 12E0_realk, TENTH = 0.01E0_realk
+  REAL(REALK), PARAMETER :: COEF2 = HALF,  COEF3 = - D1/6E0_realk, COEF4 = D1/24E0_realk
+  REAL(REALK), PARAMETER :: COEF5 = - D1/120E0_realk, COEF6 = D1/720E0_realk
+  REAL(REALK), PARAMETER :: GFAC0 =  D2*0.4999489092E0_realk
+  REAL(REALK), PARAMETER :: GFAC1 = -D2*0.2473631686E0_realk
+  REAL(REALK), PARAMETER :: GFAC2 =  D2*0.321180909E0_realk
+  REAL(REALK), PARAMETER :: GFAC3 = -D2*0.3811559346E0_realk
+  Real(realk), parameter :: PI=3.14159265358979323846E0_realk
+  REAL(REALK), PARAMETER :: SQRTPI = 1.77245385090551602730E00_realk
+  REAL(REALK), PARAMETER :: SQRPIH = SQRTPI/D2
+  REAL(REALK), PARAMETER :: PID4 = PI/D4, PID4I = D4/PI
+  REAL(REALK), PARAMETER :: SMALL = 1E-15_realk
+  Real(realk), parameter :: One = 1.0E0_realk, MinusTwo = -2E0_realk, MinusHalf = -0.5E0_realk
+  Real(realk) :: WDIFF,RWVAL,REXPW,PREF,D2MALPHA
+  Real(realk) :: W2,W3,R,Ooor,RhoHat,RhoTilde,TEMP1,TEMP2,TEMP3,R2
+  REAL(REALK)     :: D2JP36,WVAL,RJ000(0:Jmax)
+  Integer :: IPNT,J,iP,iPrimQP,K,M
+
+  !$OMP DO PRIVATE(IPNT,J,iP,iPrimQP,K,M,WDIFF,RWVAL,REXPW,PREF,D2MALPHA,&
+  !$OMP            W2,W3,R,Ooor,RhoHat,RhoTilde,TEMP1,TEMP2,TEMP3,R2,&
+  !$OMP            D2JP36,WVAL,RJ000)
+  DO iP = 1,nPrimQ*nPrimP*nPasses
+     iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
+     K = 1
+     Ooor = One/(ReducedExponents(IPrimQP)+GGemexponent(K))
+     RhoHat = ReducedExponents(IPrimQP)*Ooor
+     RhoTilde = GGemexponent(K)*Ooor
+     TEMP3 = ReducedExponents(IPrimQP)*RhoTilde
+     R2 = Rpq(iP,1)*Rpq(iP,1)+Rpq(iP,2)*Rpq(iP,2)+Rpq(iP,3)*Rpq(iP,3)
+     TEMP1 = -R2*TEMP3
+     TEMP3 = MinusHalf/TEMP3
+     TEMP2 = Ooor*EXP(TEMP1)
+     TEMP1 = ReducedExponents(IPrimQP)*RhoHat
+     D2JP36 = 2*JMAX + 36
+     iPrimQP = mod(IP-1,nPrimQ*nPrimP)+1
+     !(nPrimP,nPrimQ)*(nPrimP,nPrimQ,nPasses)        squaredDistance
+     WVAL = TEMP1*R2
+     !  0 < WVAL < 0.000001
+     IF (ABS(WVAL) .LT. SMALL) THEN         
+        RJ000(0) = D1
+        DO J=1,JMAX
+           RJ000(J)= D1/(2*J + 1) !THE BOYS FUNCTION FOR ZERO ARGUMENT
+        ENDDO
+        !  0 < WVAL < 12 
+     ELSE IF (WVAL .LT. D12) THEN
+        IPNT = NINT(D100*WVAL)
+        WDIFF = WVAL - TENTH*IPNT
+        W2    = WDIFF*WDIFF
+        W3    = W2*WDIFF
+        W2    = W2*COEF2
+        W3    = W3*COEF3
+        DO J=0,JMAX
+           R = TABFJW(J,IPNT)
+           R = R -TABFJW(J+1,IPNT)*WDIFF
+           R = R + TABFJW(J+2,IPNT)*W2
+           R = R + TABFJW(J+3,IPNT)*W3
+           RJ000(J) = R
+        ENDDO
+        !  12 < WVAL <= (2J+36) 
+     ELSE IF (WVAL.LE.D2JP36) THEN
+        REXPW = HALF*EXP(-WVAL)
+        RWVAL = D1/WVAL
+        RJ000(0) = SQRPIH*SQRT(RWVAL) - &
+             & REXPW*(GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3)))*RWVAL
+        DO J=1,JMAX
+           RJ000(J) = RWVAL*((J - HALF)*RJ000(J-1)-REXPW)
+        ENDDO
+        !  (2J+36) < WVAL 
+     ELSE
+        RWVAL = PID4/WVAL
+        RJ000(0) = SQRT(RWVAL)
+        RWVAL = RWVAL*PID4I
+        DO J = 1, JMAX
+           RJ000(J) = RWVAL*(J - HALF)*RJ000(J-1)
+        ENDDO
+     ENDIF
+     ! Scaling
+     PREF = integralPrefactor(iPrimQP)
+     RJ000(0) = PREF*RJ000(0)
+     D2MALPHA = -D2*TEMP1
+     DO j=1,jmax
+        PREF = PREF*D2MALPHA
+        RJ000(J) = PREF*RJ000(J)
+     ENDDO
+     GJ000(0,iP) = GGemCoeff(K)*RJ000(0)*TEMP2*ReducedExponents(IPrimQP)
+     DO J=1,Jmax
+        Ooor = RhoTilde**J
+        TEMP1 = RJ000(0)*Ooor 
+        DO M=1,J
+           Ooor = Ooor*TEMP3
+           TEMP1 = TEMP1 + BinomArray(M,J)*RJ000(M)*Ooor
+        ENDDO
+        TEMP2 = TEMP2*ReducedExponents(IPrimQP)*MinusTwo
+        GJ000(J,iP) = GGemCoeff(K)*TEMP1*TEMP2*ReducedExponents(IPrimQP)
+     ENDDO     
+     DO K=2,nGGem
+        Ooor = One/(ReducedExponents(IPrimQP)+GGemexponent(K))
+        RhoHat = ReducedExponents(IPrimQP)*Ooor
+        RhoTilde = GGemexponent(K)*Ooor
+        TEMP3 = ReducedExponents(IPrimQP)*RhoTilde
+        TEMP1 = -R2*TEMP3
+        TEMP3 = MinusHalf/TEMP3
+        TEMP2 = Ooor*EXP(TEMP1)
+        TEMP1 = ReducedExponents(IPrimQP)*RhoHat
+        !(nPrimP,nPrimQ)*(nPrimP,nPrimQ,nPasses)        squaredDistance
+        WVAL = TEMP1*R2
+        !  0 < WVAL < 0.000001
+        IF (ABS(WVAL) .LT. SMALL) THEN         
+           RJ000(0) = D1
+           DO J=1,JMAX
+              RJ000(J)= D1/(2*J + 1) !THE BOYS FUNCTION FOR ZERO ARGUMENT
+           ENDDO
+           !  0 < WVAL < 12 
+        ELSE IF (WVAL .LT. D12) THEN
+           IPNT = NINT(D100*WVAL)
+           WDIFF = WVAL - TENTH*IPNT
+           W2    = WDIFF*WDIFF
+           W3    = W2*WDIFF
+           W2    = W2*COEF2
+           W3    = W3*COEF3
+           DO J=0,JMAX
+              R = TABFJW(J,IPNT)
+              R = R -TABFJW(J+1,IPNT)*WDIFF
+              R = R + TABFJW(J+2,IPNT)*W2
+              R = R + TABFJW(J+3,IPNT)*W3
+              RJ000(J) = R
+           ENDDO
+           !  12 < WVAL <= (2J+36) 
+        ELSE IF (WVAL.LE.D2JP36) THEN
+           REXPW = HALF*EXP(-WVAL)
+           RWVAL = D1/WVAL
+           RJ000(0) = SQRPIH*SQRT(RWVAL) - &
+                & REXPW*(GFAC0 + RWVAL*(GFAC1 + RWVAL*(GFAC2 + RWVAL*GFAC3)))*RWVAL
+           DO J=1,JMAX
+              RJ000(J) = RWVAL*((J - HALF)*RJ000(J-1)-REXPW)
+           ENDDO
+           !  (2J+36) < WVAL 
+        ELSE
+           RWVAL = PID4/WVAL
+           RJ000(0) = SQRT(RWVAL)
+           RWVAL = RWVAL*PID4I
+           DO J = 1, JMAX
+              RJ000(J) = RWVAL*(J - HALF)*RJ000(J-1)
+           ENDDO
+        ENDIF
+        ! Scaling
+        PREF = integralPrefactor(iPrimQP)
+        RJ000(0) = PREF*RJ000(0)
+        D2MALPHA = -D2*TEMP1
+        DO j=1,jmax
+           PREF = PREF*D2MALPHA
+           RJ000(J) = PREF*RJ000(J)
+        ENDDO
+        GJ000(0,iP) = GJ000(0,iP) + GGemCoeff(K)*RJ000(0)*TEMP2*ReducedExponents(IPrimQP)
+        DO J=1,Jmax
+           Ooor = RhoTilde**J
+           TEMP1 = RJ000(0)*Ooor 
+           DO M=1,J
+              Ooor = Ooor*TEMP3
+              TEMP1 = TEMP1 + BinomArray(M,J)*RJ000(M)*Ooor
+           ENDDO
+           TEMP2 = TEMP2*ReducedExponents(IPrimQP)*MinusTwo
+           GJ000(J,iP) = GJ000(J,iP) + GGemCoeff(K)*TEMP1*TEMP2*ReducedExponents(IPrimQP)
+        ENDDO
+     ENDDO
+  ENDDO
+  !$OMP END DO
+END SUBROUTINE buildGJ000Coulomb_general
 
 subroutine PrintRJ000(RJ000,AngmomPQ,nPrim,nPasses,lupri)
   implicit none

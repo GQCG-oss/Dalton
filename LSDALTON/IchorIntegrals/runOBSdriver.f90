@@ -512,6 +512,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'!    nlmC = 2*AngmomC+1'
      WRITE(ILUMOD,'(A)')'!    nlmD = 2*AngmomD+1'
      WRITE(ILUMOD,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    SELECT CASE(AngmomID)'
 
      DO AngmomA = 0,2
@@ -803,6 +804,7 @@ DO GPUrun=1,2
      WRITE(ILUMOD,'(A)')'    integer :: AngmomID'
      WRITE(ILUMOD,'(A)')'    '
      WRITE(ILUMOD,'(A)')'    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD'
+     WRITE(ILUMOD,'(A)')'    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code'
      WRITE(ILUMOD,'(A)')'    TMParray2maxSize = 1'
      WRITE(ILUMOD,'(A)')'    TMParray1maxSize = 1'
 

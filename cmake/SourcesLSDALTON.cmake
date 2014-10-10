@@ -246,6 +246,7 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorCommon.F90
     LSDALTON/IchorIntegrals/IchorMem.F90
     LSDALTON/IchorIntegrals/IchorGammaTabulation.F90
+    LSDALTON/IchorIntegrals/IchorGaussianGeminal.F90
     LSDALTON/IchorIntegrals/IchorBatchTools.F90
     LSDALTON/IchorIntegrals/IchorSaveGab.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_McM_seg_seg_SSSS.F90

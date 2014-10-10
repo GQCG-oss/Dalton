@@ -5,8 +5,8 @@
 module mp2_module
 
 #ifdef VAR_MPI
-  use infpar_module
-  use lsmpi_type
+      use infpar_module
+      use lsmpi_type
 #endif
   use precision
   use lstiming!, only: lstimer
@@ -1888,6 +1888,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   real(realk),pointer :: AlphaCD2(:,:,:),AlphaCD3(:,:,:),AlphaCD4(:,:,:)
   real(realk),pointer :: AlphaCD(:,:,:),Calpha(:,:,:)
   real(realk),pointer :: Calpha2(:,:,:),Calpha3(:,:,:),AlphaCD5(:,:,:)
+  real(realk),pointer :: AlphaCD6(:,:,:),AlphaCD7(:,:,:),AlphaCD8(:,:,:)
   real(realk),pointer :: UoccEOS(:,:),Cocc(:,:),Cvirt(:,:),UvirtEOS(:,:)
   real(realk),pointer :: gao(:,:,:,:),gmo(:,:,:,:),gocc(:,:,:,:),gocc2(:,:,:,:)
   real(realk),pointer :: tocc(:,:,:,:),toccEOS(:,:,:,:),UoccEOST(:,:),UvirtT(:,:)
@@ -1906,13 +1907,16 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   integer,pointer :: IPVT(:)
   integer,pointer :: nbasisAuxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
   TYPE(MOLECULARORBITALINFO) :: orbitalInfo
-  real(realk), pointer   :: work1(:),Etmp2222(:)
+  real(realk), pointer   :: work1(:)
   real(realk)            :: RCOND
-  integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
+  integer(kind=ls_mpik)  :: COUNT,TAGS,TAG,IERR,request,Receiver,sender,J,COUNT2
+  integer(kind=ls_mpik)  :: request5,request6,request7,request8
+  logical :: useAlphaCD5,useAlphaCD6,useAlphaCD7,useAlphaCD8
+  integer ::CurrentWait(4),nAwaitDealloc,iAwaitDealloc
 #ifdef VAR_MPI
   INTEGER(kind=ls_mpik) :: HSTATUS
   CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
-  TAG = 131124879
+  TAG = 231124879 !recieving tag
 #endif
   ForcePrint = .TRUE.
   call time_start_phase(PHASE_WORK)
@@ -2081,6 +2085,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
           & nbasisAuxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
      MynAtomsMPI = nAtomsMPI(mynum+1)
      MynbasisAuxMPI = nbasisAuxMPI(mynum+1)
+     print*,'nbasisAuxMPI',nbasisAuxMPI,'MynbasisAuxMPI',MynbasisAuxMPI
      call mem_dealloc(AtomsMPI) !not used in this subroutine 
   ELSE
      MynbasisAuxMPI = nbasisAux
@@ -2179,6 +2184,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   !=====================================================================================
 
   if(CollaborateWithSlaves) then         
+#ifdef VAR_MPI
      IF(MynbasisAuxMPI.GT.0)THEN 
         !consider 
         !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
@@ -2217,6 +2223,16 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      ! 3. MPI send the recieved alphaCD to 'Sender' 
      ! 4. Repeat untill all contributions have been added
 
+     useAlphaCD5 = .TRUE. 
+     useAlphaCD6 = .FALSE.
+     useAlphaCD7 = .FALSE.
+     useAlphaCD8 = .FALSE.
+     CurrentWait(1) = 0
+     CurrentWait(2) = 0
+     CurrentWait(3) = 0
+     CurrentWait(4) = 0
+     nAwaitDealloc = 0
+
      DO node=1,numnodes-1 !should recieve numnodes-1 packages 
         !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
         !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
@@ -2226,37 +2242,136 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
         OriginalRanknbasisAuxMPI = nbasisAuxMPI(myOriginalRank+1) !dim1 of recieved package
         IF(OriginalRanknbasisAuxMPI.GT.0)THEN
            !Step 1 : MPI recieve a alphaCD from 'Receiver' 
-           call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
+           IF(nAwaitDealloc.EQ.4)THEN
+              !all buffers are allocated and await to be deallocated once the memory
+              !have been recieved by the reciever.
+              IF(CurrentWait(1).EQ.5)THEN
+                 IF(master)print*,'Mynum',mynum,'Free AlphaCD5'
+                 call MPI_WAIT(request5,status,ierr)
+!                 call MPI_Request_free(request5,ierr)
+                 call mem_dealloc(AlphaCD5)
+              ELSEIF(CurrentWait(1).EQ.6)THEN
+                 IF(master)print*,'Mynum',mynum,'Free AlphaCD6'
+                 call MPI_WAIT(request6,status,ierr)
+!                 call MPI_Request_free(request6,ierr)
+                 call mem_dealloc(AlphaCD6)
+              ELSEIF(CurrentWait(1).EQ.7)THEN
+                 IF(master)print*,'Mynum',mynum,'Free AlphaCD7'
+                 call MPI_WAIT(request7,status,ierr)
+!                 call MPI_Request_free(request7,ierr)
+                 call mem_dealloc(AlphaCD7)
+              ELSEIF(CurrentWait(1).EQ.8)THEN
+                 IF(master)print*,'Mynum',mynum,'Free AlphaCD8'
+                 call MPI_WAIT(request8,status,ierr)
+!                 call MPI_Request_free(request8,ierr)
+                 call mem_dealloc(AlphaCD8)
+              ENDIF
+              nAwaitDealloc = 3
+              CurrentWait(1) = CurrentWait(2)
+              CurrentWait(2) = CurrentWait(3)
+              CurrentWait(3) = CurrentWait(4)
+              CurrentWait(4) = 0 
+              IF(master)print*,'Mynum',mynum,'after free ',CurrentWait
+           ENDIF
+           IF(useAlphaCD5)THEN
+              call mem_alloc(AlphaCD5,OriginalRanknbasisAuxMPI,nvirt,nocc)
+           ELSEIF(useAlphaCD6)THEN
+              call mem_alloc(AlphaCD6,OriginalRanknbasisAuxMPI,nvirt,nocc)
+           ELSEIF(useAlphaCD7)THEN
+              call mem_alloc(AlphaCD7,OriginalRanknbasisAuxMPI,nvirt,nocc)
+           ELSEIF(useAlphaCD8)THEN
+              call mem_alloc(AlphaCD8,OriginalRanknbasisAuxMPI,nvirt,nocc)
+           ENDIF
            COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
            MessageRecieved = .FALSE.
-#ifdef VAR_MPI
-           call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
-#endif
+           !USE RECV instead of IRECV
+           DO WHILE(.NOT.MessageRecieved)
+              call MPI_IPROBE(MPI_ANY_SOURCE,TAG,infpar%lg_comm,MessageRecieved,status,ierr)
+              IF(MessageRecieved)THEN
+                 j = status(MPI_SOURCE)
+                 call MPI_GET_COUNT(status, MPI_DOUBLE_PRECISION, COUNT2,IERR)
+                 IF(J.NE.Receiver)CALL LSQUIT('Receiver WRONG IN QQQQQQQQ ',-1)
+                 IF(COUNT2.NE.COUNT)CALL LSQUIT('COUNT WRONG IN QQQQQQQQ ',-1)
+                 IF(useAlphaCD5)THEN
+                    IF(master)print*,'MYNUM',MYNUM,'rev5'
+                    call MPI_IRECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,J,TAG,infpar%lg_comm,request,ierr)
+                 ELSEIF(useAlphaCD6)THEN
+                    IF(master)print*,'MYNUM',MYNUM,'rev6'
+                    call MPI_IRECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,J,TAG,infpar%lg_comm,request,ierr)
+                 ELSEIF(useAlphaCD7)THEN
+                    IF(master)print*,'MYNUM',MYNUM,'rev7'
+                    call MPI_IRECV(AlphaCD7,COUNT,MPI_DOUBLE_PRECISION,J,TAG,infpar%lg_comm,request,ierr)
+                 ELSEIF(useAlphaCD8)THEN
+                    IF(master)print*,'MYNUM',MYNUM,'rev8'
+                    call MPI_IRECV(AlphaCD8,COUNT,MPI_DOUBLE_PRECISION,J,TAG,infpar%lg_comm,request,ierr)
+                 ENDIF
+                 call MPI_Request_free(request,ierr) 
+              ENDIF
+           ENDDO
            IF(MynbasisAuxMPI.GT.0)THEN
-              !Step 2: Obtain part of Calpha from this contribution
-              do I = 1,nocc
-                 do B = 1,nvirt
-                    startB2 = 0
-                    DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
-                       StartB = startAuxMPI(iAtomB,myOriginalRank+1)
-                       do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
-                          TMP = AlphaCD5(startB2 + BETA,B,I)
-                          do ALPHA = 1,MynbasisAuxMPI
-                             Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
-                          enddo
-                       enddo
-                       startB2 = startB2 + nAuxMPI(iAtomB,myOriginalRank+1)
-                    ENDDO
-                 enddo
-              enddo
+!FIXME OpenMP parallize this subroutine
+              IF(useAlphaCD5)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'build5'
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,OriginalRanknbasisAuxMPI,&
+                      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,Calpha,TMPAlphaBeta_inv,nbasisAux)
+              ELSEIF(useAlphaCD6)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'build6'
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,OriginalRanknbasisAuxMPI,&
+                      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD6,Calpha,TMPAlphaBeta_inv,nbasisAux)
+              ELSEIF(useAlphaCD7)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'build7'
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,OriginalRanknbasisAuxMPI,&
+                      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD7,Calpha,TMPAlphaBeta_inv,nbasisAux)
+              ELSEIF(useAlphaCD8)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'build8'
+                 call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,OriginalRanknbasisAuxMPI,&
+                      & MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD8,Calpha,TMPAlphaBeta_inv,nbasisAux)
+              ENDIF                 
            ENDIF
-           !Step 3: MPI send the recieved alphaCD to 'Sender' 
-#ifdef VAR_MPI
-           IF(node.NE.numnodes-1)THEN
-              call MPI_SEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,ierr)    
+           !Step 3: MPI send the recieved alphaCD to 'Sender' (No need to send the Final package)
+           IF(node.NE.numnodes-1)THEN   
+              IF(useAlphaCD5)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'send5  '
+                 call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request5,ierr)
+                 useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
+                 nAwaitDealloc = nAwaitDealloc + 1
+                 CurrentWait(nAwaitDealloc) = 5
+              ELSEIF(useAlphaCD6)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'send6  '
+                 call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request6,ierr)
+                 useAlphaCD6 = .FALSE.; useAlphaCD7=.TRUE.
+                 nAwaitDealloc = nAwaitDealloc + 1
+                 CurrentWait(nAwaitDealloc) = 6
+              ELSEIF(useAlphaCD7)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'send7  '
+                 call MPI_ISEND(AlphaCD7,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request7,ierr)
+                 useAlphaCD7 = .FALSE.; useAlphaCD8=.TRUE.
+                 nAwaitDealloc = nAwaitDealloc + 1
+                 CurrentWait(nAwaitDealloc) = 7
+              ELSEIF(useAlphaCD8)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'send8  '
+                 call MPI_ISEND(AlphaCD8,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,infpar%lg_comm,request8,ierr)
+                 useAlphaCD8 = .FALSE.; useAlphaCD5=.TRUE.
+                 nAwaitDealloc = nAwaitDealloc + 1
+                 CurrentWait(nAwaitDealloc) = 8
+              ENDIF                 
+              IF(master)print*,'CurrentWait(',nAwaitDealloc,')=',CurrentWait(nAwaitDealloc),'FULL:',CurrentWait
+           ELSE              
+              IF(useAlphaCD5)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'dealloc Nosend5  '
+                 call mem_dealloc(AlphaCD5)
+              ELSEIF(useAlphaCD6)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'dealloc Nosend6  '
+                 call mem_dealloc(AlphaCD6)
+              ELSEIF(useAlphaCD7)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'dealloc Nosend7  '
+                 call mem_dealloc(AlphaCD7)
+              ELSEIF(useAlphaCD8)THEN
+                 IF(master)print*,'MYNUM',MYNUM,'dealloc Nosend8  '
+                 call mem_dealloc(AlphaCD8)
+              ENDIF
+              IF(master)print*,'CurrentWait(',nAwaitDealloc,')=',CurrentWait(nAwaitDealloc),'FULL:',CurrentWait
            ENDIF
-#endif
-           call mem_dealloc(AlphaCD5)
         ENDIF
      ENDDO
      call mem_dealloc(nbasisAuxMPI)
@@ -2268,6 +2383,7 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      ENDIF
      NBA = MynbasisAuxMPI
 
+#endif
   else
 !     !  Make Choleksy-factorization (OpenMP hopefully)
 !     call DPOTRF('U',nbasisaux,AlphaBeta_inv,nbasisaux,INFO)
@@ -2343,7 +2459,34 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
      !$OMP END CRITICAL
      !$OMP END PARALLEL
 #ifdef VAR_MPI
-     if(CollaborateWithSlaves) then         
+     if(CollaborateWithSlaves) then
+        IF(master)print*,'DONE nAwaitDealloc'
+        IF(master)print*,'CurrentWait=',CurrentWait
+        IF(nAwaitDealloc.NE.0)THEN
+           do iAwaitDealloc=1,nAwaitDealloc
+              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
+                 IF(master)print*,'FINAL FREE 5'
+                 call MPI_WAIT(request5,status,ierr)
+!                 call MPI_Request_free(request5,ierr)
+                 call mem_dealloc(AlphaCD5)
+              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
+                 IF(master)print*,'FINAL FREE 6'
+                 call MPI_WAIT(request6,status,ierr)
+!                 call MPI_Request_free(request6,ierr)
+                 call mem_dealloc(AlphaCD6)
+              ELSEIF(CurrentWait(iAwaitDealloc).EQ.7)THEN
+                 IF(master)print*,'FINAL FREE 7'
+                 call MPI_WAIT(request7,status,ierr)
+!                 call MPI_Request_free(request7,ierr)
+                 call mem_dealloc(AlphaCD7)
+              ELSEIF(CurrentWait(iAwaitDealloc).EQ.8)THEN
+                 IF(master)print*,'FINAL FREE 8'
+                 call MPI_WAIT(request8,status,ierr)
+!                 call MPI_Request_free(request8,ierr)
+                 call mem_dealloc(AlphaCD8)
+              ENDIF
+           enddo
+        ENDIF         
 !        call lsmpi_reduction(tocc,nvirt,nvirt,noccEOS*noccEOS,infpar%master,infpar%lg_comm)
         call lsmpi_allreduce(tocc,nvirt,nvirt,noccEOS,noccEOS,infpar%lg_comm)
      endif
@@ -2733,6 +2876,39 @@ subroutine MP2_RI_EnergyContribution(MyFragment)
   call mem_dealloc(OccContribsFull)
 end subroutine MP2_RI_EnergyContribution
 #endif
+
+subroutine RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+     & OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD5,&
+     & Calpha,TMPAlphaBeta_inv,nbasisAux)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,myOriginalRank,numnodes,natoms
+  integer,intent(in) :: OriginalRanknbasisAuxMPI,MynbasisAuxMPI,nbasisAux
+  integer,intent(in) :: nAtomsMPI(numnodes)
+  integer,intent(in) :: startAuxMPI(nAtoms,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+  real(realk),intent(in) :: AlphaCD5(OriginalRanknbasisAuxMPI,nvirt,nocc)
+  real(realk),intent(inout) :: Calpha(MynbasisAuxMPI,nvirt,nocc)
+  real(realk),intent(in) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
+  !
+  integer :: I,B,startB2,iAtomB,StartB,BETA,ALPHA
+  real(realk) :: TMP
+  !Step 2: Obtain part of Calpha from this contribution
+  do I = 1,nocc
+     do B = 1,nvirt
+        startB2 = 0
+        DO iAtomB=1,nAtomsMPI(myOriginalRank+1)
+           StartB = startAuxMPI(iAtomB,myOriginalRank+1)
+           do BETA = 1,nAuxMPI(iAtomB,myOriginalRank+1)
+              TMP = AlphaCD5(startB2 + BETA,B,I)
+              do ALPHA = 1,MynbasisAuxMPI
+                 Calpha(ALPHA,B,I) = Calpha(ALPHA,B,I) + TMPAlphaBeta_inv(ALPHA,startB + BETA)*TMP
+              enddo
+           enddo
+           startB2 = startB2 + nAuxMPI(iAtomB,myOriginalRank+1)
+        ENDDO
+     enddo
+  enddo
+end subroutine RIMP2_buildCalphaContFromAlphaCD
 
   !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen

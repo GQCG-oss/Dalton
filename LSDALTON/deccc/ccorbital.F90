@@ -51,7 +51,7 @@ contains
     DECCO: if(DECinfo%DECCO) then
        ! Orbital-based DEC
        call GenerateOrbitals_DECCO(nocc,nunocc,natoms, &
-            & MyMolecule,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
+          & MyMolecule,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
        return
 
     else
@@ -59,20 +59,20 @@ contains
        ! Atom-based
        OrbitalGeneration: if(DECinfo%read_dec_orbitals) then ! Read DEC orbitals form file
           call read_DECorbitals_from_file(nocc,nunocc,&
-               &OccOrbitals,UnoccOrbitals)
+             &OccOrbitals,UnoccOrbitals)
        else ! Generate DEC orbitals
 
           if(DECinfo%BoughtonPulay) then
              write(DECinfo%output,*) 'Generating occupied DEC orbitals using Boughton-Pulay criteria'
              call GenerateOrbitals_BP(OccOrbitals,nOcc,0,MyMolecule,&
-                  & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-                  & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
+                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
+                & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
              if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nOcc,DECinfo%output)
 
              write(DECinfo%output,*) 'Generating unoccupied DEC orbitals using Boughton-Pulay criteria'
              call GenerateOrbitals_BP(UnoccOrbitals,nUnocc,nOcc,MyMolecule,&
-                  & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-                  & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
+                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
+                & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
              if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
              ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
@@ -80,13 +80,16 @@ contains
                 call reassign_orbitals(nocc,OccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
                 call reassign_orbitals(nunocc,UnOccOrbitals,natoms,MyMolecule%DistanceTable,mylsitem)
              end if
+             write(DECinfo%output,*)
+             write(DECinfo%output,*)
+             write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
 
           else ! Simple Lowdin charge procedure to determine atomic extent
 
              write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
 
              call GenerateOrbitals_simple(nocc,nunocc,natoms, &
-                  & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
+                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
              if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
              if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
@@ -3242,12 +3245,6 @@ contains
     end if
     IF(DECinfo%FragmentExpansionRI)THEN
        DECinfo%RepeatAF=.true.
-    ENDIF
-    IF(DECinfo%InteractionEnergy)THEN
-       IF(DECinfo%ccmodel.NE.DECinfo%fragopt_red_model)THEN
-          !turn of recalculation of Atomic fragment calculations
-          DECinfo%RepeatAF = .FALSE.
-       ENDIF
     ENDIF
 
   end subroutine dec_orbital_sanity_check

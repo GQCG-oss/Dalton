@@ -144,6 +144,9 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+   
+  call Test_if_64bit_integer_required(nbast,nbast)
+
 #ifdef HAS_PCMSOLVER
         !
         ! Polarizable continuum model calculation

@@ -21,7 +21,7 @@ MODULE IchorGabmodule
   use IchorParametersModule
 !debugging
   use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general
-
+  use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
 public :: IchorGab
 private
 CONTAINS
@@ -32,8 +32,8 @@ subroutine IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -82,6 +82,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = 1) means Coulomb Operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -188,6 +190,9 @@ ENDIF
 !call ichorzero2(OutputStorage,OutputDim1*OutputDim2,OutputDim3*OutputDim4*OutputDim5)
 !INTRODUCE iAngmomType Loop Like IchorEri.F90 !!!
 MaxTotalAngmomAB = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB)
+UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
+call set_GGem(IchorOperatorSpec,2*MaxTotalAngmomAB)
+IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
 
 Spherical = SphericalSpec.EQ.SphericalParam
 oldmaxangmomABCD = -25
@@ -330,6 +335,7 @@ IF(SameLHSaos)THEN
 !   call ls_output(OutputStorage,1,OutputDim1,1,OutputDim1,OutputDim1,OutputDim1,1,6)
 ENDIF
 
+call free_GGem()
 call mem_ichor_dealloc(TABFJW)
 deallocate(TABFJW)
 call mem_ichor_dealloc(BatchIndexOfTypeA)
@@ -438,7 +444,7 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
   call mem_ichor_alloc(BasisCont) 
   MaxPasses = 1
   nPasses = 1
-  IF(MAX(AngmomA,AngmomB).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
      call DetermineSizeTmpArray34(nTUVP,nCartOrbCompP,nPrimP,nTUVP,&
           & nCartOrbCompP,nPrimP,1,&
           & AngmomA,AngmomB,AngmomA,AngmomB,AngmomA+AngmomB,AngmomA+AngmomB,&
@@ -501,7 +507,7 @@ subroutine GabIntLoop(nPrimA,nPrimB,nPrimP,intprint,lupri,nContA,&
 !$OMP END SINGLE
   ENDDO
 !$OMP END PARALLEL
-  IF(MAX(AngmomA,AngmomB).GT.MaxSpecialAngmom)THEN
+  IF(MAX(AngmomA,AngmomB).GT.MaxSpecialAngmom.OR.GGemOperatorCalc)THEN
     call mem_ichor_dealloc(TmpArray3)
     deallocate(TmpArray3)
     call mem_ichor_dealloc(TmpArray4)
