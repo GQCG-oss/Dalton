@@ -1590,6 +1590,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    time_write       = 0.0E0_realk
    time_finalize    = 0.0E0_realk
 
+
    collective       = .true.
    fragment_job     = present(frag)
    

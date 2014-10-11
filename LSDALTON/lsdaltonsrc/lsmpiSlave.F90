@@ -26,6 +26,10 @@ subroutine lsmpi_init(OnMaster)
 #endif
    endif
 
+   !Set default mpi message sizes
+   SPLIT_MPI_MSG      = 100000000
+   MAX_SIZE_ONE_SIDED =  12500000
+
    lsmpi_enabled_comm_procs = .false.
 
    !asynchronous progress is off per default, might be switched on with an

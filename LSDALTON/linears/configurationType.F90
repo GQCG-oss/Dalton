@@ -69,7 +69,7 @@ type ConfigItem
    logical              :: doDEC
    !> Turns off DEC energy contribution for get_energy calls
    logical              :: noDecEnergy
-   !> Should Memory Information be printet 
+   !> Should Memory Information be printed
    logical              :: PrintMemory
    !> Perform interaction energy calculation using Counter Poise Correction
    logical              :: InteractionEnergy

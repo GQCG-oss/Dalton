@@ -97,7 +97,6 @@ contains
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%NO_MO_CCSD           = .false.
-    DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
     DECinfo%output               = output
@@ -188,8 +187,9 @@ contains
     DECinfo%array4OnFile_specified  = .false.
 
     ! ccsd(t) settings
-    DECinfo%abc = .false.
-    DECinfo%abc_tile_size = 1
+    DECinfo%abc               = .false.
+    DECinfo%abc_tile_size     = 1
+    DECinfo%CCSDPT_nbuffs_ijk = 6
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -523,13 +523,16 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
 
 
+       ! (T) SPECIFIC KEYWORDS
+       !**********************
+       case('.(T)#buffs_ijk'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
+
 
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword

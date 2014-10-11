@@ -437,12 +437,12 @@ contains
 
        call time_start_phase(PHASE_COMM)
 
-       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master,SPLIT_MSG_REC)
+       call lsmpi_local_reduction(ccsdpt_singles%elm1,ccsdpt_singles%nelms,infpar%master)
 
        if (print_frags) then
 
-          call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master,SPLIT_MSG_REC)
-          call lsmpi_local_reduction(ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%nelms,infpar%master,SPLIT_MSG_REC)
+          call lsmpi_local_reduction(ccsdpt_doubles%elm1,ccsdpt_doubles%nelms,infpar%master)
+          call lsmpi_local_reduction(ccsdpt_doubles_2%elm1,ccsdpt_doubles_2%nelms,infpar%master)
 
        else
 
@@ -622,7 +622,7 @@ contains
 
     !init multiple buffering for mpi
     !this should not be set below 3
-    nbuffs = 4
+    nbuffs = DECinfo%CCSDPT_nbuffs_ijk
     if(nbuffs < 3) call lsquit("ERROR(ijk_loop_par):programming error, nbuffs has to be >= 3",-1)
     call mem_alloc(vvvo_pdm_buff,nvirt**3,nbuffs)
     call mem_alloc(needed,nbuffs)
@@ -9083,7 +9083,7 @@ contains
 
        ! now, reduce o^3v integrals onto master
        call time_start_phase(PHASE_COMM)
-       call lsmpi_allreduce(dummy2,o3v, infpar%lg_comm,SPLIT_MSG_REC ) 
+       call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
     end if
@@ -9583,7 +9583,7 @@ contains
 
        ! now, reduce o^3v integrals onto master
        call time_start_phase(PHASE_COMM)
-       call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm,SPLIT_MSG_REC) 
+       call lsmpi_allreduce(dummy2,o3v,infpar%lg_comm) 
        call time_start_phase(PHASE_WORK)
 
     end if

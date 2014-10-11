@@ -1094,15 +1094,14 @@ contains
 
         !split messages in 2GB parts, compare to counterpart in
         !ccsd_data_preparation
-        k=SPLIT_MSG_REC
 
         nelms = nbas*nocc
-        call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-        call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(xo,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(yo,nelms,infpar%master,infpar%lg_comm)
 
         nelms = nbas*nvirt
-        call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-        call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(xv,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(yv,nelms,infpar%master,infpar%lg_comm)
 
      else
         if(.not.loc)then
@@ -2087,12 +2086,11 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=SPLIT_MSG_REC
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if (iter/=1) then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
       if(.not.loc)then
@@ -2155,7 +2153,7 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%NO_MO_CCSD,Master)
-    call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
+    call ls_mpi_buffer(DECitem%CCSDPT_nbuffs_ijk,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
