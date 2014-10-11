@@ -139,6 +139,7 @@ contains
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
+    DECinfo%only_pair_frag_jobs    =  .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
@@ -608,6 +609,7 @@ contains
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
           read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
+       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 

@@ -184,6 +184,7 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 IPRINT=SETTING%SCHEME%INTPRINT
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
+call Test_if_64bit_integer_required(nbast1,nbast2)
 
 IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
 IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
