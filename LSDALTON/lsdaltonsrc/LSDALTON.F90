@@ -140,6 +140,8 @@ SUBROUTINE LSDALTON_DRIVER(OnMaster,lupri,luerr,meminfo_slaves)
 
   ! Init LSdalton calculation and get lsitem and config structures
   call init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
+
+  call Test_if_64bit_integer_required(nbast,nbast)
   ! Timing of individual steps
   CALL LSTIMER('START ',TIMSTR,TIMEND,lupri)
   IF(config%integral%debugIchor)THEN
@@ -837,6 +839,10 @@ implicit none
   endif
 
   call lsmpi_finalize(lupri,.false.)
+#else
+  WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+       &- Should be zero - otherwise a leakage is present")') 0
+  WRITE(LUPRI,'(A)')'  This is a non MPI calculation so naturally no memory is allocated on slaves!'
 #endif
 
   if(OnMaster)then

@@ -353,14 +353,14 @@ module crop_tools_module
             write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
             write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
             write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
-            write(DECinfo%output,'(a,l1)')     'Debug routine    = ',DECinfo%CCDEBUG
-            write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
+            write(DECinfo%output,'(a,l4)')     'Debug routine    = ',DECinfo%CCDEBUG
+            write(DECinfo%output,'(a,l4)')     'Debug mode       = ',DECinfo%cc_driver_debug
             write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
-            write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
+            write(DECinfo%output,'(a,l4)')     'Use CROP         = ',DECinfo%use_crop
             write(DECinfo%output,'(a,i4)')     'CROP subspace    = ',maxsub
-            write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
-            write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
-            write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
+            write(DECinfo%output,'(a,l4)')     'Preconditioner   = ',DECinfo%use_preconditioner
+            write(DECinfo%output,'(a,l4)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
+            write(DECinfo%output,'(a,l4)')     'Singles          = ',DECinfo%use_singles
          else
             write(DECinfo%output,'(/,a)') '  Coupled-cluster energy  -> Fragment job '
             write(DECinfo%output,'(a)')   '------------------------------------------'
@@ -369,7 +369,7 @@ module crop_tools_module
             else
                write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(ccModel)
             endif
-            write(DECinfo%output,'(4x,a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
+            write(DECinfo%output,'(4x,a,l4)')     'Debug mode       = ',DECinfo%cc_driver_debug
             write(DECinfo%output,'(a,i4,$)')      'MaxIter          = ',DECinfo%ccMaxIter
             write(DECinfo%output,'(5x,a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
             write(DECinfo%output,'(a,i4,$)')      'Num. b.f.        = ',nbasis
@@ -377,7 +377,7 @@ module crop_tools_module
             write(DECinfo%output,'(a,i4,$)')      'Num. occ. orb.   = ',nocc
             write(DECinfo%output,'(5x,a,i4)')     'CROP subspace    = ',DECinfo%ccMaxDIIS
             write(DECinfo%output,'(a,i4,$)')      'Num. unocc. orb. = ',nvirt
-            write(DECinfo%output,'(5x,a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
+            write(DECinfo%output,'(5x,a,l4)')     'Preconditioner   = ',DECinfo%use_preconditioner
          end if
 
          ! cc parameters
@@ -569,15 +569,15 @@ module crop_tools_module
    !> \date: April 2013
    !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
    !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,vo,bo,bv)
+   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
 
       implicit none
       !> integers
       integer, intent(in) :: no, nv, nb
       !> general quantities with the respective sizes
-      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no)
+      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
-      real(realk), intent(inout),optional :: vo(nv*no)
+      real(realk), intent(inout),optional :: vo(nv*no),ov(no*nv)
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
       !> temp array2 and array4 structures
@@ -587,7 +587,9 @@ module crop_tools_module
       wrksize = 0
       if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
       if(present(vvoo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+      if(present(oovv)) wrksize = max(wrksize,(i8*no**2)*nv**2)
       if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
+      if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
 
@@ -597,6 +599,8 @@ module crop_tools_module
       if(present(vovo)) call successive_wxyz_trafo(nv,no,nv,no,vovo,Uvirt,Uocc,Uvirt,Uocc,tmp)
       !successive transformation of vvoo:
       if(present(vvoo)) call successive_wxyz_trafo(nv,nv,no,no,vvoo,Uvirt,Uvirt,Uocc,Uocc,tmp)
+      !successive transformation of oovv:
+      if(present(oovv)) call successive_wxyz_trafo(no,no,nv,nv,oovv,Uocc,Uocc,Uvirt,Uvirt,tmp)
 
       !if t1 trafo has to be done as well
       if(present(vo))then
@@ -604,6 +608,13 @@ module crop_tools_module
          call dgemm('n','n',nv,no,nv,1.0E0_realk,Uvirt,nv,vo,nv,0.0E0_realk,tmp,nv)
          ! tmp(aI) U(i,I)^T   -> t(ai)
          call dgemm('n','t',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,vo,nv)
+      endif
+
+      if(present(ov))then
+         !U(i,I) t(IA)    -> t(iA)
+         call dgemm('n','n',no,nv,no,1.0E0_realk,Uocc,no,ov,no,0.0E0_realk,tmp,no)
+         ! tmp(iA) U(a,A)^T   -> t(ia)
+         call dgemm('n','t',no,nv,nv,1.0E0_realk,tmp,no,Uvirt,nv,0.0E0_realk,ov,no)
       endif
 
       if(present(bo))then
@@ -621,15 +632,15 @@ module crop_tools_module
       call mem_dealloc(tmp)
    end subroutine can_local_trans
 
-   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,vo,bo,bv)
+   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
 
       implicit none
       !> integers
       integer, intent(in) :: no, nv, nb
       !> general quantities with the respective sizes
-      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no)
+      real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
-      real(realk), intent(inout),optional :: vo(nv*no)
+      real(realk), intent(inout),optional :: vo(nv*no), ov(no*nv)
       !> unitary transformation matrices
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
@@ -644,7 +655,9 @@ module crop_tools_module
       wrksize = 0
       if(present(vovo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
       if(present(vvoo)) wrksize = max(wrksize,(i8*nv**2)*no**2)
+      if(present(oovv)) wrksize = max(wrksize,(i8*no**2)*nv**2)
       if(present(vo))   wrksize = max(wrksize,(i8*nv) * no)
+      if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
 
@@ -654,6 +667,8 @@ module crop_tools_module
       if(present(vovo))call successive_wxyz_trafo(nv,no,nv,no,vovo,UvirtT,UoccT,UvirtT,UoccT,tmp)
       !successive transformation of vvoo:
       if(present(vvoo))call successive_wxyz_trafo(nv,nv,no,no,vvoo,UvirtT,UvirtT,UoccT,UoccT,tmp)
+      !successive transformation of oovv:
+      if(present(oovv))call successive_wxyz_trafo(no,no,nv,nv,oovv,UoccT,UoccT,UvirtT,UvirtT,tmp)
 
       if(present(vo))then
          !U(a,A) t(AI)    -> t(aI)
@@ -662,6 +677,13 @@ module crop_tools_module
          call dgemm('n','n',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,vo,nv)
       endif
 
+      if(present(ov))then
+         !U(i,I) t(IA)    -> t(iA)
+         call dgemm('n','n',no,nv,no,1.0E0_realk,UoccT,no,ov,no,0.0E0_realk,tmp,no)
+         ! tmp(iA) U(a,A)^T   -> t(ia)
+         call dgemm('n','n',no,nv,nv,1.0E0_realk,tmp,no,Uvirt,nv,0.0E0_realk,ov,no)
+      endif
+      
       if(present(bo))then
          tmp(1:nb*no) = bo
          ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
@@ -682,7 +704,7 @@ module crop_tools_module
       integer, intent(in) :: w,x,y,z
       real(realk), intent(inout) :: WXYZ(w*x*y*z),WRKWXYZ(w*x*y*z)
       real(realk), intent(in) :: WW(w,W),XX(x,X),YY(y,Y),ZZ(z,Z)
-      !WXYZ(W,XYZ)^T WW(w,W)^T   -> WRKWXYZ (XYZ,x)
+      !WXYZ(W,XYZ)^T WW(w,W)^T   -> WRKWXYZ (XYZ,w)
       call dgemm('t','t',X*Y*Z,w,W,1.0E0_realk,WXYZ,W,WW,w,0.0E0_realk,WRKWXYZ,X*Y*Z)
       ! WRKWXYZ(X,YZw)^T XX(x,X)^T   -> WXYZ (YZw,x)
       call dgemm('t','t',Y*Z*w,x,X,1.0E0_realk,WRKWXYZ,X,XX,x,0.0E0_realk,WXYZ,Y*Z*w)

@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
      & check_cc_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -895,6 +895,10 @@ subroutine DEC_meaningful_input(config)
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
+
+     if(DECinfo%ccmodel == MODEL_CCSDpT) then
+        if (.not. DECinfo%full_molecular_cc) DECinfo%print_frags = .true.
+     endif
 
      ! CCSD does not work for SCALAPACK, Hubi please fix!
      if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
@@ -2032,6 +2036,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
+                  config%decomp%cfg_no_of_startvectors = config%response%rspsolverinput%rsp_no_of_startvectors
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
@@ -2645,7 +2650,9 @@ DO
       CASE ('.HARDNESS' ); READ(LUCMD,*) DALTON%DFT%HRDNES
       CASE ('.DISPER' )
          DALTON%DFT%DODISP = .TRUE.
-         CALL DFTDISPCHECK()
+         DALTON%DFT%DODISP3 = .TRUE.
+         DALTON%DFT%DO_DFTD3 = .TRUE.
+         DALTON%DFT%DO_BJDAMP = .TRUE.
 !AMT
       CASE ('.DFT-D2')
          DALTON%DFT%DODISP = .TRUE.

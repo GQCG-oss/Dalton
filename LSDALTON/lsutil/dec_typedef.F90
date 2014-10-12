@@ -226,6 +226,13 @@ module dec_typedef_module
      !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
      logical :: v2o2_free_solver
 
+     !> ccsd(T) settings
+     !> *****************************
+     !> logical for abc scheme
+     logical :: abc
+     !> tile size for use with abc scheme
+     integer :: abc_tile_size
+
      !> F12 settings
      !> ************
      !> Use F12 correction
@@ -308,8 +315,10 @@ module dec_typedef_module
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
      !> Hack to only do fragment optimization
-     integer :: only_n_frag_jobs
+     integer         :: only_n_frag_jobs
      integer,pointer :: frag_job_nr(:)
+     !> Use hack to specify only pair fragment jobs
+     logical         :: only_pair_frag_jobs
      !> Has simple orbital threshold been defined manually in input (true),
      !> or should simple orbital threshold be adapted to FOT 
      !> as descripted under FOTlevel (false)?
@@ -341,8 +350,10 @@ module dec_typedef_module
      integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
-     !> Which Fragment Reduction Scheme should be used
-     integer :: Frag_Red_Scheme
+     !> Which Fragment Reduction Scheme should be used for the occ space
+     integer :: Frag_RedOcc_Scheme
+     !> Which Fragment Reduction Scheme should be used for the vir space
+     integer :: Frag_RedVir_Scheme
      !> Number of atoms to include in initial fragment
      integer :: Frag_Init_Size
      !> Number of atoms to include in fragment expansion

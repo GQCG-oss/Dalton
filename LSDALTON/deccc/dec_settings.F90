@@ -15,6 +15,7 @@ MODULE DEC_settings_mod
   use ls_util
 #ifdef VAR_MPI
   use infpar_module
+  use lsmpi_type, only: LSMPIASYNCP
 #endif
 
 contains
@@ -69,7 +70,9 @@ contains
     DECinfo%hack                 = .false.
     DECinfo%hack2                = .false.
     DECinfo%mpisplit             = 10
-    DECinfo%dyn_load             = .false.
+#ifdef VAR_MPI
+    DECinfo%dyn_load             = LSMPIASYNCP
+#endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
     DECinfo%array_test           = .false.
@@ -127,7 +130,8 @@ contains
     DECinfo%PurifyMOs              = .false.
     DECinfo%precondition_with_full = .false.
     DECinfo%Frag_Exp_Scheme        = 1
-    DECinfo%Frag_Red_Scheme        = 1
+    DECinfo%Frag_RedOcc_Scheme        = 1
+    DECinfo%Frag_RedVir_Scheme        = 1
     DECinfo%Frag_Init_Size         = 4
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
@@ -136,6 +140,7 @@ contains
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
+    DECinfo%only_pair_frag_jobs    =  .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
@@ -172,8 +177,6 @@ contains
     DECinfo%F12debug                = .false.
     DECinfo%SOS                     = .false.
     DECinfo%PureHydrogenDebug       = .false.
-    DECinfo%InteractionEnergy       = .false.
-    DECinfo%PrintInteractionEnergy  = .false.
     DECinfo%StressTest              = .false.
     DECinfo%DFTreference            = .false.
     DECinfo%ccConvergenceThreshold  = 1e-5_realk
@@ -185,6 +188,9 @@ contains
     DECinfo%array4OnFile            = .false.
     DECinfo%array4OnFile_specified  = .false.
 
+    ! ccsd(t) settings
+    DECinfo%abc = .false.
+    DECinfo%abc_tile_size = 1
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -367,6 +373,10 @@ contains
           ! Number of residual vectors to save when solving CC amplitude equation
        case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
 
+          ! CCSD(T) INFO
+          ! ==============
+       case('.PT_ABC'); DECinfo%abc=.true.
+       case('.ABC_TILE'); read(input,*) DECinfo%abc_tile_size
 
           ! CHOICE OF ORBITALS
           ! ==================
@@ -493,6 +503,7 @@ contains
        case('.CCDEBUG');                  DECinfo%CCDEBUG              = .true.
        case('.CCSOLVER_LOCAL');           DECinfo%solver_par           = .false.
        case('.CCSDDYNAMIC_LOAD');         DECinfo%dyn_load             = .true.
+       case('.CCSDNODYNAMIC_LOAD');       DECinfo%dyn_load             = .false.
        case('.CCSDNO_RESTART');           DECinfo%CCSDno_restart       = .true.
        case('.SPAWN_COMM_PROC');          DECinfo%spawn_comm_proc      = .true.
        case('.CCSDMULTIPLIERS');          DECinfo%CCSDmultipliers      = .true.
@@ -539,12 +550,6 @@ contains
           doF12 = .TRUE.
        case('.PUREHYDROGENDEBUG')     
           DECinfo%PureHydrogenDebug       = .true.
-       case('.INTERACTIONENERGY')     
-          !Calculate the Interaction energy (add ref to article) 
-          DECinfo%InteractionEnergy       = .true.
-       case('.PRINTINTERACTIONENERGY')     
-          !Print the Interaction energy (see .INTERACTIONENERGY) 
-          DECinfo%PrintInteractionEnergy  = .true.
        case('.SOSEX')
          DECinfo%SOS = .true.
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
@@ -592,7 +597,8 @@ contains
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
        case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_RED_SCHEME'); read(input,*) DECinfo%Frag_Red_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
        case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
@@ -600,6 +606,7 @@ contains
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
           read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
+       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
@@ -655,24 +662,24 @@ contains
     DoDECCO: if(DECinfo%DECCO) then
 
        ! Occupied partitioning scheme
-       if(.not. DECinfo%OnlyOccPart) then
-          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
-          print *, '--> I will only use occupied partitioning scheme.'
-          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
-          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
-          DECinfo%OnlyOccPart=.true.
-          DECinfo%OnlyVirtPart=.false.
-       end if
+!!$       if(.not. DECinfo%OnlyOccPart) then
+!!$          print *, 'WARNING: DECCO is implemented only for occ partitioning scheme!'
+!!$          print *, '--> I will only use occupied partitioning scheme.'
+!!$          write(DECinfo%output,*) 'WARNING: DECCO only for occ partitioning scheme!'
+!!$          write(DECinfo%output,*) '--> I will only use occupied partitioning scheme.'
+!!$          DECinfo%OnlyOccPart=.true.
+!!$          DECinfo%OnlyVirtPart=.false.
+!!$       end if
 
        ! Not simulate full
        if(DECinfo%simulate_full) then
           call lsquit('DECCO not implemented for SIMULATEFULL',-1)
        end if
 
-       ! Not working for first-order properties
-       if(DECinfo%first_order) then
-          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
-       end if
+!!$       ! Not working for first-order properties
+!!$       if(DECinfo%first_order) then
+!!$          call lsquit('DECCO is not implemented for first-order properties!',DECinfo%output)
+!!$       end if
 
 
        ! No stress test implemented
@@ -682,10 +689,6 @@ contains
 
        if(DECinfo%SinglesPolari) then
           call lsquit('DECCO is not implemented for singles polarization effects!',DECinfo%output)
-       end if
-
-       if(DECinfo%InteractionEnergy) then
-          call lsquit('DECCO is not implemented for interaction energies!',DECinfo%output)
        end if
 
     end if DoDECCO
@@ -970,7 +973,8 @@ contains
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
     write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
-    write(lupri,*) 'Frag_Red_Scheme ', DECitem%Frag_Red_Scheme
+    write(lupri,*) 'Frag_RedOcc_Scheme ', DECitem%Frag_RedOcc_Scheme
+    write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
     write(lupri,*) 'Frag_Init_Size ', DECitem%Frag_Init_Size
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr

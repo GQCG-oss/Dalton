@@ -29,7 +29,6 @@
 #-    MESSAGE(FATAL_ERROR "HDF5 library is needed for QMatrix!")
 #-ENDIF()
 # Sets the external QMatrix library, and a library libqmatrix.a will be generated
-set(LIB_QMATRIX qmatrix)
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -48,7 +47,7 @@ set(ExternalProjectCMakeArgs
     -DQMATRIX_AUTO_ERROR_EXIT=ON
     -DQMATRIX_TEST_EXECUTABLE=OFF
     -DQMATRIX_TEST_3M_METHOD=OFF
-    -DLIB_QMATRIX_NAME=${LIB_QMATRIX}
+    -DLIB_QMATRIX_NAME=qmatrix
     -DQMATRIX_BUILD_ADAPTER=ON
     -DEXTERNAL_BLOCK_MATRIX=OFF
     -DEXTERNAL_COMPLEX_MATRIX=OFF
@@ -62,8 +61,7 @@ set(ExternalProjectCMakeArgs
     -DLAPACK_LIBRARIES=None
     -DPARENT_MODULE_DIR=${CMAKE_Fortran_MODULE_DIRECTORY}
    )
-#-    -DLIB_HDF5_RELEASE=${LIB_HDF5_RELEASE}
-add_external(${LIB_QMATRIX} qmatrix)
+add_external(qmatrix)
 # LSDALTON/qmatrix/qmatrix_backend.F90 needs the header files of the QMatrix library
 include_directories(${PROJECT_SOURCE_DIR}/external/qmatrix/include)
 # Since QMatrix will use the matrix module of LSDALTON, we can not put it after
@@ -72,9 +70,5 @@ include_directories(${PROJECT_SOURCE_DIR}/external/qmatrix/include)
 # Instead, we put QMatrix library into LIB_LS_QMATRIX, which will be used
 # for linking together with Gen1Int, QMatrix, OpenRSP and TDRSP libraries
 set(LIB_LS_QMATRIX
-    ${PROJECT_BINARY_DIR}/external/lib/lib${LIB_QMATRIX}.a)
-#-    ${LIB_HDF5_RELEASE})
-# QMatrix will use the matrix module of LSDALTON
-#add_dependencies(${LIB_QMATRIX} matrixmlib)
-#add_dependencies(${LIB_QMATRIX} matrixolib)
-add_dependencies(${LIB_QMATRIX} matrixulib)
+    ${PROJECT_BINARY_DIR}/external/lib/libqmatrix.a)
+add_dependencies(qmatrix matrixulib)

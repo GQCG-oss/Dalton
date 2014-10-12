@@ -11,7 +11,7 @@ module lsmpi_type
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &
        & MemModParamPrintMemory, Print_Memory_info, &
-       & MemModParamPrintMemorylupri
+       & MemModParamPrintMemorylupri, mem_allocated_global
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_module
@@ -189,7 +189,7 @@ module lsmpi_type
 !General MPI vars, aka junkbox!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
-  logical               :: LSMPIASYNCP
+  logical               :: LSMPIASYNCP                !contains environment value of async progress
   logical               :: lsmpi_enabled_comm_procs 
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
@@ -4559,6 +4559,7 @@ contains
       integer(kind=long) :: recvbuffer
       real(realk) :: recvbuffer_real
       integer(kind=long),pointer :: longintbufferInt(:) 
+      integer(KIND=long) :: MPImem_allocated_global
 #ifdef VAR_INT64
       integer, parameter :: i2l = 1
 #else
@@ -4617,6 +4618,7 @@ contains
          call mem_dealloc(longintbufferInt)
 
       ELSE          
+         MPImem_allocated_global = 0
          DO I=1,infpar%nodtot-1
             call init_globalmemvar !WARNING removes all mem info on master 
             call mem_alloc(longintbufferInt,longintbuffersize)
@@ -4627,8 +4629,11 @@ contains
             call mem_dealloc(longintbufferInt)
             WRITE(LUPRI,'("  Memory statistics for MPI node number ",i9," ")') I
             call stats_mpi_mem(lupri)
+            MPImem_allocated_global = MPImem_allocated_global + mem_allocated_global
             call flush(lupri)
          ENDDO
+         WRITE(LUPRI,'("  Allocated MPI memory a cross all slaves:  ",i9," byte  &
+              &- Should be zero - otherwise a leakage is present")') MPImem_allocated_global
       ENDIF
 
 !!$!#ifdef VAR_LSDEBUG
@@ -5077,7 +5082,7 @@ contains
         call lsmpi_put_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
 
@@ -5113,7 +5118,7 @@ contains
       call lsmpi_put_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo
@@ -5269,7 +5274,7 @@ contains
         newpos = pos+j-1
         call lsmpi_get_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
     endif
@@ -5304,7 +5309,7 @@ contains
       call lsmpi_get_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo
@@ -5503,7 +5508,7 @@ contains
         newpos = pos+j-1
         call lsmpi_acc_realkV_wrapper8(buf(j:j+n-1),n,newpos,dest,win)
 #ifdef VAR_HAVE_MPI3
-        if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+        if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
       enddo
     endif
@@ -5538,7 +5543,7 @@ contains
       call lsmpi_acc_realkV_wrapper8(buf(i:i+n-1),n,newpos,dest,win)
 
 #ifdef VAR_HAVE_MPI3
-      if(fi)call lsmpi_win_flush(win,rank=dest,local=.true.)
+      if(fi)call lsmpi_win_flush(win,rank=dest,local=.false.)
 #endif
 
     enddo

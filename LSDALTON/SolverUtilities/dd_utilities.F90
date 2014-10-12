@@ -1722,8 +1722,8 @@ contains
        write(decomp%lupri,*) '****** STEP 1: Projection'
     endif
     do i = 1,Nb_new
+      lin_depend(i) = 1  !initialize to non-dependent
       if (.not. conv(i)) then
-         lin_depend(i) = 1  !initialize to non-dependent
          call DD_Fock_project(ndim,P,bvec_tmp(1:ndim,i),b_scr)
          bvec_tmp(1:ndim,i) = b_scr
          call vecnorm(bvec_tmp(1:ndim,i),ndim,norm)

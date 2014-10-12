@@ -5,19 +5,23 @@ use IchorEriCoulombintegralCPUOBSGeneralModSegQ
 use IchorEriCoulombintegralCPUOBSGeneralModSegP
 use IchorEriCoulombintegralCPUOBSGeneralModSeg
 use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim
+use IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000ModGen
 use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
-public :: IchorCoulombIntegral_CPU_OBS_general,IchorCoulombIntegral_CPU_OBS_general_size  
+public :: ICI_CPU_OBS_general,ICI_CPU_OBS_general_size  
   
 CONTAINS
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
+  subroutine ICI_CPU_OBS_general(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -32,6 +36,9 @@ CONTAINS
     integer,intent(in) :: nAtomsA,nAtomsB
     integer,intent(in) :: Qiprim1(nPrimQ),Qiprim2(nPrimQ)
     integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
+    integer,intent(in) :: nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD
+    integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
+    integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)
     logical,intent(in)     :: Qsegmented,Psegmented
     real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)
@@ -68,9 +75,12 @@ CONTAINS
     ENDIF
     
    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
-    call IchorCoulombIntegral_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
+    call ICI_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -79,9 +89,12 @@ CONTAINS
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
    ELSEIF(Psegmented.AND.Qsegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
+    call ICI_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -90,9 +103,12 @@ CONTAINS
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
    ELSEIF(Psegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
+    call ICI_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -101,9 +117,12 @@ CONTAINS
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
    ELSEIF(Qsegmented)THEN
-    call IchorCoulombIntegral_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
+    call ICI_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -112,9 +131,12 @@ CONTAINS
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
    ELSE
-    call IchorCoulombIntegral_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+    call ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
        & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
        & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
        & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
@@ -123,10 +145,10 @@ CONTAINS
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
    ENDIF
-  end subroutine IchorCoulombIntegral_CPU_OBS_general
+  end subroutine ICI_CPU_OBS_general
   
   
-  subroutine IchorCoulombIntegral_CPU_OBS_general_size(TMParray1maxsize,&
+  subroutine ICI_CPU_OBS_general_size(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,&
@@ -139,36 +161,36 @@ CONTAINS
     integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
     logical,intent(in) :: Psegmented,Qsegmented
     IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
+     call ICI_CPU_OBS_general_sizeSeg1Prim(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented.AND.Qsegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
+     call ICI_CPU_OBS_general_sizeSeg(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Psegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSegP(TMParray1maxsize,&
+     call ICI_CPU_OBS_general_sizeSegP(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSEIF(Qsegmented)THEN
-     call IchorCoulombIntegral_CPU_OBS_general_sizeSegQ(TMParray1maxsize,&
+     call ICI_CPU_OBS_general_sizeSegQ(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ELSE
-     call IchorCoulombIntegral_CPU_OBS_general_sizeGen(TMParray1maxsize,&
+     call ICI_CPU_OBS_general_sizeGen(TMParray1maxsize,&
          & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,&
          & nContA,nContB,nContC,nContD,&
          & nPrimA,nPrimB,nPrimC,nPrimD,&
          & nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
     ENDIF
-  end subroutine IchorCoulombIntegral_CPU_OBS_general_size
+  end subroutine ICI_CPU_OBS_general_size
   
 END MODULE IchorEriCoulombintegralCPUOBSGeneralMod

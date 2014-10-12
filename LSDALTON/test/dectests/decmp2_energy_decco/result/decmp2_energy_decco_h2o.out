@@ -102,14 +102,12 @@
  C++ compiler version     | unknown
  Explicit libs            | -framework vecLib
  Static linking           | OFF
- Last Git revision        | 00f7dcda06388a23e24dd2a0cee7a718e99e52eb
+ Last Git revision        | 46d2422bf15f56dc6ae2956a012b4a1922bc59ac
  Git branch               | master
- Configuration time       | 2014-09-23 10:40:04.478946
- WARNING: DECCO only for occ partitioning scheme!
- --> I will only use occupied partitioning scheme.
+ Configuration time       | 2014-09-23 16:24:13.954445
 
 Start simulation
-     Date and time (Linux)  : Tue Sep 23 10:44:06 2014
+     Date and time (Linux)  : Tue Sep 23 16:26:42 2014
      Host name              : kaspers-mbp.st.client.au.dk             
                       
  -----------------------------------------
@@ -146,6 +144,9 @@ Start simulation
   .FROZENCORE                                                                                         
   .FOT                                                                                                
   4                                                                                                   
+  .ONLYOCCPART                                                                                        
+  #.GRADIENT                                                                                          
+  .IGNOREPAIRESTIMATE                                                                                 
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -400,8 +401,8 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  4:        0.0011352321 (mu =       0.00, xmax =   0.230429E-01, xnorm =   0.637384E-01, THR =   0.184164E-02)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    64
- >>>  CPU Time used in SCF iteration is   0.02 seconds
- >>> wall Time used in SCF iteration is   0.02 seconds
+ >>>  CPU Time used in SCF iteration is   0.03 seconds
+ >>> wall Time used in SCF iteration is   0.03 seconds
 ** Get Fock matrix number   3
  The Coulomb energy contribution    46.940439780136529     
  The Exchange energy contribution    8.9813057657203554     
@@ -433,8 +434,8 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
   Error of red space iteration  4:        0.0002095398 (mu =       0.00, xmax =   0.532570E-02, xnorm =   0.146429E-01, THR =   0.271369E-03)
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    63
- >>>  CPU Time used in SCF iteration is   0.03 seconds
- >>> wall Time used in SCF iteration is   0.03 seconds
+ >>>  CPU Time used in SCF iteration is   0.02 seconds
+ >>> wall Time used in SCF iteration is   0.02 seconds
 ** Get Fock matrix number   4
  The Coulomb energy contribution    46.833611111865565     
  The Exchange energy contribution    8.9708739525987831     
@@ -467,7 +468,7 @@ CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
 Newton equations converged in  4 iterations!
 No. of matmuls in get_density:    61
  >>>  CPU Time used in SCF iteration is   0.02 seconds
- >>> wall Time used in SCF iteration is   0.02 seconds
+ >>> wall Time used in SCF iteration is   0.03 seconds
 ** Get Fock matrix number   5
  The Coulomb energy contribution    46.830153794389382     
  The Exchange energy contribution    8.9705581955541440     
@@ -817,13 +818,14 @@ Use F12 correction           =           FALSE
  DECCO ORBITAL DISTRIBUTION INFORMATION
  **************************************
 
- --- using frozen core approximation, only valence orbitals are printed
+ --- one fragment per valence orbital!
+ --- core orbitals are absorbed into valence fragments.
 
     Occ index     #Unocc Orbitals
-     2                     1
-     3                     3
-     4                     1
-     5                     3
+     2                     2
+     3                     2
+     4                     2
+     5                     2
  Total:                4                8
 
 
@@ -865,18 +867,18 @@ Use F12 correction           =           FALSE
          Occ Orbital fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      3      2      5     13     0.00    / 0.700       0.00    / 0.700              FRAG_SIZE
-      5      2      5     13    0.841    / 0.841       0.00    / 0.700              FRAG_SIZE
-      2      2      3     11    0.700    / 0.309      0.700    / 0.309              FRAG_SIZE
-      4      2      3     11    0.700    / 0.700       0.00    / 0.535              FRAG_SIZE
+      5      2      4     13    0.841    / 0.841       0.00    / 0.700              FRAG_SIZE
+      2      2      4     11     0.00    / 0.309       0.00    / 0.309              FRAG_SIZE
+      3      2      4     11    0.700    / 0.535      0.700    / 0.535              FRAG_SIZE
+      4      2      4     11    0.700    / 0.700       0.00    / 0.535              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        2       /     2.0000    /       2
- FRAGANALYSIS: Max/Ave/Min unocc       :        5       /     4.0000    /       3
- FRAGANALYSIS: Max/Ave/Min basis       :       13       /     12.000    /      11
+ FRAGANALYSIS: Max/Ave/Min unocc       :        4       /     4.0000    /       4
+ FRAGANALYSIS: Max/Ave/Min basis       :       13       /     11.500    /      11
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :     0.84144    /    0.56047    /     0.0000    
- FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.84144    /    0.63761    /    0.30858    
+ FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.84144    /    0.59629    /    0.30858    
  FRAGANALYSIS: Max/Ave/Min Diameter AOS:     0.70022    /    0.17506    /     0.0000    
- FRAGANALYSIS: Max/Ave/Min Diameter AE :     0.70022    /    0.56099    /    0.30858    
+ FRAGANALYSIS: Max/Ave/Min Diameter AE :     0.70022    /    0.51966    /    0.30858    
 
 
 
@@ -886,12 +888,12 @@ Use F12 correction           =           FALSE
  Number of jobs =            6
 
  JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis
-        1                312              2       3        4        6       13
-        2                312              2       4        4        6       13
-        3                312              2       5        3        8       13
-        4                273              3       5        2        6       13
-        5                195              4       5        3        7       13
-        6                156              3       4        3        5       13
+        1                416              2       4        4        7       13
+        2                364              2       3        4        8       13
+        3                234              2       5        3        6       13
+        4                234              3       5        2        5       11
+        5                234              4       5        3        6       13
+        6                110              3       4        3        6       13
 
 
  DEC JOB SUMMARY: Number of single jobs =          4
@@ -915,7 +917,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       1
+ Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       8
@@ -956,14 +958,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       2
  **********************************************************************
  Single occupied energy =    -0.8840046545E-02
- Single virtual  energy =    -0.5800187513E-02
+ Single virtual  energy =    -0.1604510958E-01
  Single Lagrangian occ term  =     0.6542012012E-02
- Single Lagrangian virt term =     0.1539551528E-02
+ Single Lagrangian virt term =     0.4127385569E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.649 MB
-  Max allocated memory, TOTAL                         68.901 MB
+  Allocated memory,     TOTAL                  68.650 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -992,7 +994,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       5       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       5
@@ -1007,17 +1009,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.110E-04
+ Tot memory required for tmp arrays (GB) = 0.115E-04
  Memory required for tmp array 1 (GB)    = 0.320E-05
- Memory required for tmp array 2 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.128E-05
  Memory required for tmp array 3 (GB)    = 0.320E-05
  Memory required for tmp array 4 (GB)    = 0.384E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.400E-06
- Memory required for tmp array 1 (GB)    = 0.200E-06
- Memory required for tmp array 2 (GB)    = 0.200E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1033,14 +1035,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       2
  **********************************************************************
  Single occupied energy =    -0.8228593329E-02
- Single virtual  energy =    -0.5631419421E-02
+ Single virtual  energy =    -0.1574194052E-01
  Single Lagrangian occ term  =     0.6199988789E-02
- Single Lagrangian virt term =     0.1445028945E-02
+ Single Lagrangian virt term =     0.3945174876E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.645 MB
-  Max allocated memory, TOTAL                         68.901 MB
+  Allocated memory,     TOTAL                  68.646 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -1065,7 +1067,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       7       1
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       7
@@ -1080,17 +1082,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.195E-04
+ Tot memory required for tmp arrays (GB) = 0.197E-04
  Memory required for tmp array 1 (GB)    = 0.627E-05
- Memory required for tmp array 2 (GB)    = 0.157E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
  Memory required for tmp array 3 (GB)    = 0.627E-05
  Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.784E-06
- Memory required for tmp array 1 (GB)    = 0.392E-06
- Memory required for tmp array 2 (GB)    = 0.392E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1106,14 +1108,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       2
  **********************************************************************
  Single occupied energy =    -0.8808899256E-02
- Single virtual  energy =    -0.5771301377E-02
+ Single virtual  energy =    -0.1601874200E-01
  Single Lagrangian occ term  =     0.6527840194E-02
- Single Lagrangian virt term =     0.1524303264E-02
+ Single Lagrangian virt term =     0.4108608353E-02
 
 
  Memstats before F12 fragment_energy calculation
   Allocated memory,     TOTAL                  68.646 MB
-  Max allocated memory, TOTAL                         68.901 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -1138,7 +1140,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -1153,17 +1155,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.150E-04
+ Tot memory required for tmp arrays (GB) = 0.154E-04
  Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Memory required for tmp array 2 (GB)    = 0.154E-05
  Memory required for tmp array 3 (GB)    = 0.461E-05
  Memory required for tmp array 4 (GB)    = 0.461E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1179,14 +1181,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       2
  **********************************************************************
  Single occupied energy =    -0.8779586120E-02
- Single virtual  energy =    -0.5744513289E-02
+ Single virtual  energy =    -0.1599880966E-01
  Single Lagrangian occ term  =     0.6513930331E-02
- Single Lagrangian virt term =     0.1510130561E-02
+ Single Lagrangian virt term =     0.4095470593E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.645 MB
-  Max allocated memory, TOTAL                         68.901 MB
+  Allocated memory,     TOTAL                  68.646 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   3
@@ -1212,7 +1214,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -1252,15 +1254,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8754814776E-02
- Single virtual  energy =    -0.4161461441E-02
- Single Lagrangian occ term  =     0.6479421185E-02
- Single Lagrangian virt term =     0.9635497216E-03
+ Single occupied energy =    -0.8754814873E-02
+ Single virtual  energy =    -0.1182282320E-01
+ Single Lagrangian occ term  =     0.6479421281E-02
+ Single Lagrangian virt term =     0.2662039096E-02
 
 
  Memstats before F12 fragment_energy calculation
   Allocated memory,     TOTAL                  68.645 MB
-  Max allocated memory, TOTAL                         68.901 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   4
@@ -1269,8 +1271,8 @@ Use F12 correction           =           FALSE
  FOP Loop: Number of orbitals in virt total :   6
  FOP Loop: Number of orbitals in occ total  :   3
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0087548148
- FOP Loop: Occupied energy diff             :    0.0000852318
+ FOP Loop: Occupied Fragment energy         :   -0.0087548149
+ FOP Loop: Occupied energy diff             :    0.0000852317
  FOP=========================================================
  FOP
  FOP: Occupied energy converged, energydiff   =   0.000085232
@@ -1283,7 +1285,7 @@ Use F12 correction           =           FALSE
  FOP Done: Number of orbitals in virt total :   6
  FOP Done: Number of orbitals in occ total  :   3
  FOP Done: Number of basis functions        :  13
- FOP Done: Occupied Fragment energy         :   -0.0087548148
+ FOP Done: Occupied Fragment energy         :   -0.0087548149
  FOP Done: Occupied reduction removed      1 of      4 orbitals ( 25.00 %)
  FOP Done: Virtual  reduction removed      2 of      8 orbitals ( 25.00 %)
  FOP=========================================================
@@ -1305,7 +1307,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       3
+ Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       8
@@ -1320,17 +1322,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
+ Tot memory required for tmp arrays (GB) = 0.246E-04
  Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.614E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1346,14 +1348,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       3
  **********************************************************************
  Single occupied energy =    -0.1651647519E-01
- Single virtual  energy =    -0.2207768424E-01
+ Single virtual  energy =    -0.1378089359E-01
  Single Lagrangian occ term  =     0.8590884810E-02
- Single Lagrangian virt term =     0.9162339545E-02
+ Single Lagrangian virt term =     0.6667948875E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.649 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.648 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -1371,7 +1373,7 @@ Use F12 correction           =           FALSE
  FOP  Expansion has converged. We start reduction 
  FOP =============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       13       4       6
+#SINGLEDIMS# basis,occ,virt       13       4       5
 
 
  =======================================================================
@@ -1382,37 +1384,37 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       6       3
+ Number of virtual  orbitals AOS/EOS     =       5       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       6
+ Maximum virtual batch dimension         =       5
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.706E-04
+ Tot memory required for tmp arrays (GB) = 0.694E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
+ Memory required for tmp array 2 (GB)    = 0.576E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.161E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.230E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.461E-05
+ Tot memory required for tmp arrays (GB) = 0.115E-04
+ Memory required for tmp array 1 (GB)    = 0.320E-05
+ Memory required for tmp array 2 (GB)    = 0.128E-05
+ Memory required for tmp array 3 (GB)    = 0.320E-05
+ Memory required for tmp array 4 (GB)    = 0.384E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.706E-04
- Big Array Memory required       (GB)    = 0.869E-04
+ Memory required                 (GB)    = 0.694E-04
+ Big Array Memory required       (GB)    = 0.858E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -1422,25 +1424,25 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1402020403E-01
- Single virtual  energy =    -0.2242715212E-01
- Single Lagrangian occ term  =     0.7100138068E-02
- Single Lagrangian virt term =     0.9450009387E-02
+ Single occupied energy =    -0.1530449487E-01
+ Single virtual  energy =    -0.1388468428E-01
+ Single Lagrangian occ term  =     0.7689373134E-02
+ Single Lagrangian virt term =     0.6794427612E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.648 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.646 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   3
- FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in virt total :   5
  FOP Loop: Number of orbitals in occ total  :   4
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0140202040
- FOP Loop: Occupied energy diff             :    0.0024962712
+ FOP Loop: Occupied Fragment energy         :   -0.0153044949
+ FOP Loop: Occupied energy diff             :    0.0012119803
  FOP=========================================================
  FOP
  FOP: Occupied energy NOT converged
@@ -1455,7 +1457,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       7       3
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       7
@@ -1470,17 +1472,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.206E-04
+ Tot memory required for tmp arrays (GB) = 0.197E-04
  Memory required for tmp array 1 (GB)    = 0.627E-05
- Memory required for tmp array 2 (GB)    = 0.269E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
  Memory required for tmp array 3 (GB)    = 0.627E-05
  Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1495,15 +1497,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1533086230E-01
- Single virtual  energy =    -0.2211028525E-01
- Single Lagrangian occ term  =     0.7855540119E-02
- Single Lagrangian virt term =     0.9181493142E-02
+ Single occupied energy =    -0.1648981262E-01
+ Single virtual  energy =    -0.1378121296E-01
+ Single Lagrangian occ term  =     0.8590230669E-02
+ Single Lagrangian virt term =     0.6668144074E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.648 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.647 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -1512,13 +1514,86 @@ Use F12 correction           =           FALSE
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0153308623
- FOP Loop: Occupied energy diff             :    0.0011856129
+ FOP Loop: Occupied Fragment energy         :   -0.0164898126
+ FOP Loop: Occupied energy diff             :    0.0000266626
+ FOP=========================================================
+ FOP
+ FOP: Occupied energy converged, energydiff   =   0.000026663
+#SINGLEDIMS# basis,occ,virt       13       4       6
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       4       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       6
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.706E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.691E-05
+ Memory required for tmp array 3 (GB)    = 0.150E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.154E-04
+ Memory required for tmp array 1 (GB)    = 0.461E-05
+ Memory required for tmp array 2 (GB)    = 0.154E-05
+ Memory required for tmp array 3 (GB)    = 0.461E-05
+ Memory required for tmp array 4 (GB)    = 0.461E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.706E-04
+ Big Array Memory required       (GB)    = 0.869E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       3
+ **********************************************************************
+ Single occupied energy =    -0.1628958155E-01
+ Single virtual  energy =    -0.1373049280E-01
+ Single Lagrangian occ term  =     0.8480908896E-02
+ Single Lagrangian virt term =     0.6623798871E-02
+
+
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                  68.647 MB
+  Max allocated memory, TOTAL                         68.903 MB
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   3
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0162895816
+ FOP Loop: Occupied energy diff             :    0.0002268936
  FOP=========================================================
  FOP
  FOP: Occupied energy NOT converged
  BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       13       3       8
+#SINGLEDIMS# basis,occ,virt       13       3       7
 
 
  =======================================================================
@@ -1529,37 +1604,37 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       8       3
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.668E-04
+ Tot memory required for tmp arrays (GB) = 0.660E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
+ Memory required for tmp array 2 (GB)    = 0.605E-05
  Memory required for tmp array 3 (GB)    = 0.112E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.144E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.173E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.346E-05
+ Tot memory required for tmp arrays (GB) = 0.113E-04
+ Memory required for tmp array 1 (GB)    = 0.353E-05
+ Memory required for tmp array 2 (GB)    = 0.118E-05
+ Memory required for tmp array 3 (GB)    = 0.353E-05
+ Memory required for tmp array 4 (GB)    = 0.302E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.130E-05
- Memory required for tmp array 1 (GB)    = 0.648E-06
- Memory required for tmp array 2 (GB)    = 0.648E-06
+ Tot memory required for tmp arrays (GB) = 0.784E-06
+ Memory required for tmp array 1 (GB)    = 0.392E-06
+ Memory required for tmp array 2 (GB)    = 0.392E-06
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.668E-04
- Big Array Memory required       (GB)    = 0.832E-04
+ Memory required                 (GB)    = 0.660E-04
+ Big Array Memory required       (GB)    = 0.823E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -1569,25 +1644,25 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1634939634E-01
- Single virtual  energy =    -0.1749646585E-01
- Single Lagrangian occ term  =     0.8449133653E-02
- Single Lagrangian virt term =     0.7769555896E-02
+ Single occupied energy =    -0.1632202406E-01
+ Single virtual  energy =    -0.1301696434E-01
+ Single Lagrangian occ term  =     0.8439877556E-02
+ Single Lagrangian virt term =     0.6402938850E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.648 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.647 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
- FOP              Fragment information, loop   3
+ FOP              Fragment information, loop   4
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   3
- FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   3
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0163493963
- FOP Loop: Occupied energy diff             :    0.0001670789
+ FOP Loop: Occupied Fragment energy         :   -0.0163220241
+ FOP Loop: Occupied energy diff             :    0.0001944511
  FOP=========================================================
  FOP
  FOP: Occupied energy NOT converged
@@ -1597,12 +1672,12 @@ Use F12 correction           =           FALSE
  FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   3
  FOP---------------------------------------------------------
  FOP Done: Fragment number                  :   3
- FOP Done: Number of orbitals in virt total :   8
+ FOP Done: Number of orbitals in virt total :   7
  FOP Done: Number of orbitals in occ total  :   4
  FOP Done: Number of basis functions        :  13
- FOP Done: Occupied Fragment energy         :   -0.0165164752
+ FOP Done: Occupied Fragment energy         :   -0.0164898126
  FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
- FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
+ FOP Done: Virtual  reduction removed      1 of      8 orbitals ( 12.50 %)
  FOP=========================================================
  FOP
 
@@ -1622,7 +1697,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       1
+ Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       8
@@ -1663,14 +1738,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.8840045461E-02
- Single virtual  energy =    -0.5800187181E-02
+ Single virtual  energy =    -0.1604511643E-01
  Single Lagrangian occ term  =     0.6542012356E-02
- Single Lagrangian virt term =     0.1539551687E-02
+ Single Lagrangian virt term =     0.4127386567E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.648 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.649 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -1699,7 +1774,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       5       1
+ Number of virtual  orbitals AOS/EOS     =       5       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       5
@@ -1714,17 +1789,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.110E-04
+ Tot memory required for tmp arrays (GB) = 0.115E-04
  Memory required for tmp array 1 (GB)    = 0.320E-05
- Memory required for tmp array 2 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.128E-05
  Memory required for tmp array 3 (GB)    = 0.320E-05
  Memory required for tmp array 4 (GB)    = 0.384E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.400E-06
- Memory required for tmp array 1 (GB)    = 0.200E-06
- Memory required for tmp array 2 (GB)    = 0.200E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1740,14 +1815,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.8228591206E-02
- Single virtual  energy =    -0.5631418132E-02
+ Single virtual  energy =    -0.1606376661E-01
  Single Lagrangian occ term  =     0.6199988105E-02
- Single Lagrangian virt term =     0.1445028669E-02
+ Single Lagrangian virt term =     0.4109694040E-02
 
 
  Memstats before F12 fragment_energy calculation
   Allocated memory,     TOTAL                  68.647 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
@@ -1772,7 +1847,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       7       1
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       7
@@ -1787,17 +1862,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.195E-04
+ Tot memory required for tmp arrays (GB) = 0.197E-04
  Memory required for tmp array 1 (GB)    = 0.627E-05
- Memory required for tmp array 2 (GB)    = 0.157E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
  Memory required for tmp array 3 (GB)    = 0.627E-05
  Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.784E-06
- Memory required for tmp array 1 (GB)    = 0.392E-06
- Memory required for tmp array 2 (GB)    = 0.392E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1813,14 +1888,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.8808897557E-02
- Single virtual  energy =    -0.5771300620E-02
+ Single virtual  energy =    -0.1602260525E-01
  Single Lagrangian occ term  =     0.6527840046E-02
- Single Lagrangian virt term =     0.1524303231E-02
+ Single Lagrangian virt term =     0.4113020355E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.647 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.648 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -1845,7 +1920,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -1860,17 +1935,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.150E-04
+ Tot memory required for tmp arrays (GB) = 0.154E-04
  Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Memory required for tmp array 2 (GB)    = 0.154E-05
  Memory required for tmp array 3 (GB)    = 0.461E-05
  Memory required for tmp array 4 (GB)    = 0.461E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.576E-06
- Memory required for tmp array 1 (GB)    = 0.288E-06
- Memory required for tmp array 2 (GB)    = 0.288E-06
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -1886,14 +1961,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       4
  **********************************************************************
  Single occupied energy =    -0.8779583811E-02
- Single virtual  energy =    -0.5744511991E-02
+ Single virtual  energy =    -0.1599881829E-01
  Single Lagrangian occ term  =     0.6513929681E-02
- Single Lagrangian virt term =     0.1510130277E-02
+ Single Lagrangian virt term =     0.4095472417E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.647 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Allocated memory,     TOTAL                  68.648 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   3
@@ -1919,7 +1994,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -1959,15 +2034,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8754812541E-02
- Single virtual  energy =    -0.4161462540E-02
- Single Lagrangian occ term  =     0.6479420617E-02
- Single Lagrangian virt term =     0.9635502567E-03
+ Single occupied energy =    -0.8754812444E-02
+ Single virtual  energy =    -0.1182283025E-01
+ Single Lagrangian occ term  =     0.6479420521E-02
+ Single Lagrangian virt term =     0.2662040208E-02
 
 
  Memstats before F12 fragment_energy calculation
   Allocated memory,     TOTAL                  68.647 MB
-  Max allocated memory, TOTAL                         68.902 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   4
@@ -1976,8 +2051,8 @@ Use F12 correction           =           FALSE
  FOP Loop: Number of orbitals in virt total :   6
  FOP Loop: Number of orbitals in occ total  :   3
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0087548125
- FOP Loop: Occupied energy diff             :    0.0000852329
+ FOP Loop: Occupied Fragment energy         :   -0.0087548124
+ FOP Loop: Occupied energy diff             :    0.0000852330
  FOP=========================================================
  FOP
  FOP: Occupied energy converged, energydiff   =   0.000085233
@@ -1990,7 +2065,7 @@ Use F12 correction           =           FALSE
  FOP Done: Number of orbitals in virt total :   6
  FOP Done: Number of orbitals in occ total  :   3
  FOP Done: Number of basis functions        :  13
- FOP Done: Occupied Fragment energy         :   -0.0087548125
+ FOP Done: Occupied Fragment energy         :   -0.0087548124
  FOP Done: Occupied reduction removed      1 of      4 orbitals ( 25.00 %)
  FOP Done: Virtual  reduction removed      2 of      8 orbitals ( 25.00 %)
  FOP=========================================================
@@ -2012,7 +2087,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       3
+ Number of virtual  orbitals AOS/EOS     =       8       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       8
@@ -2027,17 +2102,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
+ Tot memory required for tmp arrays (GB) = 0.246E-04
  Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
  Memory required for tmp array 3 (GB)    = 0.819E-05
  Memory required for tmp array 4 (GB)    = 0.614E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -2053,14 +2128,14 @@ Use F12 correction           =           FALSE
  Energy summary for fragment:       5
  **********************************************************************
  Single occupied energy =    -0.1651647140E-01
- Single virtual  energy =    -0.2207768434E-01
+ Single virtual  energy =    -0.1378089040E-01
  Single Lagrangian occ term  =     0.8590882162E-02
- Single Lagrangian virt term =     0.9162340590E-02
+ Single Lagrangian virt term =     0.6667947352E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.651 MB
-  Max allocated memory, TOTAL                         68.904 MB
+  Allocated memory,     TOTAL                  68.650 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP Expansion Include Full Molecule !!!
  FOP
  FOP=========================================================
@@ -2078,7 +2153,7 @@ Use F12 correction           =           FALSE
  FOP  Expansion has converged. We start reduction 
  FOP =============================================
  FOP
-#SINGLEDIMS# basis,occ,virt       13       4       6
+#SINGLEDIMS# basis,occ,virt       13       4       5
 
 
  =======================================================================
@@ -2089,37 +2164,37 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       6       3
+ Number of virtual  orbitals AOS/EOS     =       5       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       6
+ Maximum virtual batch dimension         =       5
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.706E-04
+ Tot memory required for tmp arrays (GB) = 0.694E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
+ Memory required for tmp array 2 (GB)    = 0.576E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.161E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.230E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.461E-05
+ Tot memory required for tmp arrays (GB) = 0.115E-04
+ Memory required for tmp array 1 (GB)    = 0.320E-05
+ Memory required for tmp array 2 (GB)    = 0.128E-05
+ Memory required for tmp array 3 (GB)    = 0.320E-05
+ Memory required for tmp array 4 (GB)    = 0.384E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.706E-04
- Big Array Memory required       (GB)    = 0.869E-04
+ Memory required                 (GB)    = 0.694E-04
+ Big Array Memory required       (GB)    = 0.858E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2129,25 +2204,25 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1402020199E-01
- Single virtual  energy =    -0.2242715226E-01
- Single Lagrangian occ term  =     0.7100136357E-02
- Single Lagrangian virt term =     0.9450010505E-02
+ Single occupied energy =    -0.1530449130E-01
+ Single virtual  energy =    -0.1388468096E-01
+ Single Lagrangian occ term  =     0.7689371028E-02
+ Single Lagrangian virt term =     0.6794425957E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.650 MB
-  Max allocated memory, TOTAL                         68.904 MB
+  Allocated memory,     TOTAL                  68.648 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   1
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   5
- FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in virt total :   5
  FOP Loop: Number of orbitals in occ total  :   4
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0140202020
- FOP Loop: Occupied energy diff             :    0.0024962694
+ FOP Loop: Occupied Fragment energy         :   -0.0153044913
+ FOP Loop: Occupied energy diff             :    0.0012119801
  FOP=========================================================
  FOP
  FOP: Occupied energy NOT converged
@@ -2162,7 +2237,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       7       3
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       7
@@ -2177,17 +2252,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.206E-04
+ Tot memory required for tmp arrays (GB) = 0.197E-04
  Memory required for tmp array 1 (GB)    = 0.627E-05
- Memory required for tmp array 2 (GB)    = 0.269E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
  Memory required for tmp array 3 (GB)    = 0.627E-05
  Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -2202,15 +2277,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1533085860E-01
- Single virtual  energy =    -0.2211028524E-01
- Single Lagrangian occ term  =     0.7855537273E-02
- Single Lagrangian virt term =     0.9181494122E-02
+ Single occupied energy =    -0.1648980874E-01
+ Single virtual  energy =    -0.1378120977E-01
+ Single Lagrangian occ term  =     0.8590228022E-02
+ Single Lagrangian virt term =     0.6668142557E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.650 MB
-  Max allocated memory, TOTAL                         68.904 MB
+  Allocated memory,     TOTAL                  68.649 MB
+  Max allocated memory, TOTAL                         68.903 MB
  FOP
  FOP=========================================================
  FOP              Fragment information, loop   2
@@ -2219,13 +2294,12 @@ Use F12 correction           =           FALSE
  FOP Loop: Number of orbitals in virt total :   7
  FOP Loop: Number of orbitals in occ total  :   4
  FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0153308586
- FOP Loop: Occupied energy diff             :    0.0011856128
+ FOP Loop: Occupied Fragment energy         :   -0.0164898087
+ FOP Loop: Occupied energy diff             :    0.0000266627
  FOP=========================================================
  FOP
- FOP: Occupied energy NOT converged
- BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
-#SINGLEDIMS# basis,occ,virt       13       3       8
+ FOP: Occupied energy converged, energydiff   =   0.000026663
+#SINGLEDIMS# basis,occ,virt       13       4       6
 
 
  =======================================================================
@@ -2235,149 +2309,7 @@ Use F12 correction           =           FALSE
  85% of available memory (GB)            =  1.64    
 
  Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       8       3
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.668E-04
- Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
- Memory required for tmp array 3 (GB)    = 0.112E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.144E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.173E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.346E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.130E-05
- Memory required for tmp array 1 (GB)    = 0.648E-06
- Memory required for tmp array 2 (GB)    = 0.648E-06
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.668E-04
- Big Array Memory required       (GB)    = 0.832E-04
-
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
-
-
- **********************************************************************
- Energy summary for fragment:       5
- **********************************************************************
- Single occupied energy =    -0.1634939167E-01
- Single virtual  energy =    -0.1749647163E-01
- Single Lagrangian occ term  =     0.8449130448E-02
- Single Lagrangian virt term =     0.7769558277E-02
-
-
- Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.650 MB
-  Max allocated memory, TOTAL                         68.904 MB
- FOP
- FOP=========================================================
- FOP              Fragment information, loop   3
- FOP---------------------------------------------------------
- FOP Loop: Fragment number                  :   5
- FOP Loop: Number of orbitals in virt total :   8
- FOP Loop: Number of orbitals in occ total  :   3
- FOP Loop: Number of basis functions        :  13
- FOP Loop: Occupied Fragment energy         :   -0.0163493917
- FOP Loop: Occupied energy diff             :    0.0001670797
- FOP=========================================================
- FOP
- FOP: Occupied energy NOT converged
- BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
- FOP
- FOP=========================================================
- FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   5
- FOP---------------------------------------------------------
- FOP Done: Fragment number                  :   5
- FOP Done: Number of orbitals in virt total :   8
- FOP Done: Number of orbitals in occ total  :   4
- FOP Done: Number of basis functions        :  13
- FOP Done: Occupied Fragment energy         :   -0.0165164714
- FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
- FOP Done: Virtual  reduction removed      0 of      8 orbitals (  0.00 %)
- FOP=========================================================
- FOP
-
-#PAIRDIMS# basis,occ,virt       13       4       6
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.64    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       6       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       6
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.706E-04
- Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
- Memory required for tmp array 3 (GB)    = 0.150E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.169E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.461E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.410E-05
- Memory required for tmp array 1 (GB)    = 0.205E-05
- Memory required for tmp array 2 (GB)    = 0.205E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.706E-04
- Big Array Memory required       (GB)    = 0.869E-04
-
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
-
-
- *****************************************************************************
- Energy summary for pair fragment:       2      3
- *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.4237968372E-02
-
-
-#PAIRDIMS# basis,occ,virt       13       4       6
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.64    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       2
+ Number of occupied orbitals AOS/EOS     =       4       1
  Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
@@ -2393,17 +2325,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.161E-04
+ Tot memory required for tmp arrays (GB) = 0.154E-04
  Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.230E-05
+ Memory required for tmp array 2 (GB)    = 0.154E-05
  Memory required for tmp array 3 (GB)    = 0.461E-05
  Memory required for tmp array 4 (GB)    = 0.461E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
@@ -2415,67 +2347,33 @@ Use F12 correction           =           FALSE
  BATCH: Number of virtual batches =           1
 
 
- *****************************************************************************
- Energy summary for pair fragment:       2      4
- *****************************************************************************
- Distance(Ang), pair occ energy  =      0.52167       -0.3803665258E-02
+ **********************************************************************
+ Energy summary for fragment:       5
+ **********************************************************************
+ Single occupied energy =    -0.1628957781E-01
+ Single virtual  energy =    -0.1373048960E-01
+ Single Lagrangian occ term  =     0.8480906392E-02
+ Single Lagrangian virt term =     0.6623797339E-02
 
 
-#PAIRDIMS# basis,occ,virt       13       3       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.64    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       3       2
- Number of virtual  orbitals AOS/EOS     =       8       4
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.668E-04
- Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.691E-05
- Memory required for tmp array 3 (GB)    = 0.112E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.157E-04
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
- Memory required for tmp array 3 (GB)    = 0.461E-05
- Memory required for tmp array 4 (GB)    = 0.346E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.410E-05
- Memory required for tmp array 1 (GB)    = 0.205E-05
- Memory required for tmp array 2 (GB)    = 0.205E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.668E-04
- Big Array Memory required       (GB)    = 0.832E-04
-
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
-
-
- *****************************************************************************
- Energy summary for pair fragment:       2      5
- *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1131347093E-01
-
-
-#PAIRDIMS# basis,occ,virt       13       3       7
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                  68.649 MB
+  Max allocated memory, TOTAL                         68.903 MB
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   3
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   5
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0162895778
+ FOP Loop: Occupied energy diff             :    0.0002268936
+ FOP=========================================================
+ FOP
+ FOP: Occupied energy NOT converged
+ BIN SEARCH: VIRTUAL REDUCTION CONVERGED           1
+#SINGLEDIMS# basis,occ,virt       13       3       7
 
 
  =======================================================================
@@ -2485,8 +2383,8 @@ Use F12 correction           =           FALSE
  85% of available memory (GB)            =  1.64    
 
  Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       3       2
- Number of virtual  orbitals AOS/EOS     =       7       6
+ Number of occupied orbitals AOS/EOS     =       3       1
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       7
@@ -2501,17 +2399,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.131E-04
+ Tot memory required for tmp arrays (GB) = 0.113E-04
  Memory required for tmp array 1 (GB)    = 0.353E-05
- Memory required for tmp array 2 (GB)    = 0.302E-05
+ Memory required for tmp array 2 (GB)    = 0.118E-05
  Memory required for tmp array 3 (GB)    = 0.353E-05
  Memory required for tmp array 4 (GB)    = 0.302E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.518E-05
- Memory required for tmp array 1 (GB)    = 0.259E-05
- Memory required for tmp array 2 (GB)    = 0.259E-05
+ Tot memory required for tmp arrays (GB) = 0.784E-06
+ Memory required for tmp array 1 (GB)    = 0.392E-06
+ Memory required for tmp array 2 (GB)    = 0.392E-06
 
  Summary
  -----------------------
@@ -2523,13 +2421,155 @@ Use F12 correction           =           FALSE
  BATCH: Number of virtual batches =           1
 
 
- *****************************************************************************
- Energy summary for pair fragment:       3      5
- *****************************************************************************
- Distance(Ang), pair occ energy  =      0.84144       -0.9253682479E-02
+ **********************************************************************
+ Energy summary for fragment:       5
+ **********************************************************************
+ Single occupied energy =    -0.1632202004E-01
+ Single virtual  energy =    -0.1301696020E-01
+ Single Lagrangian occ term  =     0.8439874805E-02
+ Single Lagrangian virt term =     0.6402936897E-02
 
 
-#PAIRDIMS# basis,occ,virt       13       3       5
+ Memstats before F12 fragment_energy calculation
+  Allocated memory,     TOTAL                  68.648 MB
+  Max allocated memory, TOTAL                         68.903 MB
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   4
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   5
+ FOP Loop: Number of orbitals in virt total :   7
+ FOP Loop: Number of orbitals in occ total  :   3
+ FOP Loop: Number of basis functions        :  13
+ FOP Loop: Occupied Fragment energy         :   -0.0163220200
+ FOP Loop: Occupied energy diff             :    0.0001944514
+ FOP=========================================================
+ FOP
+ FOP: Occupied energy NOT converged
+ BIN SEARCH: OCCUPIED REDUCTION CONVERGED           1
+ FOP
+ FOP=========================================================
+ FOP    LOCAL REDUCTION HAS CONVERGED FOR SITE   5
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   5
+ FOP Done: Number of orbitals in virt total :   7
+ FOP Done: Number of orbitals in occ total  :   4
+ FOP Done: Number of basis functions        :  13
+ FOP Done: Occupied Fragment energy         :   -0.0164898087
+ FOP Done: Occupied reduction removed      0 of      4 orbitals (  0.00 %)
+ FOP Done: Virtual  reduction removed      1 of      8 orbitals ( 12.50 %)
+ FOP=========================================================
+ FOP
+
+#PAIRDIMS# basis,occ,virt       13       4       8
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       4       2
+ Number of virtual  orbitals AOS/EOS     =       8       4
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       8
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.729E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 3 (GB)    = 0.150E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.266E-04
+ Memory required for tmp array 1 (GB)    = 0.819E-05
+ Memory required for tmp array 2 (GB)    = 0.410E-05
+ Memory required for tmp array 3 (GB)    = 0.819E-05
+ Memory required for tmp array 4 (GB)    = 0.614E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.410E-05
+ Memory required for tmp array 1 (GB)    = 0.205E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.729E-04
+ Big Array Memory required       (GB)    = 0.892E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       2      4
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =      0.52167       -0.1142742874E-01
+
+
+#PAIRDIMS# basis,occ,virt       13       4       7
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       4       2
+ Number of virtual  orbitals AOS/EOS     =       7       4
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       7
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.806E-05
+ Memory required for tmp array 3 (GB)    = 0.150E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.215E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.358E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.410E-05
+ Memory required for tmp array 1 (GB)    = 0.205E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =      0.70022       -0.8620503380E-02
+
+
+#PAIRDIMS# basis,occ,virt       13       3       6
 
 
  =======================================================================
@@ -2540,26 +2580,26 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       2
- Number of virtual  orbitals AOS/EOS     =       5       4
+ Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       5
+ Maximum virtual batch dimension         =       6
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.642E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 2 (GB)    = 0.518E-05
  Memory required for tmp array 3 (GB)    = 0.112E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.720E-05
- Memory required for tmp array 1 (GB)    = 0.180E-05
- Memory required for tmp array 2 (GB)    = 0.144E-05
- Memory required for tmp array 3 (GB)    = 0.180E-05
- Memory required for tmp array 4 (GB)    = 0.216E-05
+ Tot memory required for tmp arrays (GB) = 0.950E-05
+ Memory required for tmp array 1 (GB)    = 0.259E-05
+ Memory required for tmp array 2 (GB)    = 0.173E-05
+ Memory required for tmp array 3 (GB)    = 0.259E-05
+ Memory required for tmp array 4 (GB)    = 0.259E-05
 
  STEP 3 in integral loop
  -----------------------
@@ -2569,8 +2609,8 @@ Use F12 correction           =           FALSE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.642E-04
- Big Array Memory required       (GB)    = 0.806E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2578,12 +2618,12 @@ Use F12 correction           =           FALSE
 
 
  *****************************************************************************
- Energy summary for pair fragment:       4      5
+ Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.2997343670E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.4284868597E-02
 
 
-#PAIRDIMS# basis,occ,virt       13       2       6
+#PAIRDIMS# basis,occ,virt       13       3       6
 
 
  =======================================================================
@@ -2593,7 +2633,7 @@ Use F12 correction           =           FALSE
  85% of available memory (GB)            =  1.64    
 
  Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       2       2
+ Number of occupied orbitals AOS/EOS     =       3       2
  Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
@@ -2602,18 +2642,18 @@ Use F12 correction           =           FALSE
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.596E-04
+ Tot memory required for tmp arrays (GB) = 0.651E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.346E-05
- Memory required for tmp array 3 (GB)    = 0.749E-05
+ Memory required for tmp array 2 (GB)    = 0.518E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.461E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
- Memory required for tmp array 3 (GB)    = 0.115E-05
- Memory required for tmp array 4 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.950E-05
+ Memory required for tmp array 1 (GB)    = 0.259E-05
+ Memory required for tmp array 2 (GB)    = 0.173E-05
+ Memory required for tmp array 3 (GB)    = 0.259E-05
+ Memory required for tmp array 4 (GB)    = 0.259E-05
 
  STEP 3 in integral loop
  -----------------------
@@ -2623,8 +2663,116 @@ Use F12 correction           =           FALSE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.596E-04
- Big Array Memory required       (GB)    = 0.760E-04
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       3      5
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =      0.84144       -0.8058965996E-02
+
+
+#PAIRDIMS# basis,occ,virt       13       3       6
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       3       2
+ Number of virtual  orbitals AOS/EOS     =       6       4
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       6
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.651E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.518E-05
+ Memory required for tmp array 3 (GB)    = 0.112E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.950E-05
+ Memory required for tmp array 1 (GB)    = 0.259E-05
+ Memory required for tmp array 2 (GB)    = 0.173E-05
+ Memory required for tmp array 3 (GB)    = 0.259E-05
+ Memory required for tmp array 4 (GB)    = 0.259E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.230E-05
+ Memory required for tmp array 1 (GB)    = 0.115E-05
+ Memory required for tmp array 2 (GB)    = 0.115E-05
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.651E-04
+ Big Array Memory required       (GB)    = 0.815E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       4      5
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =      0.70022       -0.4417884759E-02
+
+
+#PAIRDIMS# basis,occ,virt       11       2       5
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      11
+ Number of occupied orbitals AOS/EOS     =       2       2
+ Number of virtual  orbitals AOS/EOS     =       5       4
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       5
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.441E-04
+ Memory required for tmp array 1 (GB)    = 0.348E-04
+ Memory required for tmp array 2 (GB)    = 0.288E-05
+ Memory required for tmp array 3 (GB)    = 0.634E-05
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.336E-05
+ Memory required for tmp array 1 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.800E-06
+ Memory required for tmp array 3 (GB)    = 0.800E-06
+ Memory required for tmp array 4 (GB)    = 0.960E-06
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.160E-05
+ Memory required for tmp array 1 (GB)    = 0.800E-06
+ Memory required for tmp array 2 (GB)    = 0.800E-06
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.441E-04
+ Big Array Memory required       (GB)    = 0.604E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2634,7 +2782,7 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.4057833767E-02
+ Distance(Ang), pair occ energy  =      0.70022       -0.8004676114E-02
 
 
 
@@ -2648,8 +2796,20 @@ Use F12 correction           =           FALSE
  Pairs to be treated at input CC level          6
  Pairs to be skipped from calculation           0
 
- Estimated pair correlation energy:            -0.3566396448E-01
+ Estimated pair correlation energy:            -0.4481432759E-01
  Estimated contribution from skipped pairs:      0.000000000    
+
+
+
+
+ =================================================================
+ Last pairs included for each atomic center
+ =================================================================
+
+  Atom1  Atom2     Dist(Ang)        Energy
+     2       3     0.70022         -0.8620503380E-02    PF_LASTPAIR
+     4       3     0.70022         -0.8004676114E-02    PF_LASTPAIR
+     5       3     0.84144         -0.8058965996E-02    PF_LASTPAIR
 
 
 
@@ -2659,16 +2819,17 @@ Use F12 correction           =           FALSE
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.4237968372E-02    PF_ESTIMATE
-     2       4     0.52167         -0.3803665258E-02    PF_ESTIMATE
-     2       5     0.70022         -0.1131347093E-01    PF_ESTIMATE
-     3       4     0.70022         -0.4057833767E-02    PF_ESTIMATE
-     3       5     0.84144         -0.9253682479E-02    PF_ESTIMATE
-     4       5     0.70022         -0.2997343670E-02    PF_ESTIMATE
+     2       3     0.70022         -0.8620503380E-02    PF_ESTIMATE
+     2       4     0.52167         -0.1142742874E-01    PF_ESTIMATE
+     2       5     0.70022         -0.4284868597E-02    PF_ESTIMATE
+     3       4     0.70022         -0.8004676114E-02    PF_ESTIMATE
+     3       5     0.84144         -0.8058965996E-02    PF_ESTIMATE
+     4       5     0.70022         -0.4417884759E-02    PF_ESTIMATE
 
 
- >>>  CPU Time used in DEC Atomic Frags and Estimates is   1.49 seconds
- >>> wall Time used in DEC Atomic Frags and Estimates is   1.49 seconds
+  ** WARNING: CALCULATING ALL PAIRS REGARDLESS OF ESTMATES ** 
+ >>>  CPU Time used in DEC Atomic Frags and Estimates is   1.62 seconds
+ >>> wall Time used in DEC Atomic Frags and Estimates is   1.62 seconds
  Preparing job list...
 
 
@@ -2677,13 +2838,13 @@ Use F12 correction           =           FALSE
          Occ Orbital fragments listed according to total size
  *******************************************************************************
     Index  #Occ  #Virt   #Bas  Rmax(AOS/AE)      Dmax(AOS/AE)      
-      3      4      8     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
-      5      4      8     13    0.841    / 0.841      0.700    / 0.700              FRAG_SIZE
+      3      4      7     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
+      5      4      7     13    0.841    / 0.841      0.700    / 0.700              FRAG_SIZE
       2      3      6     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
       4      3      6     13    0.700    / 0.700      0.700    / 0.700              FRAG_SIZE
 
  FRAGANALYSIS: Max/Ave/Min occ         :        4       /     3.5000    /       3
- FRAGANALYSIS: Max/Ave/Min unocc       :        8       /     7.0000    /       6
+ FRAGANALYSIS: Max/Ave/Min unocc       :        7       /     6.5000    /       6
  FRAGANALYSIS: Max/Ave/Min basis       :       13       /     13.000    /      13
  FRAGANALYSIS: Max/Ave/Min Radius AOS  :     0.84144    /    0.73553    /    0.70022    
  FRAGANALYSIS: Max/Ave/Min Radius AE   :     0.84144    /    0.73553    /    0.70022    
@@ -2698,16 +2859,16 @@ Use F12 correction           =           FALSE
  Number of jobs =           10
 
  JobIndex            Jobsize         Occ EOS orbitals    #occ   #virt  #basis
-        1                416              2       3        3        6       13
-        2                416              2       5        4        8       13
-        3                416              3                4        6       13
-        4                416              3       4        4        8       13
-        5                416              3       5        4        8       13
-        6                416              4       5        4        8       13
-        7                416              5                4        8       13
+        1                416              3       5        3        6       13
+        2                364              2       3        4        7       13
+        3                364              2       5        4        6       13
+        4                364              3                4        7       13
+        5                364              3       4        4        7       13
+        6                364              4       5        4        7       13
+        7                364              5                4        8       13
         8                312              2       4        3        6       13
-        9                234              2                4        8       13
-       10                234              4                4        8       13
+        9                234              2                4        7       13
+       10                234              4                4        7       13
 
 
  DEC JOB SUMMARY: Number of single jobs =          4
@@ -2767,12 +2928,12 @@ Use F12 correction           =           FALSE
 
 
  *****************************************************************************
- Energy summary for pair fragment:       2      3
+ Energy summary for pair fragment:       3      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1146060111E-01
+ Distance(Ang), pair occ energy  =      0.84144       -0.1259768134E-01
 
 
-#PAIRDIMS# basis,occ,virt       13       4       8
+#PAIRDIMS# basis,occ,virt       13       4       7
 
 
  =======================================================================
@@ -2783,26 +2944,26 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =       7       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 2 (GB)    = 0.806E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.266E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.410E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
+ Tot memory required for tmp arrays (GB) = 0.215E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.358E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
@@ -2812,8 +2973,62 @@ Use F12 correction           =           FALSE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
+
+ BATCH: Number of Gamma batches   =            3
+ BATCH: Number of Alpha batches   =            3
+ BATCH: Number of virtual batches =           1
+
+
+ *****************************************************************************
+ Energy summary for pair fragment:       2      3
+ *****************************************************************************
+ Distance(Ang), pair occ energy  =      0.70022       -0.1142339592E-01
+
+
+#PAIRDIMS# basis,occ,virt       13       4       7
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.64    
+
+ Number of atomic basis functions        =      13
+ Number of occupied orbitals AOS/EOS     =       4       2
+ Number of virtual  orbitals AOS/EOS     =       7       4
+ Maximum alpha batch dimension           =       6
+ Maximum gamma batch dimension           =       6
+ Maximum virtual batch dimension         =       7
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.717E-04
+ Memory required for tmp array 1 (GB)    = 0.487E-04
+ Memory required for tmp array 2 (GB)    = 0.806E-05
+ Memory required for tmp array 3 (GB)    = 0.150E-04
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.215E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.358E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.410E-05
+ Memory required for tmp array 1 (GB)    = 0.205E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
+
+ Summary
+ -----------------------
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2823,10 +3038,10 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       2      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1146059878E-01
+ Distance(Ang), pair occ energy  =      0.70022       -0.1142339360E-01
 
 
-#SINGLEDIMS# basis,occ,virt       13       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       7
 
 
  =======================================================================
@@ -2837,37 +3052,37 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       3
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 2 (GB)    = 0.806E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
+ Tot memory required for tmp arrays (GB) = 0.197E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2877,16 +3092,16 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       3
  **********************************************************************
- Single occupied energy =    -0.1651647519E-01
- Single virtual  energy =    -0.2207768424E-01
- Single Lagrangian occ term  =     0.8590884810E-02
- Single Lagrangian virt term =     0.9162339545E-02
+ Single occupied energy =    -0.1648981262E-01
+ Single virtual  energy =    -0.1378121296E-01
+ Single Lagrangian occ term  =     0.8590230669E-02
+ Single Lagrangian virt term =     0.6668144074E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.599 MB
-  Max allocated memory, TOTAL                         68.904 MB
-#PAIRDIMS# basis,occ,virt       13       4       8
+  Allocated memory,     TOTAL                  68.598 MB
+  Max allocated memory, TOTAL                         68.910 MB
+#PAIRDIMS# basis,occ,virt       13       4       7
 
 
  =======================================================================
@@ -2897,26 +3112,26 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =       7       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 2 (GB)    = 0.806E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.266E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.410E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
+ Tot memory required for tmp arrays (GB) = 0.215E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.358E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
@@ -2926,8 +3141,8 @@ Use F12 correction           =           FALSE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -2937,64 +3152,10 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       3      4
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1146060758E-01
+ Distance(Ang), pair occ energy  =      0.70022       -0.1142340149E-01
 
 
-#PAIRDIMS# basis,occ,virt       13       4       8
-
-
- =======================================================================
-                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
- =======================================================================
-
- 85% of available memory (GB)            =  1.64    
-
- Number of atomic basis functions        =      13
- Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       6
- Maximum alpha batch dimension           =       6
- Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
- Number of OMP threads                   =       1
-
- STEP 1 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
- Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
- Memory required for tmp array 3 (GB)    = 0.150E-04
-
- STEP 2 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.287E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.614E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
-
- STEP 3 in integral loop
- -----------------------
- Tot memory required for tmp arrays (GB) = 0.922E-05
- Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.461E-05
-
- Summary
- -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
-
- BATCH: Number of Gamma batches   =            3
- BATCH: Number of Alpha batches   =            3
- BATCH: Number of virtual batches =           1
-
-
- *****************************************************************************
- Energy summary for pair fragment:       3      5
- *****************************************************************************
- Distance(Ang), pair occ energy  =      0.84144       -0.1259768134E-01
-
-
-#PAIRDIMS# basis,occ,virt       13       4       8
+#PAIRDIMS# basis,occ,virt       13       4       7
 
 
  =======================================================================
@@ -3005,26 +3166,26 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =       7       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 2 (GB)    = 0.806E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.266E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.410E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
+ Tot memory required for tmp arrays (GB) = 0.215E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.358E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
@@ -3034,8 +3195,8 @@ Use F12 correction           =           FALSE
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -3045,10 +3206,10 @@ Use F12 correction           =           FALSE
  *****************************************************************************
  Energy summary for pair fragment:       4      5
  *****************************************************************************
- Distance(Ang), pair occ energy  =      0.70022       -0.1146060528E-01
+ Distance(Ang), pair occ energy  =      0.70022       -0.1142339924E-01
 
 
-#SINGLEDIMS# basis,occ,virt       13       4       8
+#SINGLEDIMS# basis,occ,virt       13       4       7
 
 
  =======================================================================
@@ -3059,37 +3220,37 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       1
- Number of virtual  orbitals AOS/EOS     =       8       3
+ Number of virtual  orbitals AOS/EOS     =       7       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
- Maximum virtual batch dimension         =       8
+ Maximum virtual batch dimension         =       7
  Number of OMP threads                   =       1
 
  STEP 1 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.729E-04
+ Tot memory required for tmp arrays (GB) = 0.717E-04
  Memory required for tmp array 1 (GB)    = 0.487E-04
- Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 2 (GB)    = 0.806E-05
  Memory required for tmp array 3 (GB)    = 0.150E-04
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.256E-04
- Memory required for tmp array 1 (GB)    = 0.819E-05
- Memory required for tmp array 2 (GB)    = 0.307E-05
- Memory required for tmp array 3 (GB)    = 0.819E-05
- Memory required for tmp array 4 (GB)    = 0.614E-05
+ Tot memory required for tmp arrays (GB) = 0.197E-04
+ Memory required for tmp array 1 (GB)    = 0.627E-05
+ Memory required for tmp array 2 (GB)    = 0.179E-05
+ Memory required for tmp array 3 (GB)    = 0.627E-05
+ Memory required for tmp array 4 (GB)    = 0.538E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.102E-05
+ Memory required for tmp array 1 (GB)    = 0.512E-06
+ Memory required for tmp array 2 (GB)    = 0.512E-06
 
  Summary
  -----------------------
- Memory required                 (GB)    = 0.729E-04
- Big Array Memory required       (GB)    = 0.892E-04
+ Memory required                 (GB)    = 0.717E-04
+ Big Array Memory required       (GB)    = 0.881E-04
 
  BATCH: Number of Gamma batches   =            3
  BATCH: Number of Alpha batches   =            3
@@ -3099,15 +3260,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       5
  **********************************************************************
- Single occupied energy =    -0.1651647140E-01
- Single virtual  energy =    -0.2207768434E-01
- Single Lagrangian occ term  =     0.8590882162E-02
- Single Lagrangian virt term =     0.9162340590E-02
+ Single occupied energy =    -0.1648980874E-01
+ Single virtual  energy =    -0.1378120977E-01
+ Single Lagrangian occ term  =     0.8590228022E-02
+ Single Lagrangian virt term =     0.6668142557E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.599 MB
-  Max allocated memory, TOTAL                         68.904 MB
+  Allocated memory,     TOTAL                  68.598 MB
+  Max allocated memory, TOTAL                         68.910 MB
 #PAIRDIMS# basis,occ,virt       13       4       6
 
 
@@ -3119,7 +3280,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       4       2
- Number of virtual  orbitals AOS/EOS     =       6       2
+ Number of virtual  orbitals AOS/EOS     =       6       4
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -3134,17 +3295,17 @@ Use F12 correction           =           FALSE
 
  STEP 2 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.161E-04
+ Tot memory required for tmp arrays (GB) = 0.169E-04
  Memory required for tmp array 1 (GB)    = 0.461E-05
- Memory required for tmp array 2 (GB)    = 0.230E-05
+ Memory required for tmp array 2 (GB)    = 0.307E-05
  Memory required for tmp array 3 (GB)    = 0.461E-05
  Memory required for tmp array 4 (GB)    = 0.461E-05
 
  STEP 3 in integral loop
  -----------------------
- Tot memory required for tmp arrays (GB) = 0.230E-05
- Memory required for tmp array 1 (GB)    = 0.115E-05
- Memory required for tmp array 2 (GB)    = 0.115E-05
+ Tot memory required for tmp arrays (GB) = 0.410E-05
+ Memory required for tmp array 1 (GB)    = 0.205E-05
+ Memory required for tmp array 2 (GB)    = 0.205E-05
 
  Summary
  -----------------------
@@ -3173,7 +3334,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -3213,15 +3374,15 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       2
  **********************************************************************
- Single occupied energy =    -0.8754814776E-02
- Single virtual  energy =    -0.4161461441E-02
- Single Lagrangian occ term  =     0.6479421185E-02
- Single Lagrangian virt term =     0.9635497216E-03
+ Single occupied energy =    -0.8754814873E-02
+ Single virtual  energy =    -0.1182282320E-01
+ Single Lagrangian occ term  =     0.6479421281E-02
+ Single Lagrangian virt term =     0.2662039096E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.596 MB
-  Max allocated memory, TOTAL                         68.904 MB
+  Allocated memory,     TOTAL                  68.597 MB
+  Max allocated memory, TOTAL                         68.910 MB
 #SINGLEDIMS# basis,occ,virt       13       3       6
 
 
@@ -3233,7 +3394,7 @@ Use F12 correction           =           FALSE
 
  Number of atomic basis functions        =      13
  Number of occupied orbitals AOS/EOS     =       3       1
- Number of virtual  orbitals AOS/EOS     =       6       1
+ Number of virtual  orbitals AOS/EOS     =       6       2
  Maximum alpha batch dimension           =       6
  Maximum gamma batch dimension           =       6
  Maximum virtual batch dimension         =       6
@@ -3273,17 +3434,17 @@ Use F12 correction           =           FALSE
  **********************************************************************
  Energy summary for fragment:       4
  **********************************************************************
- Single occupied energy =    -0.8754812541E-02
- Single virtual  energy =    -0.4161462540E-02
- Single Lagrangian occ term  =     0.6479420617E-02
- Single Lagrangian virt term =     0.9635502567E-03
+ Single occupied energy =    -0.8754812444E-02
+ Single virtual  energy =    -0.1182283025E-01
+ Single Lagrangian occ term  =     0.6479420521E-02
+ Single Lagrangian virt term =     0.2662040208E-02
 
 
  Memstats before F12 fragment_energy calculation
-  Allocated memory,     TOTAL                  68.596 MB
-  Max allocated memory, TOTAL                         68.904 MB
- >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.66 seconds
- >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.66 seconds
+  Allocated memory,     TOTAL                  68.597 MB
+  Max allocated memory, TOTAL                         68.910 MB
+ >>>  CPU Time used in DEC Atomic and Pair Fragcalc is   0.65 seconds
+ >>> wall Time used in DEC Atomic and Pair Fragcalc is   0.65 seconds
 
 
  =============================================================================
@@ -3294,10 +3455,10 @@ Use F12 correction           =           FALSE
  =================================================================
 
  Fragment       Energy
-     2      -0.8754814776E-02    AF_MP2_OCC
-     3      -0.1651647519E-01    AF_MP2_OCC
-     4      -0.8754812541E-02    AF_MP2_OCC
-     5      -0.1651647140E-01    AF_MP2_OCC
+     2      -0.8754814873E-02    AF_MP2_OCC
+     3      -0.1648981262E-01    AF_MP2_OCC
+     4      -0.8754812444E-02    AF_MP2_OCC
+     5      -0.1648980874E-01    AF_MP2_OCC
 
 
  =================================================================
@@ -3305,14 +3466,14 @@ Use F12 correction           =           FALSE
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
-     2       3     0.70022         -0.1146060111E-01    PF_MP2_OCC
+     2       3     0.70022         -0.1142339592E-01    PF_MP2_OCC
      2       4     0.52167         -0.1131603413E-01    PF_MP2_OCC
-     2       5     0.70022         -0.1146059878E-01    PF_MP2_OCC
-     3       4     0.70022         -0.1146060758E-01    PF_MP2_OCC
+     2       5     0.70022         -0.1142339360E-01    PF_MP2_OCC
+     3       4     0.70022         -0.1142340149E-01    PF_MP2_OCC
      3       5     0.84144         -0.1259768134E-01    PF_MP2_OCC
-     4       5     0.70022         -0.1146060528E-01    PF_MP2_OCC
+     4       5     0.70022         -0.1142339924E-01    PF_MP2_OCC
 
- MP2 occupied   correlation energy :    -0.1202987021    
+ MP2 occupied   correlation energy :    -0.1200965544    
 
 
 
@@ -3326,8 +3487,8 @@ Use F12 correction           =           FALSE
              **********************************************************
 
                E: Hartree-Fock energy :      -75.5853918738
-               E: Correlation energy  :       -0.1202987021
-               G: Total MP2 energy    :      -75.7056905759
+               E: Correlation energy  :       -0.1200965544
+               G: Total MP2 energy    :      -75.7054884281
 
 
  >>>  CPU Time used in DEC FINAL is   0.01 seconds
@@ -3335,9 +3496,9 @@ Use F12 correction           =           FALSE
 
  CC Memory summary
  -----------------
- Allocated memory for array4   :  0.1215E-03 GB
+ Allocated memory for array4   :  0.1139E-03 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.1331E-04 GB
+ Max memory in use for array4  :  0.8192E-05 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -3346,13 +3507,13 @@ Use F12 correction           =           FALSE
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC          :         2.15908     s
-Total Wall time used in DEC          :         2.15900     s
+Total CPU  time used in DEC          :         2.28503     s
+Total Wall time used in DEC          :         2.28500     s
 ------------------------------------------------------
 
 
 Hostname       : kaspers-mbp.st.client.au.dk                       
-Job finished   : Date: 23/09/2014   Time: 10:44:08
+Job finished   : Date: 23/09/2014   Time: 16:26:45
 
 
 
@@ -3362,8 +3523,8 @@ Job finished   : Date: 23/09/2014   Time: 10:44:08
 
 
 
- >>>  CPU Time used in *SCF is   2.70 seconds
- >>> wall Time used in *SCF is   2.70 seconds
+ >>>  CPU Time used in *SCF is   2.82 seconds
+ >>> wall Time used in *SCF is   2.82 seconds
 
 Total no. of matmuls used:                      1853
 Total no. of Fock/KS matrix evaluations:           8
@@ -3414,7 +3575,7 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (XC    ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         68.904 MB
+  Max allocated memory, TOTAL                         68.910 MB
   Max allocated memory, type(matrix)                  72.128 kB
   Max allocated memory, real(realk)                    4.444 MB
   Max allocated memory, MPI                            0.000 Byte
@@ -3423,7 +3584,7 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, logical                      201.776 kB
   Max allocated memory, character                      3.360 kB
   Max allocated memory, AOBATCH                       12.096 kB
-  Max allocated memory, DECORBITAL                     5.760 kB
+  Max allocated memory, DECORBITAL                     5.696 kB
   Max allocated memory, DECFRAG                       96.400 kB
   Max allocated memory, BATCHTOORB                     0.336 kB
   Max allocated memory, DECAOBATCHINFO                 0.000 Byte
@@ -3456,9 +3617,11 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, Lattice_cell                   0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- >>>  CPU Time used in LSDALTON is   2.78 seconds
- >>> wall Time used in LSDALTON is   2.78 seconds
+  Allocated MPI memory a cross all slaves:          0 byte  - Should be zero - otherwise a leakage is present
+  This is a non MPI calculation so naturally no memory is allocated on slaves!
+ >>>  CPU Time used in LSDALTON is   2.91 seconds
+ >>> wall Time used in LSDALTON is   2.91 seconds
 
 End simulation
-     Date and time (Linux)  : Tue Sep 23 10:44:08 2014
+     Date and time (Linux)  : Tue Sep 23 16:26:45 2014
      Host name              : kaspers-mbp.st.client.au.dk             

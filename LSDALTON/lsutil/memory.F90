@@ -1186,7 +1186,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated MPI memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated MPI memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated MPI memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_MP2DENS
@@ -1337,7 +1337,7 @@ INTERFACE mem_alloc
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY4
       WRITE(LUPRI,'("  Allocated memory (ARRAY):           ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ARRAY
-      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):           ",i9," byte  &
+      WRITE(LUPRI,'("  Allocated memory (PNOSpaceInfo):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_PNOSpaceInfo
       WRITE(LUPRI,'("  Allocated memory (MP2DENS):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_MP2DENS
@@ -1816,46 +1816,46 @@ subroutine debug_mem_stats(lupri)
      IF (error_size.LT.0) THEN
         write(ERR,'(A8)') ' < zero '
         ELSEIF (error_size.LT.1000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E0," B "
+        write(ERR,'(F5.1,A3)') error_size*1E0_realk," B "
         ELSEIF (error_size.LT.1000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-3," kB"
+        write(ERR,'(F5.1,A3)') error_size*1E-3_realk," kB"
         ELSEIF (error_size.LT.1000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-6," MB"
+        write(ERR,'(F5.1,A3)') error_size*1E-6_realk," MB"
 #ifdef VAR_INT64
         ELSEIF (error_size.LT.1000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+        write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
         ELSEIF (error_size.LT.1000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-12," TB"
+        write(ERR,'(F5.1,A3)') error_size*1E-12_realk," TB"
         ELSEIF (error_size.LT.1000000000000000000) THEN
-        write(ERR,'(F5.1,A3)') error_size*1E-15," PB"
+        write(ERR,'(F5.1,A3)') error_size*1E-15_realk," PB"
      ELSE
-        write(ERR,'(F5.1,A3)') error_size*1E-18," EB"
+        write(ERR,'(F5.1,A3)') error_size*1E-18_realk," EB"
      ENDIF
 #else
   ELSE
-     write(ERR,'(F5.1,A3)') error_size*1E-9," GB"
+     write(ERR,'(F5.1,A3)') error_size*1E-9_realk," GB"
   ENDIF
 #endif
 
   IF (max_mem_used_global.LT.0) THEN
      write(GLOB,'(A8)') ' < zero '
      ELSEIF (max_mem_used_global.LT.1000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0," B "
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E0_realk," B "
      ELSEIF (max_mem_used_global.LT.1000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3," kB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-3_realk," kB"
      ELSEIF (max_mem_used_global.LT.1000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6," MB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-6_realk," MB"
 #ifdef VAR_INT64
      ELSEIF (max_mem_used_global.LT.1000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12," TB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-12_realk," TB"
      ELSEIF (max_mem_used_global.LT.1000000000000000000) THEN
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15," PB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-15_realk," PB"
   ELSE
-     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18," EB"
+     write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-18_realk," EB"
   ENDIF
 #else
 ELSE
-   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9," GB"
+   write(GLOB,'(F5.1,A3)') max_mem_used_global*1E-9_realk," GB"
 ENDIF
 #endif
 
@@ -7201,56 +7201,59 @@ end subroutine mem_deallocated_mem_lattice_cell
 !> 1 GB be default.
 !> \author Kasper Kristensen, modified by Patrick Ettenhuber
 !> \date January 2012
-subroutine get_available_memory(lupri,MemoryAvailable,memfound)
+subroutine get_available_memory(lupri,MemoryAvailable,memfound,suppress_print)
    !> Logical unit number for output file
    integer,intent(in) :: lupri
    !> Available memory measured in GB (using 1GB = 1000000000 bytes)
    real(realk),intent(inout) :: MemoryAvailable
    !> Was the memory information found?
    logical,intent(inout) :: MemFound
+   logical,intent(in),optional :: suppress_print
    !> check for /proc/meminfo
-   logical :: meminfo_found
+   logical :: meminfo_found,sp
 
    ! If System will not be identified, use default values
    memfound=.false.
    MemoryAvailable=1.0E0_realk
+
+   sp = .false.
+   if(present(suppress_print))sp = suppress_print
 
    INQUIRE(FILE="/proc/meminfo", EXIST=meminfo_found)
 
    ! Is this a LINUX system?
    if(meminfo_found) then
       call get_available_memory_specific('MENFO',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! meminfo not found or mem in meminfo not found  --> Is this a MAC system?
    if((.not. meminfo_found).or.(.not.memfound)) then
       call get_available_memory_specific('MAC  ',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be MAC!'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       end if
    endif
 
    ! Still no result --> Is this a LINUX system without a  readable /proc/memninfo?
    if(.not.memfound) then
       call get_available_memory_specific('LINUX',MemoryAvailable,memfound)
-      if(memfound) then
+      if(memfound.and..not.sp) then
          write(lupri,*) 'get_available_memory: System identified to be LINUX!(using the top command)'
          write(lupri,'(1X,a,g16.5)') 'Available Memory (GB) = ', MemoryAvailable
-         return
       endif
    endif
 
 
-   write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
-   write(lupri,*) 'get_available_memory: System type NOT identified!'
-   write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   if(.not.memfound)then
+      write(lupri,*) '******************** WARNING WARNING WARNING ***********************'
+      write(lupri,*) 'get_available_memory: System type NOT identified!'
+      write(lupri,'(1X,a,g16.5)') 'Default setting: Available Memory (GB) = ', MemoryAvailable
+   endif
 
 
 end subroutine get_available_memory
