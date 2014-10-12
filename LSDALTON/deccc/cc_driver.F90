@@ -3044,12 +3044,14 @@ subroutine analyze_energy_decay(MyMolecule,t1,t2,g)
   type(fullmolecule), intent(in) :: MyMolecule
   type(array2),intent(inout) :: t1
   type(array4),intent(in) :: t2,g
-  integer :: i,j,a,b,nocc,nunocc,offset,ad,bd,k,c
+  integer :: i,j,a,b,nocc,nunocc,offset,ad,bd,k,c,funit
   real(realk) :: E,tmp,E2
   real(realk),pointer :: DistUnoccOcc(:,:), Earr(:,:,:,:)
   real(realk) :: dists(MyMolecule%nunocc),dists2(MyMolecule%nunocc)
   integer :: sorted_orbitals(MyMolecule%nunocc), sorted_orbitals2(MyMolecule%nunocc)
   real(realk) :: Edist(MyMolecule%nunocc)
+  character(len=15) :: FileName
+
 
   nocc = t2%dims(2)
   nunocc = t2%dims(1)
@@ -3090,6 +3092,13 @@ subroutine analyze_energy_decay(MyMolecule,t1,t2,g)
   jloop: do j=1,nocc
      iloop: do i=j,nocc
 
+        funit = -1
+        FileName(1:6) = 'Edecay'
+        write(FileName(7:10),'(i4.4)') i
+        FileName(11:11) = '_'
+        write(FileName(12:15),'(i4.4)') j
+        call lsopen(funit,FileName,'REPLACE','FORMATTED')
+
         do k=1,nunocc
            dists2(k) = min( DistUnoccOcc(k,i+offset), DistUnoccOcc(k,j+offset) )
         end do
@@ -3119,17 +3128,19 @@ subroutine analyze_energy_decay(MyMolecule,t1,t2,g)
            else
               tmp = Edist(c)-Edist(c-1)
            end if
-           print '(a,3i5,3g20.10)', 'i,j,c,dist,cont,acc',i,j,c,dists(c)*bohr_to_angstrom,tmp,Edist(c)
+           write(funit,'(3g20.10)') &
+                & dists(c)*bohr_to_angstrom,tmp,Edist(c)
 
         end do
         E2 = E2 + Edist(nunocc)
+
+        call lsclose(funit,'KEEP')
 
      end do iloop
   end do jloop
 
 
-  print *, 'Test - total energy ', E !,E2,E-E2
-  print *, 'Edist ', Edist
+  print *, 'Test - total energy ', E
 
   if(.not. DECinfo%use_singles) then
      call array2_free(t1)
