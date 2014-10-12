@@ -75,6 +75,10 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
      ymax = max(y)
    else:
      xmin, xmax, ymin, ymax = ax1.axis()
+     xmin = min(min(x),xmin)
+     xmax = max(max(x),xmax)
+     ymin = min(min(y),ymin)
+     ymax = max(max(y),ymax)
 
    ax1.set_title(title)
 
