@@ -3094,9 +3094,9 @@ subroutine analyze_energy_decay(MyMolecule,t1,t2,g)
 
         funit = -1
         FileName(1:6) = 'Edecay'
-        write(FileName(7:10),'(i4.4)') i
+        write(FileName(7:10),'(i4.4)') j
         FileName(11:11) = '_'
-        write(FileName(12:15),'(i4.4)') j
+        write(FileName(12:15),'(i4.4)') i
         call lsopen(funit,FileName,'REPLACE','FORMATTED')
 
         do k=1,nunocc
