@@ -330,6 +330,9 @@ contains
 
     ! Get job list 
     calcAF = DECinfo%RepeatAF
+    !This is a hack to specify that only pair fragment jobs should be done
+    if(DECinfo%only_pair_frag_jobs) calcAF = .false.
+
     call create_dec_joblist_driver(calcAF,MyMolecule,mylsitem,nfrags,nocc,nunocc,&
          &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,.false.,jobs)
 
