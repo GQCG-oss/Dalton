@@ -29,7 +29,7 @@ f.add(from_string = 'Chemical shielding for ',
 # Magnetizabilities
 f.add(from_string = 'Magnetizabilities',
       num_lines = 9,
-      mask = [4],
+      mask = [2],
       abs_tolerance = 1.0e-3)
 
 test.run(['choles_lda_prop.dal'], ['HCN_aug-cc-pVDZ.mol'], {'out': f},
