@@ -2224,7 +2224,6 @@ contains
     call ls_mpi_buffer(DECitem%Frag_Exp_Size,Master)
     call ls_mpi_buffer(DECitem%Frag_red_occ_thr,Master)
     call ls_mpi_buffer(DECitem%Frag_red_virt_thr,Master)
-    call ls_mpi_buffer(DECitem%FragmentExpansionRI,Master)
     call ls_mpi_buffer(DECitem%fragopt_exp_model,Master)
     call ls_mpi_buffer(DECitem%fragopt_red_model,Master)
     call ls_mpi_buffer(DECitem%no_orb_based_fragopt,Master)

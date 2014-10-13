@@ -15,13 +15,11 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Correlation energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Total MP2 energy',
+f.add(string = 'Total RIMP2 energy',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'Use RI for Expansion step')
-
-f.add(from_string = 'MP2 occupied single energies',
-      to_string   = 'MP2 Lagrangian correlation energy',
+f.add(from_string = 'RIMP2 occupied single energies',
+      to_string   = 'RIMP2 Lagrangian correlation energy',
       rel_tolerance = 1.0e-6)
 
 f.add(string = 'Allocated memory (TOTAL)')

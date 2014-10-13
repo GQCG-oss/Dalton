@@ -3243,9 +3243,6 @@ contains
     else
        DECinfo%RepeatAF=.false.
     end if
-    IF(DECinfo%FragmentExpansionRI)THEN
-       DECinfo%RepeatAF=.true.
-    ENDIF
 
   end subroutine dec_orbital_sanity_check
 

@@ -64,8 +64,8 @@ subroutine dec_lsmpi_slave(comm)
          call MP2_integrals_and_amplitudes_workhorse_slave
          ! DEC MP2 RI energy
 #ifdef MOD_UNRELEASED 
-      case(MP2INAMPRI);
-         call MP2_RI_EnergyContribution_slave
+      case(RIMP2INAMP);
+         call RIMP2_integrals_and_amplitudes_slave
 #endif
       case(CCSDDATA);
          call ccsd_data_preparation

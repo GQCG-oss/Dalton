@@ -47,7 +47,8 @@ MODULE precision
   
 INTERFACE Test_if_64bit_integer_required
    MODULE PROCEDURE Test_if_64bit_integer_required_2d,&
-        & Test_if_64bit_integer_required_3d 
+        & Test_if_64bit_integer_required_3d,&
+        & Test_if_64bit_integer_required_4d 
 end INTERFACE Test_if_64bit_integer_required
 
 contains
@@ -96,5 +97,29 @@ subroutine Test_if_64bit_integer_required_3d(n1,n2,n3)
    ENDIF
 #endif
  end subroutine Test_if_64bit_integer_required_3d
+
+subroutine Test_if_64bit_integer_required_4d(n1,n2,n3,n4)
+   implicit none
+   integer,intent(in) :: n1,n2,n3,n4
+#ifndef VAR_INT64
+   !local variables
+   integer(kind=long) :: n   
+   n = n1*n2*n3*n4
+   IF(n.GT.MAXINT)THEN
+      print*,'A 64 bit integer is required in this context'
+      print*,'The four dimensions: '
+      print*,'n1 = ',n1
+      print*,'n2 = ',n2
+      print*,'n3 = ',n3
+      print*,'n4 = ',n4
+      print*,'gives a combined dimension',n
+      print*,'which is bigger than can be described using a 32 bit integer'
+      print*,'The maximum size is ',MAXINT
+      print*,'Use the flag --int64 in the setup command e.g.'
+      print*,'./setup --int64 BuildUsing64int'
+      call lsquit('A 64 bit integer is required, recompile using --int64',-1)
+   ENDIF
+#endif
+ end subroutine Test_if_64bit_integer_required_4d
 
 END MODULE precision
