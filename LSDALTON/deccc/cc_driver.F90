@@ -83,27 +83,37 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), dimension(nbasis,nocc), intent(in),optional :: Co_fc
    !> Occ-occ block of Fock matrix in MO basis (only used for frozen core)
    real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
-   !> Coupled cluster energy for full molecule
-   real(realk) :: ccenergy,ccsdpt_e4,ccsdpt_e5,ccsdpt_tot
    type(array2) :: t1_final_arr2
    type(array4) :: t2_final_arr4, VOVO_arr4, mp2_amp
    type(array) :: t2_final,ccsdpt_t2,VOVO
-   type(array) :: t1_final,ccsdpt_t1,ccsd_mat_tot,ccsd_mat_tmp,e4_mat_tot,e4_mat_tmp,e5_mat_tot
+   type(array) :: t1_final,ccsdpt_t1,e4_mat_tot,e4_mat_tmp,e5_mat_tot
    integer :: natoms,nfrags,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
    logical, pointer :: orbitals_assigned(:)
    logical :: local,print_frags,abc
+   ! Fragment and total energies as listed in decfrag type def "energies"
+   real(realk), pointer :: FragEnergies(:,:,:), FragEnergies_tmp(:,:), ccenergies(:)
+   real(realk) :: ccenergy
+   integer :: nenergies, cc_sol, pT_4, pT_5, pT_full
+   !> local variables 
+   character(len=30) :: CorrEnergyString
+   integer :: iCorrLen, nsingle, npair, njobs
 
    real(realk) :: time_CCSD_work, time_CCSD_comm, time_CCSD_idle
    real(realk) :: time_pT_work, time_pT_comm, time_pT_idle
 
    call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
 
-   ccenergy   = 0.0E0_realk
-   ccsdpt_e4  = 0.0E0_realk
-   ccsdpt_e5  = 0.0E0_realk
-   ccsdpt_tot = 0.0E0_realk
+   ! nenergies is set to 4: a CC solver model plus pT corrections, 
+   ! (4th order, 5th order and both):
+   nenergies = 4
+   call mem_alloc(ccenergies,nenergies)
+   ccenergies = 0.0E0_realk
+   cc_sol  = 1
+   pT_full = 2
+   pT_4    = 3
+   pT_5    = 4
 
    local=.true.
 #ifdef VAR_MPI
@@ -136,7 +146,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
                !CALL THE SOLVER WITH PNO ARGUMENT
                call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
-                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy, &
+                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol), &
                   & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
    
                !FREE MP2 AMPLITUDES
@@ -145,7 +155,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             else
    
                call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                   & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
    
             endif
@@ -153,11 +163,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          else
             if(DECinfo%use_pnos)then
                call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+                  & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                   & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,.false.)
             endif
             call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,DECinfo%use_pnos,m2=mp2_amp )
    
             if(DECinfo%use_pnos)call array4_free( mp2_amp )
@@ -175,7 +185,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
                !CALL THE SOLVER WITH PNO ARGUMENT
                call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
-                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy, &
+                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol), &
                   & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
    
                !FREE MP2 AMPLITUDES
@@ -183,17 +193,17 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
             else
                call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                   & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
             endif
          else
             if(DECinfo%use_pnos)then
                call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+                  & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                   & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,.false.)
             endif
             call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,DECinfo%use_pnos, m2 = mp2_amp )
    
             if(DECinfo%use_pnos)call array4_free( mp2_amp )
@@ -279,6 +289,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       else
    
          call array_reorder(t2_final,[1,3,2,4])
+         call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
    
       endif
    
@@ -315,64 +326,45 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             orbitals_assigned(pdx) = .true.
          end do
       end if
+
+      ! Summary print out
+      nsingle = count(orbitals_assigned)
+      npair   = nsingle*(nsingle-1)/2
+      njobs   = nsingle + npair
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of single jobs = ', nsingle
+      write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Number of pair jobs   = ', npair
+      write(DECinfo%output,'(1X,a,i10)') 'FULL JOB SUMMARY: Total number of jobs  = ', njobs
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
    
-      ! print out ccsd fragment and pair interaction energies
-      call array_init(ccsd_mat_tot,[nfrags,nfrags],2)
-      call array_init(ccsd_mat_tmp,[nfrags,nfrags],2)
-      call array_zero(ccsd_mat_tot)
-      call array_zero(ccsd_mat_tmp)
+      ! Calculate single and pair fragments energies:
+      call mem_alloc(FragEnergies,nfrags,nfrags,nenergies)
+      call mem_alloc(FragEnergies_tmp,nfrags,nfrags)
+      FragEnergies     = 0.0E0_realk
+      FragEnergies_tmp = 0.0E0_realk
    
       call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
-         & ccsd_mat_tot%elm1,ccsd_mat_tmp%elm1)
-   
-      call array_free(ccsd_mat_tmp)
-   
-      call print_ccsd_full_occ(nfrags,ccsd_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
-      
-      ! release ccsd stuff
-      call array_free(ccsd_mat_tot)
-   
-      ! free integrals
-      !call array_free(VOVO)
+         & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
    
       if(ccmodel == MODEL_CCSDpT)then
-         ! now we calculate fourth-order (which are printed out in print_e4_full) and fifth-order energies
-         call array_init(e4_mat_tot, [nfrags,nfrags],2)
-         call array_init(e4_mat_tmp, [nfrags,nfrags],2)
-         call array_init(e5_mat_tot, [nfrags,nfrags],2)
-   
+         ! now we calculate fourth-order and fifth-order energies
          call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
-            & e4_mat_tot%elm1,e4_mat_tmp%elm1,ccsdpt_e4)
+            & FragEnergies(:,:,pT_4),FragEnergies_tmp,ccenergies(pT_4))
    
          call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
-            & occ_orbitals,unocc_orbitals,e5_mat_tot%elm1,ccsdpt_e5)
+            & occ_orbitals,unocc_orbitals,FragEnergies(:,:,pT_5),ccenergies(pT_5))
    
-         ! print out the fourth- and fifth-order fragment and pair interaction energies
-         !call print_atomic_fragment_energies(nfrags,e4_mat_tot%elm1,dofrag, &
-         !   & '(T) occupied single energies','AF_ParT_BOTH')
-   
-         call print_atomic_fragment_energies(nfrags,e4_mat_tot%elm1,orbitals_assigned, &
-            & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
-   
-         call print_atomic_fragment_energies(nfrags,e5_mat_tot%elm1,orbitals_assigned, &
-            & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
-   
-         call print_pair_fragment_energies(nfrags,e4_mat_tot%elm1,orbitals_assigned, &
-            & mymolecule%distancetable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
-   
-         call print_pair_fragment_energies(nfrags,e5_mat_tot%elm1,orbitals_assigned, &
-            & mymolecule%distancetable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
-   
-         !call print_e4_full(nfrags,e4_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
-   
-         !call print_e5_full(nfrags,e5_mat_tot%elm1,orbitals_assigned,mymolecule%distancetable)
-      
-         ! release stuff
-         call array_free(e4_mat_tot)
-         call array_free(e4_mat_tmp)
-         call array_free(e5_mat_tot)
+         ! calculate total (T) contributions:
+         ccenergies(pT_full) = ccenergies(pT_4)+ccenergies(pT_5)
+         FragEnergies(:,:,pT_full) = FragEnergies(:,:,pT_4) + FragEnergies(:,:,pT_5)
+
       endif
    
+      ! Print all fragment energies
+      call print_fragment_energies_full(nfrags,FragEnergies,ccenergies,orbitals_assigned,&
+         & mymolecule%DistanceTable)
    
       do i=1,nocc_tot
          call orbital_free(occ_orbitals(i))
@@ -386,9 +378,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       call mem_dealloc(unocc_orbitals)
       call mem_dealloc(orbitals_assigned)
    
-      ! sum up energies
-      ccsdpt_tot = ccsdpt_e4 + ccsdpt_e5
-
+      ! release stuff
+      call mem_dealloc(FragEnergies)
+      call mem_dealloc(FragEnergies_tmp)
+   
    else ! we do not print fragment energies
 
       ! is this a frozen core calculation or not?
@@ -405,13 +398,13 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          end if
    
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
+            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
       else
          ncore = 0
    
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
       end if
 
@@ -461,18 +454,18 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
          if(DECinfo%frozencore) then
             call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
-               & ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
+               & ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,e4=ccsdpt_e4)
+               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
          end if
 
 
          if (abc) call array_reorder(ccsdpt_t1,[2,1])
-         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccsdpt_e5)
+         call ccsdpt_energy_e5_ddot(nocc,nvirt,ccsdpt_t1%elm1,t1_final%elm1,ccenergies(pT_5))
 
          ! sum up energies
-         ccsdpt_tot = ccsdpt_e4 + ccsdpt_e5
+         ccenergies(pT_full) = ccenergies(pT_4) + ccenergies(pT_5)
 
          if(DECinfo%PL>1)then
             call time_start_phase(PHASE_WORK,dwwork = time_pT_work, dwcomm = time_pT_comm, dwidle = time_pT_idle, &
@@ -481,6 +474,38 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
       endif
+
+      CorrEnergyString = 'correlation energy            '
+      iCorrLen = 18
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      if(ccmodel == MODEL_RPA)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+      else if(ccmodel == MODEL_MP2)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'MP2 ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+      else if(ccmodel == MODEL_CC2)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CC2 ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+      else if(ccmodel == MODEL_CCSD)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+      else if(ccmodel == MODEL_CCSDpT)then
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)
+         write(DECinfo%output,'(1X,a,g20.10)') '(T) correlation energy  : ', &
+            & ccenergies(pT_full)
+         write(DECinfo%output,'(1X,a,g20.10)') '(T) 4th order energy    : ', &
+            & ccenergies(pT_4)
+         write(DECinfo%output,'(1X,a,g20.10)') '(T) 5th order energy    : ', &
+            & ccenergies(pT_5)
+         write(DECinfo%output,*)
+         write(DECinfo%output,'(1X,a,a,a,g20.10)') 'Total CCSD(T) ', &
+            & CorrEnergyString(1:iCorrLen),' : ', ccenergies(cc_sol)+ccenergies(pT_full)
+      end if
+      write(DECinfo%output,*)
 
    endif
 
@@ -506,50 +531,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    endif
    write(DECinfo%output,'(1X,a)') '*****************************************************************************'
    write(DECinfo%output,*)
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a,g20.10)') 'Total CC solver correlation energy      =', ccenergy
-   write(DECinfo%output,*)
-   write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-   write(DECinfo%output,*)
+
 
    ! now update ccenergy with ccsd(t) correction
-   ccenergy = ccenergy + ccsdpt_tot
+   ccenergy = ccenergies(cc_sol) + ccenergies(pT_full)
+
 
    if(ccmodel == MODEL_CCSDpT)then
-      write(DECinfo%output,'(1X,a,g20.10)') 'The E4 doubles and triples contribution =', ccsdpt_e4
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a,g20.10)') 'The E5 singles and triples contribution =', ccsdpt_e5
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) energy contribution       =', ccsdpt_tot
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a,g20.10)') 'Total CCSD(T) correlation energy        =', ccenergy
-      write(DECinfo%output,*)
-      write(DECinfo%output,'(1X,a)')   '-------------------------------------------------------------'
-      write(DECinfo%output,*)
-      write(DECinfo%output,*)
-   endif
-
-   if(ccmodel == MODEL_CCSDpT)then
-
       if (DECinfo%print_frags) then
-
          call array_free(ccsdpt_t1)
          call array_free(ccsdpt_t2)
-
       else
-
          call array_free(ccsdpt_t1)
-
       endif
-
    endif
 
    if( ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA ) then
@@ -558,6 +552,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    endif
 
    call array_free(t2_final)
+   call mem_dealloc(ccenergies)
 
 !else mod unreleased
 #else
@@ -581,7 +576,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ncore = 0
 
       call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
+         &
+         mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
          & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
    end if
 

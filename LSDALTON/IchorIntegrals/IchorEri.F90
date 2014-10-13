@@ -2569,7 +2569,6 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
   real(realk),allocatable :: LocalIntPass1(:,:)
   real(realk),allocatable :: Qcent(:,:,:),Qdistance12(:,:),QpreExpFac(:,:)
 ! real(realk),intent(inout):: Qcent(3,nPrimQ),Qdistance12(3),QpreExpFac(nPrimQ)
-
   nLocalIntPass = nOrbA*nAtomsA*nOrbB*nAtomsB*nOrbC*nOrbD
   call DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
        & iBatchIndexOfTypeC,iBatchIndexOfTypeA,nBatchB,nBatchA,iBatchIndexOfTypeB,&
@@ -2580,11 +2579,12 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
   !Determine number of Async handles (related to size of memory required)
 #ifdef VAR_OPENACC
-  MaxGPUmemory = 2_long*1000_long*1000_long !2 GB change to input keyword
+  MaxGPUmemory = 2_long*1000_long*1000_long*1000_long !2 GB change to input keyword
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
        & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
   IF(nAsyncHandles.EQ.0)call ichorquit('GPU Memory Error. Calc require too much memory transported to device',-1)
+!  print*,'nAsyncHandles',nAsyncHandles
 #else
   nAsyncHandles = 1
 #endif
@@ -2623,7 +2623,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
 
 !$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!$ACC             nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
+!$ACC             nPrimQ,nPasses,MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
 !$ACC             ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
 !$ACC             nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -2876,7 +2876,10 @@ subroutine DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nP
   nSizeAsync = nSizeAsync + mem_realsize*nLocalIntPass !LocalIntPass1 is nAsyncDependent
     !ACC CREATE(TmpArray1,TmpArray2)                                      
   nSizeAsync = nSizeAsync + mem_realsize*(TMParray1maxsize*MaxPasses+TMParray2maxsize*MaxPasses)
-  
+
+!  print*,'nSizeStatic',nSizeStatic
+!  print*,'nSizeAsync',nSizeAsync
+!  print*,'MaxGPUmemory',MaxGPUmemory
   DO iAsyncHandles=1,maxnAsyncHandles
      IF(nSizeStatic+iAsyncHandles*nSizeAsync.LT.MaxGPUmemory)THEN
         nAsyncHandles = iAsyncHandles

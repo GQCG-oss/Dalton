@@ -4103,15 +4103,15 @@ end function max_batch_dimension
        end if
     else
        IF(.NOT.DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
        ENDIF
        IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'E: DFT energy :', Ehf
+          write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
        ENDIF
-       write(lupri,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+       write(lupri,'(15X,a,f20.10)')       'E: Correlation energy  :', Ecorr
        ! skip error print for full calculation (0 by definition)
        if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-          write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+          write(lupri,'(15X,a,f20.10)')    'E: Estimated DEC error :', Eerr
        end if
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
@@ -4120,9 +4120,9 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
           endif
        elseif(DECinfo%ccmodel==FRAGMODEL_MP2f12) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)')    'E: Total MP2-F12 energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CC2) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)')    'E: Total CC2 energy    :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
@@ -4130,12 +4130,12 @@ end function max_batch_dimension
              write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
           endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-          write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+          write(lupri,'(15X,a,f20.10)')    'E: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
           if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total RPA energy    :', Ehf+Ecorr
           else
-             write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy:', Ehf+Ecorr
+             write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy  :', Ehf+Ecorr
           endif
        end if
     end if
@@ -4164,12 +4164,20 @@ end function max_batch_dimension
     !local variables 
     character(len=30) :: CorrEnergyString
     integer :: iCorrLen
+    logical :: print_pair, print_4pT_5pT
+
+    ! Print Header:
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-    write(DECinfo%output,*) '============================================================================='
+    write(DECinfo%output,*) '             ==============================================='
+    write(DECinfo%output,*) '             |   Print single and pair fragment energies   |'
+    write(DECinfo%output,*) '             ==============================================='
+    write(DECinfo%output,*)
 
     CorrEnergyString = 'correlation energy            '
     iCorrLen = 18
+    print_pair = count(dofrag)>1
+    print_4pT_5pT = DECinfo%PL>0
     
     select case(DECinfo%ccmodel)
     case(MODEL_MP2)
@@ -4186,15 +4194,15 @@ end function max_batch_dimension
                & 'MP2 Lagrangian single energies','AF_MP2_LAG')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCMP2),dofrag,&
                & DistanceTable, 'MP2 occupied pair energies','PF_MP2_OCC')
        endif
-       if(.not. DECinfo%onlyoccpart) then  
+       if((.not. DECinfo%onlyoccpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTMP2),dofrag,&
                & DistanceTable, 'MP2 virtual pair energies','PF_MP2_VIR')          
        endif
-       if(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)) then  
+       if((.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_LAGMP2),dofrag,&
                & DistanceTable, 'MP2 Lagrangian pair energies','PF_MP2_LAG')
        end if
@@ -4223,11 +4231,11 @@ end function max_batch_dimension
                & 'CC2 virtual single energies','AF_CC2_VIR')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCC2),dofrag,&
                & DistanceTable, 'CC2 occupied pair energies','PF_CC2_OCC')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCC2),dofrag,&
                & DistanceTable, 'CC2 virtual pair energies','PF_CC2_VIR')
        end if
@@ -4252,14 +4260,23 @@ end function max_batch_dimension
                & 'RPA virtual single energies','AF_RPA_VIR')
        endif
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCRPA),dofrag,&
                & DistanceTable, 'RPA occupied pair energies','PF_RPA_OCC')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTRPA),dofrag,&
                & DistanceTable, 'RPA virtual pair energies','PF_RPA_VIR')          
        endif
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA occupied   ',CorrEnergyString(1:iCorrLen),' : ', &
+            & energies(FRAGMODEL_OCCRPA)
+       if(.not.DECinfo%onlyoccpart) then
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'RPA virtual    ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_VIRTRPA)
+       end if
+       write(DECinfo%output,*)
 
     case(MODEL_CCSD)
        if(.not.DECinfo%CCDhack)then
@@ -4272,11 +4289,11 @@ end function max_batch_dimension
                   & 'CCSD virtual single energies','AF_CCSD_VIR')
           end if
 
-          if(.not.DECinfo%onlyvirtpart) then  
+          if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
                   & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
           endif
-          if(.not.DECinfo%onlyoccpart) then
+          if((.not.DECinfo%onlyoccpart).and.print_pair) then
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
           end if
@@ -4301,11 +4318,11 @@ end function max_batch_dimension
                   & 'CCD virtual single energies','AF_CCD_VIR')
           end if
 
-          if(.not.DECinfo%onlyvirtpart) then  
+          if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
                   & DistanceTable, 'CCD occupied pair energies','PF_CCD_OCC')
           endif
-          if(.not.DECinfo%onlyoccpart) then
+          if((.not.DECinfo%onlyoccpart).and.print_pair) then
              call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                   & DistanceTable, 'CCD virtual pair energies','PF_CCD_VIR')
           end if
@@ -4331,25 +4348,14 @@ end function max_batch_dimension
                & 'CCSD virtual single energies','AF_CCSD_VIR')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCCCSD),dofrag,&
                & DistanceTable, 'CCSD occupied pair energies','PF_CCSD_OCC')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTCCSD),dofrag,&
                & DistanceTable, 'CCSD virtual pair energies','PF_CCSD_VIR')
        end if
-
-       write(DECinfo%output,*)
-       if(.not.DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied ',CorrEnergyString(1:iCorrLen),' : ', &
-               & energies(FRAGMODEL_OCCCCSD)
-       endif
-       if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
-               & energies(FRAGMODEL_VIRTCCSD)
-       end if
-       write(DECinfo%output,*)
 
        if(.not.DECinfo%onlyvirtpart) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
@@ -4360,61 +4366,67 @@ end function max_batch_dimension
                & '(T) virtual single energies','AF_ParT_VIR_BOTH')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & '(T) occupied single energies (fourth order)','AF_ParT_OCC4')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & '(T) virtual single energies (fourth order)','AF_ParT_VIR4')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_4pT_5pT) then  
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & '(T) occupied single energies (fifth order)','AF_ParT_OCC5')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_4pT_5pT) then
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & '(T) virtual single energies (fifth order)','AF_ParT_VIR5')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT),dofrag,&
                & DistanceTable, '(T) occupied pair energies','PF_ParT_OCC_BOTH')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT),dofrag,&
                & DistanceTable, '(T) virtual pair energies','PF_ParT_VIR_BOTH')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT4),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fourth order)','PF_ParT_OCC4')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT4),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fourth order)','PF_ParT_VIR4')
        end if
 
-       if(.not.DECinfo%onlyvirtpart) then  
+       if((.not.DECinfo%onlyvirtpart).and.print_pair.and.print_4pT_5pT) then  
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_OCCpT5),dofrag,&
                & DistanceTable, '(T) occupied pair energies (fifth order)','PF_ParT_OCC5')
        endif
-       if(.not.DECinfo%onlyoccpart) then
+       if((.not.DECinfo%onlyoccpart).and.print_pair.and.print_4pT_5pT) then
           call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_VIRTpT5),dofrag,&
                & DistanceTable, '(T) virtual pair energies (fifth order)','PF_ParT_VIR5')
        end if
 
        write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
        if(.not.DECinfo%onlyvirtpart) then  
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy : ', energies(FRAGMODEL_OCCpT)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy   : ', energies(FRAGMODEL_OCCpT4)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy   : ', energies(FRAGMODEL_OCCpT5)
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD occupied ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_OCCCCSD)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied correlation energy  : ', energies(FRAGMODEL_OCCpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 4th order energy    : ', energies(FRAGMODEL_OCCpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) occupied 5th order energy    : ', energies(FRAGMODEL_OCCpT5)
        endif
        if(.not.DECinfo%onlyoccpart) then
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy : ', energies(FRAGMODEL_VIRTpT)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy   : ', energies(FRAGMODEL_VIRTpT4)
-          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy   : ', energies(FRAGMODEL_VIRTpT5)
+          write(DECinfo%output,'(1X,a,a,a,g20.10)') 'CCSD virtual  ',CorrEnergyString(1:iCorrLen),' : ', &
+               & energies(FRAGMODEL_VIRTCCSD)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  correlation energy  : ', energies(FRAGMODEL_VIRTpT)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  4th order energy    : ', energies(FRAGMODEL_VIRTpT4)
+          write(DECinfo%output,'(1X,a,g20.10)') '(T) virtual  5th order energy    : ', energies(FRAGMODEL_VIRTpT5)
        end if
        write(DECinfo%output,*)
        if(.not.DECinfo%onlyvirtpart) then  
@@ -4443,13 +4455,13 @@ end function max_batch_dimension
        case(MODEL_MP2)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & 'MP2F12 occupied single energies','AF_MP2f12_OCC')
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        
        case(MODEL_CCSD)
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & 'MP2F12 occupied single energies','AF_CCSDf12_OCC')
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+            if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        end select
 
