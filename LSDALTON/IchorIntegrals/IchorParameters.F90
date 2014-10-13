@@ -49,7 +49,7 @@ integer,parameter :: GGemSqOperator =5    ! The Gaussian geminal operator square
 !     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, Ichor!PermuteFFF, IchorNofilestorage
 !private
 #ifdef VAR_OPENACC
-  integer,parameter :: maxnAsyncHandles=4
+  integer,parameter :: maxnAsyncHandles=16
 #else
   integer,parameter :: maxnAsyncHandles=1
 #endif
