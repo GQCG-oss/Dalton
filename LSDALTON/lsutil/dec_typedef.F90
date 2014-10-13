@@ -281,7 +281,7 @@ module dec_typedef_module
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
-     logical :: array_test
+     logical :: tensor_test
      !> test the array reorderings
      logical :: reorder_test
      !> Check that LCM orbitals are correct

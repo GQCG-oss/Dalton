@@ -30,7 +30,7 @@ integer :: SphericalSpec,IchorJobSpec,IchorInputSpec,IchorParSpec,IchorScreenSpe
 Integer :: IchorInputDim1,IchorInputDim2,IchorInputDim3,IchorDebugSpec,IchorAlgoSpec
 integer :: filestorageIdentifier,MaxFileStorage,IchorPermuteSpec
 Integer :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
-Integer :: GabIdentifier, IchorGabID1, IchorGabID2
+Integer :: GabIdentifier, IchorGabID1, IchorGabID2,IchorOperatorSpec
 logical :: SameLHSaos
 real(8) :: THRESHOLD_CS,THRESHOLD_QQR,THRESHOLD_OD
 real(8),pointer :: InputStorage(:)
@@ -299,6 +299,7 @@ do Ipass = IpassStart,IpassEnd
      
      call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
      call GetIchorFileStorageIdentifier(filestorageIdentifier)
+     call GetIchorOpereratorIntSpec('C',IchorOperatorSpec) !Coulomb Operator
        
      MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
      MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
@@ -338,8 +339,8 @@ do Ipass = IpassStart,IpassEnd
           & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
           & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
           & nbatchDstart2,nbatchDend2,&
-          & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,IchorInputDim2,&
-          & IchorInputDim3,&
+          & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+          & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
           & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
           & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
           & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
@@ -469,6 +470,30 @@ IF(ALLPASS)THEN
 ELSE
    WRITE(*,'(A)')'Ichor Integrals UnitTest: FAILED'
 ENDIF
+CONTAINS
+subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
+  implicit none
+  character :: intspec 
+  integer,intent(inout) :: IchorOperatorSpec
+  IF (intSpec.EQ.'C') THEN
+     ! Regular Coulomb operator 1/r12                                                                   
+     call GetIchorOpererator('Coulomb',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'G') THEN
+     ! The Gaussian geminal operator g                                                                  
+     call GetIchorOpererator('GGem   ',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'F') THEN
+     ! The Gaussian geminal divided by the Coulomb operator g/r12                                       
+     call GetIchorOpererator('GGemCou',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'D') THEN
+     ! The double commutator [[T,g],g]                                                                  
+     call GetIchorOpererator('GGemGrd',IchorOperatorSpec)
+  ELSE IF (intSpec.EQ.'2') THEN
+     ! The Gaussian geminal operator squared g^2                                                        
+     call GetIchorOpererator('GGemSq ',IchorOperatorSpec)
+  ELSE
+     STOP 'Error in specification of operator in GetIchorOpereratorIntSpec'
+  ENDIF
+end subroutine GetIchorOpereratorIntSpec
 
 END PROGRAM IchorErimoduleTEST
 

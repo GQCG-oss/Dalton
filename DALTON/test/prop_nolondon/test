@@ -42,7 +42,7 @@ f.add(string = 'No Darwin correction calculated',
 
 f.add(from_string = 'Magnetizabilities',
       num_lines = 9,
-      mask = [4],
+      mask = [2],
       abs_tolerance = 1.0e-3)
 
 f.add(from_string = 'Total magnetizability tensor',

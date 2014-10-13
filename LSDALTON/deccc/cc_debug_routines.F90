@@ -173,11 +173,11 @@ module cc_debug_routines_module
      real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
      real(realk) :: iter_cpu,iter_wall, sosex
      character(18) :: save_to,keep
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
      integer :: ii,aa, cc
      integer :: MaxSubSpace
      logical :: restart, u_pnos
-     type(array) :: govov
+     type(tensor) :: govov
      integer :: nspaces
      type(PNOSpaceInfo), pointer :: pno_cv(:), pno_S(:)
 
@@ -425,8 +425,8 @@ module cc_debug_routines_module
 
      ! Get MO int. (govov) for RPA:
      if (ccmodel==MODEL_RPA) then
-       call array_minit(govov, [nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
-       call array_zero(govov)
+       call tensor_minit(govov, [nocc,nvirt,nocc,nvirt],4,local=.true.,atype='TDAR')
+       call tensor_zero(govov)
 
        call  wrapper_to_get_t1_free_gmo(nbasis,nocc,nvirt,Co%val,Cv2%val,&
              & govov,ccmodel,mylsitem)
@@ -968,7 +968,7 @@ module cc_debug_routines_module
      ! *************************************
 
      ! free memory
-     if (ccmodel==MODEL_RPA) call array_free(govov)
+     if (ccmodel==MODEL_RPA) call tensor_free(govov)
 
      ! remove rest of the singles amplitudes and residuals
      do i=last_iter,max(last_iter-MaxSubSpace+1,1),-1
@@ -1311,7 +1311,7 @@ module cc_debug_routines_module
      type(array4) :: l1, l2, tmp
      type(array2) :: ppX,qqY,pptmp,qqtmp
      integer :: a,i,b,j,k,l,c,d
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
 
      aStart=0.0E0_realk; aEnd=0.0E0_realk
      bStart=0.0E0_realk; bEnd=0.0E0_realk
@@ -1514,7 +1514,7 @@ module cc_debug_routines_module
      real(realk), pointer      :: gvovv(:), gvooo(:), govvv(:), gooov(:), govov(:)
      real(realk), pointer      :: goovv(:)
      real(realk), pointer      :: oof(:),ovf(:),vof(:),vvf(:)
-     character(ARR_MSG_LEN)    :: msg
+     character(tensor_MSG_LEN)    :: msg
      integer                   :: v4,o4,o3v,ov3,o2v2,ov,b2,v2,o2
      type(matrix)              :: iFock, Dens
      integer                   :: i,a,j,b,ctr
@@ -2316,7 +2316,7 @@ module cc_debug_routines_module
      integer :: saved_iter11,saved_iter12,saved_iter21,saved_iter22,iter_start
      integer :: saved_nel11,saved_nel12,saved_nel21,saved_nel22
      character(11) :: fullname11, fullname12, fullname21, fullname22
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
      if(get_mult)then
        safefilet21 = 'm21'
        safefilet22 = 'm22'
@@ -2517,7 +2517,7 @@ module cc_debug_routines_module
     integer :: fu_t11,fu_t12
     logical :: file_status11,file_status12,file_status21,file_status22
     logical :: all_singles
-    character(ARR_MSG_LEN) :: msg
+    character(tensor_MSG_LEN) :: msg
 #ifdef SYS_AIX
     character(12) :: fullname11,  fullname12,  fullname21,  fullname22
     character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
@@ -2650,13 +2650,13 @@ module cc_debug_routines_module
 
     integer, intent(in) :: nb, no, nv
     real(realk), pointer, intent(in) :: Co(:,:), Cv(:,:)
-    type(array), intent(inout) :: govov
+    type(tensor), intent(inout) :: govov
     integer, intent(in) :: ccmodel
     !> LS item with information needed for integrals
     type(lsitem), intent(inout) :: MyLsItem
      
     ! dummy arguments:
-    type(array) :: pgmo_diag, pgmo_up
+    type(tensor) :: pgmo_diag, pgmo_up
     type(MObatchInfo) :: MOinfo
     logical :: mo_ccsd  
   

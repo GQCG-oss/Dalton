@@ -190,7 +190,7 @@ integer(KIND=long),save :: max_mem_used_DecAObatchinfo_tmp
 integer(KIND=long),save :: max_mem_used_MYPOINTER_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY2_tmp
 integer(KIND=long),save :: max_mem_used_ARRAY4_tmp
-integer(KIND=long),save :: max_mem_used_ARRAY_tmp
+integer(KIND=long),save :: max_mem_used_tensor_tmp
 integer(KIND=long),save :: max_mem_used_PNOSPACEINFO_tmp
 integer(KIND=long),save :: max_mem_used_MP2DENS_tmp
 integer(KIND=long),save :: max_mem_used_TRACEBACK_tmp
@@ -329,7 +329,7 @@ INTERFACE mem_alloc
       &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
       &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
       &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,PNOSPACEINFO_allocate_1dim, &
-      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
+      &             OVERLAPT_allocate_1dim,tensor_allocate_1dim, lsmpi_allocate_i8V, lsmpi_allocate_i4V,&
       &             lsmpi_allocate_dV4,lsmpi_allocate_dV8, lsmpi_local_allocate_dV8, &
       &             lsmpi_local_allocate_I8V8,lsmpi_local_allocate_I4V4,&
       &             lsmpi_allocate_d,DECAOBATCHINFO_allocate_1dim,&
@@ -361,7 +361,7 @@ INTERFACE mem_alloc
          &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
          &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
          &             TRACEBACK_deallocate_1dim,MP2GRAD_deallocate_1dim, &
-         &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
+         &             OVERLAPT_deallocate_1dim,tensor_deallocate_1dim,PNOSPACEINFO_deallocate_1dim,&
          &             lsmpi_local_deallocate_I4V,lsmpi_local_deallocate_I8V,&
          &             lsmpi_deallocate_d,DECAOBATCHINFO_deallocate_1dim,&
 #ifdef MOD_UNRELEASED
@@ -457,7 +457,7 @@ INTERFACE mem_alloc
       TYPE(MYPOINTER) :: MYPOINTERitem
       TYPE(ARRAY2) :: ARRAY2item
       TYPE(ARRAY4) :: ARRAY4item
-      TYPE(ARRAY) :: ARRAYitem
+      type(tensor) :: ARRAYitem
       TYPE(PNOSpaceInfo) :: PNOSpaceitem
       TYPE(MP2DENS) :: MP2DENSitem
       TYPE(TRACEBACK) :: TRACEBACKitem
@@ -602,7 +602,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER = MAX(max_mem_used_MYPOINTER,max_mem_used_MYPOINTER_tmp)
       max_mem_used_ARRAY2 = MAX(max_mem_used_ARRAY2,max_mem_used_ARRAY2_tmp)
       max_mem_used_ARRAY4 = MAX(max_mem_used_ARRAY4,max_mem_used_ARRAY4_tmp)
-      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_ARRAY_tmp)
+      max_mem_used_ARRAY = MAX(max_mem_used_ARRAY,max_mem_used_tensor_tmp)
       max_mem_used_PNOSpaceInfo = MAX(max_mem_used_PNOSpaceInfo,max_mem_used_PNOSpaceInfo_tmp)
       max_mem_used_MP2DENS = MAX(max_mem_used_MP2DENS,max_mem_used_MP2DENS_tmp)
       max_mem_used_TRACEBACK = MAX(max_mem_used_TRACEBACK,max_mem_used_TRACEBACK_tmp)
@@ -651,7 +651,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = 0
       max_mem_used_ARRAY2_tmp = 0
       max_mem_used_ARRAY4_tmp = 0
-      max_mem_used_ARRAY_tmp = 0
+      max_mem_used_tensor_tmp = 0
       max_mem_used_PNOSpaceInfo_tmp = 0
       max_mem_used_MP2DENS_tmp = 0
       max_mem_used_TRACEBACK_tmp = 0
@@ -917,7 +917,7 @@ INTERFACE mem_alloc
       max_mem_used_MYPOINTER_tmp = max_mem_used_MYPOINTER_tmp+max_mem_tp_used_MYPOINTER
       max_mem_used_ARRAY2_tmp = max_mem_used_ARRAY2_tmp+max_mem_tp_used_ARRAY2
       max_mem_used_ARRAY4_tmp = max_mem_used_ARRAY4_tmp+max_mem_tp_used_ARRAY4
-      max_mem_used_ARRAY_tmp = max_mem_used_ARRAY_tmp+max_mem_tp_used_ARRAY
+      max_mem_used_tensor_tmp = max_mem_used_tensor_tmp+max_mem_tp_used_ARRAY
       max_mem_used_PNOSpaceInfo_tmp = max_mem_used_PNOSpaceInfo_tmp+max_mem_tp_used_PNOSpaceInfo
       max_mem_used_MP2DENS_tmp = max_mem_used_MP2DENS_tmp+max_mem_tp_used_MP2DENS
       max_mem_used_TRACEBACK_tmp = max_mem_used_TRACEBACK_tmp+max_mem_tp_used_TRACEBACK
@@ -4405,40 +4405,40 @@ END SUBROUTINE ARRAY4_deallocate_1dim
 
 !----- ALLOCATE ARRAY POINTERS -----!
 
-SUBROUTINE ARRAY_allocate_1dim(ARRAYITEM,n)
+SUBROUTINE tensor_allocate_1dim(ARRAYITEM,n)
    implicit none
    integer,intent(in) :: n
-   TYPE(ARRAY),pointer    :: ARRAYITEM(:)
+   type(tensor),pointer    :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nullify(ARRAYITEM)
    ALLOCATE(ARRAYITEM(n),STAT = IERR)
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_allocate_1dim',IERR,n
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim',nsize)
+      write(*,*) 'Error in tensor_allocate_1dim',IERR,n
+      CALL MEMORY_ERROR_QUIT('Error in tensor_allocate_1dim',nsize)
    ENDIF
    call mem_allocated_mem_ARRAY(nsize)
-END SUBROUTINE ARRAY_allocate_1dim
+END SUBROUTINE tensor_allocate_1dim
 
-SUBROUTINE ARRAY_deallocate_1dim(ARRAYITEM)
+SUBROUTINE tensor_deallocate_1dim(ARRAYITEM)
    implicit none
-   TYPE(ARRAY),pointer :: ARRAYITEM(:)
+   type(tensor),pointer :: ARRAYITEM(:)
    integer :: IERR
    integer (kind=long) :: nsize
    nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
    call mem_deallocated_mem_ARRAY(nsize)
    if (.not.ASSOCIATED(ARRAYITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released',nsize)
+      call memory_error_quit('Error in tensor_deallocate_1dim - memory previously released',nsize)
    endif
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ARRAY_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim',nsize)
+      write(*,*) 'Error in tensor_deallocate_1dim',IERR
+      CALL MEMORY_ERROR_QUIT('Error in tensor_deallocate_1dim',nsize)
    ENDIF
    NULLIFY(ARRAYITEM)
-END SUBROUTINE ARRAY_deallocate_1dim
+END SUBROUTINE tensor_deallocate_1dim
 
 !----- ALLOCATE MP2DENS POINTERS -----!
 

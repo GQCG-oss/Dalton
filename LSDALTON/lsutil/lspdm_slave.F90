@@ -1,5 +1,5 @@
 
-subroutine pdm_array_slave(comm)
+subroutine pdm_tensor_slave(comm)
   use precision
   use lstiming
   !use matrix_operations_scalapack, only: BLOCK_SIZE, SLGrid, DLEN_
@@ -15,7 +15,7 @@ subroutine pdm_array_slave(comm)
 
    IMPLICIT NONE
    INTEGER(kind=ls_mpik),intent(in) :: comm
-   TYPE(array)  :: A, B, C, D, AUX
+   type(tensor)  :: A, B, C, D, AUX
    CHARACTER    :: T(2)
    INTEGER      :: JOB, i, j
    real(REALK)  :: AF, AB(2), REAL1, REAL2
@@ -30,38 +30,38 @@ subroutine pdm_array_slave(comm)
    loc = (infpar%parent_comm /= MPI_COMM_NULL)
 
    call time_start_phase(PHASE_COMM)
-   CALL PDM_ARRAY_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
+   CALL PDM_tensor_SYNC(comm,JOB,A,B,C,D,loc_addr=loc) !Job is output
    call time_start_phase(PHASE_WORK)
 
    SELECT CASE(JOB)
    CASE(JOB_PC_DEALLOC_DENSE)
-      call memory_deallocate_array_dense_pc(A)
+      call memory_deallocate_tensor_dense_pc(A)
    CASE(JOB_PC_ALLOC_DENSE)
-      call memory_allocate_array_dense_pc(A)
-   CASE(JOB_INIT_ARR_PC)
+      call memory_allocate_tensor_dense_pc(A)
+   CASE(JOB_INIT_tensor_PC)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
-      call arr_free_aux(A)
-      call array_init_standard(A,intarr1,A%mode,MASTER_ACCESS) 
+      call tensor_free_aux(A)
+      call tensor_init_standard(A,intarr1,A%mode,MASTER_ACCESS) 
       call mem_dealloc(intarr1)
-   CASE(JOB_INIT_ARR_TILED)
+   CASE(JOB_INIT_tensor_TILED)
       call mem_alloc(intarr2,A%mode)
       call mem_alloc(intarr1,A%mode)
       intarr2=A%tdim
       intarr1 =A%dims
-      call arr_free_aux(A)
-      call array_init_tiled(A,intarr1,A%mode,at,it,MASTER_ACCESS,intarr2,A%zeros) 
+      call tensor_free_aux(A)
+      call tensor_init_tiled(A,intarr1,A%mode,at,it,MASTER_ACCESS,intarr2,A%zeros) 
       call mem_dealloc(intarr2)
       call mem_dealloc(intarr1)
-   CASE(JOB_FREE_ARR_STD)
-      call array_free_pdm(A) 
-   CASE(JOB_FREE_ARR_PDM)
-      call array_free_pdm(A) 
-   CASE(JOB_INIT_ARR_REPLICATED)
+   CASE(JOB_FREE_tensor_STD)
+      call tensor_free_pdm(A) 
+   CASE(JOB_FREE_tensor_PDM)
+      call tensor_free_pdm(A) 
+   CASE(JOB_INIT_tensor_REPLICATED)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
-      call arr_free_aux(A)
-      call array_init_replicated(A,intarr1,A%mode,MASTER_ACCESS) 
+      call tensor_free_aux(A)
+      call tensor_init_replicated(A,intarr1,A%mode,MASTER_ACCESS) 
       call mem_dealloc(intarr1)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)
@@ -70,7 +70,7 @@ subroutine pdm_array_slave(comm)
       call print_mem_per_node(DECinfo%output,.false.,dummy)
       call mem_dealloc(dummy)
    CASE(JOB_GET_NRM2_TILED)
-      AF=array_tiled_pdm_get_nrm2(A)
+      AF=tensor_tiled_pdm_get_nrm2(A)
    CASE(JOB_DATA2TILED_DIST)
       !dummy has to be allocated, otherwise seg faults might occur with 
       !some compilers
@@ -80,17 +80,17 @@ subroutine pdm_array_slave(comm)
       call mem_dealloc(dummy)
    CASE(JOB_GET_TILE_SEND)
       !i,dummy and j are just dummy arguments
-      call array_get_tile(A,i,dummy,j)
+      call tensor_get_tile(A,i,dummy,j)
    CASE(JOB_PRINT_TI_NRM)
-      call array_tiled_pdm_print_ti_nrm(A,0)
+      call tensor_tiled_pdm_print_ti_nrm(A,0)
    CASE(JOB_SYNC_REPLICATED)
-      call array_sync_replicated(A)
+      call tensor_sync_replicated(A)
    CASE(JOB_GET_NORM_REPLICATED)
-      AF=array_print_norm_repl(A)
+      AF=tensor_print_norm_repl(A)
    CASE(JOB_PREC_DOUBLES_PAR)
       call precondition_doubles_parallel(A,B,C,D)
    CASE(JOB_DDOT_PAR)
-      AF=array_ddot_par(A,B,0)
+      AF=tensor_ddot_par(A,B,0)
    CASE(JOB_ADD_PAR)
       intarr1_size = A%mode
       call mem_alloc(intarr1,intarr1_size)
@@ -102,13 +102,13 @@ subroutine pdm_array_slave(comm)
       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call time_start_phase(PHASE_WORK)
 
-      call array_add_par(REAL1,A,REAL2,B,intarr1)
+      call tensor_add_par(REAL1,A,REAL2,B,intarr1)
 
       call mem_dealloc(intarr1)
    CASE(JOB_CP_ARR)
-      call array_cp_tiled(A,B)
-   CASE(JOB_ARRAY_ZERO)
-      call array_zero_tiled_dist(A)
+      call tensor_cp_tiled(A,B)
+   CASE(JOB_tensor_ZERO)
+      call tensor_zero_tiled_dist(A)
    CASE(JOB_GET_CC_ENERGY)
       AF = get_cc_energy_parallel(A,B,C)
    CASE(JOB_GET_MP2_ENERGY)
@@ -132,16 +132,16 @@ subroutine pdm_array_slave(comm)
       call mem_dealloc(intarr2)
    CASE(JOB_CHANGE_ACCESS_TYPE)
       call change_access_type_td(A,i)
-   CASE(JOB_ARRAY_SCALE)
+   CASE(JOB_tensor_SCALE)
       call ls_mpibcast(AF,infpar%master,infpar%lg_comm)
-      call array_scale_td(A,AF)
+      call tensor_scale_td(A,AF)
    CASE(JOB_GET_RPA_ENERGY)
       write(*,*) 'Johannes RPA ene'
       AF = get_rpa_energy_parallel(A,B)
    CASE(JOB_GET_SOS_ENERGY)
       write(*,*) 'Johannes SOS ene'
       AF = get_sosex_cont_parallel(A,B)
-   CASE(JOB_ARR_CONTRACT_SIMPLE)
+   CASE(JOB_tensor_CONTRACT_SIMPLE)
       call time_start_phase(PHASE_COMM)
       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call ls_mpi_buffer(intarr1_size,infpar%master)
@@ -158,13 +158,13 @@ subroutine pdm_array_slave(comm)
       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call time_start_phase(PHASE_WORK)
 
-      call lspdm_array_contract_simple(REAL1,A,B,intarr1,intarr2,intarr1_size,REAL2,C,intarr3)
+      call lspdm_tensor_contract_simple(REAL1,A,B,intarr1,intarr2,intarr1_size,REAL2,C,intarr3)
 
       call mem_dealloc(intarr1)
       call mem_dealloc(intarr2)
 
    CASE DEFAULT
-        call lsquit("ERROR(pdm_array_slave): Unknown job",-1)
+        call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)
    END SELECT
 #endif
-end subroutine pdm_array_slave
+end subroutine pdm_tensor_slave

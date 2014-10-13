@@ -46,11 +46,11 @@ all: libIchorIntegrals.a
 #FMMDIR      = mm
 #
 #
-#CPPFLAGS      = -DVAR_ICHOR -DVAR_OPENACC -DVAR_PGF90
+#CPPFLAGS      = -DVAR_ICHOR -DVAR_OMP -DVAR_OPENACC -DVAR_PGF90
 #F90            = pgf90
 #FLNK           = pgf90
 #RM             = rm -f
-#F90OPTFLAGS    = -mp -Mconcur -acc #-Minfo=accel
+#F90OPTFLAGS    = -mp -Mconcur -acc -Minfo=accel
 #INCLUDES       =  
 #LIBS           = 
 #AR             = ar
@@ -216,6 +216,7 @@ F90_OBJS = \
         IchorMem.o \
 	IchorSaveGab.o \
         IchorGammaTabulation.o \
+        IchorGaussianGeminal.o\
         IchorEri_CoulombIntegral_McM_general.o \
         IchorEri_CoulombIntegral_McM_Ecoeff_general.o \
         IchorEri_CoulombIntegral_McM_Ecoeff_specR.o \
