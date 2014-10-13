@@ -829,7 +829,6 @@ module cc_tools_module
                call ass_D1to4(sio4%elm1,h1,[no,no,no2,no2])
                do j=no,1,-1
                   do i=j,1,-1
-                     print *,i+j*(j-1)/2
                      call array_reorder_2d(1.0E0_realk,t1(:,:,i+j*(j-1)/2),no2,no2,[2,1],1.0E0_realk,h1(i,j,:,:))
                      if(i /= j)then
                         h1(j,i,:,:) = h1(j,i,:,:) +  t1(:,:,i+j*(j-1)/2)

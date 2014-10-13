@@ -3410,12 +3410,20 @@ contains
           endif
        end if
     end do
+
     if( DECinfo%only_n_frag_jobs>0)then
-       print *,"HACK TO ONLY DO ONE FRAGMENT JOB"
+
+       if(DECinfo%only_n_frag_jobs == 1)then
+          print *,"HACK TO ONLY DO ONE FRAGMENT JOB"
+       else
+          print *,"HACK TO ONLY DO",DECinfo%only_n_frag_jobs," FRAGMENT JOBS"
+       endif
+
        dofrag = .false.
        do i = 1, DECinfo%only_n_frag_jobs
           dofrag(DECinfo%frag_job_nr(i)) = .true.
        enddo
+
     endif
 
   end subroutine which_atoms_have_orbitals_assigned
