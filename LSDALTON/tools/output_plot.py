@@ -22,16 +22,16 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
    ect = 0
    if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
       ov  = "o"
-      ect = 1
+      ect = 0
    elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
       ov  = "v"
-      ect = 1
+      ect = 0
    elif ecorrtype=="o(T)":
       ov  = "o"
-      ect = 2
+      ect = 1
    elif ecorrtype=="v(T)":
       ov  = "v"
-      ect = 2
+      ect = 1
    elif ecorrtype=="oEsti":
       ov = "o"
       ect = 3
@@ -104,12 +104,12 @@ def plot_pair_energies(self,fig,ecorrtype="oMP2",title="DEFAULT TITLE",to_plot=0
 
    return ax1
 
-# The plot_AF_energy_errors function plot the atomic fragment energy errors
+# The plot_SF_energy_errors function plot the atomic fragment energy errors
 # of a dec calculation compared to a (full) reference job.
 #
 # Necessary inputs are the structure from a reference job "self0",
 # the structure from an actual (dec) calculation "self1" and fig obtained:
-def plot_AF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy errors", 
+def plot_SF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy errors", 
     color='b', marker="o", label="series", to_plot=0):
 
    if(to_plot==0):
@@ -122,21 +122,18 @@ def plot_AF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
    ect = 0
    if ecorrtype=="oCCSD" or ecorrtype=="oMP2":
       ov  = "o"
-      ect = 1
+      ect = 0
    elif ecorrtype=="vCCSD" or ecorrtype=="vMP2":
       ov  = "v"
-      ect = 1
+      ect = 0
    elif ecorrtype=="o(T)":
       ov  = "o"
-      ect = 2
+      ect = 1
    elif ecorrtype=="v(T)":
       ov  = "v"
-      ect = 2
-   elif ecorrtype=="oEsti":
-      ov = "o"
-      ect = 3
+      ect = 1
    else: 
-      print "ERROR(plot_AF_energy_error):invalid choice of ecorrtype"
+      print "ERROR(plot_SF_energy_error):invalid choice of ecorrtype"
       exit()
    
    ect = ect - 1
@@ -155,7 +152,7 @@ def plot_AF_energy_errors(self, info, fig, ecorrtype="oMP2", title="AF energy er
    if (natdec!=natoms):
      print "natoms from ref:",natoms
      print "natoms from dec:",natdec
-     exit("ERROR(plot_AF_energy_error):input structure not compatible")
+     exit("ERROR(plot_SF_energy_error):input structure not compatible")
     
    AF_dec=np.zeros((natoms))
    AF_err=np.zeros((natoms))
