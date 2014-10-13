@@ -2623,7 +2623,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
 
 !$ACC DATA COPYIN(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,&
-!$ACC             nPrimQ,nPrimP*nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
+!$ACC             nPrimQ,nPasses(iCAH),MaxPasses,intprint,lupri,&
 !$ACC             nContA,nContB,nContC,nContD,nContP,nContQ,expP,expQ,&
 !$ACC             ContractCoeffA,ContractCoeffB,ContractCoeffC,ContractCoeffD,&
 !$ACC             nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
