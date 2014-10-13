@@ -2298,10 +2298,10 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
 
      if(print_debug)then
-        call print_norm(ppfock,int((i8*no)*no,kind=8)," NORM(ppfock):")
-        call print_norm(pqfock,int((i8*no)*nv,kind=8)," NORM(pqfock):")
-        call print_norm(qpfock,int((i8*no)*nv,kind=8)," NORM(qpfock):")
-        call print_norm(qqfock,int((i8*nv)*nv,kind=8)," NORM(qqfock):")
+        call print_norm(ppfock,int((i8*no)*no,kind=8)," NORM(ppfock)   :")
+        call print_norm(pqfock,int((i8*no)*nv,kind=8)," NORM(pqfock)   :")
+        call print_norm(qpfock,int((i8*no)*nv,kind=8)," NORM(qpfock)   :")
+        call print_norm(qqfock,int((i8*nv)*nv,kind=8)," NORM(qqfock)   :")
      endif
 
      !Free the AO fock matrix
@@ -3962,11 +3962,11 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     end select
 
     memrq =((memrq*8.0E0_realk)/(1.024E3_realk**3))
-#ifdef VAR_MPI
-    if(LSMPIASYNCP)then
-       memrq = 1.5*memrq
-    endif
-#endif
+!#ifdef VAR_MPI
+!    if(LSMPIASYNCP)then
+!       memrq = 1.5*memrq
+!    endif
+!#endif
 
   end function get_min_mem_req
 

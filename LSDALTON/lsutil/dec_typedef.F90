@@ -223,6 +223,8 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
+     !> set tilesize in ccsolver in GB
+     real(realk) :: cc_solver_tile_mem
 
      !> ccsd(T) settings
      !> *****************************
