@@ -345,6 +345,19 @@ contains
      end if
 
      select case(A%itype)
+     case(DENSE,REPLICATED)
+        select case(B%itype)
+        case(DENSE,REPLICATED)
+           select case(C%itype)
+           case(DENSE,REPLICATED)
+              call array_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+              if(C%itype==REPLICATED)call array_sync_replicated(C)
+           case default
+              call lsquit("ERROR(array_contract_simple): C%itype not implemented",-1)
+           end select
+        case default
+           call lsquit("ERROR(array_contract_simple): B%itype not implemented",-1)
+        end select
      case(TILED_DIST)
         select case(B%itype)
         case(TILED_DIST)
@@ -364,6 +377,227 @@ contains
 
   end subroutine array_contract
 
+  subroutine array_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+     implicit none
+     real(realk), intent(in)    :: pre1,pre2
+     type(array), intent(in)    :: A,B
+     integer, intent(in)        :: nmodes2c
+     integer, intent(in)        :: m2cA(nmodes2c), m2cB(nmodes2c)
+     type(array), intent(inout) :: C
+     integer, intent(inout)     :: order(C%mode)
+     real(realk), intent(in),    optional :: mem
+     real(realk), intent(inout), target, optional :: wrk(:)
+     integer, intent(in),        optional :: iwrk
+     !internal variables
+     real(realk), pointer :: wA(:),  wB(:), wC(:)
+     integer :: ordA(A%mode), ordB(B%mode), ro(C%mode), dims_product(C%mode)
+     integer :: m_gemm, n_gemm, k_gemm, ldA,ldB
+     integer :: i,j,k,l
+     logical :: contraction_mode, use_wrk_space
+     character :: tA, tB
+
+     !in the case of simle matrices do not allocate buffer space
+     ! TODO: this can be generalized for cases where the modes to contract are
+     ! the outer modes of a tensor
+     if(A%mode == 2 .and. B%mode == 2 .and. C%mode == 2)then
+
+        m_gemm = C%dims(1)
+        n_gemm = C%dims(2)
+        wC => C%elm1
+
+        if(order(1) == 1 .and. order(2) == 2)then
+
+           select case (m2cA(1))
+           case(1)
+              tA = 't'
+              k_gemm = A%dims(1)
+           case(2)
+              tA = 'n'
+              k_gemm = A%dims(2)
+           case default
+              call lsquit("ERROR(array_contract_dense_simple): undefined contraction mode A",-1)
+           end select
+           select case (m2cB(1))
+           case(1)
+              tB = 'n'
+           case(2)
+              tB = 't'
+           case default
+              call lsquit("ERROR(array_contract_dense_simple): undefined contraction mode B",-1)
+           end select
+
+
+           wA => A%elm1
+           ldA = A%dims(1)
+           wB => B%elm1
+           ldB = B%dims(1)
+
+
+        else if(order(1) == 2 .and. order(2) == 1)then
+
+           select case (m2cA(1))
+           case(1)
+              tA = 'n'
+              k_gemm = A%dims(1)
+           case(2)
+              tA = 't'
+              k_gemm = A%dims(2)
+           case default
+              call lsquit("ERROR(array_contract_dense_simple): undefined contraction mode A",-1)
+           end select
+           select case (m2cB(1))
+           case(1)
+              tB = 't'
+           case(2)
+              tB = 'n'
+           case default
+              call lsquit("ERROR(array_contract_dense_simple): undefined contraction mode B",-1)
+           end select
+
+           wA => B%elm1
+           ldA = B%dims(1)
+           wB => A%elm1
+           ldB = A%dims(1)
+
+        endif
+
+        call dgemm(tA,tB,m_gemm,n_gemm,k_gemm,pre1,wA,ldA,wB,ldB,pre2,wC,m_gemm)
+
+        wA => null()
+        wB => null()
+        wC => null()
+
+     !GENERAL TENSOR CONTRACTION
+     else
+
+        do i = 1, C%mode
+           ro(order(i)) = i
+        enddo
+
+        if(present(mem))then
+           !use provided memory information to allcate space
+           if(mem < (((A%nelms + B%nelms + C%nelms) * 8.0 )/ 1024.0**3))then
+              print *,"WARNING(array_contract_dense_simple): too little memory &
+                 &given, will try to allocate needed space anyways"
+           endif
+           use_wrk_space = .false.
+        else if(present(wrk).and.present(iwrk))then
+           !just assoctiate pointers to work space provided
+           if(A%nelms + B%nelms + C%nelms > iwrk)then
+              print *,"WARNING(array_contract_dense_simple): too small work space &
+                 &given, will try to allocate needed space"
+              use_wrk_space = .false.
+           else
+              use_wrk_space = .true.
+           endif
+        else
+           use_wrk_space = .false.
+        endif
+
+        if(use_wrk_space)then
+           wA => wrk(1:A%nelms)
+           wB => wrk(A%nelms + 1 : A%nelms + B%nelms )
+           wC => wrk(A%nelms + B%nelms + 1 : A%nelms + B%nelms + C%nelms )
+        else
+           call mem_alloc(wA,A%nelms)
+           call mem_alloc(wB,B%nelms)
+           call mem_alloc(wC,C%nelms)
+        endif
+
+        m_gemm = 1
+        n_gemm = 1
+        !get the uncontracted mode indices of the A and B arrays
+        k = 1
+        do i = 1, A%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cA(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              ordA(k) = i
+              m_gemm  = m_gemm * C%dims(ro(k))
+              k=k+1
+           endif
+        enddo
+
+        if(k-1/=A%mode-nmodes2c)then
+           call lsquit("ERROR(array_contract_dense_simple): something wrong in ordering",-1)
+        endif
+
+        k_gemm = 1
+        do i = 1,nmodes2c
+           ordA(k-1+i) = m2cA(i)
+           ordB(i)     = m2cB(i)
+           k_gemm      = k_gemm * A%dims(m2cA(i))
+        end do
+
+        l = 1
+        do i = 1, B%mode
+           contraction_mode=.false.
+           do j=1,nmodes2c
+              contraction_mode = contraction_mode.or.(m2cB(j) == i)
+           enddo
+           if(.not.contraction_mode)then
+              ordB(nmodes2c+l) = i
+              n_gemm           = n_gemm * C%dims(ro(k))
+              k=k+1
+              l=l+1
+           endif
+        enddo
+
+        select case (A%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),ordA,0.0E0_realk,wA)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),A%dims(3),ordA,0.0E0_realk,wA)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,A%elm1,A%dims(1),A%dims(2),A%dims(3),A%dims(4),ordA,0.0E0_realk,wA)
+        case default
+           call lsquit("ERROR(array_contract_dense_simple): sorting A not implemented",-1)
+        end select
+
+        select case (B%mode)
+        case(2)
+           call array_reorder_2d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),ordB,0.0E0_realk,wB)
+        case(3)
+           call array_reorder_3d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),B%dims(3),ordB,0.0E0_realk,wB)
+        case(4)
+           call array_reorder_4d(1.0E0_realk,B%elm1,B%dims(1),B%dims(2),B%dims(3),B%dims(4),ordB,0.0E0_realk,wB)
+        case default
+           call lsquit("ERROR(array_contract_dense_simple): sorting B not implemented",-1)
+        end select
+
+
+        call dgemm('n','n',m_gemm,n_gemm,k_gemm,1.0E0_realk,wA,m_gemm,wB,k_gemm,0.0E0_realk,wC,m_gemm)
+
+
+        do i=1,C%mode
+           dims_product(i) = C%dims(ro(i))
+        enddo
+
+        !ADD THE FINALIZED TILE TO THE LOCAL TILE IN THE CORRECT ORDER
+        select case (C%mode)
+        case(2)
+           call array_reorder_2d(pre1,wC,dims_product(1),dims_product(2),order,pre2,C%elm1)
+        case(3)
+           call array_reorder_3d(pre1,wC,dims_product(1),dims_product(2),dims_product(3),order,pre2,C%elm1)
+        case(4)
+           call array_reorder_4d(pre1,wC,dims_product(1),dims_product(2),dims_product(3),dims_product(4),order,pre2,C%elm1)
+        case default
+           call lsquit("ERROR(array_contract_dense_simple): sorting C not implemented",-1)
+        end select
+
+        if(use_wrk_space)then
+           wA => null()
+           wB => null()
+           wC => null()
+        else
+           call mem_dealloc(wA)
+           call mem_dealloc(wB)
+           call mem_dealloc(wC)
+        endif
+     endif
+  end subroutine array_contract_dense_simple
 
   !> \brief perform a contraction of the outer indices of two arrays, r means
   !the right-most index for the first array, l means the left-most index for the

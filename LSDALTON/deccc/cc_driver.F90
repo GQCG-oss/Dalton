@@ -1524,7 +1524,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
    real(realk) :: ccenergy_check
-   integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
+   integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
    integer, dimension(4) :: ampl4_dims
    type(array)  :: fock,Co,Cv,Co2,Cv2
    type(array)  :: ppfock,qqfock,pqfock,qpfock
@@ -1831,18 +1831,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call array_zero(qpfock_prec)
    else
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR' )
-      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
-      call array_contract_outer_indices_ll(1.0E0_realk,Co,tmp,0.0E0_realk,ppfock_prec)
+      ord2 = [1,2]
+      call array_contract(1.0E0_realk,fock,Co2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call array_contract(1.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,ppfock_prec,ord2)
       call array_free(tmp)
 
       call array_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
-      call array_contract_outer_indices_rl(1.0E0_realk,fock,Cv2,0.0E0_realk,tmp)
-      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qqfock_prec)
+      call array_contract(1.0E0_realk,fock,Cv2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call array_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qqfock_prec,ord2)
       call array_free(tmp)
 
       call array_minit(tmp, [nb,no], 2, local=local, atype='LDAR'  )
-      call array_contract_outer_indices_rl(1.0E0_realk,fock,Co2,0.0E0_realk,tmp)
-      call array_contract_outer_indices_ll(1.0E0_realk,Cv,tmp,0.0E0_realk,qpfock_prec)
+      call array_contract(1.0E0_realk,fock,Co2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call array_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qpfock_prec,ord2)
       call array_free(tmp)
    end if
 
@@ -1985,22 +1986,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
             !COUNT PAIRS OUTSIDE EOS
             nspaces = ( no - frag%noccEOS ) * ( no - frag%noccEOS + 1) / 2 &
-               !COUNT PAIRS WITH 1 IDX IN EOS                   !EOS
+            !COUNT PAIRS WITH 1 IDX IN EOS          !EOS
             &+ frag%noccEOS * ( no - frag%noccEOS ) + 1
 
             frag%nspaces = nspaces
 
             call mem_alloc( frag%CLocPNO, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%val,&
-               &frag%CLocPNO,frag%nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,m2%val,frag%CLocPNO,frag%nspaces,f=frag)
             pno_cv => frag%CLocPNO
 
          else
             !ALL PAIRS
             nspaces = no * ( no + 1 ) / 2
             call mem_alloc( pno_cv, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%val,&
-               &pno_cv,nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,m2%val,pno_cv,nspaces,f=frag)
 
          endif
 
@@ -2072,11 +2071,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             ! get the T1 transformation matrices
             call array_cp_data(Cv2,yv)
             call array_cp_data(Cv,xv)
-            call array_contract_outer_indices_rr(-1.0E0_realk,Co,t1(iter),1.0E0_realk,xv)
+            ord2 = [1,2]
+            call array_contract(-1.0E0_realk,Co,t1(iter),[2],[2],1,1.0E0_realk,xv,ord2)
+            
 
             call array_cp_data(Co2,yo)
             call array_cp_data(Co,xo)
-            call array_contract_outer_indices_rl(1.0E0_realk,Cv2,t1(iter),1.0E0_realk,yo)
+            call array_contract(1.0E0_realk,Cv2,t1(iter),[2],[1],1,1.0E0_realk,yo,ord2)
 
          end if T1Related
 
