@@ -270,17 +270,17 @@ contains
      !> Atomic fragment
      type(decfrag),intent(inout) :: MyFragment
      !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
-     type(array),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
+     type(tensor),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
      !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
-     type(array),intent(in) :: t2virt
+     type(tensor),intent(in) :: t2virt
      !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOOO
+     type(tensor),intent(in) :: VOOO
      !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOVV
+     type(tensor),intent(in) :: VOVV
      !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
-     type(array),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
+     type(tensor),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
      !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
-     type(array),intent(in)    :: VOVOvirt
+     type(tensor),intent(in)    :: VOVOvirt
      type(array4) :: t2occ_arr4
      type(array4) :: t2virt_arr4
      type(array4) :: VOOO_arr4
@@ -334,10 +334,10 @@ contains
         ! Theta(C,I,D,J) --> Theta(C,I,J,D)
         call array4_reorder(ThetaOCC,[1,2,4,3])
         ! t2(C,I,D,J) --> t2(C,I,J,D)
-        call array_reorder(t2occ,[1,2,4,3])
+        call tensor_reorder(t2occ,[1,2,4,3])
         t2occ_arr4%dims = t2occ%dims
         ! VOVOocc(C,I,D,J) --> VOVOocc(C,I,J,D)
-        call array_reorder(VOVOocc,[1,2,4,3])
+        call tensor_reorder(VOVOocc,[1,2,4,3])
         VOVOocc_arr4%dims =  VOVOocc%dims
    
         ! Calculate MP2 density contributions to gradient
@@ -650,17 +650,17 @@ contains
      !> Pair fragment
      type(decfrag),intent(inout) :: pairfragment
      !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
-     type(array),intent(in) :: t2occ
+     type(tensor),intent(in) :: t2occ
      !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
-     type(array),intent(in) :: t2virt
+     type(tensor),intent(in) :: t2virt
      !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOOO
+     type(tensor),intent(in) :: VOOO
      !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
-     type(array),intent(in) :: VOVV
+     type(tensor),intent(in) :: VOVV
      !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
-     type(array),intent(inout) :: VOVOocc
+     type(tensor),intent(inout) :: VOVOocc
      !> (A K | B L) integrals stored as (A,K,B,L)   [using virt partitioning]
-     type(array),intent(in) :: VOVOvirt
+     type(tensor),intent(in) :: VOVOvirt
      type(array4) :: t2occ_arr4
      type(array4) :: t2virt_arr4
      type(array4) :: VOOO_arr4

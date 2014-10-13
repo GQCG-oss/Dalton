@@ -151,7 +151,7 @@ implicit none
   !F12 calc?
   config%doF12=.false.
   config%doTestMPIcopy = .false.
-  config%type_array_debug = .false.
+  config%type_tensor_debug = .false.
   config%skipscfloop = .false.
 #ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
@@ -1086,7 +1086,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');         config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');      config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');       config%doTestMPIcopy         = .true.
-        CASE('.TYPE_ARRAY_DEBUG');  config%type_array_debug      = .true.
+        CASE('.TYPE_tensor_DEBUG');  config%type_tensor_debug      = .true.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'

@@ -46,47 +46,31 @@ integer :: Ipass,iBasis1,iBasis2,iBasis3,iBasis4,ibasiselm(4)
 real(8),pointer :: integrals(:,:,:,:),ComparisonInt(:,:,:,:)
 integer :: iBasis1Q,iBasis2Q,iBasis3Q,iBasis4Q
 integer,pointer :: iBasisA(:),iBasisB(:),iBasisC(:),iBasisD(:)
-CHARACTER(len=20)    :: BASISTYPE(10)
-integer              :: iBASISTYPE(10),DebugIchorOption,ifilename
+CHARACTER(len=20)    :: BASISTYPE(13)
+integer :: iBASISTYPE(13),DebugIchorOption,ifilename,nKK,KK
+integer :: DebugIchorOption2,nRepetitions,L,K,I,J
 character(len=100) :: filename
-logical      :: SpecialPass,FAIL(10,10,10,10),ALLPASS
-do A=1,100
-   filename(A:A) = ' '
-enddo
-filename(1:13) = 'IchorUnitTest'
-ifilename = 14
+logical      :: SpecialPass,FAIL(13,13,13,13),ALLPASS
+real(8) :: WALLTIMEFULL,WALLTIMECASE,WALLTIMEseg,WALLTIMEsegP,WALLTIMEsegQ
+real(8) :: WALLTIMEseg1Prim,WALLTIMEGen,TIME1,TIME2,DELTAWALL,CPUTIME,WALLTIME
 SpecialPass = .FALSE.
 DebugIchorOption = 9
 LUPRI = 6
 IPRINT = 0
 spherical = .TRUE.
-SELECT CASE(DebugIchorOption)
-CASE(0)
-   !all types and all passes
-   nbasisA = 9; nbasisB = 9; nbasisC = 9; nbasisD = 9
-   IpassStart = 1; IpassEnd = 2
-   allocate(iBasisA(nBasisA))
-   allocate(iBasisB(nBasisB))
-   allocate(iBasisC(nBasisC))
-   allocate(iBasisD(nBasisD))
-   do iBasis1Q=1,nbasisA
-      iBasisA(iBasis1Q) = iBasis1Q
-   enddo
-   do iBasis2Q=1,nbasisB
-      iBasisB(iBasis2Q) = iBasis2Q
-   enddo
-   do iBasis3Q=1,nbasisC
-      iBasisC(iBasis3Q) = iBasis3Q
-   enddo
-   do iBasis4Q=1,nbasisD
-      iBasisD(iBasis4Q) = iBasis4Q
-   enddo
+nKK = 5
+
+WALLTIMEFULL=0.0E0_8
+
+DO KK=1,nKK      
+WALLTIMECASE=0.0E0_8
+DebugIchorOption2 = kk
+SELECT CASE(DebugIchorOption2)
 CASE(1)
    !Special types
    !   A          B          C          D          OVERALL
    !Seg1Prim     Seg        Gen      Seg1Prim      SegP
    nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
-   IpassStart = 1; IpassEnd = 2
    SpecialPass = .TRUE.
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
@@ -101,7 +85,6 @@ CASE(2)
    !   A          B          C           D          OVERALL
    !  Seg        Seg1Prim   Seg1Prim  Seg1Prim      Seg
    nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
-   IpassStart = 1; IpassEnd = 2
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
    allocate(iBasisC(nBasisC))
@@ -116,7 +99,6 @@ CASE(3)
    !   A          B          C          D          OVERALL
    !Seg1Prim   Seg1Prim   Seg1Prim   Seg1Prim      Seg1Prim 
    nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
-   IpassStart = 1; IpassEnd = 2
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
    allocate(iBasisC(nBasisC))
@@ -131,7 +113,6 @@ CASE(4)
    !   A          B          C          D          OVERALL
    !Seg1Prim     Gen        Seg      Seg1Prim      SegQ
    nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
-   IpassStart = 1; IpassEnd = 2
    SpecialPass = .TRUE.
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
@@ -148,7 +129,6 @@ CASE(5)
    !  Gen        Gen        Gen        Gen         Gen    
    !Pure Gen (S,P,D ; S,P,D | S,P,D ; S,P,D)
    nbasisA = 3; nbasisB = 3; nbasisC = 3; nbasisD = 3
-   IpassStart = 1; IpassEnd = 2
    SpecialPass = .TRUE. !otherwise too expensive
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
@@ -159,12 +139,11 @@ CASE(5)
    iBasisC(1) = 7; iBasisC(2) = 8; iBasisC(3) = 9
    iBasisD(1) = 7; iBasisD(2) = 8; iBasisD(3) = 9
 CASE DEFAULT
-   FileName = 'IchorUnitTestUnitTest_segD1pUnitTest_segDUnitTest_genDUnitTest_segD1p1'
+   FileName = 'IchorProfTestUnitTest_segS1pUnitTest_segS1pUnitTest_segS1pUnitTest_segS1p1'
    nBasisA = 1
    nBasisB = 1
    nBasisC = 1
    nBasisD = 1
-   IpassStart = 1; IpassEnd = 1
    nbasisA = 1; nbasisB = 1; nbasisC = 1; nbasisD = 1
    allocate(iBasisA(nBasisA))
    allocate(iBasisB(nBasisB))
@@ -183,7 +162,7 @@ CASE DEFAULT
       iBasisD(iBasis4Q) = iBasis4Q
    enddo
 END SELECT
-
+IpassStart = 1; IpassEnd = 1
 BASISTYPE(1) = 'UnitTest_segS1p     '; iBASISTYPE(1) = 15
 BASISTYPE(2) = 'UnitTest_segP1p     '; iBASISTYPE(2) = 15
 BASISTYPE(3) = 'UnitTest_segD1p     '; iBASISTYPE(3) = 15
@@ -204,21 +183,25 @@ do Ipass = IpassStart,IpassEnd
     iBasis3 = iBasisC(iBasis3Q)
     do iBasis4Q = 1,nBasisD
      iBasis4 = iBasisD(iBasis4Q)
-     IF(DebugIchorOption.LE.5)THEN
-        ibasiselm(1) = iBasis1
-        ibasiselm(2) = iBasis2
-        ibasiselm(3) = iBasis3
-        ibasiselm(4) = iBasis4
-        ifilename = 14
-        do A = 1,4       
-           filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
-           ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
-        enddo
-        WRITE(filename(ifilename:ifilename),'(I1)') Ipass
-        ifilename = ifilename + 1
-     ENDIF
+
+     ibasiselm(1) = iBasis1
+     ibasiselm(2) = iBasis2
+     ibasiselm(3) = iBasis3
+     ibasiselm(4) = iBasis4
+
+     do A=1,100
+        filename(A:A) = ' '
+     enddo
+     filename(1:13) = 'IchorProfTest'
+     ifilename = 14
+     do A = 1,4       
+        filename(ifilename:ifilename+iBASISTYPE(iBasiselm(A))-1) =  BASISTYPE(iBasiselm(A))(1:iBASISTYPE(iBasiselm(A)))
+        ifilename = ifilename+iBASISTYPE(iBasiselm(A)) 
+     enddo
+     WRITE(filename(ifilename:ifilename),'(I1)') Ipass
+     ifilename = ifilename + 1
      LUOUTPUT = 12
-     print*,'FileName',FileName
+!     print*,'FileName',FileName
      open(unit = LUOUTPUT, file=TRIM(FileName),status='OLD',FORM='FORMATTED')
      
      !A
@@ -300,7 +283,6 @@ do Ipass = IpassStart,IpassEnd
      call GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
      call GetIchorFileStorageIdentifier(filestorageIdentifier)
      call GetIchorOpereratorIntSpec('C',IchorOperatorSpec) !Coulomb Operator
-       
      MaxMem=0         !Maximum Memory Ichor is allowed to use. Zero = no restrictions
      MaxFileStorage=0 !Maximum File size, if zero - no file will be written or read. 
      MaxMemAllocated=0!Maximum Memory used in the program. Ichor adds to this value
@@ -319,81 +301,151 @@ do Ipass = IpassStart,IpassEnd
      THRESHOLD_OD = 1.0d-10
      THRESHOLD_CS = 1.0d-10
      THRESHOLD_QQR = 1.0d-10
-     !print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
-     !=====================================================================
-     !  Main Call
-     !=====================================================================
-     call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
-          & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
-          & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
-          & nbatchAstart2,nbatchAend2,&
-          & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
-          & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
-          & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-          & nbatchBstart2,nbatchBend2,&
-          & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
-          & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
-          & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
-          & nbatchCstart2,nbatchCend2,&
-          & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
-          & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
-          & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
-          & nbatchDstart2,nbatchDend2,&
-          & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
-          & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
-          & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
-          & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
-          & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
-          & MaxFileStorage,MaxMemAllocated,MemAllocated,&
-          & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
-          & integrals,lupri)
-     
-     !     print*,'OutputDim1:',OutputDim1,OutputDim2,OutputDim3,OutputDim4
-     !     do d=1,OutputDim4
-     !        do c=1,OutputDim3
-     !           do b=1,OutputDim2
-     !              do a=1,OutputDim1            
-     !                print*,'int',integrals(a,b,c,d)
-     !             enddo
-     !          enddo
-     !       enddo
-     !    enddo
-     
+
+     IF(DebugIchorOption2.EQ.3)THEN
+        nRepetitions = 3
+     ELSE
+        nRepetitions = 1
+     ENDIF
+
      allocate(ComparisonInt(Outdim1,Outdim2,Outdim3,Outdim4))
-     READ(LUOUTPUT,*) ComparisonInt
-     FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
-     do d=1,OutputDim4
-        do c=1,OutputDim3
-           do b=1,OutputDim2
-              do a=1,OutputDim1   
-                 IF(ABS(integrals(A,B,C,D)).GT.1.0E-10_8)THEN     
-                    IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8/ABS(ComparisonInt(a,b,c,d)))THEN
-                       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                       print*,'ERROR a,b,c,d = ',a,b,c,d
-                       print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
-                       print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
-                       print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
-                       FAIL = .TRUE.
-                    ENDIF
-                 ELSE                    
-                    IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
-                       FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
-                       print*,'ERROR a,b,c,d = ',a,b,c,d
-                       print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
-                       print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
-                       print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
-                       FAIL = .TRUE.
-                    ENDIF
-                 ENDIF
+
+     IF(MIN(Outputdim1,Outputdim2,Outputdim3,Outputdim4).LT.7)THEN
+        DO L=1,7
+           DO K=1,7
+              DO J=1,7
+                 DO I=1,7
+                    READ(LUOUTPUT,*) ComparisonInt(I,J,K,L)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDIF
+     DO L=1,Outputdim4,10
+        DO K=1,Outputdim3,10
+           DO J=1,Outputdim2,10
+              DO I=1,Outputdim1,10
+                 READ(LUOUTPUT,*) ComparisonInt(I,J,K,L)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+!     READ(LUOUTPUT,*) ComparisonInt
+     DO I=1,nRepetitions
+        !print*,'THRESHOLD_CS',THRESHOLD_CS,'THRESHOLD_OD',THRESHOLD_OD
+        !=====================================================================
+        !  Main Call
+        !=====================================================================
+        
+        CALL ICHOR_GETTIM(CPUTIME,WALLTIME)
+
+        call IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+             & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+             & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+             & nbatchAstart2,nbatchAend2,&
+             & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+             & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+             & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+             & nbatchBstart2,nbatchBend2,&
+             & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+             & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+             & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+             & nbatchCstart2,nbatchCend2,&
+             & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+             & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+             & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+             & nbatchDstart2,nbatchDend2,&
+             & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+             & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
+             & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,THRESHOLD_CS,&
+             & THRESHOLD_QQR,IchorGabID1,IchorGabID2,IchorDebugSpec,&
+             & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+             & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+             & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+             & integrals,lupri)
+
+
+        CALL ICHOR_GETTIM(TIME1,TIME2)
+        DELTAWALL=TIME2-WALLTIME
+        write(lupri,'(A,A,A,A,A,A,A,A,A,F16.8)')'BASIS(',TRIM(BASISTYPE(iBasis1)),',',TRIM(BASISTYPE(iBasis2)),&
+             & ',',TRIM(BASISTYPE(iBasis3)),',',TRIM(BASISTYPE(iBasis4)),') Wall Time=',DELTAWALL
+        WALLTIMECASE = WALLTIMECASE + DELTAWALL
+        !     print*,'OutputDim1:',OutputDim1,OutputDim2,OutputDim3,OutputDim4
+        !     do d=1,OutputDim4
+        !        do c=1,OutputDim3
+        !           do b=1,OutputDim2
+        !              do a=1,OutputDim1            
+        !                print*,'int',integrals(a,b,c,d)
+        !             enddo
+        !          enddo
+        !       enddo
+        !    enddo
+        IF(I.EQ.1.OR.MOD(I,5).EQ.0)THEN
+           FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .FALSE.
+
+           IF(MIN(Outputdim1,Outputdim2,Outputdim3,Outputdim4).LT.7)THEN
+              do d=1,7
+                 do c=1,7
+                    do b=1,7
+                       do a=1,7
+                         IF(ABS(integrals(A,B,C,D)).GT.1.0E-10_8)THEN     
+                          IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8/ABS(ComparisonInt(a,b,c,d)))THEN
+                             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                             print*,'ERROR a,b,c,d = ',a,b,c,d
+                             print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                             print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                             print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                             FAIL = .TRUE.
+                          ENDIF
+                         ELSE                    
+                          IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
+                             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                             print*,'ERROR a,b,c,d = ',a,b,c,d
+                             print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                             print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                             print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                             FAIL = .TRUE.
+                          ENDIF
+                         ENDIF
+                       enddo
+                    enddo
+                 enddo
+              enddo
+           ENDIF
+           do d=1,OutputDim4,10
+              do c=1,OutputDim3,10
+                 do b=1,OutputDim2,10
+                    do a=1,OutputDim1,10   
+                       IF(ABS(integrals(A,B,C,D)).GT.1.0E-10_8)THEN     
+                          IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8/ABS(ComparisonInt(a,b,c,d)))THEN
+                             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                             print*,'ERROR a,b,c,d = ',a,b,c,d
+                             print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                             print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                             print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                             FAIL = .TRUE.
+                          ENDIF
+                       ELSE                    
+                          IF(ABS(integrals(a,b,c,d)-ComparisonInt(a,b,c,d)).GT.1.0E-10_8)THEN
+                             FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
+                             print*,'ERROR a,b,c,d = ',a,b,c,d
+                             print*,'integrals(a,b,c,d)    ',integrals(a,b,c,d)
+                             print*,'ComparisonInt(a,b,c,d)',ComparisonInt(a,b,c,d)
+                             print*,'DIFF ',integrals(a,b,c,d)-ComparisonInt(a,b,c,d)
+                             FAIL = .TRUE.
+                          ENDIF
+                       ENDIF
+                    enddo
+                 enddo
               enddo
            enddo
-        enddo
+           IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
+              write(*,'(A)')'TEST FAILED '
+!           ELSE
+!              write(*,'(A)')'TEST SUCCEEDED '
+           ENDIF
+        ENDIF
      enddo
-     IF(FAIL(iBasis1,ibasis2,ibasis3,ibasis4))THEN
-        write(*,'(A)')'TEST FAILED '
-     ELSE
-        write(*,'(A)')'TEST SUCCEEDED '
-     ENDIF
      deallocate(integrals)
      deallocate(ComparisonInt)
      
@@ -439,7 +491,7 @@ do Ipass = IpassStart,IpassEnd
   enddo
  enddo
  ALLPASS = .TRUE.
- write(*,'(A,I5)')'Summary of Unit Test for nPasses=',ipass
+ write(*,'(A)')'Summary'
  do iBasis1Q = 1,nBasisA
   iBasis1 = iBasisA(iBasis1Q)
   do iBasis2Q = 1,nBasisB
@@ -454,10 +506,10 @@ do Ipass = IpassStart,IpassEnd
              & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
              & BASISTYPE(iBasis4)(10:15),',',ipass,') FAILED'
         ALLPASS = .FALSE.
-     ELSE
-        write(*,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
-             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
-             & BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
+!     ELSE
+!        write(*,'(A,A,A,A,A,A,A,A,A,I1,A)')'BASIS(',BASISTYPE(iBasis1)(10:15),',',&
+!             & BASISTYPE(iBasis2)(10:15),',',BASISTYPE(iBasis3)(10:15),',',&
+!             & BASISTYPE(iBasis4)(10:15),',',ipass,') SUCCESSFUL'
      ENDIF     
     enddo
    enddo
@@ -470,6 +522,36 @@ IF(ALLPASS)THEN
 ELSE
    WRITE(*,'(A)')'Ichor Integrals UnitTest: FAILED'
 ENDIF
+
+WALLTIMEFULL=WALLTIMEFULL+WALLTIMECASE
+
+SELECT CASE(DebugIchorOption2)
+CASE(1)
+   WALLTIMEsegP = WALLTIMECASE
+   WRITE(*,'(A,F16.8)')'SegP Wall Time     =',WALLTIMEsegP
+CASE(2)
+   WALLTIMEseg = WALLTIMECASE
+   WRITE(*,'(A,F16.8)')'Seg Wall Time      =',WALLTIMEseg
+CASE(3)
+   WALLTIMEseg1Prim = WALLTIMECASE
+   WRITE(*,'(A,F16.8)')'Seg1Prim Wall Time =',WALLTIMEseg1Prim
+CASE(4)
+   WALLTIMEsegQ = WALLTIMECASE
+   WRITE(*,'(A,F16.8)')'SegQ Wall Time     =',WALLTIMEsegQ
+CASE(5)
+   WALLTIMEGen = WALLTIMECASE
+   WRITE(*,'(A,F16.8)')'Gen Wall Time      =',WALLTIMEGen
+END SELECT
+
+ENDDO
+
+WRITE(*,'(A,F16.8)')'SegP Wall Time     =',WALLTIMEsegP
+WRITE(*,'(A,F16.8)')'Seg Wall Time      =',WALLTIMEseg
+WRITE(*,'(A,F16.8)')'Seg1Prim Wall Time =',WALLTIMEseg1Prim
+WRITE(*,'(A,F16.8)')'SegQ Wall Time     =',WALLTIMEsegQ
+WRITE(*,'(A,F16.8)')'Gen Wall Time      =',WALLTIMEGen
+WRITE(*,'(A,F16.8)')'Total Wall Time    =',WALLTIMEFULL
+
 CONTAINS
 subroutine GetIchorOpereratorIntSpec(intSpec,IchorOperatorSpec)
   implicit none

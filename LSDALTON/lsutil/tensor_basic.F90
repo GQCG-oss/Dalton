@@ -22,9 +22,9 @@ module tensor_basic_module
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
-    subroutine arr_set_dims(arr,dims,mode)
+    subroutine tensor_set_dims(arr,dims,mode)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       integer,intent(in) :: dims(*)
       integer, optional :: mode
       real(realk) :: vector_size
@@ -32,7 +32,7 @@ module tensor_basic_module
       if (present(mode))then
         if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
           print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of arr_set_dims",lspdm_errout)
+          call lsquit("wrong use of tensor_set_dims",lspdm_errout)
         else
           arr%mode=mode
         endif
@@ -40,8 +40,8 @@ module tensor_basic_module
       if (associated(arr%dims))then
 !$OMP CRITICAL
         vector_size = dble(size(arr%dims))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
 !$OMP END CRITICAL
         call mem_dealloc(arr%dims)
       endif
@@ -49,21 +49,21 @@ module tensor_basic_module
         call mem_alloc(arr%dims,arr%mode)
 !$OMP CRITICAL
         vector_size = dble(size(arr%dims))
-        array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-        array_memory_in_use  = array_memory_in_use  + vector_size
+        tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+        tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
       endif
       do i=1,arr%mode
         arr%dims(i)=dims(i)
       enddo
-    end subroutine arr_set_dims
+    end subroutine tensor_set_dims
 
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
-    subroutine arr_set_tdims(arr,tdims,mode)
+    subroutine tensor_set_tdims(arr,tdims,mode)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       integer,intent(in) :: tdims(*)
       integer, optional :: mode
       real(realk) :: vector_size
@@ -71,7 +71,7 @@ module tensor_basic_module
       if (present(mode))then
         if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
           print *,"mode",mode,"arr%mode",arr%mode      
-          call lsquit("wrong use of arr_set_tdim",lspdm_errout)
+          call lsquit("wrong use of tensor_set_tdim",lspdm_errout)
         else
           arr%mode=mode
         endif
@@ -79,8 +79,8 @@ module tensor_basic_module
       if (associated(arr%tdim))then
 !$OMP CRITICAL
         vector_size = dble(size(arr%tdim))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
 !$OMP END CRITICAL
         call mem_dealloc(arr%tdim)
       endif
@@ -88,38 +88,38 @@ module tensor_basic_module
         call mem_alloc(arr%tdim,arr%mode)
 !$OMP CRITICAL
         vector_size = dble(size(arr%tdim))
-        array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-        array_memory_in_use  = array_memory_in_use  + vector_size
+        tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+        tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
       endif
       do i=1,arr%mode
         arr%tdim(i)=tdims(i)
       enddo
-    end subroutine arr_set_tdims
+    end subroutine tensor_set_tdims
   
-    subroutine arr_init_lock_set(arr)
+    subroutine tensor_init_lock_set(arr)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       real(realk) :: vector_size
 
       if(.not.associated(arr%lock_set))then
         call mem_alloc(arr%lock_set,arr%ntiles)
 !$OMP CRITICAL
         vector_size = dble(size(arr%lock_set))
-        array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-        array_memory_in_use  = array_memory_in_use  + vector_size
+        tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+        tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
         arr%lock_set = .false.
       endif
       
-    end subroutine arr_init_lock_set
+    end subroutine tensor_init_lock_set
 
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
     !> \author Patrick Ettenhuber
-    subroutine arr_set_ntpm(arr,ntpm,mode)
+    subroutine tensor_set_ntpm(arr,ntpm,mode)
        implicit none
-       type(array),intent(inout) :: arr
+       type(tensor),intent(inout) :: arr
        integer,intent(in) :: ntpm(*)
        integer, optional :: mode
        real(realk) :: vector_size
@@ -127,7 +127,7 @@ module tensor_basic_module
        if (present(mode))then
           if((arr%mode/=0 .and. arr%mode/=mode).or.arr%mode==0)then
              print *,"mode",mode,"arr%mode",arr%mode      
-             call lsquit("wrong use of arr_set_ntpm",lspdm_errout)
+             call lsquit("wrong use of tensor_set_ntpm",lspdm_errout)
           else
              arr%mode=mode
           endif
@@ -135,8 +135,8 @@ module tensor_basic_module
        if (associated(arr%ntpm))then
           !$OMP CRITICAL
           vector_size = dble(size(arr%ntpm))
-          array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use  - vector_size
+          tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+          tensor_memory_in_use    = tensor_memory_in_use  - vector_size
           !$OMP END CRITICAL
           call mem_dealloc(arr%ntpm)
        endif
@@ -144,18 +144,18 @@ module tensor_basic_module
           call mem_alloc(arr%ntpm,arr%mode)
           !$OMP CRITICAL
           vector_size = dble(size(arr%ntpm))
-          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-          array_memory_in_use  = array_memory_in_use  + vector_size
+          tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+          tensor_memory_in_use  = tensor_memory_in_use  + vector_size
           !$OMP END CRITICAL
        endif
        do i=1,arr%mode
           arr%ntpm(i)=ntpm(i)
        enddo
-    end subroutine arr_set_ntpm
+    end subroutine tensor_set_ntpm
 
-    subroutine arr_set_addr(arr,addr,nnodes)
+    subroutine tensor_set_addr(arr,addr,nnodes)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       integer,intent(in) :: addr(*)
       integer(kind=ls_mpik) :: nnodes
       real(realk) :: vector_size
@@ -164,8 +164,8 @@ module tensor_basic_module
       if (associated(arr%addr_p_arr))then
          !$OMP CRITICAL
          vector_size = dble(size(arr%addr_p_arr))
-         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-         array_memory_in_use    = array_memory_in_use  - vector_size
+         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+         tensor_memory_in_use    = tensor_memory_in_use  - vector_size
          !$OMP END CRITICAL
          call mem_dealloc(arr%addr_p_arr)
       endif
@@ -173,14 +173,14 @@ module tensor_basic_module
          call mem_alloc(arr%addr_p_arr,nnodes)
          !$OMP CRITICAL
          vector_size = dble(size(arr%addr_p_arr))
-         array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-         array_memory_in_use  = array_memory_in_use  + vector_size
+         tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+         tensor_memory_in_use  = tensor_memory_in_use  + vector_size
          !$OMP END CRITICAL
       endif
       do i=1,nnodes
          arr%addr_p_arr(i)=addr(i)
       enddo
-    end subroutine arr_set_addr
+    end subroutine tensor_set_addr
 
 
 
@@ -191,9 +191,9 @@ module tensor_basic_module
 
   !> \brief Allocate memory for general arrays with memory statistics
   !> \author Patrick Ettenhuber adapted from Marcin Ziolkowski
-    subroutine memory_allocate_array_dense(arr)
+    subroutine memory_allocate_tensor_dense(arr)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       real(realk) :: vector_size
       real(realk) :: tcpu1,twall1,tcpu2,twall2
       integer(kind=8) :: ne
@@ -212,34 +212,34 @@ module tensor_basic_module
 !        if(infpar%pc_mynum==infpar%pc_nodtot-1) ne = arr%nelms
 !        call mem_alloc(arr%elm1,arr%e1c,ne,arr%w1,infpar%pc_comm,arr%nelms)
 !#else
-!        call lsquit("ERROR(memory_allocate_array_dense) not possible without MPI",-1)
+!        call lsquit("ERROR(memory_allocate_tensor_dense) not possible without MPI",-1)
 !#endif
 !      else
         call mem_alloc(arr%elm1,arr%nelms)
 !      endif
 
-      if( array_debug_mode )then
+      if( tensor_debug_mode )then
          arr%elm1 = 0.0E0_realk
       endif
 
 !$OMP CRITICAL
-      array_dense_allocd_mem = array_dense_allocd_mem + vector_size
-      array_memory_in_use = array_memory_in_use + vector_size
-      array_max_memory = max(array_max_memory,array_memory_in_use)
+      tensor_dense_allocd_mem = tensor_dense_allocd_mem + vector_size
+      tensor_memory_in_use = tensor_memory_in_use + vector_size
+      tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
       
       call assoc_ptr_arr(arr)
 
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
-    end subroutine memory_allocate_array_dense
+    end subroutine memory_allocate_tensor_dense
 
   !> \brief deallocate dense part
   !> \author Patrick Ettenhuber
   !> \param array for which elm1 should be deallocated
-    subroutine memory_deallocate_array_dense(arr)
+    subroutine memory_deallocate_tensor_dense(arr)
       implicit none
-      type(array) :: arr
+      type(tensor) :: arr
       real(realk) :: vector_size
       real(realk) :: dim1
       real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -257,15 +257,15 @@ module tensor_basic_module
          !endif
          arr%elm1 => null()
 !$OMP CRITICAL
-         array_dense_deallocd_mem = array_dense_deallocd_mem + vector_size
-         array_memory_in_use = array_memory_in_use - vector_size
+         tensor_dense_deallocd_mem = tensor_dense_deallocd_mem + vector_size
+         tensor_memory_in_use = tensor_memory_in_use - vector_size
 !$OMP END CRITICAL
       end if
 
       call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
 
 
-    end subroutine memory_deallocate_array_dense
+    end subroutine memory_deallocate_tensor_dense
 
 
 
@@ -276,7 +276,7 @@ module tensor_basic_module
   !> \date September 2012
     subroutine memory_deallocate_tile(arr)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       real(realk) :: vector_size
       real(realk) :: dim1,dim2,dim3,dim4
       real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -300,18 +300,18 @@ module tensor_basic_module
            nullify(arr%ti(i)%t)
            call mem_dealloc(arr%ti(i)%d)
 !$OMP CRITICAL
-           array_tiled_deallocd_mem = array_tiled_deallocd_mem + dim1 
-           array_memory_in_use      = array_memory_in_use      - dim1
-           array_aux_deallocd_mem   = array_aux_deallocd_mem   + dim2 
-           array_memory_in_use      = array_memory_in_use      - dim2
+           tensor_tiled_deallocd_mem = tensor_tiled_deallocd_mem + dim1 
+           tensor_memory_in_use      = tensor_memory_in_use      - dim1
+           tensor_aux_deallocd_mem   = tensor_aux_deallocd_mem   + dim2 
+           tensor_memory_in_use      = tensor_memory_in_use      - dim2
 !$OMP END CRITICAL
         end if
 
       enddo
       vector_size = dble(size(arr%ti))
 !$OMP CRITICAL
-      array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-      array_memory_in_use    = array_memory_in_use    - vector_size
+      tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+      tensor_memory_in_use    = tensor_memory_in_use    - vector_size
 !$OMP END CRITICAL
       deallocate(arr%ti)
       nullify(arr%ti)
@@ -331,7 +331,7 @@ module tensor_basic_module
     !> \date September 2012
     subroutine assoc_ptr_arr(arr)
        implicit none
-       type(array)::arr
+       type(tensor)::arr
        select case(arr%mode)
        case(2)
           call ass_D1to2(arr%elm1,arr%elm2,arr%dims)
@@ -355,7 +355,7 @@ module tensor_basic_module
     !\date September 2012
     subroutine deassoc_ptr_arr(arr)
       implicit none
-      type(array)::arr
+      type(tensor)::arr
       arr%elm2 => null()
       arr%elm3 => null()
       arr%elm4 => null()
@@ -376,12 +376,12 @@ module tensor_basic_module
 
       write(lspdm_stdout,'(/,a)')    '  Array memory statistics    '
       write(lspdm_stdout,'(a)')      ' =================================================='
-      write(lspdm_stdout,'(a,f12.2,a)') ' Allocated memory    : ',array_dense_allocd_mem/2**20,' MB'
-      write(lspdm_stdout,'(a,f12.2,a)') ' Deallocated memory  : ',array_dense_deallocd_mem/2**20,' MB'
+      write(lspdm_stdout,'(a,f12.2,a)') ' Allocated memory    : ',tensor_dense_allocd_mem/2**20,' MB'
+      write(lspdm_stdout,'(a,f12.2,a)') ' Deallocated memory  : ',tensor_dense_deallocd_mem/2**20,' MB'
       write(lspdm_stdout,'(a,f12.2,a)') ' Alloc-dealloc mem   : ', &
-           (array_dense_allocd_mem-array_dense_deallocd_mem)/2**20,' MB'
-      write(lspdm_stdout,'(a,f12.2,a)') ' Memory in use       : ',array_memory_in_use/2**20,' MB'
-      write(lspdm_stdout,'(a,f12.2,a)') ' Max memory in use   : ',array_max_memory/2**20,' MB'
+           (tensor_dense_allocd_mem-tensor_dense_deallocd_mem)/2**20,' MB'
+      write(lspdm_stdout,'(a,f12.2,a)') ' Memory in use       : ',tensor_memory_in_use/2**20,' MB'
+      write(lspdm_stdout,'(a,f12.2,a)') ' Max memory in use   : ',tensor_max_memory/2**20,' MB'
 
       write(lspdm_stdout,'(a,/,a)') '  Time ', &
            ' ======='
@@ -391,7 +391,7 @@ module tensor_basic_module
   !> \brief Print currenly used memory and max allocated memory so far
   !> \author Marcin Ziolkowski, modified by Patrick Ettenhuber
   !> \param output File unit for output
-  subroutine array_print_memory_currents(output,retour)
+  subroutine tensor_print_memory_currents(output,retour)
     implicit none
     !> selects the output
     integer, intent(in) :: output
@@ -400,102 +400,102 @@ module tensor_basic_module
     
     if(.not.present(retour))then
       write(*,'(a,g12.4,a)') ' Allocated memory for dense array   :',&
-           & array_dense_allocd_mem/(1.0E9_realk),' GB'
+           & tensor_dense_allocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Deallocated memory for dense array :',&
-           & array_dense_deallocd_mem/(1.0E9_realk),' GB'
+           & tensor_dense_deallocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Allocated memory for tiled array   :',&
-           & array_tiled_allocd_mem/(1.0E9_realk),' GB'
+           & tensor_tiled_allocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Deallocated memory for tiled array :',&
-           & array_tiled_deallocd_mem/(1.0E9_realk),' GB'
+           & tensor_tiled_deallocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Allocated aux memory for array     :',&
-           & array_aux_allocd_mem/(1.0E9_realk),' GB'
+           & tensor_aux_allocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Dellocated aux memory for array    :',&
-           & array_aux_deallocd_mem/(1.0E9_realk),' GB'
+           & tensor_aux_deallocd_mem/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Memory in use for array      :',&
-           & array_memory_in_use/(1.0E9_realk),' GB'
+           & tensor_memory_in_use/(1.0E9_realk),' GB'
       write(*,'(a,g12.4,a)') ' Max memory in use for array  :',&
-           & array_max_memory/(1.0E9_realk),' GB'
+           & tensor_max_memory/(1.0E9_realk),' GB'
     else
-      retour(1)=array_dense_allocd_mem
-      retour(2)=array_dense_deallocd_mem
-      retour(3)=array_tiled_allocd_mem
-      retour(4)=array_tiled_deallocd_mem
-      retour(5)=array_aux_allocd_mem
-      retour(6)=array_aux_deallocd_mem
-      retour(7)=array_memory_in_use
-      retour(8)=array_max_memory
+      retour(1)=tensor_dense_allocd_mem
+      retour(2)=tensor_dense_deallocd_mem
+      retour(3)=tensor_tiled_allocd_mem
+      retour(4)=tensor_tiled_deallocd_mem
+      retour(5)=tensor_aux_allocd_mem
+      retour(6)=tensor_aux_deallocd_mem
+      retour(7)=tensor_memory_in_use
+      retour(8)=tensor_max_memory
     endif
 
-  end subroutine array_print_memory_currents
+  end subroutine tensor_print_memory_currents
 
 
 
-  subroutine arr_free_aux(arr)
+  subroutine tensor_free_aux(arr)
      implicit none
-     type(array),intent(inout) :: arr
+     type(tensor),intent(inout) :: arr
      real(realk) :: vector_size
      if (associated(arr%dims))then
         !$OMP CRITICAL
         vector_size = dble(size(arr%dims))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
         call mem_dealloc(arr%dims)
      endif
      if (associated(arr%tdim))then
         !$OMP CRITICAL
         vector_size = dble(size(arr%tdim))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
         call mem_dealloc(arr%tdim)
      endif
      if (associated(arr%ntpm))then
         !$OMP CRITICAL
         vector_size = dble(size(arr%ntpm))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
         call mem_dealloc(arr%ntpm)
      endif
      if (associated(arr%addr_p_arr))then
         !$OMP CRITICAL
         vector_size = dble(size(arr%addr_p_arr))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
         call mem_dealloc(arr%addr_p_arr)
      endif
      if (associated(arr%lock_set))then
         !$OMP CRITICAL
         vector_size = dble(size(arr%lock_set))
-        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-        array_memory_in_use    = array_memory_in_use  - vector_size
+        tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+        tensor_memory_in_use    = tensor_memory_in_use  - vector_size
         !$OMP END CRITICAL
         call mem_dealloc(arr%lock_set)
      endif
-     if(array_aux_deallocd_mem > array_aux_allocd_mem) &
-        &print *,"WARNING(arr_free_aux)more memory deallocated than allocated"
-     call array_pdm_free_special_aux(arr)
-  end subroutine arr_free_aux
+     if(tensor_aux_deallocd_mem > tensor_aux_allocd_mem) &
+        &print *,"WARNING(tensor_free_aux)more memory deallocated than allocated"
+     call tensor_pdm_free_special_aux(arr)
+  end subroutine tensor_free_aux
   
   !> \author Patrick Ettenhuber adpted from Marcin Ziolkowski
   !> \date September 2012
   !> \brief free the array structure
-  subroutine array_free_basic(arr)
+  subroutine tensor_free_basic(arr)
     implicit none
-    type(array), intent(inout) :: arr
-    call arr_free_aux(arr)
-    if(associated(arr%elm1))call memory_deallocate_array_dense(arr)
+    type(tensor), intent(inout) :: arr
+    call tensor_free_aux(arr)
+    if(associated(arr%elm1))call memory_deallocate_tensor_dense(arr)
     if(associated(arr%ti))  call memory_deallocate_tile(arr)
-  end subroutine array_free_basic
+  end subroutine tensor_free_basic
 
   !> \author Patrick Ettenhuber
   !> \date October 2014
   !> \brief set all values to invalid
-  subroutine array_reset_value_defaults(arr)
+  subroutine tensor_reset_value_defaults(arr)
      implicit none
-     type(array) :: arr
+     type(tensor) :: arr
      arr%local_addr  = -1
      arr%ntiles      = -1
      arr%nlti        = -1
@@ -504,14 +504,14 @@ module tensor_basic_module
      arr%access_type = -1
      arr%zeros       = .false.
      arr%initialized = .false.
-  end subroutine array_reset_value_defaults
+  end subroutine tensor_reset_value_defaults
 
   !> \author Patrick Ettenhuber
   !> \date September 2012
   !> \brief nullify all pointers in the array
-  subroutine array_nullify_pointers(arr)
+  subroutine tensor_nullify_pointers(arr)
     implicit none
-    type(array), intent(inout) :: arr
+    type(tensor), intent(inout) :: arr
     NULLIFY(arr%dims)     
     NULLIFY(arr%elm1)     
     NULLIFY(arr%elm2)     
@@ -527,6 +527,6 @@ module tensor_basic_module
     NULLIFY(arr%tdim)     
     NULLIFY(arr%addr_p_arr)
     arr%dummyc = c_null_ptr
-  end subroutine array_nullify_pointers
+  end subroutine tensor_nullify_pointers
 
 end module  tensor_basic_module

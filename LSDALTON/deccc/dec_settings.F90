@@ -75,7 +75,7 @@ contains
 #endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
-    DECinfo%array_test           = .false.
+    DECinfo%tensor_test           = .false.
     DECinfo%reorder_test         = .false.
     DECinfo%CCSDno_restart       = .false.
     DECinfo%CCSDnosaferun        = .false.
@@ -139,6 +139,7 @@ contains
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
+    DECinfo%only_pair_frag_jobs    =  .false.
     ! for CC models beyond MP2 (e.g. CCSD), option to use MP2 optimized fragments
     DECinfo%fragopt_exp_model      = MODEL_MP2  ! Use MP2 fragments for expansion procedure by default
     DECinfo%fragopt_red_model      = MODEL_MP2  ! Use MP2 fragments for reduction procedure by default
@@ -463,7 +464,7 @@ contains
           ! so on purpose there is no documentation for those in the LSDALTON manual.
 
        !general testing
-       case('.TESTARRAY'); DECinfo%array_test=.true.
+       case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
     
        !CCSD testing
@@ -608,6 +609,7 @@ contains
           read(input,*)DECinfo%only_n_frag_jobs
           call mem_alloc(DECinfo%frag_job_nr,DECinfo%only_n_frag_jobs)
           read(input,*)DECinfo%frag_job_nr(1:DECinfo%only_n_frag_jobs)
+       case('.ONLY_PAIR_FRAG_JOBS'); DECinfo%only_pair_frag_jobs = .true.
 
           ! kappabar multiplier equation
        case('.KAPPAMAXITER'); read(input,*) DECinfo%kappaMaxIter 
@@ -950,7 +952,7 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'array_test ', DECitem%array_test
+    write(lupri,*) 'tensor_test ', DECitem%tensor_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality

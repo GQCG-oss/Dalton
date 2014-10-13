@@ -3372,13 +3372,13 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: goccEOS
+    type(tensor),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: toccEOS
+    type(tensor),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: gvirtEOS
+    type(tensor),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: tvirtEOS
+    type(tensor),intent(inout) :: tvirtEOS
     type(array4) :: goccEOS_arr4
     type(array4) :: toccEOS_arr4
     type(array4) :: gvirtEOS_arr4
@@ -3393,17 +3393,17 @@ end subroutine Get_ijba_integrals
     call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
          & gvirtEOS_arr4, tvirtEOS_arr4, dummy1, dummy2,bat,first_order_integrals)
 
-    call array_init(goccEOS, goccEOS_arr4%dims,4)
-    call array_convert(goccEOS_arr4%val,goccEOS)
+    call tensor_init(goccEOS, goccEOS_arr4%dims,4)
+    call tensor_convert(goccEOS_arr4%val,goccEOS)
     call array4_free(goccEOS_arr4)
-    call array_init(toccEOS, toccEOS_arr4%dims,4)
-    call array_convert(toccEOS_arr4%val,toccEOS)
+    call tensor_init(toccEOS, toccEOS_arr4%dims,4)
+    call tensor_convert(toccEOS_arr4%val,toccEOS)
     call array4_free(toccEOS_arr4)
-    call array_init(gvirtEOS, gvirtEOS_arr4%dims,4)
-    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call tensor_init(gvirtEOS, gvirtEOS_arr4%dims,4)
+    call tensor_convert(gvirtEOS_arr4%val,gvirtEOS)
     call array4_free(gvirtEOS_arr4)
-    call array_init(tvirtEOS,tvirtEOS_arr4%dims,4)
-    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call tensor_init(tvirtEOS,tvirtEOS_arr4%dims,4)
+    call tensor_convert(tvirtEOS_arr4%val,tvirtEOS)
     call array4_free(tvirtEOS_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy
@@ -3423,17 +3423,17 @@ end subroutine Get_ijba_integrals
     !> Atomic fragment (or pair fragment)
     type(decfrag), intent(inout) :: MyFragment
     !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: goccEOS
+    type(tensor),intent(inout) :: goccEOS
     !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: toccEOS
+    type(tensor),intent(inout) :: toccEOS
     !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: gvirtEOS
+    type(tensor),intent(inout) :: gvirtEOS
     !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: tvirtEOS
+    type(tensor),intent(inout) :: tvirtEOS
     !> Occ EOS integrals (d j | i k) in the order (d,j,i,k)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: djik
+    type(tensor),intent(inout) :: djik
     !> Virt EOS integrals (b l | a d) in the order (b,l,a,d)  [see MP2_integrals_and_amplitudes_workhorse]
-    type(array),intent(inout) :: blad
+    type(tensor),intent(inout) :: blad
     type(array4) :: goccEOS_arr4
     type(array4) :: toccEOS_arr4
     type(array4) :: gvirtEOS_arr4
@@ -3449,23 +3449,23 @@ end subroutine Get_ijba_integrals
     call MP2_integrals_and_amplitudes_workhorse(MyFragment,goccEOS_arr4, toccEOS_arr4, &
          & gvirtEOS_arr4, tvirtEOS_arr4, djik_arr4,blad_arr4,bat,first_order_integrals)
 
-    call array_init(goccEOS, goccEOS_arr4%dims,4)
-    call array_convert(goccEOS_arr4%val,goccEOS)
+    call tensor_init(goccEOS, goccEOS_arr4%dims,4)
+    call tensor_convert(goccEOS_arr4%val,goccEOS)
     call array4_free(goccEOS_arr4)
-    call array_init(toccEOS,toccEOS_arr4%dims,4)
-    call array_convert(toccEOS_arr4%val,toccEOS)
+    call tensor_init(toccEOS,toccEOS_arr4%dims,4)
+    call tensor_convert(toccEOS_arr4%val,toccEOS)
     call array4_free(toccEOS_arr4)
-    call array_init(gvirtEOS, gvirtEOS_arr4%dims,4)
-    call array_convert(gvirtEOS_arr4%val,gvirtEOS)
+    call tensor_init(gvirtEOS, gvirtEOS_arr4%dims,4)
+    call tensor_convert(gvirtEOS_arr4%val,gvirtEOS)
     call array4_free(gvirtEOS_arr4)
-    call array_init(tvirtEOS, tvirtEOS_arr4%dims,4)
-    call array_convert(tvirtEOS_arr4%val,tvirtEOS)
+    call tensor_init(tvirtEOS, tvirtEOS_arr4%dims,4)
+    call tensor_convert(tvirtEOS_arr4%val,tvirtEOS)
     call array4_free(tvirtEOS_arr4)
-    call array_init(djik, djik_arr4%dims,4)
-    call array_convert(djik_arr4%val,djik)
+    call tensor_init(djik, djik_arr4%dims,4)
+    call tensor_convert(djik_arr4%val,djik)
     call array4_free(djik_arr4)
-    call array_init(blad, blad_arr4%dims,4)
-    call array_convert(blad_arr4%val,blad)
+    call tensor_init(blad, blad_arr4%dims,4)
+    call tensor_convert(blad_arr4%val,blad)
     call array4_free(blad_arr4)
 
   end subroutine MP2_integrals_and_amplitudes_energy_and_first_order
@@ -4127,7 +4127,7 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 
 subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
    implicit none
-   type(array), intent(inout) :: iajb, t2, oof, vvf
+   type(tensor), intent(inout) :: iajb, t2, oof, vvf
    logical, intent(in) :: local
    real(realk), pointer :: o2v2(:)
    real(realk), pointer :: wrk(:)
@@ -4163,7 +4163,7 @@ subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
       call mem_alloc(wrk,iwrk)
 
       call time_start_phase( PHASE_COMM )
-      call array_gather(1.0E0_realk,iajb,0.0E0_realk,o2v2,iajb%nelms,oo=[2,4,1,3],wrk=wrk,iwrk=iwrk)
+      call tensor_gather(1.0E0_realk,iajb,0.0E0_realk,o2v2,iajb%nelms,oo=[2,4,1,3],wrk=wrk,iwrk=iwrk)
       call ass_D1to4(o2v2,elm4,[nv,nv,no,no])
       !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(no,nv,elm4,oof,vvf)
       do j = 1, no
@@ -4177,7 +4177,7 @@ subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
          enddo
       enddo
       !$OMP END PARALLEL DO
-      call array_scatter(1.0E0_realk,o2v2,0.0E0_realk,t2,t2%nelms,wrk=wrk,iwrk=iwrk)
+      call tensor_scatter(1.0E0_realk,o2v2,0.0E0_realk,t2,t2%nelms,wrk=wrk,iwrk=iwrk)
       call time_start_phase( PHASE_WORK )
 
       call mem_dealloc(o2v2)
@@ -4187,7 +4187,7 @@ end subroutine get_mp2_starting_guess
 
 subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    implicit none
-   type(array), intent(inout) :: omega2, iajb,t2,oof,vvf
+   type(tensor), intent(inout) :: omega2, iajb,t2,oof,vvf
    real(realk) :: tw,tc
    logical :: local
    integer,intent(in) :: iter
@@ -4200,7 +4200,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    integer :: ml1,fai1,l1,tl1,lai1
    integer :: ml2,fai2,l2,tl2,lai2
    integer :: fri,tri
-   character(ARR_MSG_LEN) :: msg
+   character(tensor_MSG_LEN) :: msg
    real(realk) :: nrm
    integer(kind=8) :: w3size
    integer(kind=ls_mpik) :: mode
@@ -4259,10 +4259,10 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       if( me == 0 )then
 
-         if(iter>1)call array_mv_dense2tiled( t2, .true. )
+         if(iter>1)call tensor_mv_dense2tiled( t2, .true. )
 
-         call array_gather(0.5E0_realk,iajb,0.0E0_realk,w_o2v2,iajb%nelms,oo=[2,4,1,3])
-         call array_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,t2%nelms)
+         call tensor_gather(0.5E0_realk,iajb,0.0E0_realk,w_o2v2,iajb%nelms,oo=[2,4,1,3])
+         call tensor_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,t2%nelms)
 
          call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
 
@@ -4293,8 +4293,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       !DO ALL THINGS DEPENDING ON 1
       if(lock_outside.and.traf1)then
          call time_start_phase(PHASE_COMM, at = tw)
-         call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
+         call tensor_lock_wins(t2,'s',mode)
+         call tensor_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
          call time_start_phase(PHASE_WORK, at = tc)
       endif
 
@@ -4302,10 +4302,10 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 
       ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-      !if(me==0) call array_convert(t2,w_o2v2,t2%nelms)
+      !if(me==0) call tensor_convert(t2,w_o2v2,t2%nelms)
       if(.not.lock_outside)then
          call time_start_phase(PHASE_COMM, at = tw)
-         call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
          do nod=1,nnod-1
             call mo_work_dist(nv*nv*no,fri,tri,trafi,nod)
             if(trafi)then
@@ -4329,7 +4329,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       else
          if(traf1)then
             call time_start_phase(PHASE_COMM, at = tw)
-            call arr_unlock_wins(t2)
+            call tensor_unlock_wins(t2)
             call time_start_phase(PHASE_WORK, at = tc)
          endif
       endif
@@ -4339,13 +4339,13 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
             call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
             call time_start_phase(PHASE_COMM, at = tw)
             call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-            call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+            call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
             call time_start_phase(PHASE_WORK, at = tc)
          else
-            !call arr_lock_wins(omega2,'s',mode)
+            !call tensor_lock_wins(omega2,'s',mode)
             call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2,tl1)
             call time_start_phase(PHASE_COMM, at = tw)
-            call array_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.)
+            call tensor_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.)
             call time_start_phase(PHASE_WORK, at = tc)
          endif
       endif
@@ -4354,8 +4354,8 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       !DO ALL THINGS DEPENDING ON 2
       if(lock_outside.and.traf2)then
          call time_start_phase(PHASE_COMM, at = tw)
-         call arr_lock_wins(t2,'s',mode)
-         call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
+         call tensor_lock_wins(t2,'s',mode)
+         call tensor_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
          call time_start_phase(PHASE_WORK, at = tc)
       endif
 
@@ -4363,7 +4363,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       ! F[a c] * t [c b i j] =+ Omega [a b i j]
       if(.not.lock_outside)then
          call time_start_phase(PHASE_COMM, at = tw)
-         call array_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
+         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
          call time_start_phase(PHASE_WORK, at = tc)
          do nod=1,nnod-1
             call mo_work_dist(nv*no*no,fri,tri,trafi,nod)
@@ -4389,7 +4389,7 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
       else
          if(traf2)then
             call time_start_phase(PHASE_COMM, at = tw)
-            call arr_unlock_wins(t2)
+            call tensor_unlock_wins(t2)
             call time_start_phase(PHASE_WORK, at = tc)
          endif
       endif
@@ -4400,17 +4400,17 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
             call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
             call time_start_phase(PHASE_COMM, at = tw)
             call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-            call array_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
+            call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
             call time_start_phase(PHASE_WORK, at = tc)
          else
             call time_start_phase(PHASE_COMM, at = tw)
-            call arr_unlock_wins(omega2,.true.)
-            call arr_lock_wins(omega2,'s',mode)
+            call tensor_unlock_wins(omega2,.true.)
+            call tensor_lock_wins(omega2,'s',mode)
             call time_start_phase(PHASE_WORK, at = tc)
             call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2,nv)
             call time_start_phase(PHASE_COMM, at = tw)
-            call array_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,lock_outside)
-            call arr_unlock_wins(omega2)
+            call tensor_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,lock_outside)
+            call tensor_unlock_wins(omega2)
             call time_start_phase(PHASE_IDLE, at = tc)
             call lsmpi_barrier(infpar%lg_comm)
             call time_start_phase(PHASE_WORK, at = tc)
@@ -4428,19 +4428,19 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
       if(.not.lock_outside)then
          call time_start_phase(PHASE_COMM, at = tw)
-         call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
-         call array_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-         call array_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
+         call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
+         call tensor_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+         call tensor_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
          call time_start_phase(PHASE_WORK, at = tc)
       else
          if(me==0)then
             call time_start_phase(PHASE_COMM, at = tw)
-            call arr_lock_wins(omega2,'s',mode)
-            call array_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
-            call arr_unlock_wins(omega2,.true.)
-            call arr_lock_wins(omega2,'s',mode)
-            call array_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
-            call arr_unlock_wins(omega2,.true.)
+            call tensor_lock_wins(omega2,'s',mode)
+            call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
+            call tensor_unlock_wins(omega2,.true.)
+            call tensor_lock_wins(omega2,'s',mode)
+            call tensor_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
+            call tensor_unlock_wins(omega2,.true.)
             call time_start_phase(PHASE_WORK, at = tc)
          endif
       endif
@@ -4511,7 +4511,7 @@ subroutine get_simple_parallel_mp2_residual_slave()
    use mp2_module, only: get_simple_parallel_mp2_residual
    use decmpi_module, only: get_slaves_to_simple_par_mp2_res
    implicit none
-   type(array) :: omega2,iajb,t2,oof,vvf
+   type(tensor) :: omega2,iajb,t2,oof,vvf
    integer :: iter
    call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
    call get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,.false.)

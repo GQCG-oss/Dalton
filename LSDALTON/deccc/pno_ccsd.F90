@@ -64,7 +64,7 @@ module pno_ccsd_module
      type(PNOSpaceInfo),intent(inout) :: pno_S(nspaces*(nspaces-1)/2)
      !INTERNAL VARIABLES
 #ifdef MOD_UNRELEASED
-     type(array),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
+     type(tensor),pointer :: pno_o2(:),pno_t2(:),pno_gvvvv(:)
      integer :: ns,c,nc,nc2
      integer(kind=8)     :: s1,   s2,   s3,    s4,   s5
      real(realk),pointer :: w1(:),w2(:),w3(:), w4(:),w5(:)
@@ -75,7 +75,7 @@ module pno_ccsd_module
      real(realk),pointer :: Gai(:,:), Gkj(:,:)
      integer :: i, j, a, b, i_idx, la, lg, fa, fg, xa, xg
      integer(kind=8) :: o2v2
-     character(ARR_MSG_LEN) :: msg
+     character(tensor_MSG_LEN) :: msg
      real(realk),pointer :: d(:,:), d1(:,:), d2(:,:),t(:), t22(:), t21(:), o(:),vof(:),ovf(:)
      real(realk),pointer :: Lvoov(:)
      integer, pointer :: idx(:),idx1(:),idx2(:), p_idx(:,:), p_nidx(:), oidx1(:,:),oidx2(:,:)
@@ -86,7 +86,7 @@ module pno_ccsd_module
      real(realk), pointer :: iFock(:,:), Dens(:,:)
      integer(kind=8) :: maxsize, myload
      integer :: pair,paircontribs,paircontrib(2,2),rpd
-     type(array), pointer :: sio4(:)
+     type(tensor), pointer :: sio4(:)
      logical :: master, add_contrib
      type(pno_query_info) :: query
 
@@ -728,9 +728,9 @@ module pno_ccsd_module
      do ns = 1, nspaces
 
         if(  pno_cv(ns)%allocd )then
-           call array_free( pno_t2(ns) )
-           call array_free( pno_o2(ns) )
-           call array_free( sio4(ns)   )
+           call tensor_free( pno_t2(ns) )
+           call tensor_free( pno_o2(ns) )
+           call tensor_free( sio4(ns)   )
         endif
 
      enddo
@@ -1412,7 +1412,7 @@ module pno_ccsd_module
   subroutine backtransform_omegas(pno_o2,pno_cv,o2,n,no,nv)
      implicit none
      integer,intent(in) :: n,no,nv
-     type(array), intent(in) :: pno_o2(n)
+     type(tensor), intent(in) :: pno_o2(n)
      type(PNOSpaceInfo),intent(in) :: pno_cv(n)
      real(realk), intent(inout) :: o2(nv,no,nv,no)
      integer :: ns,pno,pnv,i,j,a,b, rpd
@@ -1821,7 +1821,7 @@ module pno_ccsd_module
      implicit none
      integer, intent(in) :: n,no
      type(PNOSpaceInfo),intent(in) :: cv(n)
-     type(array),intent(inout) :: o2(n),sio4(n)
+     type(tensor),intent(inout) :: o2(n),sio4(n)
      integer :: nn, pnv,pno,rpd
 
      do nn=1,n
@@ -1832,17 +1832,17 @@ module pno_ccsd_module
 
         if(cv(nn)%allocd)then
 
-           call array_init(o2(nn), [pnv,rpd,pnv,rpd],4)
-           call array_zero(o2(nn))
+           call tensor_init(o2(nn), [pnv,rpd,pnv,rpd],4)
+           call tensor_zero(o2(nn))
 
 
            if( cv(nn)%PS )then
-              call array_init(sio4(nn),[no,no],2)
+              call tensor_init(sio4(nn),[no,no],2)
            else
-              call array_init(sio4(nn),[no,no,pno,pno],4)
+              call tensor_init(sio4(nn),[no,no,pno,pno],4)
            endif
 
-           call array_zero(sio4(nn))
+           call tensor_zero(sio4(nn))
 
         endif
      enddo
@@ -1853,7 +1853,7 @@ module pno_ccsd_module
      integer, intent(in) :: n,no,nv
      real(realk),intent(in) :: t2(:,:,:,:)
      type(PNOSpaceInfo), intent(in) :: cv(n)
-     type(array), intent(inout) :: pno_t2(n)
+     type(tensor), intent(inout) :: pno_t2(n)
      real(realk), pointer :: tmp1(:),tmp2(:)
      real(realk), pointer :: w1(:,:,:,:)
      integer :: nn, pnv, pno, a, b, i, j, rpd
@@ -1871,7 +1871,7 @@ module pno_ccsd_module
 
         if(cv(nn)%allocd)then
 
-           call array_init(pno_t2(nn), [pnv,rpd,pnv,rpd],4)
+           call tensor_init(pno_t2(nn), [pnv,rpd,pnv,rpd],4)
 
            call ass_D1to4(tmp1,w1,[nv,rpd,nv,rpd])
 
@@ -2025,7 +2025,7 @@ module pno_ccsd_module
      type(lsitem), intent(inout) :: mylsitem
      integer, intent(in) :: no,nv,nb,maxocc,maxvirt,nspaces
      type(int_batch),intent(inout) :: a_batch, g_batch
-     type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
+     type(tensor), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      type(pno_query_info),intent(inout) :: query
      logical :: converged
@@ -2193,7 +2193,7 @@ module pno_ccsd_module
      real(realk), target, intent(inout)  :: w1(:),w2(:),w3(:), w4(:),w5(:)
      integer, intent(in) :: no, nv, nb, maxocc,maxvirt,nspaces
      type(int_batch),intent(in) :: a_batch, g_batch
-     type(array), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
+     type(tensor), intent(inout) :: sio4(nspaces), pno_t2(nspaces),pno_o2(nspaces)
      type(PNOSpaceInfo),intent(inout) :: pno_cv(nspaces)
      real(realk), intent(in) :: xo(:,:), xv(:,:), yo(:,:), yv(:,:)
      real(realk), intent(inout) :: gooov(:), goovv(:),govov(:),Lvoov(:),Gai(:,:)
@@ -3030,7 +3030,7 @@ module pno_ccsd_module
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_t2(nspaces),sio4(nspaces)
+     type(tensor), intent(in) :: pno_t2(nspaces),sio4(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
      real(realk),intent(in) :: govov(:),vvf(:,:)
@@ -3393,7 +3393,7 @@ module pno_ccsd_module
      implicit none
      integer, intent(in) :: no,ns,nspaces
      type(PNOSpaceInfo), intent(inout) :: pno_cv(nspaces),pno_S(nspaces*(nspaces-1)/2)
-     type(array), intent(in) :: pno_t2(nspaces)
+     type(tensor), intent(in) :: pno_t2(nspaces)
      real(realk),pointer,intent(inout) :: o2_space(:)
      real(realk),pointer,intent(inout) :: w1(:),w2(:),w3(:),w4(:),w5(:)
      real(realk),intent(in) :: goovv(:),govov(:),Lvoov(:),oof(:,:)
@@ -3742,7 +3742,7 @@ module pno_ccsd_module
                  call ass_D1to4( w4, p4, [rpd,pnv,pnv1,rpd1] )
 
 
-                 !FIXME: introduce the array_reorder_3/2d
+                 !FIXME: introduce the tensor_reorder_3/2d
                  if( PS1 )then
 
                     do c=1,pnv1
