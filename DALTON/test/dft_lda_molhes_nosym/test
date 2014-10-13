@@ -30,7 +30,7 @@ f.add(from_string = 'Dipole moment gradient (au)',
 # Vibrational Frequencies and IR Intensities
 f.add(from_string = 'Vibrational Frequencies and IR Intensities',
       num_lines    = 30,
-      mask = [3,5],
+      mask = [2,4],
       abs_tolerance = 1.0e-1)
 
 # Rotational constant
