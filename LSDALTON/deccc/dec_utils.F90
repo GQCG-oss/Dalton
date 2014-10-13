@@ -5076,11 +5076,11 @@ end function max_batch_dimension
   subroutine get_combined_SingleDouble_amplitudes_newarr(t1,t2,u)
      implicit none
      !> Singles amplitudes t1(a,i)
-     type(array),intent(in) :: t1
+     type(tensor),intent(in) :: t1
      !> Doubles amplitudes t2(a,i,b,j)
-     type(array),intent(in) :: t2
+     type(tensor),intent(in) :: t2
      !> Combined single+double amplitudes
-     type(array),intent(inout) :: u
+     type(tensor),intent(inout) :: u
      integer :: i,j,a,b,nocc,nvirt
 
      ! Number of occupied/virtual orbitals assuming index ordering given above
@@ -5089,7 +5089,7 @@ end function max_batch_dimension
 
      if(t2%itype == DENSE)then
         ! Init combined amplitudes
-        call array_init(u,t2%dims,4)
+        call tensor_init(u,t2%dims,4)
 
         if(DECinfo%use_singles)then
            do j=1,nocc
@@ -5174,9 +5174,9 @@ end function max_batch_dimension
     !> Atomic fragment
     type(decfrag),intent(inout) :: MyFragment
     !> Original array
-    type(array),intent(in) :: A
+    type(tensor),intent(in) :: A
     !> New array where core indices for the last index are removed
-    type(array),intent(inout) :: B
+    type(tensor),intent(inout) :: B
     integer :: dims(4), i,j,k,l
 
     ! Sanity check 1: Frozen core.
@@ -5197,7 +5197,7 @@ end function max_batch_dimension
     dims(4) = MyFragment%noccAOS
 
     if( A%itype == DENSE )then
-       call array_init(B, dims,4) 
+       call tensor_init(B, dims,4) 
 
        ! Copy elements from A to B, but only valence for last index
        do l=1,B%dims(4)

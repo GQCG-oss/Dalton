@@ -581,7 +581,7 @@ contains
        ! Read overlap matrix from file
 !       write(DECinfo%output,*) 'Reading carmom matrices from file carmommatrix...'
 !       write(DECinfo%output,*)
-!       call dec_read_mat_array_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
+!       call dec_read_mat_tensor_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
 !    else
        ! Calculate carmom matrix from scratch
        write(DECinfo%output,*) 'Calculating carmom matrix for DEC calculation...'

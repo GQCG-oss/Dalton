@@ -276,8 +276,8 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(array) :: t1, ccsdpt_t1, m1
-    type(array) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(tensor) :: t1, ccsdpt_t1, m1
+    type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -324,14 +324,14 @@ contains
 
        ! Extract EOS indices for integrals
        ! *********************************
-       call array_extract_eos_indices(VOVO,MyFragment,Arr_occEOS=VOVOocc,Arr_virtEOS=VOVOvirt)
-!       call array_free(VOVO)
+       call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
+!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
 !          call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
-          call array_free(m2)
-          call array_free(m1)
+          call tensor_free(m2)
+          call tensor_free(m1)
        endif
 #endif
 
@@ -342,9 +342,9 @@ contains
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array_extract_eos_indices(u,MyFragment,Arr_occEOS=t2occ,Arr_virtEOS=t2virt)
+       call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
-       call array_free(u)
+       call tensor_free(u)
 
        call dec_fragment_time_get(times_ccsd)
 
@@ -364,20 +364,20 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
          if (abc) then
 
-            call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-            call array_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
-            call array_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
+            call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+            call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
 
          else
 
-            call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-            call array_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-            call array_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+            call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+            call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
 
          endif
@@ -393,8 +393,8 @@ contains
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
 
           ! release ccsd(t) singles and doubles amplitudes
-          call array_free(ccsdpt_t1)
-          call array_free(ccsdpt_t2)
+          call tensor_free(ccsdpt_t1)
+          call tensor_free(ccsdpt_t2)
 
           call dec_fragment_time_get(times_pt)
 
@@ -402,12 +402,12 @@ contains
 #endif 
 
        ! free vovo integrals
-       call array_free(VOVO)
+       call tensor_free(VOVO)
 
        if(DECinfo%use_singles)then
-          call array_free(t1)
+          call tensor_free(t1)
        endif
-       call array_free(t2)
+       call tensor_free(t2)
 
 
     case default
@@ -433,7 +433,7 @@ contains
     if(DECinfo%frozencore .and. DECinfo%first_order) then
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-       call array_free(VOVOvirtTMP)
+       call tensor_free(VOVOvirtTMP)
     else ! use VOVOvirt as it is
        call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
     end if
@@ -469,8 +469,8 @@ contains
 #endif
        if(DECinfo%ccmodel == MODEL_MP2)then
           call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-          call array_free(VOOO)
-          call array_free(VOVV)
+          call tensor_free(VOOO)
+          call tensor_free(VOVV)
        end if
     end if
 
@@ -481,10 +481,10 @@ contains
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(t2occ)
-    call array_free(VOVOvirt)
-    call array_free(t2virt)
+    call tensor_free(VOVOocc)
+    call tensor_free(t2occ)
+    call tensor_free(VOVOvirt)
+    call tensor_free(t2virt)
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
     !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
@@ -506,15 +506,15 @@ contains
 
     implicit none
     !> Two-electron integrals (a i | b j), only occ orbitals on central atom, virt AOS orbitals
-    type(array), intent(in) :: gocc
+    type(tensor), intent(in) :: gocc
     !> Two-electron integrals (a i | b j), only virt orbitals on central atom, occ AOS orbitals
-    type(array), intent(in) :: gvirt
+    type(tensor), intent(in) :: gvirt
     !> amplitudes, only occ orbitals on central atom, virt AOS orbitals
     !  (combine singles and doubles if singles are present)
-    type(array), intent(in) :: t2occ
+    type(tensor), intent(in) :: t2occ
     !> amplitudes, only virt orbitals on central atom, occ AOS orbitals
     !  (combine singles and doubles if singles are present)
-    type(array), intent(in) :: t2virt
+    type(tensor), intent(in) :: t2virt
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
@@ -950,8 +950,8 @@ contains
     type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(array) :: t1, ccsdpt_t1,m1,m2
-    type(array) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
+    type(tensor) :: t1, ccsdpt_t1,m1,m2
+    type(tensor) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -1000,14 +1000,14 @@ contains
 
        ! Extract EOS indices for integrals 
        ! *********************************
-       call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
-!       call array_free(VOVO)
+       call tensor_extract_eos_indices(VOVO, PairFragment, tensor_occEOS=VOVOocc, tensor_virtEOS=VOVOvirt)
+!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
           !construct RHS for pairs
-          call array_free(m2)
-          call array_free(m1)
+          call tensor_free(m2)
+          call tensor_free(m1)
        endif
 #endif
 
@@ -1018,9 +1018,9 @@ contains
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array_extract_eos_indices(u, PairFragment,Arr_occEOS=t2occ, Arr_virtEOS=t2virt)
+       call tensor_extract_eos_indices(u, PairFragment,tensor_occEOS=t2occ, tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
-       call array_free(u)
+       call tensor_free(u)
 
        call dec_fragment_time_get(times_ccsd)
 
@@ -1048,7 +1048,7 @@ contains
        call remove_core_orbitals_from_last_index(PairFragment,VOVOvirt,VOVOvirtTMP)
        call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
             & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
-       call array_free(VOVOvirtTMP)
+       call tensor_free(VOVOvirtTMP)
     else ! use VOVOvirt as it is
        call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
             & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
@@ -1076,8 +1076,8 @@ contains
     if(DECinfo%first_order) then
        call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,PairFragment,&
             & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-       call array_free(VOOO)
-       call array_free(VOVV)
+       call tensor_free(VOOO)
+       call tensor_free(VOVV)
     end if
 
 #ifdef MOD_UNRELEASED
@@ -1097,20 +1097,20 @@ contains
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-          call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+          call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+          call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-          call array_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
-          call array_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
+          call tensor_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
+          call tensor_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
                &PairFragment%nunoccAOS,PairFragment%nunoccAOS],4)
 
        else
 
-          call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-          call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+          call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-          call array_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
-          call array_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+          call tensor_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
+          call tensor_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
                &PairFragment%noccAOS,PairFragment%noccAOS],4)
 
        endif
@@ -1125,8 +1125,8 @@ contains
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
-       call array_free(ccsdpt_t1)
-       call array_free(ccsdpt_t2)
+       call tensor_free(ccsdpt_t1)
+       call tensor_free(ccsdpt_t2)
 
        call dec_fragment_time_get(times_pt)
 
@@ -1137,13 +1137,13 @@ contains
     if (PairFragment%CCModel == MODEL_RPA  .or. &
        &PairFragment%CCModel == MODEL_CC2  .or. &
        &PairFragment%CCModel == MODEL_CCSD .or. &
-       &PairFragment%CCModel == MODEL_CCSDpT ) call array_free(VOVO)
+       &PairFragment%CCModel == MODEL_CCSDpT ) call tensor_free(VOVO)
 
     if( PairFragment%ccmodel /= MODEL_MP2 ) then
        if(DECinfo%use_singles)then
-          call array_free(t1)
+          call tensor_free(t1)
        endif
-       call array_free(t2)
+       call tensor_free(t2)
        call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     end if
 
@@ -1152,10 +1152,10 @@ contains
     endif
 
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(t2occ)
-    call array_free(t2virt)
-    call array_free(VOVOvirt)
+    call tensor_free(VOVOocc)
+    call tensor_free(t2occ)
+    call tensor_free(t2virt)
+    call tensor_free(VOVOvirt)
 
     !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
@@ -1183,13 +1183,13 @@ contains
 
      implicit none
      !> Two-electron integrals (a i | b j), only occ orbitals on central atom, virt AOS orbitals
-     type(array), intent(in) :: gocc
+     type(tensor), intent(in) :: gocc
      !> Two-electron integrals (a i | b j), only virt orbitals on central atom, occ AOS orbitals
-     type(array), intent(in) :: gvirt
+     type(tensor), intent(in) :: gvirt
      !> MP2 amplitudes, only occ orbitals on central atom, virt AOS orbitals
-     type(array), intent(in) :: t2occ
+     type(tensor), intent(in) :: t2occ
      !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
-     type(array), intent(in) :: t2virt
+     type(tensor), intent(in) :: t2virt
      !> Fragment 1 in the pair fragment
      type(decfrag),intent(inout) :: Fragment1
      !> Fragment 2 in the pair fragment

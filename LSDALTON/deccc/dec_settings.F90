@@ -75,7 +75,7 @@ contains
 #endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
-    DECinfo%array_test           = .false.
+    DECinfo%tensor_test           = .false.
     DECinfo%reorder_test         = .false.
     DECinfo%CCSDno_restart       = .false.
     DECinfo%CCSDnosaferun        = .false.
@@ -460,7 +460,7 @@ contains
           ! so on purpose there is no documentation for those in the LSDALTON manual.
 
        !general testing
-       case('.TESTARRAY'); DECinfo%array_test=.true.
+       case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
     
        !CCSD testing
@@ -949,7 +949,7 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'array_test ', DECitem%array_test
+    write(lupri,*) 'tensor_test ', DECitem%tensor_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
