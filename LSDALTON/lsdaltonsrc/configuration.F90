@@ -1088,8 +1088,14 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
         CASE('.TYPE_ARRAY_DEBUG');      config%type_array_debug      = .true.
 #ifdef VAR_MPI
-        CASE('.MAX_MPI_MSG_SIZE_NEL');           READ(LUCMD,*) SPLIT_MPI_MSG 
-        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+        CASE('.MAX_MPI_MSG_SIZE_NEL');
+           READ(LUCMD,*) SPLIT_MPI_MSG 
+           call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
+           READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+           call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
 #endif
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&

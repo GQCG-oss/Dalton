@@ -217,6 +217,11 @@ subroutine lsmpi_slave(comm)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
 
+      case(SET_SPLIT_MPI_MSG);
+         call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+      case(SET_MAX_SIZE_ONE_SIDED);
+         call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
+
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########
          !##########################################
