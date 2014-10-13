@@ -14,7 +14,7 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
-f.add(from_string = 'CCSD occupied single energies',
+f.add(from_string = 'Print single and pair fragment energies',
       to_string   = 'CC Memory summary',
       abs_tolerance = 1.0e-8)
 

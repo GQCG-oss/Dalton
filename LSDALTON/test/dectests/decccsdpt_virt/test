@@ -14,10 +14,7 @@ f.add(string = 'Final HF energy',
 f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
-f.add(string = 'CCSD virtual  correlation energy :',
-      rel_tolerance = 1.0e-6)
-
-f.add(from_string = ' (T) virtual  correlation energy :',
+f.add(from_string = 'Print single and pair fragment energies',
       to_string   = 'Total CCSD(T) energy:',
       abs_tolerance = 1.0e-6)
 
