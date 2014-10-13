@@ -1917,7 +1917,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   real(realk)            :: RCOND
   integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
   real(realk) :: tcpuTOT,twallTOT
-  real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end
+  real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,MemEstimate
   integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc
   logical :: useAlphaCD5,useAlphaCD6
   integer(kind=ls_mpik)  :: request5,request6
@@ -1949,6 +1949,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   nvirtEOS = MyFragment%nunoccEOS  ! virtual EOS
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
+  call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+!#ifndef VAR_MPI
+!  do not use the Calpha or the alphaCD as a vector at any point
+!  call Test_if_64bit_integer_required(nBasisAux,nocc,nvirt)
+!#endif
 
   call Test_if_64bit_integer_required(nvirt,noccEOS,nvirt,noccEOS)
   call Test_if_64bit_integer_required(nvirtEOS,nocc,nvirtEOS,nocc)
@@ -1963,7 +1968,13 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Memory Statistics at the beginning of the subroutine'
      write(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Total memory:    ', DECinfo%memory
      WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Memory Available:', MemInGBCollected
-!     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Estimated memory usage',
+
+#ifdef VAR_MPI
+     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) + 2*(nbasisAux*nvirt*nocc)/infpar%lg_nodtot)*mem_realsize
+#else
+     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) + 2*nbasisAux*nvirt*nocc)*mem_realsize
+#endif
+     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Estimated memory usage',MemEstimate
      call stats_globalmem(DECinfo%output)
   endif
 
@@ -2038,11 +2049,6 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt)
   !             : UoccEOST(nocc,noccEOS),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt) 
   !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + nbasis*(nvirt+nocc)
-  call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
-!#ifndef VAR_MPI
-!  do not use the Calpha or the alphaCD as a vector at any point
-!  call Test_if_64bit_integer_required(nBasisAux,nocc,nvirt)
-!#endif
 
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
@@ -2427,7 +2433,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   endif
 
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(toccEOS%elm4,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(toccEOS%elm1,nvirt*noccEOS*nvirt*noccEOS,infpar%master,infpar%lg_comm)
      IF(.NOT.Master )call tensor_free(toccEOS)
   ENDIF
 #endif
@@ -2461,7 +2467,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(tvirtEOS%elm1,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(tvirtEOS%elm1,nvirtEOS*nocc*nvirtEOS*nocc,infpar%master,infpar%lg_comm)
      IF(.NOT.Master )call tensor_free(tvirtEOS)
   ENDIF
 #endif
@@ -2512,7 +2518,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(goccEOS%elm1,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(goccEOS%elm1,nvirt*noccEOS*nvirt*noccEOS,infpar%master,infpar%lg_comm)
      IF(.NOT.Master )call tensor_free(goccEOS)
   ENDIF
 #endif
@@ -2563,7 +2569,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(gvirtEOS%elm1,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
+     call lsmpi_reduction(gvirtEOS%elm1,nvirtEOS*nocc*nvirtEOS*nocc,infpar%master,infpar%lg_comm)
      IF(.NOT.Master )call tensor_free(gvirtEOS)
   ENDIF
 #endif
@@ -2571,7 +2577,7 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
   call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
   tmpidiff = twmpi2-twmpi1
 #ifdef VAR_MPI
-  if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,i12,g18.8)') 'RANK, TIME(s) ',infpar%mynum,tmpidiff
+  if(DECinfo%PL>0) write(DECinfo%output,'(a,i12,g18.8)') 'RANK, TIME(s) ',infpar%mynum,tmpidiff
   if(master) write(DECinfo%output,'(1X,a,g18.8)') 'TIME INTEGRALLOOP(s) = ', tmpidiff
 #endif
   if(.not. master) then
@@ -4494,6 +4500,7 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   ! *****************************************
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
   use mp2_module,only: RIMP2_integrals_and_amplitudes
+  use tensor_type_def_module, only: tensor
   implicit none
   !> Fragment information
   type(decfrag) :: MyFragment
