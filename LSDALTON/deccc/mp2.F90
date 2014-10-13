@@ -1860,76 +1860,26 @@ end if
 
 end subroutine MP2_integrals_and_amplitudes_workhorse
 
-
 !> \brief Calculate EOS integrals and EOS amplitudes for RI-MP2 calculation -
-!> both for occupied and virtual partitioning schemes.
-!> See index convention in RIMP2_integrals_and_amplitudes_workhorse.
-!> \author Thomas Kjaergaard
-!> \date November 2014
-subroutine RIMP2_integrals_and_amplitudes(MyFragment,goccEOS, toccEOS,gvirtEOS, tvirtEOS)
-  
-  implicit none
-  
-  !> Atomic fragment (or pair fragment)
-  type(decfrag), intent(inout) :: MyFragment
-  !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array),intent(inout) :: goccEOS
-  !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array),intent(inout) :: toccEOS
-  !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array),intent(inout) :: gvirtEOS
-  !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array),intent(inout) :: tvirtEOS
-  type(array4) :: goccEOS_arr4
-  type(array4) :: toccEOS_arr4
-  type(array4) :: gvirtEOS_arr4
-  type(array4) :: tvirtEOS_arr4
-  type(array4) :: dummy1,dummy2
-  type(mp2_batch_construction) :: bat
-  logical :: first_order_integrals
-  
-  ! Calculate integrals and amplitudes
-  call RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
-       & goccEOS_arr4,toccEOS_arr4,gvirtEOS_arr4,tvirtEOS_arr4)
-
-  call array_init(goccEOS, goccEOS_arr4%dims,4)
-  call array_convert(goccEOS_arr4%val,goccEOS)
-  call array4_free(goccEOS_arr4)
-  call array_init(toccEOS, toccEOS_arr4%dims,4)
-  call array_convert(toccEOS_arr4%val,toccEOS)
-  call array4_free(toccEOS_arr4)
-  call array_init(gvirtEOS, gvirtEOS_arr4%dims,4)
-  call array_convert(gvirtEOS_arr4%val,gvirtEOS)
-  call array4_free(gvirtEOS_arr4)
-  call array_init(tvirtEOS,tvirtEOS_arr4%dims,4)
-  call array_convert(tvirtEOS_arr4%val,tvirtEOS)
-  call array4_free(tvirtEOS_arr4)
-
-end subroutine RIMP2_integrals_and_amplitudes
-
-!TEST What happens when 1 or some (MynbasisAuxMPI.EQ.0)
-
-!> \brief Calculating MP2 Energy using RI (resolution of identity) RIMP2
 !> both for occupied and virtual partitioning schemes.
 !> \author Thomas Kjaergaard
 !> \date Marts 2014
-
-! Memory Usage 
-! nAux distribution better - for better load balancing - split atoms
-
-subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
+subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      & goccEOS, toccEOS,gvirtEOS, tvirtEOS) 
   implicit none
+!FIXME : Memory Usage RIMP2MEM, 
+!FIXME : nAux distribution better - for better load balancing - split atoms
+
   !> Atomic fragment (or pair fragment)
   type(decfrag), intent(inout) :: MyFragment
   !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array4),intent(inout) :: goccEOS
+  type(tensor),intent(inout) :: goccEOS
   !> Amplitudes for occ EOS in the order (d,j,c,i) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array4),intent(inout) :: toccEOS
+  type(tensor),intent(inout) :: toccEOS
   !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array4),intent(inout) :: gvirtEOS
+  type(tensor),intent(inout) :: gvirtEOS
   !> Amplitudes for virt EOS in the order (b,l,a,k) [see MP2_integrals_and_amplitudes_workhorse]
-  type(array4),intent(inout) :: tvirtEOS
+  type(tensor),intent(inout) :: tvirtEOS
   !local variables
   type(mp2_batch_construction) :: bat
   type(array2) :: CDIAGocc, CDIAGvirt, Uocc, Uvirt
@@ -1953,7 +1903,7 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
   real(realk) :: deltaEPS,goccAIBJ,goccBIAJ,Gtmp,Ttmp,Eocc,TMP,Etmp,twmpi2
   real(realk) :: gmocont,Gtmp1,Gtmp2,Eocc2,TMP1,flops,tmpidiff,EnergyMPI(2)
   real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2,tcmpi1,tcmpi2,twmpi1
-  real(realk) :: Evirt,Evirt2,dummy(2)
+  real(realk) :: Evirt,Evirt2,dummy(2),MemInGBCollected
   integer(kind=long) :: maxsize
   Integer :: iAtomA,nBastLocA,startRegA,endRegA,nAuxA,startAuxA,endAuxA
   integer :: MynAtomsMPI,startA2,StartA,B,I,startB2,iAtomB,StartB,node,myOriginalRank
@@ -2000,9 +1950,22 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
   nocctot = MyFragment%nocctot     ! total occ: core+valence (identical to nocc without frozen core)
   ncore = MyFragment%ncore         ! number of core orbitals
 
+  call Test_if_64bit_integer_required(nvirt,noccEOS,nvirt,noccEOS)
+  call Test_if_64bit_integer_required(nvirtEOS,nocc,nvirtEOS,nocc)
   ! For frozen core energy calculation, we never need core orbitals
   ! (but we do if first order integrals are required)
   if(DECinfo%frozencore) nocctot = nocc
+
+  if(master.AND.DECinfo%PL>0)THEN
+     MemInGBCollected = 0.0E0_realk
+     call get_currently_available_memory(MemInGBCollected)
+     WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: RIMP2_integrals_and_amplitudes: Internal memory bookkeeping'
+     WRITE(DECinfo%output,'(1X,A)')'RIMP2MEM: Memory Statistics at the beginning of the subroutine'
+     write(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Total memory:    ', DECinfo%memory
+     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Memory Available:', MemInGBCollected
+!     WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Estimated memory usage',
+     call stats_globalmem(DECinfo%output)
+  endif
 
   ! *************************************
   ! Get arrays for transforming integrals: Cocc,Cvirt,UoccEOST,UvirtT,UvirtEOST,UoccT
@@ -2076,6 +2039,11 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
   !             : UoccEOST(nocc,noccEOS),Cocc(nbasis,nocc),Cvirt(nbasis,nvirt) 
   !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + nbasis*(nvirt+nocc)
   call getMolecularDimensions(MyFragment%mylsitem%SETTING%MOLECULE(1)%p,nAtoms,nBasis2,nBasisAux)
+!#ifndef VAR_MPI
+!  do not use the Calpha or the alphaCD as a vector at any point
+!  call Test_if_64bit_integer_required(nBasisAux,nocc,nvirt)
+!#endif
+
   ! *************************************************************
   ! *                    Start up MPI slaves                    *
   ! *************************************************************
@@ -2272,6 +2240,7 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
   !=====================================================================================
 
   if(CollaborateWithSlaves) then         
+#ifdef VAR_MPI
      IF(MynbasisAuxMPI.GT.0)THEN 
         !consider 
         !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
@@ -2334,14 +2303,12 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
            COUNT = OriginalRanknbasisAuxMPI*nocc*nvirt
 
            MessageRecieved = .FALSE.
-#ifdef VAR_MPI
            IF(useAlphaCD5)THEN
               call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
            ELSEIF(useAlphaCD6)THEN
               call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,infpar%lg_comm,status,ierr)
            ENDIF
 !           call MPI_Request_free(request,ierr) 
-#endif
            IF(MynbasisAuxMPI.GT.0)THEN
               !Step 2: Obtain part of Calpha from this contribution
               IF(useAlphaCD5)THEN
@@ -2356,7 +2323,6 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
 
            ENDIF
            !Step 3: MPI send the recieved alphaCD to 'Sender' 
-#ifdef VAR_MPI
            IF(node.NE.numnodes-1)THEN
 
 !CHANGE TO ISEND AND AD MPI_WAIT like the backup code ! Before alphaCD5 can be deallocated it must have been 
@@ -2373,7 +2339,6 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
                  CurrentWait(nAwaitDealloc) = 6
               ENDIF
            ELSE
-#endif
               IF(useAlphaCD5)THEN
                  call mem_dealloc(AlphaCD5)
               ELSEIF(useAlphaCD6)THEN
@@ -2395,6 +2360,7 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      !             : AlphaCD3(MynbasisAuxMPI,nvirt,nocc),Calpha(MynbasisAuxMPI,nvirt,nocc) 
      !               (nocc+noccEOS)*nocc + nvirt*(nvirtEOS+nvirt) + 2*MynbasisAuxMPI*nvirt*nocc
 
+#endif
   else
 !     !  Make Choleksy-factorization (OpenMP hopefully)
 !     call DPOTRF('U',nbasisaux,AlphaBeta_inv,nbasisaux,INFO)
@@ -2426,7 +2392,7 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      call mem_alloc(tocc,nvirt,nvirt,noccEOS,noccEOS)
      !Calculate and partial transform to local basis - transform occupied indices
      call RIMP2_calc_tocc(nvirt,nocc,noccEOS,NBA,alphaCD3,Calpha,EVocc,EVvirt,tocc,UoccEOST)
-     toccEOS=array4_init(dimocc)
+     call tensor_ainit(toccEOS,dimocc,4)
 
      !memory usage : UoccT(nocc,nocc), UvirtEOST(nvirt,nvirtEOS),UvirtT(nvirt,nvirt),UoccEOST(nocc,noccEOS)
      !             : AlphaCD3(MynbasisAuxMPI,nvirt,nocc),Calpha(MynbasisAuxMPI,nvirt,nocc)
@@ -2435,14 +2401,15 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      !               2*nvirt*nvirt*noccEOS*noccEOS
 
      !transform to local basis - transform virtual indices
-     call RIMP2_calc_tocc2(nvirt,noccEOS,NBA,tocc,UvirtT,toccEOS%val)
+     call RIMP2_calc_tocc2(nvirt,noccEOS,NBA,tocc,UvirtT,toccEOS%elm1)
      call mem_dealloc(tocc)
   ELSE
-     toccEOS=array4_init(dimocc)
-     call ls_dzero(toccEOS%val,size(toccEOS%val))
+     call tensor_ainit(toccEOS,dimocc,4)
+     call ls_dzero(toccEOS%elm1,size(toccEOS%elm1))
   ENDIF
 
 
+#ifdef VAR_MPI
   if(CollaborateWithSlaves) then
      IF(nAwaitDealloc.NE.0)THEN
         do iAwaitDealloc=1,nAwaitDealloc
@@ -2459,11 +2426,9 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      ENDIF
   endif
 
-#ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call Test_if_64bit_integer_required(nvirt,noccEOS,nvirt,noccEOS)
-     call lsmpi_reduction(toccEOS%val,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
-     IF(.NOT.Master )call array4_free(toccEOS)
+     call lsmpi_reduction(toccEOS%elm4,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
+     IF(.NOT.Master )call tensor_free(toccEOS)
   ENDIF
 #endif
 
@@ -2485,20 +2450,19 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      !               2*nvirtEOS*nvirtEOS*nocc*nocc
 
      !transform to local basis - transform virtual indices
-     tvirtEOS=array4_init(dimvirt)
-     call RIMP2_calc_tvirt2(nvirtEOS,nocc,NBA,tvirt,UoccT,tvirtEOS%val)
+     call tensor_ainit(tvirtEOS,dimvirt,4)
+     call RIMP2_calc_tvirt2(nvirtEOS,nocc,NBA,tvirt,UoccT,tvirtEOS%elm1)
      call mem_dealloc(tvirt)
   ELSE
-     tvirtEOS=array4_init(dimvirt)
+     call tensor_ainit(tvirtEOS,dimvirt,4)
      call mem_dealloc(EVocc)
      call mem_dealloc(EVvirt)
-     call ls_dzero(tvirtEOS%val,size(toccEOS%val))
+     call ls_dzero(tvirtEOS%elm1,size(toccEOS%elm1))
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call Test_if_64bit_integer_required(nvirt,noccEOS,nvirt,noccEOS)
-     call lsmpi_reduction(tvirtEOS%val,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
-     IF(.NOT.Master )call array4_free(tvirtEOS)
+     call lsmpi_reduction(tvirtEOS%elm1,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
+     IF(.NOT.Master )call tensor_free(tvirtEOS)
   ENDIF
 #endif
 
@@ -2536,20 +2500,20 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      call mem_dealloc(Calpha2)
      call mem_dealloc(UvirtT)
      
-     goccEOS=array4_init(dimocc)
-     call RIMP2_calc_gocc(nvirt,noccEOS,NBA,alphaCD5,Calpha3,goccEOS%val)
+     call tensor_ainit(goccEOS,dimocc,4)
+     call RIMP2_calc_gocc(nvirt,noccEOS,NBA,alphaCD5,Calpha3,goccEOS%elm1)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
   ELSE
      call mem_dealloc(UoccEOST)
      call mem_dealloc(UvirtT)
-     goccEOS=array4_init(dimocc)
-     call ls_dzero(goccEOS%val,size(toccEOS%val))
+     call tensor_ainit(goccEOS,dimocc,4)
+     call ls_dzero(goccEOS%elm1,size(toccEOS%elm1))
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(goccEOS%val,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
-     IF(.NOT.Master )call array4_free(goccEOS)
+     call lsmpi_reduction(goccEOS%elm1,nvirt,noccEOS,nvirt,noccEOS,infpar%master,infpar%lg_comm)
+     IF(.NOT.Master )call tensor_free(goccEOS)
   ENDIF
 #endif
 
@@ -2587,20 +2551,20 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      call mem_dealloc(UvirtEOST)
      call mem_dealloc(Calpha2)
 
-     gvirtEOS=array4_init(dimvirt)
-     call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,alphaCD5,Calpha3,gvirtEOS%val)
+     call tensor_ainit(gvirtEOS,dimvirt,4)
+     call RIMP2_calc_gvirt(nvirtEOS,nocc,NBA,alphaCD5,Calpha3,gvirtEOS%elm1)
      call mem_dealloc(Calpha3)
      call mem_dealloc(alphaCD5)
   ELSE
      call mem_dealloc(UvirtEOST)
      call mem_dealloc(UoccT)
-     gvirtEOS=array4_init(dimvirt)
-     call ls_dzero(gvirtEOS%val,size(toccEOS%val))
+     call tensor_ainit(gvirtEOS,dimvirt,4)
+     call ls_dzero(gvirtEOS%elm1,size(toccEOS%elm1))
   ENDIF
 #ifdef VAR_MPI
   IF(CollaborateWithSlaves) then         
-     call lsmpi_reduction(gvirtEOS%val,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
-     IF(.NOT.Master )call array4_free(gvirtEOS)
+     call lsmpi_reduction(gvirtEOS%elm1,nvirtEOS,nocc,nvirtEOS,nocc,infpar%master,infpar%lg_comm)
+     IF(.NOT.Master )call tensor_free(gvirtEOS)
   ENDIF
 #endif
 
@@ -2650,7 +2614,7 @@ subroutine RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
      call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
   end if
 
-end subroutine RIMP2_integrals_and_amplitudes_workhorse
+end subroutine RIMP2_integrals_and_amplitudes
 
 !alphaCD(NBA,nvirt,nocc) is in the diagonal basis 
 subroutine RIMP2_calc_tocc(nvirt,nocc,noccEOS,NBA,alphaCD3,Calpha,EVocc,EVvirt,tocc,UoccEOST)
@@ -4529,7 +4493,7 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
-  use mp2_module,only: RIMP2_integrals_and_amplitudes_workhorse
+  use mp2_module,only: RIMP2_integrals_and_amplitudes
   implicit none
   !> Fragment information
   type(decfrag) :: MyFragment
@@ -4538,13 +4502,13 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   !> Calculate intgrals for first order MP2 properties?
   logical :: first_order_integrals
   !> Integrals for occ EOS: (d j|c i) in the order (d,j,c,i) [see notation inside]
-  type(array4) :: goccEOS
+  type(tensor) :: goccEOS
   !> Amplitudes for occ EOS in the order (d,j,c,i) [see notation inside]
-  type(array4) :: toccEOS
+  type(tensor) :: toccEOS
   !> Integrals for virt EOS: (b l|a k) in the order (b,l,a,k) [see notation inside]
-  type(array4) :: gvirtEOS
+  type(tensor) :: gvirtEOS
   !> Amplitudes for virt EOS in the order (b,l,a,k) [see notation inside]
-  type(array4) :: tvirtEOS
+  type(tensor) :: tvirtEOS
 
   ! Receive fragment structure and other information from master rank
   ! *****************************************************************
@@ -4553,7 +4517,7 @@ subroutine RIMP2_integrals_and_amplitudes_slave()
   call time_start_phase( PHASE_WORK)
   ! Calculate contribution to integrals/amplitudes for slave
   ! ********************************************************
-  call RIMP2_integrals_and_amplitudes_workhorse(MyFragment,&
+  call RIMP2_integrals_and_amplitudes(MyFragment,&
        & goccEOS,toccEOS,gvirtEOS,tvirtEOS)
 
 end subroutine RIMP2_integrals_and_amplitudes_slave
