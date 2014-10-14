@@ -1434,12 +1434,6 @@ cs
          IF (DIPDER) POLAR = .TRUE.
       END IF
       IF (ABASOP) THEN
-C BEYER COmmented this out.  This means test jobs will crash as of Jan 2014.
-C this was commented out to enable programming of the RPA paralellization.
-
-CSPAS : 26/08-2013 fixing the problem with the test jobs running MPI
-C         IF (PARCAL) CALL PARQUIT('ABASOP')
-CKeinSPASmehr
          IF (CCPPA) THEN
             WRITE(LUPRI,'(A/A/A)')
      &          '@ SOPPA(CCSD) :    '//

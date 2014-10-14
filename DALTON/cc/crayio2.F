@@ -185,18 +185,9 @@ C
 #if defined (SYS_CRAY)
 C        CALL GETWA(FILE,DATA(1),IADR,LEN,IERR)
          CALL GETWA(FILE,DATA(IOFF),JADR,LREAD,IERR)
-
-C todo beyer
-         write(*,*) 'this is cray'
-         write(*,*) 'LREAD is:', lread
-C todo beyer
 #else
 C        CALL GETWA(LUNIT,DATA(1),IADR,LEN,IERR)
          CALL GETWA(LUNIT,DATA(IOFF),JADR,LREAD,IERR)
-C todo beyer
-         write(*,*) 'this is NOT cray'
-         write(*,*) 'LREAD is:', lread
-C todo beyer
 #endif
 C
          IF (IERR.NE.0) THEN
@@ -354,13 +345,13 @@ c            WRITE (LUPRI,*) 'MODE:', MODE
 *            END OF SUBROUTINE WCLOSEALL
 *=====================================================================*
 
-C /*deck subroutine printgetwaerr*/
+C /* deck subroutine printgetwaerr */
       subroutine printgetwaerr(ierr)
 C     KEYWORDS: getwa error ierr message getwa2 
 C
 C     This subroutine takes an integer error message from GETWA (a FORTAN extension routine)
 C     and prints the corresponding error to the output file, or rather the LUPRI unit as 
-C     the case may be.
+C     the case may be. 
 C
 C     F.Beyer June. 2014.
 

@@ -23,10 +23,13 @@ C              RES1D, RES2E, and RES2D.
 C              The linear transformation is driven over atomic orbitals,
 C              and E[2] is not constructed explicitly.
 C
-#ifdef VAR_MPI
-      use mpi
-#endif
+
 #include "implicit.h"
+
+#ifdef VAR_MPI
+#include "mpif.h"
+#endif
+
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxash.h"
@@ -49,7 +52,7 @@ C
 C todo This inew variables changes behaviour erratically unless saved. Using Write(*,*) statements to print its value will retain it's intended value, but omitting the write statement will turn it into a non-functioning integer.
 C The error seems to occur after the parallel call to par_so_eres.
 C The implicit save of inew removes the error and makes sure it's correct throughout the calculation.
-C I advice using a debugger that will monitor the adress of INEW and see when it changes. This MIGHT be an out-of-bounds error in par_so_eres.
+C I advise using a debugger that will monitor the adress of INEW and see when it changes. This MIGHT be an out-of-bounds error in par_so_eres.
       integer, save :: inew=0
 
 C
@@ -358,7 +361,7 @@ C***********************************************************
          goto 888  ! Skips over the do loop that would normally assemble the Fock/density matrix sequentially
 
       endif parallelsoppa
-#endif
+#endif !!endif VAR_MPI
 
             DO 220 ILLL = 1,NTOT
 C------------------------------------------------
@@ -692,18 +695,6 @@ C--------------------------------------------------------------
 C
          DTIME      = SECOND()
 
-C TODO NOTE this routine makes heavy use of DGEMM and DGEMV
-C      can you speed it up with MKL?
-         !write(*,*) 'from so_eres, these are aab '
-         !do iasdf=0, laab
-            !write(*,*) work(kaab+iasdf), iasdf
-         !enddo
-         
-         !write(*,*) 'from so_eres, these are aij'
-         !write(*,*)
-         !do iasdf=0, laij
-            !write(*,*) work(kaij+iasdf), iasdf
-         !enddo
          CALL SO_RES_SYM(WORK(KRES1E),LRES1E,WORK(KRES1D),LRES1D,
      &                   WORK(KAIJ),LAIJ,WORK(KAAB),LAAB,WORK(KTR1E),
      &                   LTR1E,WORK(KTR1D),LTR1D,ISYRES)
@@ -763,21 +754,7 @@ C
          CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
 
 C
-         write(*,*) 'at end of 100 loop, iterating...', inewtr, nnewtr
   100 CONTINUE 
-
-         write(*,*) 'This is the Aab array'
-         do iasdf=0, laab-1
-            write(*,*) work(kaab+iasdf)       
-         enddo
-
-
-         write(*,*) 'This is the Aij array'
-         do iasdf=0, laij-1
-            write(*,*) work(kaij+iasdf)       
-         enddo
-
-
 C
 C==================================
 C     End of loop over excitations.
@@ -792,13 +769,9 @@ C
      &   (NIT .EQ. 1)         .and.
      &   (assemble_densai ))  THEN
 
-C todo if I remove these write statements, the whole calculation fucks up and crashes before it even gets here...
-         write(*,*) 'now calling so_densai2'
-
          CALL SO_DENSAI2(DENSAI,LDENSAI,FOCKD,LFOCKD)
          assemble_densai = .false. 
 
-         write(*,*) 'done calling so_densai2'
       END IF
 C
       DTIME      = SECOND()   - DTIME
@@ -851,9 +824,6 @@ C
 #ifdef VAR_MPI
 C   /*deck par_so_eres */
       subroutine PAR_SO_ERES(WORK, LWORK, MYID)
-C TODO As of April 2014 this is NOT a functioning routine
-C TODO benchmark load balancig schemes
-C TODO improve teh allocatoin and deallocation of t2mp and densai
 C
 C PAR_SO_ERES is a Parallel subroutine for SO_ERES
 C It calculates the AO-FOCK matrix in parallel by distributing the 
@@ -875,14 +845,6 @@ C the slaves by using the subroutine getbytespan and mpi_bcast. The frequency
 C with which these common blocks need to be transferred is regulated with a logical
 C keyword, set in so_eres. 
 C
-C
-C
-C
-C
-C
-C
-C
-      use mpi 
       use dyn_iadrpk
 
 #ifdef VAR_IFORT
@@ -890,6 +852,7 @@ C
 #endif
 ! Parameter-only include files
 #include "implicit.h"
+#include "mpif.h" !use mpi fails with some profilers...
 #include "priunit.h" 
 #include "maxorb.h" 
 #include "maxash.h"
@@ -949,15 +912,15 @@ C     Variables for the spinning barrier
       logical       :: release, flag, exitspinningbarrier
       logical, save :: printspininfo = .true.
 
-C     MPI related and load balancing variables
+C     MPI related and static load balancing variables
       integer :: numprocs, sharedwork, rest, firstindex, lastindex
       integer :: request 
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
 C     Pre-sorting load balancing variables
-      logical :: presorting, assignnow, workreceived
+      logical       :: presorting, assignnow, workreceived
       logical, save :: printsortinginfo=.true.
-      integer :: TargetID, getnumjobs, getindices
+      integer       :: TargetID, getnumjobs, getindices
 
       integer, allocatable, dimension(:,:) :: presortarray !only used by master
       integer, allocatable, dimension(:,:) :: finalsorted !only used by master
@@ -1239,12 +1202,13 @@ C**************************************************
 C     Start load balancing
 C**************************************************    
 
-      presorting = .true.
+      presorting = .true. !Presorting = .true.  is the load balancing scheme that scales best. If you need the static balance for any reason set this to false.
       if (printsortinginfo) then
          if (presorting) then
             write(lupri,*) 'PAR_SO_ERES uses the presorting',
      &                  ' load balancing scheme'
-         else
+         endif
+         if(.not.presorting) then
             write(lupri,*) 'PAR_SO_ERES uses the non-sorted',
      &                  ' load balancing scheme'
          endif
@@ -1267,7 +1231,7 @@ C
 C     The number of distributions per ILLL index is unevenly distributed
 C     so this load balancing scheme might be slower for smaller systems.
 C     For large systems the amount of work is assumed to even out as the
-C     number of ILLL indexes grows. TODO this has not been benchmarked yet.
+C     number of ILLL indexes grows. 
 C **********************************************************
 
       sharedwork = ntot/numprocs 
@@ -1318,19 +1282,21 @@ C **********************************************************
       if (myid.lt.rest) then      
          if ((iprint.gt.1).and.(printspininfo) ) then
             printspininfo = .false.
-            write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
+            write(lupri,*)"Spinning load balance used in PAR_SO_ERES. ",
      &                    "The number of employed processes might be ",
      &                    "in excess of what is appropriate for this ", 
      &                    "calculation."
          endif
-         ! Slaves that are non in excess of what is needed 
+         ! Slaves that are not in excess of what is needed 
          ! are assigned an AO-INDEX.
          firstindex = myid + 1 
          lastindex = myid + 1
+
       endif 
 
       exitspinningbarrier = .false. 
       spinningbarrier: if (myid.ge.ntot) then
+
          ! The release signal is sent from the master towards the end of the subroutine
          call mpi_irecv(exitspinningbarrier, 1, MPI_LOGICAL, 0, myid,
      &   mpi_comm_world, request, ierr) 
@@ -1371,13 +1337,12 @@ C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          call presortaodist(ntot, work(kindxb), presortarray)
          call getallocsize(ntot, presortarray, maxnumjobs) 
 
-C        Tell the slaves how much space to allocate ...
+C        The master tells the slaves how much space to allocate ...
          numrecipients = min(numprocs, ntot)
          do targetID=1, (numrecipients-1)
             call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
      &                     targetID, mpi_comm_world, getnumjobs, ierr) 
          enddo
-
          allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
          if(.not.(allocstatus.eq.0) ) then
             call quit('The vector AssignedIndices was not properly ', 
@@ -1412,10 +1377,11 @@ C**************************************************
 C     Slaves receive the pre-sorted indices to integrate over
 C**************************************************
       IF (myid.ne.0) then
+
+
+C Get the number of tasks and allocate memory for the indices
          call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
      &                  mpi_comm_world, getnumjobs, ierr)
-
-
 001      continue
          call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
          if (assignnow)  then
@@ -1428,34 +1394,38 @@ C**************************************************
          endif
 
 
+
+C Get the actual AO indices to integrate over.
          call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
      &                  myid, mpi_comm_world, getindices, ierr)
-
-002      continue
+002      continue  !Slaves receive the actual indices they have to integrate over
          call mpi_test(getindices, workreceived, mpistatus, ierr)
          if (workreceived)  then
             continue 
          else 
             goto 002
          endif
-
       ENDIF 
 
 C ************************************************** 
 C     ALL PROCESSES PERFORM THE INTEGRALS WITH THE PRE-ORDERED AO INDICES
-C     This is the do loop that drives the parallel calculation.
-C     The slaves will perform one iteration for an ILLL index and then
-C     return and receive the next index to integrate over.
+C
+C     !!! This is the do loop that drives the parallel calculation. !!!
+C
+C     The slaves will perform one iteration for a single ILLL index and then
+C     return and read the next index to integrate over.
 C ************************************************** 
-      DO i=1, maxnumjobs 
+      drivingdoloop: DO i=1, maxnumjobs 
          if ( .not.(AssignedIndices(i).eq.0) ) then
             firstindex = AssignedIndices(i)
-            lastindex  = AssignedIndices(i)
+           ! lastindex  = AssignedIndices(i)
+
             goto 999  ! Perform integral, then return to label 998
          endif
 998      continue
-      ENDDO
-      goto 888 !exit the pre-sorted load balancer now that all integrals are done
+      ENDDO drivingdoloop
+
+      goto 888 !Now that all integrals are done, skip the primary parallel loop and start assembling the results.
 
       endif PresortedStaticBalance
 
@@ -1463,12 +1433,23 @@ C **************************************************
 
 
 C *******************************************
-C            Primary parallel loop. 
+C           Embarrasingly parallel do-loop 
 C *******************************************
+
 999         continue !direction point from the driving do-loop if you are using the pre-sorted load balancer
-            doilll: DO 300 ILLL=firstindex, lastindex
+
+            doilll: DO 300 ILLL=firstindex, firstindex !lastindex
+
+C Create an array that will be saved between calls to par_so_eres so the master only has to load balance once.
+C create the array the keeps track of ALL times for all indices and the array that keeps track of the assigned indices
+
+C zero the array that keeps track of how much time is spent calculating one ILLL index
+C Start the timer
+C end the timer and write the time spent performing one loop iteration for index ILLL in the ILLL'th location in the timearray
+C assemble all times so the master can dynamically load balance the calculation
+
                   if (.not.direct) then
-                     call quit('SOPPA in parallel must use .DIRECT. ',
+                     call quit('AOSOPPA in parallel must use .DIRECT. ',
      &                         'integral transformations')
                   endif
 
@@ -1671,12 +1652,13 @@ C
       if (presorting) goto 998
 
 888   continue ! target goto when all pre-sorted processes finishes their integrals
-      
+C**************************************************  
+C  END OF PARALLEL PORTION 
+C**************************************************  
 
 
-
-C     The master sends a release signal to all 
-C     processes participating in the spinning barrier.
+C     Relase all surplus processes from the spinning barrier.
+C     The master sends a release signal.
 C     The slaves are redirected to label 800
       if (numprocs.gt.ntot) then
          if (myid.eq.0) then
@@ -1688,6 +1670,9 @@ C     The slaves are redirected to label 800
          endif
       endif
 800   continue 
+
+
+
 
 C ************************************************** 
 C Now assemble the Fock matrix, the result vectors and the sigma vectors
@@ -1710,7 +1695,7 @@ C     Assemble the Fock Matrix in the master's work array
       endif
 
 
-C    Assemble the Result vector in the master's work array
+C     Assemble the Result vector in the master's work array
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kres1e), lres, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -1720,7 +1705,7 @@ C    Assemble the Result vector in the master's work array
       endif
         
  
-C    Assemble the sigda vector in the master's work array
+C     Assemble the sigda vector in the master's work array
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(ksigai1), lsig, MPI_REAL8,
      &                   MPI_SUM, 0, MPI_COMM_WORLD, ierr)
@@ -1730,9 +1715,7 @@ C    Assemble the sigda vector in the master's work array
       endif
 
 
-
-
-C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
+C     Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
       if (aijreduce) then
       if  (myid.eq.0) then
          call mpi_reduce(MPI_IN_PLACE, work(kaab), laab, MPI_REAL8,
@@ -1748,9 +1731,10 @@ C    Assemble KAIJ and KAAB (from routine so_res_a) in the master's work array
             aijreduce = .false. 
       endif
 
-C TODO replace this by saving the density matrix in the master's work
-C      array and then transfer the data back in so_eres with a vectorized
-C      operation.
+C TODO Slight performance enhancement:
+C     replace this by saving the density matrix in the master's work
+C     array and then transfer the data back in so_eres with a vectorized
+C     operation.
 C     Assemble the density matrix on process 1.
 C     Process 1 will send this matrix to the master, once the master
 C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
@@ -1763,8 +1747,6 @@ C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
          if( (myid.eq.0) .or. (myid.eq.1) ) densai_was_reduced = .true.
       endif
 
-
-
       ! This array is given to SO_ERES as an input parameter. It needs
       ! to be transferred back from PAR_SO_ERES before process 1 returns.
       ! The master posts a recv call immediately after returning from PAR_SO ERES
@@ -1773,6 +1755,10 @@ C     has successfully exited PAR_SO_ERES and returned to SO_ERES.
      &                 mpi_comm_world, ierr)
          densai_was_reduced = .false. 
       endif
+
+
+
+
 
 C************************************************** 
 C      Clean up allocated arrays 
@@ -1827,6 +1813,6 @@ C**************************************************
 
 
       return
-      
       end subroutine
-#endif
+
+#endif !VAR_MPI at the beginning of PAR_SO_ERES
