@@ -75,7 +75,7 @@ contains
 #endif
     DECinfo%force_scheme         = .false.
     DECinfo%en_mem               = 0
-    DECinfo%array_test           = .false.
+    DECinfo%tensor_test           = .false.
     DECinfo%reorder_test         = .false.
     DECinfo%CCSDno_restart       = .false.
     DECinfo%CCSDnosaferun        = .false.
@@ -134,7 +134,6 @@ contains
     DECinfo%Frag_Exp_Size          = 10
     DECinfo%frag_red_occ_thr       = 1.0  ! times FOT
     DECinfo%frag_red_virt_thr      = 0.9  ! times FOT
-    DECinfo%FragmentExpansionRI    = .false.
     DECinfo%fragadapt              = .false.
     DECinfo%only_n_frag_jobs       =  0
     DECinfo%frag_job_nr            => null()
@@ -224,11 +223,12 @@ contains
     !> The DEC item
     type(decsettings),intent(inout) :: DECitem
 
-    DECitem%cc_models(MODEL_MP2)='MP2     '
-    DECitem%cc_models(MODEL_CC2)='CC2     '
-    DECitem%cc_models(MODEL_CCSD)='CCSD    '
+    DECitem%cc_models(MODEL_MP2)   ='MP2     '
+    DECitem%cc_models(MODEL_CC2)   ='CC2     '
+    DECitem%cc_models(MODEL_CCSD)  ='CCSD    '
     DECitem%cc_models(MODEL_CCSDpT)='CCSD(T) '
-    DECitem%cc_models(MODEL_RPA)='RPA     '
+    DECitem%cc_models(MODEL_RPA)   ='RPA     '
+    DECitem%cc_models(MODEL_RIMP2) ='RIMP2   '
 
   end subroutine dec_set_model_names
 
@@ -327,6 +327,10 @@ contains
 
           ! CC model
        case('.MP2') 
+          call find_model_number_from_input(word, DECinfo%ccModel)
+          DECinfo%use_singles = .false.  
+          DECinfo%NO_MO_CCSD  = .true.
+       case('.RIMP2') 
           call find_model_number_from_input(word, DECinfo%ccModel)
           DECinfo%use_singles = .false.  
           DECinfo%NO_MO_CCSD  = .true.
@@ -451,7 +455,7 @@ contains
           ! so on purpose there is no documentation for those in the LSDALTON manual.
 
        !general testing
-       case('.TESTARRAY'); DECinfo%array_test=.true.
+       case('.TESTARRAY'); DECinfo%tensor_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
     
        !CCSD testing
@@ -589,7 +593,6 @@ contains
        case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
        case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
        case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
-       case('.FRAGMENTEXPANSIONRI'); DECinfo%FragmentExpansionRI = .true.
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
@@ -944,7 +947,7 @@ contains
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
-    write(lupri,*) 'array_test ', DECitem%array_test
+    write(lupri,*) 'tensor_test ', DECitem%tensor_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test
     write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
     write(lupri,*) 'check_Occ_SubSystemLocality ', DECitem%check_Occ_SubSystemLocality
@@ -972,7 +975,6 @@ contains
     write(lupri,*) 'Frag_Exp_Size ', DECitem%Frag_Exp_Size
     write(lupri,*) 'Frag_Red_occ_thr ', DECinfo%frag_red_occ_thr
     write(lupri,*) 'Frag_Red_virt_thr ', DECinfo%frag_red_virt_thr
-    write(lupri,*) 'FragmentExpansionRI ', DECitem%FragmentExpansionRI
     write(lupri,*) 'fragopt_exp_model ', DECitem%fragopt_exp_model
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
@@ -1047,6 +1049,7 @@ contains
     case('.CCD');     modelnumber = MODEL_CCSD  ! effectively use CCSD where singles amplitudes are zeroed
     case('.CCSD(T)'); modelnumber = MODEL_CCSDpT
     case('.RPA');     modelnumber = MODEL_RPA
+    case('.RIMP2');   modelnumber = MODEL_RIMP2
     case default
        print *, 'Model not found: ', myword
        write(DECinfo%output,*)'Model not found: ', myword
@@ -1057,6 +1060,7 @@ contains
        write(DECinfo%output,*)'.CCD'
        write(DECinfo%output,*)'.CCSD(T)'
        write(DECinfo%output,*)'.RPA'
+       write(DECinfo%output,*)'.RIMP2'
        call lsquit('Requested model not found!',-1)
     end SELECT
 

@@ -193,9 +193,9 @@ module crop_tools_module
    function get_cc_energy_arrnew(t1,t2,gmo,nocc,nvirt) result(ecorr)
 
       implicit none
-      type(array), intent(inout) :: t1
-      type(array), intent(in) :: t2
-      type(array), intent(inout) :: gmo
+      type(tensor), intent(inout) :: t1
+      type(tensor), intent(in) :: t2
+      type(tensor), intent(inout) :: gmo
       integer, intent(in) :: nocc,nvirt
       real(realk) :: ecorr,ecorr_s,ecorr_d
       integer :: a,i,b,j
@@ -229,7 +229,7 @@ module crop_tools_module
       else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
 
          t1%itype = REPLICATED
-         call array_sync_replicated(t1)
+         call tensor_sync_replicated(t1)
          ecorr    = get_cc_energy_parallel(t1,t2,gmo)
          t1%itype = DENSE
 
@@ -241,8 +241,8 @@ module crop_tools_module
    function get_mp2_energy_arrnew(t2,gmo,nocc,nvirt) result(ecorr)
 
       implicit none
-      type(array), intent(in) :: t2
-      type(array), intent(inout) :: gmo
+      type(tensor), intent(in) :: t2
+      type(tensor), intent(inout) :: gmo
       integer, intent(in) :: nocc,nvirt
       real(realk) :: ecorr,ecorr_d
       integer :: a,i,b,j
