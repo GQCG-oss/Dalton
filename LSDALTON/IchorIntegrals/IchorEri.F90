@@ -422,9 +422,7 @@ oldmaxangmomABCD = -25
 
 MaxTotalAngmom = MAXVAL(AngmomOfTypeA) + MAXVAL(AngmomOfTypeB) &
      & + MAXVAL(AngmomOfTypeC) + MAXVAL(AngmomOfTypeD)
-UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
 call set_GGem(IchorOperatorSpec,MaxTotalAngmom)
-IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
 !we loop over Total angmom in order to ensure that we first do all
 !SSSS integrals then PSSS,SPSS,SSPS,SSSP, ...
 !this mean we call GAMMATABULATION a limited number of times and
@@ -651,6 +649,9 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       ! TYPE PQ CALC ================================
       TotalAngmom = AngmomA + AngmomB + AngmomQ
       maxangmomABCD = AngmomA + AngmomB + AngmomQ
+      UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
+      IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
+      IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)UseGeneralCode = .TRUE.
       IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
        IF(oldmaxangmomABCD.NE.-25)THEN
           call mem_ichor_dealloc(TABFJW)
@@ -1594,8 +1595,10 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       ! TYPE PQ CALC ================================
       TotalAngmom = AngmomA + AngmomB + AngmomQ
       maxangmomABCD = AngmomA + AngmomB + AngmomQ
-      IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)UseGeneralCode = .TRUE.
 
+      UseGeneralCode = .FALSE. !Use Specialized code when appropriate. 
+      IF(GGemOperatorCalc)UseGeneralCode = .TRUE.
+      IF(MAX(AngmomA,AngmomB,AngmomC,AngmomD).GT.MaxSpecialAngmom)UseGeneralCode = .TRUE.
       IF(maxangmomABCD.NE.oldmaxangmomABCD)THEN
        IF(oldmaxangmomABCD.NE.-25)THEN
           call mem_ichor_dealloc_dryrun((nTABFJW1+1)*(nTABFJW2+1)) !TABFJW
