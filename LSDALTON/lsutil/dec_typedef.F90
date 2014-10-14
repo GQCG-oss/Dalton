@@ -36,6 +36,9 @@ module dec_typedef_module
   integer,parameter :: MODEL_CCSDpT = 4
   integer,parameter :: MODEL_RPA    = 5
 
+  ! Number of possible FOTs to consider in geometry optimization
+  integer,parameter :: nFOTs=8
+
 
   ! DEC fragment energies: MODIFY FOR NEW MODEL & MODIFY FOR NEW CORRECTION
   ! -----------------------------------------------------------------------
@@ -319,10 +322,6 @@ module dec_typedef_module
      integer,pointer :: frag_job_nr(:)
      !> Use hack to specify only pair fragment jobs
      logical         :: only_pair_frag_jobs
-     !> Has simple orbital threshold been defined manually in input (true),
-     !> or should simple orbital threshold be adapted to FOT 
-     !> as descripted under FOTlevel (false)?
-     logical :: simple_orbital_threshold_set     
      !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
      logical :: BoughtonPulay
      !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
@@ -342,12 +341,13 @@ module dec_typedef_module
      !> *********************
      !> Fragment optimization threshold
      real(realk) :: FOT
+     !> Fragment optimization thresholds of decreasing magnitude (increasing accuracy)
+     !> to possibly be used in geometry optimization
+     real(realk) :: GeoFOTs(nFOTs)
      !> Max number of iterations for expanding fragment
      integer :: MaxIter
-     !> FOT level defining precision of calculation, see set_input_for_fot_level
+     !> FOT level (used for geometry opt.)
      integer :: FOTlevel
-     !> Max accepted FOT level
-     integer :: maxFOTlevel
      !> Which Fragment Expansion Scheme should be used
      integer :: Frag_Exp_Scheme
      !> Which Fragment Reduction Scheme should be used for the occ space
@@ -389,8 +389,6 @@ module dec_typedef_module
      !> **************
      !> Distance cutoff for pair fragments
      real(realk) :: pair_distance_threshold
-     !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
-     logical :: paircut_set
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
@@ -437,7 +435,7 @@ module dec_typedef_module
      !> *********************
      !> Book keeping of the number of DEC calculations for each FOT level
      !> (only relevant for geometry optimizations)
-     integer,dimension(8) :: ncalc
+     integer,dimension(nFOTs) :: ncalc
      !> Factor multiply intrinsic energy error by before returning error to geometry optimizer
      real(realk) :: EerrFactor
      !> Old energy error (used only for geometry opt)
