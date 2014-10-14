@@ -1473,6 +1473,9 @@ contains
     call tensor_minit(Taibj_local,[nunocc,nocc,nunocc,nocc],4,atype="LDAR")
     call tensor_add(Taibj_local,1.0E0_realk,Taibj,a=0.0E0_realk)
 
+    call tensor_free(Taibj)
+    call tensor_free(Tai)
+
 
   end subroutine full_get_ccsd_singles_and_doubles
 
