@@ -24,7 +24,7 @@ module LS_optimizer_mod
 CONTAINS
   SUBROUTINE LS_RUNOPT(E,config,H1,F,D,S,CMO,ls)
     use DEC_settings_mod
-    use dec_typedef_module,only: DECinfo
+    use dec_typedef_module
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem)                    :: ls   ! General information,used only to get E and gradient
@@ -34,29 +34,27 @@ CONTAINS
     Type(ConfigItem), intent(inout) :: Config ! General information
     Real(realk),intent(inout)       :: E(1)   ! Energy
     !
-    INTEGER :: iOpt,iPre, fotLevelSave, fotLevel
+    INTEGER :: iOpt, ipre
     Real(realk) :: GradThr, ThrStep, ThGradMax, ThStepMax, trsave
     ! Special preoptimization step currently only possible for DEC calculations
     config%noDecEnergy = .TRUE.
     IF (config%optinfo%dynopt) THEN
       IF (.NOT.DECinfo%doDec) THEN
         CALL LSQUIT('.DYNOPT currently just available for DEC-type calculations',ls%lupri)
-      ELSE
-        fotLevelSave = DECinfo%FOTlevel
-        fotlevel     = fotLevelSave
       ENDIF
       trsave    = config%optinfo%TrustRad
       GradThr   = config%optinfo%GradThr
       ThrStep   = config%optinfo%ThrStep
       ThGradMax = config%optinfo%ThGradMax
       ThStepMax = config%optinfo%ThStepMax
-      iPre=0
+      ipre=1
       DO 
-        config%optinfo%dynamicThreshold = fotlevel.NE.DECinfo%maxfotlevel
+        config%optinfo%dynamicThreshold = ipre.NE.nFOTs
         IF (DECinfo%doDec) THEN
-          CALL set_input_for_fot_level(FOTlevel)
+           DECinfo%FOT = DECinfo%GeoFOTs(Ipre)
+           DECinfo%FOTlevel=ipre
         ENDIF
-        WRITE(ls%lupri,'(A,I2)') '*** Starting dynamical optimization step number',iPre
+        WRITE(ls%lupri,'(A,I2)') '*** Starting dynamical optimization step number',ipre
         ! Reset trust radius to input value for each dynamical optimization step
         config%optinfo%TrustRad  = trsave
         config%optinfo%ItrNmr    = 0
@@ -67,9 +65,8 @@ CONTAINS
         CALL LS_FLSHFO(ls%lupri)
         CALL LS_RUNOP1(E,config,H1,F,D,S,CMO,ls)
         IF (config%optinfo%dynamicConvergence) EXIT
-        IF (fotlevel==DECinfo%maxfotlevel) EXIT
-        iPre     = iPre+1
-        FOTlevel = FOTlevel +1
+        IF (ipre==nFOTs) EXIT
+        Ipre = Ipre +1
       ENDDO
       IF (config%optinfo%dynamicConvergence) THEN
         WRITE(ls%lupri,'(A)') '*** Dynamical optimization converged'
@@ -77,7 +74,8 @@ CONTAINS
         WRITE(ls%lupri,'(A)') '*** Dynamical optimization did not converge!'
       ENDIF
       !Reset FOT level
-      CALL set_input_for_fot_level(FOTlevelSave)
+      DECinfo%FOTlevel=1
+      DECinfo%FOT = DECinfo%GeoFOTs(1)
     ! Deafult geoemetry optimization
     ELSE
       CALL LS_RUNOP1(E,config,H1,F,D,S,CMO,ls)
@@ -1359,6 +1357,10 @@ Endif ! Optimization
           optinfo%EvLini = 1.0E0_realk
           optinfo%TrustRad = 0.5E0_realk
           RETURN
+       ELSEIF(DECinfo%dodec) then
+          ! For DEC we have the possibility to tighten FOT and start over
+          goto 100
+
           !
           !     Otherwise we give up...
           !
@@ -1375,10 +1377,10 @@ Endif ! Optimization
 100 CONTINUE
     IF (optinfo%dynamicChange) THEN
        write(lupri,*) 
-       write(lupri,*) 'DEC ERROR IS LARGER THAN ENERGY DIFF BETWEEN GEOMETRIES!'
-       write(lupri,*) '========================================================'
+       write(lupri,*) 'UNSTABLE DEC GEOMETRY CONVERGENCE - TRY TO TIGHTEN FOT!'
+       write(lupri,*) '======================================================='
        write(lupri,'(1X,a,i5)')    'DECERR: Current FOT level              = ', DECinfo%FOTlevel
-       if(DECinfo%FOTlevel<DECinfo%maxFOTlevel) then
+       if(DECinfo%FOTlevel<nFOTs) then
           write(lupri,'(1X,a,i5)') 'DECERR: FOT level will be increased to = ', DECinfo%FOTlevel+1
        else
          write(lupri,'(1X,a)') 'DECERR: Stopping geometry optimization because the intrinsic'

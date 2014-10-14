@@ -38,7 +38,7 @@ module mp2_gradient_module
   public :: init_fullmp2grad,free_fullmp2grad,single_calculate_mp2gradient_driver,&
        &pair_calculate_mp2gradient_driver,read_gradient_and_energies_for_restart, &
        &write_gradient_and_energies_for_restart,free_mp2grad,get_mp2gradient_main,&
-       &dec_get_error_difference,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad
+       &dec_get_error_for_geoopt,update_full_mp2gradient,nullify_mp2dens,nullify_mp2grad
   private
 
 contains
@@ -2062,13 +2062,17 @@ contains
   end subroutine convert_mp2gradient_matrices_to_typematrix
 
 
-  !> \brief Get difference in intrinsic DEC errors for this and
-  !> the previous geometry (only to be used for geometry optimizations).
-  !> Note: DECinfo%EerrOLD is also set equal to the current
-  !> intrinsic DEC error here.
+  !> \brief Get intrinsic DEC energy error for geometry optimization
+  !>
+  !> UNDER INVESTIGATION!!!
+  !> 
+  !> It is not yet clear what the best strategy is here.
+  !> We could simply take the estimated error as it is ( DECinfo%EerrFactor = 1)
+  !> or scale it ( DECinfo%EerrFactor /= 1)
+  !> or compare it to the error at the previous geometry (code currently commented out).
   !> \author Kasper Kristensen
   !> \date December 2012
-  subroutine dec_get_error_difference(Eerr)
+  subroutine dec_get_error_for_geoopt(Eerr)
     implicit none
     !> Input: Estimated intrinsic DEC energy error
     !> Output: Absolute difference between intrinsic energy error from this
@@ -2080,27 +2084,28 @@ contains
     Eerr = DECinfo%EerrFactor*Eerr
     Eerrsave = Eerr
 
-    ! Energy error returned to optimizer is difference between error at this 
-    ! geometry and the previous geometry.
-    if( DECinfo%ncalc(DECinfo%FOTlevel)==0 ) then  
-       ! This is the very first gradient calculation for the current FOT level.
-       ! Therefore, we don't have an error at a different geometry to compare against,
-       ! and we simply set error to zero to avoid artefacts for the dynamic geometry optimizer
-       Eerr = 0.0_realk
-    else
-       ! Set error equal to difference in errors between this and the previous geometry.
-       Eerr = abs(Eerr - DECinfo%EerrOLD)
-    end if
-
     ! Save existing energy error in DECinfo%EerrOLD
     DECinfo%EerrOLD = Eerrsave
-    write(DECinfo%output,'(1X,a)') 'DEC STABILITY'
-    write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic absolute error   :', Eerrsave
-    if( DECinfo%ncalc(DECinfo%FOTlevel)/=0 ) then
-       write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic error difference :', Eerr
-    end if
 
-  end subroutine dec_get_error_difference
+!!$    ! Energy error returned to optimizer is difference between error at this 
+!!$    ! geometry and the previous geometry.
+!!$    if( DECinfo%ncalc(DECinfo%FOTlevel)==0 ) then  
+!!$       ! This is the very first gradient calculation for the current FOT level.
+!!$       ! Therefore, we don't have an error at a different geometry to compare against,
+!!$       ! and we simply set error to zero to avoid artefacts for the dynamic geometry optimizer
+!!$       Eerr = 0.0_realk
+!!$    else
+!!$       ! Set error equal to difference in errors between this and the previous geometry.
+!!$       Eerr = abs(Eerr - DECinfo%EerrOLD)
+!!$    end if
+!!$
+!!$    write(DECinfo%output,'(1X,a)') 'DEC STABILITY'
+!!$    write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic absolute error   :', Eerrsave
+!!$    if( DECinfo%ncalc(DECinfo%FOTlevel)/=0 ) then
+!!$       write(DECinfo%output,'(1X,a,g20.10)') 'DEC STABILITY: Intrinsic error difference :', Eerr
+!!$    end if
+
+  end subroutine dec_get_error_for_geoopt
 
 
 

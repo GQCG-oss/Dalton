@@ -12,7 +12,7 @@ TRILEVEL
 **DEC
 .ONLYOCCPART
 .FOT
-3
+1.0e-3
 .CCSD(T)
 .ccThr
 1.0d-5

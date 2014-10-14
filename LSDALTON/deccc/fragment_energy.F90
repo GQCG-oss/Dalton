@@ -2335,7 +2335,7 @@ contains
         init_Occradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Occradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Occradius = 3.0_realk/bohr_to_angstrom
@@ -2346,7 +2346,7 @@ contains
         init_Virtradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Virtradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Virtradius = 3.0_realk/bohr_to_angstrom

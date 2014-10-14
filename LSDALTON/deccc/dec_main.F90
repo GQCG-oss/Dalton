@@ -30,7 +30,7 @@ module dec_main_mod
   use full_molecule!,only: molecule_init, molecule_finalize,molecule_init_from_inputs
   use orbital_operations!,only: check_lcm_against_canonical
   use full_molecule!,only: molecule_copyback_FSC_matrices
-  use mp2_gradient_module!,only: dec_get_error_difference
+  use mp2_gradient_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
 
@@ -362,7 +362,7 @@ contains
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
-    call dec_get_error_difference(Eerr)
+    call dec_get_error_for_geoopt(Eerr)
 
     ! Update number of DEC calculations for given FOT level
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
@@ -453,7 +453,7 @@ contains
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
-    call dec_get_error_difference(Eerr)
+    call dec_get_error_for_geoopt(Eerr)
 
     ! Update number of DEC calculations for given FOT level
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
@@ -474,8 +474,10 @@ contains
        write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
        write(DECinfo%output,*) '============================'
        write(DECinfo%output,*) 
-       do i=1,7
-          write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+       do i=1,nFOTs
+          if(DECinfo%ncalc(i)/=0) then
+             write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+          end if
        end do
        write(DECinfo%output,*) 
     end if

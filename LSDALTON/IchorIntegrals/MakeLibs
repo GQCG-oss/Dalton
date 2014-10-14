@@ -27,8 +27,8 @@ all: libIchorIntegrals.a
 #
 #ARCH        = linux
 #FMMDIR      = mm
-##
-##
+#
+#
 #CPPFLAGS      = -DVAR_ICHOR
 #F90            = ifort
 #FLNK           = ifort
@@ -117,84 +117,110 @@ F90_OBJS = \
         AGC_GPU_VerticalRecurrenceQPBSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPCSeg1Prim.o \
         AGC_GPU_VerticalRecurrenceQPDSeg1Prim.o \
-        AGC_CPU_TransferRecurrenceAtoCGen.o \
-        AGC_CPU_TransferRecurrenceAtoDGen.o \
+        AGC_CPU_TransferRecurrenceAtoCGen1.o \
+        AGC_CPU_TransferRecurrenceAtoCGen2.o \
+        AGC_CPU_TransferRecurrenceAtoDGen1.o \
+        AGC_CPU_TransferRecurrenceAtoDGen2.o \
         AGC_CPU_TransferRecurrenceDtoAGen.o \
         AGC_CPU_TransferRecurrenceCtoAGen.o \
-        AGC_CPU_TransferRecurrenceBtoCGen.o \
-        AGC_CPU_TransferRecurrenceBtoDGen.o \
+        AGC_CPU_TransferRecurrenceBtoCGen1.o \
+        AGC_CPU_TransferRecurrenceBtoDGen1.o \
         AGC_CPU_TransferRecurrenceDtoBGen.o \
         AGC_CPU_TransferRecurrenceCtoBGen.o \
-        AGC_CPU_TransferRecurrenceAtoCSegQ.o \
-        AGC_CPU_TransferRecurrenceAtoDSegQ.o \
+        AGC_CPU_TransferRecurrenceAtoCSegQ1.o \
+        AGC_CPU_TransferRecurrenceAtoCSegQ2.o \
+        AGC_CPU_TransferRecurrenceAtoCSegQ3.o \
+        AGC_CPU_TransferRecurrenceAtoDSegQ1.o \
+        AGC_CPU_TransferRecurrenceAtoDSegQ2.o \
         AGC_CPU_TransferRecurrenceDtoASegQ.o \
         AGC_CPU_TransferRecurrenceCtoASegQ.o \
-        AGC_CPU_TransferRecurrenceBtoCSegQ.o \
-        AGC_CPU_TransferRecurrenceBtoDSegQ.o \
+        AGC_CPU_TransferRecurrenceBtoCSegQ1.o \
+        AGC_CPU_TransferRecurrenceBtoDSegQ1.o \
         AGC_CPU_TransferRecurrenceDtoBSegQ.o \
         AGC_CPU_TransferRecurrenceCtoBSegQ.o \
-        AGC_CPU_TransferRecurrenceAtoCSegP.o \
-        AGC_CPU_TransferRecurrenceAtoDSegP.o \
+        AGC_CPU_TransferRecurrenceAtoCSegP1.o \
+        AGC_CPU_TransferRecurrenceAtoCSegP2.o \
+        AGC_CPU_TransferRecurrenceAtoCSegP3.o \
+        AGC_CPU_TransferRecurrenceAtoDSegP1.o \
+        AGC_CPU_TransferRecurrenceAtoDSegP2.o \
         AGC_CPU_TransferRecurrenceDtoASegP.o \
         AGC_CPU_TransferRecurrenceCtoASegP.o \
-        AGC_CPU_TransferRecurrenceBtoCSegP.o \
-        AGC_CPU_TransferRecurrenceBtoDSegP.o \
+        AGC_CPU_TransferRecurrenceBtoCSegP1.o \
+        AGC_CPU_TransferRecurrenceBtoDSegP1.o \
         AGC_CPU_TransferRecurrenceDtoBSegP.o \
         AGC_CPU_TransferRecurrenceCtoBSegP.o \
-        AGC_CPU_TransferRecurrenceAtoCSeg.o \
-        AGC_CPU_TransferRecurrenceAtoDSeg.o \
+        AGC_CPU_TransferRecurrenceAtoCSeg1.o \
+        AGC_CPU_TransferRecurrenceAtoCSeg2.o \
+        AGC_CPU_TransferRecurrenceAtoCSeg3.o \
+        AGC_CPU_TransferRecurrenceAtoDSeg1.o \
+        AGC_CPU_TransferRecurrenceAtoDSeg2.o \
         AGC_CPU_TransferRecurrenceDtoASeg.o \
         AGC_CPU_TransferRecurrenceCtoASeg.o \
-        AGC_CPU_TransferRecurrenceBtoCSeg.o \
-        AGC_CPU_TransferRecurrenceBtoDSeg.o \
+        AGC_CPU_TransferRecurrenceBtoCSeg1.o \
+        AGC_CPU_TransferRecurrenceBtoDSeg1.o \
         AGC_CPU_TransferRecurrenceDtoBSeg.o \
         AGC_CPU_TransferRecurrenceCtoBSeg.o \
-        AGC_CPU_TransferRecurrenceAtoCSeg1Prim.o \
-        AGC_CPU_TransferRecurrenceAtoDSeg1Prim.o \
+        AGC_CPU_TransferRecurrenceAtoCSeg1Prim1.o \
+        AGC_CPU_TransferRecurrenceAtoCSeg1Prim2.o \
+        AGC_CPU_TransferRecurrenceAtoDSeg1Prim1.o \
+        AGC_CPU_TransferRecurrenceAtoDSeg1Prim2.o \
         AGC_CPU_TransferRecurrenceDtoASeg1Prim.o \
         AGC_CPU_TransferRecurrenceCtoASeg1Prim.o \
-        AGC_CPU_TransferRecurrenceBtoCSeg1Prim.o \
-        AGC_CPU_TransferRecurrenceBtoDSeg1Prim.o \
+        AGC_CPU_TransferRecurrenceBtoCSeg1Prim1.o \
+        AGC_CPU_TransferRecurrenceBtoDSeg1Prim1.o \
         AGC_CPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_CPU_TransferRecurrenceCtoBSeg1Prim.o \
-        AGC_GPU_TransferRecurrenceAtoCGen.o \
-        AGC_GPU_TransferRecurrenceAtoDGen.o \
+        AGC_GPU_TransferRecurrenceAtoCGen1.o \
+        AGC_GPU_TransferRecurrenceAtoCGen2.o \
+        AGC_GPU_TransferRecurrenceAtoDGen1.o \
+        AGC_GPU_TransferRecurrenceAtoDGen2.o \
         AGC_GPU_TransferRecurrenceDtoAGen.o \
         AGC_GPU_TransferRecurrenceCtoAGen.o \
-        AGC_GPU_TransferRecurrenceBtoCGen.o \
-        AGC_GPU_TransferRecurrenceBtoDGen.o \
+        AGC_GPU_TransferRecurrenceBtoCGen1.o \
+        AGC_GPU_TransferRecurrenceBtoDGen1.o \
         AGC_GPU_TransferRecurrenceDtoBGen.o \
         AGC_GPU_TransferRecurrenceCtoBGen.o \
-        AGC_GPU_TransferRecurrenceAtoCSegQ.o \
-        AGC_GPU_TransferRecurrenceAtoDSegQ.o \
+        AGC_GPU_TransferRecurrenceAtoCSegQ1.o \
+        AGC_GPU_TransferRecurrenceAtoCSegQ2.o \
+        AGC_GPU_TransferRecurrenceAtoCSegQ3.o \
+        AGC_GPU_TransferRecurrenceAtoDSegQ1.o \
+        AGC_GPU_TransferRecurrenceAtoDSegQ2.o \
         AGC_GPU_TransferRecurrenceDtoASegQ.o \
         AGC_GPU_TransferRecurrenceCtoASegQ.o \
-        AGC_GPU_TransferRecurrenceBtoCSegQ.o \
-        AGC_GPU_TransferRecurrenceBtoDSegQ.o \
+        AGC_GPU_TransferRecurrenceBtoCSegQ1.o \
+        AGC_GPU_TransferRecurrenceBtoDSegQ1.o \
         AGC_GPU_TransferRecurrenceDtoBSegQ.o \
         AGC_GPU_TransferRecurrenceCtoBSegQ.o \
-        AGC_GPU_TransferRecurrenceAtoCSegP.o \
-        AGC_GPU_TransferRecurrenceAtoDSegP.o \
+        AGC_GPU_TransferRecurrenceAtoCSegP1.o \
+        AGC_GPU_TransferRecurrenceAtoCSegP2.o \
+        AGC_GPU_TransferRecurrenceAtoCSegP3.o \
+        AGC_GPU_TransferRecurrenceAtoDSegP1.o \
+        AGC_GPU_TransferRecurrenceAtoDSegP2.o \
         AGC_GPU_TransferRecurrenceDtoASegP.o \
         AGC_GPU_TransferRecurrenceCtoASegP.o \
-        AGC_GPU_TransferRecurrenceBtoCSegP.o \
-        AGC_GPU_TransferRecurrenceBtoDSegP.o \
+        AGC_GPU_TransferRecurrenceBtoCSegP1.o \
+        AGC_GPU_TransferRecurrenceBtoDSegP1.o \
         AGC_GPU_TransferRecurrenceDtoBSegP.o \
         AGC_GPU_TransferRecurrenceCtoBSegP.o \
-        AGC_GPU_TransferRecurrenceAtoCSeg.o \
-        AGC_GPU_TransferRecurrenceAtoDSeg.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg2.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg3.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg1.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg2.o \
         AGC_GPU_TransferRecurrenceDtoASeg.o \
         AGC_GPU_TransferRecurrenceCtoASeg.o \
-        AGC_GPU_TransferRecurrenceBtoCSeg.o \
-        AGC_GPU_TransferRecurrenceBtoDSeg.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg1.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg1.o \
         AGC_GPU_TransferRecurrenceDtoBSeg.o \
         AGC_GPU_TransferRecurrenceCtoBSeg.o \
-        AGC_GPU_TransferRecurrenceAtoCSeg1Prim.o \
-        AGC_GPU_TransferRecurrenceAtoDSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1Prim1.o \
+        AGC_GPU_TransferRecurrenceAtoCSeg1Prim2.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg1Prim1.o \
+        AGC_GPU_TransferRecurrenceAtoDSeg1Prim2.o \
         AGC_GPU_TransferRecurrenceDtoASeg1Prim.o \
         AGC_GPU_TransferRecurrenceCtoASeg1Prim.o \
-        AGC_GPU_TransferRecurrenceBtoCSeg1Prim.o \
-        AGC_GPU_TransferRecurrenceBtoDSeg1Prim.o \
+        AGC_GPU_TransferRecurrenceBtoCSeg1Prim1.o \
+        AGC_GPU_TransferRecurrenceBtoDSeg1Prim1.o \
         AGC_GPU_TransferRecurrenceDtoBSeg1Prim.o \
         AGC_GPU_TransferRecurrenceCtoBSeg1Prim.o \
         AGC_CPU_HorizontalRecurrencePAtoB.o \
@@ -209,6 +235,12 @@ F90_OBJS = \
         AGC_CPU_SphContractOBS2.o \
         AGC_GPU_SphContractOBS1.o \
         AGC_GPU_SphContractOBS2.o \
+        AGC_GPU_PrimContractSegQ.o \
+        AGC_GPU_PrimContractSegP.o \
+        AGC_GPU_PrimContractGen.o \
+        AGC_CPU_PrimContractSegQ.o \
+        AGC_CPU_PrimContractSegP.o \
+        AGC_CPU_PrimContractGen.o \
         IchorParameters.o \
         IchorCommon.o \
         IchorInputInfo.o\
@@ -229,17 +261,30 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_CPU_OBS_SegP.o \
         IchorEri_CoulombIntegral_CPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_CPU_OBS_Seg1Prim.o \
-        IchorEri_CoulombIntegral_CPU_OBS_general.o \
         IchorEri_CoulombIntegral_GPU_OBS_Gen.o \
         IchorEri_CoulombIntegral_GPU_OBS_SegQ.o \
         IchorEri_CoulombIntegral_GPU_OBS_SegP.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
+        IchorEri_CoulombIntegral_CPU_OBS_GenSize.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegQSize.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegPSize.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegSize.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Seg1PrimSize.o \
+        IchorEri_CoulombIntegral_GPU_OBS_GenSize.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegQSize.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegPSize.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegSize.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Seg1PrimSize.o \
+        IchorEri_CoulombIntegral_CPU_OBS_general.o \
         IchorEri_CoulombIntegral_GPU_OBS_general.o \
         IchorEri_GabIntegral_McM_general.o \
 	IchorEri_GabIntegral_OBS_Gen.o \
 	IchorEri_GabIntegral_OBS_Seg.o \
 	IchorEri_GabIntegral_OBS_general.o \
+        IchorEriTools.o \
+        IchorEriDist.o \
+        IchorEriLink.o \
         IchorEri.o \
         IchorGab.o \
         MainIchorInterface.o\
