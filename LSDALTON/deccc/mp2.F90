@@ -1970,9 +1970,11 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Memory Available:', MemInGBCollected
 
 #ifdef VAR_MPI
-     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) + 2*(nbasisAux*nvirt*nocc)/infpar%lg_nodtot)*mem_realsize
+     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) &
+          & + 2*(nbasisAux*nvirt*nocc)/infpar%lg_nodtot)*mem_realsize
 #else
-     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) + 2*nbasisAux*nvirt*nocc)*mem_realsize
+     MemEstimate = (2*(noccEOS*noccEOS*nvirt*nvirt)+3*(nocc*nocc*nvirtEOS*nvirtEOS) &
+          & + 2*nbasisAux*nvirt*nocc)*mem_realsize
 #endif
      WRITE(DECinfo%output,'(1X,a,g12.4)') 'RIMP2MEM: Estimated memory usage',MemEstimate
      call stats_globalmem(DECinfo%output)
@@ -2175,21 +2177,8 @@ subroutine RIMP2_integrals_and_amplitudes(MyFragment,&
      !where alpha runs over the Aux basis functions allocated for this rank
      !and beta run over the full set of nbasisAux
      call mem_alloc(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux)
-     !$OMP PARALLEL DO DEFAULT(NONE) &
-     !$OMP PRIVATE(BETA,startA2,iatomA,startA,ALPHA) &
-     !$OMP SHARED(nbasisAux,nAtomsMPI,mynum,startAuxMPI,nAuxMPI,&
-     !$OMP TMPAlphaBeta_inv,AlphaBeta_inv)
-     do BETA = 1,nbasisAux
-      startA2 = 0
-      DO iAtomA=1,nAtomsMPI(mynum+1)
-       StartA = startAuxMPI(iAtomA,mynum+1)
-       do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
-        TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = AlphaBeta_inv(startA + ALPHA,BETA)
-       enddo
-       startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
-      enddo
-     enddo
-     !$OMP END PARALLEL DO
+     call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux,&
+          & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_inv,numnodes,natoms)
      call mem_dealloc(AlphaBeta_inv)
   ENDIF
 
@@ -2991,6 +2980,33 @@ subroutine  RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,&
   enddo
 !$OMP END PARALLEL DO
 end subroutine RIMP2_buildOwnCalphaFromAlphaCD
+
+subroutine RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_inv,MynbasisAuxMPI,nbasisAux,&
+     & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_inv,numnodes,nAtoms)
+  implicit none
+  integer,intent(in) :: MynbasisAuxMPI,nbasisAux,numnodes,mynum,nAtoms
+  integer,intent(in) :: nAtomsMPI(numnodes),startAuxMPI(nAtoms,numnodes)
+  integer,intent(in) :: nAuxMPI(nAtoms,numnodes)
+  real(realk),intent(in) :: AlphaBeta_inv(nbasisAux,nbasisAux)
+  real(realk),intent(inout) :: TMPAlphaBeta_inv(MynbasisAuxMPI,nbasisAux)
+  !
+  integer :: BETA,startA2,iatomA,startA,ALPHA
+  !$OMP PARALLEL DO DEFAULT(NONE) &
+  !$OMP PRIVATE(BETA,startA2,iatomA,startA,ALPHA) &
+  !$OMP SHARED(nbasisAux,nAtomsMPI,mynum,startAuxMPI,nAuxMPI,&
+  !$OMP TMPAlphaBeta_inv,AlphaBeta_inv)
+  do BETA = 1,nbasisAux
+   startA2 = 0
+   DO iAtomA=1,nAtomsMPI(mynum+1)
+    StartA = startAuxMPI(iAtomA,mynum+1)
+    do ALPHA = 1,nAuxMPI(iAtomA,mynum+1)
+     TMPAlphaBeta_inv(startA2 + ALPHA,BETA) = AlphaBeta_inv(startA + ALPHA,BETA)
+    enddo
+    startA2 = startA2 + nAuxMPI(iAtomA,mynum+1)
+   enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine RIMP2_buildTMPAlphaBeta_inv
 
   !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen
