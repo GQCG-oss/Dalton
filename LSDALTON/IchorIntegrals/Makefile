@@ -1,71 +1,6 @@
 all: libIchorIntegrals.a
 
-#########################################################
-#
-# COMPILER SECTION 
-#
-#########################################################
-#
-# CRAY ON TITAN EXAMPLE
-#
-#ARCH        = linux
-#FMMDIR      = mm
-##
-##
-#CPPFLAGS      = -DVAR_ICHOR
-#F90            = ftn
-#FLNK           = ftn
-#RM             = rm -f
-#F90OPTFLAGS    = -eZ -x omp -rm -hsystem_alloc
-#INCLUDES       =  
-#LIBS           =
-#AR             = ar
-#ARFLAGS        = rvs
-##
-#
-# IFORT EXAMPLE
-#
-ARCH        = linux
-FMMDIR      = mm
-#
-#
-CPPFLAGS      = -DVAR_ICHOR
-F90            = ifort
-FLNK           = ifort
-RM             = rm -f
-F90OPTFLAGS    = -O3  -ip -w -fpp1 -openmp
-#F90OPTFLAGS    = -g -O0 -ip -w -fpp1 -check all #-openmp
-INCLUDES       =  
-LIBS           = #-openmp
-AR             = ar
-ARFLAGS        =  rvs
-#
-# PGI SISYPHOS EXAMPLE
-#
-#ARCH        = linux
-#FMMDIR      = mm
-#
-#
-#CPPFLAGS      = -DVAR_ICHOR -DVAR_OMP -DVAR_OPENACC -DVAR_PGF90
-#F90            = pgf90
-#FLNK           = pgf90
-#RM             = rm -f
-#F90OPTFLAGS    = -mp -Mconcur -acc -Minfo=accel
-#INCLUDES       =  
-#LIBS           = 
-#AR             = ar
-#ARFLAGS        =  rvs
-#
-#########################################################
-#
-# END OF COMPILER SECTION 
-#
-#########################################################
-
-.SUFFIXES : .F90 
-
-.F90.o:
-	$(F90) $(INCLUDES) $(CPPFLAGS) $(F90OPTFLAGS) -c $*.F90
+include ../Makefile.config
 
 INCLUDES := $(INCLUDES) 
 
@@ -287,19 +222,23 @@ F90_OBJS = \
         IchorEriLink.o \
         IchorEri.o \
         IchorGab.o \
-        MainIchorInterface.o\
-        IchorProfileMain.o\
-        IchorTestingMain.o
+        MainIchorInterface.o 
 
-libIchorIntegrals.a: $(F90_OBJS) 
+F_CPPS = $(F_OBJS:.o=.i)
+
+pre: $(F_CPPS)
+
+# we should really have a separate target for bsm to properly
+# track dependencies but we would not like it to be too troublesome.
+libIchorIntegrals.a: $(F_OBJS) $(F90_OBJS) 
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD *.x
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F90_OBJS:.o=.F90)
-	../tools/f90dep.pl $(INCLUDES) -- $(F90_OBJS:.o=.F90) > Makefile.depend
+Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################
@@ -308,13 +247,3 @@ include Makefile.depend
 # Makefile.depend can be created with 'make depend'.
 #-include Makefile.depend
 ###################################################################### 
-
-#the above code makes the libIchorIntegrals.a now you just have to link using
-
-test.x: $(F90_OBJS) libIchorIntegrals.a
-	@echo "---------------> Linking test.x ..."
-	$(F90) $(F90OPTFLAGS) -o test.x IchorTestingMain.F90 libIchorIntegrals.a
-
-prof.x: $(F90_OBJS) libIchorIntegrals.a
-	@echo "---------------> Linking prof.x ..."
-	$(F90) $(F90OPTFLAGS) -o prof.x IchorProfileMain.F90 libIchorIntegrals.a
