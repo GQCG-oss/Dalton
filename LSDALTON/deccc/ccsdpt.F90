@@ -1303,6 +1303,7 @@ contains
      integer :: i_search_buf,ts
      logical :: found
      integer(kind=ls_mpik) :: mode
+     pos = 0
 #ifdef VAR_MPI
      mode = MPI_MODE_NOCHECK
 

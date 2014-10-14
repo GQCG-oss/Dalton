@@ -97,26 +97,10 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
-    call get_atomic_fragment_Energy_and_prop(MyFragment)
+    call atomic_fragment_Energy_and_prop(MyFragment)
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
   end subroutine get_fragment_and_Energy
-
-  subroutine get_atomic_fragment_Energy_and_prop(MyFragment)
-    implicit none
-    !> Atomic fragment to be determined  (NOT pair fragment)
-    type(decfrag), intent(inout) :: MyFragment         
-    IF(DECinfo%FragmentExpansionRI)THEN
-#ifdef MOD_UNRELEASED
-       CALL MP2_RI_energyContribution(MyFragment)
-       call get_occ_virt_lag_energies_fragopt(MyFragment)
-#else
-       call lsquit('MP2_RI_energyContribution not implemented',-1)
-#endif
-    ELSE
-       call atomic_fragment_energy_and_prop(MyFragment)
-    ENDIF
-  end subroutine get_atomic_fragment_Energy_and_prop
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -287,6 +271,7 @@ contains
     times_ccsd => null()
     times_pt   => null()
 
+    !MODIFY FOR NEW MODEL
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -304,6 +289,11 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+
+    case(MODEL_RIMP2) ! RIMP2 calculation
+
+       if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
+       call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -440,7 +430,7 @@ contains
 
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
+    ! (1) Your new model fits into the standard CC energy expression (this includes MP2). 
     !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new atomic fragment energy subroutine and call it from
@@ -491,8 +481,8 @@ contains
           call tensor_free(VOVV)
        end if
     end if
-
-    if(MyFragment%ccmodel /= MODEL_MP2)then
+    !
+    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel.NE.MODEL_RIMP2)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     endif
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
@@ -984,6 +974,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    ! MODIFY FOR NEW MODEL!
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(PairFragment%ccmodel) 
@@ -999,6 +990,11 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+
+    case( MODEL_RIMP2 ) ! RI-MP2
+
+       ! calculate only RI-MP2 energy integrals and MP2 amplitudes
+       call RIMP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -1055,7 +1051,7 @@ contains
 
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
+    ! (1) Your new model fits into the standard CC energy expression. (This includes MP2) 
     !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new pair interaction energy subroutine and call it from
@@ -1170,7 +1166,7 @@ contains
        call tensor_free(VOVO)
     endif
 
-    if( PairFragment%ccmodel /= MODEL_MP2 ) then
+    if(PairFragment%ccmodel /= MODEL_MP2.AND.PairFragment%ccmodel.NE.MODEL_RIMP2) then
        if(DECinfo%use_singles)then
           call tensor_free(t1)
        endif
@@ -2369,7 +2365,7 @@ contains
         init_Occradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Occradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Occradius = 3.0_realk/bohr_to_angstrom
@@ -2380,7 +2376,7 @@ contains
         init_Virtradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Virtradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Virtradius = 3.0_realk/bohr_to_angstrom
@@ -2398,7 +2394,7 @@ contains
              & OccAOS,VirtAOS,OccOrbitals,UnOccOrbitals,MyAtom)
         call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
              & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
      ELSEIF(OrbDistanceSpec)THEN
         call mem_alloc(OccAOS,nocc)
         call mem_alloc(VirtAOS,nunocc)
@@ -2411,7 +2407,7 @@ contains
              & OccOrbitals,UnOccOrbitals,MyAtom)
         call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
              & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
      ELSE
         call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
              & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
@@ -2533,7 +2529,7 @@ contains
         ! Different model in expansion and reduction steps - Calculate new reference energy
         ! for converged fragment from expansion loop.
         AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
         LagEnergyDiff=0.0_realk
         OccEnergyDiff=0.0_realk
         VirtEnergyDiff=0.0_realk
@@ -2972,7 +2968,7 @@ contains
            call atomic_fragment_free(AtomicFragment)
            call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
                 & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-           call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+           call atomic_fragment_Energy_and_prop(AtomicFragment)
         ELSEIF(OrbDistanceSpec)THEN
            call ExpandFragmentOrbitalSpec(natoms,nocc,nunocc,&
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
@@ -2981,7 +2977,7 @@ contains
            call atomic_fragment_free(AtomicFragment)
            call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
                 & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-           call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+           call atomic_fragment_Energy_and_prop(AtomicFragment)
         ELSE
            ! Expand fragment and get new energy
            call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
@@ -3017,16 +3013,12 @@ contains
         ! Exit loop if we are converged
         ExpansionConvergence: if(expansion_converged) then
            Occ_atoms = OccOld;Virt_atoms = VirtOld
-           IF(DECinfo%FragmentExpansionRI)THEN
-              write(DECinfo%output,*) 'FOP RI Fragment expansion converged in iteration ', iter
-           ELSE
-              IF(ExpandOcc.AND.ExpandVirt)THEN
-                 write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
-              ELSEIF(ExpandOcc)THEN
-                 write(DECinfo%output,*) 'FOP Occupied Fragment expansion converged in iteration ', iter
-              ELSEIF(ExpandVirt)THEN
-                 write(DECinfo%output,*) 'FOP Virtual Fragment expansion converged in iteration ', iter
-              ENDIF
+           IF(ExpandOcc.AND.ExpandVirt)THEN
+              write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
+           ELSEIF(ExpandOcc)THEN
+              write(DECinfo%output,*) 'FOP Occupied Fragment expansion converged in iteration ', iter
+           ELSEIF(ExpandVirt)THEN
+              write(DECinfo%output,*) 'FOP Virtual Fragment expansion converged in iteration ', iter
            ENDIF
            exit EXPANSION_LOOP
         else
@@ -3413,7 +3405,7 @@ contains
                    call atomic_fragment_free(AtomicFragment)
                    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                         & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-                   call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+                   call atomic_fragment_Energy_and_prop(AtomicFragment)
                    WRITE(DECinfo%output,'(A,I5)')'Orbital i included in AOS space (CALC)  i=',I
                    BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP-OccEnergyOld)
                 ELSE
@@ -3475,7 +3467,7 @@ contains
 !!$             call atomic_fragment_free(AtomicFragment)
 !!$             call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
 !!$                  & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-!!$             call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+!!$             call atomic_fragment_Energy_and_prop(AtomicFragment)
 !!$             BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP)            
 !!$          ENDDO
 !!$          call real_inv_sort_with_tracking(BruteForceOccContribs,BruteForceTrackListOcc,nocc)
@@ -3718,7 +3710,7 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+          call atomic_fragment_Energy_and_prop(AtomicFragment)
           
           ! Check if reduced fragment energy is converged to FOT precision
           ! **************************************************************
@@ -3886,7 +3878,7 @@ contains
                   & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                   & AtomicFragment,.true.,.false.)
              
-             call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+             call atomic_fragment_Energy_and_prop(AtomicFragment)
 
              ! we set the reduction to be converged to avoid quiting:
              reduction_converged = .true.
@@ -3905,7 +3897,7 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+          call atomic_fragment_Energy_and_prop(AtomicFragment)
           
           
           ! Check if reduced fragment energy is converged to FOT precision
@@ -4641,6 +4633,11 @@ contains
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
        !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
+
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -4704,6 +4701,11 @@ contains
        fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP - fragment%energies(FRAGMODEL_VIRTCCSD)
 !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
+
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -4782,6 +4784,12 @@ contains
        energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
        !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       energies(FRAGMODEL_OCCRIMP2) = Eocc     ! occupied
+       energies(FRAGMODEL_VIRTRIMP2) = Evirt   ! virtual
+    case default
+       call lsquit('case unknown in put_fragment_energy_contribs',-1)
     end select
 
   end subroutine put_fragment_energy_contribs
@@ -4927,7 +4935,7 @@ contains
       call atomic_fragment_init_orbital_specific(MyAtom,nv,no,Vir_AOS,Occ_AOS,OccOrbitals, &
          & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.) 
       ! Get Energy for the initialized fragment
-      call get_atomic_fragment_Energy_and_prop(AtomicFragment) 
+      call atomic_fragment_Energy_and_prop(AtomicFragment) 
       ! Print initial fragment information
       if (full_mol) write(DECinfo%output,*) 'FOP Expansion Include Full Molecule !!!'
       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
@@ -4970,7 +4978,7 @@ contains
       ! if expansion and reduction ccmodels are different, we need to calculate
       ! the energy of the expanded fragment using the new model:
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
          write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
            & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
          call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
@@ -5076,7 +5084,7 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_old - AtomicFragment%LagFOP)
@@ -5245,7 +5253,7 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_exp - AtomicFragment%LagFOP)

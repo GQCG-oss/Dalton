@@ -5,13 +5,18 @@ use IchorEriCoulombintegralCPUOBSGeneralModSegQ
 use IchorEriCoulombintegralCPUOBSGeneralModSegP
 use IchorEriCoulombintegralCPUOBSGeneralModSeg
 use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim
+use IchorEriCoulombintegralCPUOBSGeneralModGenSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegQSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegPSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegSize
+use IchorEriCoulombintegralCPUOBSGeneralModSeg1PrimSize
 use IchorEriCoulombintegralCPUMcMGeneralMod
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000ModGen
 use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
-public :: ICI_CPU_OBS_general,ICI_CPU_OBS_general_size  
+public :: ICI_CPU_OBS_general
   
 CONTAINS
   

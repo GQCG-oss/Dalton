@@ -1002,6 +1002,7 @@ SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
   ENDDO
 ! alpha_beta_AB = alpha_beta_full(:,1,:,1,1)
   ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+  call Test_if_64bit_integer_required(nBastAux,nBastReg,nBastReg)
   call DPOSV('U',nBastAux,nBastReg*nBastReg,alpha_beta_AB,nBastAux,Calpha_ab_full,nBastAux,info)
   If (info.NE. 0) THEN
      WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
@@ -1142,6 +1143,7 @@ SUBROUTINE II_get_pari_df_coulomb_mat_simple(LUPRI,LUERR,SETTING,D,F)
         !write(*,'(A,I2,A,I2)') 'DPOSV: nAuxAB=',nAuxAB,' nRegAB=',nrega*nregB
 
         ! --- solve the linear system: (alpha|beta) Calpha_ab_AB = (ab|beta) e.g. A X = B
+        call Test_if_64bit_integer_required(nAuxAB,nRegA*nRegB)
         call DPOSV('U',nAuxAB,nRegA*nRegB,alpha_beta_AB,nAuxAB,ab_beta_AB,nAuxAB,info)
         If (info.NE. 0) THEN
            WRITE(LUPRI,'(1X,A,I5)') 'DPOSV error in II_get_pari_df_coulomb_mat_simple. Info =',info
@@ -1853,6 +1855,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
         call retrieve_Output(lupri,setting,alphabeta,.FALSE.)
 
         !  Make Choleksy-factorization
+        call Test_if_64bit_integer_required(nbastaux,nbastaux)
         call DPOTRF('U',nbastaux,alphabeta,nbastaux,INFO)
         IF (info.ne. 0) THEN
            WRITE(LUPRI,'(1X,A,I5)') 'DPOTRF error in II_get_df_exchange_mat. Info =',info
@@ -1870,6 +1873,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
      !  c_(alpha,aB) = (alpha|beta)^-1 (beta|aB)
      !  Solve the system A*X = B, overwriting B with X.
      !  Solve  A=(beta|alpha)  X=c_alpha   B = (beta|aB)
+     call Test_if_64bit_integer_required(nBastAux,nBast,nBast)
      CALL DPOTRS('U',nBastAux,nBast*nBast,alphabeta,nbastaux,Calpha,nbastaux,info)
      IF (info.ne. 0) THEN
         WRITE(LUPRI,'(1X,A,I5)') 'DPOTRS error in II_get_df_exchange_mat. Info =',info
@@ -1961,6 +1965,7 @@ SUBROUTINE II_get_df_exchange_mat(LUPRI,LUERR,SETTING,Dmat,F,ndmat)
 
            call mem_alloc(Calpha,nBastAux,nBastLocA,nBast)
            call DCOPY(nBastaux*nBast*nBastLocA,alphaAB,1,Calpha,1)
+           call Test_if_64bit_integer_required(nBastAux,nbast,nBastLocA)
            CALL DPOTRS('U',nBastAux,nbast*nBastLocA,alphabeta,nBastAux,Calpha,nBastAux,info)
 
            ! d_(alpha,aD) = sum_b c_(alpha,aB) * D_bd = [alpha*s,B]*[B,D] 
@@ -2335,13 +2340,17 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
      N = nocc           !columns of Output Matrix
      K = nbast          !summation dimension
      call mem_alloc(AlphaCD2,nbastAux,nbast,nocc)
+     call Test_if_64bit_integer_required(N,K)
+     call Test_if_64bit_integer_required(M,K)
+     call Test_if_64bit_integer_required(M,N)
      call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,&
           & 0.0E0_realk,AlphaCD2,M)
      call mem_dealloc(AlphaCD)
      call mem_alloc(FullAlphaCD,nbasisAux,nvirt,nocc)
      !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP)
+!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,GAMMA,TMP) &
+!$OMP SHARED(Cvirt,AlphaCD2,FullAlphaCD,nvirt,nocc,nbasisAUX,nbasis)
      do BDIAG = 1,nvirt
         do IDIAG = 1,nocc
            do ALPHAAUX = 1,nbasisAUX
@@ -2404,23 +2413,13 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
            N = nocc               !columns of Output Matrix
            K = nbast              !summation dimension
            call mem_alloc(AlphaCD2,nAuxA,nBast,nocc)
+           call Test_if_64bit_integer_required(N,K)
+           call Test_if_64bit_integer_required(M,K)
+           call Test_if_64bit_integer_required(M,N)
            call dgemm('N','N',M,N,K,1.0E0_realk,AlphaCD,M,Cocc,nbast,0.0E0_realk,AlphaCD2,M)
            call mem_dealloc(AlphaCD)
            !(alphaAux,B,J) = (alphaAux,gamma,delta)*C(gamma,B)
-!$OMP PARALLEL DO COLLAPSE(3) DEFAULT(shared) &
-!$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,ALPHA,TMP)
-           do BDIAG = 1,nvirt
-            do IDIAG = 1,nocc
-             do ALPHAAUX = 1,nAUXA
-              TMP = 0.0E0_realk
-              do ALPHA = 1,nbast
-               TMP = TMP + Cvirt(ALPHA,BDIAG)*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
-              enddo
-              FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) = FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) + TMP
-             enddo
-            enddo
-           enddo
-!$OMP END PARALLEL DO
+           call DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
            call mem_dealloc(AlphaCD2)
            startF = startF + nAUXA
         ENDDO
@@ -2442,6 +2441,31 @@ SUBROUTINE II_get_RI_AlphaCD_3CenterInt2(LUPRI,LUERR,FullAlphaCD,SETTING,nbasisA
   SETTING%scheme%OD_SCREEN = .TRUE.
   SETTING%scheme%OE_SCREEN = .TRUE.
 END SUBROUTINE II_get_RI_AlphaCD_3CenterInt2
+
+subroutine DF3centerTrans(nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,Cvirt,AlphaCD2,FullAlphaCD,startF)
+  implicit none
+  integer,intent(in) :: nvirt,nocc,nbast,nAuxA,MynbasisAuxMPI,startF
+  real(realk),intent(in) :: Cvirt(nbast,nvirt),AlphaCD2(nAuxA,nBast,nocc)
+  real(realk),intent(inout) :: FullAlphaCD(MynbasisAuxMPI,nvirt,nocc)
+  !
+  integer ::BDIAG,IDIAG,ALPHAAUX,ALPHA
+  real(realk) :: TMP 
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(none) &
+  !$OMP PRIVATE(BDIAG,IDIAG,ALPHAAUX,ALPHA,TMP) &
+  !$OMP SHARED(nvirt,nocc,nbast,nAuxA,Cvirt,AlphaCD2,FullAlphaCD,startF) 
+  do BDIAG = 1,nvirt
+     do IDIAG = 1,nocc
+        do ALPHAAUX = 1,nAUXA
+           TMP = 0.0E0_realk
+           do ALPHA = 1,nbast
+              TMP = TMP + Cvirt(ALPHA,BDIAG)*AlphaCD2(ALPHAAUX,ALPHA,IDIAG)
+           enddo
+           FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) = FullAlphaCD(startF + ALPHAAUX,BDIAG,IDIAG) + TMP
+        enddo
+     enddo
+  enddo
+  !$OMP END PARALLEL DO
+end subroutine DF3centerTrans
 
 subroutine getRIbasisMPI(molecule1,nAtoms,numnodes,nbasisAuxMPI,&
      & startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)

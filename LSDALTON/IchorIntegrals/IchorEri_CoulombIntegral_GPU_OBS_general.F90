@@ -5,12 +5,17 @@ use IchorEriCoulombintegralGPUOBSGeneralModSegQ
 use IchorEriCoulombintegralGPUOBSGeneralModSegP
 use IchorEriCoulombintegralGPUOBSGeneralModSeg
 use IchorEriCoulombintegralGPUOBSGeneralModSeg1Prim
+use IchorEriCoulombintegralGPUOBSGeneralModGenSize
+use IchorEriCoulombintegralGPUOBSGeneralModSegQSize
+use IchorEriCoulombintegralGPUOBSGeneralModSegPSize
+use IchorEriCoulombintegralGPUOBSGeneralModSegSize
+use IchorEriCoulombintegralGPUOBSGeneralModSeg1PrimSize
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
 use AGC_GPU_OBS_BUILDRJ000ModGen
 use AGC_GPU_OBS_BUILDRJ000ModSeg1Prim
-public :: ICI_GPU_OBS_general,ICI_GPU_OBS_general_size  
+public :: ICI_GPU_OBS_general
   
 CONTAINS
   
