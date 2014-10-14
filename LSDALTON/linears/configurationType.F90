@@ -140,7 +140,7 @@ type ConfigItem
    !> do MPI testing of mpicopy_setting and mpicopy_screen
    logical              :: doTestMPIcopy
    !> set debugging mode for the PDM type arrays
-   logical              :: type_array_debug
+   logical              :: type_tensor_debug
    !> skip SCF calculations
    logical              :: skipscfloop
 end type ConfigItem

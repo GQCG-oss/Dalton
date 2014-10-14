@@ -107,8 +107,8 @@ class lsoutput:
                  if(".MP2" == lineparser2):
                    self.calctype[1] = "MP2"
                    found = True
-                 elif(".MP2DEBUG" == lineparser2):
-                   self.calctype.append("MP2DEBUG")
+                 elif(".RPA" == lineparser2):
+                   self.calctype.append("RPA")
                    found = True
                  elif(".CCSD(T)" == lineparser2):
                    self.calctype[1] = "CCSD(T)"
@@ -151,8 +151,11 @@ class lsoutput:
                found = False
                while("*" not in lineparser2):
                  lineparser2=self.lines[k].strip().upper()
-                 if(".MP2" in lineparser2):
-                   self.calctype[1] = " MP2"
+                 if(".RPA" in lineparser2):
+                   self.calctype[1] = "RPA"
+                   found = True
+                 elif(".MP2" in lineparser2):
+                   self.calctype[1] = "MP2"
                    found = True
                  elif(".CCSD(T)" == lineparser2):
                    self.calctype[1] = "CCSD(T)"
@@ -180,14 +183,17 @@ class lsoutput:
            self.nb = int(line.strip().split()[-1])
            found_nb = True
   
-         #RIGHT NOW TAKE THE OCCUPIED NUMBER FROM DEC PRINT, SHOULD BE CHANGED
-         if("FULL: NUMBER OF ELECTRONS        :" in line):
+         if("NUMBER OF OCCUPIED ORBITALS:" in line):
            self.no = int(line.strip().split()[-1])
            found_no = True
+
+         if("NUMBER OF VIRTUAL ORBITALS:" in line):
+           self.nv = int(line.strip().split()[-1])
+           found_nv = True
          
          #THE PRELIMINARY FILLING IS FINISHED WHEN MOLINP AND DALINP ARE 
          #FILLED IN A SECOND LOOP THE DETAILS HAVE TO BE FILLED IN
-         allfound = (found_molinp and found_dalinp and found_nb and found_no)
+         allfound = (found_molinp and found_dalinp and found_nb and found_no and found_nv)
          if(allfound):
            break
 
@@ -195,11 +201,10 @@ class lsoutput:
       ##########################################
       #PARSING THE FILE IN A FIRST ROUND IS DONE
       ##########################################
-
-
-      if(found_nb and found_no):
-        print "ATTENTION: CALCULATION OF N_VIRTUAL = N_BASIS - N_OCCUPIED"
-        self.nv = self.nb - self.no
+      if (not allfound):
+         print "WARNING: All the information has not been found in 1st round!!"
+         print "         RESTART option might be responsible for that\n"
+         print found_molinp, found_dalinp, found_nb, found_no, found_nv
 
       #REMOVE ALL TRAILING BLANK LINES FROM THE INPUT FILES
       while(self.molinp[0] == ''):
@@ -214,11 +219,13 @@ class lsoutput:
       #FIND MORE SPECIFIC INFORMATION ACCORDING TO THE JOB STRING
       
       #Read DEC fragments from DEC calculation
-      if("DEC"==self.calctype[0] and not "MP2DEBUG" in self.calctype):
+      if("DEC"==self.calctype[0]):
+        print "DEC model = ",self.calctype[1],"\n"
         self.decinfo.get_dec_info(self.lines,self.calctype[1],True)
 
       #Read CC information
       if("CC"==self.calctype[0]):
+        print "CC model = ",self.calctype[1],"\n"
         self.ccinfo.get_cc_info(self.lines,self.calctype[1])
 
         #Read fragment info if availale
@@ -229,16 +236,19 @@ class lsoutput:
    ############################################################
    ###########         DEC SPECIFIC FUNCTIONS       ###########
    ############################################################
+
    #GET FRAGMENT ENERGIES FROM FULL CALCULATION
    def get_fraginfo_from_full(self):
-      if(("DEC"==self.calctype[0] and "MP2DEBUG" in self.calctype)or self.decinfo.enable_fragread):
+      if("DEC"==self.calctype[0] or self.decinfo.enable_fragread):
         print "reading fragment info"
         self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
       else:
         print "ERROR(get_frag_from_full): cannot be performed for this type of calculation"
+
    #REFERENCE TO FULL CALCULATION
    def ref_to_full(self):
       print "NOT YET IMPLEMENTED"
+
    #WRITE FRAGMENT ENERGIES
    def write_sfrag_occ_energies(self,outstream,whichen,printabs):
       energ_id1 = 0

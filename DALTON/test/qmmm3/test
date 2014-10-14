@@ -17,7 +17,7 @@ f.add(from_re = 'QM\/MM \"QMMM\" calculation converged',
 
 f.add(from_re = 'Dipole moment components',
       num_lines = 9,
-      mask = [4],
+      mask = [3],
       rel_tolerance = 1.0e-6)
 
 f.add(from_re = 'Shielding tensors in symmetry coordinates \(ppm\)',

@@ -97,26 +97,10 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
-    call get_atomic_fragment_Energy_and_prop(MyFragment)
+    call atomic_fragment_Energy_and_prop(MyFragment)
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output,ForcePrint)
 
   end subroutine get_fragment_and_Energy
-
-  subroutine get_atomic_fragment_Energy_and_prop(MyFragment)
-    implicit none
-    !> Atomic fragment to be determined  (NOT pair fragment)
-    type(decfrag), intent(inout) :: MyFragment         
-    IF(DECinfo%FragmentExpansionRI)THEN
-#ifdef MOD_UNRELEASED
-       CALL MP2_RI_energyContribution(MyFragment)
-       call get_occ_virt_lag_energies_fragopt(MyFragment)
-#else
-       call lsquit('MP2_RI_energyContribution not implemented',-1)
-#endif
-    ELSE
-       call atomic_fragment_energy_and_prop(MyFragment)
-    ENDIF
-  end subroutine get_atomic_fragment_Energy_and_prop
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
   !> and calculate fragment energy. 
@@ -276,8 +260,8 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-    type(array) :: t1, ccsdpt_t1, m1
-    type(array) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(tensor) :: t1, ccsdpt_t1, m1
+    type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -286,6 +270,7 @@ contains
     times_ccsd => null()
     times_pt   => null()
 
+    !MODIFY FOR NEW MODEL
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
@@ -303,6 +288,11 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+
+    case(MODEL_RIMP2) ! RIMP2 calculation
+
+       if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
+       call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -324,14 +314,14 @@ contains
 
        ! Extract EOS indices for integrals
        ! *********************************
-       call array_extract_eos_indices(VOVO,MyFragment,Arr_occEOS=VOVOocc,Arr_virtEOS=VOVOvirt)
-!       call array_free(VOVO)
+       call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
+!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
 !          call z_vec_rhs_ccsd(MyFragment,eta,m1_arr=m1,m2_arr=m2,t1_arr=t1,t2_arr=t2)
-          call array_free(m2)
-          call array_free(m1)
+          call tensor_free(m2)
+          call tensor_free(m1)
        endif
 #endif
 
@@ -342,9 +332,9 @@ contains
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array_extract_eos_indices(u,MyFragment,Arr_occEOS=t2occ,Arr_virtEOS=t2virt)
+       call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
-       call array_free(u)
+       call tensor_free(u)
 
        call dec_fragment_time_get(times_ccsd)
 
@@ -364,20 +354,20 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
          if (abc) then
 
-            call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-            call array_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
-            call array_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
+            call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
+            call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
                  &MyFragment%nunoccAOS,MyFragment%nunoccAOS],4)
 
          else
 
-            call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-            call array_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
-            call array_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
+            call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
+            call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
                  &MyFragment%noccAOS,MyFragment%noccAOS],4)
 
          endif
@@ -393,8 +383,8 @@ contains
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
 
           ! release ccsd(t) singles and doubles amplitudes
-          call array_free(ccsdpt_t1)
-          call array_free(ccsdpt_t2)
+          call tensor_free(ccsdpt_t1)
+          call tensor_free(ccsdpt_t2)
 
           call dec_fragment_time_get(times_pt)
 
@@ -402,12 +392,12 @@ contains
 #endif 
 
        ! free vovo integrals
-       call array_free(VOVO)
+       call tensor_free(VOVO)
 
        if(DECinfo%use_singles)then
-          call array_free(t1)
+          call tensor_free(t1)
        endif
-       call array_free(t2)
+       call tensor_free(t2)
 
 
     case default
@@ -422,7 +412,7 @@ contains
 
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
+    ! (1) Your new model fits into the standard CC energy expression (this includes MP2). 
     !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new atomic fragment energy subroutine and call it from
@@ -433,7 +423,7 @@ contains
     if(DECinfo%frozencore .and. DECinfo%first_order) then
        call remove_core_orbitals_from_last_index(MyFragment,VOVOvirt,VOVOvirtTMP)
        call get_atomic_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,MyFragment)
-       call array_free(VOVOvirtTMP)
+       call tensor_free(VOVOvirtTMP)
     else ! use VOVOvirt as it is
        call get_atomic_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,MyFragment)
     end if
@@ -469,22 +459,22 @@ contains
 #endif
        if(DECinfo%ccmodel == MODEL_MP2)then
           call single_calculate_mp2gradient_driver(MyFragment,t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-          call array_free(VOOO)
-          call array_free(VOVV)
+          call tensor_free(VOOO)
+          call tensor_free(VOVV)
        end if
     end if
-
-    if(MyFragment%ccmodel /= MODEL_MP2)then
+    !
+    if(MyFragment%ccmodel /= MODEL_MP2.AND.MyFragment%ccmodel.NE.MODEL_RIMP2)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     endif
     if(MyFragment%ccmodel == MODEL_CCSDpT)then
        call dec_time_evaluate_efficiency_frag(MyFragment,times_pt,MODEL_CCSDpT,'(T)  part')
     endif
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(t2occ)
-    call array_free(VOVOvirt)
-    call array_free(t2virt)
+    call tensor_free(VOVOocc)
+    call tensor_free(t2occ)
+    call tensor_free(VOVOvirt)
+    call tensor_free(t2virt)
     !print *,"s1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"s2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
     !print *,"s3",t2virt%initialized,associated(t2virt%elm1)
@@ -506,15 +496,15 @@ contains
 
     implicit none
     !> Two-electron integrals (a i | b j), only occ orbitals on central atom, virt AOS orbitals
-    type(array), intent(in) :: gocc
+    type(tensor), intent(in) :: gocc
     !> Two-electron integrals (a i | b j), only virt orbitals on central atom, occ AOS orbitals
-    type(array), intent(in) :: gvirt
+    type(tensor), intent(in) :: gvirt
     !> amplitudes, only occ orbitals on central atom, virt AOS orbitals
     !  (combine singles and doubles if singles are present)
-    type(array), intent(in) :: t2occ
+    type(tensor), intent(in) :: t2occ
     !> amplitudes, only virt orbitals on central atom, occ AOS orbitals
     !  (combine singles and doubles if singles are present)
-    type(array), intent(in) :: t2virt
+    type(tensor), intent(in) :: t2virt
     !> Atomic fragment 
     type(decfrag), intent(inout) :: myfragment
     integer :: noccEOS,nvirtEOS,noccAOS,nvirtAOS
@@ -950,8 +940,8 @@ contains
     type(decfrag), intent(inout) :: PairFragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout) :: grad
-    type(array) :: t1, ccsdpt_t1,m1,m2
-    type(array) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
+    type(tensor) :: t1, ccsdpt_t1,m1,m2
+    type(tensor) :: g,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVO,ccsdpt_t2,VOVOvirtTMP
     real(realk) :: tcpu, twall
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -965,6 +955,7 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    ! MODIFY FOR NEW MODEL!
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(PairFragment%ccmodel) 
@@ -980,6 +971,11 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+
+    case( MODEL_RIMP2 ) ! RI-MP2
+
+       ! calculate only RI-MP2 energy integrals and MP2 amplitudes
+       call RIMP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -1000,14 +996,14 @@ contains
 
        ! Extract EOS indices for integrals 
        ! *********************************
-       call array_extract_eos_indices(VOVO, PairFragment, Arr_occEOS=VOVOocc, Arr_virtEOS=VOVOvirt)
-!       call array_free(VOVO)
+       call tensor_extract_eos_indices(VOVO, PairFragment, tensor_occEOS=VOVOocc, tensor_virtEOS=VOVOvirt)
+!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
           !construct RHS for pairs
-          call array_free(m2)
-          call array_free(m1)
+          call tensor_free(m2)
+          call tensor_free(m1)
        endif
 #endif
 
@@ -1018,9 +1014,9 @@ contains
 
        ! Extract EOS indices for amplitudes
        ! **********************************
-       call array_extract_eos_indices(u, PairFragment,Arr_occEOS=t2occ, Arr_virtEOS=t2virt)
+       call tensor_extract_eos_indices(u, PairFragment,tensor_occEOS=t2occ, tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
-       call array_free(u)
+       call tensor_free(u)
 
        call dec_fragment_time_get(times_ccsd)
 
@@ -1036,7 +1032,7 @@ contains
 
     ! MODIFY FOR NEW MODEL!
     ! Two possible situations:
-    ! (1) Your new model fits into the standard CC energy expression. 
+    ! (1) Your new model fits into the standard CC energy expression. (This includes MP2) 
     !     Things should work out of the box simply by calling get_atomic_fragment_energy below.
     ! (2) Your model does NOT fit into the standard CC energy expression.
     !     In this case you need to make a new pair interaction energy subroutine and call it from
@@ -1048,7 +1044,7 @@ contains
        call remove_core_orbitals_from_last_index(PairFragment,VOVOvirt,VOVOvirtTMP)
        call get_pair_fragment_energy(VOVOocc,VOVOvirtTMP,t2occ,t2virt,&
             & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
-       call array_free(VOVOvirtTMP)
+       call tensor_free(VOVOvirtTMP)
     else ! use VOVOvirt as it is
        call get_pair_fragment_energy(VOVOocc,VOVOvirt,t2occ,t2virt,&
             & Fragment1, Fragment2, PairFragment,natoms,DistanceTable)
@@ -1076,8 +1072,8 @@ contains
     if(DECinfo%first_order) then
        call pair_calculate_mp2gradient_driver(Fragment1,Fragment2,PairFragment,&
             & t2occ,t2virt,VOOO,VOVV,VOVOocc,VOVOvirt,grad)
-       call array_free(VOOO)
-       call array_free(VOVV)
+       call tensor_free(VOOO)
+       call tensor_free(VOVV)
     end if
 
 #ifdef MOD_UNRELEASED
@@ -1089,6 +1085,7 @@ contains
 
     if (PairFragment%CCModel == MODEL_CCSDpT) then
 
+       print *,"DOING(T)"
        call dec_fragment_time_init(times_pt)
 
        print_frags = DECinfo%print_frags
@@ -1097,20 +1094,20 @@ contains
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          call array_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-          call array_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+          call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+          call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
-          call array_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
-          call array_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
+          call tensor_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
+          call tensor_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
                &PairFragment%nunoccAOS,PairFragment%nunoccAOS],4)
 
        else
 
-          call array_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-          call array_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+          call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
-          call array_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
-          call array_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
+          call tensor_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
+          call tensor_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
                &PairFragment%noccAOS,PairFragment%noccAOS],4)
 
        endif
@@ -1125,8 +1122,8 @@ contains
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
-       call array_free(ccsdpt_t1)
-       call array_free(ccsdpt_t2)
+       call tensor_free(ccsdpt_t1)
+       call tensor_free(ccsdpt_t2)
 
        call dec_fragment_time_get(times_pt)
 
@@ -1137,13 +1134,13 @@ contains
     if (PairFragment%CCModel == MODEL_RPA  .or. &
        &PairFragment%CCModel == MODEL_CC2  .or. &
        &PairFragment%CCModel == MODEL_CCSD .or. &
-       &PairFragment%CCModel == MODEL_CCSDpT ) call array_free(VOVO)
+       &PairFragment%CCModel == MODEL_CCSDpT ) call tensor_free(VOVO)
 
-    if( PairFragment%ccmodel /= MODEL_MP2 ) then
+    if(PairFragment%ccmodel /= MODEL_MP2.AND.PairFragment%ccmodel.NE.MODEL_RIMP2) then
        if(DECinfo%use_singles)then
-          call array_free(t1)
+          call tensor_free(t1)
        endif
-       call array_free(t2)
+       call tensor_free(t2)
        call dec_time_evaluate_efficiency_frag(PairFragment,times_ccsd,MODEL_CCSD,'CCSD part')
     end if
 
@@ -1152,10 +1149,10 @@ contains
     endif
 
     ! Free remaining arrays
-    call array_free(VOVOocc)
-    call array_free(t2occ)
-    call array_free(t2virt)
-    call array_free(VOVOvirt)
+    call tensor_free(VOVOocc)
+    call tensor_free(t2occ)
+    call tensor_free(t2virt)
+    call tensor_free(VOVOvirt)
 
     !print *,"p1",VOVOocc%initialized,associated(VOVOocc%elm1)
     !print *,"p2",VOVOvirt%initialized,associated(VOVOvirt%elm1)
@@ -1183,13 +1180,13 @@ contains
 
      implicit none
      !> Two-electron integrals (a i | b j), only occ orbitals on central atom, virt AOS orbitals
-     type(array), intent(in) :: gocc
+     type(tensor), intent(in) :: gocc
      !> Two-electron integrals (a i | b j), only virt orbitals on central atom, occ AOS orbitals
-     type(array), intent(in) :: gvirt
+     type(tensor), intent(in) :: gvirt
      !> MP2 amplitudes, only occ orbitals on central atom, virt AOS orbitals
-     type(array), intent(in) :: t2occ
+     type(tensor), intent(in) :: t2occ
      !> MP2 amplitudes, only virt orbitals on central atom, occ AOS orbitals
-     type(array), intent(in) :: t2virt
+     type(tensor), intent(in) :: t2virt
      !> Fragment 1 in the pair fragment
      type(decfrag),intent(inout) :: Fragment1
      !> Fragment 2 in the pair fragment
@@ -2367,7 +2364,7 @@ contains
              & OccAOS,VirtAOS,OccOrbitals,UnOccOrbitals,MyAtom)
         call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
              & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
      ELSEIF(OrbDistanceSpec)THEN
         call mem_alloc(OccAOS,nocc)
         call mem_alloc(VirtAOS,nunocc)
@@ -2380,7 +2377,7 @@ contains
              & OccOrbitals,UnOccOrbitals,MyAtom)
         call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS, &
              & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
      ELSE
         call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,&
              & init_Occradius, init_Virtradius, Occ_atoms,Virt_atoms)
@@ -2502,7 +2499,7 @@ contains
         ! Different model in expansion and reduction steps - Calculate new reference energy
         ! for converged fragment from expansion loop.
         AtomicFragment%ccmodel = MyMolecule%ccmodel(MyAtom,Myatom)
-        call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+        call atomic_fragment_Energy_and_prop(AtomicFragment)
         LagEnergyDiff=0.0_realk
         OccEnergyDiff=0.0_realk
         VirtEnergyDiff=0.0_realk
@@ -2941,7 +2938,7 @@ contains
            call atomic_fragment_free(AtomicFragment)
            call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
                 & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-           call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+           call atomic_fragment_Energy_and_prop(AtomicFragment)
         ELSEIF(OrbDistanceSpec)THEN
            call ExpandFragmentOrbitalSpec(natoms,nocc,nunocc,&
                 & SortedDistanceTableOrbAtomOcc,OrbOccDistTrackMyAtom,&
@@ -2950,7 +2947,7 @@ contains
            call atomic_fragment_free(AtomicFragment)
            call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc,VirtAOS, &
                 & OccAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-           call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+           call atomic_fragment_Energy_and_prop(AtomicFragment)
         ELSE
            ! Expand fragment and get new energy
            call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
@@ -2986,16 +2983,12 @@ contains
         ! Exit loop if we are converged
         ExpansionConvergence: if(expansion_converged) then
            Occ_atoms = OccOld;Virt_atoms = VirtOld
-           IF(DECinfo%FragmentExpansionRI)THEN
-              write(DECinfo%output,*) 'FOP RI Fragment expansion converged in iteration ', iter
-           ELSE
-              IF(ExpandOcc.AND.ExpandVirt)THEN
-                 write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
-              ELSEIF(ExpandOcc)THEN
-                 write(DECinfo%output,*) 'FOP Occupied Fragment expansion converged in iteration ', iter
-              ELSEIF(ExpandVirt)THEN
-                 write(DECinfo%output,*) 'FOP Virtual Fragment expansion converged in iteration ', iter
-              ENDIF
+           IF(ExpandOcc.AND.ExpandVirt)THEN
+              write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
+           ELSEIF(ExpandOcc)THEN
+              write(DECinfo%output,*) 'FOP Occupied Fragment expansion converged in iteration ', iter
+           ELSEIF(ExpandVirt)THEN
+              write(DECinfo%output,*) 'FOP Virtual Fragment expansion converged in iteration ', iter
            ENDIF
            exit EXPANSION_LOOP
         else
@@ -3382,7 +3375,7 @@ contains
                    call atomic_fragment_free(AtomicFragment)
                    call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                         & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-                   call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+                   call atomic_fragment_Energy_and_prop(AtomicFragment)
                    WRITE(DECinfo%output,'(A,I5)')'Orbital i included in AOS space (CALC)  i=',I
                    BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP-OccEnergyOld)
                 ELSE
@@ -3444,7 +3437,7 @@ contains
 !!$             call atomic_fragment_free(AtomicFragment)
 !!$             call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
 !!$                  & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-!!$             call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+!!$             call atomic_fragment_Energy_and_prop(AtomicFragment)
 !!$             BruteForceOccContribs(I) = ABS(AtomicFragment%EoccFOP)            
 !!$          ENDDO
 !!$          call real_inv_sort_with_tracking(BruteForceOccContribs,BruteForceTrackListOcc,nocc)
@@ -3687,7 +3680,7 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+          call atomic_fragment_Energy_and_prop(AtomicFragment)
           
           ! Check if reduced fragment energy is converged to FOT precision
           ! **************************************************************
@@ -3855,7 +3848,7 @@ contains
                   & OccAOS_orig,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
                   & AtomicFragment,.true.,.false.)
              
-             call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+             call atomic_fragment_Energy_and_prop(AtomicFragment)
 
              ! we set the reduction to be converged to avoid quiting:
              reduction_converged = .true.
@@ -3874,7 +3867,7 @@ contains
           call atomic_fragment_free(AtomicFragment)
           call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
                & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-          call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+          call atomic_fragment_Energy_and_prop(AtomicFragment)
           
           
           ! Check if reduced fragment energy is converged to FOT precision
@@ -4610,6 +4603,11 @@ contains
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
        !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       fragment%EoccFOP = fragment%energies(FRAGMODEL_OCCRIMP2)
+       fragment%EvirtFOP = fragment%energies(FRAGMODEL_VIRTRIMP2)
+
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -4673,6 +4671,11 @@ contains
        fragment%energies(FRAGMODEL_VIRTpT) = fragment%EvirtFOP - fragment%energies(FRAGMODEL_VIRTCCSD)
 !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       fragment%energies(FRAGMODEL_OCCRIMP2) = fragment%EoccFOP
+       fragment%energies(FRAGMODEL_VIRTRIMP2) = fragment%EvirtFOP 
+
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', fragment%ccmodel
@@ -4751,6 +4754,12 @@ contains
        energies(FRAGMODEL_VIRTCCSD) = Evirt   ! virtual
        !endif mod_unreleased
 #endif
+    case(MODEL_RIMP2)
+       ! RI-MP2
+       energies(FRAGMODEL_OCCRIMP2) = Eocc     ! occupied
+       energies(FRAGMODEL_VIRTRIMP2) = Evirt   ! virtual
+    case default
+       call lsquit('case unknown in put_fragment_energy_contribs',-1)
     end select
 
   end subroutine put_fragment_energy_contribs
@@ -4896,7 +4905,7 @@ contains
       call atomic_fragment_init_orbital_specific(MyAtom,nv,no,Vir_AOS,Occ_AOS,OccOrbitals, &
          & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.) 
       ! Get Energy for the initialized fragment
-      call get_atomic_fragment_Energy_and_prop(AtomicFragment) 
+      call atomic_fragment_Energy_and_prop(AtomicFragment) 
       ! Print initial fragment information
       if (full_mol) write(DECinfo%output,*) 'FOP Expansion Include Full Molecule !!!'
       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
@@ -4939,7 +4948,7 @@ contains
       ! if expansion and reduction ccmodels are different, we need to calculate
       ! the energy of the expanded fragment using the new model:
       if(DECinfo%fragopt_exp_model /= DECinfo%fragopt_red_model) then
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
          write(DECinfo%output,'(2a)') ' FOP Calculated ref atomic fragment energy for relevant CC model: ', &
            & DECinfo%cc_models(MyMolecule%ccmodel(MyAtom,Myatom))
          call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
@@ -5045,7 +5054,7 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_old - AtomicFragment%LagFOP)
@@ -5214,7 +5223,7 @@ contains
             & VirOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
          ! Get new fragment energy:
-         call get_atomic_fragment_Energy_and_prop(AtomicFragment)
+         call atomic_fragment_Energy_and_prop(AtomicFragment)
 
          ! Energy differences
          LagEnergy_dif = abs(LagEnergy_exp - AtomicFragment%LagFOP)

@@ -127,11 +127,11 @@ module cc_tools_module
       integer, intent(in) :: la,lg
       !> the doubles residual to update
       !real(realk), intent(inout) :: om2(:)
-      type(array), intent(inout) :: om2
+      type(tensor), intent(inout) :: om2
       !> the lambda transformation matrices
       real(realk), intent(in)    :: xo(:),yo(:),xv(:),yv(:)
       !> the sio4 matrix to calculate the b2.2 contribution
-      type(array),intent(inout) ::sio4
+      type(tensor),intent(inout) ::sio4
       !> scheme
       integer,intent(in) :: s
       logical,intent(in) :: lo
@@ -235,7 +235,7 @@ module cc_tools_module
       !\> omega should be the residual matrix which contains the second parts
       !of the A2 and B2 term
       !real(realk),intent(inout) :: omega(nv*nv*no*no)
-      type(array),intent(inout) :: omega
+      type(tensor),intent(inout) :: omega
       !> w0 is just some workspace on input
       real(realk),intent(inout) :: w0(:)
       !> w2 is just some workspace on input
@@ -244,7 +244,7 @@ module cc_tools_module
       real(realk),intent(inout) :: w3(:)
       !> sio4 are the reduced o4 integrals whic are used to calculate the B2.2
       !contribution after the loop, update them in the loops
-      type(array),intent(inout) :: sio4
+      type(tensor),intent(inout) :: sio4
       !> Lambda p virutal part
       real(realk),intent(in) :: xvirt(:)
       !> Lambda p occupied part
@@ -277,7 +277,7 @@ module cc_tools_module
       real(realk) :: twork,tcomm
       !> the doubles amplitudes
       !real(realk),intent(in) :: amps(nv*nv*no*no)
-      !type(array),intent(in) :: amps
+      !type(tensor),intent(in) :: amps
       real(realk) :: scaleitby
       integer(kind=8)       :: pos,pos2,pos21,i,j,dim_big,dim_small,ttri,tsq,nel2cp,ncph,pos1
       integer ::occ,gamm,alpha,case_sel,full1,full2,offset1,offset2
@@ -652,12 +652,12 @@ module cc_tools_module
                endif
             else if(s==2)then
 #ifdef VAR_MPI
-               if( lock_outside )call arr_lock_wins(omega,'s',mode)
+               if( lock_outside )call tensor_lock_wins(omega,'s',mode)
                !$OMP WORKSHARE
                w2(1_long:o2v2) = scaleitby*w2(1_long:o2v2)
                !$OMP END WORKSHARE
                call time_start_phase(PHASE_COMM, at=twork)
-               call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                call time_start_phase(PHASE_WORK, at=tcomm)
 #endif
             endif
@@ -691,7 +691,7 @@ module cc_tools_module
 #ifdef  VAR_MPI
             if( lock_outside .and. s==2 )then
                call time_start_phase(PHASE_COMM, at=twork)
-               call arr_unlock_wins(omega,.true.)
+               call tensor_unlock_wins(omega,.true.)
                call time_start_phase(PHASE_WORK, at=tcomm)
             endif
 #endif 
@@ -752,7 +752,7 @@ module cc_tools_module
                   !$OMP END WORKSHARE
 #endif
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                   call time_start_phase(PHASE_WORK, at=tcomm)
                endif
             else
@@ -776,7 +776,7 @@ module cc_tools_module
          call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
 #ifdef VAR_MPI
          if(lock_outside.and.s==2)then
-            call arr_unlock_wins(omega,.true.)
+            call tensor_unlock_wins(omega,.true.)
          endif
 #endif
          !transform gamma -> l
@@ -818,11 +818,11 @@ module cc_tools_module
                   enddo
                enddo
 #ifdef VAR_MPI
-               if( lock_outside )call arr_lock_wins(sio4,'s',mode)
+               if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
                call time_start_phase(PHASE_COMM, at=twork)
-               call array_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+               call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                call time_start_phase(PHASE_WORK, at=tcomm)
-               if( lock_outside )call arr_unlock_wins(sio4,.true.)
+               if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
             else
                call ass_D1to3(w2,t1,[no2,no2,nor])
@@ -894,11 +894,11 @@ module cc_tools_module
                      enddo
                   enddo
 #ifdef VAR_MPI
-                  if( lock_outside )call arr_lock_wins(sio4,'s',mode)
+                  if( lock_outside )call tensor_lock_wins(sio4,'s',mode)
                   call time_start_phase(PHASE_COMM, at=twork)
-                  call array_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
+                  call tensor_add(sio4,1.0E0_realk,w2,wrk=w3,iwrk=wszes(3))
                   call time_start_phase(PHASE_WORK, at=tcomm)
-                  if( lock_outside )call arr_unlock_wins(sio4,.true.)
+                  if( lock_outside )call tensor_unlock_wins(sio4,.true.)
 #endif
                else
 
@@ -1273,10 +1273,10 @@ module cc_tools_module
    subroutine get_B22_contrib_mo(sio4,t2,w1,w2,no,nv,om2,s,lock_outside,tw,tc,no_par,order)
       implicit none
       !> the sio4 matrix from the kobayashi terms on input
-      type(array), intent(in) :: sio4
+      type(tensor), intent(in) :: sio4
       !> amplitudes
       !real(realk), intent(in) :: t2(*)
-      type(array), intent(inout) :: t2
+      type(tensor), intent(inout) :: t2
       !> some workspave
       real(realk), intent(inout) :: w1(:)
       real(realk), pointer :: w2(:)
@@ -1284,7 +1284,7 @@ module cc_tools_module
       integer, intent(in) :: no,nv
       !> residual to be updated
       !real(realk), intent(inout) :: om2(*)
-      type(array), intent(inout) :: om2
+      type(tensor), intent(inout) :: om2
       !> integer specifying the calc-scheme
       integer, intent(in) :: s
       logical, intent(in) :: lock_outside
@@ -1389,8 +1389,8 @@ module cc_tools_module
 
 #ifdef VAR_MPI
          o = [1,2,3,4]
-         if(lock_outside)call arr_lock_local_wins(om2,'e',mode)
-         call array_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
+         if(lock_outside)call tensor_lock_local_wins(om2,'e',mode)
+         call tensor_contract(0.5E0_realk,t2,sio4,[3,4],[1,2],2,1.0E0_realk,om2,o)
 #endif
 
       endif
