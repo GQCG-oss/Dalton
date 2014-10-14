@@ -4000,6 +4000,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Get Fock matrix for the fragment (or full molecule) density matrix
     call mat_init(fock,nbasis,nbasis)
     call mat_zero(fock)
+    call util_get_symm_part(D)
     call dec_fock_transformation(fock,D,MyLsitem,.true.)
     call mat_free(D)
 
@@ -4049,6 +4050,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     ! Get Fock matrix for the fragment (or full molecule) density matrix
     call mat_init(fock,nbasis,nbasis)
     call mat_zero(fock)
+    call util_get_symm_part(D)
     call dec_fock_transformation(fock,D,MyLsitem,.true.)
     call mat_free(D)
 
