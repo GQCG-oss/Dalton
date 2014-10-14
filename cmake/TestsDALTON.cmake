@@ -99,7 +99,7 @@ add_dalton_test(energy_lucita_gasci "dalton;energy;short;parallel")
 add_dalton_runtest(energy_stex      "dalton;runtest;energy;short;parallel;multistep")
 add_dalton_test(energy_scsmp2       "dalton;energy;short;parallel;essential")
 add_dalton_test(energy_localize_selected         "dalton;energy;short;essential")
-add_dalton_test(energy_corehole     "dalton;energy;short;multistep")
+add_dalton_runtest(energy_corehole  "dalton;runtest;energy;short;multistep")
 
 add_dalton_test(energy_solv         "dalton;energy;medium")
 
