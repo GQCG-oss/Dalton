@@ -675,14 +675,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
   !    nullify(xv_p)
   !    nullify(yv_p)
   !end subroutine get_ccsd_residual_integral_driven_oldtensor_wrapper
-  subroutine ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2,t2,&
+  subroutine ccsd_residual_wrapper(ccmodel,delta_fock,omega2,t2,&
              & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,&
              & xv,yo,yv,nb,MyLsItem,omega1,t1,pgmo_diag,pgmo_up,&
              & MOinfo,mo_ccsd,pno_cv,pno_s,nspaces,iter,local,use_pnos,rest,frag)
     implicit none
     !> CC model
     integer,intent(in)    :: ccmodel
-    logical, intent(in)      :: w_cp
     type(tensor)              :: delta_fock
     type(tensor)              :: omega2
     type(tensor)              :: t2
@@ -4328,7 +4327,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(lsitem), intent(inout) :: mylsitem
     !> Singles amplitudes for fragment or full molecule
     !> Although this is intent(inout), it is unchanged at output
-    type(array2),intent(inout) :: t1
+    type(tensor),intent(inout) :: t1
     !> T1-transformed Fock matrix in the AO basis (also initialized here)
     type(tensor),intent(inout) :: fockt1
     !> Number of occupied orbitals (fragment AOS or full molecule)
@@ -4348,24 +4347,28 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     type(array2) :: Co_a2
     type(array2) :: Co2_a2
     type(array2) :: Cv_a2
+    type(array2) :: t1_a2
 
-    fockt1_a2%dims=fockt1%dims
-    Co_a2%dims=Co%dims
-    Co2_a2%dims=Co2%dims
-    Cv_a2%dims=Cv%dims
+    fockt1_a2%dims = fockt1%dims
+    Co_a2%dims     = Co%dims
+    Co2_a2%dims    = Co2%dims
+    Cv_a2%dims     = Cv%dims
+    t1_a2%dims     = t1%dims
 
-    call ass_D1to2(fockt1%elm1,fockt1_a2%val,fockt1%dims)
-    call ass_D1to2(Co%elm1,Co_a2%val,Co%dims)
-    call ass_D1to2(Co2%elm1,Co2_a2%val,Co2%dims)
-    call ass_D1to2(Cv%elm1,Cv_a2%val,Cv%dims)
+    call ass_D1to2( fockt1%elm1,fockt1_a2%val,fockt1%dims )
+    call ass_D1to2( Co%elm1,    Co_a2%val,    Co%dims     )
+    call ass_D1to2( Co2%elm1,   Co2_a2%val,   Co2%dims    )
+    call ass_D1to2( Cv%elm1,    Cv_a2%val,    Cv%dims     )
+    call ass_D1to2( t1%elm1,    t1_a2%val,    t1%dims     )
 
-    call Get_AOt1Fock(mylsitem,t1,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
+    call Get_AOt1Fock(mylsitem,t1_a2,fockt1_a2,nocc,nvirt,nbasis,Co_a2,Co2_a2,Cv_a2)
 
 
-    nullify(fockt1_a2%val)
-    nullify(Co_a2%val)
-    nullify(Co2_a2%val)
-    nullify(Cv_a2%val)
+    nullify( fockt1_a2%val )
+    nullify( Co_a2%val     )
+    nullify( Co2_a2%val    )
+    nullify( Cv_a2%val     )
+    nullify( t1_a2%val     )
 
     !call print_norm(fockt1)
   end subroutine Get_AOt1Fock_arraywrapper

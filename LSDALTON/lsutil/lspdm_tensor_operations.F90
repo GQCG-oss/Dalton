@@ -115,34 +115,38 @@ module lspdm_tensor_operations_module
   save
   
   ! job parameters for pdm jobs
-  integer,parameter :: JOB_PC_ALLOC_DENSE      =  1
-  integer,parameter :: JOB_PC_DEALLOC_DENSE    =  2
-  integer,parameter :: JOB_FREE_tensor_STD        =  3
-  integer,parameter :: JOB_INIT_tensor_TILED      =  4
-  integer,parameter :: JOB_FREE_tensor_PDM        =  5
-  integer,parameter :: JOB_INIT_tensor_REPLICATED =  6
-  integer,parameter :: JOB_PRINT_MEM_INFO1     =  7
-  integer,parameter :: JOB_PRINT_MEM_INFO2     =  8
-  integer,parameter :: JOB_GET_NRM2_TILED      =  9
-  integer,parameter :: JOB_DATA2TILED_DIST     = 10
-  integer,parameter :: JOB_GET_TILE_SEND       = 11
-  integer,parameter :: JOB_PRINT_TI_NRM        = 12
-  integer,parameter :: JOB_SYNC_REPLICATED     = 13
-  integer,parameter :: JOB_GET_NORM_REPLICATED = 14
-  integer,parameter :: JOB_PREC_DOUBLES_PAR    = 15
-  integer,parameter :: JOB_DDOT_PAR            = 16
-  integer,parameter :: JOB_ADD_PAR             = 17
-  integer,parameter :: JOB_CP_ARR              = 18
-  integer,parameter :: JOB_tensor_ZERO          = 19
-  integer,parameter :: JOB_GET_CC_ENERGY       = 20
-  integer,parameter :: JOB_GET_FRAG_CC_ENERGY  = 21
-  integer,parameter :: JOB_CHANGE_ACCESS_TYPE  = 22
-  integer,parameter :: JOB_tensor_SCALE         = 23
-  integer,parameter :: JOB_INIT_tensor_PC         = 24
-  integer,parameter :: JOB_GET_MP2_ENERGY      = 25
-  integer,parameter :: JOB_GET_RPA_ENERGY      = 26
-  integer,parameter :: JOB_GET_SOS_ENERGY      = 27
-  integer,parameter :: JOB_tensor_CONTRACT_SIMPLE = 28
+  integer,parameter :: JOB_PC_ALLOC_DENSE         =  1
+  integer,parameter :: JOB_PC_DEALLOC_DENSE       =  2
+  integer,parameter :: JOB_FREE_TENSOR_STD        =  3
+  integer,parameter :: JOB_INIT_TENSOR_TILED      =  4
+  integer,parameter :: JOB_FREE_TENSOR_PDM        =  5
+  integer,parameter :: JOB_INIT_TENSOR_REPLICATED =  6
+  integer,parameter :: JOB_PRINT_MEM_INFO1        =  7
+  integer,parameter :: JOB_PRINT_MEM_INFO2        =  8
+  integer,parameter :: JOB_GET_NRM2_TILED         =  9
+  integer,parameter :: JOB_DATA2TILED_DIST        = 10
+  integer,parameter :: JOB_GET_TILE_SEND          = 11
+  integer,parameter :: JOB_PRINT_TI_NRM           = 12
+  integer,parameter :: JOB_SYNC_REPLICATED        = 13
+  integer,parameter :: JOB_GET_NORM_REPLICATED    = 14
+  integer,parameter :: JOB_PREC_DOUBLES_PAR       = 15
+  integer,parameter :: JOB_DDOT_PAR               = 16
+  integer,parameter :: JOB_ADD_PAR                = 17
+  integer,parameter :: JOB_CP_ARR                 = 18
+  integer,parameter :: JOB_TENSOR_ZERO            = 19
+  integer,parameter :: JOB_GET_CC_ENERGY          = 20
+  integer,parameter :: JOB_GET_FRAG_CC_ENERGY     = 21
+  integer,parameter :: JOB_CHANGE_ACCESS_TYPE     = 22
+  integer,parameter :: JOB_TENSOR_SCALE           = 23
+  integer,parameter :: JOB_INIT_TENSOR_PC         = 24
+  integer,parameter :: JOB_GET_MP2_ENERGY         = 25
+  integer,parameter :: JOB_GET_RPA_ENERGY         = 26
+  integer,parameter :: JOB_GET_SOS_ENERGY         = 27
+  integer,parameter :: JOB_TENSOR_CONTRACT_SIMPLE = 28
+  integer,parameter :: JOB_TENSOR_EXTRACT_VEOS    = 29
+  integer,parameter :: JOB_TENSOR_EXTRACT_OEOS    = 30
+  integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 31
+  integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 32
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -906,6 +910,302 @@ module lspdm_tensor_operations_module
 #endif
   end function get_cc_energy_parallel
 
+  subroutine lspdm_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array in the order nv,no,nv,no
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims, o
+     integer, pointer :: idxatil(:), idxbtil(:)
+     integer :: lt, di, da, dj, db, nidxa, nidxb, a_eos,b_eos
+     real(realk), pointer :: tile(:,:,:,:)
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)  ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)  ! Total number of virtual orbitals
+     new_dims = [nEOS,nocc,nEOS,nocc] ! nEOS=Number of occupied EOS orbitals
+#ifdef VAR_MPI
+     if(infpar%lg_mynum == infpar%master.and. &
+        & tensor_full%access_type==MASTER_ACCESS)then
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VEOS,tensor_full)
+        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call ls_mpi_buffer(nEOS,infpar%master)
+        call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
+        call ls_mpi_buffer(4,infpar%master)
+        call ls_mpi_buffer(new_dims,4,infpar%master)
+        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     endif
+
+     call mem_alloc(idxatil,nEOS)
+     call mem_alloc(idxbtil,nEOS)
+
+     do lt=1,tensor_full%nlti
+
+        call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
+
+        call ass_D1to4(tensor_full%ti(lt)%t,tile,tensor_full%ti(lt)%d)
+
+        !get offset for tile counting
+        do j=1,tensor_full%mode
+           o(j)=(o(j)-1)*tensor_full%tdim(j)
+        enddo
+
+        da = tensor_full%ti(lt)%d(1)
+        di = tensor_full%ti(lt)%d(2)
+        db = tensor_full%ti(lt)%d(3)
+        dj = tensor_full%ti(lt)%d(4)
+
+        ! GET EOS mapping to the tile
+        nidxa = 0
+        do a_eos = 1, nEOS
+           do a = 1, da
+              if( o(1) + a == EOS_idx(a_eos))then
+                 idxatil(nidxa+1) = a
+                 nidxa = nidxa + 1
+              endif
+           enddo
+        enddo
+
+        nidxb = 0
+        do b_eos = 1, nEOS
+           do b = 1, db
+              if( o(3) + b == EOS_idx(b_eos))then
+                 idxbtil(nidxb+1) = b
+                 nidxb = nidxb + 1
+              endif
+           enddo
+        enddo
+
+        if(nidxa > 0 .and. nidxb>0)then
+
+           do j=1,dj
+              do b=1,nidxb
+                 do i=1,di
+                    do a=1,nidxa
+                       Arr%elm4(o(1)+idxatil(a),o(2)+i,o(3)+idxbtil(b),o(4)+j) = tile(idxatil(a),i,idxbtil(b),j)
+                    end do
+                 end do
+              end do
+           end do
+
+        endif
+
+        tile => null()
+     enddo
+
+     call mem_dealloc(idxatil)
+     call mem_dealloc(idxbtil)
+
+     if(tensor_full%access_type==MASTER_ACCESS)then
+        call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     else if(tensor_full%access_type==ALL_ACCESS)then
+        call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     endif
+
+#endif
+
+  end subroutine lspdm_extract_eos_indices_virt
+
+  subroutine lspdm_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+     implicit none
+     !> Array where EOS indices where are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array in the order nv,no,nv,no
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ix,jx
+     integer, dimension(4) :: new_dims, o
+     integer, pointer :: idxitil(:), idxjtil(:)
+     integer :: lt, di, da, dj, db, nidxi, nidxj, i_eos, j_eos
+     real(realk), pointer :: tile(:,:,:,:)
+
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)  ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)  ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
+
+#ifdef VAR_MPI
+     if(infpar%lg_mynum == infpar%master.and. &
+        & tensor_full%access_type==MASTER_ACCESS)then
+        call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_OEOS,tensor_full)
+        call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        call ls_mpi_buffer(nEOS,infpar%master)
+        call ls_mpi_buffer(EOS_idx,nEOS,infpar%master)
+        call ls_mpi_buffer(4,infpar%master)
+        call ls_mpi_buffer(new_dims,4,infpar%master)
+        call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+     endif
+
+     call mem_alloc(idxitil,nEOS)
+     call mem_alloc(idxjtil,nEOS)
+
+     do lt=1,tensor_full%nlti
+
+        call get_midx(tensor_full%ti(lt)%gt,o,tensor_full%ntpm,tensor_full%mode)
+
+        call ass_D1to4(tensor_full%ti(lt)%t,tile,tensor_full%ti(lt)%d)
+
+        !get offset for tile counting
+        do j=1,tensor_full%mode
+           o(j)=(o(j)-1)*tensor_full%tdim(j)
+        enddo
+
+        da = tensor_full%ti(lt)%d(1)
+        di = tensor_full%ti(lt)%d(2)
+        db = tensor_full%ti(lt)%d(3)
+        dj = tensor_full%ti(lt)%d(4)
+
+        ! GET EOS mapping to the tile
+        nidxi = 0
+        do i_eos = 1, nEOS
+           do i = 1, di
+              if( o(2) + i == EOS_idx(i_eos))then
+                 idxitil(nidxi+1) = i
+                 nidxi = nidxi + 1
+              endif
+           enddo
+        enddo
+
+        nidxj = 0
+        do j_eos = 1, nEOS
+           do j = 1, dj
+              if( o(4) + j == EOS_idx(j_eos))then
+                 idxjtil(nidxj+1) = j
+                 nidxj = nidxj + 1
+              endif
+           enddo
+        enddo
+
+        if(nidxi > 0 .and. nidxj>0)then
+
+           do j=1,nidxj
+              do b=1,db
+                 do i=1,nidxi
+                    do a=1,da
+                       Arr%elm4(o(1)+a,o(2)+idxitil(i),o(3)+b,o(4)+idxjtil(j)) = tile(a,idxitil(i),b,idxjtil(j))
+                    end do
+                 end do
+              end do
+           end do
+
+        endif
+
+        tile => null()
+     enddo
+
+     call mem_dealloc(idxitil)
+     call mem_dealloc(idxjtil)
+
+     if(tensor_full%access_type==MASTER_ACCESS)then
+        call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
+     else if(tensor_full%access_type==ALL_ACCESS)then
+        call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
+     endif
+
+#endif
+
+  end subroutine lspdm_extract_eos_indices_occ
+  
+  subroutine lspdm_get_combined_SingleDouble_amplitudes(t1,t2,u)
+     implicit none
+     !> Singles amplitudes t1(a,i)
+     type(tensor),intent(in) :: t1
+     !> Doubles amplitudes t2(a,i,b,j)
+     type(tensor),intent(in) :: t2
+     !> Combined single+double amplitudes
+     type(tensor),intent(inout) :: u
+     integer :: i,j,a,b,nocc,nvirt,da,db,di,dj,gtnr,lt,nelt
+     integer :: o(4)
+     real(realk), pointer :: tt(:,:,:,:), ut(:,:,:,:)
+     real(realk), pointer :: ttile(:)
+
+#ifdef VAR_MPI
+     
+     if( t2%access_type == MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
+        if(t1%itype == REPLICATED.or.t1%itype==TILED_DIST)then
+           call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_1,t1,t2,u)
+        else if(t1%itype == DENSE)then
+           call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_2,t2,u)
+           call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+           call ls_mpi_buffer(t1%dims,2,infpar%master)
+           call ls_mpi_buffer(t1%elm1,t1%nelms,infpar%master)
+           call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
+        else
+           call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes):no valid t1%itype",-1)
+        endif
+     endif
+
+     select case(t1%itype)
+     case(DENSE,REPLICATED)
+
+        call mem_alloc(ttile,u%tsize)
+
+        do lt = 1, u%nlti
+
+           gtnr = u%ti(lt)%gt
+
+           nelt = u%ti(lt)%e
+
+           call get_midx(gtnr,o,u%ntpm,u%mode)
+
+           !This is just a copy since we enforced u to have the same
+           !distribution an t, but for the sake of generality we use the MPI_GET
+           !to perform the copy.
+           call tensor_get_tile(t2,gtnr,ttile,nelt,flush_it=(nelt>MAX_SIZE_ONE_SIDED))
+
+           !Facilitate access
+           call ass_D1to4( u%ti(lt)%t, ut, u%ti(lt)%d )
+           call ass_D1to4( ttile,      tt, u%ti(lt)%d )
+
+           !get offset for tile counting
+           do j=1,u%mode
+              o(j)=(o(j)-1)*u%tdim(j)
+           enddo
+
+           da = u%ti(lt)%d(1)
+           di = u%ti(lt)%d(2)
+           db = u%ti(lt)%d(3)
+           dj = u%ti(lt)%d(4)
+
+           do j=1,dj
+              do b=1,db
+                 do i=1,di
+                    do a=1,da
+                       ut(a,i,b,j) = tt(a,i,b,j) + t1%elm2(o(1)+a,o(2)+i) * t1%elm2(o(3)+b,o(4)+j)
+                    end do
+                 end do
+              end do
+           end do
+
+           print *,infpar%lg_mynum," has ",lt," and ",norm2(ut)
+
+           ut => null()
+           tt => null()
+        enddo
+
+        call mem_dealloc(ttile)
+
+     case default
+        call lsquit("ERROR(lspdm_get_combined_SingleDouble_amplitudes): not yet&
+        & implemented for tiled t1, but it should be simple :)",-1)
+     end select
+
+     call lsmpi_barrier(infpar%lg_comm)
+#endif
+
+  end subroutine lspdm_get_combined_SingleDouble_amplitudes
+
   subroutine get_info_for_mpi_get_and_reorder_t1(arr,table_iajb,table_ibja, &
            & dims,ord,t1,t1tile)
     implicit none
@@ -1245,7 +1545,7 @@ module lspdm_tensor_operations_module
 
       call time_start_phase(PHASE_COMM)
 
-      call tensor_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e,flush_it=.true.)
+      call tensor_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e,flush_it=(prec%ti(lt)%e>MAX_SIZE_ONE_SIDED))
 
       call time_start_phase(PHASE_WORK)
 
@@ -1343,7 +1643,7 @@ module lspdm_tensor_operations_module
       !loop over local tiles of array2  and get the corresponding tiles of
       !array1
       do lt=1,arr2%nlti
-        call tensor_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e,flush_it=.true.)
+        call tensor_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e,flush_it=(arr2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
       call mem_dealloc(buffer)
@@ -1439,7 +1739,7 @@ module lspdm_tensor_operations_module
        cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
        call tensor_lock_win(y,cmidy,'s')
-       call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=.true.)
+       call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
     enddo
   
     !lsoop over local tiles of array x
@@ -1468,7 +1768,7 @@ module lspdm_tensor_operations_module
           cmidy = get_cidx(ymidx,y%ntpm,y%mode)
 
           call tensor_lock_win(y,cmidy,'s')
-          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=.true.)
+          call tensor_get_tile(y,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
        endif
 
        call get_midx(x%ti(lt)%gt,xmidx,x%ntpm,x%mode)
@@ -1553,7 +1853,7 @@ module lspdm_tensor_operations_module
     if(from%tdim(1)==to_ar%tdim(1).and.from%tdim(2)==to_ar%tdim(2).and.&
       &from%tdim(3)==to_ar%tdim(3).and.to_ar%tdim(4)==to_ar%tdim(4))then
       do lt=1,to_ar%nlti
-        call tensor_get_tile(from,to_ar%ti(lt)%gt,to_ar%ti(lt)%t,to_ar%ti(lt)%e,flush_it=.true.)
+        call tensor_get_tile(from,to_ar%ti(lt)%gt,to_ar%ti(lt)%t,to_ar%ti(lt)%e,flush_it=(to_ar%ti(lt)%e>MAX_SIZE_ONE_SIDED))
       enddo
     else
       call lsquit("ERROR(tensor_cp_tiled):NOT YET IMPLEMENTED, if the arrato_ars have&
@@ -1605,7 +1905,7 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: lg_nnodes,pc_nnodes
     integer(kind=ls_mpik) :: pc_me, lg_me
     integer, pointer :: lg_buf(:),pc_buf(:)
-    logical :: master,pc_master,lg_master,child,parent
+    logical :: master,pc_master,lg_master,child
 
     !set the initial values and overwrite them later
     pc_nnodes               = 1
@@ -1614,11 +1914,9 @@ module lspdm_tensor_operations_module
     lg_nnodes               = 1
     lg_master               = .true.
     child                   = .false.
-    parent                  = .not.child
 
 #ifdef VAR_MPI
     child     = (infpar%parent_comm /= MPI_COMM_NULL)
-    parent    = .not.child
 
     !assign if master and the number of nodes in the local group
     !if( lspdm_use_comm_proc ) then
@@ -1627,10 +1925,8 @@ module lspdm_tensor_operations_module
     !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
     !endif
 
-    if( parent )then
-      lg_master = (infpar%lg_mynum==infpar%master)
-      lg_nnodes = infpar%lg_nodtot
-    endif
+    lg_master = (infpar%lg_mynum==infpar%master)
+    lg_nnodes = infpar%lg_nodtot
 #endif
 
     master = (pc_master.and.lg_master)
@@ -1669,10 +1965,8 @@ module lspdm_tensor_operations_module
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
-    if( parent )then
-      call mem_alloc(lg_buf,lg_nnodes)
-      lg_buf = 0
-    endif
+    call mem_alloc(lg_buf,lg_nnodes)
+    lg_buf = 0
     !if( lspdm_use_comm_proc )then
     !  call mem_alloc(pc_buf,pc_nnodes)
     !  pc_buf = 0
@@ -1680,10 +1974,10 @@ module lspdm_tensor_operations_module
     
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS.and.parent)then
+    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS)then
       call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
-      call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_tensor_REPLICATED,p_arr%a(addr),loc_addr=.false.)
+      call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_REPLICATED,p_arr%a(addr),loc_addr=.false.)
 #endif
     endif
 
@@ -1696,17 +1990,15 @@ module lspdm_tensor_operations_module
 
     !if ALL_ACCESS all have to have the addresses allocated
     if(p_arr%a(addr)%access_type==ALL_ACCESS)then
-      if(parent)call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
+      call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
       !if(lspdm_use_comm_proc)call tensor_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
     endif
 
 #ifdef VAR_MPI
     !SET THE ADDRESSES ON ALL NODES     
-    if( parent )then
-      lg_buf(infpar%lg_mynum+1)=addr 
-      call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
-      call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
-    endif
+    lg_buf(infpar%lg_mynum+1)=addr 
+    call lsmpi_allreduce(lg_buf,lg_nnodes,infpar%lg_comm)
+    call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
     !if( lspdm_use_comm_proc )then
     !  pc_buf(infpar%pc_mynum+1)=addr 
     !  call lsmpi_allreduce(pc_buf,pc_nnodes,infpar%pc_comm)
@@ -1720,7 +2012,7 @@ module lspdm_tensor_operations_module
     !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
 
-    if(parent)call mem_dealloc(lg_buf)
+    call mem_dealloc(lg_buf)
     !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine tensor_init_replicated
 
@@ -1883,8 +2175,8 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: lg_nnodes,pc_nnodes
     integer(kind=ls_mpik) :: pc_me, lg_me
     logical :: master,defdims, pseudo_dense
-    logical :: pc_master,lg_master,child,parent
-    integer :: infobuf(2)
+    logical :: pc_master,lg_master,child
+    integer :: infobuf(2),fo
     logical,parameter :: zeros_in_tiles=.false.
    
     !set the initial values and overwrite them later
@@ -1894,11 +2186,9 @@ module lspdm_tensor_operations_module
     lg_nnodes               = 1
     lg_master               = .true.
     child                   = .false.
-    parent                  = .not.child
     lg_me                   = 0
 #ifdef VAR_MPI
     child     = (infpar%parent_comm /= MPI_COMM_NULL)
-    parent    = .not.child
 
     !assign if master and the number of nodes in the local group
     !if( lspdm_use_comm_proc ) then
@@ -1907,14 +2197,17 @@ module lspdm_tensor_operations_module
     !  pc_master    = (infpar%parent_comm == MPI_COMM_NULL)
     !endif
 
-    if( parent )then
-      lg_master = (infpar%lg_mynum==infpar%master)
-      lg_nnodes = infpar%lg_nodtot
-      lg_me     = infpar%lg_mynum
-    endif
+    lg_master = (infpar%lg_mynum==infpar%master)
+    lg_nnodes = infpar%lg_nodtot
+    lg_me     = infpar%lg_mynum
 #endif
     pseudo_dense = .false.
     if(present(ps_d))pseudo_dense=ps_d
+
+    fo = -1
+    if(present(force_offset))then
+       fo = force_offset
+    endif
 
     master = (pc_master.and.lg_master)
 
@@ -1994,18 +2287,18 @@ module lspdm_tensor_operations_module
 
     !In the initialization the addess has to be set, since pdm_tensor_sync
     !depends on the  adresses, but setting them correctly is done later
-    if( parent )then
-      call mem_alloc(lg_buf,2*lg_nnodes)
-      lg_buf = 0
-    endif
+    call mem_alloc(lg_buf,2*lg_nnodes)
+    lg_buf = 0
     
     !if master init only master has to get addresses
-    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS.and.parent)then
+    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS)then
       call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
-      call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_tensor_TILED,p_arr%a(addr))
+      call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_TILED,p_arr%a(addr))
+      call ls_mpibcast(fo,infpar%master,infpar%lg_comm)
 #endif
     endif
+
 #ifdef VAR_MPI
     call ls_mpibcast(p_arr%a(addr)%itype,infpar%master,infpar%lg_comm)
     call ls_mpibcast(p_arr%a(addr)%atype,4,infpar%master,infpar%lg_comm)
@@ -2017,19 +2310,17 @@ module lspdm_tensor_operations_module
     call get_distribution_info(p_arr%a(addr),force_offset = force_offset)
 
 #ifdef VAR_MPI
-    if( parent )then
-      lg_buf(infpar%lg_mynum+1)=addr 
-      lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
-      call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
-      call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
-      do i=1,lg_nnodes
-        if(lg_buf(lg_nnodes+i)/=p_arr%a(addr)%offset)then
-          print * ,infpar%lg_mynum,"found",lg_buf(lg_nnodes+i),p_arr%a(addr)%offset,i
-          call lsquit("ERROR(tensor_init_tiled):offset &
-          &is not the same on all nodes",DECinfo%output)
-        endif
-      enddo
-    endif
+    lg_buf(infpar%lg_mynum+1)=addr 
+    lg_buf(lg_nnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
+    call lsmpi_allreduce(lg_buf,2*lg_nnodes,infpar%lg_comm)
+    call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
+    do i=1,lg_nnodes
+      if(lg_buf(lg_nnodes+i)/=p_arr%a(addr)%offset)then
+        print * ,infpar%lg_mynum,"found",lg_buf(lg_nnodes+i),p_arr%a(addr)%offset,i,fo
+        call lsquit("ERROR(tensor_init_tiled):offset &
+        &is not the same on all nodes",DECinfo%output)
+      endif
+    enddo
 #endif
  
     call tensor_init_lock_set(p_arr%a(addr))
@@ -2042,7 +2333,7 @@ module lspdm_tensor_operations_module
     arr = p_arr%a(addr)
     !print *,infpar%lg_mynum,associated(arr%wi),"peristent",associated(p_arr%a(addr)%wi)
 
-    if(parent)call mem_dealloc(lg_buf)
+    call mem_dealloc(lg_buf)
     !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine tensor_init_tiled
   
@@ -2254,9 +2545,9 @@ module lspdm_tensor_operations_module
            cmidB = get_cidx(mB,B%ntpm,B%mode)
 
            call tensor_lock_win(A,cmidA,'s')
-           call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=.true.)
+           call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
            call tensor_lock_win(B,cmidB,'s')
-           call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=.true.)
+           call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
 
         enddo
 
@@ -2286,9 +2577,9 @@ module lspdm_tensor_operations_module
               cmidB = get_cidx(mB,B%ntpm,B%mode)
 
               call tensor_lock_win(A,cmidA,'s')
-              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=.true.)
+              call tensor_get_tile(A,mA,buffA(:,ibufA),nelmsTA,lock_set=.true.,flush_it=(nelmsTA>MAX_SIZE_ONE_SIDED))
               call tensor_lock_win(B,cmidB,'s')
-              call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=.true.)
+              call tensor_get_tile(B,mB,buffB(:,ibufB),nelmsTB,lock_set=.true.,flush_it=(nelmsTB>MAX_SIZE_ONE_SIDED))
            endif
 
            !build full mode index for A and B
@@ -2389,6 +2680,9 @@ module lspdm_tensor_operations_module
         call mem_dealloc(wB)
         call mem_dealloc(wC)
      endif
+
+     !critical barrier if synchronization is not achieved by other measures
+     call lsmpi_barrier(infpar%lg_comm)
 #else
      call lsquit("ERROR(lspdm_tensor_contract_simple): cannot be called without MPI",-1)
 #endif
@@ -2438,7 +2732,9 @@ module lspdm_tensor_operations_module
       call get_midx(i,tmdidx,arr%ntpm,arr%mode)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
       if(pdm)then
-        call tensor_get_tile(arr,i,tmp,nelintile,flush_it=.true.)
+#ifdef VAR_MPI
+        call tensor_get_tile(arr,i,tmp,nelintile,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+#endif
       else
         tmp => arr%ti(i)%t
       endif
@@ -2483,7 +2779,9 @@ module lspdm_tensor_operations_module
       call get_tile_dim(l,i,arr%dims,arr%tdim,arr%mode,2)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
       if(pdm)then
-        call tensor_get_tile(arr,i,tmp,nelintile,flush_it=.true.)
+#ifdef VAR_MPI
+        call tensor_get_tile(arr,i,tmp,nelintile,flush_it=(nelintile>MAX_SIZE_ONE_SIDED))
+#endif
       else
         tmp => arr%ti(i)%t
       endif

@@ -2960,7 +2960,7 @@ end function max_batch_dimension
     !> Fragment info (only t1-related information will be modified here)
     type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes to be stored (stored as virtual,occupied)
-    type(array2),intent(in) :: t1
+    real(realk),intent(in) :: t1(:,:)
     integer :: nocc,nvirt,i,a,ix,ax
 
     ! Init dimensions
@@ -2968,12 +2968,12 @@ end function max_batch_dimension
     nvirt = MyFragment%nunoccAOS   ! virtual AOS dimension
 
     ! Sanity check
-    if( (nvirt/=t1%dims(1)) .or. (nocc/=t1%dims(2)) ) then
-       write(DECinfo%output,*) 'Fragment virt,occ', nvirt,nocc
-       write(DECinfo%output,*) 't1 input virt,occ', t1%dims
-       call lsquit('save_fragment_t1_AOSAOSamplitudes &
-            & AOS dimension mismatch!',DECinfo%output)
-    end if
+    !if( (nvirt/=t1%dims(1)) .or. (nocc/=t1%dims(2)) ) then
+    !   write(DECinfo%output,*) 'Fragment virt,occ', nvirt,nocc
+    !   write(DECinfo%output,*) 't1 input virt,occ', t1%dims
+    !   call lsquit('save_fragment_t1_AOSAOSamplitudes &
+    !        & AOS dimension mismatch!',DECinfo%output)
+    !end if
 
     ! Free t1 stuff (in case old ampltiudes are already stored)
     call free_fragment_t1(MyFragment)
@@ -2992,7 +2992,7 @@ end function max_batch_dimension
     ! Save amplitudes and indices
     do i=1,nocc
        do a=1,nvirt
-          MyFragment%t1(a,i) = t1%val(a,i)
+          MyFragment%t1(a,i) = t1(a,i)
        end do
     end do
 
@@ -5087,11 +5087,14 @@ end function max_batch_dimension
      nocc  = t2%dims(2)
      nvirt = t2%dims(1)
 
-     if(t2%itype == DENSE)then
+     select case(t2%itype)
+     case(DENSE,REPLICATED)
+
         ! Init combined amplitudes
         call tensor_init(u,t2%dims,4)
 
         if(DECinfo%use_singles)then
+
            do j=1,nocc
               do b=1,nvirt
                  do i=1,nocc
@@ -5101,7 +5104,9 @@ end function max_batch_dimension
                  end do
               end do
            end do
+
         else
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
            call assign_in_subblocks(u%elm1,'=',t2%elm1,t2%nelms)
 #else
@@ -5109,10 +5114,27 @@ end function max_batch_dimension
            u%elm1 = t2%elm1
            !$OMP END WORKSHARE
 #endif
+
         endif
-     else
+     case( TILED_DIST )
+
+        if(t1%itype /= DENSE .and. t1%itype /= REPLICATED)then
+           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+        endif
+
+        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
+
+        if(DECinfo%use_singles)then
+           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+        else
+           !this is just copying t2 to u
+           call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)
+        endif
+
+     case default
         call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr) no PDM version implemented yet",-1)
-     endif
+     end select
 
 
   end subroutine get_combined_SingleDouble_amplitudes_newarr

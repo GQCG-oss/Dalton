@@ -33,8 +33,8 @@ module tensor_interface_module
      module procedure tensor_convert_fort2tensor_wrapper1,&
      &tensor_convert_fort2tensor_wrapper2,tensor_convert_fort2tensor_wrapper3,&
      &tensor_convert_fort2tensor_wrapper4,tensor_convert_array22array,&
-     &tensor_convert_arr2fort_wrapper1,tensor_convert_arr2fort_wrapper2,&
-     &tensor_convert_arr2fort_wrapper3,tensor_convert_arr2fort_wrapper4
+     &tensor_convert_tensor2fort_wrapper1,tensor_convert_tensor2fort_wrapper2,&
+     &tensor_convert_tensor2fort_wrapper3,tensor_convert_tensor2fort_wrapper4
   end interface tensor_convert
 
 !> print norms of array, array2 array3, array4 and fortran arrays
@@ -205,6 +205,70 @@ contains
            call lsquit("ERROR(tensor_add_normal):not yet implemented x%itype",DECinfo%output)
      end select
   end subroutine tensor_add_normal
+
+  subroutine tensor_transform_basis(U,nus,tens,whichU,t,maxtensmode,ntens)
+     implicit none
+     !> specify the number of thensors that should be transformed
+     integer, intent(in) :: ntens,nus,maxtensmode
+     !list of which index of the trafo matrices to contract with the tensor index
+     integer, intent(in) :: t(maxtensmode,ntens)
+     ! list of which u to use to contract with the tensor index
+     integer, intent(in) :: whichU(maxtensmode,ntens)
+     !this contains the transformation matrices
+     type(tensor), intent(in) :: U(nus)
+     !this contains the tensors
+     type(tensor), intent(in) :: tens(ntens)
+
+     !internal variables
+     integer :: itens, imode, it_mode, isort
+     integer :: ord(maxtensmode)
+     type(tensor) :: AUX, AUX1, AUX2
+     real(realk), parameter :: p10 = 1.0E0_realk
+     real(realk), parameter :: p00 = 0.0E0_realk
+
+     do itens=1,ntens
+
+        it_mode = tens(itens)%mode
+
+
+        !initialize a tensor that has exactly the same type and distribution as
+        !the one that should be tansformed
+        call tensor_init(AUX, tens(itens)%dims, it_mode, &
+           & pdm         = tens(itens)%access_type, &
+           & tensor_type = tens(itens)%itype, &
+           & tdims       = tens(itens)%tdim, &
+           & fo          = tens(itens)%offset ) 
+
+        do imode = 1, it_mode
+
+           do isort = 1, it_mode
+              if(isort == imode)then
+                 ord(isort) = 1
+              else if(isort < imode )then
+                 ord(isort) = isort+1
+              else if(isort > imode )then
+                 ord(isort) = isort
+              endif
+           enddo
+
+           !USE ALIASES FOR THE ACTUAL CONTRACTION
+           if( mod(imode,2) == 0)then
+              AUX1 = AUX
+              AUX2 = tens(itens)
+           else
+              AUX1 = tens(itens)
+              AUX2 = AUX
+           endif
+
+           call tensor_contract(p10,U(whichU(imode,itens)),AUX1,[t(imode,itens)],[imode],1,p00,AUX2,ord(1:it_mode))
+
+        enddo
+
+        call tensor_free(AUX)
+     enddo
+
+  end subroutine tensor_transform_basis
+
 
   ! x = x + b * y
   !> \brief add a scaled fortran-array to an array. The data may have arbitrary
@@ -990,89 +1054,99 @@ contains
 
   subroutine tensor_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
 
-    implicit none
-    !> Array output where EOS indices are extracted
-    type(tensor),intent(inout) :: Arr
-    !> Original array
-    type(tensor),intent(in) :: tensor_full
-    !> Number of EOS indices
-    integer,intent(in) :: nEOS
-    !> List of EOS indices in the total (EOS+buffer) list of orbitals
-    integer, dimension(nEOS),intent(in) :: EOS_idx
-    integer :: nocc,nvirt,i,a,b,j,ax,bx
-    integer, dimension(4) :: new_dims
+     implicit none
+     !> Array output where EOS indices are extracted
+     type(tensor),intent(inout) :: Arr
+     !> Original array
+     type(tensor),intent(in) :: tensor_full
+     !> Number of EOS indices
+     integer,intent(in) :: nEOS
+     !> List of EOS indices in the total (EOS+buffer) list of orbitals
+     integer, dimension(nEOS),intent(in) :: EOS_idx
+     integer :: nocc,nvirt,i,a,b,j,ax,bx
+     integer, dimension(4) :: new_dims
 
-    ! Initialize stuff
-    ! ****************
-    nocc = tensor_full%dims(2)  ! Total number of occupied orbitals
-    nvirt = tensor_full%dims(1)  ! Total number of virtual orbitals
-    new_dims=[nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
-
-
-    ! Sanity checks
-    ! *************
-
-    ! 1. Positive number of orbitals
-    if( (nocc<1) .or. (nvirt<1) ) then
-       write(DECinfo%output,*) 'nocc = ', nocc
-       write(DECinfo%output,*) 'nvirt = ', nvirt
-       call lsquit('tensor_extract_eos_indices_virt: &
-          & Negative or zero number of orbitals!',DECinfo%output)
-    end if
-
-    ! 2. Array structure is (virt,occ,virt,occ)
-    if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
-       write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
-       write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
-       write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
-       write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
-       call lsquit('tensor_extract_eos_indices_virt: &
-          & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
-    end if
-
-    ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
-    if(nEOS > nvirt) then
-       write(DECinfo%output,*) 'nvirt = ', nvirt
-       write(DECinfo%output,*) 'nEOS  = ', nEOS
-       call lsquit('array4_extract_eos_indices_virt_memory: &
-          & Number of EOS orbitals must be smaller than (or equal to) total number of &
-          & virtual orbitals!',DECinfo%output)
-    end if
-
-    ! 4. EOS indices must not exceed total number of virtual orbitals
-    do i=1,nEOS
-       if(EOS_idx(i) > nvirt) then
-          write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
-          write(DECinfo%output,*) 'nvirt   = ', nvirt
-          write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
-          call lsquit('array4_extract_eos_indices_virt_memory: &
-             & EOS index value larger than nvirt!',DECinfo%output)
-       end if
-    end do
+     ! Initialize stuff
+     ! ****************
+     nocc     = tensor_full%dims(2)   ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)   ! Total number of virtual orbitals
+     new_dims = [nEOS,nocc,nEOS,nocc] ! nEOS=Number of virtual EOS orbitals
 
 
-    ! Extract virtual EOS indices and store in Arr
-    ! ********************************************
+     ! Sanity checks
+     ! *************
 
-    if( tensor_full%itype == DENSE )then
-       ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
-       call tensor_init(Arr,new_dims,4)
+     ! 1. Positive number of orbitals
+     if( (nocc<1) .or. (nvirt<1) ) then
+        write(DECinfo%output,*) 'nocc = ', nocc
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        call lsquit('tensor_extract_eos_indices_virt: &
+           & Negative or zero number of orbitals!',DECinfo%output)
+     end if
 
-       ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
-       do j=1,nocc
-          do b=1,nEOS
-             bx=EOS_idx(b)
-             do i=1,nocc
-                do a=1,nEOS
-                   ax=EOS_idx(a)
-                   Arr%elm4(a,i,b,j) = tensor_full%elm4(ax,i,bx,j)
-                end do
-             end do
-          end do
-       end do
-    else
-       call lsquit("ERROR(tensor_extract_eos_indices_virt): NO PDM version implemented yet",-1)
-    endif
+     ! 2. Array structure is (virt,occ,virt,occ)
+     if( (nvirt/=tensor_full%dims(3)) .or. (nocc/=tensor_full%dims(4)) ) then
+        write(DECinfo%output,*) 'tensor_full%dims(1) = ', tensor_full%dims(1)
+        write(DECinfo%output,*) 'tensor_full%dims(2) = ', tensor_full%dims(2)
+        write(DECinfo%output,*) 'tensor_full%dims(3) = ', tensor_full%dims(3)
+        write(DECinfo%output,*) 'tensor_full%dims(4) = ', tensor_full%dims(4)
+        call lsquit('tensor_extract_eos_indices_virt: &
+           & Arr dimensions does not match (virt,occ,virt,occ) structure!',DECinfo%output)
+     end if
+
+     ! 3. EOS dimension must be smaller than (or equal to) total number of virt orbitals
+     if(nEOS > nvirt) then
+        write(DECinfo%output,*) 'nvirt = ', nvirt
+        write(DECinfo%output,*) 'nEOS  = ', nEOS
+        call lsquit('array4_extract_eos_indices_virt_memory: &
+           & Number of EOS orbitals must be smaller than (or equal to) total number of &
+           & virtual orbitals!',DECinfo%output)
+     end if
+
+     ! 4. EOS indices must not exceed total number of virtual orbitals
+     do i=1,nEOS
+        if(EOS_idx(i) > nvirt) then
+           write(DECinfo%output,'(a,i6,a)') 'EOS index number ', i, ' is larger than nvirt!'
+           write(DECinfo%output,*) 'nvirt   = ', nvirt
+           write(DECinfo%output,*) 'EOS_idx = ', EOS_idx(i)
+           call lsquit('array4_extract_eos_indices_virt_memory: &
+              & EOS index value larger than nvirt!',DECinfo%output)
+        end if
+     end do
+
+     print*,"EXTRACTING VIRT"
+
+     ! Extract virtual EOS indices and store in Arr
+     ! ********************************************
+
+     ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
+     call tensor_init(Arr,new_dims,4)
+
+     select case ( tensor_full%itype )
+     case( DENSE, REPLICATED )
+
+        ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
+        do j=1,nocc
+           do b=1,nEOS
+              bx=EOS_idx(b)
+              do i=1,nocc
+                 do a=1,nEOS
+                    ax=EOS_idx(a)
+                    Arr%elm4(a,i,b,j) = tensor_full%elm4(ax,i,bx,j)
+                 end do
+              end do
+           end do
+        end do
+
+     case( TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_eos_indices_virt(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
+        call lsquit("ERROR(tensor_extract_eos_indices_virt): NO PDM version implemented yet",-1)
+     end select
 
 
   end subroutine tensor_extract_eos_indices_virt
@@ -1092,9 +1166,9 @@ contains
 
      ! Initialize stuff
      ! ****************
-     nocc = tensor_full%dims(2)  ! Total number of occupied orbitals
-     nvirt = tensor_full%dims(1)  ! Total number of virtual orbitals
-     new_dims=[nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
+     nocc     = tensor_full%dims(2)  ! Total number of occupied orbitals
+     nvirt    = tensor_full%dims(1)  ! Total number of virtual orbitals
+     new_dims = [nvirt,nEOS,nvirt,nEOS] ! nEOS=Number of occupied EOS orbitals
 
      ! Sanity checks
      ! *************
@@ -1144,10 +1218,12 @@ contains
      ! Extract occupied EOS indices and store in Arr
      ! *********************************************
 
-     if( tensor_full%itype == DENSE )then
+     ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
+     call tensor_init(Arr,new_dims,4)
 
-        ! Initiate Arr with new dimensions (nvirt,nocc_EOS,nvirt,nocc_EOS)
-        call tensor_init(Arr,new_dims,4)
+     select case( tensor_full%itype )
+     case( DENSE, REPLICATED )
+
 
         ! Set Arr equal to the EOS indices of the original Arr array (tensor_full)
         do j=1,nEOS
@@ -1161,9 +1237,16 @@ contains
               end do
            end do
         end do
-     else
+
+     case( TILED_DIST )
+
+        call tensor_zero(Arr)
+
+        call lspdm_extract_eos_indices_occ(Arr,tensor_full,nEOS,EOS_idx)
+
+     case default
         call lsquit("ERROR(tensor_extract_eos_indices_occ): NO PDM version implemented yet",-1)
-     endif
+     end select
 
 
   end subroutine tensor_extract_eos_indices_occ
@@ -1449,11 +1532,11 @@ contains
     !if(arr%initialized)call lsquit("ERROR(tensor_init):array already initialized",-1) 
 
     !DEFAULTS
-    it     = DENSE
+    it      = DENSE
     pdmtype = NO_PDM_ACCESS !NO PDM
 
     !OPTIONAL SPECIFICATIONS
-    if(present(tensor_type))    it      = tensor_type
+    if(present(tensor_type)) it      = tensor_type
     if(present(pdm))         pdmtype = pdm
 
     !CHECK INPUT
@@ -1766,22 +1849,27 @@ contains
   !action if non-mpi build.
   !> \author Patrick Ettenhuber
   !> \date January 2012
-  subroutine tensor_mv_dense2tiled(arr,change)
+  subroutine tensor_mv_dense2tiled(arr,change,dealloc_local)
     implicit none
     !> array to copy dense to tiled and deallocate dense part
     type(tensor),intent(inout) :: arr
     logical, intent(in) :: change
-    logical :: pdm
+    logical, intent(in),optional :: dealloc_local
+    logical :: pdm,dl
 #ifdef VAR_MPI
     pdm=.false.
     if(.not.associated(arr%elm1))then
       call lsquit("ERROR(tensor_cp_dense2tiled):dense is NOT allocated,&
       & please make sure you are not doing someting stupid",DECinfo%output)
     endif
+
+    dl = .true.
+    if(present(dealloc_local))dl = dealloc_local
+
     if(arr%access_type>0)pdm=.true.
     if(change)arr%itype=TILED_DIST
     call tensor_convert_fort2arr(arr%elm1,arr,arr%nelms)
-    call tensor_deallocate_dense(arr)
+    if(dl)call tensor_deallocate_dense(arr)
 #else
     return
 #endif
@@ -1790,34 +1878,34 @@ contains
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
-  subroutine tensor_convert_arr2fort_wrapper1(arr,fort,order)
+  subroutine tensor_convert_tensor2fort_wrapper1(arr,fort,order)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine tensor_convert_arr2fort_wrapper1
-  subroutine tensor_convert_arr2fort_wrapper2(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper1
+  subroutine tensor_convert_tensor2fort_wrapper2(arr,fort,order)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine tensor_convert_arr2fort_wrapper2
-  subroutine tensor_convert_arr2fort_wrapper3(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper2
+  subroutine tensor_convert_tensor2fort_wrapper3(arr,fort,order)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine tensor_convert_arr2fort_wrapper3
-  subroutine tensor_convert_arr2fort_wrapper4(arr,fort,order)
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper3
+  subroutine tensor_convert_tensor2fort_wrapper4(arr,fort,order)
     implicit none
     type(tensor), intent(inout) :: arr
     real(realk), intent(inout) :: fort(:,:,:,:)
     integer, intent(in), optional :: order(arr%mode)
-    call tensor_convert_arr2fort(arr,fort,arr%nelms,order=order)
-  end subroutine tensor_convert_arr2fort_wrapper4
+    call tensor_convert_tensor2fort(arr,fort,arr%nelms,order=order)
+  end subroutine tensor_convert_tensor2fort_wrapper4
 
   !\brief all the following wrappers are necessary to use the conversion routine
   !in an interface for different shapes of the fortran array  
@@ -1931,7 +2019,7 @@ contains
   !> \brief put data of an arbitrary array into a basic fortan type array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine tensor_convert_arr2fort(arr,fort,nelms,order)
+  subroutine tensor_convert_tensor2fort(arr,fort,nelms,order)
     implicit none
     !> array with the data at the beginning
     type(tensor), intent(inout) :: arr
@@ -1942,7 +2030,7 @@ contains
     !> if the fortan array has a different order than the array this specifies
     !the reordering
     integer, intent(in), optional :: order(arr%mode)
-    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_arr2fort):array&
+    if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_tensor2fort):array&
     &dimensions are not the same",DECinfo%output)
     select case(arr%itype)
       case(DENSE)
@@ -1958,7 +2046,7 @@ contains
         if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
         if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
     end select
-  end subroutine tensor_convert_arr2fort
+  end subroutine tensor_convert_tensor2fort
 
 
   
@@ -2146,6 +2234,7 @@ contains
     if(squareback.and..not.present(nrm))print *,"NORM^2:",norm
     if(present(nrm))nrm=norm
   end subroutine tensor_print_norm_nrm
+
   subroutine tensor_print_norm_customprint(arr,msg,returnsquared)
     implicit none
     character*(*),intent(in) :: msg

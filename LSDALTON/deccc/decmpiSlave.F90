@@ -95,7 +95,7 @@ subroutine dec_lsmpi_slave(comm)
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
-         call PDM_tensor_SLAVE(comm)
+         call PDM_TENSOR_SLAVE(comm)
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
@@ -117,6 +117,7 @@ subroutine dec_lsmpi_slave(comm)
          infpar%lg_morejobs   = .false.
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 
