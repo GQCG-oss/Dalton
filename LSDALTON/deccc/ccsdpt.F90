@@ -110,20 +110,20 @@ contains
     !> mylsitem for fragment or full molecule
     type(lsitem), intent(inout) :: mylsitem
     !> ccsd doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles
+    type(tensor), intent(inout) :: ccsd_doubles
     !> incoming vovo integrals
-    type(array), intent(inout) :: vovo
+    type(tensor), intent(inout) :: vovo
     !> 2-el integrals
     ! ijk scheme
-    type(array) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
+    type(tensor) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
     ! vvvo is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
-    type(array) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    type(tensor) :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     ! abc scheme
-    type(array) :: ooov ! integrals (AI|JK) in the order (I,J,K,A)
+    type(tensor) :: ooov ! integrals (AI|JK) in the order (I,J,K,A)
     ! vovv is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
-    type(array) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
+    type(tensor) :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
     integer :: nodtotal
     integer :: tile_size
     !> orbital energies
@@ -135,12 +135,12 @@ contains
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
-    type(array),intent(inout) :: ccsdpt_singles
+    type(tensor),intent(inout) :: ccsdpt_singles
     logical :: print_frags,abc
-    type(array),intent(inout),optional :: ccsdpt_doubles
+    type(tensor),intent(inout),optional :: ccsdpt_doubles
     real(realk),optional :: e4 
     logical :: master
-    type(array) :: ccsdpt_doubles_2
+    type(tensor) :: ccsdpt_doubles_2
 #ifdef VAR_OPENACC
     !> device type
     integer(acc_device_kind) :: acc_device_type
@@ -182,13 +182,13 @@ contains
     if (print_frags) then
 
        !Zero to be able to sum up 
-       call array_zero(ccsdpt_singles)
-       call array_zero(ccsdpt_doubles)
+       call tensor_zero(ccsdpt_singles)
+       call tensor_zero(ccsdpt_doubles)
 
     else
 
        !Zero to be able to sum up
-       call array_zero(ccsdpt_singles)
+       call tensor_zero(ccsdpt_singles)
  
        if (present(e4)) then
 
@@ -332,15 +332,15 @@ contains
 
        if (abc) then
 
-          call array_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
+          call tensor_init(ccsdpt_doubles_2, [nvirt,nocc,nocc,nvirt],4)
 
        else
 
-          call array_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
+          call tensor_init(ccsdpt_doubles_2, [nocc,nvirt,nvirt,nocc],4)
  
        endif
 
-       call array_zero(ccsdpt_doubles_2)
+       call tensor_zero(ccsdpt_doubles_2)
 
     endif
 
@@ -460,20 +460,20 @@ contains
        call time_start_phase(PHASE_WORK)
 
        ! release stuff initialized herein
-       if (print_frags) call array_free(ccsdpt_doubles_2) 
+       if (print_frags) call tensor_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
 
        ! release o^3v and v^3o integrals
        if (abc) then
 
-          call array_free(ooov)
-          call array_free(vovv)
+          call tensor_free(ooov)
+          call tensor_free(vovv)
 
        else
 
-          call array_free(ovoo)
-          call array_free(vvvo)
+          call tensor_free(ovoo)
+          call tensor_free(vvvo)
 
        endif
 
@@ -498,20 +498,20 @@ contains
                                   &[2,3,4,1],1.0E0_realk,ccsdpt_doubles%elm1)
    
        ! release ccsdpt_doubles_2 array structure
-       call array_free(ccsdpt_doubles_2)
+       call tensor_free(ccsdpt_doubles_2)
 
     endif
 
     ! release o^3v and v^3o integrals
     if (abc) then
 
-       call array_free(ooov)
-       call array_free(vovv)
+       call tensor_free(ooov)
+       call tensor_free(vovv)
 
     else
 
-       call array_free(ovoo)
-       call array_free(vvvo)
+       call tensor_free(ovoo)
+       call tensor_free(vvvo)
 
     endif
 
@@ -576,7 +576,7 @@ contains
     !> 2-el integrals
     real(realk), dimension(nocc,nvirt,nocc,nocc) :: ovoo ! integrals (AI|JK) in the order (J,A,I,K)
     real(realk), dimension(nvirt,nvirt,nocc,nocc) :: vvoo ! integrals (AI|BJ) in the order (A,B,I,J)
-    type(array), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
+    type(tensor), intent(inout)  :: vvvo ! integrals (AI|BC) in the order (C,B,A,I)
     real(realk), pointer, dimension(:) :: vvvo_pdm_i,vvvo_pdm_j,vvvo_pdm_k ! v^3 tiles from cbai
     real(realk), pointer, dimension(:,:) :: vvvo_pdm_buff      ! buffers to prefetch tiles
     !> ccsd doubles amplitudes
@@ -651,7 +651,7 @@ contains
     call mem_alloc(jobs,b_size + 1)
 
     ! create ij_array
-    call create_ij_array_ccsdpt(njobs,nocc,ij_array)
+    call create_ij_tensor_ccsdpt(njobs,nocc,ij_array)
     ! fill the list
     call job_distrib_ccsdpt(b_size,njobs,ij_array,jobs)
 
@@ -769,7 +769,7 @@ contains
 
                   if(vvvo%lock_set(j))then
 
-                     call arr_unlock_win(vvvo,j)
+                     call tensor_unlock_win(vvvo,j)
 
                   endif
 
@@ -812,7 +812,7 @@ contains
 
                      if(vvvo%lock_set(i))then
 
-                        call arr_unlock_win(vvvo,i)
+                        call tensor_unlock_win(vvvo,i)
 
                      endif
 
@@ -846,7 +846,7 @@ contains
 
                      if(vvvo%lock_set(i))then
 
-                        call arr_unlock_win(vvvo,i)
+                        call tensor_unlock_win(vvvo,i)
 
                      endif
 
@@ -886,7 +886,7 @@ contains
 
                      if(vvvo%lock_set(i))then
 
-                        call arr_unlock_win(vvvo,i)
+                        call tensor_unlock_win(vvvo,i)
 
                      endif
 
@@ -923,13 +923,13 @@ contains
 
                      if(vvvo%lock_set(i))then
 
-                        call arr_unlock_win(vvvo,i)
+                        call tensor_unlock_win(vvvo,i)
 
                      endif
 
                      if(vvvo%lock_set(j))then
 
-                        call arr_unlock_win(vvvo,j)
+                        call tensor_unlock_win(vvvo,j)
 
                      endif
 
@@ -991,7 +991,7 @@ contains
 
                         if(vvvo%lock_set(k))then
 
-                           call arr_unlock_win(vvvo,k)
+                           call tensor_unlock_win(vvvo,k)
 
                         endif
 
@@ -1037,7 +1037,7 @@ contains
 
                         if(vvvo%lock_set(k))then
 
-                           call arr_unlock_win(vvvo,k)
+                           call tensor_unlock_win(vvvo,k)
 
                         endif
 
@@ -1294,7 +1294,7 @@ contains
   subroutine assoc_ptr_to_buf(tilenr,arr,nbuffs,buf_pos,buf_log,ptr,bg_buf,pos)
      implicit none
      integer, intent(in):: tilenr,nbuffs
-     type(array), intent(inout) :: arr
+     type(tensor), intent(inout) :: arr
      integer, intent(inout):: buf_pos(nbuffs)
      logical, intent(inout):: buf_log(nbuffs)
      real(realk), intent(out),   pointer :: ptr(:)
@@ -1303,6 +1303,7 @@ contains
      integer :: i_search_buf,ts
      logical :: found
      integer(kind=ls_mpik) :: mode
+     pos = 0
 #ifdef VAR_MPI
      mode = MPI_MODE_NOCHECK
 
@@ -1319,11 +1320,11 @@ contains
 
               pos          = i_search_buf
 
-              call arr_lock_win(arr,tilenr,'s',assert=mode)
+              call tensor_lock_win(arr,tilenr,'s',assert=mode)
 
               call get_tile_dim(ts,arr,tilenr)
 
-              call array_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
+              call tensor_get_tile(arr,tilenr,bg_buf(:,pos),ts,lock_set=.true.,flush_it=.true.)
 
               buf_pos(pos) = tilenr
               buf_log(pos) = .true.
@@ -1366,7 +1367,7 @@ contains
   subroutine preload_tiles_in_bg_buf(vvvo,jobs,b_size,nocc,current_i,current_j,current_k,current_ij_count,nbuffs,needed,&
         &tiles_in_buf,vvvo_pdm_buff)
      implicit none
-     type(array), intent(inout) :: vvvo
+     type(tensor), intent(inout) :: vvvo
      integer, intent(in) :: b_size,current_i, current_j, current_k, current_ij_count, nbuffs,nocc
      integer, intent(in) :: jobs(b_size+1)
      logical, intent(inout) :: needed(nbuffs)
@@ -1418,9 +1419,9 @@ contains
               do i_search_buf = 1, nbuffs
                  if(.not.needed(i_search_buf))then
                     kbuf_test = i_search_buf
-                    call arr_lock_win(vvvo,k_test,'s',assert=mode)
+                    call tensor_lock_win(vvvo,k_test,'s',assert=mode)
                     call get_tile_dim(ts,vvvo,k_test)
-                    call array_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
+                    call tensor_get_tile(vvvo,k_test,vvvo_pdm_buff(:,kbuf_test),ts,&
                        &lock_set=.true.,flush_it=.true.)
                     needed(kbuf_test)       = .true.
                     tiles_in_buf(kbuf_test) = k_test
@@ -1482,9 +1483,9 @@ contains
                  do i_search_buf = 1, nbuffs
                     if(.not.needed(i_search_buf))then
                        jbuf_test = i_search_buf
-                       call arr_lock_win(vvvo,j_test,'s',assert=mode)
+                       call tensor_lock_win(vvvo,j_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,j_test)
-                       call array_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
+                       call tensor_get_tile(vvvo,j_test,vvvo_pdm_buff(:,jbuf_test),ts,&
                           &lock_set=.true.,flush_it=.true.)
                        needed(jbuf_test)       = .true.
                        tiles_in_buf(jbuf_test) = j_test
@@ -1505,9 +1506,9 @@ contains
 
                        ibuf_test = i_search_buf
 
-                       call arr_lock_win(vvvo,i_test,'s',assert=mode)
+                       call tensor_lock_win(vvvo,i_test,'s',assert=mode)
                        call get_tile_dim(ts,vvvo,i_test)
-                       call array_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
+                       call tensor_get_tile(vvvo,i_test,vvvo_pdm_buff(:,ibuf_test),ts,&
                           &lock_set=.true.,flush_it=.true.)
 
                        needed(ibuf_test)       = .true.
@@ -2023,7 +2024,7 @@ contains
     !> 2-el integrals
     real(realk), dimension(nocc,nocc,nocc,nvirt) :: ooov ! integrals (AI|JK) in the order (K,I,J,A)
     real(realk), dimension(nocc,nocc,nvirt,nvirt) :: oovv ! integrals (AI|BJ) in the order (I,J,A,B)
-    type(array), intent(inout)  :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
+    type(tensor), intent(inout)  :: vovv ! integrals (AI|BC) in the order (B,I,A,C)
     real(realk), pointer, dimension(:) :: vovv_pdm_a,vovv_pdm_b,vovv_pdm_c ! ov^2*tile_size tiles from vovv
     real(realk), pointer, dimension(:,:,:,:) :: ptr_pdm_a,ptr_pdm_b,ptr_pdm_c
     integer, intent(inout) :: nodtotal, tile_size
@@ -2139,7 +2140,7 @@ contains
        tile_size_tmp_a = int(nelms/(nocc*nvirt**2))
 
        call time_start_phase(PHASE_COMM)
-       call array_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
+       call tensor_get_tile(vovv,a_tile_num,vovv_pdm_a,nocc*nvirt**2*tile_size_tmp_a,flush_it = .true.)
        call time_start_phase(PHASE_WORK)
    
        call ass_D1to4(vovv_pdm_a,ptr_pdm_a,[nvirt,nocc,nvirt,tile_size_tmp_a])
@@ -2152,7 +2153,7 @@ contains
           tile_size_tmp_b = int(nelms/(nocc*nvirt**2))
 
           call time_start_phase(PHASE_COMM)
-          call array_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
+          call tensor_get_tile(vovv,b_tile_num,vovv_pdm_b,nocc*nvirt**2*tile_size_tmp_b,flush_it = .true.)
           call time_start_phase(PHASE_WORK)
 
           call ass_D1to4(vovv_pdm_b,ptr_pdm_b,[nvirt,nocc,nvirt,tile_size_tmp_b])
@@ -2165,7 +2166,7 @@ contains
              tile_size_tmp_c = int(nelms/(nocc*nvirt**2))
 
              call time_start_phase(PHASE_COMM)
-             call array_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
+             call tensor_get_tile(vovv,c_tile_num,vovv_pdm_c,nocc*nvirt**2*tile_size_tmp_c,flush_it = .true.)
              call time_start_phase(PHASE_WORK)
    
              call ass_D1to4(vovv_pdm_c,ptr_pdm_c,[nvirt,nocc,nvirt,tile_size_tmp_c])
@@ -4021,7 +4022,7 @@ contains
   !> \brief: create ij_array for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine create_ij_array_ccsdpt(njobs,no,ij_array)
+  subroutine create_ij_tensor_ccsdpt(njobs,no,ij_array)
 
     implicit none
 
@@ -4101,7 +4102,7 @@ contains
 
     end do
 
-  end subroutine create_ij_array_ccsdpt
+  end subroutine create_ij_tensor_ccsdpt
 
 
   !> \brief: make job distribution list for ccsd(t)
@@ -5942,7 +5943,7 @@ contains
 
     implicit none
     !> ccsd doubles
-    type(array), intent(inout) :: ccsd_t2_arr
+    type(tensor), intent(inout) :: ccsd_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -6002,9 +6003,9 @@ contains
 
     implicit none
     !> ccsdpt_singles
-    type(array), intent(inout) :: ccsdpt_t1_arr
+    type(tensor), intent(inout) :: ccsdpt_t1_arr
     !> ccsd_doubles and ccsdpt_doubles
-    type(array), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
+    type(tensor), intent(inout) :: ccsd_t2_arr, ccsdpt_t2_arr
     !> unitary transformation matrices
     type(array2), intent(inout) :: U_occ, U_virt
     !> integers
@@ -7735,7 +7736,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(MyFragment%noccAOS), SEC_unocc(MyFragment%nunoccAOS)
     integer :: noccAOS,nunoccAOS,i,a
@@ -7809,7 +7810,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     real(realk) :: energy_tmp, ccsdpt_e5
     logical :: SEC_occ(PairFragment%noccAOS), SEC_unocc(PairFragment%nunoccAOS)
     integer :: noccAOS,nunoccAOS,i,a,atomi,atoma
@@ -7890,7 +7891,7 @@ contains
     !> fragment info
     type(decfrag), intent(inout) :: MyFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> is this called from inside the ccsd(t) fragment optimization routine?
     logical, optional, intent(in) :: fragopt_pT
     !> incomming orbital contribution vectors
@@ -7981,7 +7982,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array_reorder(ccsd_doubles,[1,2,4,3])
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
@@ -8031,16 +8032,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[3,4,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[4,3,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -8077,7 +8078,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array_reorder(ccsd_doubles,[2,1,3,4])
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
@@ -8130,17 +8131,17 @@ contains
        if (do_occ .and. (.not. do_virt)) then
 
           ! reorder from (a,b,j,i) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[1,4,2,3])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[1,4,2,3])
 
        else if (do_virt .and. (.not. do_virt)) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
 
        else if (do_occ .and. do_virt) then
 
           ! reorder from (i,j,a,b) to (a,i,b,j)
-          if (fragopt_pT) call array_reorder(ccsd_doubles,[3,1,4,2])
+          if (fragopt_pT) call tensor_reorder(ccsd_doubles,[3,1,4,2])
 
        end if
 
@@ -8167,7 +8168,7 @@ contains
     !> pair fragment info
     type(decfrag), intent(inout) :: PairFragment
     ! ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     ! logical pointers for keeping hold of which pairs are to be handled
     logical, pointer :: dopair_occ(:,:), dopair_virt(:,:)
     !> integers
@@ -8261,7 +8262,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder from (a,b,i,j) to (a,b,j,i)
-       call array_reorder(ccsd_doubles,[1,2,4,3])
+       call tensor_reorder(ccsd_doubles,[1,2,4,3])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
@@ -8306,16 +8307,16 @@ contains
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,j,i) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[3,4,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[3,4,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        else
 
           ! initially, reorder ccsd_doubles and ccsdpt_doubles
           ! ccsd_doubles from from (a,b,i,j) sequence to (j,i,a,b) sequence
           ! ccsdpt_doubles from from (a,b,i,j) sequence to (i,j,a,b) sequence
-          call array_reorder(ccsd_doubles,[4,3,1,2])
-          call array_reorder(ccsdpt_doubles,[3,4,1,2])
+          call tensor_reorder(ccsd_doubles,[4,3,1,2])
+          call tensor_reorder(ccsdpt_doubles,[3,4,1,2])
 
        end if
 
@@ -8347,7 +8348,7 @@ contains
        !$OMP END PARALLEL DO
    
        ! reorder form (j,i,a,b) to (i,j,a,b)
-       call array_reorder(ccsd_doubles,[2,1,3,4])
+       call tensor_reorder(ccsd_doubles,[2,1,3,4])
    
        !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
@@ -8416,7 +8417,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) doubles amplitudes
-    type(array), intent(inout) :: ccsd_doubles, ccsdpt_doubles
+    type(tensor), intent(inout) :: ccsd_doubles, ccsdpt_doubles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
@@ -8468,7 +8469,7 @@ contains
     !$OMP END PARALLEL DO
 
     ! reorder from (a,b,i,j) to (a,b,j,i)
-    call array_reorder(ccsd_doubles,[1,2,4,3])
+    call tensor_reorder(ccsd_doubles,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
     !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
@@ -8596,7 +8597,7 @@ contains
     implicit none
 
     !> ccsd and ccsd(t) singles amplitudes
-    type(array), intent(inout) :: ccsd_singles, ccsdpt_singles
+    type(tensor), intent(inout) :: ccsd_singles, ccsdpt_singles
     !> dimensions
     integer, intent(in) :: nocc, nvirt, nfrags, offset
     !> occupied orbital information
@@ -8724,9 +8725,9 @@ contains
     !> Virtual MO coefficients
     real(realk), dimension(nbasis,nvirt),intent(in) :: Cvirt
     ! ovoo: Integrals (AI|JK) in the order (J,A,I,K)
-    type(array), intent(inout) :: ovoo
+    type(tensor), intent(inout) :: ovoo
     ! vvvo: Integrals (AI|BC) in the order (C,B,A,I)
-    type(array), intent(inout) :: vvvo
+    type(tensor), intent(inout) :: vvvo
     integer :: gammadim, alphadim,iorb
     integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
     real(realk),pointer :: tmp1(:),tmp2(:),tmp3(:)
@@ -8777,21 +8778,21 @@ contains
 
     ! Integrals (AI|KJ) in the order (J,A,I,K)
     dims = [nocc,nvirt,nocc,nocc]
-    call array_init(ovoo, dims,4)
-    call array_zero(ovoo)
+    call tensor_init(ovoo, dims,4)
+    call tensor_zero(ovoo)
 
     ! Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
 #ifdef VAR_MPI
     mode   = MPI_MODE_NOCHECK
 
-    call array_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
-    call array_zero_tiled_dist(vvvo)
+    call tensor_ainit(vvvo,dims,4,tdims=[nvirt,nvirt,nvirt,1],atype="TDAR")
+    call tensor_zero_tiled_dist(vvvo)
 
 #else
 
-    call array_init(vvvo, dims,4)
-    call array_zero(vvvo)
+    call tensor_init(vvvo, dims,4)
+    call tensor_zero(vvvo)
 
 #endif
 
@@ -9025,15 +9026,15 @@ contains
 
              call time_start_phase(PHASE_COMM)
 #ifdef VAR_HAVE_MPI3
-             call arr_lock_win(vvvo,i,'s',assert=mode)
+             call tensor_lock_win(vvvo,i,'s',assert=mode)
 #endif
-             !call array_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
+             !call tensor_accumulate_tile(vvvo,i,tmp2,nvirt**3,lock_set=.true.,flush_it=.true.)
 
              dest = get_residence_of_tile(i,vvvo) 
 
              do first_el_i_block=1,v3,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
-                call arr_lock_win(vvvo,i,'s',assert=mode)
+                call tensor_lock_win(vvvo,i,'s',assert=mode)
 #endif
                 nel2t=MAX_SIZE_ONE_SIDED
                 if(((v3-first_el_i_block)<MAX_SIZE_ONE_SIDED).and.&
@@ -9045,12 +9046,12 @@ contains
 #ifdef VAR_HAVE_MPI3
                 call lsmpi_win_flush(vvvo%wi(i),rank=dest,local=.true.)
 #else
-                call arr_unlock_win(vvvo,i)
+                call tensor_unlock_win(vvvo,i)
 #endif
              enddo
 
 #ifdef VAR_HAVE_MPI3
-             call arr_unlock_win(vvvo,i)
+             call tensor_unlock_win(vvvo,i)
 #endif
              call time_start_phase(PHASE_WORK)
 
@@ -9146,9 +9147,9 @@ contains
     !> Virtual MO coefficients
     real(realk), dimension(nbasis,nvirt),intent(in) :: Cvirt
     ! Integrals (AI|JK) in the order (I,J,K,A)
-    type(array), intent(inout) :: ooov
+    type(tensor), intent(inout) :: ooov
     ! Integrals (AI|BC) in the order (B,I,A,C)
-    type(array), intent(inout) :: vovv
+    type(tensor), intent(inout) :: vovv
     integer, intent(inout) :: tile_size
     integer :: gammadim, alphadim,iorb,tile
     integer :: alphaB,gammaB,dimAlpha,dimGamma,idx
@@ -9226,8 +9227,8 @@ contains
 
     ! ooov: Integrals (AI|KJ) in the order (I,J,K,A)
     dims = [nocc,nocc,nocc,nvirt]
-    call array_init(ooov, dims,4)
-    call array_zero(ooov)
+    call tensor_init(ooov, dims,4)
+    call tensor_zero(ooov)
 
     ! vovv: Integrals (AB|IC) in the order (B,I,A,C)
     dims = [nvirt,nocc,nvirt,nvirt]
@@ -9236,13 +9237,13 @@ contains
 
     mode   = MPI_MODE_NOCHECK
 
-    call array_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
-    call array_zero_tiled_dist(vovv)
+    call tensor_ainit(vovv,dims,4,tdims=[nvirt,nocc,nvirt,tile_size],atype="TDAR")
+    call tensor_zero_tiled_dist(vovv)
 
 #else
 
-    call array_init(vovv, dims,4)
-    call array_zero(vovv)
+    call tensor_init(vovv, dims,4)
+    call tensor_zero(vovv)
 
 #endif
 
@@ -9531,13 +9532,13 @@ contains
 
              call time_start_phase(PHASE_COMM)
 #ifdef VAR_HAVE_MPI3
-             call arr_lock_win(vovv,tile,'s',assert=mode)
+             call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
              dest = get_residence_of_tile(tile,vovv)
 
              do first_el_c_block=1,ov2*tile_size_tmp,MAX_SIZE_ONE_SIDED
 #ifndef VAR_HAVE_MPI3
-                call arr_lock_win(vovv,tile,'s',assert=mode)
+                call tensor_lock_win(vovv,tile,'s',assert=mode)
 #endif
                 nel2t=MAX_SIZE_ONE_SIDED
                 if(((ov2*tile_size_tmp-first_el_c_block)<MAX_SIZE_ONE_SIDED).and.&
@@ -9549,12 +9550,12 @@ contains
 #ifdef VAR_HAVE_MPI3
                 call lsmpi_win_flush(vovv%wi(tile),rank=dest,local=.true.)
 #else
-                call arr_unlock_win(vovv,tile)
+                call tensor_unlock_win(vovv,tile)
 #endif
              enddo
 
 #ifdef VAR_HAVE_MPI3
-             call arr_unlock_win(vovv,tile)
+             call tensor_unlock_win(vovv,tile)
 #endif
              call time_start_phase(PHASE_WORK)
 
@@ -9629,7 +9630,7 @@ contains
     call mem_dealloc(CvirtT)
 
     ! finally, reorder ooov(K,I,J,A) --> ooov(I,J,K,A)
-    call array_reorder(ooov,[2,3,1,4])
+    call tensor_reorder(ooov,[2,3,1,4])
 
     if (master) call LSTIMER('CCSD(T) INT (ABC)',tcpu,twall,DECinfo%output,FORCEPRINT=.true.)
 
@@ -10032,8 +10033,8 @@ end module ccsdpt_module
     implicit none
     integer :: nocc, nvirt,nbasis
     real(realk), pointer :: ppfock(:,:), qqfock(:,:), Co(:,:), Cv(:,:)
-    type(array) :: ccsdpt_t1
-    type(array) :: vovo,ccsd_t2, ccsdpt_t2
+    type(tensor) :: ccsdpt_t1
+    type(tensor) :: vovo,ccsd_t2, ccsdpt_t2
     real(realk) :: ccsdpt_e4
     type(lsitem) :: mylsitem
     logical :: print_frags,abc
@@ -10050,16 +10051,16 @@ end module ccsdpt_module
     ! init and receive vovo and ccsd_doubles array structures
     if (abc) then
 
-       call array_init(vovo,[nocc,nocc,nvirt,nvirt],4)
-       call array_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
+       call tensor_init(vovo,[nocc,nocc,nvirt,nvirt],4)
+       call tensor_init(ccsd_t2, [nocc,nocc,nvirt,nvirt],4)
 
        call ls_mpibcast(vovo%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nocc,nocc,nvirt,nvirt,infpar%master,infpar%lg_comm)
 
     else
 
-       call array_init(vovo, [nvirt,nvirt,nocc,nocc],4)
-       call array_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
+       call tensor_init(vovo, [nvirt,nvirt,nocc,nocc],4)
+       call tensor_init(ccsd_t2, [nvirt,nvirt,nocc,nocc],4)
 
        call ls_mpibcast(vovo%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
        call ls_mpibcast(ccsd_t2%elm4,nvirt,nvirt,nocc,nocc,infpar%master,infpar%lg_comm)
@@ -10071,13 +10072,13 @@ end module ccsdpt_module
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          call array_init(ccsdpt_t1, [nocc,nvirt],2)
-          call array_init(ccsdpt_t2, [nocc,nocc,nvirt,nvirt],4)
+          call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
+          call tensor_init(ccsdpt_t2, [nocc,nocc,nvirt,nvirt],4)
           
        else
 
-          call array_init(ccsdpt_t1, [nvirt,nocc],2)
-          call array_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
+          call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
+          call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
 
        endif
 
@@ -10086,11 +10087,11 @@ end module ccsdpt_module
        ! init ccsd(t) singles
        if (abc) then
 
-          call array_init(ccsdpt_t1, [nocc,nvirt],2)
+          call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
 
        else
 
-          call array_init(ccsdpt_t1, [nvirt,nocc],2)
+          call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
 
        endif
        ccsdpt_e4 = 0.0E0_realk
@@ -10115,17 +10116,17 @@ end module ccsdpt_module
     call time_start_phase(PHASE_WORK)
 
     ! now, release all amplitude arrays, both ccsd and ccsd(t)
-    call array_free(vovo)
-    call array_free(ccsd_t2)
+    call tensor_free(vovo)
+    call tensor_free(ccsd_t2)
 
     if (print_frags) then
 
-       call array_free(ccsdpt_t1)
-       call array_free(ccsdpt_t2)
+       call tensor_free(ccsdpt_t1)
+       call tensor_free(ccsdpt_t2)
 
     else
 
-       call array_free(ccsdpt_t1)
+       call tensor_free(ccsdpt_t1)
 
     endif
 

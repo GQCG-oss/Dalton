@@ -14,7 +14,7 @@ MODULE TYPEDEFTYPE
  use matrix_module
  use Integralparameters
  use integralOutput_typetype
- use tensor_type_def_module,only:array
+ use tensor_type_def_module,only:tensor
 #ifdef VAR_MPI
  use infpar_module
 #endif

@@ -563,6 +563,13 @@ contains
           ENDIF
        endif
 #endif 
+    case(MODEL_RIMP2)
+       ! RI-MP2, use occ energy
+       IF(DECinfo%onlyVirtPart)THEN
+          Ecorr = energies(FRAGMODEL_VIRTRIMP2)
+       ELSE
+          Ecorr = energies(FRAGMODEL_OCCRIMP2)
+       ENDIF
     case(MODEL_RPA)
        ! RPA, use occ energy
        IF(DECinfo%onlyVirtPart)THEN
@@ -645,8 +652,6 @@ subroutine print_dec_info()
         & DECinfo%simple_orbital_threshold
    write(LU,'(a,i5)')    'Expansion step size                                 =           ',&
         & DECinfo%Frag_Exp_Size
-   write(LU,'(a,A5)')    'Use RI for Expansion step                           =           ',&
-        & LogicString(Log2It(DECinfo%FragmentExpansionRI))
    write(LU,'(a,i5)')    'Print level                                         =           ',DECinfo%PL
    write(LU,'(a,A5)')    'Fragment-adapted orbitals                           =           ',&
         & LogicString(Log2It(DECinfo%FragAdapt))

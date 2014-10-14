@@ -128,9 +128,9 @@ contains
     ! Minor tests
     ! ***********
     !Array test
-    if (DECinfo%array_test)then
+    if (DECinfo%tensor_test)then
       print *,"TEST ARRAY MODULE"
-      call test_array_struct()
+      call test_tensor_struct()
       return
     endif
     ! Reorder test

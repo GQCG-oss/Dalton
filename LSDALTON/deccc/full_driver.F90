@@ -3,6 +3,11 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module full 
+
+#ifdef VAR_MPI
+  use infpar_module
+  use lsmpi_type
+#endif
   use fundamental
   use precision
   use typedeftype!,only:lsitem
@@ -61,6 +66,8 @@ contains
     call set_dec_settings_on_slaves()
 #endif
 
+    !MODIFY FOR NEW MODEL
+
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
@@ -72,6 +79,9 @@ contains
 #else
        call lsquit('f12 not released',-1)
 #endif
+    elseif(DECinfo%ccModel==MODEL_RIMP2)then
+!       call lsquit('RIMP2 currently not implemented for **CC ',-1)
+       call full_canonical_rimp2(MyMolecule,MyLsitem,D,Ecorr)       
     else
        !if(DECinfo%ccModel==MODEL_MP2) then
 
@@ -832,6 +842,128 @@ contains
 
   end subroutine full_canonical_mp2_memory_check
 
+  !> \brief Calculate canonical RIMP2 energy for full molecular system
+  !> \author Thomas Kjaergaard
+  !> \date October 2014
+  subroutine full_canonical_rimp2(MyMolecule,MyLsitem,Dmat,rimp2_energy)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    !> HF density matrix
+    type(matrix),intent(in) :: Dmat
+    !> Canonical MP2 correlation energy
+    real(realk),intent(inout) :: rimp2_energy    
+
+    integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes
+    logical :: master,wakeslave
+    integer,pointer :: IPVT(:)
+    real(realk), pointer   :: work1(:)
+    real(realk)            :: RCOND,dummy(2)
+    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2
+    real(realk) :: tcpuTOT,twallTOT
+    real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end
+    real(realk),pointer :: AlphaBeta_inv(:,:)
+    real(realk),pointer :: TMPAlphaBeta_inv(:,:)
+    !sanity check
+    if(DECinfo%use_canonical) then
+       call lsquit('Error: full_canonical_rimp2 require canonical Orbitals',-1)
+    endif
+
+    ! Init stuff
+    ! **********
+    nbasis = MyMolecule%nbasis
+    nocc   = MyMolecule%nocc
+    nvirt  = MyMolecule%nunocc
+    naux   = MyMolecule%nauxbasis
+    noccfull = nocc
+
+#ifdef VAR_MPI
+    master= (infpar%mynum == infpar%master)
+    mynum = infpar%mynum
+    numnodes = infpar%nodtot
+    wakeslave = infpar%nodtot.GT.1
+#else
+    ! If MPI is not used, consider the single node to be "master"
+    master=.true.
+    mynum = 0
+    numnodes = 1
+    wakeslave = .false.
+#endif
+
+    ! Memory check!
+    ! ********************
+!    call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
+
+!    MyMolecule%Co
+!    MyMolecule%Cv
+
+  ! Master starts up slave
+  StartUpSlaves: if(wakeslave .and. master) then
+     ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+     ! and call full_canonical_rimp2_slave which communicate info 
+     ! then calls full_canonical_rimp2.
+!     call ls_mpibcast(RIMP2FULL,infpar%master,MPI_COMM_LSDALTON)
+
+     ! Communicate fragment information to slaves
+     !call mpi_communicate_mp2_int_and_amp(MyFragment,bat,first_order_integrals,.true.)
+  endif StartUpSlaves
+
+  IF(master)THEN
+     !=====================================================================================
+     ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+     !=====================================================================================
+     !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+     !this should naturally be changed      
+     
+     call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+          & AlphaBeta_inv,Mylsitem%setting,nAux)
+     
+     !=====================================================================================
+     ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
+     !=====================================================================================
+     ! Warning the inverse is not unique so in order to make sure all slaves have the same
+     ! inverse matrix we calculate it on the master a BCAST to slaves
+     
+     !Create the inverse AlphaBeta = (alpha|beta)^-1
+     call mem_alloc(work1,naux)
+     call mem_alloc(IPVT,naux)
+     IPVT = 0 ; RCOND = 0.0E0_realk  
+     call DGECO(AlphaBeta_inv,naux,naux,IPVT,RCOND,work1)
+     call DGEDI(AlphaBeta_inv,naux,naux,IPVT,dummy,work1,01)
+     call mem_dealloc(work1)
+     call mem_dealloc(IPVT)
+#ifdef VAR_MPI
+     call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,MPI_COMM_LSDALTON)
+#endif
+  ELSE
+#ifdef VAR_MPI
+     call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,MPI_COMM_LSDALTON)
+#endif
+  ENDIF
+  
+!       ! Calculate canonical MP2 energy
+!       ! ******************************
+!       mp2_energy = 0.0E0_realk
+!       do J=1,nocc
+!          do B=1,nvirt
+!             do I=1,nocc
+!                do A=1,nvirt
+!
+!                   ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+!                   eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
+!                        & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+!
+!                   ! Energy = sum_{AIBJ} (AI|BJ) * [ 2(AI|BJ) - (BI|AJ) ] / (epsI + epsJ - epsA - epsB)
+!                   rimp2_energy = rimp2_energy + gmo(A,I,B,J)*(2E0_realk*gmo(A,I,B,J)-gmo(B,I,A,J))/eps
+!
+!                end do
+!             end do
+!          end do
+!       end do
+end subroutine full_canonical_rimp2
 
 #ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)

@@ -113,7 +113,7 @@ MODULE Integralparameters
   integer,parameter :: DEC_SETTING_TO_SLAVES        = 47
   integer,parameter :: INITSLAVETIME                = 48
   integer,parameter :: GETSLAVETIME                 = 49
-  integer,parameter :: MP2INAMPRI                   = 50
+  integer,parameter :: RIMP2INAMP                   = 50
   integer,parameter :: SIMPLE_MP2_PAR               = 51
   integer,parameter :: RPAGETFOCK                   = 52
 

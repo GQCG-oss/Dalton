@@ -13,10 +13,10 @@ module tensor_type_def_module
     integer(kind=ls_mpik) :: wi                     !window in pc group
   end type tile
 
-  type array
+  type tensor
      !mode=number of modes of the array or order of the corresponding tensor,
      !nelms=number of elements in the array
-     !atype= format or distribution in which the array is stored --> dense, distributed --> see parameters in array_operations.f90
+     !atype= format or distribution in which the array is stored --> dense, distributed --> see parameters in tensor_operations.f90
      integer :: mode
      integer(kind=8) :: nelms
      integer      :: itype                                              !integer type specification
@@ -59,24 +59,24 @@ module tensor_type_def_module
      !logical :: allocd_w_c_p                         ! allocated with comm_threads or not?
      logical :: initialized = .false.                !check variable if array is initialized
 
-  end type array
+  end type tensor
 
   !> Allocated memory of dense array
-  real(realk) :: array_dense_allocd_mem   = 0.0E0_realk
+  real(realk) :: tensor_dense_allocd_mem   = 0.0E0_realk
   !> Deallocated memory of dense array
-  real(realk) :: array_dense_deallocd_mem = 0.0E0_realk
+  real(realk) :: tensor_dense_deallocd_mem = 0.0E0_realk
   !> Currently allocated memory on node
-  real(realk) :: array_memory_in_use      = 0.0E0_realk
+  real(realk) :: tensor_memory_in_use      = 0.0E0_realk
   !> Max allocated memory
-  real(realk) :: array_max_memory         = 0.0E0_realk
+  real(realk) :: tensor_max_memory         = 0.0E0_realk
   !> Allocated memory of tiled array
-  real(realk) :: array_tiled_allocd_mem   = 0.0E0_realk
+  real(realk) :: tensor_tiled_allocd_mem   = 0.0E0_realk
   !> Deallocated memory of tiled array
-  real(realk) :: array_tiled_deallocd_mem = 0.0E0_realk
+  real(realk) :: tensor_tiled_deallocd_mem = 0.0E0_realk
   !> Allocated auxiliary memory of array
-  real(realk) :: array_aux_allocd_mem     = 0.0E0_realk
+  real(realk) :: tensor_aux_allocd_mem     = 0.0E0_realk
   !> Deallocated auxiliary memory of array
-  real(realk) :: array_aux_deallocd_mem   = 0.0E0_realk
+  real(realk) :: tensor_aux_deallocd_mem   = 0.0E0_realk
 
 
   !parameters to define the data distribution in the array type
@@ -91,8 +91,8 @@ module tensor_type_def_module
   integer,parameter :: ALL_ACCESS    = 2
 
   !other parameters
-  integer,parameter :: ARR_MSG_LEN   = 30
-  integer,parameter :: DEFAULT_TDIM  = 10
+  integer,parameter :: TENSOR_MSG_LEN = 30
+  integer,parameter :: DEFAULT_TDIM   = 10
   
   integer,parameter :: lspdm_stdout  = 6
   integer,parameter :: lspdm_errout  = 0
@@ -100,7 +100,7 @@ module tensor_type_def_module
 
   !> execution time variables
   logical :: lspdm_use_comm_proc
-  logical :: array_debug_mode = .false.
+  logical :: tensor_debug_mode = .false.
 
 
 
