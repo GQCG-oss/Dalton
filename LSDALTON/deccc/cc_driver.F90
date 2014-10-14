@@ -1419,7 +1419,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer                 :: iter,last_iter,i,j,k,l
    logical                 :: crop_ok,break_iterations,saferun
    type(ri)                :: l_ao
-   type(tensor)             :: ppfock_prec, qqfock_prec, qpfock_prec
+   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
    integer                 :: nnodes
@@ -1825,7 +1825,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
          call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+         call tensor_zero(t2(1))
+         call print_norm(t2(1),"t2 before")
          call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
+         call print_norm(t2(1),"t2 after ")
+
 
       else
 

@@ -260,7 +260,8 @@ contains
               AUX2 = AUX
            endif
 
-           call tensor_contract(p10,U(whichU(imode,itens)),AUX1,[t(imode,itens)],[imode],1,p00,AUX2,ord(1:it_mode))
+           call tensor_contract(p10,U(whichU(imode,itens)),AUX1,[t(imode,itens)],&
+              &[imode],1,p00,AUX2,ord(1:it_mode),force_sync=.true.)
 
         enddo
 
@@ -350,7 +351,7 @@ contains
 
   !> \brief simple general tensor conraction of the type C = pre1 * A * B + pre2 * C
   !> \author Patrick Ettenhuber
-  subroutine tensor_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+  subroutine tensor_contract(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
      real(realk), intent(in)    :: pre1,pre2
      type(tensor), intent(in)    :: A,B
@@ -361,6 +362,7 @@ contains
      real(realk), intent(in),    optional :: mem
      real(realk), intent(inout), optional :: wrk(:)
      integer, intent(in),        optional :: iwrk
+     logical, intent(in),        optional :: force_sync
      !internal variables
      integer :: i,j,k
      logical :: contraction_mode
@@ -415,7 +417,8 @@ contains
         case(DENSE,REPLICATED)
            select case(C%itype)
            case(DENSE,REPLICATED)
-              call tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+              call tensor_contract_dense_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 &mem=mem,wrk=wrk,iwrk=iwrk)
               if(C%itype==REPLICATED)call tensor_sync_replicated(C)
            case default
               call lsquit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
@@ -428,7 +431,8 @@ contains
         case(TILED_DIST)
            select case(C%itype)
            case(TILED_DIST)
-              call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+              call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 &mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
            case default
               call lsquit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
            end select
@@ -2082,13 +2086,18 @@ contains
     type(tensor),intent(inout) :: to_arr
     integer :: i
     real(realk) :: tilemem,MemFree
+    integer :: o(from_arr%mode)
     if(from_arr%nelms/=to_arr%nelms)then
       call lsquit("ERROR(tensor_cp_data):arrays need the same number of& 
       & elements",DECinfo%output)
     endif
+
+    do i=1,from_arr%mode
+       o(i) = i
+    enddo
     
     select case(from_arr%itype)
-      case(DENSE)
+      case(DENSE,REPLICATED)
         select case(to_arr%itype)
           case(DENSE)
             call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
@@ -2096,20 +2105,14 @@ contains
             call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
             call tensor_sync_replicated(to_arr)
           case(TILED_DIST)
-            call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
-          case default
-            call lsquit("ERROR(tensor_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case(REPLICATED)
-        select case(to_arr%itype)
-          case(DENSE)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-          case(REPLICATED)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-            call tensor_sync_replicated(to_arr)
-          case(TILED_DIST)
-            call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
+             if(to_arr%access_type==ALL_ACCESS)then
+                do i=1,to_arr%nlti
+                   call tile_from_fort(1.0E0_realk,from_arr%elm1,from_arr%dims,to_arr%mode,&
+                      &0.0E0_realk,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
+                enddo
+             else
+                call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
+             endif
           case default
             call lsquit("ERROR(tensor_cp_data):operation not yet&
             & implemented",DECinfo%output)

@@ -147,6 +147,7 @@ module lspdm_tensor_operations_module
   integer,parameter :: JOB_TENSOR_EXTRACT_OEOS    = 30
   integer,parameter :: JOB_GET_COMBINEDT1T2_1     = 31
   integer,parameter :: JOB_GET_COMBINEDT1T2_2     = 32
+  integer,parameter :: JOB_GET_MP2_ST_GUESS       = 33
 
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
@@ -1500,7 +1501,104 @@ module lspdm_tensor_operations_module
 #endif
   end function get_sosex_cont_parallel
 
+  subroutine lspdm_get_mp2_starting_guess(iajb,t2,oof,vvf) 
+     implicit none
+     type(tensor), intent(inout) :: iajb,t2,oof,vvf
+     real(realk), pointer :: buf(:),t(:,:,:,:),g(:,:,:,:)
+     integer :: gtidx,lt,o(t2%mode),da,db,di,dj,a,b,i,j,nelms
+     integer :: order(4)
+     call time_start_phase(PHASE_WORK)
 
+     order = [3,1,4,2]
+     
+     !sanity checks
+     if(t2%access_type /= iajb%access_type)then
+        call lsquit("ERROR(lspdm_get_mp2_starting_guess): pdm tensors should have the same access types",-1)
+     endif
+     if(oof%itype /= vvf%itype)then
+        call lsquit("ERROR(lspdm_get_mp2_starting_guess): Fock matrices should have the same types",-1)
+     endif
+
+     do i=1,t2%mode
+        if( iajb%dims(i) /= t2%dims(order(i)))then
+           call lsquit("ERROR(lspdm_get_mp2_starting_guess): dimensions of iajb and t2 not in the assumed order",-1)
+        endif
+        if( iajb%tdim(i) /= t2%tdim(order(i)))then
+           call lsquit("ERROR(lspdm_get_mp2_starting_guess): tiling of iajb and t2 not as expected",-1)
+        endif
+     enddo
+
+     if(t2%access_type == MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
+        call time_start_phase(PHASE_COMM)
+        call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ST_GUESS,iajb,t2,oof,vvf)
+        call time_start_phase(PHASE_WORK)
+     endif
+
+     select case(oof%itype)
+     case(DENSE,REPLICATED)
+
+        !TODO: introduce prefetching of tiles
+        call mem_alloc(buf,iajb%tsize)
+
+        do lt=1,t2%nlti
+
+           gtidx = t2%ti(lt)%gt
+           nelms = t2%ti(lt)%e
+
+           !get offset for global indices
+           call get_midx(gtidx,o,t2%ntpm,t2%mode)
+
+           call time_start_phase(PHASE_COMM)
+           call tensor_get_tile(iajb,[o(3),o(1),o(4),o(2)],buf,nelms,flush_it=(t2%ti(lt)%e>MAX_SIZE_ONE_SIDED))
+           call time_start_phase(PHASE_WORK)
+
+           call ass_D1to4( t2%ti(lt)%t, t, t2%ti(lt)%d                                                   )
+           call ass_D1to4( buf,         g, [t2%ti(lt)%d(3),t2%ti(lt)%d(1),t2%ti(lt)%d(4),t2%ti(lt)%d(2)] )
+
+
+           do j=1,t2%mode
+              o(j)=(o(j)-1)*t2%tdim(j)
+           enddo
+
+
+           da = t2%ti(lt)%d(1)
+           db = t2%ti(lt)%d(2)
+           di = t2%ti(lt)%d(3)
+           dj = t2%ti(lt)%d(4)
+
+           !count over local indices
+           !$OMP  PARALLEL DO DEFAULT(NONE) SHARED(g,o,t,oof,vvf,&
+           !$OMP  da,db,di,dj) PRIVATE(i,j,a,b) COLLAPSE(3)
+           do j=1,dj
+              do i=1,di
+                 do b=1,db
+                    do a=1,da
+
+                       t(a,b,i,j) = g(i,a,j,b) / &
+                        & (oof%elm2(o(3)+i,o(3)+i) - vvf%elm2(o(1)+a,o(1)+a) + oof%elm2(o(4)+j,o(4)+j) - vvf%elm2(o(2)+b,o(2)+b))
+
+                    enddo 
+                 enddo
+              enddo
+           enddo
+           !$OMP END PARALLEL DO
+
+           t => null()
+           g => null()
+
+        enddo
+
+        call mem_dealloc(buf)
+
+     case default
+        call lsquit("ERROR(lspdm_get_mp2_starting_guess): the routine does not accept this type of fock matrix",-1)
+     end select
+
+     call time_start_phase(PHASE_IDLE)
+     call lsmpi_barrier(infpar%lg_comm)
+     call time_start_phase(PHASE_WORK)
+
+  end subroutine lspdm_get_mp2_starting_guess
 
 
 
@@ -1519,6 +1617,7 @@ module lspdm_tensor_operations_module
     real(realk) :: nrm
     integer :: t(4),da,db,di,dj
 
+    call time_start_phase(PHASE_WORK)
 #ifdef VAR_MPI
 
     !CHECK if the distributions are the same, if it becomes necessary, that they
@@ -1531,13 +1630,13 @@ module lspdm_tensor_operations_module
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call time_start_phase(PHASE_COMM)
-
       call pdm_tensor_sync(infpar%lg_comm,JOB_PREC_DOUBLES_PAR,omega2,ppfock,qqfock,prec)
       call time_start_phase(PHASE_WORK)
     endif
 
     dims=prec%dims
 
+    !TODO: introduce prefetching of tiles
     
     !do a loop over the local tiles of the preconditioned matrix and get the
     !corresponding tiles of the residual to form the preconditioned residual
@@ -1639,6 +1738,8 @@ module lspdm_tensor_operations_module
       !allocate buffer for the tiles
       call mem_alloc(buffer,arr1%tsize)
       buffer=0.0E0_realk
+
+      !TODO: introduce prefetching of tiles
  
       !loop over local tiles of array2  and get the corresponding tiles of
       !array1
@@ -2337,7 +2438,7 @@ module lspdm_tensor_operations_module
     !if(lspdm_use_comm_proc)call mem_dealloc(pc_buf)
   end subroutine tensor_init_tiled
   
-  subroutine lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk)
+  subroutine lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,mem,wrk,iwrk,force_sync)
      implicit none
      real(realk), intent(in)    :: pre1,pre2
      type(tensor), intent(in)    :: A,B
@@ -2348,8 +2449,9 @@ module lspdm_tensor_operations_module
      real(realk), intent(in),    optional :: mem !in GB
      real(realk), intent(inout), target, optional :: wrk(:)
      integer, intent(in),        optional :: iwrk
+     logical, intent(in),        optional :: force_sync
      !internal variables
-     logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode
+     logical :: test_all_master_access,test_all_all_access,master, use_wrk_space,contraction_mode,sync
      real(realk), pointer :: buffA(:,:),buffB(:,:),wA(:),wB(:),wC(:),tA(:),tB(:),tC(:)
      integer :: ibufA, ibufB, nbuffsA,nbuffsB, nbuffs, buffer_cm
      integer :: gc, gm(C%mode), ro(C%mode), locC
@@ -2359,6 +2461,9 @@ module lspdm_tensor_operations_module
      integer :: nelmsTA, nelmsTB
      integer :: i,j,k,l, cci, max_mode_ci(nmodes2c),cm,current_mode(nmodes2c)
      integer :: m_gemm, n_gemm, k_gemm
+
+     sync = .false.
+     if(present(force_sync))sync = force_sync
 
 #ifdef VAR_MPI
      master = (infpar%lg_mynum == infpar%master)
@@ -2407,6 +2512,7 @@ module lspdm_tensor_operations_module
         call ls_mpi_buffer(order,C%mode,infpar%master)
         call ls_mpi_buffer(pre1,infpar%master)
         call ls_mpi_buffer(pre2,infpar%master)
+        call ls_mpi_buffer(sync,infpar%master)
         call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
         call time_start_phase(PHASE_WORK)
      endif
@@ -2682,7 +2788,7 @@ module lspdm_tensor_operations_module
      endif
 
      !critical barrier if synchronization is not achieved by other measures
-     call lsmpi_barrier(infpar%lg_comm)
+     if(sync)call lsmpi_barrier(infpar%lg_comm)
 #else
      call lsquit("ERROR(lspdm_tensor_contract_simple): cannot be called without MPI",-1)
 #endif

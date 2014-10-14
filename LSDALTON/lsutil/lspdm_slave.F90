@@ -23,6 +23,7 @@ subroutine pdm_tensor_slave(comm)
    integer, pointer  :: intarr1(:), intarr2(:), intarr3(:)
    integer           :: INT1,       INT2,       INT3
    real(realk)       :: REAL1,      REAL2
+   logical           :: LOG1
    logical :: loc
    character (4) :: at 
    integer       :: it
@@ -169,10 +170,15 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpi_buffer(intarr3,INT3,infpar%master)
       call ls_mpi_buffer(REAL1,infpar%master)
       call ls_mpi_buffer(REAL2,infpar%master)
+      call ls_mpi_buffer(LOG1, infpar%master)
       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
       call time_start_phase(PHASE_WORK)
 
-      call lspdm_tensor_contract_simple(REAL1,A,B,intarr1,intarr2,INT1,REAL2,C,intarr3)
+      if(LOG1)then
+         call lspdm_tensor_contract_simple(REAL1,A,B,intarr1,intarr2,INT1,REAL2,C,intarr3,force_sync=LOG1)
+      else
+         call lspdm_tensor_contract_simple(REAL1,A,B,intarr1,intarr2,INT1,REAL2,C,intarr3)
+      endif
 
       call mem_dealloc(intarr1)
       call mem_dealloc(intarr2)
@@ -238,6 +244,8 @@ subroutine pdm_tensor_slave(comm)
       call lspdm_get_combined_SingleDouble_amplitudes(AUX,A,B)
 
       call tensor_free(AUX)
+   CASE(JOB_GET_MP2_ST_GUESS)
+      call lspdm_get_mp2_starting_guess(A,B,C,D)
 
    CASE DEFAULT
         call lsquit("ERROR(pdm_tensor_slave): Unknown job",-1)
