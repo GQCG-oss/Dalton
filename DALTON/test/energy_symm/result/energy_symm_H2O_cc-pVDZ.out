@@ -4,7 +4,7 @@
      *************** Dalton - An Electronic Structure Program ***************
      ************************************************************************
 
-    This is output from DALTON (Release Dalton2013 patch 0)
+    This is output from DALTON 2014.0
    ----------------------------------------------------------------------------
     NOTE:
      
@@ -24,32 +24,33 @@
      
        K. Aidas, C. Angeli, K. L. Bak, V. Bakken, R. Bast,
        L. Boman, O. Christiansen, R. Cimiraglia, S. Coriani,
-       P. Dahle, E. K. Dalskov, U. Ekstroem, T. Enevoldsen,
-       J. J. Eriksen, P. Ettenhuber, B. Fernandez, L. Ferrighi,
-       H. Fliegl, L. Frediani, K. Hald, A. Halkier, C. Haettig,
-       H. Heiberg, T. Helgaker, A. C. Hennum, H. Hettema,
-       E. Hjertenaes, S. Hoest, I.-M. Hoeyvik, M. F. Iozzi,
-       B. Jansik, H. J. Aa. Jensen, D. Jonsson, P. Joergensen,
-       J. Kauczor, S. Kirpekar, T. Kjaergaard, W. Klopper,
-       S. Knecht, R. Kobayashi, H. Koch, J. Kongsted, A. Krapp,
-       K. Kristensen, A. Ligabue, O. B. Lutnaes, J. I. Melo,
-       K. V. Mikkelsen, R. H. Myhre, C. Neiss, C. B. Nielsen,
-       P. Norman, J. Olsen, J. M. H. Olsen, A. Osted,
-       M. J. Packer, F. Pawlowski, T. B. Pedersen, P. F. Provasi,
-       S. Reine, Z. Rinkevicius, T. A. Ruden, K. Ruud, V. Rybkin,
-       P. Salek, C. C. M. Samson, A. Sanchez de Meras, T. Saue,
-       S. P. A. Sauer, B. Schimmelpfennig, K. Sneskov,
-       A. H. Steindal, K. O. Sylvester-Hvid, P. R. Taylor,
-       A. M. Teale, E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen,
-       L. Thoegersen, O. Vahtras, M. A. Watson, D. J. D. Wilson,
-       M. Ziolkowski and H. Aagren.
-       The Dalton quantum chemistry program system.
-       WIREs Comput. Mol. Sci. 2013. doi: 10.1002/wcms.1172
+       J. Cukras, P. Dahle, E. K. Dalskov, U. Ekstroem,
+       T. Enevoldsen, J. J. Eriksen, P. Ettenhuber, B. Fernandez,
+       L. Ferrighi, H. Fliegl, L. Frediani, K. Hald, A. Halkier,
+       C. Haettig, H. Heiberg, T. Helgaker, A. C. Hennum,
+       H. Hettema, E. Hjertenaes, S. Hoest, I.-M. Hoeyvik,
+       M. F. Iozzi, B. Jansik, H. J. Aa. Jensen, D. Jonsson,
+       P. Joergensen, M. Kaminski, J. Kauczor, S. Kirpekar,
+       T. Kjaergaard, W. Klopper, S. Knecht, R. Kobayashi, H. Koch,
+       J. Kongsted, A. Krapp, K. Kristensen, A. Ligabue,
+       O. B. Lutnaes, J. I. Melo, K. V. Mikkelsen, R. H. Myhre,
+       C. Neiss, C. B. Nielsen, P. Norman, J. Olsen,
+       J. M. H. Olsen, A. Osted, M. J. Packer, F. Pawlowski,
+       T. B. Pedersen, P. F. Provasi, S. Reine, Z. Rinkevicius,
+       T. A. Ruden, K. Ruud, V. Rybkin, P. Salek, C. C. M. Samson,
+       A. Sanchez de Meras, T. Saue, S. P. A. Sauer,
+       B. Schimmelpfennig, K. Sneskov, A. H. Steindal,
+       K. O. Sylvester-Hvid, P. R. Taylor, A. M. Teale,
+       E. I. Tellgren, D. P. Tew, A. J. Thorvaldsen, L. Thoegersen,
+       O. Vahtras, M. A. Watson, D. J. D. Wilson, M. Ziolkowski
+       and H. Aagren,
+       "The Dalton quantum chemistry program system",
+       WIREs Comput. Mol. Sci. 2013. (doi: 10.1002/wcms.1172)
     
     and
     
        Dalton, a Molecular Electronic Structure Program,
-       Release DALTON2013.0 (2013), see http://daltonprogram.org
+       Release DALTON2014.0 (2014), see http://daltonprogram.org
    ----------------------------------------------------------------------------
 
     Authors in alphabetical order (major contribution(s) in parenthesis):
@@ -58,15 +59,17 @@
   Celestino Angeli,         University of Ferrara,        Italy       (NEVPT2)
   Keld L. Bak,              UNI-C,                        Denmark     (AOSOPPA, non-adiabatic coupling, magnetic properties)
   Vebjoern Bakken,          University of Oslo,           Norway      (DALTON; geometry optimizer, symmetry detection)
-  Radovan Bast,             KTH Stockholm                 Sweden      (DALTON installation and execution frameworks)
+  Radovan Bast,             KTH Stockholm,                Sweden      (DALTON installation and execution frameworks)
+  Pablo Baudin,             University of Valencia,       Spain       (Cholesky excitation energies)
   Linus Boman,              NTNU,                         Norway      (Cholesky decomposition and subsystems)
   Ove Christiansen,         Aarhus University,            Denmark     (CC module)
   Renzo Cimiraglia,         University of Ferrara,        Italy       (NEVPT2)
   Sonia Coriani,            University of Trieste,        Italy       (CC module, MCD in RESPONS)
+  Janusz Cukras,            University of Trieste,        Italy       (MChD in RESPONS)
   Paal Dahle,               University of Oslo,           Norway      (Parallelization)
   Erik K. Dalskov,          UNI-C,                        Denmark     (SOPPA)
   Thomas Enevoldsen,        Univ. of Southern Denmark,    Denmark     (SOPPA)
-  Janus J. Eriksen,         Aarhus University,            Denmark     (PE-MP2/SOPPA, TDA)
+  Janus J. Eriksen,         Aarhus University,            Denmark     (Polarizable embedding model, TDA)
   Berta Fernandez,          U. of Santiago de Compostela, Spain       (doublet spin, ESR in RESPONS)
   Lara Ferrighi,            Aarhus University,            Denmark     (PCM Cubic response)
   Heike Fliegl,             University of Oslo,           Norway      (CCSD(R12))
@@ -75,6 +78,7 @@
   Christof Haettig,         Ruhr-University Bochum,       Germany     (CC module)
   Kasper Hald,              Aarhus University,            Denmark     (CC module)
   Asger Halkier,            Aarhus University,            Denmark     (CC module)
+  Erik D. Hedegaard,        Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Hanne Heiberg,            University of Oslo,           Norway      (geometry analysis, selected one-electron integrals)
   Trygve Helgaker,          University of Oslo,           Norway      (DALTON; ABACUS, ERI, DFT modules, London, and much more)
   Alf Christian Hennum,     University of Oslo,           Norway      (Parity violation)
@@ -85,14 +89,16 @@
   Hans Joergen Aa. Jensen,  Univ. of Southern Denmark,    Denmark     (DALTON; SIRIUS, RESPONS, ABACUS modules, London, and much more)
   Dan Jonsson,              UiT The Arctic U. of Norway,  Norway      (cubic response in RESPONS module)
   Poul Joergensen,          Aarhus University,            Denmark     (RESPONS, ABACUS, and CC modules)
+  Maciej Kaminski,          University of Warsaw,         Poland      (CPPh in RESPONS)
   Joanna Kauczor,           Linkoeping University,        Sweden      (Complex polarization propagator (CPP) module)
   Sheela Kirpekar,          Univ. of Southern Denmark,    Denmark     (Mass-velocity & Darwin integrals)
   Wim Klopper,              KIT Karlsruhe,                Germany     (R12 code in CC, SIRIUS, and ABACUS modules)
   Stefan Knecht,            ETH Zurich,                   Switzerland (Parallel CI and MCSCF)
   Rika Kobayashi,           Australian National Univ.,    Australia   (DIIS in CC, London in MCSCF)
   Henrik Koch,              NTNU,                         Norway      (CC module, Cholesky decomposition)
-  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding, QM/MM)
+  Jacob Kongsted,           Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Andrea Ligabue,           University of Modena,         Italy       (CTOCD, AOSOPPA)
+  Nanna H. List             Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Ola B. Lutnaes,           University of Oslo,           Norway      (DFT Hessian)
   Juan I. Melo,             University of Buenos Aires,   Argentina   (LRESC, Relativistic Effects on NMR Shieldings)
   Kurt V. Mikkelsen,        University of Copenhagen,     Denmark     (MC-SCRF and QM/MM)
@@ -101,24 +107,26 @@
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM)
   Patrick Norman,           Linkoeping University,        Sweden      (Cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
-  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding, PE library, QM/MM)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding model, QM/MM)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
-  Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
+  Filip Pawlowski,          Kazimierz Wielki University,  Poland      (CC3)
+  Morten N. Pedersen,       Univ. of Southern Denmark,    Denmark     (Polarizable embedding model)
   Thomas B. Pedersen,       University of Oslo,           Norway      (Cholesky decomposition)
   Patricio F. Provasi,      University of Northeastern,   Argentina   (Analysis of coupling constants in localized orbitals)
   Zilvinas Rinkevicius,     KTH Stockholm,                Sweden      (open-shell DFT, ESR)
   Elias Rudberg,            KTH Stockholm,                Sweden      (DFT grid and basis info)
   Torgeir A. Ruden,         University of Oslo,           Norway      (Numerical derivatives in ABACUS)
-  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and  much more)
+  Kenneth Ruud,             UiT The Arctic U. of Norway,  Norway      (DALTON; ABACUS magnetic properties and much more)
   Pawel Salek,              KTH Stockholm,                Sweden      (DALTON; DFT code)
   Claire C. M. Samson       University of Karlsruhe       Germany     (Boys localization, r12 integrals in ERI)
   Alfredo Sanchez de Meras, University of Valencia,       Spain       (CC module, Cholesky decomposition)
   Trond Saue,               Paul Sabatier University,     France      (direct Fock matrix construction)
   Stephan P. A. Sauer,      University of Copenhagen,     Denmark     (SOPPA(CCSD), SOPPA prop., AOSOPPA, vibrational g-factors)
   Bernd Schimmelpfennig,    Forschungszentrum Karlsruhe,  Germany     (AMFI module)
-  Kristian Sneskov,         Aarhus University,            Denmark     (QM/MM, PE-CC)
-  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM)
+  Kristian Sneskov,         Aarhus University,            Denmark     (Polarizable embedding model, QM/MM)
+  Arnfinn H. Steindal,      UiT The Arctic U. of Norway,  Norway      (parallel QM/MM, Polarizable embedding model)
+  Casper Steinmann,         Univ. of Southern Denmark,    Denmark     (QFIT, Polarizable embedding model)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
   Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
@@ -128,35 +136,45 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, RESPONS, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:18 2014
+     Host name              : c22-1.local                             
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/bast/DALTON-2013.0-Source/build/test_energy_symm
-   2) /home/bast/DALTON-2013.0-Source/build/basis
+   1) /home/arnfinn/dalton/DALTON/test/runtest_energy_symm
+   2) /home/arnfinn/dalton/build-2014/basis
 
 
 Compilation information
 -----------------------
 
- Who compiled             | bast
- Host                     | lpqlx131.ups-tlse.fr
- System                   | Linux-3.8.5-201.fc18.x86_64
+ Who compiled             | arnfinn
+ Host                     | c22-1.local
+ System                   | Linux-2.6.32-358.6.2.el6.x86_64
  CMake generator          | Unix Makefiles
  Processor                | x86_64
  64-bit integers          | OFF
- MPI                      | OFF
- Fortran compiler         | /usr/bin/gfortran
- Fortran compiler version | GNU Fortran (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C compiler               | /usr/bin/gcc
- C compiler version       | gcc (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
- C++ compiler             | /usr/bin/g++
- C++ compiler version     | g++ (GCC) 4.7.2 20121109 (Red Hat 4.7.2-8)
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ Fortran compiler version | ifort (IFORT) 13.0.1 20121010
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_i
+                          | ntel_lp64.so;/global/apps/intel/2013.1/mkl/lib/int
+                          | el64/libmkl_sequential.so;/global/apps/intel/2013.
+                          | 1/mkl/lib/intel64/libmkl_core.so;/usr/lib64/libpth
+                          | read.so;/usr/lib64/libm.so
+ LAPACK                   | /global/apps/intel/2013.1/mkl/lib/intel64/libmkl_l
+                          | apack95_lp64.a;/global/apps/intel/2013.1/mkl/lib/i
+                          | ntel64/libmkl_intel_lp64.so
  Static linking           | OFF
- Last Git revision        | f34203295a86316e27f9e7b44f9b6769c4a046c0
- Configuration time       | 2013-09-08 20:31:27.952056
+ Last Git revision        | 3dba68d3e56a129170f19156792a4d865143a267
+ Configuration time       | 2014-10-14 12:20:13.600219
+
+ * Sequential calculation.
 
 
    Content of the .dal input file
@@ -229,13 +247,22 @@ H_b  -1.45235 0.899623 0.0
  2:    Test Purpose:     Check energy calculation with symmetry             
     ------------------------------------------------------------------------
 
+
+
+@ WARNING - deprecated old .mol fixed format input has been detected:
+    2                                                                           
+@ WARNING - this input format may not be supported in future releases.
+
+
+
+
   Atomic type no.    1
   --------------------
   Nuclear charge:   8.00000
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+     "/home/arnfinn/dalton/build-2014/basis/cc-pVDZ"
 
   Atomic type no.    2
   --------------------
@@ -243,7 +270,7 @@ H_b  -1.45235 0.899623 0.0
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/home/bast/DALTON-2013.0-Source/build/basis/cc-pVDZ"
+     "/home/arnfinn/dalton/build-2014/basis/cc-pVDZ"
 
 
                       SYMADD: Requested addition of symmetry
@@ -251,8 +278,8 @@ H_b  -1.45235 0.899623 0.0
 
  Symmetry test threshold:  5.00E-06
 
- - molecule centered at center of mass and rotated so
-   principal axes of inertia are along coordinate axes.
+@   The molecule is centered at center of mass and rotated
+@   so principal axes of inertia are along coordinate axes.
 
  Symmetry class found: C(2v)          
 
@@ -267,8 +294,10 @@ H_b  -1.45235 0.899623 0.0
                          SYMGRP: Point group information
                          -------------------------------
 
-Full point group is: C(2v)          
-Represented as:      C2v
+@    Full point group is: C(2v)          
+@    Represented as:      C2v
+
+@  * The irrep name for each symmetry:    1: A1     2: B1     3: B2     4: A2 
 
    * The point group was generated by:
 
@@ -418,7 +447,7 @@ Represented as:      C2v
  Rotational constants
  --------------------
 
- The molecule is planar.
+@    The molecule is planar.
 
                A                   B                   C
 
@@ -485,10 +514,23 @@ Represented as:      C2v
 
 
 
-    *************************************************************************
-    ****************** Output from HERMIT input processing ******************
-    *************************************************************************
+ ***************************************************************************************
+ ****************** Output from **INTEGRALS input processing (HERMIT) ******************
+ ***************************************************************************************
 
+
+ - Using defaults, no **INTEGRALS input found
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ Center of mass  (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Operator center (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Gauge origin    (bohr):      0.000000000000      0.000000000000      0.000000000000
+ Dipole origin   (bohr):      0.000000000000      0.000000000000      0.000000000000
 
 
      ************************************************************************
@@ -497,11 +539,11 @@ Represented as:      C2v
 
 
  Threshold for neglecting two-electron integrals:  1.00D-12
- Number of two-electron integrals written:       11412 ( 25.3% )
- Megabytes written:                              0.137
+ HERMIT - Number of two-electron integrals written:       11412 ( 25.3% )
+ HERMIT - Megabytes written:                              0.137
 
  >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
 
 
                         .----------------------------------.
@@ -538,8 +580,8 @@ Represented as:      C2v
  **********************************************************************
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:19 2014
+     Host name              : c22-1.local                             
 
  Title lines from ".mol" input file:
         Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ            
@@ -561,18 +603,19 @@ Represented as:      C2v
 
      Wave function specification
      ============================
-@    For the wave function of type :      >>> MC-SCF <<<
+@    Wave function type        >>> MC-SCF <<<
 @    Number of closed shell electrons           2
 @    Number of electrons in active shells       8
 @    Total charge of the molecule               0
 
 @    Spin multiplicity and 2 M_S                1         0
-     Total number of symmetries                 4
-@    Reference state symmetry                   1
+@    Total number of symmetries                 4 (point group: C2v)
+@    Reference state symmetry                   1 (irrep name : A1 )
 
      Orbital specifications
      ======================
      Abelian symmetry species          All |    1    2    3    4
+                                           |  A1   B1   B2   A2 
                                        --- |  ---  ---  ---  ---
 @    Inactive orbitals                   1 |    1    0    0    0
 @    Active orbitals                     8 |    4    2    2    0
@@ -605,9 +648,11 @@ Represented as:      C2v
      Maximum number of NEO/NR iterations  24
 
 
- >>>>> DIIS optimization of Hartree-Fock <<<<<
+ *********************************************
+ ***** DIIS optimization of Hartree-Fock *****
+ *********************************************
 
- C1-DIIS algorithm; max error vectors =   10
+ C1-DIIS algorithm; max error vectors =    8
 
  Automatic occupation of symmetries with  10 electrons.
 
@@ -619,43 +664,47 @@ Represented as:      C2v
       Virial theorem: -V/T =      1.999834
 @      MULPOP O      -0.43; H_a _1  0.22; H_a _2  0.22; 
  -----------------------------------------------------------------------------
-@  2  -76.0179559355       3.50D-01  -2.10D-01     3   1   1   0
-      Virial theorem: -V/T =      2.000516
+@  2  -76.0180389527       3.48D-01  -2.10D-01     3   1   1   0
+      Virial theorem: -V/T =      2.000554
 @      MULPOP O      -0.28; H_a _1  0.14; H_a _2  0.14; 
  -----------------------------------------------------------------------------
-@  3  -76.0250798476       8.42D-02  -7.12D-03     3   1   1   0
-      Virial theorem: -V/T =      2.002196
+@  3  -76.0250902193       8.29D-02  -7.05D-03     3   1   1   0
+      Virial theorem: -V/T =      2.002132
 @      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
  -----------------------------------------------------------------------------
-@  4  -76.0256316151       2.94D-02  -5.52D-04     3   1   1   0
-      Virial theorem: -V/T =      2.000742
+@  4  -76.0256351037       2.79D-02  -5.45D-04     3   1   1   0
+      Virial theorem: -V/T =      2.000771
 @      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-@  5  -76.0256787149       7.26D-03  -4.71D-05     3   1   1   0
-      Virial theorem: -V/T =      2.001331
+@  5  -76.0256785547       7.40D-03  -4.35D-05     3   1   1   0
+      Virial theorem: -V/T =      2.001332
 @      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-@  6  -76.0256814298       7.07D-04  -2.71D-06     3   1   1   0
-      Virial theorem: -V/T =      2.001210
+@  6  -76.0256814177       7.80D-04  -2.86D-06     3   1   1   0
+      Virial theorem: -V/T =      2.001209
 @      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-@  7  -76.0256814818       1.30D-04  -5.20D-08     3   1   1   0
+@  7  -76.0256814814       1.43D-04  -6.37D-08     3   1   1   0
       Virial theorem: -V/T =      2.001216
 @      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-@  8  -76.0256814839       1.07D-05  -2.11D-09     3   1   1   0
+@  8  -76.0256814839       1.26D-05  -2.52D-09     3   1   1   0
       Virial theorem: -V/T =      2.001217
 @      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
  -----------------------------------------------------------------------------
-@  9  -76.0256814839       6.63D-07  -1.20D-11     3   1   1   0
+@  9  -76.0256814839       1.25D-06  -1.71D-11     3   1   1   0
+      Virial theorem: -V/T =      2.001217
+@      MULPOP O      -0.32; H_a _1  0.16; H_a _2  0.16; 
+ -----------------------------------------------------------------------------
+@ 10  -76.0256814839       4.28D-07  -2.42D-13     3   1   1   0
 
-@ *** DIIS converged in   9 iterations !
-@     Converged SCF energy, gradient:    -76.025681483944    6.63D-07
+@ *** DIIS converged in  10 iterations !
+@     Converged SCF energy, gradient:    -76.025681483944    4.28D-07
     - total time used in SIRFCK :              0.00 seconds
 
- >>> Writing SIRIFC interface file <<<
+ >>> Writing SIRIFC interface file
 
- >>>> CPU and wall time for SCF :       0.005       0.005
+ >>>> CPU and wall time for SCF :       0.021       0.028
 
 
  >>>>> Output from SIRIUS MP2 module <<<<<
@@ -673,31 +722,31 @@ Represented as:      C2v
  Hartree-Fock electronic energy:         -85.080686009582
  Hartree-Fock total      energy:         -76.025681483944
 
- Hartree-Fock orbital energies, symmetry 1, number of occupied SCF orbitals is    3
+ Hartree-Fock orbital energies, symmetry 1 ( A1 ),    3 occupied SCF orbitals
 
-       -20.55301999    -1.32934105    -0.56387096     0.18304191     0.84069368
-         1.16451078     1.44696810     1.87052764     2.45391738     3.49100499
+       -20.55302000    -1.32934105    -0.56387095     0.18304191     0.84069367
+         1.16451079     1.44696810     1.87052765     2.45391737     3.49100500
          3.85003076
 
- Hartree-Fock orbital energies, symmetry 2, number of occupied SCF orbitals is    1
+ Hartree-Fock orbital energies, symmetry 2 ( B1 ),    1 occupied SCF orbitals
 
-        -0.49212364     1.20008013     1.67196077     3.27277142
+        -0.49212363     1.20008014     1.67196076     3.27277143
 
- Hartree-Fock orbital energies, symmetry 3, number of occupied SCF orbitals is    1
+ Hartree-Fock orbital energies, symmetry 3 ( B2 ),    1 occupied SCF orbitals
 
-        -0.69144632     0.25403523     0.77887080     1.25426150     1.91890925
-         2.41834248     4.13079456
+        -0.69144633     0.25403522     0.77887079     1.25426150     1.91890925
+         2.41834248     4.13079457
 
- Hartree-Fock orbital energies, symmetry 4, number of occupied SCF orbitals is    0
+ Hartree-Fock orbital energies, symmetry 4 ( A2 ),    0 occupied SCF orbitals
 
-         1.47255805     3.32446046
+         1.47255804     3.32446047
 
     E(LUMO) :     0.18304191   (in symmetry 1)
-  - E(HOMO) :    -0.49212364   (in symmetry 2)
+  - E(HOMO) :    -0.49212363   (in symmetry 2)
   --------------------------
-    gap     :     0.67516556
+    gap     :     0.67516554
 
- Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.006       0.013
 
  MP2 move   0.099313 electrons to unoccupied HF orbitals
 
@@ -707,35 +756,35 @@ Represented as:      C2v
 
 
 @   Hartree-Fock total energy        :           -76.0256814839
-@   + Scaled MP2 contribution        :            -0.1992969384
-@   = Scaled MP2 second order energy :           -76.2249784223
+@   + Scaled MP2 contribution        :            -0.1992969365
+@   = Scaled MP2 second order energy :           -76.2249784205
 
- Natural orbital occupation numbers, symmetry 1
+ Natural orbital occupation numbers, symmetry 1 (irrep A1 )
  Sum =     5.99953727; RHF =     6.00000000; Difference =    -0.00046273
 
          1.99992466     1.98635873     1.97070026     0.02169202     0.01019381
          0.00471720     0.00381963     0.00104057     0.00057923     0.00045453
          0.00005661
 
- Natural orbital occupation numbers, symmetry 2
+ Natural orbital occupation numbers, symmetry 2 (irrep B1 )
  Sum =     1.99620138; RHF =     2.00000000; Difference =    -0.00379862
 
          1.97587088     0.01614520     0.00365780     0.00052749
 
- Natural orbital occupation numbers, symmetry 3
+ Natural orbital occupation numbers, symmetry 3 (irrep B2 )
  Sum =     1.99939436; RHF =     2.00000000; Difference =    -0.00060564
 
          1.96821845     0.02392261     0.00508404     0.00097404     0.00065051
          0.00048964     0.00005507
 
- Natural orbital occupation numbers, symmetry 4
+ Natural orbital occupation numbers, symmetry 4 (irrep A2 )
  Sum =     0.00486700; RHF =     0.00000000; Difference =     0.00486700
 
          0.00417704     0.00068995
 
- Time used for MP2 natural orbitals :       0.006 CPU seconds,       0.006 wall seconds.
+ Time used for MP2 natural orbitals :       0.009 CPU seconds,       0.015 wall seconds.
 
- >>>> CPU and wall time for MP2 :       0.006       0.006
+ >>>> CPU and wall time for MP2 :       0.010       0.015
 
 
         SIRIUS MCSCF optimization (SIROPT)
@@ -748,16 +797,16 @@ Represented as:      C2v
 
 
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.002
+ Integral transformation: Total CPU and WALL times (sec)       0.003       0.006
 
  (CIST1)  4 lowest diagonal elements:
 
  Element no. Config.no.    Active energy      Total energy
 
-         1 :         20    -23.8021365324    -76.0250280948
-         2 :        131    -22.8484202517    -75.0713118140
-         3 :         80    -22.8220738361    -75.0449653984
-         4 :        120    -22.6041892928    -74.8270808552
+         1 :         20    -23.8021365346    -76.0250280967
+         2 :        131    -22.8484202407    -75.0713118028
+         3 :         80    -22.8220737645    -75.0449653266
+         4 :        120    -22.6041893004    -74.8270808625
 
 
  %%% Non-symmetric elements in redH, reduced CI matrix,
@@ -793,8 +842,8 @@ Represented as:      C2v
  Reduced CI matrix (as bT*s) :
 
                Column   1     Column   2
-       1     -23.80213653     0.61207170
-       2       0.61207170   -20.53197177
+       1     -23.80213653     0.61207171
+       2       0.61207171   -20.53197167
     ==== End of matrix output ====
 
 
@@ -815,9 +864,9 @@ Represented as:      C2v
  Reduced CI matrix (as bT*s) :
 
                Column   1     Column   2     Column   3
-       1     -23.80213653     0.61207170     0.03133841
-       2       0.61207170   -20.53197177    -0.90127960
-       3       0.03133841    -0.90127960   -19.71555580
+       1     -23.80213653     0.61207171     0.03133842
+       2       0.61207171   -20.53197167    -0.90127958
+       3       0.03133842    -0.90127958   -19.71555542
     ==== End of matrix output ====
 
 
@@ -825,8 +874,8 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3
        1       1.00000000     0.00000000     0.00000000
-       2       0.00000000     1.00000000    -0.00000000
-       3       0.00000000    -0.00000000     1.00000000
+       2       0.00000000     1.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -834,44 +883,41 @@ Represented as:      C2v
               1 CI roots are not converged.
 
 
- CI energies and residuals:
-    1      -76.145026675970826       4.98D-02
+@ Final CI energies and residuals in symmetry 1 (irrep A1 )
+@    1      -76.145026675614702       4.98D-02
 
-
- Final CI energy:      -76.145026675970826
-
-   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
  Occupations of CAS natural orbitals:
 
- Symmetry  1
+ Symmetry  1 ( irrep A1  in C2v )
 
-   1.989754744   1.975936561   0.024404509   0.010652325
+   1.989754744   1.975936562   0.024404507   0.010652325
 
- Symmetry  2
+ Symmetry  2 ( irrep B1  in C2v )
 
    1.981168104   0.017661635
 
- Symmetry  3
+ Symmetry  3 ( irrep B2  in C2v )
 
-   1.974613537   0.025808585
+   1.974613540   0.025808582
 
 
  <<< MACRO ITERATION  1 >>>
  --------------------------
 
- Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.008       0.010
 
- Total MCSCF energy       :           -76.145026675970712  (MACRO    1)
+ Total MCSCF energy       :           -76.145026675614545  (MACRO    1)
 
  - Nuclear repulsion      :             9.055004525637894
- - Inactive energy        :           -61.277896087984310
- - Active energy          :           -23.922135113624286
+ - Inactive energy        :           -61.277896087722532
+ - Active energy          :           -23.922135113529912
 
- Norm of total gradient   :             0.106665317706
- -    of CI gradient      :             0.099587489883
- -    of orbital gradient :             0.038207615213
+ Norm of total gradient   :             0.106665334745
+ -    of CI gradient      :             0.099587482798
+ -    of orbital gradient :             0.038207681247
       Virial theorem: -V/T =      2.000933
 @      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -888,8 +934,8 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2
-       1       8.72698040     0.04098254
-       2       0.04098254     0.11506524
+       1       8.72698100     0.04098255
+       2       0.04098255     0.11506522
     ==== End of matrix output ====
 
 
@@ -914,9 +960,9 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3
-       1       8.72698040     0.04098254    -1.01284583
-       2       0.04098254     0.11506524    -0.31962410
-       3      -1.01284583    -0.31962410     6.27426437
+       1       8.72698100     0.04098255    -1.01284502
+       2       0.04098255     0.11506522    -0.31962415
+       3      -1.01284502    -0.31962415     6.27426429
     ==== End of matrix output ====
 
 
@@ -942,10 +988,10 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4
-       1       8.72698040     0.04098254    -1.01284583     1.83704885
-       2       0.04098254     0.11506524    -0.31962410    -0.07656037
-       3      -1.01284583    -0.31962410     6.27426437    -2.64454338
-       4       1.83704885    -0.07656037    -2.64454338    10.32014934
+       1       8.72698100     0.04098255    -1.01284502     1.83704913
+       2       0.04098255     0.11506522    -0.31962415    -0.07656034
+       3      -1.01284502    -0.31962415     6.27426429    -2.64454203
+       4       1.83704913    -0.07656034    -2.64454203    10.32015091
     ==== End of matrix output ====
 
 
@@ -972,11 +1018,11 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       8.72698040     0.04098254    -1.01284583     1.83704885    -0.03677501
-       2       0.04098254     0.11506524    -0.31962410    -0.07656037    -0.04671681
-       3      -1.01284583    -0.31962410     6.27426437    -2.64454338    -0.05129900
-       4       1.83704885    -0.07656037    -2.64454338    10.32014934    -0.01512801
-       5      -0.03677501    -0.04671681    -0.05129900    -0.01512801     0.16715679
+       1       8.72698100     0.04098255    -1.01284502     1.83704913    -0.03677501
+       2       0.04098255     0.11506522    -0.31962415    -0.07656034    -0.04671680
+       3      -1.01284502    -0.31962415     6.27426429    -2.64454203    -0.05129893
+       4       1.83704913    -0.07656034    -2.64454203    10.32015091    -0.01512803
+       5      -0.03677501    -0.04671680    -0.05129893    -0.01512803     0.16715669
     ==== End of matrix output ====
 
 
@@ -1006,20 +1052,20 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       8.72698040     0.04098254    -1.01284583     1.83704885    -0.03677501
-       2       0.04098254     0.11506524    -0.31962410    -0.07656037    -0.04671681
-       3      -1.01284583    -0.31962410     6.27426437    -2.64454338    -0.05129900
-       4       1.83704885    -0.07656037    -2.64454338    10.32014934    -0.01512801
-       5      -0.03677501    -0.04671681    -0.05129900    -0.01512801     0.16715679
-       6      -1.29587550     0.02028637     0.26078275    -5.07988835    -0.08125552
+       1       8.72698100     0.04098255    -1.01284502     1.83704913    -0.03677501
+       2       0.04098255     0.11506522    -0.31962415    -0.07656034    -0.04671680
+       3      -1.01284502    -0.31962415     6.27426429    -2.64454203    -0.05129893
+       4       1.83704913    -0.07656034    -2.64454203    10.32015091    -0.01512803
+       5      -0.03677501    -0.04671680    -0.05129893    -0.01512803     0.16715669
+       6      -1.29587603     0.02028638     0.26078251    -5.07988696    -0.08125570
 
                Column   6
-       1      -1.29587550
-       2       0.02028637
-       3       0.26078275
-       4      -5.07988835
-       5      -0.08125552
-       6      12.53213407
+       1      -1.29587603
+       2       0.02028638
+       3       0.26078251
+       4      -5.07988696
+       5      -0.08125570
+       6      12.53212696
     ==== End of matrix output ====
 
 
@@ -1050,22 +1096,22 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       8.72698040     0.04098254    -1.01284583     1.83704885    -0.03677501
-       2       0.04098254     0.11506524    -0.31962410    -0.07656037    -0.04671681
-       3      -1.01284583    -0.31962410     6.27426437    -2.64454338    -0.05129900
-       4       1.83704885    -0.07656037    -2.64454338    10.32014934    -0.01512801
-       5      -0.03677501    -0.04671681    -0.05129900    -0.01512801     0.16715679
-       6      -1.29587550     0.02028637     0.26078275    -5.07988835    -0.08125552
-       7      -0.00990767     0.01636509    -0.01768274     0.02747950    -0.09075153
+       1       8.72698100     0.04098255    -1.01284502     1.83704913    -0.03677501
+       2       0.04098255     0.11506522    -0.31962415    -0.07656034    -0.04671680
+       3      -1.01284502    -0.31962415     6.27426429    -2.64454203    -0.05129893
+       4       1.83704913    -0.07656034    -2.64454203    10.32015091    -0.01512803
+       5      -0.03677501    -0.04671680    -0.05129893    -0.01512803     0.16715669
+       6      -1.29587603     0.02028638     0.26078251    -5.07988696    -0.08125570
+       7      -0.00990784     0.01636500    -0.01768277     0.02747948    -0.09075126
 
                Column   6     Column   7
-       1      -1.29587550    -0.00990767
-       2       0.02028637     0.01636509
-       3       0.26078275    -0.01768274
-       4      -5.07988835     0.02747950
-       5      -0.08125552    -0.09075153
-       6      12.53213407     0.01238276
-       7       0.01238276     0.22742943
+       1      -1.29587603    -0.00990784
+       2       0.02028638     0.01636500
+       3       0.26078251    -0.01768277
+       4      -5.07988696     0.02747948
+       5      -0.08125570    -0.09075126
+       6      12.53212696     0.01238267
+       7       0.01238267     0.22742880
     ==== End of matrix output ====
 
 
@@ -1079,49 +1125,49 @@ Represented as:      C2v
        5      -0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8
-       6       1.00000000     0.00000000     0.00000000
+       6       1.00000000     0.00000000    -0.00000000
        7       0.00000000     1.00000000     0.00000000
-       8       0.00000000     0.00000000     1.00000000
+       8      -0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
  Residual norm when dim(red L) =   8
  NEO root     CSF        orbital          total
-    1     0.01142682     0.00319907     0.01186618 converged
+    1     0.01142683     0.00319907     0.01186620 converged
 
  (NEONEX) NEO vector is converged.
 
-   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
  Occupations of CAS natural orbitals:
 
- Symmetry  1
+ Symmetry  1 ( irrep A1  in C2v )
 
-   1.988448476   1.975718082   0.025043526   0.011708061
+   1.988448475   1.975718083   0.025043525   0.011708061
 
- Symmetry  2
+ Symmetry  2 ( irrep B1  in C2v )
 
-   1.981229219   0.018001637
+   1.981229219   0.018001638
 
- Symmetry  3
+ Symmetry  3 ( irrep B2  in C2v )
 
-   1.973591105   0.026259893
+   1.973591106   0.026259893
 
 
  <<< MACRO ITERATION  2 >>>
  --------------------------
 
- Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.010
 
- Total MCSCF energy       :           -76.147511954368227  (MACRO    2)
+ Total MCSCF energy       :           -76.147511954286017  (MACRO    2)
 
  - Nuclear repulsion      :             9.055004525637894
- - Inactive energy        :           -61.281603832408642
- - Active energy          :           -23.920912647597472
+ - Inactive energy        :           -61.281603831714520
+ - Active energy          :           -23.920912648209395
 
- Norm of total gradient   :             0.031231382601
- -    of CI gradient      :             0.030404740720
- -    of orbital gradient :             0.007137996983
+ Norm of total gradient   :             0.031231391870
+ -    of CI gradient      :             0.030404750367
+ -    of orbital gradient :             0.007137996447
       Virial theorem: -V/T =      2.000924
 @      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -1138,8 +1184,8 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2
-       1       6.61742413     0.03260438
-       2       0.03260438     0.10998571
+       1       6.61742440     0.03260448
+       2       0.03260448     0.10998566
     ==== End of matrix output ====
 
 
@@ -1164,9 +1210,9 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3
-       1       6.61742413     0.03260438    -0.72448876
-       2       0.03260438     0.10998571    -0.13232878
-       3      -0.72448876    -0.13232878     8.00625531
+       1       6.61742440     0.03260448    -0.72448819
+       2       0.03260448     0.10998566    -0.13232889
+       3      -0.72448819    -0.13232889     8.00625474
     ==== End of matrix output ====
 
 
@@ -1192,10 +1238,10 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4
-       1       6.61742413     0.03260438    -0.72448876     0.29629226
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217
+       1       6.61742440     0.03260448    -0.72448819     0.29629211
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378
     ==== End of matrix output ====
 
 
@@ -1203,10 +1249,10 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1222,11 +1268,11 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
     ==== End of matrix output ====
 
 
@@ -1234,10 +1280,10 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6
        6       1.00000000
@@ -1256,20 +1302,20 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
 
                Column   6
-       1      -0.37379868
-       2      -0.03974815
-       3       0.25545684
-       4      -4.11214095
-       5      -0.14488360
-       6       9.40470532
+       1      -0.37379620
+       2      -0.03974824
+       3       0.25545693
+       4      -4.11214245
+       5      -0.14488332
+       6       9.40471356
     ==== End of matrix output ====
 
 
@@ -1277,10 +1323,10 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7
        6       1.00000000     0.00000000
@@ -1300,22 +1346,22 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
-       7      -0.87265989     0.00431391     0.06068614     1.78247227    -0.07167725
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
+       7      -0.87266015     0.00431385     0.06068607     1.78247042    -0.07167724
 
                Column   6     Column   7
-       1      -0.37379868    -0.87265989
-       2      -0.03974815     0.00431391
-       3       0.25545684     0.06068614
-       4      -4.11214095     1.78247227
-       5      -0.14488360    -0.07167725
-       6       9.40470532    -5.66322218
-       7      -5.66322218    11.37877283
+       1      -0.37379620    -0.87266015
+       2      -0.03974824     0.00431385
+       3       0.25545693     0.06068607
+       4      -4.11214245     1.78247042
+       5      -0.14488332    -0.07167724
+       6       9.40471356    -5.66322183
+       7      -5.66322183    11.37877004
     ==== End of matrix output ====
 
 
@@ -1323,15 +1369,15 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8
        6       1.00000000     0.00000000     0.00000000
-       7       0.00000000     1.00000000    -0.00000000
-       8       0.00000000    -0.00000000     1.00000000
+       7       0.00000000     1.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1347,24 +1393,24 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
-       7      -0.87265989     0.00431391     0.06068614     1.78247227    -0.07167725
-       8      -0.08901597     0.00064233     0.02768403    -0.00386045     0.03001567
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
+       7      -0.87266015     0.00431385     0.06068607     1.78247042    -0.07167724
+       8      -0.08901559     0.00064226     0.02768417    -0.00386021     0.03001543
 
                Column   6     Column   7     Column   8
-       1      -0.37379868    -0.87265989    -0.08901597
-       2      -0.03974815     0.00431391     0.00064233
-       3       0.25545684     0.06068614     0.02768403
-       4      -4.11214095     1.78247227    -0.00386045
-       5      -0.14488360    -0.07167725     0.03001567
-       6       9.40470532    -5.66322218    -0.14030685
-       7      -5.66322218    11.37877283    -0.11889990
-       8      -0.14030685    -0.11889990     0.20006246
+       1      -0.37379620    -0.87266015    -0.08901559
+       2      -0.03974824     0.00431385     0.00064226
+       3       0.25545693     0.06068607     0.02768417
+       4      -4.11214245     1.78247042    -0.00386021
+       5      -0.14488332    -0.07167724     0.03001543
+       6       9.40471356    -5.66322183    -0.14030607
+       7      -5.66322183    11.37877004    -0.11889948
+       8      -0.14030607    -0.11889948     0.20006246
     ==== End of matrix output ====
 
 
@@ -1372,16 +1418,16 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9
-       6       1.00000000     0.00000000     0.00000000    -0.00000000
-       7       0.00000000     1.00000000    -0.00000000     0.00000000
-       8       0.00000000    -0.00000000     1.00000000     0.00000000
-       9      -0.00000000     0.00000000     0.00000000     1.00000000
+       6       1.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1397,26 +1443,26 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
-       7      -0.87265989     0.00431391     0.06068614     1.78247227    -0.07167725
-       8      -0.08901597     0.00064233     0.02768403    -0.00386045     0.03001567
-       9       0.12852812     0.02277533    -0.06390952    -0.56018749     0.02678361
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
+       7      -0.87266015     0.00431385     0.06068607     1.78247042    -0.07167724
+       8      -0.08901559     0.00064226     0.02768417    -0.00386021     0.03001543
+       9       0.12852656     0.02277527    -0.06390950    -0.56018443     0.02678347
 
                Column   6     Column   7     Column   8     Column   9
-       1      -0.37379868    -0.87265989    -0.08901597     0.12852812
-       2      -0.03974815     0.00431391     0.00064233     0.02277533
-       3       0.25545684     0.06068614     0.02768403    -0.06390952
-       4      -4.11214095     1.78247227    -0.00386045    -0.56018749
-       5      -0.14488360    -0.07167725     0.03001567     0.02678361
-       6       9.40470532    -5.66322218    -0.14030685     0.43076959
-       7      -5.66322218    11.37877283    -0.11889990    -4.38496423
-       8      -0.14030685    -0.11889990     0.20006246    -0.10663789
-       9       0.43076959    -4.38496423    -0.10663789     7.90120265
+       1      -0.37379620    -0.87266015    -0.08901559     0.12852656
+       2      -0.03974824     0.00431385     0.00064226     0.02277527
+       3       0.25545693     0.06068607     0.02768417    -0.06390950
+       4      -4.11214245     1.78247042    -0.00386021    -0.56018443
+       5      -0.14488332    -0.07167724     0.03001543     0.02678347
+       6       9.40471356    -5.66322183    -0.14030607     0.43076916
+       7      -5.66322183    11.37877004    -0.11889948    -4.38496252
+       8      -0.14030607    -0.11889948     0.20006246    -0.10663810
+       9       0.43076916    -4.38496252    -0.10663810     7.90119584
     ==== End of matrix output ====
 
 
@@ -1424,17 +1470,17 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       6       1.00000000     0.00000000     0.00000000    -0.00000000     0.00000000
-       7       0.00000000     1.00000000    -0.00000000     0.00000000     0.00000000
-       8       0.00000000    -0.00000000     1.00000000     0.00000000     0.00000000
-       9      -0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000    -0.00000000    -0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1450,28 +1496,28 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
-       7      -0.87265989     0.00431391     0.06068614     1.78247227    -0.07167725
-       8      -0.08901597     0.00064233     0.02768403    -0.00386045     0.03001567
-       9       0.12852812     0.02277533    -0.06390952    -0.56018749     0.02678361
-      10       0.16380924     0.05108125    -0.07867263    -0.12469314    -0.01260497
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
+       7      -0.87266015     0.00431385     0.06068607     1.78247042    -0.07167724
+       8      -0.08901559     0.00064226     0.02768417    -0.00386021     0.03001543
+       9       0.12852656     0.02277527    -0.06390950    -0.56018443     0.02678347
+      10       0.16380941     0.05108126    -0.07867285    -0.12469212    -0.01260512
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1      -0.37379868    -0.87265989    -0.08901597     0.12852812     0.16380924
-       2      -0.03974815     0.00431391     0.00064233     0.02277533     0.05108125
-       3       0.25545684     0.06068614     0.02768403    -0.06390952    -0.07867263
-       4      -4.11214095     1.78247227    -0.00386045    -0.56018749    -0.12469314
-       5      -0.14488360    -0.07167725     0.03001567     0.02678361    -0.01260497
-       6       9.40470532    -5.66322218    -0.14030685     0.43076959    -0.03455993
-       7      -5.66322218    11.37877283    -0.11889990    -4.38496423     0.39797172
-       8      -0.14030685    -0.11889990     0.20006246    -0.10663789    -0.04657935
-       9       0.43076959    -4.38496423    -0.10663789     7.90120265    -3.70639236
-      10      -0.03455993     0.39797172    -0.04657935    -3.70639236     9.82142404
+       1      -0.37379620    -0.87266015    -0.08901559     0.12852656     0.16380941
+       2      -0.03974824     0.00431385     0.00064226     0.02277527     0.05108126
+       3       0.25545693     0.06068607     0.02768417    -0.06390950    -0.07867285
+       4      -4.11214245     1.78247042    -0.00386021    -0.56018443    -0.12469212
+       5      -0.14488332    -0.07167724     0.03001543     0.02678347    -0.01260512
+       6       9.40471356    -5.66322183    -0.14030607     0.43076916    -0.03455982
+       7      -5.66322183    11.37877004    -0.11889948    -4.38496252     0.39797229
+       8      -0.14030607    -0.11889948     0.20006246    -0.10663810    -0.04657952
+       9       0.43076916    -4.38496252    -0.10663810     7.90119584    -3.70639481
+      10      -0.03455982     0.39797229    -0.04657952    -3.70639481     9.82142299
     ==== End of matrix output ====
 
 
@@ -1479,17 +1525,17 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       6       1.00000000     0.00000000     0.00000000    -0.00000000     0.00000000
-       7       0.00000000     1.00000000    -0.00000000     0.00000000     0.00000000
-       8       0.00000000    -0.00000000     1.00000000     0.00000000     0.00000000
-       9      -0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000    -0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column  11
       11       1.00000000
@@ -1508,43 +1554,43 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       6.61742413     0.03260438    -0.72448876     0.29629226    -0.21001587
-       2       0.03260438     0.10998571    -0.13232878    -0.10284408    -0.02857419
-       3      -0.72448876    -0.13232878     8.00625531    -3.95339217     0.01170344
-       4       0.29629226    -0.10284408    -3.95339217    13.20884217     0.01806858
-       5      -0.21001587    -0.02857419     0.01170344     0.01806858     0.15490680
-       6      -0.37379868    -0.03974815     0.25545684    -4.11214095    -0.14488360
-       7      -0.87265989     0.00431391     0.06068614     1.78247227    -0.07167725
-       8      -0.08901597     0.00064233     0.02768403    -0.00386045     0.03001567
-       9       0.12852812     0.02277533    -0.06390952    -0.56018749     0.02678361
-      10       0.16380924     0.05108125    -0.07867263    -0.12469314    -0.01260497
-      11      -0.03096887     0.00447721    -0.07909356    -0.06362777     0.05660426
+       1       6.61742440     0.03260448    -0.72448819     0.29629211    -0.21001581
+       2       0.03260448     0.10998566    -0.13232889    -0.10284414    -0.02857428
+       3      -0.72448819    -0.13232889     8.00625474    -3.95339288     0.01170361
+       4       0.29629211    -0.10284414    -3.95339288    13.20884378     0.01806879
+       5      -0.21001581    -0.02857428     0.01170361     0.01806879     0.15490687
+       6      -0.37379620    -0.03974824     0.25545693    -4.11214245    -0.14488332
+       7      -0.87266015     0.00431385     0.06068607     1.78247042    -0.07167724
+       8      -0.08901559     0.00064226     0.02768417    -0.00386021     0.03001543
+       9       0.12852656     0.02277527    -0.06390950    -0.56018443     0.02678347
+      10       0.16380941     0.05108126    -0.07867285    -0.12469212    -0.01260512
+      11      -0.03096846     0.00447713    -0.07909340    -0.06362750     0.05660400
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1      -0.37379868    -0.87265989    -0.08901597     0.12852812     0.16380924
-       2      -0.03974815     0.00431391     0.00064233     0.02277533     0.05108125
-       3       0.25545684     0.06068614     0.02768403    -0.06390952    -0.07867263
-       4      -4.11214095     1.78247227    -0.00386045    -0.56018749    -0.12469314
-       5      -0.14488360    -0.07167725     0.03001567     0.02678361    -0.01260497
-       6       9.40470532    -5.66322218    -0.14030685     0.43076959    -0.03455993
-       7      -5.66322218    11.37877283    -0.11889990    -4.38496423     0.39797172
-       8      -0.14030685    -0.11889990     0.20006246    -0.10663789    -0.04657935
-       9       0.43076959    -4.38496423    -0.10663789     7.90120265    -3.70639236
-      10      -0.03455993     0.39797172    -0.04657935    -3.70639236     9.82142404
-      11      -0.09835950    -0.18095630    -0.04246378    -0.26853830    -0.13799587
+       1      -0.37379620    -0.87266015    -0.08901559     0.12852656     0.16380941
+       2      -0.03974824     0.00431385     0.00064226     0.02277527     0.05108126
+       3       0.25545693     0.06068607     0.02768417    -0.06390950    -0.07867285
+       4      -4.11214245     1.78247042    -0.00386021    -0.56018443    -0.12469212
+       5      -0.14488332    -0.07167724     0.03001543     0.02678347    -0.01260512
+       6       9.40471356    -5.66322183    -0.14030607     0.43076916    -0.03455982
+       7      -5.66322183    11.37877004    -0.11889948    -4.38496252     0.39797229
+       8      -0.14030607    -0.11889948     0.20006246    -0.10663810    -0.04657952
+       9       0.43076916    -4.38496252    -0.10663810     7.90119584    -3.70639481
+      10      -0.03455982     0.39797229    -0.04657952    -3.70639481     9.82142299
+      11      -0.09835881    -0.18095581    -0.04246412    -0.26853827    -0.13799566
 
                Column  11
-       1      -0.03096887
-       2       0.00447721
-       3      -0.07909356
-       4      -0.06362777
-       5       0.05660426
-       6      -0.09835950
-       7      -0.18095630
-       8      -0.04246378
-       9      -0.26853830
-      10      -0.13799587
-      11       0.62467996
+       1      -0.03096846
+       2       0.00447713
+       3      -0.07909340
+       4      -0.06362750
+       5       0.05660400
+       6      -0.09835881
+       7      -0.18095581
+       8      -0.04246412
+       9      -0.26853827
+      10      -0.13799566
+      11       0.62467722
     ==== End of matrix output ====
 
 
@@ -1552,17 +1598,17 @@ Represented as:      C2v
 
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
-       2      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
        3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
-       5       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
+       5       0.00000000     0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       6       1.00000000     0.00000000     0.00000000    -0.00000000     0.00000000
-       7       0.00000000     1.00000000    -0.00000000     0.00000000     0.00000000
-       8       0.00000000    -0.00000000     1.00000000     0.00000000     0.00000000
-       9      -0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
-      10       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       6       1.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000     1.00000000     0.00000000
+      10       0.00000000    -0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column  11     Column  12
       11       1.00000000     0.00000000
@@ -1575,20 +1621,20 @@ Represented as:      C2v
 
  (NEONEX) NEO vector is converged.
 
-   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
  Occupations of CAS natural orbitals:
 
- Symmetry  1
+ Symmetry  1 ( irrep A1  in C2v )
 
    1.989069446   1.976435185   0.024209241   0.011258944
 
- Symmetry  2
+ Symmetry  2 ( irrep B1  in C2v )
 
    1.981380541   0.017800613
 
- Symmetry  3
+ Symmetry  3 ( irrep B2  in C2v )
 
    1.974635246   0.025210784
 
@@ -1596,17 +1642,17 @@ Represented as:      C2v
  <<< MACRO ITERATION  3 >>>
  --------------------------
 
- Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.008       0.011
 
- Total MCSCF energy       :           -76.147614042099647  (MACRO    3)
+ Total MCSCF energy       :           -76.147614042099391  (MACRO    3)
 
  - Nuclear repulsion      :             9.055004525637894
- - Inactive energy        :           -61.283199136222933
- - Active energy          :           -23.919419431514608
+ - Inactive energy        :           -61.283199136203663
+ - Active energy          :           -23.919419431533626
 
- Norm of total gradient   :             0.000756277584
- -    of CI gradient      :             0.000682625142
- -    of orbital gradient :             0.000325543699
+ Norm of total gradient   :             0.000756277928
+ -    of CI gradient      :             0.000682625660
+ -    of orbital gradient :             0.000325543410
       Virial theorem: -V/T =      2.000969
 @      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
@@ -1623,8 +1669,8 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2
-       1       5.67638400     0.03446808
-       2       0.03446808     0.12879623
+       1       5.67639456     0.03446829
+       2       0.03446829     0.12879605
     ==== End of matrix output ====
 
 
@@ -1649,9 +1695,9 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3
-       1       5.67638400     0.03446808    -0.00991574
-       2       0.03446808     0.12879623    -0.22417871
-       3      -0.00991574    -0.22417871     6.35107582
+       1       5.67639456     0.03446829    -0.00990831
+       2       0.03446829     0.12879605    -0.22417869
+       3      -0.00990831    -0.22417869     6.35107959
     ==== End of matrix output ====
 
 
@@ -1677,10 +1723,10 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527
     ==== End of matrix output ====
 
 
@@ -1689,9 +1735,9 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1707,11 +1753,11 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
     ==== End of matrix output ====
 
 
@@ -1720,9 +1766,9 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6
        6       1.00000000
@@ -1741,20 +1787,20 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
 
                Column   6
-       1       0.42980095
-       2       0.00870702
-       3       0.43928103
-       4      -0.06338627
-       5      -5.17287073
-       6       9.80673671
+       1       0.42980876
+       2       0.00870677
+       3       0.43928224
+       4      -0.06338600
+       5      -5.17286846
+       6       9.80673077
     ==== End of matrix output ====
 
 
@@ -1763,9 +1809,9 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7
        6       1.00000000    -0.00000000
@@ -1785,22 +1831,22 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
 
                Column   6     Column   7
-       1       0.42980095     0.00897458
-       2       0.00870702    -0.02686495
-       3       0.43928103    -0.04402993
-       4      -0.06338627     0.04214083
-       5      -5.17287073    -0.09375451
-       6       9.80673671    -0.13472965
-       7      -0.13472965     0.22596975
+       1       0.42980876     0.00897529
+       2       0.00870677    -0.02686496
+       3       0.43928224    -0.04402954
+       4      -0.06338600     0.04214021
+       5      -5.17286846    -0.09375403
+       6       9.80673077    -0.13472940
+       7      -0.13472940     0.22597022
     ==== End of matrix output ====
 
 
@@ -1809,9 +1855,9 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8
        6       1.00000000    -0.00000000     0.00000000
@@ -1832,24 +1878,24 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
 
                Column   6     Column   7     Column   8
-       1       0.42980095     0.00897458    -0.97729918
-       2       0.00870702    -0.02686495     0.04037877
-       3       0.43928103    -0.04402993    -0.01360489
-       4      -0.06338627     0.04214083    -0.03446333
-       5      -5.17287073    -0.09375451     0.54156714
-       6       9.80673671    -0.13472965    -5.33307392
-       7      -0.13472965     0.22596975    -0.11599726
-       8      -5.33307392    -0.11599726    12.91460744
+       1       0.42980876     0.00897529    -0.97729927
+       2       0.00870677    -0.02686496     0.04037855
+       3       0.43928224    -0.04402954    -0.01360649
+       4      -0.06338600     0.04214021    -0.03446331
+       5      -5.17286846    -0.09375403     0.54156684
+       6       9.80673077    -0.13472940    -5.33307131
+       7      -0.13472940     0.22597022    -0.11599737
+       8      -5.33307131    -0.11599737    12.91459435
     ==== End of matrix output ====
 
 
@@ -1858,15 +1904,15 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9
        6       1.00000000    -0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -1882,26 +1928,26 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
-       9      -0.97120170     0.03378822    -0.15103323    -0.00784318     0.39385181
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
+       9      -0.97119843     0.03378809    -0.15103385    -0.00784332     0.39384846
 
                Column   6     Column   7     Column   8     Column   9
-       1       0.42980095     0.00897458    -0.97729918    -0.97120170
-       2       0.00870702    -0.02686495     0.04037877     0.03378822
-       3       0.43928103    -0.04402993    -0.01360489    -0.15103323
-       4      -0.06338627     0.04214083    -0.03446333    -0.00784318
-       5      -5.17287073    -0.09375451     0.54156714     0.39385181
-       6       9.80673671    -0.13472965    -5.33307392     0.40961594
-       7      -0.13472965     0.22596975    -0.11599726    -0.06705500
-       8      -5.33307392    -0.11599726    12.91460744    -5.33707316
-       9       0.40961594    -0.06705500    -5.33707316    10.06669057
+       1       0.42980876     0.00897529    -0.97729927    -0.97119843
+       2       0.00870677    -0.02686496     0.04037855     0.03378809
+       3       0.43928224    -0.04402954    -0.01360649    -0.15103385
+       4      -0.06338600     0.04214021    -0.03446331    -0.00784332
+       5      -5.17286846    -0.09375403     0.54156684     0.39384846
+       6       9.80673077    -0.13472940    -5.33307131     0.40961533
+       7      -0.13472940     0.22597022    -0.11599737    -0.06705512
+       8      -5.33307131    -0.11599737    12.91459435    -5.33707453
+       9       0.40961533    -0.06705512    -5.33707453    10.06669066
     ==== End of matrix output ====
 
 
@@ -1910,15 +1956,15 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
        6       1.00000000    -0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
       10       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
     ==== End of matrix output ====
 
@@ -1935,28 +1981,28 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
-       9      -0.97120170     0.03378822    -0.15103323    -0.00784318     0.39385181
-      10       0.25550548     0.01172582    -0.00754725     0.01243006    -0.27693739
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
+       9      -0.97119843     0.03378809    -0.15103385    -0.00784332     0.39384846
+      10       0.25550327     0.01172587    -0.00754649     0.01242986    -0.27693664
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1       0.42980095     0.00897458    -0.97729918    -0.97120170     0.25550548
-       2       0.00870702    -0.02686495     0.04037877     0.03378822     0.01172582
-       3       0.43928103    -0.04402993    -0.01360489    -0.15103323    -0.00754725
-       4      -0.06338627     0.04214083    -0.03446333    -0.00784318     0.01243006
-       5      -5.17287073    -0.09375451     0.54156714     0.39385181    -0.27693739
-       6       9.80673671    -0.13472965    -5.33307392     0.40961594     0.34738737
-       7      -0.13472965     0.22596975    -0.11599726    -0.06705500    -0.02196737
-       8      -5.33307392    -0.11599726    12.91460744    -5.33707316     0.04609743
-       9       0.40961594    -0.06705500    -5.33707316    10.06669057    -5.30853433
-      10       0.34738737    -0.02196737     0.04609743    -5.30853433    12.98926194
+       1       0.42980876     0.00897529    -0.97729927    -0.97119843     0.25550327
+       2       0.00870677    -0.02686496     0.04037855     0.03378809     0.01172587
+       3       0.43928224    -0.04402954    -0.01360649    -0.15103385    -0.00754649
+       4      -0.06338600     0.04214021    -0.03446331    -0.00784332     0.01242986
+       5      -5.17286846    -0.09375403     0.54156684     0.39384846    -0.27693664
+       6       9.80673077    -0.13472940    -5.33307131     0.40961533     0.34738739
+       7      -0.13472940     0.22597022    -0.11599737    -0.06705512    -0.02196731
+       8      -5.33307131    -0.11599737    12.91459435    -5.33707453     0.04609626
+       9       0.40961533    -0.06705512    -5.33707453    10.06669066    -5.30854088
+      10       0.34738739    -0.02196731     0.04609626    -5.30854088    12.98928108
     ==== End of matrix output ====
 
 
@@ -1965,15 +2011,15 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
        6       1.00000000    -0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
       10       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column  11
@@ -1993,43 +2039,43 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
-       9      -0.97120170     0.03378822    -0.15103323    -0.00784318     0.39385181
-      10       0.25550548     0.01172582    -0.00754725     0.01243006    -0.27693739
-      11      -0.16358588     0.01514387    -0.01804845     0.13501421    -0.06847080
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
+       9      -0.97119843     0.03378809    -0.15103385    -0.00784332     0.39384846
+      10       0.25550327     0.01172587    -0.00754649     0.01242986    -0.27693664
+      11      -0.16358572     0.01514385    -0.01804788     0.13501378    -0.06847043
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1       0.42980095     0.00897458    -0.97729918    -0.97120170     0.25550548
-       2       0.00870702    -0.02686495     0.04037877     0.03378822     0.01172582
-       3       0.43928103    -0.04402993    -0.01360489    -0.15103323    -0.00754725
-       4      -0.06338627     0.04214083    -0.03446333    -0.00784318     0.01243006
-       5      -5.17287073    -0.09375451     0.54156714     0.39385181    -0.27693739
-       6       9.80673671    -0.13472965    -5.33307392     0.40961594     0.34738737
-       7      -0.13472965     0.22596975    -0.11599726    -0.06705500    -0.02196737
-       8      -5.33307392    -0.11599726    12.91460744    -5.33707316     0.04609743
-       9       0.40961594    -0.06705500    -5.33707316    10.06669057    -5.30853433
-      10       0.34738737    -0.02196737     0.04609743    -5.30853433    12.98926194
-      11      -0.11558078    -0.03331660    -0.13499646    -0.13805000    -0.05927105
+       1       0.42980876     0.00897529    -0.97729927    -0.97119843     0.25550327
+       2       0.00870677    -0.02686496     0.04037855     0.03378809     0.01172587
+       3       0.43928224    -0.04402954    -0.01360649    -0.15103385    -0.00754649
+       4      -0.06338600     0.04214021    -0.03446331    -0.00784332     0.01242986
+       5      -5.17286846    -0.09375403     0.54156684     0.39384846    -0.27693664
+       6       9.80673077    -0.13472940    -5.33307131     0.40961533     0.34738739
+       7      -0.13472940     0.22597022    -0.11599737    -0.06705512    -0.02196731
+       8      -5.33307131    -0.11599737    12.91459435    -5.33707453     0.04609626
+       9       0.40961533    -0.06705512    -5.33707453    10.06669066    -5.30854088
+      10       0.34738739    -0.02196731     0.04609626    -5.30854088    12.98928108
+      11      -0.11558075    -0.03331765    -0.13499653    -0.13804993    -0.05927094
 
                Column  11
-       1      -0.16358588
-       2       0.01514387
-       3      -0.01804845
-       4       0.13501421
-       5      -0.06847080
-       6      -0.11558078
-       7      -0.03331660
-       8      -0.13499646
-       9      -0.13805000
-      10      -0.05927105
-      11       0.40586447
+       1      -0.16358572
+       2       0.01514385
+       3      -0.01804788
+       4       0.13501378
+       5      -0.06847043
+       6      -0.11558075
+       7      -0.03331765
+       8      -0.13499653
+       9      -0.13804993
+      10      -0.05927094
+      11       0.40586540
     ==== End of matrix output ====
 
 
@@ -2038,15 +2084,15 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
        6       1.00000000    -0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
       10       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column  11     Column  12
@@ -2067,46 +2113,46 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
-       9      -0.97120170     0.03378822    -0.15103323    -0.00784318     0.39385181
-      10       0.25550548     0.01172582    -0.00754725     0.01243006    -0.27693739
-      11      -0.16358588     0.01514387    -0.01804845     0.13501421    -0.06847080
-      12      -0.98428493    -0.00020908    -0.03017871     0.00154869     0.44436591
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
+       9      -0.97119843     0.03378809    -0.15103385    -0.00784332     0.39384846
+      10       0.25550327     0.01172587    -0.00754649     0.01242986    -0.27693664
+      11      -0.16358572     0.01514385    -0.01804788     0.13501378    -0.06847043
+      12      -0.98428707    -0.00020899    -0.03018094     0.00154875     0.44436663
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1       0.42980095     0.00897458    -0.97729918    -0.97120170     0.25550548
-       2       0.00870702    -0.02686495     0.04037877     0.03378822     0.01172582
-       3       0.43928103    -0.04402993    -0.01360489    -0.15103323    -0.00754725
-       4      -0.06338627     0.04214083    -0.03446333    -0.00784318     0.01243006
-       5      -5.17287073    -0.09375451     0.54156714     0.39385181    -0.27693739
-       6       9.80673671    -0.13472965    -5.33307392     0.40961594     0.34738737
-       7      -0.13472965     0.22596975    -0.11599726    -0.06705500    -0.02196737
-       8      -5.33307392    -0.11599726    12.91460744    -5.33707316     0.04609743
-       9       0.40961594    -0.06705500    -5.33707316    10.06669057    -5.30853433
-      10       0.34738737    -0.02196737     0.04609743    -5.30853433    12.98926194
-      11      -0.11558078    -0.03331660    -0.13499646    -0.13805000    -0.05927105
-      12      -0.24370110    -0.00694960     0.27537147     0.40444112    -4.35358818
+       1       0.42980876     0.00897529    -0.97729927    -0.97119843     0.25550327
+       2       0.00870677    -0.02686496     0.04037855     0.03378809     0.01172587
+       3       0.43928224    -0.04402954    -0.01360649    -0.15103385    -0.00754649
+       4      -0.06338600     0.04214021    -0.03446331    -0.00784332     0.01242986
+       5      -5.17286846    -0.09375403     0.54156684     0.39384846    -0.27693664
+       6       9.80673077    -0.13472940    -5.33307131     0.40961533     0.34738739
+       7      -0.13472940     0.22597022    -0.11599737    -0.06705512    -0.02196731
+       8      -5.33307131    -0.11599737    12.91459435    -5.33707453     0.04609626
+       9       0.40961533    -0.06705512    -5.33707453    10.06669066    -5.30854088
+      10       0.34738739    -0.02196731     0.04609626    -5.30854088    12.98928108
+      11      -0.11558075    -0.03331765    -0.13499653    -0.13804993    -0.05927094
+      12      -0.24370677    -0.00694912     0.27537535     0.40443899    -4.35359292
 
                Column  11     Column  12
-       1      -0.16358588    -0.98428493
-       2       0.01514387    -0.00020908
-       3      -0.01804845    -0.03017871
-       4       0.13501421     0.00154869
-       5      -0.06847080     0.44436591
-       6      -0.11558078    -0.24370110
-       7      -0.03331660    -0.00694960
-       8      -0.13499646     0.27537147
-       9      -0.13805000     0.40444112
-      10      -0.05927105    -4.35358818
-      11       0.40586447    -0.14240813
-      12      -0.14240813    10.09109690
+       1      -0.16358572    -0.98428707
+       2       0.01514385    -0.00020899
+       3      -0.01804788    -0.03018094
+       4       0.13501378     0.00154875
+       5      -0.06847043     0.44436663
+       6      -0.11558075    -0.24370677
+       7      -0.03331765    -0.00694912
+       8      -0.13499653     0.27537535
+       9      -0.13804993     0.40443899
+      10      -0.05927094    -4.35359292
+      11       0.40586540    -0.14240795
+      12      -0.14240795    10.09110943
     ==== End of matrix output ====
 
 
@@ -2115,21 +2161,21 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
        6       1.00000000    -0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
       10       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column  11     Column  12     Column  13
-      11       1.00000000     0.00000000    -0.00000000
+      11       1.00000000     0.00000000     0.00000000
       12       0.00000000     1.00000000     0.00000000
-      13      -0.00000000     0.00000000     1.00000000
+      13       0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
 
@@ -2145,49 +2191,49 @@ Represented as:      C2v
  Reduced Hessian (as bT*s) :
 
                Column   1     Column   2     Column   3     Column   4     Column   5
-       1       5.67638400     0.03446808    -0.00991574    -0.14616330    -1.30832502
-       2       0.03446808     0.12879623    -0.22417871    -0.05588164    -0.09179887
-       3      -0.00991574    -0.22417871     6.35107582    -0.04236664    -3.37835274
-       4      -0.14616330    -0.05588164    -0.04236664     0.29605717    -0.07243829
-       5      -1.30832502    -0.09179887    -3.37835274    -0.07243829    12.10440044
-       6       0.42980095     0.00870702     0.43928103    -0.06338627    -5.17287073
-       7       0.00897458    -0.02686495    -0.04402993     0.04214083    -0.09375451
-       8      -0.97729918     0.04037877    -0.01360489    -0.03446333     0.54156714
-       9      -0.97120170     0.03378822    -0.15103323    -0.00784318     0.39385181
-      10       0.25550548     0.01172582    -0.00754725     0.01243006    -0.27693739
-      11      -0.16358588     0.01514387    -0.01804845     0.13501421    -0.06847080
-      12      -0.98428493    -0.00020908    -0.03017871     0.00154869     0.44436591
-      13       0.55176823    -0.00944660     0.04592709    -0.00906173    -0.19679452
+       1       5.67639456     0.03446829    -0.00990831    -0.14616234    -1.30832191
+       2       0.03446829     0.12879605    -0.22417869    -0.05588137    -0.09179901
+       3      -0.00990831    -0.22417869     6.35107959    -0.04236642    -3.37835494
+       4      -0.14616234    -0.05588137    -0.04236642     0.29605527    -0.07243791
+       5      -1.30832191    -0.09179901    -3.37835494    -0.07243791    12.10440569
+       6       0.42980876     0.00870677     0.43928224    -0.06338600    -5.17286846
+       7       0.00897529    -0.02686496    -0.04402954     0.04214021    -0.09375403
+       8      -0.97729927     0.04037855    -0.01360649    -0.03446331     0.54156684
+       9      -0.97119843     0.03378809    -0.15103385    -0.00784332     0.39384846
+      10       0.25550327     0.01172587    -0.00754649     0.01242986    -0.27693664
+      11      -0.16358572     0.01514385    -0.01804788     0.13501378    -0.06847043
+      12      -0.98428707    -0.00020899    -0.03018094     0.00154875     0.44436663
+      13       0.55175969    -0.00944662     0.04592868    -0.00906183    -0.19679214
 
                Column   6     Column   7     Column   8     Column   9     Column  10
-       1       0.42980095     0.00897458    -0.97729918    -0.97120170     0.25550548
-       2       0.00870702    -0.02686495     0.04037877     0.03378822     0.01172582
-       3       0.43928103    -0.04402993    -0.01360489    -0.15103323    -0.00754725
-       4      -0.06338627     0.04214083    -0.03446333    -0.00784318     0.01243006
-       5      -5.17287073    -0.09375451     0.54156714     0.39385181    -0.27693739
-       6       9.80673671    -0.13472965    -5.33307392     0.40961594     0.34738737
-       7      -0.13472965     0.22596975    -0.11599726    -0.06705500    -0.02196737
-       8      -5.33307392    -0.11599726    12.91460744    -5.33707316     0.04609743
-       9       0.40961594    -0.06705500    -5.33707316    10.06669057    -5.30853433
-      10       0.34738737    -0.02196737     0.04609743    -5.30853433    12.98926194
-      11      -0.11558078    -0.03331660    -0.13499646    -0.13805000    -0.05927105
-      12      -0.24370110    -0.00694960     0.27537147     0.40444112    -4.35358818
-      13       0.19861629    -0.01527706    -0.21546278    -0.04720764     0.83411862
+       1       0.42980876     0.00897529    -0.97729927    -0.97119843     0.25550327
+       2       0.00870677    -0.02686496     0.04037855     0.03378809     0.01172587
+       3       0.43928224    -0.04402954    -0.01360649    -0.15103385    -0.00754649
+       4      -0.06338600     0.04214021    -0.03446331    -0.00784332     0.01242986
+       5      -5.17286846    -0.09375403     0.54156684     0.39384846    -0.27693664
+       6       9.80673077    -0.13472940    -5.33307131     0.40961533     0.34738739
+       7      -0.13472940     0.22597022    -0.11599737    -0.06705512    -0.02196731
+       8      -5.33307131    -0.11599737    12.91459435    -5.33707453     0.04609626
+       9       0.40961533    -0.06705512    -5.33707453    10.06669066    -5.30854088
+      10       0.34738739    -0.02196731     0.04609626    -5.30854088    12.98928108
+      11      -0.11558075    -0.03331765    -0.13499653    -0.13804993    -0.05927094
+      12      -0.24370677    -0.00694912     0.27537535     0.40443899    -4.35359292
+      13       0.19861549    -0.01527677    -0.21546179    -0.04720322     0.83411565
 
                Column  11     Column  12     Column  13
-       1      -0.16358588    -0.98428493     0.55176823
-       2       0.01514387    -0.00020908    -0.00944660
-       3      -0.01804845    -0.03017871     0.04592709
-       4       0.13501421     0.00154869    -0.00906173
-       5      -0.06847080     0.44436591    -0.19679452
-       6      -0.11558078    -0.24370110     0.19861629
-       7      -0.03331660    -0.00694960    -0.01527706
-       8      -0.13499646     0.27537147    -0.21546278
-       9      -0.13805000     0.40444112    -0.04720764
-      10      -0.05927105    -4.35358818     0.83411862
-      11       0.40586447    -0.14240813    -0.08601296
-      12      -0.14240813    10.09109690    -5.21324555
-      13      -0.08601296    -5.21324555    11.84221937
+       1      -0.16358572    -0.98428707     0.55175969
+       2       0.01514385    -0.00020899    -0.00944662
+       3      -0.01804788    -0.03018094     0.04592868
+       4       0.13501378     0.00154875    -0.00906183
+       5      -0.06847043     0.44436663    -0.19679214
+       6      -0.11558075    -0.24370677     0.19861549
+       7      -0.03331765    -0.00694912    -0.01527677
+       8      -0.13499653     0.27537535    -0.21546179
+       9      -0.13804993     0.40443899    -0.04720322
+      10      -0.05927094    -4.35359292     0.83411565
+      11       0.40586540    -0.14240795    -0.08601312
+      12      -0.14240795    10.09110943    -5.21324587
+      13      -0.08601312    -5.21324587    11.84222107
     ==== End of matrix output ====
 
 
@@ -2196,22 +2242,22 @@ Represented as:      C2v
                Column   1     Column   2     Column   3     Column   4     Column   5
        1       1.00000000    -0.00000000     0.00000000    -0.00000000     0.00000000
        2      -0.00000000     1.00000000     0.00000000    -0.00000000     0.00000000
-       3       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.00000000     0.00000000    -0.00000000
        4      -0.00000000    -0.00000000     0.00000000     1.00000000     0.00000000
-       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+       5       0.00000000     0.00000000    -0.00000000     0.00000000     1.00000000
 
                Column   6     Column   7     Column   8     Column   9     Column  10
        6       1.00000000    -0.00000000     0.00000000     0.00000000     0.00000000
-       7      -0.00000000     1.00000000     0.00000000     0.00000000    -0.00000000
+       7      -0.00000000     1.00000000     0.00000000    -0.00000000    -0.00000000
        8       0.00000000     0.00000000     1.00000000     0.00000000     0.00000000
-       9       0.00000000     0.00000000     0.00000000     1.00000000    -0.00000000
+       9       0.00000000    -0.00000000     0.00000000     1.00000000    -0.00000000
       10       0.00000000    -0.00000000     0.00000000    -0.00000000     1.00000000
 
                Column  11     Column  12     Column  13     Column  14
-      11       1.00000000     0.00000000    -0.00000000     0.00000000
+      11       1.00000000     0.00000000     0.00000000    -0.00000000
       12       0.00000000     1.00000000     0.00000000     0.00000000
-      13      -0.00000000     0.00000000     1.00000000     0.00000000
-      14       0.00000000     0.00000000     0.00000000     1.00000000
+      13       0.00000000     0.00000000     1.00000000     0.00000000
+      14      -0.00000000     0.00000000     0.00000000     1.00000000
     ==== End of matrix output ====
 
  Residual norm when dim(red L) =  14
@@ -2220,20 +2266,20 @@ Represented as:      C2v
 
  (NEONEX) NEO vector is converged.
 
-   <<< OUTPUT FROM SIRCNO >>>    Keyword = FD+NO 
+   <<< OUTPUT FROM SIRCNO     Keyword = FD+NO 
 
 
  Occupations of CAS natural orbitals:
 
- Symmetry  1
+ Symmetry  1 ( irrep A1  in C2v )
 
    1.989080749   1.976436583   0.024209560   0.011251102
 
- Symmetry  2
+ Symmetry  2 ( irrep B1  in C2v )
 
    1.981380839   0.017798593
 
- Symmetry  3
+ Symmetry  3 ( irrep B2  in C2v )
 
    1.974627531   0.025215043
 
@@ -2241,26 +2287,26 @@ Represented as:      C2v
  <<< MACRO ITERATION  4 >>>
  --------------------------
 
- Integral transformation: Total CPU and WALL times (sec)       0.003       0.003
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.011
 
- Total MCSCF energy       :           -76.147614159002288  (MACRO    4)
+ Total MCSCF energy       :           -76.147614159002273  (MACRO    4)
 
  - Nuclear repulsion      :             9.055004525637894
- - Inactive energy        :           -61.283288418881007
- - Active energy          :           -23.919330265759168
+ - Inactive energy        :           -61.283288418878769
+ - Active energy          :           -23.919330265761403
 
- Norm of total gradient   :             0.000009157701
- -    of CI gradient      :             0.000005247887
- -    of orbital gradient :             0.000007504877
+ Norm of total gradient   :             0.000009157691
+ -    of CI gradient      :             0.000005247861
+ -    of orbital gradient :             0.000007504883
       Virial theorem: -V/T =      2.000973
 @      MULPOP O      -0.30; H_a _1  0.15; H_a _2  0.15; 
 
  *** Optimization control: MCSCF converged ***
      Number of macro iterations used            4
      Number of micro iterations used           28
-     Total number of CPU seconds used         0.13
+     Total number of CPU seconds used         0.18
 
- >>>> CPU and wall time for MCSCF :       0.132       0.133
+ >>>> CPU and wall time for MCSCF :       0.179       0.733
 
 
                      .----------------------------------------.
@@ -2269,16 +2315,16 @@ Represented as:      C2v
 
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:19 2014
+     Host name              : c22-1.local                             
 
 
   ITER ITMIC     EMCSCF           GRDNRM        RATIO      STPLNG
  ---------------------------------------------------------------------
-    1    6    -76.145026675971   0.1066653177  0.000000   0.2472193992
-    2   10    -76.147511954368   0.0312313826  0.900232   0.0273536170
-    3   12    -76.147614042100   0.0007562776  1.012374   0.0013188861
-    4    0    -76.147614159002   0.0000091577  1.000479   0.0000000000
+    1    6    -76.145026675615   0.1066653347  0.000000   0.2472194978
+    2   10    -76.147511954286   0.0312313919  0.900232   0.0273536488
+    3   12    -76.147614042099   0.0007562779  1.012374   0.0013188886
+    4    0    -76.147614159002   0.0000091577  1.000480   0.0000000000
 
 
   ITER  INDGCM  GCIMAX      GCINRM     INDGOM  GOBMAX      GOBNRM      GRDNRM
@@ -2292,42 +2338,42 @@ Represented as:      C2v
   ITER ITMIC NCLIN NOLIN   TIMMAC    TIMITR    TIMMIC    TIMLIN    TIMMIC/ITMIC
  ------------------------------------------------------------------------------
 
-    1     6     4     3      0.03      0.00      0.02      0.02      0.00
-    2    10     7     4      0.04      0.00      0.03      0.03      0.00
-    3    12     9     4      0.05      0.00      0.04      0.04      0.00
-    4     0     0     0      0.01      0.00      0.00      0.00
+    1     6     4     3      0.04      0.01      0.02      0.01      0.00
+    2    10     7     4      0.05      0.01      0.04      0.02      0.00
+    3    12     9     4      0.06      0.01      0.05      0.03      0.00
+    4     0     0     0      0.01      0.01      0.00      0.00
 
 
  ITER         EMY                 EACTIV              EMCSCF
 
-    1    -61.277896087984    -23.922135113624    -76.145026675971
-    2    -61.281603832409    -23.920912647597    -76.147511954368
-    3    -61.283199136223    -23.919419431515    -76.147614042100
-    4    -61.283288418881    -23.919330265759    -76.147614159002
+    1    -61.277896087723    -23.922135113530    -76.145026675615
+    2    -61.281603831715    -23.920912648209    -76.147511954286
+    3    -61.283199136204    -23.919419431534    -76.147614042099
+    4    -61.283288418879    -23.919330265761    -76.147614159002
 
 
  ITER         DEPRED              DEACT               RATIO
 
     1      0.000000000000      0.000000000000      0.000000000000
-    2     -0.002760708696     -0.002485278398      0.900232031541
-    3     -0.000100839901     -0.000102087731      1.012374370674
-    4     -0.000000116847     -0.000000116903      1.000479443704
+    2     -0.002760709466     -0.002485278671      0.900231879634
+    3     -0.000100839978     -0.000102087813      1.012374407755
+    4     -0.000000116847     -0.000000116903      1.000479597602
 
 
  ITER    BETA           GAMMA             STPLNG              RTRUST
 
-    1      0.20000000  1.00000000      0.247219399209      0.700000000000
-    2      0.20000000  1.00000000      0.027353617014      0.700000000000
-    3      0.20000000  1.00000000      0.001318886106      0.700000000000
+    1      0.20000000  1.00000000      0.247219497802      0.700000000000
+    2      0.20000000  1.00000000      0.027353648789      0.700000000000
+    3      0.20000000  1.00000000      0.001318888593      0.700000000000
     4      0.00000000  0.00000000      0.000000000000      0.700000000000
 
 
  Reduced L root no.  1
  ITER         EVAL              EVEC(1)           EVEC(2)           EVEC(3)
  ----------------------------------------------------------------------------
-    1   -0.000220318085    0.998779888021   -0.002122909825   -0.047880106700
-    2   -0.000008066951    0.999985035929   -0.000947917931   -0.005030539973
-    3   -0.000000009348    0.999999965211   -0.000022107339   -0.000258775480
+    1   -0.000220318146    0.998779887050   -0.002122909345   -0.047880124638
+    2   -0.000008066957    0.999985035894   -0.000947917855   -0.005030547054
+    3   -0.000000009348    0.999999965211   -0.000022107264   -0.000258775982
     4    0.000000000000    0.000000000000    0.000000000000    0.000000000000
 
 
@@ -2337,7 +2383,7 @@ Represented as:      C2v
 
 
 @    Spin multiplicity:           1
-@    Spatial symmetry:            1
+@    Spatial symmetry:            1 ( irrep  A1  in C2v )
 @    Total charge of molecule:    0
 @    State number:                1
 
@@ -2345,33 +2391,33 @@ Represented as:      C2v
 @    Nuclear repulsion:             9.055004525638
 @    Electronic energy:           -85.202618684640
 
-@    Final gradient norm:           0.000009157701
+@    Final gradient norm:           0.000009157691
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:19 2014
+     Host name              : c22-1.local                             
 
  Occupancies of natural orbitals
  -------------------------------
 
- Symmetry  1 -- Total occupation in this symmetry is   6.000977994
+ Symmetry 1  ( A1 ) -- Total occupation in this symmetry is   6.000977994
 
    2.000000000   1.989080749   1.976436583   0.024209560   0.011251102
 
- Symmetry  2 -- Total occupation in this symmetry is   1.999179432
+ Symmetry 2  ( B1 ) -- Total occupation in this symmetry is   1.999179432
 
    1.981380839   0.017798593
 
- Symmetry  3 -- Total occupation in this symmetry is   1.999842574
+ Symmetry 3  ( B2 ) -- Total occupation in this symmetry is   1.999842574
 
    1.974627531   0.025215043
 
- Symmetry  4 -- No occupied orbitals
+ Symmetry 4  ( A2 ) -- No occupied orbitals
 
  (Only coefficients >0.0100 are printed.)
 
- Molecular orbitals for symmetry species  1
- ------------------------------------------
+ Molecular orbitals for symmetry species 1  (A1 )
+ ------------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
    1 O   :1s     1.0004  -0.0070   0.0003   0.0953   0.5206   0.2039  -0.3553
@@ -2386,8 +2432,8 @@ Represented as:      C2v
   10 H_a :2py    0.0005  -0.0190  -0.0405   0.0528   0.0032  -0.1546  -0.2644
   11 H_a :2pz    0.0005  -0.0216   0.0008  -0.0147   0.0536  -0.0694   0.4383
 
- Molecular orbitals for symmetry species  2
- ------------------------------------------
+ Molecular orbitals for symmetry species 2  (B1 )
+ ------------------------------------------------
 
     Orbital         1        2        3        4
    1 O   :2px    0.9133  -1.4088  -0.1295   0.0002
@@ -2395,8 +2441,8 @@ Represented as:      C2v
    3 O   :3d1+   0.0179   0.0304  -0.1627  -1.0380
    4 H_a :2px    0.0318   0.0800  -0.7588   0.3896
 
- Molecular orbitals for symmetry species  3
- ------------------------------------------
+ Molecular orbitals for symmetry species 3  (B2 )
+ ------------------------------------------------
 
     Orbital         1        2        3        4
    1 O   :2py    0.7254  -1.3704   0.2200  -0.6057
@@ -2407,8 +2453,8 @@ Represented as:      C2v
    6 H_a :2py   -0.0203  -0.0265  -0.0963   0.1717
    7 H_a :2pz   -0.0293  -0.0250  -0.1156   0.0267
 
- Molecular orbitals for symmetry species  4
- ------------------------------------------
+ Molecular orbitals for symmetry species 4  (A2 )
+ ------------------------------------------------
 
     Orbital         1        2
    1 O   :3d2-  -0.1340   1.0607
@@ -2466,27 +2512,30 @@ Represented as:      C2v
   10- 3 to 10- 2        89    0.13778489E-02      0.9999526690
   10- 4 to 10- 3       220    0.47010825E-04      0.9999996798
   10- 5 to 10- 4       115    0.31904707E-06      0.9999999989
-  10- 6 to 10- 5        35    0.11310416E-08      1.0000000000
-  10- 7 to 10- 6         1    0.48622849E-12      1.0000000000
+  10- 6 to 10- 5        35    0.11310415E-08      1.0000000000
+  10- 7 to 10- 6         1    0.48622847E-12      1.0000000000
   Number of coefficients less than 10^-11 times norm is            0
 
 
 
- >>>> Total CPU  time used in SIRIUS :      0.15 seconds
- >>>> Total wall time used in SIRIUS :      0.15 seconds
+ >>>> Total CPU  time used in SIRIUS :      0.23 seconds
+ >>>> Total wall time used in SIRIUS :      0.80 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:19 2014
+     Host name              : c22-1.local                             
+
+ NOTE:    1 warnings have been issued.
+ Check output, result, and error files for "WARNING".
 
 
                      .---------------------------------------.
                      | End of Wave Function Section (SIRIUS) |
                      `---------------------------------------'
 
- >>>> Total CPU  time used in DALTON:   0.17 seconds
- >>>> Total wall time used in DALTON:   0.17 seconds
+ >>>> Total CPU  time used in DALTON:   0.28 seconds
+ >>>> Total wall time used in DALTON:   1.18 seconds
 
  
-     Date and time (Linux)  : Sun Sep  8 20:38:20 2013
-     Host name              : lpqlx131.ups-tlse.fr                    
+     Date and time (Linux)  : Tue Oct 14 14:07:19 2014
+     Host name              : c22-1.local                             
