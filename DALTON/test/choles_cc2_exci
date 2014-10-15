@@ -124,11 +124,10 @@ ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
 # CCS excitations
 CRIT1=`$GREP "\^1A1" $log | grep "0.434" | wc -l`
 CRIT2=`$GREP "\^1A1" $log | grep "0.675" | wc -l`
-CRIT3=`$GREP "\^1B1" $log | grep "0.339" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | egrep "0.339|0.3389" | wc -l`
 CRIT4=`$GREP "\^1B2" $log | grep "0.500" | wc -l`
-CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
-TEST[3]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
-CTRL[3]=8
+TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[3]=4
 ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
 
 
@@ -137,10 +136,9 @@ ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
 CRIT1=`$GREP "\^1A1" $log | grep "0.394" | wc -l`
 CRIT2=`$GREP "\^1A1" $log | grep "0.656" | wc -l`
 CRIT3=`$GREP "\^1B1" $log | grep "0.298" | wc -l`
-CRIT5=`$GREP "\^1B2" $log | grep "0.472" | wc -l`
-CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
-TEST[4]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
-CTRL[4]=8
+CRIT4=`$GREP "\^1B2" $log | grep "0.472" | wc -l`
+TEST[4]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[4]=4
 ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
 
 
