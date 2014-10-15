@@ -31,6 +31,7 @@ contains
     integer, intent(in) :: output
 
     DECinfo%SNOOP = .false.
+    DECinfo%SNOOPjustHF = .false.
 
     DECinfo%doDEC                  = .false.
 
@@ -323,6 +324,10 @@ contains
           ! Perform SNOOP calculation rather than DEC (will be merged at some point)
        case('.SNOOP') 
           DECinfo%SNOOP=.true.
+
+          ! Just do HF calculation in SNOOP and skip correlated CC calculation?
+       case('.SNOOPJUSTHF') 
+          DECinfo%SNOOPjustHF=.true.
 
 
           ! GENERAL INFO
@@ -656,6 +661,32 @@ contains
 #ifdef VAR_MPI
     nodtot = infpar%nodtot
 #endif
+
+    
+    ! SNOOP - currently limited in several ways
+    if(DECinfo%SNOOP) then
+       
+       ! Only for full calculation
+       if(.not. DECinfo%full_molecular_cc) then
+          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+       end if
+
+       ! Only for dense matrices for now
+       if(matrix_type/=mtype_dense) then
+          call lsquit('SNOOP is only implemented for dense matrices!',-1)
+       end if
+       
+       ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
+       if(DECinfo%simulate_full) then
+          call lsquit('SNOOP cannot be used in connection with the SIMULATEFULL keyword!',-1)
+       end if
+
+       ! Energy contribution analysis will not work for DECCO
+       if(DECinfo%DECCO) then
+          call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
+       end if
+       
+    end if
 
 
     ! DEC orbital-based - currently limited to occupied partitioning scheme

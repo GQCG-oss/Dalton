@@ -24,6 +24,7 @@ module dec_main_mod
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
+  use snoop_main_module
   use dec_fragment_utils
   use array3_memory_manager!,only: print_memory_currents_3d
   use array4_memory_manager!,only: print_memory_currents4
