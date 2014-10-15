@@ -101,6 +101,8 @@ set(DEC_SOURCES
     LSDALTON/deccc/mp2_gradient.F90
     LSDALTON/deccc/fragment_energy.F90
     LSDALTON/deccc/full_driver.F90
+    LSDALTON/deccc/snoop_main.F90
+    LSDALTON/deccc/snoop_tools.F90
     LSDALTON/deccc/decmpi.F90
     LSDALTON/deccc/decmpiSlave.F90
     )

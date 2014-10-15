@@ -84,6 +84,9 @@ module dec_typedef_module
      ! *****************************************************************************************
 
 
+     !> Do a SNOOP calculation rather than DEC? (later SNOOP and DEC will be somewhat merged)
+     logical :: SNOOP
+
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
      !> **************************************

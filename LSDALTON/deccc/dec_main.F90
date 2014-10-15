@@ -183,6 +183,16 @@ contains
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
 
+    ! Perform SNOOP calculation and skip DEC calculation
+    ! (at some point SNOOP and DEC might be merged)
+    if(DECinfo%SNOOP) then
+       write(DECinfo%output,*) '***********************************************************'
+       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
+       write(DECinfo%output,*) '***********************************************************'
+       call snoop_driver(mylsitem,Molecule,D)
+       return
+    end if
+
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
     if(DECinfo%check_lcm_orbitals) then
        call check_lcm_against_canonical(molecule,MyLsitem)

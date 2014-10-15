@@ -30,6 +30,8 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
+    DECinfo%SNOOP = .false.
+
     DECinfo%doDEC                  = .false.
 
     ! Orbital-based DEC scheme 
@@ -316,6 +318,12 @@ contains
           ! *               Keywords available for the general user                    *
           ! ****************************************************************************
           ! These keywords should be properly documented for the release.
+
+
+          ! Perform SNOOP calculation rather than DEC (will be merged at some point)
+       case('.SNOOP') 
+          DECinfo%SNOOP=.true.
+
 
           ! GENERAL INFO
           ! ============
