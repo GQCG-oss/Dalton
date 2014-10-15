@@ -18,7 +18,7 @@ module full
   use matrix_module
   use matrix_operations
   use memory_handling
-
+  use MemoryLeakToolMod
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use dec_fragment_utils
@@ -880,7 +880,7 @@ contains
     real(realk),intent(inout) :: rimp2_energy    
 
     integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes
-    logical :: master,wakeslave
+    logical :: master,wakeslaves
     integer,pointer :: IPVT(:)
     real(realk), pointer   :: work1(:)
     real(realk)            :: RCOND,dummy(2)
@@ -889,13 +889,20 @@ contains
     real(realk),pointer :: AlphaBeta_inv(:,:),AlphaCD(:,:,:),AlphaCD2(:,:,:),AlphaCD5(:,:,:)
     real(realk),pointer :: TMPAlphaBeta_inv(:,:),Calpha(:,:,:),Calpha2(:,:,:),AlphaCD6(:,:,:)
     real(realk),pointer :: EpsOcc(:),EpsVirt(:)
-    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm
+    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
     integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A
-    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved
-    integer(kind=ls_mpik)  :: request5,request6
+    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin
+    integer(kind=ls_mpik)  :: request1,request2,request5,request6
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
-    
+    integer(KIND=long) :: MaxMemAllocated,MemAllocated
+    !use Memory leak tool
+    MaxMemAllocated = 0
+    MemAllocated = 0
+    call set_LeakTool_memvar(MaxMemAllocated,MemAllocated)
+    TAG = 1023242411
+    TAG1 = 1023242412
+    TAG2 = 1023242413
 
     !sanity check
     if(.NOT.DECinfo%use_canonical) then
@@ -908,19 +915,20 @@ contains
     nvirt  = MyMolecule%nunocc
     naux   = MyMolecule%nauxbasis
     noccfull = nocc
+    nAtoms = MyMolecule%nAtoms
 
 #ifdef VAR_MPI
     comm = MPI_COMM_LSDALTON
     master= (infpar%mynum == infpar%master)
     mynum = infpar%mynum
     numnodes = infpar%nodtot
-    wakeslave = infpar%nodtot.GT.1
+    wakeslaves = infpar%nodtot.GT.1
 #else
     ! If MPI is not used, consider the single node to be "master"
     master=.true.
     mynum = 0
     numnodes = 1
-    wakeslave = .false.
+    wakeslaves = .false.
 #endif
 
     ! Memory check!
@@ -930,7 +938,7 @@ contains
 
 #ifdef VAR_MPI
     ! Master starts up slave
-    StartUpSlaves: if(wakeslave .and. master) then
+    StartUpSlaves: if(wakeslaves .and. master) then
        ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
        ! and call full_canonical_rimp2_slave which communicate info 
        ! then calls full_canonical_rimp2.
@@ -944,6 +952,7 @@ contains
 #endif
 
     call mem_alloc(AlphaBeta_inv,nAux,nAux)
+    call mem_LeakTool_alloc(AlphaBeta_inv,LT_RIMP2_AlphaBeta_inv)
     
     IF(master)THEN
        !=====================================================================================
@@ -964,9 +973,11 @@ contains
        !Create the inverse AlphaBeta = (alpha|beta)^-1
        call mem_alloc(work1,naux)
        call mem_alloc(IPVT,naux)
+       call mem_leaktool_alloc(work1,LT_TMP)
        IPVT = 0 ; RCOND = 0.0E0_realk  
        call DGECO(AlphaBeta_inv,naux,naux,IPVT,RCOND,work1)
        call DGEDI(AlphaBeta_inv,naux,naux,IPVT,dummy,work1,01)
+       call mem_leaktool_dealloc(work1,LT_TMP)
        call mem_dealloc(work1)
        call mem_dealloc(IPVT)
 #ifdef VAR_MPI
@@ -978,13 +989,13 @@ contains
 #endif
     ENDIF
 
-    IF(wakeslave)then 
+    IF(wakeslaves)then 
        !all nodes have info about all nodes 
        call mem_alloc(nbasisauxMPI,numnodes)        !number of Aux basis func assigned to rank
        call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
        call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (naux)
-       call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
        call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+       call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
        call getRIbasisMPI(Mylsitem%SETTING%MOLECULE(1)%p,nAtoms,numnodes,&
             & nbasisauxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
        MynauxMPI = nbasisauxmpi(mynum+1)
@@ -993,17 +1004,22 @@ contains
        MynauxMPI = naux
     ENDIF
 
-
-
-    IF(wakeslave)then 
-       !We wish to build
-       !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
-       !where alpha runs over the Aux basis functions allocated for this rank
-       !and beta run over the full set of naux
-       call mem_alloc(TMPAlphaBeta_inv,MynauxMPI,naux)
-       call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_inv,MynauxMPI,naux,&
-            & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_inv,numnodes,nAtoms)
-       call mem_dealloc(AlphaBeta_inv)
+    IF(wakeslaves)then 
+       IF(MynauxMPI.GT.0)THEN
+          !We wish to build
+          !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
+          !where alpha runs over the Aux basis functions allocated for this rank
+          !and beta run over the full set of naux
+          call mem_alloc(TMPAlphaBeta_inv,MynauxMPI,naux)
+          call mem_LeakTool_alloc(TMPAlphaBeta_inv,LT_RIMP2_TMPAlphaBeta_inv)
+          call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_inv,MynauxMPI,naux,&
+               & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_inv,numnodes,nAtoms)
+          call mem_LeakTool_dealloc(AlphaBeta_inv,LT_RIMP2_AlphaBeta_inv)
+          call mem_dealloc(AlphaBeta_inv)
+       ELSE
+          call mem_LeakTool_dealloc(AlphaBeta_inv,LT_RIMP2_AlphaBeta_inv)
+          call mem_dealloc(AlphaBeta_inv)          
+       ENDIF
     ENDIF
 
     IF(MynauxMPI.GT.0)THEN
@@ -1016,9 +1032,10 @@ contains
        call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
             & AlphaCD,mylsitem%setting,naux,nbasis,&
             & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
+       call mem_LeakTool_alloc(AlphaCD,LT_AlphaCD)
     ENDIF
 
-    IF(wakeslave)THEN !START BY SENDING MY OWN PACKAGE alphaCD
+    IF(wakeslaves)THEN !START BY SENDING MY OWN PACKAGE alphaCD
 #ifdef VAR_MPI
        !A given rank always recieve a package from the same node 
        !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
@@ -1027,8 +1044,8 @@ contains
        !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
        Sender = MOD(mynum-1+numnodes,numnodes)
        COUNT = MynauxMPI*nocc*nvirt !size of alphaCD
-       call Test_if_64bit_integer_required(MynauxMPI,nocc,nvirt)
        IF(MynauxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
+          call Test_if_64bit_integer_required(MynauxMPI,nocc,nvirt)
           call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request,ierr)
           call MPI_Request_free(request,ierr)
        ENDIF
@@ -1037,9 +1054,11 @@ contains
           !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
           !so that you only need 1 3dim quantity      
           call mem_alloc(Calpha,MynauxMPI,nvirt,nocc)
+          call mem_leaktool_alloc(Calpha,LT_Calpha)
           !Use own AlphaCD to obtain part of Calpha
-          call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,MynauxMPI,&
-               & nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,Calpha,TMPAlphaBeta_inv,naux)
+          call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,&
+               & natoms,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,&
+               & Calpha,TMPAlphaBeta_inv,naux)
        ENDIF
        !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
        !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
@@ -1065,17 +1084,19 @@ contains
           !myOriginalRank therefore determine the size of NodenauxMPI
           myOriginalRank = MOD(mynum+node,numnodes)
           OriginalRanknauxMPI = nbasisauxMPI(myOriginalRank+1) !dim1 of recieved package
-          call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
           IF(OriginalRanknauxMPI.GT.0)THEN
+             call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
              !Step 1 : MPI recieve a alphaCD from 'Receiver' 
              IF(nAwaitDealloc.EQ.2)THEN
                 !all buffers are allocated and await to be deallocated once the memory
                 !have been recieved by the reciever.
                 IF(CurrentWait(1).EQ.5)THEN
                    call MPI_WAIT(request5,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
                 ELSEIF(CurrentWait(1).EQ.6)THEN
                    call MPI_WAIT(request6,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
                 ENDIF
                 nAwaitDealloc = 1
@@ -1084,8 +1105,10 @@ contains
              ENDIF
              IF(useAlphaCD5)THEN
                 call mem_alloc(AlphaCD5,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD5,LT_AlphaCD5)
              ELSEIF(useAlphaCD6)THEN
                 call mem_alloc(AlphaCD6,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD6,LT_AlphaCD6)
              ENDIF
              COUNT = OriginalRanknauxMPI*nocc*nvirt
              MessageRecieved = .FALSE.
@@ -1121,74 +1144,105 @@ contains
                 ENDIF
              ELSE
                 IF(useAlphaCD5)THEN
+                   call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
                 ELSEIF(useAlphaCD6)THEN
+                   call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
                 ENDIF
              ENDIF
           ENDIF
        ENDDO
-       call mem_dealloc(nbasisauxMPI)
-       call mem_dealloc(startAuxMPI)
-       call mem_dealloc(nAtomsMPI)
-       call mem_dealloc(nAuxMPI)
        IF(MynauxMPI.GT.0)THEN
+          call mem_LeakTool_dealloc(TMPAlphaBeta_inv,LT_RIMP2_TMPAlphaBeta_inv)
           call mem_dealloc(TMPAlphaBeta_inv)
        ENDIF
        NBA = MynauxMPI
+       IF(nAwaitDealloc.NE.0)THEN
+          do iAwaitDealloc=1,nAwaitDealloc
+             IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
+                call MPI_WAIT(request5,status,ierr)
+                call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
+                call mem_dealloc(AlphaCD5)
+             ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
+                call MPI_WAIT(request6,status,ierr)
+                call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
+                call mem_dealloc(AlphaCD6)
+             ENDIF
+          enddo
+       ENDIF
 #endif
     ELSE
        call mem_alloc(Calpha,naux,nvirt,nocc)
+       call mem_leaktool_alloc(Calpha,LT_Calpha)
        !Calpha(naux,nvirt,nocc) = AlphaBeta_inv(naux,naux)*AlphaCD(naux,nvirt,nocc)
        call DGEMM('N','N',naux,nvirt*nocc,naux,1.0E0_realk,AlphaBeta_inv,&
             & naux,AlphaCD,naux,0.0E0_realk,Calpha,naux)
+       call mem_LeakTool_dealloc(AlphaBeta_inv,LT_RIMP2_AlphaBeta_inv)
        call mem_dealloc(AlphaBeta_inv)
        NBA = naux
     ENDIF
 
     call mem_alloc(EpsOcc,nocc)
+    call mem_leaktool_alloc(EpsOcc,LT_Eps)
     do I=1,nocc
        EpsOcc(I) = MyMolecule%ppfock(I,I)
     enddo
     call mem_alloc(EpsVirt,nvirt)
+    call mem_leaktool_alloc(EpsVirt,LT_Eps)
     do A=1,nvirt
        EpsVirt(A) = MyMolecule%qqfock(A,A)
     enddo
 
     rimp2_energy = 0.0E0_realk
 
-    IF(Wakeslave)THEN
+    nullify(AlphaCD2)
+    nullify(Calpha2)
+    IF(Wakeslaves)THEN
 #ifdef VAR_MPI
-       nullify(AlphaCD2)
-       nullify(Calpha2)
        IF(MynauxMPI.GT.0)THEN 
           !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
           call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
                & NBA,alphaCD,Calpha,rimp2_energy)
+          !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+          COUNT = NBA*nocc*nvirt
+          call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request1,ierr)
+!          call MPI_Request_free(request1,ierr)
+          call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request2,ierr)
+!          call MPI_Request_free(request2,ierr)
        ENDIF
-       !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
-       call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
-       call MPI_Request_free(request5,ierr)
-       call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
-       call MPI_Request_free(request6,ierr)
+       RoundRobin = .FALSE.
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           myOriginalRank = MOD(mynum+node,numnodes)         
           OriginalRanknauxMPI = nBasisauxMPI(myOriginalRank+1) !dim1 of recieved package
           IF(OriginalRanknauxMPI.GT.0)THEN
              IF(associated(AlphaCD2))THEN
                 call MPI_WAIT(request5,status,ierr)
+                call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
                 call mem_dealloc(AlphaCD2)              
                 call MPI_WAIT(request6,status,ierr)
-                call mem_dealloc(Calpha2)              
+                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                call mem_dealloc(Calpha2)
+                nullify(AlphaCD2)
+                nullify(Calpha2)                
              ENDIF
              call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
+             call mem_leaktool_alloc(AlphaCD2,LT_AlphaCD2)
              call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
-             COUNT = OriginalRanknauxMPI*nocc*nvirt
-             call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
-             call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
+             call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+             COUNT = OriginalRanknauxMPI*nvirt*nocc
+             IF(node.EQ.1)THEN
+                !recieve from the ISEND above 
+                call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
+                call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
+             ELSE
+                call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+             ENDIF
              IF(node.NE.numnodes-1)THEN
-                call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
-                call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                RoundRobin = .TRUE.
+                call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
+                call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
              ENDIF
              IF(MynauxMPI.GT.0)THEN
                 call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
@@ -1196,26 +1250,57 @@ contains
              ENDIF
           ENDIF
        ENDDO
-       IF(associated(AlphaCD2))THEN
-          call MPI_WAIT(request5,status,ierr)
-          call mem_dealloc(AlphaCD5)
-          call MPI_WAIT(request6,status,ierr)
-          call mem_dealloc(AlphaCD6)          
+       IF(RoundRobin)THEN
+          IF(associated(AlphaCD2))THEN
+             call MPI_WAIT(request5,status,ierr)
+             call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+             call mem_dealloc(AlphaCD2)
+             call MPI_WAIT(request6,status,ierr)
+             call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+             call mem_dealloc(Calpha2)              
+          ENDIF
+       ELSE
+          call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+          call mem_dealloc(AlphaCD2)
+          call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+          call mem_dealloc(Calpha2)              
        ENDIF
+       IF(MynauxMPI.GT.0)THEN
+          call MPI_WAIT(request1,status,ierr)
+          call mem_leaktool_dealloc(AlphaCD,LT_AlphaCD)
+          call mem_dealloc(AlphaCD)              
+          call MPI_WAIT(request2,status,ierr)
+          call mem_leaktool_dealloc(Calpha,LT_Calpha)
+          call mem_dealloc(Calpha)              
+       ENDIF
+       call mem_dealloc(nbasisauxMPI)
+       call mem_dealloc(startAuxMPI)
+       call mem_dealloc(nAtomsMPI)
+       call mem_dealloc(nAuxMPI)
 #endif
     ELSE
        !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
        call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
             & NBA,alphaCD,Calpha,rimp2_energy)
+       call mem_leaktool_dealloc(AlphaCD,LT_AlphaCD)
+       call mem_dealloc(AlphaCD)              
+       call mem_leaktool_dealloc(Calpha,LT_Calpha)
+       call mem_dealloc(Calpha)              
     ENDIF
+    call mem_leaktool_dealloc(EpsOcc,LT_Eps)
     call mem_dealloc(EpsOcc)
+    call mem_leaktool_dealloc(EpsVirt,LT_Eps)
     call mem_dealloc(EpsVirt)
 #ifdef VAR_MPI
     call lsmpi_reduction(rimp2_energy,infpar%master,comm)
 #endif    
-    
-    write(DECinfo%output,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
-    write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+    IF(MASTER)THEN
+       write(DECinfo%output,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+       write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+    ENDIF
+
+    write(DECinfo%output,*)  'LEAK TOOL STATISTICS IN full_canonical_rimp2'
+    call LeakTools_stat_mem(DECinfo%output)
 
   end subroutine full_canonical_rimp2
 
@@ -1289,7 +1374,7 @@ subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
               eps = epsIJB - EpsVirt(A)
               gmoAIBJ2 = 0.0E0_realk
               DO ALPHA = 1,NBA2
-                 gmoAIBJ2 = gmoAIBJ + alphaCD2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
+                 gmoAIBJ2 = gmoAIBJ2 + alphaCD2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
               ENDDO
               gmoAIBJ = 0.0E0_realk
               DO ALPHA = 1,NBA

@@ -1086,7 +1086,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
-        CASE('.TYPE_TENSOR_DEBUG');      config%type_array_debug      = .true.
+        CASE('.TYPE_TENSOR_DEBUG');      config%type_tensor_debug    = .true.
 #ifdef VAR_MPI
         CASE('.MAX_MPI_MSG_SIZE_NEL');
            READ(LUCMD,*) SPLIT_MPI_MSG 
