@@ -26,6 +26,10 @@ subroutine lsmpi_init(OnMaster)
 #endif
    endif
 
+   !Set default mpi message sizes
+   SPLIT_MPI_MSG      = 100000000
+   MAX_SIZE_ONE_SIDED =  12500000
+
    lsmpi_enabled_comm_procs = .false.
 
    !asynchronous progress is off per default, might be switched on with an
@@ -212,6 +216,11 @@ subroutine lsmpi_slave(comm)
       case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
+
+      case(SET_SPLIT_MPI_MSG);
+         call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
+      case(SET_MAX_SIZE_ONE_SIDED);
+         call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,comm)
 
          !##########################################
          !########  QUIT THE SLAVEROUTINE ##########

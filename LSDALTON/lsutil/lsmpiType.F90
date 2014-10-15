@@ -195,13 +195,9 @@ module lsmpi_type
 
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  !integer,parameter     :: SPLIT_MPI_MSG     = 2147483640
-!  integer,parameter     :: SPLIT_MPI_MSG      = 1000000000
-  integer,parameter     :: SPLIT_MPI_MSG      = 100000000
-  !The recommended size of message chunks
-  integer,parameter     :: SPLIT_MSG_REC      =  100000000
+  integer     :: SPLIT_MPI_MSG      = 100000000
   !split mpi one sided communication into 100MB chunks
-  integer,parameter     :: MAX_SIZE_ONE_SIDED =  12500000
+  integer     :: MAX_SIZE_ONE_SIDED 
 
   !mpistatus
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
