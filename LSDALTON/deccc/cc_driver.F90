@@ -1539,7 +1539,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit("ERROR(ccsolver_par): input specified that vovo was&
          & supplied, but vovo is not initialized",-1)
       endif
-      if(VOVO%itype == TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os)then
+      if(VOVO%itype == TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os))then
          call lsquit("ERROR(ccsolver_par): distribution of VOVO not fit for solver",-1)
       endif
    endif
@@ -1771,11 +1771,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
+   !GET OVOV integrals from NON-T_1 transformed VOVO integrals or generate
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
    if(.not.vovo_avail)then
       call tensor_zero(iajb)
+      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
-      call tensor_cp_data(iajb,1.0E0_realk,VOVO, order = [2,1,4,3])
+      call tensor_add(iajb,1.0E0_realk,VOVO, a=0.0E0_realk,order = [2,1,4,3])
       call tensor_free(VOVO)
    endif
 
@@ -1793,28 +1795,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
       call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-      !call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR' )
 
-      call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
 
-      !if MP2, just zero the array, and keep it in PDM all the time
-      atype = 'TDAR'
-      call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
-      !call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype )
-      if(ccmodel == MODEL_MP2 )then
-         old_iter = 0
-      else
-         call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
-            & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
-      endif
+      call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+
+      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
    call tensor_free(qpfock_prec)
-
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
@@ -1843,32 +1838,25 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
         end if
       end if
 
-      INTEGRAL : if(ccmodel == MODEL_MP2) then
-
-         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
-         call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
-
-      else
 
 #ifdef MOD_UNRELEASED
-         !============================================================================!
-         !                          MO-CCSD initialization                            !
-         !____________________________________________________________________________!
-         ! Check if there is enough memory to performed an MO-CCSD calculation.
-         !   YES: get full set of t1 free gmo and pack them
-         !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-         if (mo_ccsd.or.(ccmodel == MODEL_RPA)) then
-            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+      !============================================================================!
+      !                          MO-CCSD initialization                            !
+      !____________________________________________________________________________!
+      ! Check if there is enough memory to performed an MO-CCSD calculation.
+      !   YES: get full set of t1 free gmo and pack them
+      !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+      if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
 
-            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
-               & nb,no,nv,CCmodel,MOinfo)
+         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
+            & nb,no,nv,CCmodel,MOinfo)
 
-            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
-               &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+            &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
-         end if
+      end if
 #endif
-      end if INTEGRAL
 
       nspaces = 0
       set_pno_info:if(use_pnos)then
@@ -1903,9 +1891,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
-         !Get the integrals provided by MP2
-         !call array_reorder_4d(1.0E0_realk,VOVO%elm1,nv,no,nv,no,[2,1,4,3],0.0E0_realk,iajb%elm1)
-         call tensor_add( iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3] )
 
       endif set_pno_info
 
@@ -2075,6 +2060,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
          call tensor_zero( omega2_opt )
          call tensor_zero( t2_opt     )
+
+         print *,"coeffs",c(1:iter)
 
          do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
 
@@ -2496,10 +2483,10 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
+subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
    & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
-   integer, intent(in) :: nb
+   integer, intent(in) :: nb,ccmodel
    logical,intent(out) :: restart
    real(realk), intent(inout) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
@@ -2697,22 +2684,27 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    endif
 
 
-   if(readfile1)then
-      READ(fu_t1) t1%elm1
-      READ(fu_t1) norm
-      READ(fu_t1) energy
-      CLOSE(fu_t1)
-      restart = .true.
-      call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
-   else
-      !do a=1,nv
-      !   do i=1,no
+   if(DECinfo%use_singles)then
+      if(readfile1)then
+         READ(fu_t1) t1%elm1
+         READ(fu_t1) norm
+         READ(fu_t1) energy
+         CLOSE(fu_t1)
+         restart = .true.
+         call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
+      else
+         !This was an attempt to start with something else than 0 for CCSD, but
+         !it does not seem worth it, even if the start is the amplitudes of the
+         !second iteration
+         do a=1,nv
+            do i=1,no
 
-      !      t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+               t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
 
-      !   end do
-      !end do
-      if(DECinfo%use_singles) call tensor_zero(t1)
+            end do
+         end do
+         !call tensor_zero(t1)
+      endif
    endif
 
    if(readfile2)then
@@ -2727,10 +2719,11 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
       if (.not.local) call tensor_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-      !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
-      !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
-      call tensor_zero(t2)
-      !call tensor_zero(iajb)
+      !if(ccmodel == MODEL_MP2)then
+         call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
+      !else
+      !   call tensor_zero(t2)
+      !endif
    endif
 end subroutine get_guess_vectors
 

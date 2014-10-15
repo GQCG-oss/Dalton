@@ -1509,6 +1509,7 @@ module lspdm_tensor_operations_module
      integer :: gtidx,lt,o(t2%mode),da,db,di,dj,a,b,i,j,nelms
      integer :: order(4)
      call time_start_phase(PHASE_WORK)
+#ifdef VAR_MPI
 
      order = [3,1,4,2]
      
@@ -1598,7 +1599,7 @@ module lspdm_tensor_operations_module
      call time_start_phase(PHASE_IDLE)
      call lsmpi_barrier(infpar%lg_comm)
      call time_start_phase(PHASE_WORK)
-
+#endif
   end subroutine lspdm_get_mp2_starting_guess
 
 
