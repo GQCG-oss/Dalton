@@ -105,6 +105,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
 
+   local=.true.
+#ifdef VAR_MPI
+   if(infpar%lg_nodtot>1)local=.false.
+#endif
+
+#ifdef MOD_UNRELEASED
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
    nenergies = 4
@@ -115,12 +121,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_4    = 3
    pT_5    = 4
 
-   local=.true.
-#ifdef VAR_MPI
-   if(infpar%lg_nodtot>1)local=.false.
-#endif
-
-#ifdef MOD_UNRELEASED
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
       ! is this a frozen core calculation or not?

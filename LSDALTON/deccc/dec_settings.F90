@@ -482,10 +482,11 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
-       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
-       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
-       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.FRAG_EXP_SCHEME');    read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
+       case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
+       case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
           DECinfo%print_frags = .true.
@@ -593,9 +594,8 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
-       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
+       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
+       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
