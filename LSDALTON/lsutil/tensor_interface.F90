@@ -427,15 +427,28 @@ contains
            call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select
      case(TILED_DIST)
+
         select case(B%itype)
+
+        case(DENSE,REPLICATED)
+
+           select case(C%itype)
+           case(TILED_DIST)
+              call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
+                 & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
+           case default
+              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
+           end select
+
         case(TILED_DIST)
            select case(C%itype)
            case(TILED_DIST)
               call lspdm_tensor_contract_simple(pre1,A,B,m2cA,m2cB,nmodes2c,pre2,C,order,&
-                 &mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
+                 & mem=mem,wrk=wrk,iwrk=iwrk,force_sync=force_sync)
            case default
-              call lsquit("ERROR(tensor_contract_simple): C%itype not implemented",-1)
+              call lsquit("error(tensor_contract_simple): c%itype not implemented",-1)
            end select
+
         case default
            call lsquit("ERROR(tensor_contract_simple): B%itype not implemented",-1)
         end select

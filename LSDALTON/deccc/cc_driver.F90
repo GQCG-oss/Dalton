@@ -1348,7 +1348,8 @@ end subroutine mp2_solver_file
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos,m2,m1,frag)
+      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos, &
+      & m2,m1,frag,vovo_supplied)
 
    implicit none
 
@@ -1393,6 +1394,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(tensor), intent(inout), optional     :: m2
    type(tensor), intent(inout), optional     :: m1
    type(decfrag), intent(inout), optional    :: frag
+   logical, intent(in), optional             :: vovo_supplied
    !
    !> Do an MO-based CCSD calculation?
    logical :: mo_ccsd
@@ -1445,7 +1447,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer(kind=8)        :: o2v2
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
-   logical                :: restart, restart_from_converged,collective,use_singles
+   logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
@@ -1526,6 +1528,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(.not. local)then
          print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
          stop 0
+      endif
+   endif
+
+   vovo_avail = .false.
+   if(present(vovo_supplied)) vovo_avail = vovo_supplied
+
+   if(vovo_avail)then
+      if(.not.VOVO%initialized)then
+         call lsquit("ERROR(ccsolver_par): input specified that vovo was&
+         & supplied, but vovo is not initialized",-1)
+      endif
+      if(VOVO%itype == TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os)then
+         call lsquit("ERROR(ccsolver_par): distribution of VOVO not fit for solver",-1)
       endif
    endif
 
@@ -1757,8 +1772,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    end if
 
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
-   !call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR' )
-   call tensor_zero(iajb)
+   if(.not.vovo_avail)then
+      call tensor_zero(iajb)
+   else
+      call tensor_cp_data(iajb,1.0E0_realk,VOVO, order = [2,1,4,3])
+      call tensor_free(VOVO)
+   endif
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
@@ -1827,11 +1846,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       INTEGRAL : if(ccmodel == MODEL_MP2) then
 
          call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
-         call tensor_zero(t2(1))
-         call print_norm(t2(1),"t2 before")
          call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
-         call print_norm(t2(1),"t2 after ")
-
 
       else
 
