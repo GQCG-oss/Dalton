@@ -201,6 +201,16 @@ F90_OBJS = \
         IchorEri_CoulombIntegral_GPU_OBS_SegP.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg.o \
         IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Gen2.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegQ2.o \
+        IchorEri_CoulombIntegral_CPU_OBS_SegP2.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Seg2.o \
+        IchorEri_CoulombIntegral_CPU_OBS_Seg1Prim2.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Gen2.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegQ2.o \
+        IchorEri_CoulombIntegral_GPU_OBS_SegP2.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Seg2.o \
+        IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim2.o \
         IchorEri_CoulombIntegral_CPU_OBS_GenSize.o \
         IchorEri_CoulombIntegral_CPU_OBS_SegQSize.o \
         IchorEri_CoulombIntegral_CPU_OBS_SegPSize.o \

@@ -261,6 +261,16 @@ set(ICHORINT_SOURCES
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegP.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_Gen2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegQ2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegP2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_Seg2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_Seg1Prim2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Gen2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegQ2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_SegP2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg2.F90
+    LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_GPU_OBS_Seg1Prim2.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_GenSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegQSize.F90
     LSDALTON/IchorIntegrals/IchorEri_CoulombIntegral_CPU_OBS_SegPSize.F90

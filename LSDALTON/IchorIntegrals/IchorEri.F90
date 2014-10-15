@@ -678,6 +678,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(DoLink) NOTDoSSSS=.TRUE.
       IF(DoMoTrans) NOTDoSSSS=.TRUE.
       IF(UseGeneralCode)NOTDoSSSS = .TRUE.
+      IF(UseCPU)NOTDoSSSS = .TRUE.
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
