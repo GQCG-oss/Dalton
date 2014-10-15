@@ -97,7 +97,6 @@ contains
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%NO_MO_CCSD           = .false.
-    DECinfo%v2o2_free_solver     = .false.
 
     ! -- Output options 
     DECinfo%output               = output
@@ -117,13 +116,11 @@ contains
     DECinfo%BoughtonPulay                = .false.
     DECinfo%FitOrbitals                  = .true.
     DECinfo%simple_orbital_threshold     = 0.05E0_realk
-    DECinfo%simple_orbital_threshold_set = .false.
 
 
     ! -- Fragment
     DECinfo%MaxIter                = 20
-    DECinfo%FOTlevel               = 4
-    DECinfo%maxFOTlevel            = 8   ! if you modify this remember to modify dimension of ncalc as well!
+    DECinfo%FOTlevel               = 1
     DECinfo%FOT                    = 1.0E-4_realk
     DECinfo%InclFullMolecule       = .false.
     DECinfo%PL                     = 0
@@ -153,7 +150,6 @@ contains
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold = 1000.0E0_realk/bohr_to_angstrom
-    DECinfo%paircut_set             = .false.
     DECinfo%PairMinDist             = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
     DECinfo%pairFOthr               =  0.0_realk
     DECinfo%PairMP2                 = .false.
@@ -188,8 +184,9 @@ contains
     DECinfo%array4OnFile_specified  = .false.
 
     ! ccsd(t) settings
-    DECinfo%abc = .false.
-    DECinfo%abc_tile_size = 1
+    DECinfo%abc               = .false.
+    DECinfo%abc_tile_size     = 1
+    DECinfo%CCSDPT_nbuffs_ijk = 6
 
     ! First order properties
     DECinfo%first_order = .false.
@@ -206,7 +203,7 @@ contains
     DECinfo%kappaMaxIter=100
     DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaTHR=1e-4_realk
-    DECinfo%EerrFactor = 1.0_realk
+    DECinfo%EerrFactor = 0.1_realk
     DECinfo%EerrOLD = 0.0_realk
 
     ! -- Timings
@@ -257,7 +254,7 @@ contains
     !> do we do F12 calc (is a CABS basis required?)
     logical,intent(inout) :: doF12
     logical,save :: already_called = .false.
-    integer :: fotlevel,nworkers
+    integer :: nworkers
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
@@ -406,13 +403,9 @@ contains
           ! Do not absorb H atoms when assigning orbitals
        case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
 
-          !> See description of FOT level in set_input_for_fot_level.
-          !> Note that if one does not use simple orbital threshold, then
-          !> one should manually choose a suitable threshold to determine
-          !> the atomic extent (e.g. threshold for Boughton-Pulay procedure).
+          ! FOT
        case('.FOT')  
-          read(input,*) FOTlevel
-          call set_input_for_fot_level(FOTlevel)
+          read(input,*) DECinfo%FOT
 
           !> Correlation density for fragment-adapted orbitals, see DECsettings type definition.
        case('.CORRDENS')  
@@ -433,12 +426,10 @@ contains
        case('.PAIRTHR') 
           ! Threshold in a.u.
           read(input,*) DECinfo%pair_distance_threshold
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
        case('.PAIRTHRANGSTROM') 
           ! Input in Angstrom
           read(input,*) DECinfo%pair_distance_threshold
           DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
 
           ! Calculate MP2 gradient (without necessarily doing geometry optimization)
        case('.GRADIENT') 
@@ -491,10 +482,11 @@ contains
        case('.STRESSTEST')     
           !Calculate biggest 2 atomic fragments and the biggest pair fragment
           DECinfo%StressTest  = .true.
-       case('.FRAG_INIT_SIZE'); read(input,*) DECinfo%Frag_Init_Size
-       case('.FRAG_EXP_SIZE'); read(input,*) DECinfo%Frag_Exp_Size
-       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
-       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
+       case('.FRAG_EXP_SCHEME');    read(input,*) DECinfo%Frag_Exp_Scheme
+       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
+       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
+       case('.FRAG_INIT_SIZE');     read(input,*) DECinfo%Frag_Init_Size
+       case('.FRAG_EXP_SIZE');      read(input,*) DECinfo%Frag_Exp_Size
        case('.PRINTFRAGS')
           ! Print fragment energies for full molecular cc calculation
           DECinfo%print_frags = .true.
@@ -528,13 +520,16 @@ contains
        case('.PNOOVERLAPTHR'); read(input,*) DECinfo%PNOoverlapthr
 
 
+       ! (T) SPECIFIC KEYWORDS
+       !**********************
+       case('.(T)#buffs_ijk'); read(input,*) DECinfo%CCSDPT_nbuffs_ijk 
+
 
        !OTHER STUFF FIXME: SORT IT INTO BLOCKS
        !***********
 
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
-       case('.V2O2_FREE_SOLVER'); DECinfo%v2o2_free_solver= .true.
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.FRAGEXPMODEL') 
           read(input,*) myword
@@ -564,7 +559,6 @@ contains
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')
           read(input,*) DECinfo%simple_orbital_threshold
-          DECinfo%simple_orbital_threshold_set=.true.
        case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
        case('.MAXITER'); read(input,*) DECinfo%MaxIter
        case('.DECPRINT'); read(input,*) DECinfo%PL
@@ -600,9 +594,8 @@ contains
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
-       case('.FRAG_EXP_SCHEME'); read(input,*) DECinfo%Frag_Exp_Scheme
-       case('.FRAG_REDOCC_SCHEME'); read(input,*) DECinfo%Frag_RedOcc_Scheme
-       case('.FRAG_REDVIR_SCHEME'); read(input,*) DECinfo%Frag_RedVir_Scheme
+       case('.FRAG_RED_OCC_THR'); read(input,*) DECinfo%frag_red_occ_thr
+       case('.FRAG_RED_VIRT_THR'); read(input,*) DECinfo%frag_red_virt_thr
        case('.FRAGMENTADAPTED'); DECinfo%fragadapt = .true.
        case('.NO_ORB_BASED_FRAGOPT'); DECinfo%no_orb_based_fragopt = .true.
        case('.ONLY_N_JOBS')
@@ -835,6 +828,11 @@ contains
             &the CCSD part which is dependent on running at least 2 &
             &MPI processes with only one process",-1)
     endif
+
+
+    ! Set FOTs for geometry opt.
+    call set_geoopt_FOTs(DECinfo%FOT)
+
   end subroutine check_dec_input
 
   !> \brief Check that CC input is consistent with calc requirements
@@ -965,7 +963,6 @@ contains
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
     write(lupri,*) 'FragAdapt ', DECitem%FragAdapt
-    write(lupri,*) 'simple_orbital_threshold_set ', DECitem%simple_orbital_threshold_set
     write(lupri,*) 'BoughtonPulay ', DECitem%BoughtonPulay
     write(lupri,*) 'mulliken_threshold ', DECitem%mulliken_threshold
     write(lupri,*) 'simple_mulliken_threshold ', DECitem%simple_mulliken_threshold
@@ -974,7 +971,6 @@ contains
     write(lupri,*) 'FOT ', DECitem%FOT
     write(lupri,*) 'MaxIter ', DECitem%MaxIter
     write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
-    write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
     write(lupri,*) 'Frag_Exp_Scheme ', DECitem%Frag_Exp_Scheme
     write(lupri,*) 'Frag_RedOcc_Scheme ', DECitem%Frag_RedOcc_Scheme
     write(lupri,*) 'Frag_RedVir_Scheme ', DECitem%Frag_RedVir_Scheme
@@ -986,7 +982,6 @@ contains
     write(lupri,*) 'fragopt_red_model ', DECitem%fragopt_red_model
     write(lupri,*) 'No_Orb_Based_FragOpt ', DECitem%no_orb_based_fragopt
     write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
-    write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
     write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'pairFOthr ', DECitem%pairFOthr
@@ -1009,85 +1004,29 @@ contains
 
 
 
-  !> \brief Set DEC parameters in DEC structure according to FOT level,
-  !> e.g. FOT itself and orbital extent threshold are set here.
-  !> See details inside subroutine.
+  !> \brief Set FOTs to (possibly) be used for geometry optimization,
+  !> --> sets DECinfo%GeoFOTs such that
+  !> DECinfo%GeoFOTs(1) = initial FOT
+  !> DECinfo%GeoFOTs(2) = (initial FOT)/10
+  !> DECinfo%GeoFOTs(3) = (initial FOT)/100
+  !> etc.
   !> \author Kasper Kristensen
   !> \date November 2012
-  subroutine set_input_for_fot_level(FOTlevel)
+  subroutine set_geoopt_FOTs(FOT)
     implicit none
-    !> FOT level defining precision of calculation
-    integer,intent(in) :: FOTlevel
+    !> Initial FOT
+    real(realk),intent(in) :: FOT
+    integer :: i
 
-    !> FOTlevel: Defines the precision of the whole calculation:
-    !>           In general FOT=10^{-FOTlevel}
-    !>           So a large FOTlevel means HIGH precision.
-    !>           It is also possible to adapt the orbital threshold to the given FOT,
-    !>           however, for now we simply set the orbital threshold to 0.05 for all levels.
-    !> 
-    !> Default: FOTlevel=4. If FOTlevel is not 1,2,3,4,5,6,7, or 8, the program will quit.
+    ! Initial FOT level is 1
+    DECinfo%FOTlevel = 1
 
-    ! Set FOT level
-    DECinfo%FOTlevel = FOTlevel
+    DECinfo%GeoFOTs(1) = FOT
+    do i=2,nFOTs
+       DECinfo%GeoFOTs(i) = DECinfo%GeoFOTs(i-1)*0.1_realk
+    end do
 
-    WhatFOTlevel: SELECT CASE(DECinfo%FOTlevel)
-
-    case(1)
-       DECinfo%FOT = 1.0E-1_realk
-       ! Define simple orbital threshold here only if it was not set manually
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(2)
-       DECinfo%FOT = 1.0E-2_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(3)
-       DECinfo%FOT = 1.0E-3_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(4)
-       DECinfo%FOT = 1.0E-4_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(5)
-       DECinfo%FOT = 1.0E-5_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(6)
-       DECinfo%FOT = 1.0E-6_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(7)
-       DECinfo%FOT = 1.0E-7_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case(8)
-       DECinfo%FOT = 1.0E-8_realk
-       if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.05E0_realk
-       end if
-
-    case default
-       call lsquit('set_input_for_fot_level: FOT level must be 1,2,3,4,5,6,7, or 8!',DECinfo%output)
-
-    end SELECT WhatFOTlevel
-
-
-  end subroutine set_input_for_fot_level
+  end subroutine set_geoopt_FOTs
 
   subroutine free_decinfo()
      implicit none

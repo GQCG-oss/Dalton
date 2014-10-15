@@ -7,13 +7,16 @@ use IchorMemory
 use AGC_GPU_OBS_BUILDRJ000ModGen
 use AGC_GPU_OBS_BUILDRJ000ModSeg1Prim
 use AGC_GPU_OBS_VERTICALRECURRENCEMODAGen
+use AGC_GPU_PrimContractGenMod
 use AGC_GPU_OBS_VERTICALRECURRENCEMODBGen
 use AGC_GPU_OBS_VERTICALRECURRENCEMODDGen
 use AGC_GPU_OBS_VERTICALRECURRENCEMODCGen
-use AGC_GPU_OBS_TRMODAtoCGen
-use AGC_GPU_OBS_TRMODAtoDGen
-use AGC_GPU_OBS_TRMODBtoCGen
-use AGC_GPU_OBS_TRMODBtoDGen
+use AGC_GPU_OBS_TRMODAtoCGen1
+use AGC_GPU_OBS_TRMODAtoCGen2
+use AGC_GPU_OBS_TRMODAtoDGen1
+use AGC_GPU_OBS_TRMODAtoDGen2
+use AGC_GPU_OBS_TRMODBtoCGen1
+use AGC_GPU_OBS_TRMODBtoDGen1
 use AGC_GPU_OBS_TRMODCtoAGen
 use AGC_GPU_OBS_TRMODDtoAGen
 use AGC_GPU_OBS_TRMODCtoBGen
@@ -26,7 +29,7 @@ use AGC_GPU_OBS_Sphcontract1Mod
 use AGC_GPU_OBS_Sphcontract2Mod
   
 private   
-public :: ICI_GPU_OBS_Gen,ICI_GPU_OBS_general_sizeGen  
+public :: ICI_GPU_OBS_Gen
   
 CONTAINS
   
@@ -102,38 +105,18 @@ CONTAINS
     IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
     SELECT CASE(AngmomID)
     CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*1.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen0(nPasses,nPrimP,nPrimQ,&
                & reducedExponents,TABFJW,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,&
                & PpreExpFac,QpreExpFac,TMParray2,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*1.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,1,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*1.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,1,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*1.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,1,1,iASync)
@@ -145,54 +128,24 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen1A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray2,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*3.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & LOCALINTS,lupri,iASync)
@@ -200,216 +153,91 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP1Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
         !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP1Q2CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
         !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*27.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & LOCALINTS,lupri,iASync)
@@ -417,7105 +245,663 @@ CONTAINS
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*36.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
         !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*27.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
         !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*81.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(1,nContQP*nPasses,TMParray2,&
             & LOCALINTS,iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP2Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*210.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*175.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(35,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(1,nContQP*nPasses,TMParray2,&
             & LOCALINTS,iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP3Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP3Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP3Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP3Q3AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*8.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP3Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*630.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*525.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(35,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*540.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
         !No reason for the Electron Transfer Recurrence Relation 
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*35.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*35.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*36.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,1,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
             & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(1,nContQP*nPasses,TMParray2,&
             & LOCALINTS,iASync)
         !no need for RHS Horizontal recurrence relations 
         !no Spherical Transformation RHS needed
     CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP4Q1AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*144.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,4,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP4Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,&
             & LOCALINTS,lupri,iASync)
         !no Spherical Transformation RHS needed
     CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP4Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(25,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*8.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP4Q3AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*720.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,20,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*500.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*450.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(25,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*9.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call BuildRJ000GPUGen8(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
                & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*165.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call VerticalRecurrenceGPUGen8A(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
                & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
                & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*1225.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
         call TransferRecurrenceGPUP4Q4AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
                & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
                & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
                & TMParray1,TMParray2,iASync)
         nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*1225.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*1225.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*1225.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*1225.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
          call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
                & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
                & nContC,nPrimD,nContD,35,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*1260.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,35,&
             & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*875.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(35,nContQP*nPasses,TMParray1,&
             & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*900.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,25,Qdistance12,TMParray2,&
             & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*625.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
         call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(25,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen1D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*3.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,1,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen1C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,4,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*3.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,10,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,20,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*35.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*35.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,1,35,iASync)
-        !no need for LHS Horizontal recurrence relations, it would be a simply copy
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*36.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,1,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen1B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray2,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*4.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*3.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation LHS needed
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-    CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q2DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q2CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*27.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q3DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q2CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q3CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*105.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A0B1BtoA(nContQP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*108.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*10.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*5.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-    CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q3DtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q3CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*210.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A0B2BtoA(nContQP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*175.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA0(35,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*3.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen2(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*10.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen2A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*16.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*16.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*12.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*9.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q2DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q2CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP1Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,4,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*105.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P1A1B0AtoB(nContQP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*108.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,3,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(3,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*36.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*27.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(9,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*162.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(9,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2AtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*54.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(9,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q3CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*162.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(9,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q4CtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*315.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A1B1AtoB(nContQP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-        !no Spherical Transformation LHS needed
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*324.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,9,Qdistance12,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(9,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-    CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-        !No reason for the Electron Transfer Recurrence Relation 
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*18.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,1,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray1,&
-            & TMParray2,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(1,nContQP*nPasses,TMParray2,&
-            & LOCALINTS,iASync)
-        !no need for RHS Horizontal recurrence relations 
-        !no Spherical Transformation RHS needed
-    CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q1BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q2BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q1BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C1D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*135.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C1D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q3BtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q2BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C2D0CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC2(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6B(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Bcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q3BtoCGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Aexp,Dexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C2D1CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC2(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*8.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen7C(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Ccenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q4CtoBGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Dexp,Aexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,35,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*630.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A1B2BtoA(nContQP,nPasses,35,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*525.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA1(35,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*540.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q4C2D2CtoD(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ4_maxAngC2(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*4.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen3(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*20.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen3A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*40.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*40.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*24.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*20.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*15.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*100.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*50.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*30.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*25.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5D(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Qexp,Dcenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP2Q3DtoAGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Cexp,Bexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,10,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P2A2B0AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP2_maxAngA2(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,5,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(5,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*5.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen4(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*35.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen4A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*80.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*80.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*72.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*60.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*45.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*200.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*200.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*180.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*90.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP3Q3AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*400.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*400.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,20,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P3A2B1AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*300.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP3_maxAngA2(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*270.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,15,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*225.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(15,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*6.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen5(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*56.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen5A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP4Q1AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*140.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*140.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,4,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*144.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,4,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*100.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(4,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*75.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q1C0D1DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,&
-            & LOCALINTS,lupri,iASync)
-        !no Spherical Transformation RHS needed
-    CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*7.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen6(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*84.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen6A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP4Q2AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*350.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*350.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,10,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*360.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,10,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*250.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(10,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*150.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q2C0D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*125.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ2_maxAngC0(25,nContQP*nPasses,TMParray1,&
-            & LOCALINTS,iASync)
-    CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*8.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call BuildRJ000GPUGen7(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TABFJW,Pcent,Qcent,IatomApass,IatomBpass,&
-               & MaxPasses,nAtomsA,nAtomsB,TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*120.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call VerticalRecurrenceGPUGen7A(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & TMParray2,Pexp,Acenter,Pcent,Qcent,integralPrefactor,&
-               & IatomApass,IatomBpass,MaxPasses,nAtomsA,nAtomsB,PpreExpFac,QpreExpFac,&
-               & TMParray1,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimP*nPrimQ*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimP*nPrimQ*nPasses too small',-1)
-        ENDIF
-#endif
-        call TransferRecurrenceGPUP4Q3AtoDGen(nPasses,nPrimP,nPrimQ,reducedExponents,&
-               & Pexp,Qexp,Pdistance12,Qdistance12,Bexp,Cexp,nPrimA,nPrimB,nPrimC,nPrimD,&
-               & MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,&
-               & TMParray1,TMParray2,iASync)
-        nContQP = nContQ*nContP
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nPrimD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nPrimD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionCGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nPrimA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nPrimA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionDGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nPrimB*nContC*nContD*nPasses*700.GT.TMParray1maxsize)THEN
-          call ichorquit('nContA*nPrimB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionAGPUGen(TMParray2,TMParray1,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContA*nContB*nContC*nContD*nPasses*700.GT.TMParray2maxsize)THEN
-          call ichorquit('nContA*nContB*nContC*nContD*nPasses too small',-1)
-        ENDIF
-#endif
-         call PrimitiveContractionBGPUGen(TMParray1,TMParray2,nPrimP,nPrimQ,nPasses,&
-               & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,&
-               & nContC,nPrimD,nContD,35,20,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*720.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_LHS_P4A2B2AtoB(nContQP,nPasses,20,&
-            & Pdistance12,MaxPasses,nAtomsA,nAtomsB,IatomApass,IatomBpass,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*500.GT.TMParray2maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS1_GPU_maxAngP4_maxAngA2(20,nContQP*nPasses,TMParray1,&
-            & TMParray2,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*450.GT.TMParray1maxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call HorizontalRR_GPU_RHS_Q3C1D2DtoC(nContQP,nPasses,25,Qdistance12,TMParray2,&
-            & TMParray1,lupri,iASync)
-#ifdef VAR_DEBUGICHOR
-        IF(nContQP*nPasses*375.GT.LOCALINTSmaxsize)THEN
-          call ichorquit('nContQP*nPasses too small',-1)
-        ENDIF
-#endif
-        call SphericalContractOBS2_GPU_maxAngQ3_maxAngC1(25,nContQP*nPasses,TMParray1,&
             & LOCALINTS,iASync)
     CASE DEFAULT
         CALL ICHORQUIT('Unknown Case in ICI_GPU_OBS_Gen',-1)
     END SELECT
   end subroutine ICI_GPU_OBS_Gen
   
-  
-  subroutine ICI_GPU_OBS_general_sizeGen(TMParray1maxsize,&
-         & TMParray2maxsize,AngmomA,AngmomB,AngmomC,AngmomD,nContA,nContB,nContC,nContD,&
-         & nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP)
-    implicit none
-    integer,intent(inout) :: TMParray1maxsize,TMParray2maxsize
-    integer,intent(in) :: AngmomA,AngmomB,AngmomC,AngmomD
-    integer,intent(in) :: nPrimP,nPrimQ,nContP,nContQ,nPrimQP,nContQP
-    integer,intent(in) :: nContA,nContB,nContC,nContD
-    integer,intent(in) :: nPrimA,nPrimB,nPrimC,nPrimD
-    ! local variables
-    integer :: AngmomID
-    
-    AngmomID = 1000*AngmomA+100*AngmomB+10*AngmomC+AngmomD
-    IF(UseGeneralCode) AngmomID = AngmomID + 10000 !force to use general code
-    TMParray2maxSize = 1
-    TMParray1maxSize = 1
-    SELECT CASE(AngmomID)
-    CASE(   0)  !Angmom(A= 0,B= 0,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,1*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,1*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,1*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,1*nContC*nContD*nContA*nPrimB)
-    CASE(   1)  !Angmom(A= 0,B= 0,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nContA*nContB)
-    CASE(   2)  !Angmom(A= 0,B= 0,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nContQP)
-    CASE(  10)  !Angmom(A= 0,B= 0,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nContA*nContB)
-    CASE(  11)  !Angmom(A= 0,B= 0,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-    CASE(  12)  !Angmom(A= 0,B= 0,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(  20)  !Angmom(A= 0,B= 0,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nContQP)
-    CASE(  21)  !Angmom(A= 0,B= 0,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(  22)  !Angmom(A= 0,B= 0,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,35*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,35*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,35*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,35*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,36*nContQP)
-    CASE( 100)  !Angmom(A= 0,B= 1,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nContA*nContB)
-    CASE( 101)  !Angmom(A= 0,B= 1,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,12*nContQP)
-    CASE( 102)  !Angmom(A= 0,B= 1,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE( 110)  !Angmom(A= 0,B= 1,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,12*nContQP)
-    CASE( 111)  !Angmom(A= 0,B= 1,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE( 112)  !Angmom(A= 0,B= 1,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE( 120)  !Angmom(A= 0,B= 1,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE( 121)  !Angmom(A= 0,B= 1,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE( 122)  !Angmom(A= 0,B= 1,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,105*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,108*nContQP)
-    CASE( 200)  !Angmom(A= 0,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nContQP)
-    CASE( 201)  !Angmom(A= 0,B= 2,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,24*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
-    CASE( 202)  !Angmom(A= 0,B= 2,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE( 210)  !Angmom(A= 0,B= 2,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,24*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
-    CASE( 211)  !Angmom(A= 0,B= 2,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-    CASE( 212)  !Angmom(A= 0,B= 2,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE( 220)  !Angmom(A= 0,B= 2,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE( 221)  !Angmom(A= 0,B= 2,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE( 222)  !Angmom(A= 0,B= 2,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,210*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,175*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-    CASE(1000)  !Angmom(A= 1,B= 0,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,4*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,4*nContC*nContD*nContA*nContB)
-    CASE(1001)  !Angmom(A= 1,B= 0,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,12*nContQP)
-    CASE(1002)  !Angmom(A= 1,B= 0,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(1010)  !Angmom(A= 1,B= 0,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,16*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,16*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,16*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,12*nContQP)
-    CASE(1011)  !Angmom(A= 1,B= 0,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE(1012)  !Angmom(A= 1,B= 0,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE(1020)  !Angmom(A= 1,B= 0,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(1021)  !Angmom(A= 1,B= 0,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE(1022)  !Angmom(A= 1,B= 0,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,105*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,108*nContQP)
-    CASE(1100)  !Angmom(A= 1,B= 1,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-    CASE(1101)  !Angmom(A= 1,B= 1,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,36*nContQP)
-    CASE(1102)  !Angmom(A= 1,B= 1,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE(1110)  !Angmom(A= 1,B= 1,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,36*nContQP)
-    CASE(1111)  !Angmom(A= 1,B= 1,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(1112)  !Angmom(A= 1,B= 1,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,162*nContQP)
-    CASE(1120)  !Angmom(A= 1,B= 1,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,54*nContQP)
-    CASE(1121)  !Angmom(A= 1,B= 1,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,162*nContQP)
-    CASE(1122)  !Angmom(A= 1,B= 1,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,315*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,324*nContQP)
-    CASE(1200)  !Angmom(A= 1,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(1201)  !Angmom(A= 1,B= 2,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,72*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
-    CASE(1202)  !Angmom(A= 1,B= 2,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(1210)  !Angmom(A= 1,B= 2,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,72*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
-    CASE(1211)  !Angmom(A= 1,B= 2,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-    CASE(1212)  !Angmom(A= 1,B= 2,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,300*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,270*nContQP)
-    CASE(1220)  !Angmom(A= 1,B= 2,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(1221)  !Angmom(A= 1,B= 2,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,300*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,270*nContQP)
-    CASE(1222)  !Angmom(A= 1,B= 2,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,630*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,525*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,540*nContQP)
-    CASE(2000)  !Angmom(A= 2,B= 0,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,3*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,10*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,10*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,10*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nContQP)
-    CASE(2001)  !Angmom(A= 2,B= 0,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,24*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
-    CASE(2002)  !Angmom(A= 2,B= 0,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE(2010)  !Angmom(A= 2,B= 0,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,40*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,40*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,40*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,24*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,20*nContQP)
-    CASE(2011)  !Angmom(A= 2,B= 0,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-    CASE(2012)  !Angmom(A= 2,B= 0,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(2020)  !Angmom(A= 2,B= 0,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,100*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,100*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,60*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,50*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,30*nContQP)
-    CASE(2021)  !Angmom(A= 2,B= 0,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(2022)  !Angmom(A= 2,B= 0,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,210*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,175*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-    CASE(2100)  !Angmom(A= 2,B= 1,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,4*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,20*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,20*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,20*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,18*nContQP)
-    CASE(2101)  !Angmom(A= 2,B= 1,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,72*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
-    CASE(2102)  !Angmom(A= 2,B= 1,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(2110)  !Angmom(A= 2,B= 1,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,80*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,80*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,80*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,72*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,60*nContQP)
-    CASE(2111)  !Angmom(A= 2,B= 1,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-    CASE(2112)  !Angmom(A= 2,B= 1,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,300*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,270*nContQP)
-    CASE(2120)  !Angmom(A= 2,B= 1,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,200*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,200*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,200*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,180*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,150*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,90*nContQP)
-    CASE(2121)  !Angmom(A= 2,B= 1,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,400*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,400*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,400*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,300*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,270*nContQP)
-    CASE(2122)  !Angmom(A= 2,B= 1,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,630*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,525*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,540*nContQP)
-    CASE(2200)  !Angmom(A= 2,B= 2,C= 0,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,5*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,35*nPrimQP)
-    TMParray2maxSize = MAX(TMParray2maxSize,35*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,35*nContC*nContD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,35*nContC*nContD*nContA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,35*nContC*nContD*nContA*nContB)
-       TMParray2maxSize = MAX(TMParray2maxSize,36*nContQP)
-    CASE(2201)  !Angmom(A= 2,B= 2,C= 0,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,144*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-    CASE(2202)  !Angmom(A= 2,B= 2,C= 0,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,250*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
-    CASE(2210)  !Angmom(A= 2,B= 2,C= 1,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,6*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,56*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,140*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,140*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,140*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,144*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,100*nContQP)
-    CASE(2211)  !Angmom(A= 2,B= 2,C= 1,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,250*nContQP)
-    CASE(2212)  !Angmom(A= 2,B= 2,C= 1,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,720*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,500*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,450*nContQP)
-    CASE(2220)  !Angmom(A= 2,B= 2,C= 2,D= 0) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,7*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,84*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,350*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,350*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,350*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,360*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,250*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,150*nContQP)
-    CASE(2221)  !Angmom(A= 2,B= 2,C= 2,D= 1) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,8*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,120*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,700*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,700*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,700*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,720*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,500*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,450*nContQP)
-    CASE(2222)  !Angmom(A= 2,B= 2,C= 2,D= 2) combi
-       TMParray2maxSize = MAX(TMParray2maxSize,9*nPrimQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,165*nPrimQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,1225*nPrimQP)
-    TMParray1maxSize = MAX(TMParray1maxSize,1225*nContC*nPrimD*nPrimA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,1225*nContC*nContD*nPrimA*nPrimB)
-    TMParray1maxSize = MAX(TMParray1maxSize,1225*nContC*nContD*nContA*nPrimB)
-    TMParray2maxSize = MAX(TMParray2maxSize,1225*nContC*nContD*nContA*nContB)
-       TMParray1maxSize = MAX(TMParray1maxSize,1260*nContQP)
-       TMParray2maxSize = MAX(TMParray2maxSize,875*nContQP)
-       TMParray1maxSize = MAX(TMParray1maxSize,900*nContQP)
-    CASE DEFAULT
-        CALL ICHORQUIT('Unknown Case in ICI_OBS_general_size',-1)
-    END SELECT
-  end subroutine ICI_GPU_OBS_general_sizeGen
-
-   subroutine PrimitiveContractionCGPUGen(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
-       & nContP,nContQ,CCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
-       & nPrimD,nContD,nTUVP,nTUVQ,iASync)
-    implicit none
-    !Warning Primitive screening modifies this!!! 
-    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ,nTUVP,nTUVQ
-    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
-    real(realk),intent(in) :: CCC(nPrimC,nContC)
-    real(realk),intent(in) :: AUXarray2(nPrimC,nPrimD*nPrimA*nPrimB*nPasses*nTUVP*nTUVQ)
-    real(realk),intent(inout) :: AUXarrayCont(nContC,nPrimD*nPrimA*nPrimB*nPasses*nTUVP*nTUVQ)
-    integer(kind=acckind),intent(in) :: iASync
-    !
-    integer :: iP,iContC,iPrimC
-    real(realk) :: TMP
-!Scaling p**4*c*nTUV*nPassQ: nPrimA*nPrimB*nPrimC*nPrimD*nContC*nTUV*nPassQ
-!$ACC PARALLEL LOOP &
-!$ACC PRIVATE(iP,iContC,iPrimC,TMP) &
-!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!$ACC        CCC,AUXarrayCont,AUXarray2) ASYNC(iASync)
-   do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPrimD*nPasses
-    do iContC=1,nContC
-     TMP = 0.0E0_realk
-     do iPrimC=1,nPrimC
-      TMP = TMP + CCC(iPrimC,iContC)*AUXarray2(iPrimC,iP)
-     enddo
-     AUXarrayCont(iContC,iP)=TMP
-    enddo
-   enddo
-   end subroutine PrimitiveContractionCGPUGen
-
-   subroutine PrimitiveContractionDGPUGen(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
-       & nContP,nContQ,DCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
-       & nPrimD,nContD,nTUVP,nTUVQ,iASync)
-    implicit none
-    !Warning Primitive screening modifies this!!! 
-    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ,nTUVP,nTUVQ
-    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
-    real(realk),intent(in) :: DCC(nPrimD,nContD)
-    real(realk),intent(in) :: AUXarray2(nContC,nPrimD,nPrimA*nPrimB*nPasses*nTUVP*nTUVQ)
-    real(realk),intent(inout) :: AUXarrayCont(nContC,nContD,nPrimA*nPrimB*nPasses*nTUVP*nTUVQ)
-    integer(kind=acckind),intent(in) :: iASync
-    !
-    integer :: iP,iContC,iContD,iPrimD
-    real(realk) :: TMP
-!Scaling p**3*c**2*nTUV*nPassQ: nPrimA*nPrimB*nPrimD*nContC*nContD*nTUV*nPassQ
-!$ACC PARALLEL LOOP &
-!$ACC PRIVATE(iP,iContC,iContD,iPrimD,TMP) &
-!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!$ACC         DCC,AUXarrayCont,AUXarray2) ASYNC(iASync)
-   do iP=1,nTUVP*nTUVQ*nPrimA*nPrimB*nPasses
-    do iContD=1,nContD
-     do iContC=1,nContC
-      AUXarrayCont(iContC,iContD,iP)=0.0E0_realk
-     enddo
-     do iPrimD=1,nPrimD
-      TMP = DCC(iPrimD,iContD)
-      do iContC=1,nContC
-       AUXarrayCont(iContC,iContD,iP)=AUXarrayCont(iContC,iContD,iP)+TMP*AUXarray2(iContC,iPrimD,iP)
-      enddo
-     enddo
-    enddo
-   enddo
-   end subroutine PrimitiveContractionDGPUGen
-
-   subroutine PrimitiveContractionAGPUGen(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
-       & nContP,nContQ,ACC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
-       & nPrimD,nContD,nTUVP,nTUVQ,iASync)
-    implicit none
-    !Warning Primitive screening modifies this!!! 
-    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ,nTUVP,nTUVQ
-    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
-    real(realk),intent(in) :: ACC(nPrimA,nContA)
-    real(realk),intent(in) :: AUXarray2(nContC*nContD,nPrimA,nPrimB*nPasses*nTUVP*nTUVQ)
-    real(realk),intent(inout) :: AUXarrayCont(nContC*nContD,nContA,nPrimB*nPasses*nTUVP*nTUVQ)
-    integer(kind=acckind),intent(in) :: iASync
-    !
-    integer :: iP,iC,iContA,iPrimA
-    real(realk) :: TMP
-!Scaling p**2*c**3*nTUV*nPassQ: nPrimA*nPrimB*nContC*nContD*nContA*nTUV*nPassQ
-!$ACC PARALLEL LOOP &
-!$ACC PRIVATE(iP,iContA,iPrimA,TMP,iC) &
-!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!$ACC         ACC,AUXarrayCont,AUXarray2) ASYNC(iASync)
-   do iP=1,nTUVP*nTUVQ*nPrimB*nPasses
-    do iContA=1,nContA
-     do iC=1,nContC*nContD
-      AUXarrayCont(iC,iContA,iP)=0.0E0_realk
-     enddo
-     do iPrimA=1,nPrimA
-      TMP = ACC(iPrimA,iContA)
-      do iC=1,nContC*nContD
-       AUXarrayCont(iC,iContA,iP)=AUXarrayCont(iC,iContA,iP)+TMP*AUXarray2(iC,iPrimA,iP)
-      enddo
-     enddo
-    enddo
-   enddo
-   end subroutine PrimitiveContractionAGPUGen
-
-   subroutine PrimitiveContractionBGPUGen(AUXarray2,AUXarrayCont,nPrimP,nPrimQ,nPasses,&
-       & nContP,nContQ,BCC,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,&
-       & nPrimD,nContD,nTUVP,nTUVQ,iASync)
-    implicit none
-    !Warning Primitive screening modifies this!!! 
-    integer,intent(in) :: nPrimP,nPrimQ,nPasses,nContP,nContQ,nTUVP,nTUVQ
-    integer,intent(in) :: nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD
-    real(realk),intent(in) :: BCC(nPrimB,nContB)
-    real(realk),intent(in) :: AUXarray2(nContC*nContD*nContA,nPrimB,nPasses*nTUVP*nTUVQ)
-    real(realk),intent(inout) :: AUXarrayCont(nContC*nContD*nContA,nContB,nPasses*nTUVP*nTUVQ)
-    integer(kind=acckind),intent(in) :: iASync
-    !
-    integer :: iP,iC,iContB,iPrimB
-    real(realk) :: TMP
-    !Scaling p*c**4*nTUV*nPassQ: nPrimB*nContC*nContD*nContA*nContB*nTUV*nPassQ
-!$ACC PARALLEL LOOP &
-!$ACC PRIVATE(iP,iContB,iPrimB,TMP,iC) &
-!$ACC PRESENT(nContC,nPasses,nPrimC,nPrimD,nPrimA,nPrimB,&
-!$ACC        BCC,AUXarrayCont,AUXarray2) ASYNC(iASync)
-   do iP=1,nTUVP*nTUVQ*nPasses
-    do iContB=1,nContB
-     do iC=1,nContC*nContD*nContA
-      AUXarrayCont(iC,iContB,iP)=0.0E0_realk
-     enddo
-     do iPrimB=1,nPrimB
-      TMP = BCC(iPrimB,iContB)
-      do iC=1,nContC*nContD*nContA
-       AUXarrayCont(iC,iContB,iP)=AUXarrayCont(iC,iContB,iP)+TMP*AUXarray2(iC,iPrimB,iP)
-      enddo
-     enddo
-    enddo
-   enddo
-   end subroutine PrimitiveContractionBGPUGen
 END MODULE IchorEriCoulombintegralGPUOBSGeneralModGen

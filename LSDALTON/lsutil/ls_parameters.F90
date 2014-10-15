@@ -116,6 +116,9 @@ MODULE Integralparameters
   integer,parameter :: RIMP2INAMP                   = 50
   integer,parameter :: SIMPLE_MP2_PAR               = 51
   integer,parameter :: RPAGETFOCK                   = 52
+  integer,parameter :: SET_SPLIT_MPI_MSG            = 53
+  integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 54
+  integer,parameter :: RIMP2FULL                    = 55
 
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1

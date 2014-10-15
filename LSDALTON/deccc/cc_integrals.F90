@@ -2692,7 +2692,7 @@ contains
     call lsmpi_barrier(infpar%lg_comm)
     if(collective)then
        call time_start_phase( PHASE_COMM )
-       call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm,SPLIT_MSG_REC)
+       call lsmpi_allreduce(work,(i8*n1)*n2*n3*n4,infpar%lg_comm)
        call tensor_convert(work,integral, order = order )
     endif
     call time_start_phase( PHASE_WORK )

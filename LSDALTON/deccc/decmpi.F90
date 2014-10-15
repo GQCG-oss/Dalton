@@ -1094,15 +1094,14 @@ contains
 
         !split messages in 2GB parts, compare to counterpart in
         !ccsd_data_preparation
-        k=SPLIT_MSG_REC
 
         nelms = nbas*nocc
-        call ls_mpibcast_chunks(xo,nelms,infpar%master,infpar%lg_comm,k)
-        call ls_mpibcast_chunks(yo,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(xo,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(yo,nelms,infpar%master,infpar%lg_comm)
 
         nelms = nbas*nvirt
-        call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
-        call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(xv,nelms,infpar%master,infpar%lg_comm)
+        call ls_mpibcast(yv,nelms,infpar%master,infpar%lg_comm)
 
      else
         if(.not.loc)then
@@ -2087,12 +2086,11 @@ contains
 
       !split messages in 2GB parts, compare to counterpart in
       !ccsd_data_preparation
-      k=SPLIT_MSG_REC
 
       nelms = int(i8*nvir*nvir*nocc*nocc,kind=8)
-      call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
+      call ls_mpibcast(t2%elm1,nelms,infpar%master,infpar%lg_comm)
       if (iter/=1) then
-        call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
+        call ls_mpibcast(govov%elm1,nelms,infpar%master,infpar%lg_comm)
       endif
     else
       if(.not.loc)then
@@ -2116,7 +2114,6 @@ contains
     implicit none
     type(decsettings) :: DECitem
     integer(kind=ls_mpik) :: master
-    integer :: mydim
     master = 0
 
     call ls_mpi_buffer(DECitem%doDEC,Master)
@@ -2155,7 +2152,7 @@ contains
     call ls_mpi_buffer(DECitem%spawn_comm_proc,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%NO_MO_CCSD,Master)
-    call ls_mpi_buffer(DECitem%v2o2_free_solver,Master)
+    call ls_mpi_buffer(DECitem%CCSDPT_nbuffs_ijk,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%noPNOtrafo,Master)
     call ls_mpi_buffer(DECitem%noPNOtrunc,Master)
@@ -2206,7 +2203,6 @@ contains
     call ls_mpi_buffer(DECitem%simple_orbital_threshold,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%fragadapt,Master)
-    call ls_mpi_buffer(DECitem%simple_orbital_threshold_set,Master)
     call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
     call ls_mpi_buffer(DECitem%mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
@@ -2214,9 +2210,9 @@ contains
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%distance,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
+    call ls_mpi_buffer(DECitem%GeoFOTs,nFOTs,Master)
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
-    call ls_mpi_buffer(DECitem%maxFOTlevel,Master)
     call ls_mpi_buffer(DECitem%Frag_Exp_Scheme,Master)
     call ls_mpi_buffer(DECitem%Frag_RedOcc_Scheme,Master)
     call ls_mpi_buffer(DECitem%Frag_RedVir_Scheme,Master)
@@ -2232,7 +2228,6 @@ contains
     call ls_mpi_buffer(DECitem%RepeatAF,Master)
     call ls_mpi_buffer(DECitem%CorrDensScheme,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
-    call ls_mpi_buffer(DECitem%paircut_set,Master)
     call ls_mpi_buffer(DECitem%PairMinDist,Master)
     call ls_mpi_buffer(DECitem%checkpairs,Master)
     call ls_mpi_buffer(DECitem%pairFOthr,Master)
@@ -2250,8 +2245,7 @@ contains
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
     call ls_mpi_buffer(DECitem%SOS,Master)
-    mydim=8  
-    call ls_mpi_buffer(DECitem%ncalc,mydim,Master)
+    call ls_mpi_buffer(DECitem%ncalc,nFOTs,Master)
     call ls_mpi_buffer(DECitem%EerrFactor,Master)
     call ls_mpi_buffer(DECitem%EerrOLD,Master)
     call ls_mpi_buffer(DECitem%only_n_frag_jobs,Master)

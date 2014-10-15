@@ -66,10 +66,20 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90

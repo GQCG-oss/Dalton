@@ -266,6 +266,7 @@ contains
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc
+    type(tensor) :: t2f_local, VOVO_local
 
     times_ccsd => null()
     times_pt   => null()
@@ -304,18 +305,20 @@ contains
        ! calculate also MP2 density integrals
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then  
-          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
 #ifdef MOD_UNRELEASED
        endif
 #endif
+       call print_norm(VOVO,"VOVO")
+       call print_norm(t2,  "t2  ")
+       call print_norm(t1,  "t1  ")
 
        ! Extract EOS indices for integrals
        ! *********************************
        call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
-!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -336,6 +339,11 @@ contains
        ! Note, t2occ and t2virt also contain singles contributions
        call tensor_free(u)
 
+       call print_norm(VOVOvirt,"VOVOvirt:")
+       call print_norm(VOVOocc, "VOVOocc :")
+       call print_norm(t2virt,"t2  virt:")
+       call print_norm(t2occ, "t2  occ :")
+
        call dec_fragment_time_get(times_ccsd)
 
 #ifdef MOD_UNRELEASED
@@ -346,6 +354,14 @@ contains
        ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
 
+          !FIXME: (T) DEPENDING ON MANY V^2O^2 ALLOCATIONS ON A LOCAL NODE
+          !THIS IS A WORKAROUND:
+          call tensor_init(VOVO_local,VOVO%dims,4)
+          call tensor_init(t2f_local,t2%dims,4)
+
+          call tensor_add(VOVO_local,1.0E0_realk, VOVO, a = 0.0E0_realk ) 
+          call tensor_add(t2f_local, 1.0E0_realk, t2,   a = 0.0E0_realk ) 
+
           call dec_fragment_time_init(times_pt)
 
           print_frags = DECinfo%print_frags
@@ -354,8 +370,8 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
          if (abc) then
 
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
             call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
@@ -363,8 +379,8 @@ contains
 
          else
 
-            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
             call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
             call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
@@ -377,8 +393,8 @@ contains
                              & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
-                             & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
-          call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
+                             & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+          call ccsdpt_energy_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
 
@@ -388,6 +404,8 @@ contains
 
           call dec_fragment_time_get(times_pt)
 
+          call tensor_free(VOVO_local)
+          call tensor_free(t2f_local)
        end if
 #endif 
 
@@ -548,14 +566,14 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
     ! Init stuff
-    noccEOS = MyFragment%noccEOS
+    noccEOS  = MyFragment%noccEOS
     nvirtEOS = MyFragment%nunoccEOS
-    noccAOS = MyFragment%noccAOS
+    noccAOS  = MyFragment%noccAOS
     nvirtAOS = MyFragment%nunoccAOS
-    Eocc=0E0_realk
-    lag_occ=0E0_realk
-    Evirt=0E0_realk
-    lag_virt=0E0_realk
+    Eocc     = 0E0_realk
+    lag_occ  = 0E0_realk
+    Evirt    = 0E0_realk
+    lag_virt = 0E0_realk
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
@@ -946,6 +964,7 @@ contains
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc
+    type(tensor) :: t2f_local, VOVO_local
 
     times_ccsd => null()
     times_pt   => null()
@@ -986,7 +1005,7 @@ contains
        ! Here all output indices in t1,t2, and VOVO are AOS indices. 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then 
-          call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
+          call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
 #endif
           call fragment_ccsolver(PairFragment,t1,t2,VOVO)
@@ -1085,7 +1104,14 @@ contains
 
     if (PairFragment%CCModel == MODEL_CCSDpT) then
 
-       print *,"DOING(T)"
+       !FIXME: (T) DEPENDING ON MANY LOCAL V^2O^2 ALLOCATIONS
+       !THIS IS A WORKAROUND:
+       call tensor_init(VOVO_local,VOVO%dims,4)
+       call tensor_init(t2f_local,t2%dims,4)
+
+       call tensor_add(VOVO_local,1.0E0_realk, VOVO, a = 0.0E0_realk ) 
+       call tensor_add(t2f_local, 1.0E0_realk, t2,   a = 0.0E0_realk ) 
+
        call dec_fragment_time_init(times_pt)
 
        print_frags = DECinfo%print_frags
@@ -1094,8 +1120,8 @@ contains
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-          call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+          call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+          call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
           call tensor_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
           call tensor_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
@@ -1103,8 +1129,8 @@ contains
 
        else
 
-          call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-          call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+          call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
           call tensor_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
           call tensor_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
@@ -1117,8 +1143,8 @@ contains
                           & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
-                          & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
-       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
+                          & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2f_local,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
@@ -1127,6 +1153,8 @@ contains
 
        call dec_fragment_time_get(times_pt)
 
+       call tensor_free(VOVO_local)
+       call tensor_free(t2f_local)
     end if
 #endif
 
@@ -1134,7 +1162,9 @@ contains
     if (PairFragment%CCModel == MODEL_RPA  .or. &
        &PairFragment%CCModel == MODEL_CC2  .or. &
        &PairFragment%CCModel == MODEL_CCSD .or. &
-       &PairFragment%CCModel == MODEL_CCSDpT ) call tensor_free(VOVO)
+       &PairFragment%CCModel == MODEL_CCSDpT )then
+       call tensor_free(VOVO)
+    endif
 
     if(PairFragment%ccmodel /= MODEL_MP2.AND.PairFragment%ccmodel.NE.MODEL_RIMP2) then
        if(DECinfo%use_singles)then
@@ -2335,7 +2365,7 @@ contains
         init_Occradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Occupied orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Occradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Occradius = 3.0_realk/bohr_to_angstrom
@@ -2346,7 +2376,7 @@ contains
         init_Virtradius = 1.0_realk/bohr_to_angstrom
      ELSE
         !All Virtual orbitals assigned to atoms within 3.0 Angstrom of central atom are included
-        IF(FOT.GT.2.0E-5_realk)THEN !FOTLEVEL < 5 
+        IF(FOT.GT.2.0E-5_realk)THEN 
            init_Virtradius = 3.0_realk/bohr_to_angstrom
         ELSE
            init_Virtradius = 3.0_realk/bohr_to_angstrom

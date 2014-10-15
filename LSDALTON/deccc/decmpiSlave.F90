@@ -63,10 +63,10 @@ subroutine dec_lsmpi_slave(comm)
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
          ! DEC MP2 RI energy
-#ifdef MOD_UNRELEASED 
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
-#endif
+      case(RIMP2FULL);
+         call full_canonical_rimp2_slave
       case(CCSDDATA);
          call ccsd_data_preparation
       case(MO_INTEGRAL_SIMPLE);
@@ -95,7 +95,7 @@ subroutine dec_lsmpi_slave(comm)
       case(DEFAULTGROUPS);
          call lsmpi_default_mpi_group
       case(PDMA4SLV);
-         call PDM_tensor_SLAVE(comm)
+         call PDM_TENSOR_SLAVE(comm)
       case(INITSLAVETIME);
          call init_slave_timers_slave(comm)
       case(GETSLAVETIME);
@@ -117,6 +117,7 @@ subroutine dec_lsmpi_slave(comm)
          infpar%lg_morejobs   = .false.
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 

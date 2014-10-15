@@ -63,7 +63,7 @@ TRILEVEL
 !.CCSDsolver_par
 !.ccsd_old
 .FOT
-4
+1.0e-4
 .MEMORY
 2.0
 *END OF INPUT  
@@ -86,7 +86,7 @@ TRILEVEL
 .MPIsplit
 0
 .FOT
-4
+1.0e-4
 .MEMORY
 2.0
 *END OF INPUT  

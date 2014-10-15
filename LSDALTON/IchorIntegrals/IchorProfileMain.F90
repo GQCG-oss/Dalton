@@ -59,12 +59,14 @@ LUPRI = 6
 IPRINT = 0
 spherical = .TRUE.
 nKK = 5
+IF(DebugIchorOption.EQ.9)nKK = 1
 
 WALLTIMEFULL=0.0E0_8
 
 DO KK=1,nKK      
 WALLTIMECASE=0.0E0_8
 DebugIchorOption2 = kk
+IF(DebugIchorOption.EQ.9)DebugIchorOption2 = DebugIchorOption
 SELECT CASE(DebugIchorOption2)
 CASE(1)
    !Special types
@@ -302,7 +304,9 @@ do Ipass = IpassStart,IpassEnd
      THRESHOLD_CS = 1.0d-10
      THRESHOLD_QQR = 1.0d-10
 
-     IF(DebugIchorOption2.EQ.3)THEN
+     IF(DebugIchorOption.EQ.9)THEN
+        nRepetitions = 5
+     ELSEIF(DebugIchorOption2.EQ.3)THEN
         nRepetitions = 3
      ELSE
         nRepetitions = 1
