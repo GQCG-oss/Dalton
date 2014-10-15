@@ -3535,13 +3535,13 @@ C ---------------------------- not non-adiabatic coupling:
      &      '  ( ',REP(KSYMST-1),')'
             CALL HEADER(PRI_LINE,0)
             WRITE(LUPRI,'( A,1P,G16.8,A
-     &                    /A,T21,3(G16.8,A)
-     &                   //A,T21,G16.8,A)')
+     &                    /A,T22,3(G16.8,A)
+     &                   //A,T22,G16.8,A)')
      &      '@ Excitation energy :',WRK(KEIVAL-1+ISIM-1+INUM),' au',
      &      '@',WRK(KEIVAL-1+ISIM-1+INUM)*XTEV,  ' eV;',
      &          WRK(KEIVAL-1+ISIM-1+INUM)*XTKAYS,' cm-1;',
-     *          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
-     *      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
+     &          WRK(KEIVAL-1+ISIM-1+INUM)*XKJMOL,' kJ / mol',
+     &      '@ Total energy :',WRK(KEIVAL-1+ISIM-1+INUM)+EMCSCF,' au'
             IF (SOPPA) THEN
               TXNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR),1)
               TYNRM = DNORM2(KZCONF,WRK(KBVECS+(INUM-1)*KZYVAR+KZVAR),1)
