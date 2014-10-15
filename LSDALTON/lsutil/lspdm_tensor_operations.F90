@@ -3182,7 +3182,7 @@ module lspdm_tensor_operations_module
      maxintmp = tmps / arr%tsize
 
      elms_sent    = 0
-     last_flush_i = 1
+     last_flush_i = 0
 
      do i=1,arr%ntiles
 
@@ -3203,7 +3203,7 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i+1,i
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
@@ -3308,7 +3308,7 @@ module lspdm_tensor_operations_module
     enddo
   
     elms_sent    = 0
-    last_flush_i = 1
+    last_flush_i = 0
 
     if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk.and.consecutive)then
 
@@ -3323,7 +3323,7 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i+1,i
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
@@ -3370,7 +3370,7 @@ module lspdm_tensor_operations_module
 
         if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-           do j=last_flush_i,i
+           do j=last_flush_i+1,i
               call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
            enddo
 
@@ -3475,7 +3475,7 @@ module lspdm_tensor_operations_module
 
 
     elms_sent    = 0
-    last_flush_i = 1
+    last_flush_i = 0
 
 
     if(internal_alloc)then
@@ -3513,7 +3513,7 @@ module lspdm_tensor_operations_module
 
        if(elms_sent > MAX_SIZE_ONE_SIDED)then
 
-          do j=last_flush_i,i
+          do j=last_flush_i+1,i
              call lsmpi_win_flush(arr%wi(j),int(get_residence_of_tile(j,arr),kind=ls_mpik),local=.false.)
           enddo
 
@@ -3631,7 +3631,7 @@ module lspdm_tensor_operations_module
     enddo
 
     elms_sent    = 0
-    last_flush_i = 1
+    last_flush_i = 0
 
     if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3.and..not.deb)then
        !ATTENTION ONLY WORKS IF TL <= cons_el_in_t --> always given if order = 1,2,3,4

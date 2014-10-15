@@ -114,6 +114,7 @@ F90_OBJS = \
 	OD_operations.o\
 	LSmatrixType.o\
         memory.o \
+        MemoryLeakTool.o \
 	Time.o\
 	TestMPI.o\
 	ks-settings.o\

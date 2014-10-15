@@ -21,7 +21,7 @@ cat > choles_cc2_exci.info <<'%EOF%'
    choles_cc2_exci
    -----------------
    Molecule:         Water
-   Wave Functions:   CC2/aug-cc-pVDZ
+   Wave Functions:   CC2/cc-pVDZ
    Test Purpose:     Cholesky CC2 excitation energies
 %EOF%
 
@@ -30,14 +30,15 @@ cat > choles_cc2_exci.info <<'%EOF%'
 #######################################################################
 cat > choles_cc2_exci.mol <<'%EOF%'
 BASIS
-aug-cc-pVDZ
-Geometry optimization calculations
-for H2O
-    2    2  X  Y  Z   1.00D-15
-        1.0   1
-H     0.0000000000000000  1.427450200000000   0.986437000000000       *
-        8.0   1
-O     0.0000000000000000  0.000000000000000   -0.1243090000000        *
+cc-pVDZ
+............
+............
+Atomtypes=2
+Charge=8.0 Atoms=1
+O    -2.66610950   0.12039950   0.00000000
+Charge=1.0 Atoms=2
+H    -3.30256970  -0.78553700  -1.43043210
+H    -3.30256970  -0.78553700   1.43043210
 %EOF%
 
 #######################################################################
@@ -77,7 +78,7 @@ cat > choles_cc2_exci.dal <<'%EOF%'
 .CC2
 *CCEXCI
 .NCCEXCI
-  2   2   2   2
+  2   1   1   0
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -105,49 +106,39 @@ if $GREP -q "not implemented for parallel calculations" $log; then
 fi
 
 # SCF and CC2 energies:
-CRIT1=`$GREP "Total SCF" $log | $GREP "\-76.041415" | wc -l`
-CRIT2=`$GREP "Total CC2" $log | $GREP "\-76.263034" | wc -l`
+CRIT1=`$GREP "Total SCF" $log | $GREP "\-76.026796" | wc -l`
+CRIT2=`$GREP "Total CC2" $log | $GREP "\-76.229260" | wc -l`
 TEST[1]=`expr $CRIT1 + $CRIT2`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # Amplitudes
-CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "47" | wc -l`
-CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "2810" | wc -l`
+CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "25" | wc -l`
+CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "805" | wc -l`
 TEST[2]=`expr $CRIT1 + $CRIT2`
 CTRL[2]=4
 ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
 
 
 # CCS excitations
-CRIT1=`$GREP "\^1A1" $log | grep "0.405" | wc -l`
-CRIT2=`$GREP "\^1A1" $log | grep "0.473" | wc -l`
-CRIT3=`$GREP "\^1B1" $log | grep "0.319" | wc -l`
-CRIT4=`$GREP "\^1B1" $log | grep "0.446" | wc -l`
-CRIT5=`$GREP "\^1B2" $log | grep "0.465" | wc -l`
-CRIT6=`$GREP "\^1B2" $log | grep "0.527" | wc -l`
-CRIT7=`$GREP "\^1A2" $log | egrep "0.3809|0.3810" | wc -l`
-CRIT8=`$GREP "\^1A2" $log | egrep "0.4859|0.4860" | wc -l`
-CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
-TEST[3]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
-CTRL[3]=8
+CRIT1=`$GREP "\^1A1" $log | grep "0.434" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.675" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | egrep "0.339|0.3389" | wc -l`
+CRIT4=`$GREP "\^1B2" $log | grep "0.500" | wc -l`
+TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[3]=4
 ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
 
 
 
 # CC2 excitations
-CRIT1=`$GREP "\^1A1" $log | grep "0.349" | wc -l`
-CRIT2=`$GREP "\^1A1" $log | grep "0.418" | wc -l`
-CRIT3=`$GREP "\^1B1" $log | grep "0.261" | wc -l`
-CRIT4=`$GREP "\^1B1" $log | egrep "0.3940|0.3939" | wc -l`
-CRIT5=`$GREP "\^1B2" $log | grep "0.408" | wc -l`
-CRIT6=`$GREP "\^1B2" $log | egrep "0.5009|0.5010" | wc -l`
-CRIT7=`$GREP "\^1A2" $log | grep "0.321" | wc -l`
-CRIT8=`$GREP "\^1A2" $log | grep "0.436" | wc -l`
-CRIT0=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5`
-TEST[4]=`expr $CRIT0 + $CRIT6 + $CRIT7 + $CRIT8`
-CTRL[4]=8
+CRIT1=`$GREP "\^1A1" $log | grep "0.394" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.656" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.298" | wc -l`
+CRIT5=`$GREP "\^1B2" $log | grep "0.472" | wc -l`
+TEST[4]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[4]=4
 ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
 
 

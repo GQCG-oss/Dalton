@@ -106,6 +106,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
 
+   local=.true.
+#ifdef VAR_MPI
+   if(infpar%lg_nodtot>1)local=.false.
+#endif
+
+#ifdef MOD_UNRELEASED
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
    nenergies = 4
@@ -116,12 +122,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_4    = 3
    pT_5    = 4
 
-   local=.true.
-#ifdef VAR_MPI
-   if(infpar%lg_nodtot>1)local=.false.
-#endif
-
-#ifdef MOD_UNRELEASED
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
       ! is this a frozen core calculation or not?
@@ -540,7 +540,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ncore = 0
 
       call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         &
          mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
          & t1_final,t2_final,VOVO,.false.,local,.false.)
    end if
@@ -1472,6 +1471,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    time_t1_trafo    = 0.0E0_realk
    time_write       = 0.0E0_realk
    time_finalize    = 0.0E0_realk
+
 
    collective       = .true.
    fragment_job     = present(frag)

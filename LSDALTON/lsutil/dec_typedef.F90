@@ -229,8 +229,6 @@ module dec_typedef_module
      logical :: use_crop
      !> logial to set whether special communication processes should be spawned
      logical :: spawn_comm_proc
-     !> temporary debug keyword to calculate energy without using dense array of v2o2 size:
-     logical :: v2o2_free_solver
 
      !> ccsd(T) settings
      !> *****************************
@@ -238,6 +236,8 @@ module dec_typedef_module
      logical :: abc
      !> tile size for use with abc scheme
      integer :: abc_tile_size
+     !> number of mpi buffers in ccsdpt ijk loop to prefetch tiles
+     integer :: CCSDPT_nbuffs_ijk
 
      !> F12 settings
      !> ************

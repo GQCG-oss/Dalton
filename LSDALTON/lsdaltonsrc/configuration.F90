@@ -57,7 +57,7 @@ use plt_driver_module
 #ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
-use lsmpi_type, only: DFTSETFU
+use lsmpi_type, only: DFTSETFU,SPLIT_MPI_MSG,MAX_SIZE_ONE_SIDED
 #endif
 #ifdef BUILD_CGTODIFF
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
@@ -1081,12 +1081,22 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
-        CASE('.TIME');              call SET_LSTIME_PRINT(.TRUE.)
-        CASE('.GCBASIS');           config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
-        CASE('.NOGCBASIS');         config%decomp%cfg_gcbasis    = .false.
-        CASE('.FORCEGCBASIS');      config%INTEGRAL%FORCEGCBASIS = .true.
-        CASE('.TESTMPICOPY');       config%doTestMPIcopy         = .true.
-        CASE('.TYPE_tensor_DEBUG');  config%type_tensor_debug      = .true.
+        CASE('.TIME');                  call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');               config%decomp%cfg_gcbasis    = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
+        CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
+        CASE('.TYPE_TENSOR_DEBUG');      config%type_tensor_debug    = .true.
+#ifdef VAR_MPI
+        CASE('.MAX_MPI_MSG_SIZE_NEL');
+           READ(LUCMD,*) SPLIT_MPI_MSG 
+           call ls_mpibcast(SET_SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,MPI_COMM_LSDALTON)
+        CASE('.MAX_MPI_MSG_SIZE_ONESIDED_NEL');  
+           READ(LUCMD,*) MAX_SIZE_ONE_SIDED
+           call ls_mpibcast(SET_MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(MAX_SIZE_ONE_SIDED,infpar%master,MPI_COMM_LSDALTON)
+#endif
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **GENERAL readin.'
@@ -2920,6 +2930,10 @@ ENDIF
 #endif
 
 #ifdef VAR_MPI
+
+if(mod(SPLIT_MPI_MSG,8)/=0)call lsquit("INPUT ERROR: MAX_MPI_MSG_SIZE_NEL has to be a multiple of 8",-1)
+
+
 IF(nthreads.EQ.1)THEN
  IF(infpar%nodtot.GT.1)THEN
   WRITE(lupri,'(4X,A,I3,A)')'WARNING: This is a MPI calculation using ',infpar%nodtot, &
