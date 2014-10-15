@@ -540,6 +540,7 @@ set(LSUTIL_COMMON_SOURCES
     LSDALTON/lsutil/IntegralType.F90
     LSDALTON/lsutil/TYPE-DEF.F90
     LSDALTON/lsutil/memory.F90
+    LSDALTON/lsutil/MemoryLeakTool.F90
     LSDALTON/lsutil/gridgeneration_memory.F90
     LSDALTON/lsutil/Time.F90
     LSDALTON/lsutil/common_utilities.F90
