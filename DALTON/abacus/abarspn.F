@@ -222,6 +222,8 @@ cKeinSPASMehr:29.11.2002 debugging newtra for SOPPA
 cs
          IF (SOPPA .OR. NEXVAL.EQ.0) THEN
             JTRLVL = -10
+         ELSE IF (HJJTRA) THEN
+            JTRLVL = -4
          ELSE IF (NEWTRA) THEN
             JTRLVL = -5 ! level 5 needed for occ-sec distributions in NEWTRA
          ELSE

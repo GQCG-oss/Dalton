@@ -505,7 +505,7 @@ C
       IF ((NASHT.GT.1 .AND. .NOT.HSROHF) .OR. H2MO) THEN
          FLAG(14) = .TRUE.
          FLAG(34) = .FALSE.
-         IF (NEWTRA) THEN
+         IF (HJJTRA .OR. NEWTRA) THEN
 C            ... we need (ia/ (inactive-secondary) Mulliken distributions;
 C            they are only calculated for level 5 in "NEWTRA"
 C            transformation  /hjaaj June 09

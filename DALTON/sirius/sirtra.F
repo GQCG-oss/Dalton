@@ -170,7 +170,10 @@ C
      &     /'integral transformation (from 1988 ;-) )',
      &      'because more than 255 basis functions.'
       END IF
-      IF (NEWTRA) THEN
+      IF (HJJTRA) THEN
+         CALL SIR_INTOPEN_HJJTRA
+         RETURN
+      ELSE IF (NEWTRA) THEN
          CALL SIR_INTOPEN_NEWTRA
          RETURN
       END IF
@@ -1759,7 +1762,9 @@ C
       END IF
 C
 C
-      IF (NEWTRA) THEN
+      IF (HJJTRA) THEN
+         CALL HJJTRA_CTL(KTRLVL,CMO,WORK,KWORK)
+      ELSE IF (NEWTRA) THEN
          CALL N_TRACTL(KTRLVL,CMO,WORK,KWORK)
       ELSE
          KFRSAV = 1
@@ -2532,7 +2537,10 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (NEWTRA) THEN
+      IF (HJJTRA) THEN
+         CALL HJJTRA_NXTH2M(IC,ID,H2CD,NEEDTP,IDIST)
+         RETURN
+      ELSE IF (NEWTRA) THEN
          CALL N_NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
          RETURN
       END IF
@@ -2803,7 +2811,10 @@ C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
-      IF (NEWTRA) THEN
+      IF (HJJTRA) THEN
+         CALL HJJTRA_NXTH2D(IC,ID,H2CD,NEEDTP,IDIST)
+         RETURN
+      ELSE IF (NEWTRA) THEN
          CALL N_NXTH2D(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
          RETURN
       END IF

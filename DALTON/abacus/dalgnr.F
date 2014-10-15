@@ -1313,7 +1313,7 @@ C
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            '.HJJTRA', 'xxxxxxx', 'xxxxxxx',
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
@@ -1368,8 +1368,11 @@ C
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
       QMNPMM = .FALSE.
-C     NEWTRA is in /INFTRA/ for practical reasons
+
+C     HJJTRA and NEWTRA are in /INFTRA/ for practical reasons
+      HJJTRA = .FALSE.
       NEWTRA = .FALSE.
+
       OPTNEW = .FALSE.
       NEWSYM = .FALSE.
       NEWBAS = .TRUE.
@@ -1490,9 +1493,9 @@ C Table(01:34) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
+C 16-20: '.PRESOR', '.WESTA ', '.PRESOR', '.CHOLES', '.HJJTRA',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
-C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
+C 26-30: '.RUNERI', '.NEWTRA', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.QFIT  '.
 C
       IPRSTAT = -10
@@ -1564,7 +1567,7 @@ C        ".WALK  "
             RNSIRI = .TRUE.
             RNABAC = .TRUE.
          GO TO 100
-  114    CONTINUE
+ 114     CONTINUE
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
             RNRESP = .TRUE.
@@ -1573,19 +1576,23 @@ C        ".WALK  "
             RNHERM = .TRUE.
             RNSIRI = .TRUE.
          GO TO 100
- 116     CONTINUE
-            WRITE(LUPRI,'(//A/)') 'INFO: .PRESORT obsolete, use .NEWTRA'
+ 116     CONTINUE   ! .PRESORt
+            WRITE(LUPRI,'(//A/)')
+     &      'INFO: .PRESORT deprecated, use .NEWTRA'
             NEWTRA = .TRUE.
          GO TO 100
- 117     CONTINUE
+ 117     CONTINUE   ! .WESTA
             WESTA = .TRUE.
          GO TO 100
- 118     CONTINUE
+ 118     CONTINUE   ! .CHOLESky
             RNHERM = .TRUE.
             CHOINT = .TRUE.
             DIRCAL = .TRUE.
          GO TO 100
- 119     CONTINUE
+ 119     CONTINUE   ! .HJJTRA
+            HJJTRA = .TRUE.
+            NEWTRA = .TRUE.
+         GO TO 100
  120     CONTINUE
  121     CONTINUE
  122     CONTINUE
@@ -1603,8 +1610,7 @@ C        '.OPTIMI'
  126     CONTINUE
             RUNERI = .TRUE.
          GO TO 100
-C        .NEWTRA
- 127     CONTINUE
+ 127     CONTINUE   ! .NEWTRA
             NEWTRA = .TRUE.
          GO TO 100
  128     CONTINUE
@@ -1749,7 +1755,10 @@ C     ... default print level for statistics /hjaaj apr 2000
       IF (IVECLN .NE. 1) WRITE (LUPRI,'(4X,A,I5)')
      &     'Vector length used in direct Fock matrix calculations '//
      &     '(assuming vector machine)',IVECLN
-      IF (NEWTRA) THEN
+      IF (HJJTRA) THEN
+         WRITE(LUPRI,'(4X,A)')
+     &     'Hans Joergens integral transformation (2014) used'
+      ELSE IF (NEWTRA) THEN
          WRITE(LUPRI,'(4X,A)')
      &     '"New" (from 1988!) integral transformation used'
       ELSE

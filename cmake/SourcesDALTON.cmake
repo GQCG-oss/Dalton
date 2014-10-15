@@ -601,6 +601,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/sirius/sirfck.F
     DALTON/sirius/sirgp.F
     DALTON/sirius/sirgrad.F
+    DALTON/sirius/sirhjjtra.F
     DALTON/sirius/sirief.F
     DALTON/sirius/sirinp.F
     DALTON/sirius/sirlintrn.F
