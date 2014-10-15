@@ -13,25 +13,25 @@ if $GREP -q "not implemented for parallel calculations" $log; then
 fi
 
 # SCF and  MP2 CC2 energies:
-CRIT1=`$GREP "Total SCF" $log | $GREP "\-494.8444509" | wc -l`
-CRIT2=`$GREP "Total CC2" $log | $GREP "\-496.4012943" | wc -l`
+CRIT1=`$GREP "Total SCF" $log | $GREP "\-228.4535836" | wc -l`
+CRIT2=`$GREP "Total CC2" $log | $GREP "\-229.1682694" | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # Amplitudes
-CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "2541" | wc -l`
-CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "4848711" | wc -l`
+CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "288" | wc -l`
+CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "115497" | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2`
 CTRL[2]=4
 ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
 
 
 # CCS excitations
-CRIT1=`$GREP "\^1A'" $log | grep "0.2029" | wc -l`
-CRIT2=`$GREP "\^1A'" $log | grep "0.219" | wc -l`
-CRIT3=`$GREP "\^1A\"" $log | grep "0.1913" | wc -l`
+CRIT1=`$GREP "\^1A1" $log | grep "0.310" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.353" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.340" | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
@@ -39,9 +39,9 @@ ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
 
 
 # CC2 excitations
-CRIT1=`$GREP "\^1A'" $log | grep "0.1606" | wc -l`
-CRIT2=`$GREP "\^1A'" $log | grep "0.2032" | wc -l`
-CRIT3=`$GREP "\^1A\"" $log | grep "0.1533" | wc -l`
+CRIT1=`$GREP "\^1A1" $log | grep "0.261" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.339" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.338" | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
 ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
