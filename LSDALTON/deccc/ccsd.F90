@@ -3593,9 +3593,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       !tpl tmi
       memin = memin + (i8*nor)*nvr*2.0E0_realk
 
-      ! govov if iter == 1, else only allocated outside
-      if(iter == 1) memin = memin + (1.0E0_realk*no*no)*nv*nv
-
 
       !OUTSIDE OF MAIN LOOP
       !********************
@@ -3638,6 +3635,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     case(2)
 
+       !TODO: ADAPT TO ACTUAL REQUIREMENTS
 
       !THROUGHOUT THE ALGORITHM
       !************************
