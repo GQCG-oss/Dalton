@@ -18,7 +18,7 @@ f.add(from_string = ' E(HF)',
       rel_tolerance = 1.0e-6)
 
 f.add(from_string = ' Get Fock matrix number   2',
-      num_lines    = 10,
+      num_lines    = 9,
       rel_tolerance = 1.0e-6)
 
 f.add(string = 'HOMO-LUMO Gap',
