@@ -25,6 +25,9 @@ module snoop_tools_module
   use BUILDAOBATCH
   use DALTONINFO
 
+  ! DEC dependencies
+  use dec_fragment_utils
+
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_op
@@ -259,6 +262,379 @@ contains
     end do
 
   end subroutine partition_MO_coeff_into_two_matrices
+
+
+
+  !> Get density D = Cocc Cocc^T from occupied orbitals - type(matrix)
+  !> \author Kasper Kristensen
+  !> \date July 2014
+  subroutine get_density_from_occ_orbitals_mat(Cocc,dens)
+    implicit none
+    !> Occupied MO coefficients 
+    type(matrix),intent(in) :: Cocc
+    !> Density
+    type(matrix),intent(inout) :: dens
+    type(matrix) :: Cocc_copy
+
+    ! Cocc copy (avoid passing the same element into dgemm twice)
+    call mat_init(Cocc_copy,Cocc%nrow,Cocc%ncol)
+    call mat_assign(Cocc_copy,Cocc)
+
+    ! density = Cocc Cocc^T 
+    call mat_mul(Cocc, Cocc_copy, 'N', 'T', 1.0_realk, 0.0_realk, dens)
+    call mat_free(Cocc_copy)
+
+  end subroutine get_density_from_occ_orbitals_mat
+
+
+  !> Build lsitem for subsystem with ghost functions on the other subsystems
+  !> \author Kasper Kristensen
+  !> \date August 2014
+  subroutine build_subsystem_lsitem_ghost(this,lsfull,lssub)
+    implicit none
+    !> Subsystem label
+    integer,intent(in) :: this
+    !> LSitem for full system
+    type(lsitem),intent(in) :: lsfull
+    !> lsitem for subsystem
+    type(lsitem),intent(inout) :: lssub
+    integer :: natoms,i,nelectronsSub
+    integer,pointer :: atoms(:)
+
+
+    ! Strategy
+    ! --------
+    ! 1. Build lssub to be identical to lsfull
+    ! 2. Make modifications such that atoms on other centers are considered as "ghost atoms"
+
+    ! In this way basis function for full system are included, but electron-nuclear 
+    ! and nuclear-nuclear interactions involving nuclei outside subsystem "this" are not
+    ! considered when Fock matrix and energy are calculated.
+
+
+    ! 1. Build lssub to be identical to lsfull
+    ! ****************************************
+    ! List of all atoms
+    natoms = lsfull%input%molecule%nAtoms
+    call mem_alloc(atoms,natoms)
+    do i=1,natoms
+       atoms(i)=i
+    end do
+
+    ! Build lssub with all atoms included
+    call build_ccfragmentlsitem(lsfull,lssub,atoms,natoms,DECinfo%output,DECinfo%output)
+
+
+    ! 2. Make modifications such that atoms on other centers are considered as "ghost atoms"
+    ! **************************************************************************************
+
+
+    ! Set number of electrons for subsystem and set atoms on other subsystems to be ghost atoms
+    nelectronsSub = 0 
+    Do i = 1,natoms
+       IF(lssub%input%Molecule%Atom(i)%SubSystemIndex.NE.this)THEN
+          lssub%input%Molecule%Atom(i)%Phantom = .TRUE.
+       ELSE
+          nelectronsSub = nelectronsSub + INT(lssub%input%Molecule%Atom(i)%Charge)
+       ENDIF
+    Enddo
+    lssub%input%Molecule%nelectrons = nelectronsSub
+
+    call mem_dealloc(atoms)
+
+  end subroutine build_subsystem_lsitem_ghost
+
+
+
+  !> Get initial orthogonal basis for subsystem
+  !> 1. Take occ and virt MOs from isolated monomer calculations augmented                          
+  !>    with zeros for basis functions on the other subsystems                                      
+  !> 2. Add virtual orbitals (Cvirtother) from other subsystems augmented with zeros                
+  !>   for basis functions on this subsystem                                                       
+  !> 3. Orthogonalize Cvirtother againts MOs on this subsystem while keeping occ and virt           
+  !>    MOs for this subsystem fixed (they are already orthogonal).                  
+  !> \author Kasper Kristensen
+  subroutine get_orthogonal_basis_for_subsystem(this,nsub,&
+       & MyMolecule,Cocciso,Cvirtiso,Coccsub,Cvirtsub)
+    implicit none
+    !> Subsystem under consideration
+    integer,intent(in) :: this
+    !> Number of subsystems
+    integer,intent(in) :: nsub
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> MO coefficients for isolated monomer
+    type(matrix),intent(in) :: Cocciso(nsub), Cvirtiso(nsub)
+    !> Starting guess for occ MO coefficients for subsystem 
+    !> expressed in full basis
+    !> IMPORTANT: Should be initialized before this routine 
+    !             is called!
+    type(matrix),intent(inout) :: Coccsub
+    !> Starting guess for virt MO coefficients for subsystem 
+    !> expressed in full basis
+    !> IMPORTANT: Should NOT be initialized before this routine
+    !             is called because we do not yet the dimensions.
+    !             (We do not know how many redundancies are present
+    !              in the virtual MOs for other subsystems,
+    !              this is investigated inside this subroutine).
+    type(matrix),intent(inout) :: Cvirtsub
+    integer :: nocciso,nvirtiso,nbasisiso,nvirtmax,i,nbasisfull,j
+    integer :: idx,nbasissub,sub,nbasisother,nvirtother,norb,nvirtsub
+    integer,pointer :: basisidx(:),basisidx_other(:)
+    real(realk),pointer :: C(:,:), Cother(:,:)
+    real(realk) :: Cother_norm,thr,testnorm(1,1)
+
+
+    ! Dimensions
+    ! ----------
+    nbasisfull = MyMolecule%nbasis  ! nbasis for full system
+    nocciso = Cocciso(this)%ncol ! nocc for isolated monomer
+    nvirtiso = Cvirtiso(this)%ncol     ! nvirt for isolated monomer
+    nbasisiso = Cocciso(this)%nrow     ! nbasis for isolated monomer
+    ! Maximum number of virtual orbitals (if there are no redundancies)
+    ! - sum of virtual orbitals for all subsystems
+    nvirtmax=0
+    do i=1,nsub
+       nvirtmax = nvirtmax + Cvirtiso(i)%ncol
+    end do
+
+    ! Indices for basis functions in subsystem "this"
+    call mem_alloc(basisidx,nbasisiso)
+    call basis_idx_subsystem(this,MyMolecule,nbasisiso,basisidx)    
+
+    ! We discard a virtual orbital from other subsystem if its
+    ! norm after projection agaist existing orbitals is below 
+    ! this threshold
+    thr = 1.0e-5_realk
+
+    
+
+
+    ! *************************************************************
+    ! Put occ and virt MOs for isolated subsystem into array
+    ! with dimensions for the full system, and where we
+    ! put zeros on entries corresponding to basis functions
+    ! for other subsystems, schematically:
+    !        
+    ! C =    Cocc(this)   Cvirt(this)   0
+    !        0            0             0
+    ! *************************************************************
+    call mem_alloc(C,nbasisfull,nbasisfull)
+    C = 0.0_realk
+    ! (C is on purpose allocated to be a little too large here)
+
+    ! Occ orbitals for isolated system "this"
+    idx=0
+    do j=1,nocciso
+       do i=1,nbasisiso
+          idx = idx+1
+          C(basisidx(i),j) = Cocciso(this)%elms(idx)
+       end do
+    end do
+
+    ! Virt orbitals for isolated system "this"
+    idx=0
+    do j=nocciso+1,nvirtiso+nocciso
+       do i=1,nbasisiso
+          idx = idx+1
+          C(basisidx(i),j) = Cvirtiso(this)%elms(idx)
+       end do
+    end do
+
+    ! Number of orbitals in C array is currently the ones
+    ! from subsystem this
+    norb = nocciso +nvirtiso
+    ! Below we add orbitals from other subsystems
+
+
+    ! *************************************************************
+    ! Put virtual orbitals for other subsystems into C array,
+    ! but only after they have been orthogonalized against the
+    ! existing orbitals, and only if they are not redundant.
+    !        
+    ! C =    Cocc(this)   Cvirt(this)   nonzero tails   0
+    !        0            0             Cvirt(other)    0
+    ! *************************************************************
+    call mem_alloc(Cother,nbasisfull,1)
+    SubsystemLoop: do sub=1,nsub  ! loop over subsystem
+
+       DifferentSub: if(sub/=this) then 
+          ! consider other subsystems than "this"
+
+          ! Number of basis functions for other subsystem
+          nbasisother = Cvirtiso(sub)%nrow
+          nvirtother = Cvirtiso(sub)%ncol
+
+          ! Basis indices for other subsystem
+          call mem_alloc(basisidx_other,nbasisother)
+          call basis_idx_subsystem(sub,MyMolecule,&
+               & nbasisother,basisidx_other)
+
+          ! Loop over virtual orbitals on other subsystem
+          ! *********************************************
+          idx=0
+          OtherVirt: do i=1,nvirtother
+
+             ! Virtual orbital "i" on other subsystem
+             ! --------------------------------------
+             Cother=0.0_realk
+             OtherBasis: do j=1,nbasisother
+                idx=idx+1
+                ! Copy virtual orbital "j" into Cother
+                ! where we put zeros on entries corresponding
+                ! to other subsystems than "sub"
+                Cother(basisidx_other(j),1) = Cvirtiso(sub)%elms(idx)
+
+             end do OtherBasis
+
+             ! Project out components from the norb orbitals already
+             ! included in C array
+             call project_out_MOs(nbasisfull,norb,C(:,1:norb),&
+                  & MyMolecule%overlap,Cother,Cother_norm)
+
+             ! Include orbital "i" only if its norm after
+             ! projection is above threshold
+             if(Cother_norm > thr) then
+                norb = norb + 1
+
+                ! Normalize before putting Cother into array
+                do j=1,nbasisfull
+                   C(j,norb) = (1.0_realk/Cother_norm)*Cother(j,1)
+                end do
+                call dec_simple_basis_transform1(nbasisfull,1,&
+                     & C(:,norb),MyMolecule%overlap,testnorm)
+                write(DECinfo%output,*) 'sub,norb,norm1,norm2',sub,&
+                     & norb,Cother_norm,testnorm(1,1)
+
+             end if
+
+          end do OtherVirt
+          call mem_dealloc(basisidx_other)
+
+       end if DifferentSub
+
+    end do SubsystemLoop
+    call mem_dealloc(Cother)
+
+    ! ***********************************************************
+    ! Now C(:,1:norb) contains the orthogonal MOs which can 
+    ! be used as starting guess for the calculation on subsystem
+    ! "this" using the extended basis.
+    ! Finally, put this information into the outputs of type(matrix)
+    ! ***********************************************************
+
+    nvirtsub = norb-nocciso
+    write(DECinfo%output,'(a,i7,a,2i7)') 'Subsystem: ', this, &
+         & '  *** nvirt actual/max ', nvirtsub,nvirtmax
+
+    ! Occupied MOs (see comments in declaration above)
+    call mat_set_from_full(C(:,1:nocciso),1E0_realk, Coccsub)
+
+    ! Virtual MOs (see comments in declaration above)
+    call mat_init(Cvirtsub,nbasisfull,nvirtsub)
+    call mat_set_from_full(C(:,nocciso+1:norb),1E0_realk, Cvirtsub)
+    
+
+    call mem_dealloc(C)
+    call mem_dealloc(basisidx)
+
+  end subroutine get_orthogonal_basis_for_subsystem
+
+
+
+  !> Get basis indices for the basis function
+  !> associated with a given subsystem
+  subroutine basis_idx_subsystem(this,MyMolecule,nbasissub,basisidx)
+    implicit none
+    !> Subsystem index
+    integer,intent(in) :: this
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Number of basis functions for subssytem (see nbasis_subsystem)
+    integer,intent(in) :: nbasissub
+    !> Basis function indices for subsystem basis functions
+    integer,intent(inout) :: basisidx(nbasissub)
+    integer :: atomsub,idx,i,j
+
+    basisidx=0
+    idx=0
+    do i=1,MyMolecule%natoms
+       ! Subsystem to which atom "i" belongs
+       atomsub = MyMolecule%SubSystemIndex(i)
+
+       if(atomsub == this) then 
+          ! Atom "i" is in subsystem 
+          ! --> include basis function indices for atom "i"
+          do j=1,MyMolecule%atom_size(i)
+             idx=idx+1
+             basisidx(idx) = MyMolecule%atom_start(i) + j-1
+          end do
+       end if
+
+    end do
+
+    ! Sanity check
+    if(idx/=nbasissub) then
+       print *, 'idx, nbasissub', idx, nbasissub
+       call lsquit('nbasis_subsystem: Counter mismatch',-1)
+    end if
+
+  end subroutine basis_idx_subsystem
+
+
+
+  ! Project out components of a molecular orbital Cb
+  ! defined by an input matrix of other MOs Ca:
+  !
+  ! Cb --> (1 - Ca Ca^T S ) Cb
+  ! 
+  ! Cb is one column vector, while Ca is in general a matrix
+  ! representing a set of MOs, and S is the overlap matrix
+  ! in the AO basis.
+  ! Also calculate norm of resulting Cb.
+  subroutine project_out_MOs(nbasis,na,Ca,S,Cb,Cb_norm)
+    implicit none
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Number of orbitals in Ca matrix
+    integer,intent(in) :: na
+    !> Ca and S as defined above
+    real(realk),intent(in) :: Ca(nbasis,na), S(nbasis,nbasis)
+    !> Output Cb vector
+    real(realk),intent(inout) :: Cb(nbasis,1)
+    !> Norm of projected Cb (before renormalization)
+    real(realk),intent(inout) :: Cb_norm
+    real(realk),pointer :: tmp(:,:),tmp2(:,:),tmp3(:)
+    integer :: one,i
+    real(realk) :: norm_squared(1,1)
+
+    ! tmp = Ca^T S
+    call mem_alloc(tmp,na,nbasis)
+    call dec_simple_dgemm(na,nbasis,nbasis,Ca,S,tmp,'T','N')
+
+    ! tmp2 = Ca Ca^T S = Ca tmp
+    call mem_alloc(tmp2,nbasis,nbasis)
+    call dec_simple_dgemm(nbasis,na,nbasis,Ca,tmp,tmp2,'N','N')
+    call mem_dealloc(tmp)
+    
+    ! tmp3 = Ca Ca^T S Cb = tmp2 Cb
+    one = 1
+    call mem_alloc(tmp3,nbasis)
+    call dec_simple_dgemm(nbasis,nbasis,one,tmp2,Cb,tmp3,'N','N')
+    call mem_dealloc(tmp2)
+    
+    ! Output Cb = Cb - Ca Ca^T S Cb = Cb - tmp3
+    do i=1,nbasis
+       Cb(i,1) = Cb(i,1) - tmp3(i)
+    end do
+    call mem_dealloc(tmp3)
+    
+
+    ! Norm of final Cb
+    call dec_simple_basis_transform1(nbasis,one,Cb,S,norm_squared)
+    Cb_norm = sqrt(norm_squared(1,1))
+
+  end subroutine project_out_MOs
 
 
 end module snoop_tools_module
