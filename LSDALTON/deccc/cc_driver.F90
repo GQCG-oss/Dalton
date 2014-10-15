@@ -1787,7 +1787,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
 
 
-
    ! get guess amplitude vectors in the first iteration --> zero if no
    ! restart, else the t*.restart files are read
    two_norm_total = DECinfo%ccConvergenceThreshold + 1.0E0_realk
@@ -1813,7 +1812,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
-
 
 
    ! title
@@ -2060,8 +2058,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !call tensor_minit(t2_opt    , ampl4_dims, 4, local=local, atype='TDAR')
          call tensor_zero( omega2_opt )
          call tensor_zero( t2_opt     )
-
-         print *,"coeffs",c(1:iter)
 
          do i=iter,max(iter-DECinfo%ccMaxDIIS+1,1),-1
 
@@ -2512,8 +2508,26 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
+   logical :: use_singles
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
+
+   !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
+   ! set model specifics here
+   select case(ccmodel)
+   case(MODEL_MP2)
+      use_singles = .false.
+   case(MODEL_CC2)
+      use_singles = .true.
+   case(MODEL_CCSD)
+      use_singles = .true.
+   case(MODEL_CCSDpT)
+      use_singles = .true.
+   case(MODEL_RPA)
+      use_singles = .true.
+   case default
+      call lsquit("ERROR(get_guess_vectors) unknown model",-1)
+   end select
 
    !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
    fu_t11=111
@@ -2535,7 +2549,7 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    if(DECinfo%DECrestart)then
 
       !CHECK IF THERE ARE CONVERGED AMPLITUDES AVAILABLE
-      if(DECinfo%use_singles.and.all_singles)then
+      if(use_singles.and.all_singles)then
          fin1=safefilet1f//'.restart'
          INQUIRE(FILE=fin1,EXIST=file_exists1f)
          if(file_exists1f)then
@@ -2571,7 +2585,7 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
       endif
 
       !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
-      if(DECinfo%use_singles.and.all_singles.and..not.readfile1)then
+      if(use_singles.and.all_singles.and..not.readfile1)then
          fullname11=safefilet11//'.restart'
          fullname12=safefilet12//'.restart'
 
@@ -2684,7 +2698,7 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    endif
 
 
-   if(DECinfo%use_singles)then
+   if(use_singles)then
       if(readfile1)then
          READ(fu_t1) t1%elm1
          READ(fu_t1) norm

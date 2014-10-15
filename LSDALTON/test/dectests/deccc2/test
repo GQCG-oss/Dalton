@@ -15,7 +15,7 @@ f.add(string = 'Nuclear repulsion',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-5)
 
 #f.add(from_string = 'Summary For Counter Poise Correction',
 #      to_string   = 'Interaction Energy',
