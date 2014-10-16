@@ -57,8 +57,6 @@ C
 !TRA2,TRA2E1: OPHLFx parameter, call DARMOV(LUHLFx) if true to delete
 !   any large temporary files before exit from TRACTL.
 !-- version n04 --
-!931201-hjaaj:
-!TRALVL: 'MOFCFV' is not defined any more.
 !920529-hjaaj:
 !TR2CTL: fixed error in LTUPQ calculation (s/NOCR/NOCQ/)
 !        use NOCOUL in LTUPQ calculation
@@ -229,8 +227,8 @@ C
       KFREE  = 1
       LFREE  = MEMX
       LCDTRA = MMORBX
-      CALL MEMGET('INTE',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
-      CALL MEMGET('INTE',KTRTYP,MXCORB,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ICDTRA',KCDTRA,LCDTRA,WRK,KFREE,LFREE)
+      CALL MEMGET2('INTE','ITRTYP',KTRTYP,MXCORB,WRK,KFREE,LFREE)
 C
 C     Set MO loop limits for the four integral indices
 C
@@ -2953,6 +2951,8 @@ C
       ELSE IF (IRDAO .EQ. 3) THEN
          ITUSYM = 1
          CALL TRASET_3(LX2X3, LWORK)
+      ELSE IF (IRDAO .LT. 0) THEN
+         ! do no more, this is called from .HJJTRA routines
       ELSE
          WRITE (LUPRI,*) 'ERROR TRASET: Illegal IRDAO =',IRDAO
          CALL QTRACE(LUPRI)
@@ -3308,7 +3308,7 @@ C     Redefine MFRO,MISH,MASH according to requested integral
 C     transformation.  If KTRLVL .eq. 1 then this is the same
 C     as in Sirius.
 C
-      CALL IZERO(ITRTYP,MORBT)
+      ITRTYP(1:MORBT) = 0
       IMOL = 0
       DO 300 ISYM = 1, MSYM
          IF (KTRLVL .EQ. 0) THEN
@@ -3358,6 +3358,9 @@ C
          END IF
   780 CONTINUE
       IF (IPRTRA .GE. 5) THEN
+         WRITE (LUPRI,'(/A)') ' ITRTYP(1:NORBT) = '//
+     &      'number of integral indices in which this orbital enters:'
+             WRITE(LUPRI,'(5(2X,10I2))') ITRTYP(1:MORBT)
          WRITE (LUPRI,'(/A)')
      &      ' ICDTRA: list of distributions included on LUMINT:'
          DO 810 I = 1,MORBT
@@ -3407,16 +3410,7 @@ C
 C
       CALL QENTER('TRALVL')
       JTRLVL = ABS(ITRSIR)
-#if defined (VAR_OLDCODE)
-c --- 931201-hjaaj: MOFCFV does not exist any more
-      IF (MOFCFV) THEN
-         KTRLVL = 0
-      ELSE
-         KTRLVL = 1
-      END IF
-#else
       KTRLVL = 1
-#endif
       IF (JTRLVL .EQ. 3) THEN
          JTRLVL = 2
          KTRLVL = 1

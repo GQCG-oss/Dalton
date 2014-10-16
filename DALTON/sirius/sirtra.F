@@ -172,7 +172,7 @@ C
       END IF
       IF (HJJTRA) THEN
          CALL SIR_INTOPEN_HJJTRA
-         RETURN
+         ! RETURN -- no, continue below to create MOTWOINT for now
       ELSE IF (NEWTRA) THEN
          CALL SIR_INTOPEN_NEWTRA
          RETURN
