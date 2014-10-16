@@ -9,7 +9,7 @@ use Typedef
 use ls_Integral_Interface
 use AtomSparse
 use mat3d_mod
-use Integralparameters
+use LSparameters
 use molecule_module
 use memory_handling
 use lstiming

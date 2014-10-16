@@ -2133,7 +2133,7 @@ subroutine full_canonical_rimp2_slave
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem
-  use Integralparameters
+  use lsparameters
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef

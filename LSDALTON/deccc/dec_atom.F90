@@ -15,7 +15,7 @@ module atomic_fragment_operations
   use dec_typedef_module
   use memory_handling!, only: mem_alloc,mem_dealloc
   use IntegralInterfaceMod!, only: ii_get_mixed_overlap_full
-  use Integralparameters!,only: AORdefault
+  use lsparameters!, only: AORdefault
 #ifdef VAR_MPI
   use infpar_module
 #endif

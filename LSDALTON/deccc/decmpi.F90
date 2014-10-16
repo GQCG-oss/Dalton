@@ -2528,7 +2528,7 @@ end module decmpi_module
 subroutine set_dec_settings_on_slaves()
    use infpar_module
    use lsmpi_type
-   use Integralparameters
+   use lsparameters
    use dec_typedef_module
    use decmpi_module, only:mpibcast_dec_settings
    implicit none

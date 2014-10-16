@@ -2,7 +2,7 @@
 !> Contains module that reads the dalton input and initializes lsitem
 MODULE DALTONINFO
 use precision
-use Integralparameters
+use LSparameters
 use files, only: lsopen,lsclose
 use typedeftype, only: LSITEM, integralconfig, DALTONINPUT,&
      & BASISSETLIBRARYITEM

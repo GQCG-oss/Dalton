@@ -14,7 +14,7 @@ module ccintegrals
   use matrix_operations
   use integralinterfaceDEC
   use screen_mod
-  use Integralparameters
+  use LSparameters
   use integralinterfaceMOD
   use II_XC_interfaceModule
 #ifdef VAR_ICHOR

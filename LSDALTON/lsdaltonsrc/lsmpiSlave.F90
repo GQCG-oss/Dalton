@@ -80,6 +80,7 @@ end subroutine lsmpi_init
 #ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+   use lsparameters
    use lstiming
    use infpar_module
    use lsmpi_type
@@ -216,6 +217,9 @@ subroutine lsmpi_slave(comm)
       case(LSPDM_SLAVES_SHUT_DOWN_CHILD)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
+
+      case(SET_GPUMAXMEM);
+         call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
 
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)

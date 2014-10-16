@@ -16,7 +16,7 @@ use files!,only:lsopen,lsclose
 use memory_handling
 use dec_typedef_module
 use integralinterfaceMod
-use integralparameters
+use lsparameters
 #ifdef VAR_MPI
 use infpar_module
 #endif

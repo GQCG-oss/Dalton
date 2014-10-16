@@ -2,7 +2,7 @@
 !> Contains soubroutines that bridges integral interface routines to the main Thermite driver
 MODULE ls_Integral_Interface
   use precision
-  use Integralparameters
+  use lsparameters
   use TYPEDEFTYPE, only: lssetting, LSINTSCHEME
   use integraloutput_typetype, only: INTEGRALOUTPUT
   use integral_type, only: INTEGRALINPUT
@@ -6938,7 +6938,7 @@ END MODULE ls_Integral_Interface
 #ifdef VAR_MPI
 SUBROUTINE lsmpi_getIntegrals_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,geoOrder,SETTING,LUPRI,LUERR)
 use lsmpi_op, only: mpicopy_setting
-use Integralparameters
+use lsparameters
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
@@ -6971,7 +6971,7 @@ SUBROUTINE lsmpi_getIntegrals_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_getIntegrals
@@ -7007,7 +7007,7 @@ use precision
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 !use lstiming, only: lstimer
@@ -7042,7 +7042,7 @@ SUBROUTINE lsmpi_jengine_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_jengine
@@ -7071,7 +7071,7 @@ SUBROUTINE lsmpi_LinK_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LU
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
@@ -7103,7 +7103,7 @@ use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
-use Integralparameters
+use lsparameters
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
 implicit none

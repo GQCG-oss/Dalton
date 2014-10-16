@@ -12,7 +12,7 @@ MODULE TYPEDEFTYPE
  use lsmatrix_type
  use LSTENSOR_typetype
  use matrix_module
- use Integralparameters
+ use LSparameters
  use integralOutput_typetype
  use tensor_type_def_module,only:tensor
 #ifdef VAR_MPI
