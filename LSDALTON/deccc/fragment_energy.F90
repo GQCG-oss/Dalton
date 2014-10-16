@@ -312,9 +312,6 @@ contains
 #ifdef MOD_UNRELEASED
        endif
 #endif
-       call print_norm(VOVO,"VOVO")
-       call print_norm(t2,  "t2  ")
-       call print_norm(t1,  "t1  ")
 
        ! Extract EOS indices for integrals
        ! *********************************
@@ -338,11 +335,6 @@ contains
        call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
        call tensor_free(u)
-
-       call print_norm(VOVOvirt,"VOVOvirt:")
-       call print_norm(VOVOocc, "VOVOocc :")
-       call print_norm(t2virt,"t2  virt:")
-       call print_norm(t2occ, "t2  occ :")
 
        call dec_fragment_time_get(times_ccsd)
 

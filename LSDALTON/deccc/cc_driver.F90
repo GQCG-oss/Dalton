@@ -2504,7 +2504,7 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
    case(MODEL_CCSDpT)
       use_singles = .true.
    case(MODEL_RPA)
-      use_singles = .true.
+      use_singles = .false.
    case default
       call lsquit("ERROR(get_guess_vectors) unknown model",-1)
    end select
@@ -2690,14 +2690,18 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
          !This was an attempt to start with something else than 0 for CCSD, but
          !it does not seem worth it, even if the start is the amplitudes of the
          !second iteration
-         do a=1,nv
-            do i=1,no
+         select case(ccmodel)
+         case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+            do a=1,nv
+               do i=1,no
 
-               t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+                  t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
 
+               end do
             end do
-         end do
-         !call tensor_zero(t1)
+         case default
+            call tensor_zero(t1)
+         end select
       endif
    endif
 
@@ -2713,11 +2717,12 @@ subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,C
       if (.not.local) call tensor_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-      !if(ccmodel == MODEL_MP2)then
+      select case(ccmodel)
+      case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
          call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
-      !else
-      !   call tensor_zero(t2)
-      !endif
+      case default
+         call tensor_zero(t2)
+      end select
    endif
 end subroutine get_guess_vectors
 
