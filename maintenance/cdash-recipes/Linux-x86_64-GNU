@@ -2,14 +2,18 @@
 
 BRANCH='master'
 NUM_CORES=1
+MAKE_RELEASE=0
 
-while getopts b:p:n: opt; do
+while getopts b:p:n:r: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
       ;;
   n)
       NUM_CORES=$OPTARG
+      ;;
+  r)
+      MAKE_RELEASE=$OPTARG
       ;;
   esac
 done
@@ -27,10 +31,19 @@ git clone git@repo.ctcc.no:dalton $CTEST_TEMP_DIR/compile
 
 cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null
+
+if [ $MAKE_RELEASE -eq 1 ]; then
+    cd build
+    cmake ..
+    make release
+    tar xvzf DALTON-Source.tar.gz
+    cd DALTON-Source
+fi
+
 ./setup --fc=gfortran --cc=gcc --cxx=g++ -D BUILDNAME=$BUILDNAME
 cd build
-make -j$NUM_CORES dalton.x
-ctest -D Nightly -j$NUM_CORES -L dalton
+make -j$NUM_CORES
+ctest -D Nightly -j$NUM_CORES
 
 rm -rf $CTEST_TEMP_DIR
 

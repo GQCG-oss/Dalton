@@ -17,51 +17,34 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > choles_cc2_excdiis.info <<'%EOF%'
-   choles_cc2_excdiis
+cat > choles_cc2_exci.info <<'%EOF%'
+   choles_cc2_exci
    -----------------
-   Molecule:         7-hydroxi-1-indanone (C9O2H8)
-   Wave Functions:   Turbomole-SVP
+   Molecule:         Water
+   Wave Functions:   CC2/cc-pVDZ
    Test Purpose:     Cholesky CC2 excitation energies
 %EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > choles_cc2_excdiis.mol <<'%EOF%'
+cat > choles_cc2_exci.mol <<'%EOF%'
 BASIS
-Turbomole-SVP
+cc-pVDZ
 ............
 ............
-Atomtypes=3 Angstrom
-Charge=6 Atoms=9
-C      2.009267      1.229042      0.000000
-C      1.266421     -0.092531      0.000000
-C     -0.113670      0.125297      0.000000
-C     -0.420179      1.545646      0.000000
-C      0.903188      2.307707      0.000000
-C      1.755626     -1.392577      0.000000
-C      0.825197     -2.443817      0.000000
-C     -0.556138     -2.228617      0.000000
-C     -1.046832     -0.920237      0.000000
-Charge=8 Atoms=2
-O     -2.378196     -0.674406      0.000000
-O     -1.561925      2.034255      0.000000
-Charge=1 Atoms=8
-H     -1.250704     -3.059750      0.000000
-H      2.819391     -1.601083      0.000000
-H      1.186061     -3.466649      0.000000
-H     -2.476595      0.303641      0.000000
-H      0.938604      2.951310     -0.880991
-H      2.649351      1.310372      0.881111
-H      0.938604      2.951310      0.880991
-H      2.649351      1.310372     -0.881111
+Atomtypes=2
+Charge=8.0 Atoms=1
+O    -2.66610950   0.12039950   0.00000000
+Charge=1.0 Atoms=2
+H    -3.30256970  -0.78553700  -1.43043210
+H    -3.30256970  -0.78553700   1.43043210
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > choles_cc2_excdiis.dal <<'%EOF%'
+cat > choles_cc2_exci.dal <<'%EOF%'
 **DALTON
 .RUN WAVE
 .CHOLES
@@ -90,14 +73,12 @@ cat > choles_cc2_excdiis.dal <<'%EOF%'
 .PRINT
   1
 .FREEZE
-  11   0
+  1   0
 .CCS
 .CC2
 *CCEXCI
-.CHEXDI
-.DV4DIS
 .NCCEXCI
-  2   1
+  2   1   1   0
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
@@ -109,8 +90,8 @@ cat > choles_cc2_excdiis.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >choles_cc2_excdiis.check
-cat >>choles_cc2_excdiis.check <<'%EOF%'
+echo $CHECK_SHELL >choles_cc2_exci.check
+cat >>choles_cc2_exci.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -124,38 +105,40 @@ if $GREP -q "not implemented for parallel calculations" $log; then
    exit 0
 fi
 
-# SCF and  MP2 CC2 energies:
-CRIT1=`$GREP "Total SCF" $log | $GREP "\-494.8444509" | wc -l`
-CRIT2=`$GREP "Total CC2" $log | $GREP "\-496.4012943" | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2`
+# SCF and CC2 energies:
+CRIT1=`$GREP "Total SCF" $log | $GREP "\-76.026796" | wc -l`
+CRIT2=`$GREP "Total CC2" $log | $GREP "\-76.229260" | wc -l`
+TEST[1]=`expr $CRIT1 + $CRIT2`
 CTRL[1]=5
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # Amplitudes
-CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "2541" | wc -l`
-CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "4848711" | wc -l`
-TEST[2]=`expr $CRIT1 \+ $CRIT2`
+CRIT1=`$GREP "Number of t1 amplitudes" $log | $GREP "25" | wc -l`
+CRIT2=`$GREP "Number of t2 amplitudes" $log | $GREP "805" | wc -l`
+TEST[2]=`expr $CRIT1 + $CRIT2`
 CTRL[2]=4
 ERROR[2]="NUMBER OF AMPLITUDES NOT CORRECT"
 
 
 # CCS excitations
-CRIT1=`$GREP "\^1A'" $log | grep "0.2029" | wc -l`
-CRIT2=`$GREP "\^1A'" $log | grep "0.219" | wc -l`
-CRIT3=`$GREP "\^1A\"" $log | grep "0.1913" | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[3]=3
+CRIT1=`$GREP "\^1A1" $log | grep "0.434" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.675" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | egrep "0.339|0.3389" | wc -l`
+CRIT4=`$GREP "\^1B2" $log | grep "0.500" | wc -l`
+TEST[3]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[3]=4
 ERROR[3]="CCS EXCITATION ENERGIES NOT CORRECT"
 
 
 
 # CC2 excitations
-CRIT1=`$GREP "\^1A'" $log | grep "0.1606" | wc -l`
-CRIT2=`$GREP "\^1A'" $log | grep "0.2032" | wc -l`
-CRIT3=`$GREP "\^1A\"" $log | grep "0.1533" | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=3
+CRIT1=`$GREP "\^1A1" $log | grep "0.394" | wc -l`
+CRIT2=`$GREP "\^1A1" $log | grep "0.656" | wc -l`
+CRIT3=`$GREP "\^1B1" $log | grep "0.298" | wc -l`
+CRIT4=`$GREP "\^1B2" $log | grep "0.472" | wc -l`
+TEST[4]=`expr $CRIT1 + $CRIT2 + $CRIT3 + $CRIT4`
+CTRL[4]=4
 ERROR[4]="CC2 EXCITATION ENERGIES NOT CORRECT"
 
 
@@ -180,5 +163,5 @@ fi
 
 
 %EOF%
-chmod +x choles_cc2_excdiis.check
+chmod +x choles_cc2_exci.check
 #######################################################################
