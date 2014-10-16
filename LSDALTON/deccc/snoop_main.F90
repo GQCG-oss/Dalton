@@ -199,9 +199,8 @@ contains
 
           ! Correlation energy for subsystem
           if(.not. DECinfo%SNOOPjustHF) then
-!             call subsystem_correlation_energy(this,MyMolecule,&
-!                  & OccOrbitals,Coccsnoop(i),Cvirtsnoop(i),&
-!                  & FAOsnoop,lssnoop,Ecorrsnoop(this))
+             call subsystem_correlation_energy(Coccsnoop(i),Cvirtsnoop(i),&
+                  & FAOsnoop,lssnoop,Ecorrsnoop(i))
           end if
 
           print '(1X,a,i5,a,3g20.12)', 'Subsystem: ', this, &
@@ -613,26 +612,32 @@ contains
     write(DECinfo%output,'(1X,a)') '            Local interaction energies - summary               '
     write(DECinfo%output,'(1X,a)') '***************************************************************'
     write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- HF   energy : ', EHFfull
-    write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- corr energy : ', Ecorrfull
-    write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- tot  energy : ', EHFfull+Ecorrfull
+    if(.not. DECinfo%SNOOPjustHF) then
+       write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- corr energy : ', Ecorrfull
+       write(DECinfo%output,'(1X,a,g22.12)') 'Full system     --- tot  energy : ', EHFfull+Ecorrfull
+    end if
     EHFint = EHFfull
     Ecorrint = Ecorrfull
     do i=1,nsub
        write(DECinfo%output,'(1X,a)') ''
        write(DECinfo%output,'(1X,a,i5,a,g21.12)') 'Subsystem: ', i, &
             & ' --- HF   energy: ', EHFsub(i)
-       write(DECinfo%output,'(1X,a,i5,a,g21.12)') 'Subsystem: ', i, &
-            & ' --- corr energy: ', Ecorrsub(i)
-       write(DECinfo%output,'(1X,a,i5,a,g21.12)') 'Subsystem: ', i, &
-            & ' --- tot  energy: ', EHFsub(i)+Ecorrsub(i)
+       if(.not. DECinfo%SNOOPjustHF) then
+          write(DECinfo%output,'(1X,a,i5,a,g21.12)') 'Subsystem: ', i, &
+               & ' --- corr energy: ', Ecorrsub(i)
+          write(DECinfo%output,'(1X,a,i5,a,g21.12)') 'Subsystem: ', i, &
+               & ' --- tot  energy: ', EHFsub(i)+Ecorrsub(i)
+       end if
        EHFint = EHFint - EHFsub(i)
        Ecorrint = Ecorrint - Ecorrsub(i)
     end do
     write(DECinfo%output,'(1X,a)') ''
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a,g22.12)') 'HF Interaction energy      = ', EHFint
-    write(DECinfo%output,'(1X,a,g22.12)') 'Corr Interaction energy    = ', Ecorrint
-    write(DECinfo%output,'(1X,a,g22.12)') 'Total Interaction energy   = ', EHFint+Ecorrint
+    if(.not. DECinfo%SNOOPjustHF) then
+       write(DECinfo%output,'(1X,a,g22.12)') 'Corr Interaction energy    = ', Ecorrint
+       write(DECinfo%output,'(1X,a,g22.12)') 'Total Interaction energy   = ', EHFint+Ecorrint
+    end if
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a)') ''
     write(DECinfo%output,'(1X,a)') ''
@@ -644,19 +649,48 @@ contains
 
 
   !> Calculate MP2 correlation energy for subsystem
-  subroutine subsystem_correlation_energy(Cocc_mat,&
-       & Cvirt_mat,F_mat,lssub,Ecorr)
+  !> \author Kasper Kristensen
+  !> \date October 2014
+  subroutine subsystem_correlation_energy(Cocc,Cvirt,F,lssub,Ecorr)
     implicit none
 
     !> Occupied and virtual MO coefficients for subsystem
-    type(matrix),intent(in) :: Cocc_mat, Cvirt_mat
+    type(matrix),intent(in) :: Cocc, Cvirt
     !> Fock matrix in AO basis for subsystem
-    type(matrix),intent(in) :: F_mat
+    type(matrix),intent(in) :: F
     !> LSitem for subsystem
     type(lsitem), intent(inout) :: lssub
     !> Subsystem correlation energy
     real(realk),intent(inout) :: Ecorr
+    type(matrix) ::D,S,C
+    type(fullmolecule) :: MySubsystem
+    real(realk) :: EHF
 
+    ! Make fullmolecule structure for subsystem
+    ! *****************************************
+
+    ! Density matrix for subsystem
+    call mat_init(D,F%nrow,F%ncol)
+    call get_density_from_occ_orbitals_mat(Cocc,D)
+
+    ! Overlap matrix for subsystem
+    call mat_init(S,F%nrow,F%ncol)
+    call II_get_overlap(DECinfo%output,DECinfo%output,lssub%setting,S)
+
+    ! Collect MO coefficients in one matrix
+    call mat_init(C,F%nrow,F%ncol)
+    call collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
+    
+    ! Molecule structure for subsystem
+    call molecule_init_from_inputs(MySubsystem,lssub,F,S,C,D)
+    call mat_free(C)
+    call mat_free(F)
+
+
+    ! Correlation energy for subsystem
+    ! ********************************
+    call full_driver(MySubsystem,lssub,D,EHF,Ecorr)
+    call mat_free(D)
 
   end subroutine subsystem_correlation_energy
 
