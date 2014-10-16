@@ -30,10 +30,11 @@ C LFOCKD: Number of entries in the Fock Matrix
 C ISYMTR:
 C WORK: temporary work-vector 
 C LWORK: Total needed length of the work-vector.
-#ifdef VAR_MPI
-         use mpi
-#endif
 #include "implicit.h"
+#ifdef VAR_MPI
+         !use mpi
+#include "mpif.h"
+#endif
 #include "maxorb.h" 
 #include "maxash.h"
 #include "mxcent.h"
@@ -403,12 +404,10 @@ C and could potentially cause a lot of havoc if the calculation didn't fail ever
                   SOTIME(11) = SOTIME(11) + DTIME
 C
   230          CONTINUE ! End of IDEL2 loop.
-C
   220       CONTINUE ! End of ILLL loop.
-C
   210    CONTINUE
 
-  888    continue !Continuation point in case the Fock matrix was calculated in parallel.
+  888    continue !Continuation point in case the calculation is done in parallel.
 
 C
 C====================================================
@@ -546,7 +545,7 @@ C                    in the work vector and processes the result in rp_eres.
 C LWORK intent(in)   Length of work vector.
 C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 
-      use mpi 
+         !use mpi
       use dyn_iadrpk
 
 #ifdef VAR_IFORT
@@ -554,6 +553,9 @@ C MYID intent(in)    Process ID in MPI_COMM_WORLD.
 #endif
 ! Parameter-only include files
 #include "implicit.h"
+
+#include "mpif.h"
+
 #include "priunit.h" 
 #include "maxorb.h" 
 #include "maxash.h"
@@ -618,12 +620,14 @@ C     MPI related and load balancing variables
       integer, dimension(MPI_STATUS_SIZE) :: mpistatus
 
 C     Pre-sorting load balancing variables
-      logical                              :: presorting      ! If set to true, this will select the efficient load-balancing scheme
-      integer                              :: TargetID
-      integer, allocatable, dimension(:,:) :: presortarray    ! array for roughly sorted ILLL indices
-      integer, allocatable, dimension(:,:) :: finalsorted     ! array for final sorted ILLL indices for all processes
-      integer, allocatable, dimension(:)   :: AssignedIndices ! array with ILLL indices for one process only
-      real*8,  allocatable, dimension(:)   :: tempfock        ! array temporarely used for mpi_reduce call. It has no other use.
+      logical       :: presorting, assignnow, workreceived
+      logical, save :: printsortinginfo=.true.
+      integer       :: TargetID, getnumjobs, getindices
+
+      integer, allocatable, dimension(:,:) :: presortarray !only used by master
+      integer, allocatable, dimension(:,:) :: finalsorted !only used by master
+      integer, allocatable, dimension(:)   :: AssignedIndices
+      real*8,  allocatable, dimension(:)   :: tempfock
       
 C     Miscellaneous
       DIMENSION INDEXA(MXCORB)
@@ -814,6 +818,7 @@ C     For large systems the amount of work is assumed to even out as the
 C     number of ILLL indexes grows. TODO this has not been benchmarked yet.
 C **********************************************************
       NormalStaticLoadBalance: if (.not.presorting) then
+      write(*, *) 'Entering static balance'
       if (sharedwork.eq.1) goto 200 !load balancing for low task/process ratio
       if (sharedwork.lt.1) goto 210 !load balancing when there are excess processes 
 
@@ -864,16 +869,18 @@ C **********************************************************
 210   continue 
 
       if (myid.lt.rest) then      
-         if ((iprint.gt.3).and.(printspininfo) ) then
+         if ((myid.eq.0).and.(iprint.gt.3).and.(printspininfo) ) then
             printspininfo = .false.
             write(lupri,*)"Spinning load balance used in PAR_RP_ERES. ",
      &                    "The number of employed processes might be ",
      &                    "in excess of what is appropriate for this ", 
-     &                    "calculation."
+     &                    "basis set."
          endif
          firstindex = myid + 1 
          lastindex = myid + 1
       endif 
+
+
 
       exitspinningbarrier = .false. 
       spinningbarrier: if (myid.ge.ntot) then
@@ -892,12 +899,10 @@ C **********************************************************
              goto 800 ! Skip to the assembly of the Fock matrix 
          endif
       endif spinningbarrier
-C************************************************** 
 C     End of spinning barrier
-C************************************************** 
-
 
 666   continue  !redirection point for the non-presorted load balancing schemes
+
       endif NormalStaticLoadBalance
 
 C**************************************************
@@ -913,8 +918,9 @@ C     calculating  a different number of ILLL indexes.
 C**************************************************
       PresortedStaticBalance: if (presorting) then
       if (myid.ge.ntot) goto 210 !send excess processes to the spinning barrier to release CPU time for MKL
-      mastersorting: if (myid.eq.0) then
 
+
+      mastersorting: if (myid.eq.0) then
 C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          allocate( presortarray(2, ntot), stat=allocstatus )
          if(.not.(allocstatus.eq.0) ) then
@@ -922,33 +928,38 @@ C        FIND THE AMOUNT OF WORK ASSOCIATED WITH EVERY AO INDEX
          endif
          call presortaodist(ntot, work(kindxb), presortarray)
          call getallocsize(ntot, presortarray, maxnumjobs) 
-         call mpi_bcast(maxnumjobs, 1, mpi_integer, 0, 
-     &                  mpi_comm_world, ierr) 
+
+C        The master tells the slaves how much space to allocate ...
+         numrecipients = min(numprocs, ntot)
+         do targetID=1, (numrecipients-1)
+            call mpi_isend(maxnumjobs, 1, mpi_integer, targetID, 
+     &                     targetID, mpi_comm_world, getnumjobs, ierr) 
+         enddo
 
          allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
          if(.not.(allocstatus.eq.0) ) then
             call quit('Allocation error in PAR_RP_ERES')
          endif
 
+
+C        CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
          allocate(finalsorted(maxnumjobs, numprocs)
      &                  ,stat=allocstatus )
          if(.not.(allocstatus.eq.0) ) then
             call quit('Allocation error in PAR_RP_ERES')
          endif
-
-C        CREATE THE FINAL MATRIX OF PRE-SORTED AO INDICES
          call partitionAOindices(ntot, maxnumjobs, numprocs, 
      &                           presortarray, finalsorted)
+
 
 C        TRANSFER ILLL INDICES TO SLAVES AND KEEP OWN WORK IN A VECTOR
          numrecipients = min(numprocs, ntot)
          DO i=2, numrecipients
             TargetID = i-1 
-            call mpi_send(finalsorted(1, i), maxnumjobs, mpi_integer, 
-     &                    TargetID, TargetID, mpi_comm_world, ierr) 
+            call mpi_isend(finalsorted(1, i), maxnumjobs, mpi_integer, 
+     &      TargetID, TargetID, mpi_comm_world, getindices, ierr) 
          ENDDO
          AssignedIndices = finalsorted(:,1) 
-
      
       endif mastersorting
 
@@ -957,32 +968,48 @@ C**************************************************
 C     Slaves receive the indices to integrate over
 C**************************************************
       IF (myid.ne.0) then
-         call mpi_bcast(maxnumjobs, 1, mpi_integer, 0, 
-     &                  mpi_comm_world, ierr) 
 
-         allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
-         if(.not.(allocstatus.eq.0) ) then
-            call quit('Allocation error in PAR_RP_ERES')
+
+C Get the number of tasks and allocate memory for the indices
+         call mpi_irecv(maxnumjobs, 1, mpi_integer, 0, myid,
+     &                  mpi_comm_world, getnumjobs, ierr)
+001      continue 
+         call mpi_test(getnumjobs, assignnow, mpistatus, ierr)
+         if (assignnow)  then
+            allocate( AssignedIndices(maxnumjobs), stat=allocstatus )
+            if(.not.(allocstatus.eq.0) ) then
+               call quit('Allocation error in PAR_SO_ERES ')
+            endif
+         else 
+            goto 001
          endif
 
-         call mpi_recv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
-     &                 myid, mpi_comm_world, mpistatus, ierr)
+
+
+C Get the actual AO indices to integrate over.
+         call mpi_irecv(AssignedIndices, maxnumjobs, mpi_integer, 0, 
+     &                  myid, mpi_comm_world, getindices, ierr)
+002      continue  
+         call mpi_test(getindices, workreceived, mpistatus, ierr)
+         if (workreceived)  then
+            continue 
+         else 
+            goto 002
+         endif
       ENDIF 
 
 C ************************************************** 
 C     Pre-sorted parallel calculation  is
 C     controlled from this loop
 C ************************************************** 
-
       DO i=1, maxnumjobs 
          if ( .not.(AssignedIndices(i).eq.0) ) then
             firstindex = AssignedIndices(i)
             lastindex  = AssignedIndices(i)
+
             goto 999  ! Perform integral, then return to label 998
-998         continue
-         else
-            continue
          endif
+998      continue
       ENDDO
 
 
@@ -1012,6 +1039,9 @@ C *******************************************
                     CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
      &                          IPRINT)
                   ELSE
+
+
+               write(*,*) myid, 'got to 111'
                      CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
      &                           WORK(KODCL1),WORK(KODCL2),
      &                           WORK(KODBC1),WORK(KODBC2),
@@ -1073,10 +1103,12 @@ C----------------------------------------------
 C                 Calculate the AO-Fock matrix.
 C----------------------------------------------
                   IF (TRIPLET) THEN
+               write(*,*) myid, 'got to 222'
                      CALL CC_AOFOCK3(WORK(KXINT),WORK(KDENS),
      &                               WORK(KFOCK),WORK(KEND4),
      &                               LWORK4,IDEL,ISYMD,ISYMTR)
                   ELSE
+               write(*,*) myid, 'got to 333'
                      CALL CC_AOFOCK(WORK(KXINT),WORK(KDENS),
      &                              WORK(KFOCK),WORK(KEND4),
      &                              LWORK4,IDEL,ISYMD,.FALSE.,
@@ -1194,17 +1226,19 @@ C
 C      call getbytespan(lbuf, eribufLAST, bytesize)
 C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
 
-          use mpi
+        
+         !use mpi
 #include "implicit.h"
+
 #include "priunit.h"
 #include "ccsdinp.h"
+#include "mpif.h"
 
       integer, intent(out) :: bytespan
       intent(in)           :: firstvar, lastvar
       integer*8            :: firstmem, lastmem
       integer              :: totaltransfer = 0
       integer, parameter   :: approxeager = 4096 ! Approximate upper limit for eager protocol transfers. Implementation dependent.
-      integer, parameter   :: maxcommontransfer = 64000000 !maximum transfer is currently 64MB in a single bcast
       integer              :: numeagersends=0, numrendezsends=0 
 
 
@@ -1212,20 +1246,9 @@ C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
       call mpi_get_address(firstvar, firstmem, ierr) 
       call mpi_get_address(lastvar, lastmem, ierr) 
       bytespan = lastmem - firstmem 
-
       if (bytespan.lt.1) then
           call quit('subroutine getbytespan calculated a non-sensical ',
      &    'size for common block transfer.')
-
-      elseif (bytespan.gt.maxcommontransfer) then
-
-          if(debug.and.(myid.eq.0)) then
-              write(lupri, '(a, i8, a, i8, a)')
-     &       "NOTE! Common block of size ", bytespan, 
-     &       "was transferred. This is: ",(bytespan-maxcommontransfer), 
-     &       "Bytes in excess of the current maximum. This is not "
-     &       "critical but might indicate a slow parallel calculation."
-          endif
       endif
 
 
@@ -1236,15 +1259,15 @@ C      call mpi_bcast(lbuf, bytesize, mpi_byte, 0, mpi_comm_world, ierr)
          else
             numrendezsends  = numrendezsends + 1
          endif
+
          write(lupri, '(a, i8)') 
-     &   "Running amount of Bytes transferred via getbytespan: ",
-     &   totaltransfer
-         write(lupri, '(a, i8)') "Estimated transfers using the "
+     &   "Running amount of Bytes transferred via getbytespan: "
+     &   ,totaltransfer
+         write(lupri, '(a, i8)') "Estimated transfers using the ",
      &               "eager protocol: ", numeagersends
-         write(lupri, '(a, i8)') "Estimated transfers using the "
+         write(lupri, '(a, i8)') "Estimated transfers using the ",
      &                "rendezvous protocol: ", numrendezsends
       endif
-
 
       return
       end subroutine 
@@ -1372,14 +1395,18 @@ C     /* deck getallocsize */
       SUBROUTINE getallocsize(ntot, originalsort, maxnumjobs)
 C A subroutine associated with the atomic integral parallel RPA/SOPPA calculations.
 C 
-C This subroutine calculates which process will be assigned the
+C This subroutine is used to get the amount of storage that needs
+C to be allocated for a parallel SO_ERES run.
+C 
+C The subroutine calculates which process will be assigned the
 C most single jobs (not the largest total amount of work) for a
 C parallel RPA/SOPPA calculation. Its output is used to allocate 
 C the right amount of storage by the master when it starts pre-sorting
-C the integrals for the parallel calculation of the AO Fock matrix.
+C the integrals for the parallel calculation of the E matrix.
 C
-      use mpi
+
 #include "implicit.h"
+#include "mpif.h"
       integer,                     intent(in)  :: ntot
       integer, dimension(2, ntot), intent(in)  :: originalsort
       integer,                     intent(out) :: maxnumjobs
@@ -1388,6 +1415,8 @@ C
       integer, dimension(:,:), allocatable  :: sumofwork
       integer, dimension(2) :: temploc, tempwork, tempout
       integer :: allocstatus, deallocstatus, numprocs
+
+
 
       call mpi_comm_size(mpi_comm_world, numprocs, ierr)
       allocate( copysort(2, ntot), sumofwork(2, numprocs)
@@ -1436,11 +1465,13 @@ C to a single process. The total amount of work per column is estimated based
 C on the number of distributions that are related to the ILLL indexes in the column. 
 C
 C This pre-sorting of ILLL indexes for a parallel calculation approximates an
-C even distribution of total work for all processes when calculating the Fock
-C matrix in parallel.
+C even distribution of total work for all processes when performing two-electron 
+C integrals in parallel for AOSOPPA and AORPA. 
 C
-      use mpi
+      !use mpi
 #include "implicit.h"
+#include "mpif.h"
+
       integer,                        intent(in)    :: ntot, rows, cols
       integer, dimension(2, ntot),    intent(inout) :: presortedarray
       integer, dimension(rows, cols), intent(out)   :: sorted
