@@ -73,19 +73,28 @@
         call qexit('pe_ifc_infld')
       end subroutine
 
-      subroutine pe_ifc_grad(denmats, molgrad, nmats)
+      subroutine pe_ifc_grad(denmats)
         use polarizable_embedding, only: pe_master
         use pe_variables, only: qmnucs
         implicit none
 #include "inforb.h"
-        integer, intent(in) :: nmats
-        real*8, dimension(nmats*nnbasx), intent(in) :: denmats
-        real*8, dimension(3,qmnucs), intent(out) :: molgrad
+#include "mxcent.h"
+#include "nuclei.h"
+#include "energy.h"
+        real*8, dimension(nnbasx), intent(in) :: denmats
+        integer :: i, j
+        real*8, dimension(3,natoms) :: molgrad
         call qenter('pe_ifc_grad')
-        call pe_master(runtype='molgrad',denmats=denmats,
+        molgrad = 0.0d0
+        call pe_master(runtype='molgrad', denmats=denmats,
      &                 molgrads=molgrad, nmats=1)
-        call qexit('pe_ifc_grad')       
-      end subroutine pe_ifc_grad 
+        j = 1
+        do i = 1, natoms
+            pegrad(j:j+2) = molgrad(:,i)
+            j = j + 3
+        end do
+        call qexit('pe_ifc_grad')
+      end subroutine pe_ifc_grad
 
       subroutine pe_ifc_energy(denmats, nmats)
         use polarizable_embedding, only: pe_master
