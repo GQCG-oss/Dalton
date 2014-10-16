@@ -6,7 +6,7 @@ module lsmpi_type
 !      & ass_4D2to1,ass_8D2to1,ass_4D3to1,ass_8D3to1,&
 !      & ass_4D4to1,ass_8D4to1,ass_D2to1,ass_D3to1,ass_D4to1
   use,intrinsic :: iso_c_binding,only:c_ptr,c_f_pointer,c_associated,c_null_ptr
-  use Integralparameters
+  use LSparameters
   use memory_handling, only: mem_alloc,mem_dealloc, max_mem_used_global,&
        & longintbuffersize, print_maxmem, stats_mem, copy_from_mem_stats,&
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats, &

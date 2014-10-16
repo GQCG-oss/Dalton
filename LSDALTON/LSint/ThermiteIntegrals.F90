@@ -6,7 +6,7 @@
 MODULE Thermite_integrals
 use typedef
 use thermite_OD
-use Integralparameters
+use LSparameters
 use OverlapType
 !****** INTEGRAND
 TYPE Integrand

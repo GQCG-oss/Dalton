@@ -31,7 +31,7 @@ module ccsd_module
   use lsmpi_type
 #endif
 
-  use integralparameters!, only: AORdefault
+  use lsparameters!, only: AORdefault
   use tensor_interface_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
@@ -6163,7 +6163,7 @@ subroutine ccsd_data_preparation()
   use, intrinsic :: iso_c_binding, only:c_ptr
   use precision
   use lstiming
-  use Integralparameters, only:CCSDDATA
+  use lsparameters, only: CCSDDATA
   use dec_typedef_module
   use typedeftype,only:lsitem,tensor
   use infpar_module

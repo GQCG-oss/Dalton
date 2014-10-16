@@ -29,7 +29,7 @@ module f12_integrals_module
   use typedef!, only: typedef_free_setting,copy_setting
   use memory_handling
   use screen_mod!,only: free_decscreen, DECSCREENITEM
-  use Integralparameters!, only: MP2INAMP
+  use lsparameters
   use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
   !       & II_getBatchOrbitalScreen

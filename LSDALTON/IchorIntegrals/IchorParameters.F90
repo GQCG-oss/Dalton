@@ -42,7 +42,7 @@ integer,parameter :: GGemOperator   =2    ! The Gaussian geminal operator g
 integer,parameter :: GGemCouOperator=3    ! The Gaussian geminal divided by the Coulomb operator g/r12
 integer,parameter :: GGemGrdOperator=4    ! The double commutator [[T,g],g]
 integer,parameter :: GGemSqOperator =5    ! The Gaussian geminal operator squared g^2
-
+real(realk) :: IchorGPUmaxmem
 
 !public:: SphericalParam, IcorJobEri, IcorInputNoInput, IchorParNone,&
 !     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
@@ -54,6 +54,7 @@ integer,parameter :: GGemSqOperator =5    ! The Gaussian geminal operator square
   integer,parameter :: maxnAsyncHandles=1
 #endif
 CONTAINS
+
 subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
   implicit none
   integer,intent(in) :: IchorScreenSpec

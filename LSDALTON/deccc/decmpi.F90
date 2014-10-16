@@ -2116,6 +2116,12 @@ contains
     integer(kind=ls_mpik) :: master
     master = 0
 
+    call ls_mpi_buffer(DECitem%SNOOP,Master)
+    call ls_mpi_buffer(DECitem%SNOOPjustHF,Master)
+    call ls_mpi_buffer(DECitem%SNOOPmaxiter,Master)
+    call ls_mpi_buffer(DECitem%SNOOPthr,Master)
+    call ls_mpi_buffer(DECitem%SNOOPmaxdiis,Master)
+    call ls_mpi_buffer(DECitem%SNOOPdebug,Master)
     call ls_mpi_buffer(DECitem%doDEC,Master)
     call ls_mpi_buffer(DECitem%DECCO,Master)
     call ls_mpi_buffer(DECitem%frozencore,Master)
@@ -2528,7 +2534,7 @@ end module decmpi_module
 subroutine set_dec_settings_on_slaves()
    use infpar_module
    use lsmpi_type
-   use Integralparameters
+   use lsparameters
    use dec_typedef_module
    use decmpi_module, only:mpibcast_dec_settings
    implicit none

@@ -4,7 +4,7 @@ MODULE io
 use io_type
 use files
 use precision
-use Integralparameters
+use LSparameters
 use matrix_module
 use matrix_operations
 use memory_handling

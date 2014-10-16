@@ -678,7 +678,7 @@ DO IAngmomTypes = 0,MaxTotalAngmom
       IF(DoLink) NOTDoSSSS=.TRUE.
       IF(DoMoTrans) NOTDoSSSS=.TRUE.
       IF(UseGeneralCode)NOTDoSSSS = .TRUE.
-      IF(UseCPU)NOTDoSSSS = .TRUE.
+      IF(.NOT.UseCPU)NOTDoSSSS = .TRUE.
       IF(NOTDoSSSS)THEN
          !Determine Sizes of TmpArrays and MaxPasses
          IF(UseCPU)THEN
@@ -2269,7 +2269,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
   !Determine number of Async handles (related to size of memory required)
 #ifdef VAR_OPENACC
-  MaxGPUmemory = 2_long*1000_long*1000_long*1000_long !2 GB change to input keyword
+  MaxGPUmemory = FLOOR(GPUMAXMEM,kind=long)*1000_long*1000_long*1000_long !given by input
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
        & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)

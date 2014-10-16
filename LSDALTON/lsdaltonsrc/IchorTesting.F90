@@ -7,7 +7,7 @@ MODULE IntegralInterfaceIchorMod
   use basis_typetype,only: BASISSETINFO,BASISINFO,RegBasParam,nBasisBasParam
   use BuildBasisSet, only: Build_BASIS
   use Matrix_module, only: MATRIX, MATRIXP
-  use Integralparameters
+  use LSparameters
   use molecule_typetype, only: MOLECULEINFO, MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
        & free_moleculeinfo, build_atomicmolecule, print_mol

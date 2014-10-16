@@ -7,7 +7,7 @@ use IntegralInterfaceMOD
 use matrix_util
 use matrix_module
 use matrix_operations
-use integralparameters
+use LSparameters
 use memory_handling
 use TYPEDEF,only: count_ncore
 contains

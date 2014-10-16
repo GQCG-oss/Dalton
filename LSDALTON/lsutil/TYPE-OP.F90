@@ -21,7 +21,7 @@ MODULE TYPEDEF
  use integralOutput_typetype
  use LSTENSOR_OPERATIONSMOD
  use LSTENSOR_typetype
- use Integralparameters
+ use LSparameters
  use GCtransMod
 #ifdef VAR_MPI
  use infpar_module

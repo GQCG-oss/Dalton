@@ -2,7 +2,7 @@ MODULE IntegralInterfaceMOD
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig
   use Matrix_module, only: MATRIX, MATRIXP
-  use Integralparameters
+  use LSparameters
   use LSTIMING
   use molecule_typetype, only: MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &

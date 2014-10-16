@@ -16,7 +16,7 @@ use matrix_util
 use scfloop_module!, only : scfloop
 use lsdalton_fock_module
 use BUILDAOBATCH
-use integralparameters
+use lsparameters
 use READMOLEFILE
 use BUILDBASISSET
 use LSTIMING
@@ -1363,7 +1363,7 @@ use Matrix_Operations, only: matrix_type,mtype_dense,mat_select_type
 use lstiming
 use typedef, only: getNbasis
 use GCtransMod, only: write_GCtransformationmatrix
-use Integralparameters
+use lsparameters
 implicit none
 type(optItem), intent(inout) :: opt
 type(optItem)             :: gcopt
@@ -1551,7 +1551,7 @@ use daltoninfo
 use matrix_module
 use matrix_operations
 use matrix_util
-use Integralparameters
+use lsparameters
 use IntegralInterfaceMOD
 use diagonalization
 use scfloop_module

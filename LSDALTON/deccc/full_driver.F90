@@ -68,45 +68,57 @@ contains
     call set_dec_settings_on_slaves()
 #endif
 
-    !MODIFY FOR NEW MODEL
 
-    ! run cc program
-    if(DECinfo%F12) then ! F12 correction
-#ifdef MOD_UNRELEASED
-       if(DECinfo%ccModel==MODEL_MP2) then
-          call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
-       else
-          call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
-       end if
-#else
-       call lsquit('f12 not released',-1)
-#endif
-    elseif(DECinfo%ccModel==MODEL_RIMP2)then
-!       call lsquit('RIMP2 currently not implemented for **CC ',-1)
-       call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+    ! For SNOOP we might want to skip correlated calculation
+    DoCorrelatedCalculation: if(DECinfo%SNOOPjustHF) then
+
+       write(DECinfo%output,*) 'Skipping correlated calculation for SNOOP!'
+       Ecorr = 0.0_realk
+
     else
-       !if(DECinfo%ccModel==MODEL_MP2) then
 
-       !   if(DECinfo%use_canonical ) then
-       !      ! simple conventional MP2 calculation, only works for canonical orbitals
-       !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
-       !   else
-       !      ! Call routine which calculates individual fragment contributions and prints them,
-       !      ! works both for canonical and local orbitals
-       !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-       !   end if
 
-       !else
+       !MODIFY FOR NEW MODEL
+
+       ! run cc program
+       if(DECinfo%F12) then ! F12 correction
+#ifdef MOD_UNRELEASED
+          if(DECinfo%ccModel==MODEL_MP2) then
+             call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+          else
+             call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
+          end if
+#else
+          call lsquit('f12 not released',-1)
+#endif
+       elseif(DECinfo%ccModel==MODEL_RIMP2)then
+          !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
+          call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+       else
+          !if(DECinfo%ccModel==MODEL_MP2) then
+
+          !   if(DECinfo%use_canonical ) then
+          !      ! simple conventional MP2 calculation, only works for canonical orbitals
+          !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          !   else
+          !      ! Call routine which calculates individual fragment contributions and prints them,
+          !      ! works both for canonical and local orbitals
+          !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+          !   end if
+
+          !else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
-       !end if
-    end if
+          !end if
+       end if
 
-    ! Get HF energy
-    Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
+       ! Get HF energy
+       Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
 
-    ! Print summary
-    Eerr = 0.0_realk   ! zero error for full calculation by definition
-    call print_total_energy_summary(EHF,Ecorr,Eerr)
+       ! Print summary
+       Eerr = 0.0_realk   ! zero error for full calculation by definition
+       call print_total_energy_summary(EHF,Ecorr,Eerr)
+
+    end if DoCorrelatedCalculation
 
   end subroutine full_driver
 
@@ -2151,7 +2163,7 @@ subroutine full_canonical_rimp2_slave
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem
-  use Integralparameters
+  use lsparameters
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef
