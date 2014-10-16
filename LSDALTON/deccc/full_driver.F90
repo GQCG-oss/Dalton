@@ -68,45 +68,57 @@ contains
     call set_dec_settings_on_slaves()
 #endif
 
-    !MODIFY FOR NEW MODEL
 
-    ! run cc program
-    if(DECinfo%F12) then ! F12 correction
-#ifdef MOD_UNRELEASED
-       if(DECinfo%ccModel==MODEL_MP2) then
-          call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
-       else
-          call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
-       end if
-#else
-       call lsquit('f12 not released',-1)
-#endif
-    elseif(DECinfo%ccModel==MODEL_RIMP2)then
-!       call lsquit('RIMP2 currently not implemented for **CC ',-1)
-       call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+    ! For SNOOP we might want to skip correlated calculation
+    DoCorrelatedCalculation: if(DECinfo%SNOOPjustHF) then
+
+       write(DECinfo%output,*) 'Skipping correlated calculation for SNOOP!'
+       Ecorr = 0.0_realk
+
     else
-       !if(DECinfo%ccModel==MODEL_MP2) then
 
-       !   if(DECinfo%use_canonical ) then
-       !      ! simple conventional MP2 calculation, only works for canonical orbitals
-       !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
-       !   else
-       !      ! Call routine which calculates individual fragment contributions and prints them,
-       !      ! works both for canonical and local orbitals
-       !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
-       !   end if
 
-       !else
+       !MODIFY FOR NEW MODEL
+
+       ! run cc program
+       if(DECinfo%F12) then ! F12 correction
+#ifdef MOD_UNRELEASED
+          if(DECinfo%ccModel==MODEL_MP2) then
+             call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
+          else
+             call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
+          end if
+#else
+          call lsquit('f12 not released',-1)
+#endif
+       elseif(DECinfo%ccModel==MODEL_RIMP2)then
+          !       call lsquit('RIMP2 currently not implemented for **CC ',-1)
+          call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
+       else
+          !if(DECinfo%ccModel==MODEL_MP2) then
+
+          !   if(DECinfo%use_canonical ) then
+          !      ! simple conventional MP2 calculation, only works for canonical orbitals
+          !      call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+          !   else
+          !      ! Call routine which calculates individual fragment contributions and prints them,
+          !      ! works both for canonical and local orbitals
+          !      call Full_DECMP2_calculation(MyMolecule,mylsitem,Ecorr)
+          !   end if
+
+          !else
           call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
-       !end if
-    end if
+          !end if
+       end if
 
-    ! Get HF energy
-    Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
+       ! Get HF energy
+       Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
 
-    ! Print summary
-    Eerr = 0.0_realk   ! zero error for full calculation by definition
-    call print_total_energy_summary(EHF,Ecorr,Eerr)
+       ! Print summary
+       Eerr = 0.0_realk   ! zero error for full calculation by definition
+       call print_total_energy_summary(EHF,Ecorr,Eerr)
+
+    end if DoCorrelatedCalculation
 
   end subroutine full_driver
 
@@ -309,7 +321,13 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
-    type(array4) :: array4Taibj,array4gmo
+    type(tensor) :: tensor_Taibj,tensor_gmo
+    integer :: vs, os
+    logical :: local
+    local = .true.
+#ifdef VAR_MPI
+    local = (infpar%lg_nodtot==1)
+#endif
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
@@ -397,12 +415,14 @@ contains
        !    ! Get full MP2 (as specified in input)
 
        ! KK: Quick and dirty solution to the fact that the MP2 solver requires array4 format.
-       array4gmo = array4_init([nvirt,nocc,nvirt,nocc])
-       array4gmo%val=gmo
-       call mp2_solver(nocc,nvirt,MyMolecule%ppfock,MyMolecule%qqfock,array4gmo,array4Taibj)
-       call array4_free(array4gmo)
+       ! PE: even more quicker and dirtier solution for that the new solver
+       ! needs the tensor format
+       call mp2_solver(MyMolecule,mylsitem,tensor_gmo,tensor_Taibj,.false.)
+       call tensor_free(tensor_gmo)
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+       call tensor_convert(tensor_Taibj,Taibj)
+       call tensor_free(tensor_Taibj)
 
        mp2_energy = 0.0E0_realk
        do j=1,nocc
@@ -410,7 +430,7 @@ contains
              do i=1,nocc
                 do a=1,nvirt
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
-                   Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
+                   !Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
@@ -807,7 +827,6 @@ contains
        write(DECinfo%output,*)  'TOYCODE: MP2-F12 CORRELATION ENERGY =    ', mp2f12_energy
     endif
 
-    call array4_free(array4Taibj)
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
@@ -2144,7 +2163,7 @@ subroutine full_canonical_rimp2_slave
   use lsmpi_op,only: mpicopy_lsitem
   use precision
   use typedeftype,only:lsitem
-  use Integralparameters
+  use lsparameters
   use decmpi_module, only: mpi_bcast_fullmolecule
   use DALTONINFO, only: ls_free
 !  use typedef

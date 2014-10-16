@@ -594,6 +594,13 @@ subroutine GetIchorAlgorithmSpecIdentifier(Identifier)
   Identifier = IchorAlgoOS
 end subroutine GetIchorAlgorithmSpecIdentifier
 
+subroutine SetIchorGPUMAXMEM(InputGPUMAXMEM)
+  use IchorParametersModule
+  implicit none
+  real(realk),intent(inout) :: InputGPUMAXMEM
+  IchorGPUMAXMEM = InputGPUMAXMEM
+end subroutine SetIchorGPUMAXMEM
+
 subroutine FreeIchorSaveGabModuleInterface()
 use IchorSaveGabModule
 implicit none

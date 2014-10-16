@@ -19,7 +19,7 @@ MODULE dal_interface
                 & ao2gcao_transform_matrixf
    use basis_typetype,only:VALBasParam
    use dec_typedef_module, only: batchTOorb,DecAObatchinfo
-   use Integralparameters
+   use LSparameters
    use AO_TypeType, only: AOITEM
    use files, only: lsclose, lsopen
    use BUILDAOBATCH, only: build_batchesOfAOs, build_ao, &

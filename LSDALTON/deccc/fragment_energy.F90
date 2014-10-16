@@ -312,9 +312,6 @@ contains
 #ifdef MOD_UNRELEASED
        endif
 #endif
-       call print_norm(VOVO,"VOVO")
-       call print_norm(t2,  "t2  ")
-       call print_norm(t1,  "t1  ")
 
        ! Extract EOS indices for integrals
        ! *********************************
@@ -338,11 +335,6 @@ contains
        call tensor_extract_eos_indices(u,MyFragment,tensor_occEOS=t2occ,tensor_virtEOS=t2virt)
        ! Note, t2occ and t2virt also contain singles contributions
        call tensor_free(u)
-
-       call print_norm(VOVOvirt,"VOVOvirt:")
-       call print_norm(VOVOocc, "VOVOocc :")
-       call print_norm(t2virt,"t2  virt:")
-       call print_norm(t2occ, "t2  occ :")
 
        call dec_fragment_time_get(times_ccsd)
 
@@ -1533,6 +1525,7 @@ contains
     real(realk),intent(inout) :: Ecorr
     logical,dimension(MyMolecule%natoms) :: orbitals_assigned
     real(realk),pointer :: Cocc(:,:), Cvirt(:,:)
+    type(tensor) :: t2_t, g_t
     type(array4) :: t2, g
     real(realk) :: energy_matrix(MyMolecule%natoms,MyMolecule%natoms), multaibj, multbiaj
     integer :: nthreads, idx, nbatchINT, intstep, ncore,offset
@@ -1695,14 +1688,28 @@ contains
 
     ! Get (C K | D L) integrals stored in the order (C,K,D,L)
     ! *******************************************************
-    call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cvirt,Cocc,g)
+    !call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cvirt,Cocc,g)
     call mem_dealloc(Cocc)
     call mem_dealloc(Cvirt)
 
 
     ! Get t2 amplitudes
     ! *****************
-    call mp2_solver(nocc,nunocc,ppfock,MyMolecule%qqfock,g,t2)
+    call mp2_solver(MyMolecule,mylsitem,g_t,t2_t,.false.)
+
+
+    !FIXME:THIS IS A DIRTY WORKAROUND NOT TO CHANGE TOO MUCH IN THE SUBROUTINE
+    !-------------------------------------------------------------------------
+    t2 = array4_init(t2%dims)                                                !
+    g  = array4_init(g%dims)                                                 !
+                                                                             !
+    call tensor_convert(t2_t,t2%val)                                         !
+    call tensor_convert(g_t,g%val)                                           !
+                                                                             !
+    call tensor_free(t2_t)                                                   !
+    call tensor_free(g_t)                                                    !
+    !-------------------------------------------------------------------------
+
 
     ! STATUS: Now integrals (g) and amplitudes (t) have been determined
     ! for the full molecular system. The individual fragment contributions - solved in the
@@ -2164,8 +2171,8 @@ contains
      logical :: expansion_converged,ExpandFragmentConverged,DistanceRemoval
      logical :: OccUnchanged,VirtUnchanged,ExpandVirt,ExpandOcc
      logical :: BinarySearch,SeperateExpansion,OrbDistanceSpec,TestOcc
-     type(array4) :: t2,g
-     real(realk) :: FmaxOcc(nocc),FmaxVirt(nunocc)
+     type(tensor) :: t2,g
+     real(realk)  :: FmaxOcc(nocc),FmaxVirt(nunocc)
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
      real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:)
@@ -2497,15 +2504,16 @@ contains
         ! Get MP2 amplitudes for fragment
         ! *******************************
         ! Integrals (ai|bj)
-        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-           & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-           & AtomicFragment%Cv, AtomicFragment%Co, g)
-        ! Amplitudes
-        call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-           & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
-        call array4_free(g)
+        !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
+        !   & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+        !   & AtomicFragment%Cv, AtomicFragment%Co, g)
+        !! Amplitudes
+        call mp2_solver(AtomicFragment,g,t2,.false.)
+        !call array4_free(g)
+
+        call tensor_free(g)
         ! Get correlation density matrix for atomic fragment
-        call calculate_corrdens_frag(t2,AtomicFragment)
+        call calculate_MP2corrdens_frag(t2,AtomicFragment)
      end if FragAdapt
 
 
@@ -2556,10 +2564,12 @@ contains
 
      WhichReductionScheme: if(DECinfo%fragadapt) then
         ! Reduce using fragment-adapted orbitals
+        print *,"before",t2%initialized
         call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
            &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
-        call array4_free(t2)
+        print *,"freeing tesn",t2%initialized
+        call tensor_free(t2)
      else
         ! Reduce using local orbitals
         if(present(t1full)) then
@@ -3046,7 +3056,7 @@ contains
   !> \author Kasper Kristensen
   subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-       &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
+       &MyMolecule,mylsitem,freebasisinfo,t2tens,max_iter_red)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3068,14 +3078,16 @@ contains
     logical,intent(in) :: freebasisinfo
     !> Doubles amplitudes for converged fragment (local orbital basis, index order: a,i,b,j)
     !> At output, the virtual indices will have been transformed to the (smaller) FO orbital space
-    type(array4),intent(inout) :: t2
+    type(tensor),intent(inout) :: t2tens
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
     real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-
+    type(array4)  :: t2
+    character(4) :: stens_atype
+    integer :: os,vs
 
     ! Init stuff
     ! **********
@@ -3114,8 +3126,22 @@ contains
        !       we are not allowed to mix the virtual orbitals assigned to the central atom
        !       with the other atoms.
        if(ov==1 .and. DECinfo%onlyoccpart) then
+
+          !FIXME: dirty hack
+          t2 = array4_init(t2tens%dims)
+          call tensor_convert(t2tens, t2%val)
+          stens_atype = t2tens%atype
+          call tensor_free(t2tens)
+
           call transform_virt_amp_to_FOs(t2,AtomicFragment)
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
+
+          !FIXME: dirty hack-restore input tensor with the new dimensions and data
+          call get_symm_tensor_segmenting_simple(t2%dims(2),t2%dims(1),os,vs)
+          call tensor_minit(t2tens,t2%dims,4, atype = stens_atype, tdims=[vs,os,vs,os])
+          call tensor_convert(t2%val,t2tens)
+          call array4_free(t2)
+
        end if
        if(DECinfo%onlyVirtpart) then
           WRITE(DECinfo%output,*)'WARNING FOs usign onlyVirtpart not tested'
@@ -4128,7 +4154,7 @@ contains
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
-    type(array4) :: g, t2
+    type(tensor) :: g, t2
 
 
     write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
@@ -4144,16 +4170,17 @@ contains
        MyMolecule%ccmodel(MyAtom,MyAtom) = MODEL_MP2
 
        ! Integrals (ai|bj)
-       call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-            & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%Cv, AtomicFragment%Co, g)
+       !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
+       !     & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !     & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
-       call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
-       call array4_free(g)
+       !call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !     & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
+       call mp2_solver(AtomicFragment,g,t2,.false.)
+       call tensor_free(g)
        ! Get correlation density matrix
-       call calculate_corrdens_frag(t2,AtomicFragment)
-       call array4_free(t2)
+       call calculate_MP2corrdens_frag(t2,AtomicFragment)
+       call tensor_free(t2)
 
        ! Set MO coefficient matrices corresponding to fragment-adapted orbitals
        call fragment_adapted_transformation_matrices(AtomicFragment)

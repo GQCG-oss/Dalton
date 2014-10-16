@@ -7,7 +7,7 @@ use SphCart_matrices
 use OD_type
 use ls_util
 use precision
-use Integralparameters
+use LSparameters
 use ThermiteMem_module
 use OverlapType
 TYPE Allocitem

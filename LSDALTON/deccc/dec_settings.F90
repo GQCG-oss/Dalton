@@ -30,6 +30,15 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
+    ! SNOOP
+    DECinfo%SNOOP = .false.
+    DECinfo%SNOOPjustHF = .false.
+    DECinfo%SNOOPMaxDIIS=5
+    DECinfo%SNOOPMaxIter=100
+    DECinfo%SNOOPthr=1e-7_realk
+    DECinfo%SNOOPdebug=.false.
+
+
     DECinfo%doDEC                  = .false.
 
     ! Orbital-based DEC scheme 
@@ -199,9 +208,9 @@ contains
     DECinfo%gradient=.false.
     DECinfo%kappa_use_preconditioner=.true.
     DECinfo%kappa_use_preconditioner_in_b=.true.
+    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
-    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaTHR=1e-4_realk
     DECinfo%EerrFactor = 0.1_realk
     DECinfo%EerrOLD = 0.0_realk
@@ -316,6 +325,30 @@ contains
           ! *               Keywords available for the general user                    *
           ! ****************************************************************************
           ! These keywords should be properly documented for the release.
+
+
+          ! SNOOP
+          ! =====
+
+          ! Perform SNOOP calculation rather than DEC (will be merged at some point)
+       case('.SNOOP') 
+          DECinfo%SNOOP=.true.
+
+          ! Just do HF calculation in SNOOP and skip correlated CC calculation?
+       case('.SNOOPJUSTHF') 
+          DECinfo%SNOOPjustHF=.true.
+
+          ! Threshold for residual norm in SNOOP HF calculations
+       case('.SNOOPTHR') 
+          read(input,*) DECinfo%SNOOPthr
+
+          ! Maximum number of iterations in SNOOP HF calculations
+       case('.SNOOPMAXITER'); read(input,*) DECinfo%SNOOPMaxIter
+          ! Maximum number of DIIS vectors to store in SNOOP HF calculations (RH/DIIS scheme)
+       case('.SNOOPMAXDIIS'); read(input,*) DECinfo%SNOOPMaxDIIS
+          ! Debug prints for SNOOP
+       case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
+
 
           ! GENERAL INFO
           ! ============
@@ -652,6 +685,32 @@ contains
     nodtot = infpar%nodtot
 #endif
 
+    
+    ! SNOOP - currently limited in several ways
+    if(DECinfo%SNOOP) then
+       
+       ! Only for full calculation
+       if(.not. DECinfo%full_molecular_cc) then
+          call lsquit('Currently SNOOP is only implemented for **CC and not for **DEC!',-1)
+       end if
+
+       ! Only for dense matrices for now
+       if(matrix_type/=mtype_dense) then
+          call lsquit('SNOOP is only implemented for dense matrices!',-1)
+       end if
+       
+       ! SimulateFull will destroy subsystem assignment and thus render SNOOP meaningless
+       if(DECinfo%simulate_full) then
+          call lsquit('SNOOP cannot be used in connection with the SIMULATEFULL keyword!',-1)
+       end if
+
+       ! Energy contribution analysis will not work for DECCO
+       if(DECinfo%DECCO) then
+          call lsquit('SNOOP cannot be used in connection with the DECCO keyword!',-1)
+       end if
+       
+    end if
+
 
     ! DEC orbital-based - currently limited to occupied partitioning scheme
     ! and several options are not possible
@@ -895,8 +954,12 @@ contains
     WRITE(lupri,*) ' The DEC settings structure '
     write(lupri,*) '****************************'
 
-    write(lupri,*) 
-
+    write(lupri,*) 'SNOOP ',DECinfo%SNOOP
+    write(lupri,*) 'SNOOPjustHF ', DECinfo%SNOOPjustHF
+    write(lupri,*) 'SNOOPMaxDIIS ', DECinfo%SNOOPMaxDIIS
+    write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
+    write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
+    write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc

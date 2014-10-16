@@ -1131,12 +1131,11 @@ contains
         end if
      end do
 
-     print*,"EXTRACTING VIRT"
-
      ! Extract virtual EOS indices and store in Arr
      ! ********************************************
 
-     ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc)
+     ! Initiate Arr with new dimensions (nvirt_EOS,nocc,nvirt_EOS,nocc) on the
+     ! local node, as the tensor will be small enough to store locally
      call tensor_init(Arr,new_dims,4)
 
      select case ( tensor_full%itype )

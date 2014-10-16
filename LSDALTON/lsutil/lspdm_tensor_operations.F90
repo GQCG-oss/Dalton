@@ -1190,7 +1190,6 @@ module lspdm_tensor_operations_module
               end do
            end do
 
-           print *,infpar%lg_mynum," has ",lt," and ",norm2(ut)
 
            ut => null()
            tt => null()

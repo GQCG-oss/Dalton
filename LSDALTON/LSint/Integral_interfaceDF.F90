@@ -4,7 +4,7 @@ MODULE IntegralInterfaceModuleDF
   use Typedef  
   use Matrix_module
   use Matrix_Operations
-  use Integralparameters
+  use LSparameters
   use LStiming
   use ls_Integral_Interface
   use IO

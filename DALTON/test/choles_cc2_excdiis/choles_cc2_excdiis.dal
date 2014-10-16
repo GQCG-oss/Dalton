@@ -26,12 +26,12 @@
 .PRINT
   1
 .FREEZE
-  11   0
+  5   0
 .CCS
 .CC2
 *CCEXCI
 .CHEXDI
 .DV4DIS
 .NCCEXCI
-  2   1
+  2   1   0   0
 **END OF DALTON INPUT

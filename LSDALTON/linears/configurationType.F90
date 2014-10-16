@@ -124,6 +124,8 @@ type ConfigItem
    !> Used to store info about geometrical Hessian
    type(geoHessianconfig) :: geoHessian
 #endif
+   !> Max memory available on gpu measured in GB. By default set to 2 GB
+   real(realk) :: GPUMAXMEM
    !> Should a excited state geometry optimization be performed 
    logical              :: doESGopt
    !> Skip LSDALTON calculation and calculate PLT file from existing density

@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# these env variables are machine dependent, adapt to your needs
-export PATH=$HOME/openmpi/intel/bin:$PATH
-export LD_LIBRARY_PATH=$HOME/openmpi/intel/lib:$LD_LIBRARY_PATH
-
 BRANCH='master'
-NUM_CORES=4
+NUM_CORES=1
+MAKE_RELEASE=0
 
-while getopts b:p:n: opt; do
+while getopts b:p:n:r: opt; do
   case $opt in
   b)
       BRANCH=$OPTARG
@@ -15,12 +12,13 @@ while getopts b:p:n: opt; do
   n)
       NUM_CORES=$OPTARG
       ;;
+  r)
+      MAKE_RELEASE=$OPTARG
+      ;;
   esac
 done
 
 shift $((OPTIND - 1))
-
-export DALTON_NUM_MPI_PROCS=$NUM_CORES
 
 BUILDNAME="$BRANCH-$(basename $0)"
 
@@ -33,10 +31,19 @@ git clone git@repo.ctcc.no:dalton $CTEST_TEMP_DIR/compile
 
 cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null
-./setup --mpi --mkl=sequential -D BUILDNAME=$BUILDNAME
+
+if [ $MAKE_RELEASE -eq 1 ]; then
+    cd build
+    cmake ..
+    make release
+    tar xvzf DALTON-Source.tar.gz
+    cd DALTON-Source
+fi
+
+./setup --fc=ifort --cc=icc --cxx=icpc --mkl=sequential -D BUILDNAME=$BUILDNAME
 cd build
-make -j$NUM_CORES dalton.x
-ctest -D Nightly -L dalton
+make -j$NUM_CORES
+ctest -D Nightly -j$NUM_CORES
 
 rm -rf $CTEST_TEMP_DIR
 

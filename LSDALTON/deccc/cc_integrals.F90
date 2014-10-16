@@ -14,7 +14,7 @@ module ccintegrals
   use matrix_operations
   use integralinterfaceDEC
   use screen_mod
-  use Integralparameters
+  use LSparameters
   use integralinterfaceMOD
   use II_XC_interfaceModule
 #ifdef VAR_ICHOR
@@ -502,7 +502,7 @@ contains
   !> where J(U) and K(U) are the coulomb and exchange transformations, respectively.
   !> \author Kasper Kristensen
   !> \date November 2010
-  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric)
+  subroutine dec_fock_transformation(FockU,U,MyLsitem,symmetric,incl_h)
 
     implicit none
     !> Fock transformation on U matrix
@@ -513,9 +513,12 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
+    !> Include one-electron contribution to Fock matrix (default: not include)
+    logical,intent(in),optional :: incl_h
     real(realk) :: Edft(1),DFTELS
     logical :: doMPI 
     integer :: igrid
+    type(matrix) :: h
     ! Sanity check
     if(U%nrow /= U%ncol) then
        call lsquit('dec_fock_transformation:&
@@ -548,6 +551,18 @@ contains
        !       IF(DECinfo%FrozenCore)
        MyLsItem%setting%scheme%DFT%DFTELS = DFTELS
     ENDIF
+
+
+    ! Add one-electron contribution
+    if(present(incl_h)) then
+       if(incl_h) then
+          call mat_init(h,U%nrow,U%ncol)
+          call mat_zero(h)
+          call ii_get_h1(DECinfo%output,DECinfo%output,mylsitem%setting,h)
+          call mat_daxpy(1E0_realk,h,FockU)
+          call mat_free(h)
+       end if
+    end if
 
   end subroutine dec_fock_transformation
 
