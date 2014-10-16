@@ -52,6 +52,10 @@ public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
    & mp2_solver
 private
 
+interface mp2_solver
+   module procedure mp2_solver_frag, mp2_solver_mol
+end interface mp2_solver
+
 contains
 
 
@@ -610,11 +614,8 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
          & myfragment%ppfock,myfragment%qqfock,ccenergy,&
          & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,.false.,frag=myfragment)
 
-      !GET THE CORRELATION DENSITY FOR THE CENTRAL ATOM
-      call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
-      call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
-      call calculate_corrdens_EOS(mp2_amp%elm4,MyFragment) 
-      MyFragment%CDset=.true.
+      !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
+      call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
    endif
 #endif
    call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
@@ -622,7 +623,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
       & myfragment%ppfock,myfragment%qqfock,ccenergy,&
       & t1,t2,VOVO,MyFragment%t1_stored,local,DECinfo%use_pnos,frag=myfragment, &
-      & m2=mp2_amp)
+      & m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
 
 #ifdef MOD_UNRELEASED
    if(DECinfo%use_pnos)call tensor_free(mp2_amp)
@@ -648,677 +649,797 @@ end subroutine fragment_ccsolver
 !>               + sum_{k} t_{bjak} F_{ki}
 !>               + sum_{k} t_{aibk} F_{kj}
 !> It is assumed that RHS_{bjai} = R_{aibj} !
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!> \author Patrick Ettenhuber adapted from Kasper Kristensen
+!> \date October 2014
+subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
 
    implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
+   !> fragment
+   type(decfrag), intent(inout) :: frag 
    !> RHS array
-   type(array4), intent(in) :: RHS
+   type(tensor), intent(inout)  :: RHS
    !> Solution array
-   type(array4), intent(inout) :: t2
-   real(realk) :: tcpu1,twall1,tcpu2,twall2
+   type(tensor), intent(inout)  :: t2
+   !> logical to specify whether to use the supplied RHS or calculate it in the
+   !solver
+   logical, intent(in)          :: rhs_input
+   !> output mp2 energy
+   real(realk), intent(out), optional   :: mp2_energy
+   real(realk)  :: tcpu1,twall1,tcpu2,twall2
+   type(tensor) :: t1_dummy
+   real(realk) :: e
+   integer :: Ncore, no, nv, nb
+   logical :: local
 
    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-   if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
-      call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
-   else ! RHS and t2 values are stored in memory
-      call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
-   end if
+   local = .true.
+#ifdef VAR_MPI
+   local = (infpar%lg_nodtot==1)
+#endif
+
+   !if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
+   !   call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !else ! RHS and t2 values are stored in memory
+   !   call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !end if
+
+   nb    = frag%nbasis
+   nv    = frag%nunoccAOS
+   no    = frag%noccAOS
+   Ncore = frag%ncore
+
+   call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
+      & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
+      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false.,frag=frag,&
+      & vovo_supplied = rhs_input)
+
+   if(present(mp2_energy)) mp2_energy = e
 
    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
+   if(t1_dummy%initialized)then
+      call lsquit("ERROR(mp2_solver_frag) something wrong with singles handling in ccsolver_par",-1)
+   endif
 
-end subroutine mp2_solver
+end subroutine mp2_solver_frag
 
-
-
-!> \brief Solve MP2 equation when RHS and t2 are values are stored in memory.
-!> See mp2_solver for details about the equation.
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!> \brief Solve MP2 equation:
+!> RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
+!>               - sum_{c} t_{aicj} F_{cb}
+!>               + sum_{k} t_{bjak} F_{ki}
+!>               + sum_{k} t_{aibk} F_{kj}
+!> It is assumed that RHS_{bjai} = R_{aibj} !
+!> \author Patrick Ettenhuber adapted from Kasper Kristensen
+!> \date October 2014
+subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
+   !> Full molecular information
+   type(fullmolecule), intent(in) :: mol 
+   !corresponding lsitem info
+   type(lsitem), intent(inout)  :: mls
    !> RHS array
-   type(array4), intent(in) :: RHS
+   type(tensor), intent(inout)  :: RHS
    !> Solution array
-   type(array4), intent(inout) :: t2
-   type(array4) :: tmp1,tmp2
-   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
-   real(realk),pointer :: EVocc(:), EVvirt(:)
-   type(array2) :: Cocc, Cvirt
-   integer :: I,J,A,B
-   real(realk) :: tcpu, twall, deltaF
-   integer :: dims(4), occdims(2), virtdims(2)
-   ! real(realk) :: test
+   type(tensor), intent(inout)  :: t2
+   !> logical to specify whether to use the supplied RHS or calculate it in the
+   !solver
+   logical, intent(in)          :: rhs_input
+   !> output mp2 energy
+   real(realk), intent(out), optional   :: mp2_energy
 
+   !internal variables
+   real(realk)  :: tcpu1,twall1,tcpu2,twall2
+   type(tensor) :: t1_dummy
+   real(realk)  :: e
+   real(realk), pointer :: Co(:,:),oof(:,:)
+   integer :: Ncore, no, nv, nb, i, j
+   logical :: local
 
-   ! Strategy for solving MP2 equation:
-   ! 1. Find basis where Fock matrix is diagonal
-   ! 2. Transform 2-electron integrals to diagonal basis
-   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
-   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+   call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-   call LSTIMER('START',tcpu,twall,DECinfo%output)
+   local = .true.
+#ifdef VAR_MPI
+   local = (infpar%lg_nodtot==1)
+#endif
 
+   !if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
+   !   call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !else ! RHS and t2 values are stored in memory
+   !   call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !end if
 
-   write(DECinfo%output,*)
-   write(DECinfo%output,*) 'Entering MP2 solver - store array values in memory'
-   write(DECinfo%output,*)
+   nb    = mol%nbasis
+   nv    = mol%nunocc
+   Ncore = mol%ncore
 
+   if(DECinfo%frozencore) then
 
-   ! Sanity checks
-   ! *************
-   ! Check that nvirt /= 0.
-   if(nvirt<1 .or. nocc<1) then
-      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
-      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
-   endif
+      no = mol%nval
 
+      ! Only copy valence orbitals
 
+      call mem_alloc(Co,nb,no)
+      call mem_alloc(oof,no,no)
 
-
-   ! Initialize stuff
-   ! ****************
-   dims = [nvirt,nocc,nvirt,nocc]
-   occdims = [nocc,nocc]
-   virtdims = [nvirt,nvirt]
-
-
-
-
-   ! 1. Solve Fock eigenvalue problem - each block separately
-   ! ********************************************************
-
-   ! OCCUPIED-OCCUPIED BLOCK
-   ! '''''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cocc_data,nocc,nocc)
-
-   ! Eigenvalues
-   call mem_alloc(EVocc,nocc)
-
-   ! The overlap matrix is simply the unit matrix because
-   ! the LCM/MLM basis is orthogonal.
-   call mem_alloc(Socc,nocc,nocc)
-   Socc=0.0E0_realk
-   do i=1,nocc
-      Socc(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   Cocc = array2_init(occdims,Cocc_data)
-
-   ! Done with some matrices
-   call mem_dealloc(Cocc_data)
-   call mem_dealloc(Socc)
-
-
-
-
-   ! VIRTUAL-VIRTUAL BLOCK
-   ! '''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cvirt_data,nvirt,nvirt)
-
-   ! Eigenvalues
-   call mem_alloc(EVvirt,nvirt)
-
-   ! Unit overlap for virtual space
-   call mem_alloc(Svirt,nvirt,nvirt)
-   Svirt=0.0E0_realk
-   do i=1,nvirt
-      Svirt(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   Cvirt = array2_init(virtdims,Cvirt_data)
-
-   ! Done with some matrices
-   call mem_dealloc(Cvirt_data)
-   call mem_dealloc(Svirt)
-
-
-   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
-
-
-
-   ! 2. Transform two-electron integrals to diagonal basis
-   ! *****************************************************
-
-   ! Using notation that (a,i,b,j) are LCM indices
-   ! and (A,I,B,J) are indices in the diagonal basis,
-   ! we want to carry out the transformations:
-   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj} (*)
-
-   ! 1. Init temporary array
-   tmp1= array4_init(dims)
-
-   ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
-   call array4_contract1(RHS,Cvirt,tmp1,.true.)
-
-   ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
-   call array4_reorder(tmp1,[2,1,3,4])
-   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
-
-   call array4_contract1(tmp1,Cocc,tmp2,.true.)
-   call array4_free(tmp1)
-
-   ! 4. Index J: tmp2(I,A,b,j) --> tmp2(j,b,A,I) --> tmp1(J,b,A,I)
-   call array4_reorder(tmp2,[4,3,2,1])
-   tmp1= array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp2,Cocc,tmp1,.true.)
-   call array4_free(tmp2)
-
-   ! 5. Index B: tmp1(J,b,A,I) --> tmp1(b,J,A,I) --> t2(B,J,A,I)
-   call array4_reorder(tmp1,[2,1,3,4])
-   t2 = array4_init(dims)
-   call array4_contract1(tmp1,Cvirt,t2,.true.)
-   call array4_free(tmp1)
-
-   ! Now t2 contains the two-electron integrals (AI|BJ) = (BJ|AI) in the order (B,J,A,I).
-   ! [Due to the symmetry it is not necessary to reorder t2 back to (A,I,B,J)].
-
-
-   call LSTIMER('SOLVE: TRANS 1',tcpu,twall,DECinfo%output)
-
-
-
-   ! 3. Solve MP2 equation in the diagonal basis
-   ! *******************************************
-
-   ! In the diagonal basis the solution to the MP2 equation is trivial!
-   ! The equation:
-   ! RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
-   !               - sum_{c} t_{aicj} F_{cb}
-   !               + sum_{k} t_{bjak} F_{ki}
-   !               + sum_{k} t_{aibk} F_{kj}
-   !
-   ! simply becomes (using t_{BJAI} = t_{AIBJ}):
-   !
-   ! RHS_{BJAI} =  - t_{BJAI} F_{AA}
-   !               - t_{AIBJ} F_{BB}
-   !               + t_{BJAI} F_{II}
-   !               + t_{AIBJ} F_{JJ}
-   !            =  t_{BJAI} [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ]
-   !
-   ! In other words:
-   !
-   ! t_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
-   !
-
-   ! Recalling that currently t_{BJAI} = RHS_{BJAI} and that the
-   ! Fock matrix in the diagonal basis are the eigenvalues EVocc and EVvirt -
-   ! we simply modify the t2 elements as follows:
-
-   !    test=0E0_realk
-   do I=1,nocc
-      do A=1,nvirt
-         do J=1,nocc
-            do B=1,nvirt
-
-               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
-               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
-
-               ! Sanity check
-               if( abs(deltaF) < 1e-9_realk ) then
-                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
-                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
-                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
-               end if
-
-               ! Canonical energy check
-               ! test = test &
-               ! & + (2E0_realk*t2%val(B,J,A,I) - t2%val(B,I,A,J))*t2%val(B,J,A,I)/deltaF
-
-               ! t2 according to (**)
-               t2%val(B,J,A,I) = t2%val(B,J,A,I)/deltaF
-
-            end do
-         end do
+      do i=1,no
+         Co(:,i) = mol%Co(:,i+Ncore)
       end do
-   end do
 
-   call LSTIMER('SOLVE: CALC T2',tcpu,twall,DECinfo%output)
-
-
-
-
-   ! 4. Transform amplitudes back to LCM/MLM basis
-   ! *********************************************
-
-   ! Since LCM/MLM and the diagonal basis are connected by a unitary
-   ! transformation this basically corresponds to repeating step 2
-   ! above with the transposed transformation matrices:
-   !
-   ! t_{aibj} = sum_{AIBJ} C_{Aa} C_{Ia} C_{Bb} C_{Jj} t_{AIBJ}
-
-   ! 1. Transpose transformation matrices
-   call array2_transpose(Cocc)
-   call array2_transpose(Cvirt)
-
-   ! 2. Index A: t(A,I,B,J) --> tmp1(a,I,B,J)
-   tmp1= array4_init(dims)
-   call array4_contract1(t2,Cvirt,tmp1,.true.)
-   call array4_free(t2)
-
-   ! 3. Index I: tmp1(a,I,B,J) --> tmp1(I,a,B,J) --> tmp2(i,a,B,J)
-   call array4_reorder(tmp1,[2,1,3,4])
-   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp1,Cocc,tmp2,.true.)
-   call array4_free(tmp1)
-
-   ! 4. Index J: tmp2(i,a,B,J) --> tmp2(J,B,a,i) --> tmp1(j,B,a,i)
-   call array4_reorder(tmp2,[4,3,2,1])
-   tmp1 = array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp2,Cocc,tmp1,.true.)
-   call array4_free(tmp2)
-
-   ! 5. Index B: tmp1(j,B,a,i) --> tmp1(B,j,a,i) --> t2(b,j,a,i)
-   call array4_reorder(tmp1,[2,1,3,4])
-   t2 = array4_init(dims)
-   call array4_contract1(tmp1,Cvirt,t2,.true.)
-   call array4_free(tmp1)
-
-   call LSTIMER('SOLVE: TRANS 2',tcpu,twall,DECinfo%output)
-
-
-   ! Clean up
-   ! ********
-   call mem_dealloc(EVocc)
-   call mem_dealloc(EVvirt)
-   call array2_free(Cocc)
-   call array2_free(Cvirt)
-
-
-
-end subroutine mp2_solver_mem
-
-
-
-!> \brief Solve MP2 equation when RHS and t2 are values are stored on file.
-!> See mp2_solver for details about the equation.
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
-
-   implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
-   !> RHS array, storing type 1 (see array4_init_file)
-   type(array4), intent(in) :: RHS
-   !> Solution array, storing type 1 (see array4_init_file)
-   type(array4), intent(inout) :: t2
-   type(array4) :: tmp1,tmp2
-   type(array4) :: RHSaib,RHSbaj,RHStmp,t2tmp
-   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
-   real(realk),pointer :: EVocc(:), EVvirt(:)
-   type(array2) :: Cocc, Cvirt,CoccT,CvirtT
-   integer :: I,J,A,B
-   real(realk) :: tcpu, twall, deltaF
-   integer :: occdims(2), virtdims(2)
-
-
-
-   ! Strategy for solving MP2 equation:
-   ! 1. Find basis where Fock matrix is diagonal
-   ! 2. Transform 2-electron integrals to diagonal basis
-   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
-   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
-
-   ! Steps 2-4 necessarily overlap when we store array values on file.
-   call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-
-   write(DECinfo%output,*)
-   write(DECinfo%output,*) 'Entering MP2 solver - store array values on file'
-   write(DECinfo%output,*)
-
-
-   ! Sanity checks
-   ! *************
-   ! Check that nvirt /= 0.
-   if(nvirt<1 .or. nocc<1) then
-      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
-      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
-   endif
-
-
-   ! Initialize stuff
-   ! ****************
-   occdims = [nocc,nocc]
-   virtdims = [nvirt,nvirt]
-
-
-
-   ! 1. Solve Fock eigenvalue problem - each block separately
-   ! ********************************************************
-
-   ! OCCUPIED-OCCUPIED BLOCK
-   ! '''''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cocc_data,nocc,nocc)
-   ! Eigenvalues
-   call mem_alloc(EVocc,nocc)
-
-   ! The overlap matrix is simply the unit matrix because
-   ! the LCM/MLM basis is orthogonal.
-   call mem_alloc(Socc,nocc,nocc)
-   Socc=0.0E0_realk
-   do i=1,nocc
-      Socc(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   ! and also to have the transposed matrices available
-   Cocc = array2_init(occdims,Cocc_data)
-   CoccT = array2_init(occdims)
-   call array2_copy(CoccT,Cocc)
-   call array2_transpose(CoccT)
-
-   ! Done with some matrices
-   call mem_dealloc(Cocc_data)
-   call mem_dealloc(Socc)
-
-
-
-
-   ! VIRTUAL-VIRTUAL BLOCK
-   ! '''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cvirt_data,nvirt,nvirt)
-
-   ! Eigenvalues
-   call mem_alloc(EVvirt,nvirt)
-
-   ! Unit overlap for virtual space
-   call mem_alloc(Svirt,nvirt,nvirt)
-   Svirt=0.0E0_realk
-   do i=1,nvirt
-      Svirt(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   ! and also to have the transposed matrices available
-   Cvirt = array2_init(virtdims,Cvirt_data)
-   CvirtT = array2_init(virtdims)
-   call array2_copy(CvirtT,Cvirt)
-   call array2_transpose(CvirtT)
-
-
-   ! Done with some matrices
-   call mem_dealloc(Cvirt_data)
-   call mem_dealloc(Svirt)
-   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
-
-
-
-   ! Transform three indices to diagonal basis (aib-->AIB)
-   ! *****************************************************
-
-   ! Using the notation that (a,i,b,j) are LCM indices
-   ! and (A,I,B,J) are indices in the diagonal basis,
-   ! we want to carry out the transformations:
-   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj}
-
-   ! Since we cannot have full four-dimensional arrays in memory,
-   ! we do this in steps. First, for a fixed "j" we transform the other indices:
-   !
-   ! RHS_{AIBj} = sum_{aib} C_{aA} C_{iI} C_{bB} RHS_{aibj}
-
-   ! Temporary RHS where three indices are transformed, stored on file.
-   RHStmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
-   ! Temporary array for keeping RHS_{aibj} for a fixed j (last dimension is one).
-   RHSaib = array4_init([nvirt,nocc,nvirt,1])
-   call array4_open_file(RHS)
-   call array4_open_file(RHStmp)
-
-
-   do j=1,nocc
-
-      ! 1. Read in RHS_{aibj} for fixed j
-      call array4_read_file_type1(RHS,j,&
-         & RHSaib%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
-
-      ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
-      tmp1= array4_init([nvirt,nocc,nvirt,1])
-      call array4_contract1(RHSaib,Cvirt,tmp1,.true.)
-
-      ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
-      call array4_reorder(tmp1,[2,1,3,4])
-      tmp2= array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,Cocc,tmp2,.true.)
-      call array4_free(tmp1)
-
-      ! 4. Index B: tmp2(I,A,b,j) --> tmp2(b,A,I,j) --> tmp1(B,A,I,j)
-      call array4_reorder(tmp2,[3,2,1,4])
-      tmp1= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp2,Cvirt,tmp1,.true.)
-      call array4_free(tmp2)
-
-      ! 5. Write to file referenced by temporary RHS array (storing type 2)
-      do I=1,nocc
-         call array4_write_file_type2(RHStmp,I,j,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
-      end do
-      call array4_free(tmp1)
-
-   end do
-   call array4_close_file(RHS,'KEEP')
-   call array4_free(RHSaib)
-   call LSTIMER('SOLVE: STEP 1',tcpu,twall,DECinfo%output)
-   ! Now the file referenced by RHStmp contains RHS_{AIBj},
-   ! stored in the order (B,A,I,j) using storing type 2.
-
-
-
-   ! Transform j-->J; Solve equation in diag basis; Back transform ABJ-->abj
-   ! ***********************************************************************
-
-   ! Temporary array
-   t2tmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
-   call array4_open_file(t2tmp)
-
-
-   I_loop: do I=1,nocc
-
-
-      ! Read in RHS_{AIBj} for fixed I
-      ! ------------------------------
-      RHSbaj=array4_init([nvirt,nvirt,nocc,1])
-      do j=1,nocc
-         call array4_read_file_type2(RHStmp,I,j,&
-            & RHSbaj%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt)
-      end do
-      ! Now RHSbaj contains elements RHS_{AIBj} for a fixed I
-      ! stored in the order (B,A,j,I)
-
-
-      ! Transform final index j-->J
-      ! ---------------------------
-      ! Reorder: RHSbaj(B,A,j,I) --> RHSbaj(j,B,A,I)
-      call array4_reorder(RHSbaj,[3,1,2,4])
-
-
-      ! Transform: RHSbaj(j,B,A,I) --> tmp1(J,B,A,I)
-      tmp1=array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(RHSbaj,Cocc,tmp1,.true.)
-      call array4_free(RHSbaj)
-
-
-      ! Now tmp1 contains the RHS_{BJAI} in the diagonal basis
-      ! stored in the order (J,B,A,I) [fixed I].
-
-
-      ! Divide by deltaF (solve equation in diagonal basis)
-      ! ---------------------------------------------------
-      ! In the diagonal basis the t2 solution vector is simply:
-      ! t2_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
-      ! [See (**) in subroutine mp2_solver_mem]
-      do A=1,nvirt
-         do B=1,nvirt
-            do J=1,nocc
-
-               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
-               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
-
-               ! Sanity check
-               if( abs(deltaF) < 1e-9_realk ) then
-                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
-                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
-                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
-               end if
-
-               ! Amplitude element according to (**)
-               tmp1%val(J,B,A,1) = tmp1%val(J,B,A,1)/deltaF
-
-            end do
+      ! Fock valence
+      do j=1,no
+         do i=1,no
+            oof(i,j) = mol%ppfock(i+Ncore,j+Ncore)
          end do
       end do
 
-      ! Now tmp1 contains the t2_{BJAI} solution vector in the diagonal basis
-      ! stored in the order (J,B,A,I) [fixed I], and we "just"
-      ! need to transform back to the original basis.
+   else
+      ! No frozen core, simply copy elements for all occupied orbitals
+      no = mol%nocc
 
+      call mem_alloc(Co,nb,no)
+      call mem_alloc(oof,no,no)
 
-      ! Transform back three indices: JBA --> jba
-      ! -----------------------------------------
-      ! Note: Use Transposed transformation matrices to back transform
+      Co  = mol%Co
+      oof = mol%ppfock
 
-      ! 1. Index j: tmp1(J,B,A,I) -->  tmp2(j,B,A,I)
-      tmp2= array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,CoccT,tmp2,.true.)
-      call array4_free(tmp1)
+   end if
 
-      ! 2. Index b: tmp2(j,B,A,I) --> tmp2(B,A,j,I) --> tmp1(b,A,j,I)
-      call array4_reorder(tmp2,[2,3,1,4])
-      tmp1= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp2,CvirtT,tmp1,.true.)
-      call array4_free(tmp2)
+   call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
+      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false., vovo_supplied = rhs_input)
 
-      ! 3. Index a: tmp1(b,A,j,I) --> tmp1(A,b,j,I) --> tmp2(a,b,j,I)
-      call array4_reorder(tmp1,[2,1,3,4])
-      tmp2= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp1,CvirtT,tmp2,.true.)
-      call array4_free(tmp1)
+   if(present(mp2_energy)) mp2_energy = e
 
+   if(t1_dummy%initialized)then
+      call lsquit("ERROR(mp2_solver_mol) something wrong with singles handling in ccsolver_par",-1)
+   endif
 
-      ! Write solution vector t2_{aIbj} to file using storing type 2, order: (a,b,j,I)
-      ! ------------------------------------------------------------------------------
+   call mem_dealloc(Co)
+   call mem_dealloc(oof)
 
-      ! Note: Now we only need to transform the last "I" index of t2 back.
-      ! To do this we need to save on file such that we later can read in the full set of "I's"
-      do j=1,nocc
-         call array4_write_file_type2(t2tmp,j,I,&
-            & tmp2%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt )
-      end do
-      call array4_free(tmp2)
-
-   end do I_loop
-
-   call array4_close_file(RHStmp,'DELETE')
-   call array4_free(RHStmp)
-   call LSTIMER('SOLVE: STEP 2',tcpu,twall,DECinfo%output)
-   ! Now the file assosicated with t2tmp contains the final amplitudes,
-   ! except that the I index must be transformed back.
+   call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+end subroutine mp2_solver_mol
 
 
 
-   ! Transform final t2 index (I-->i) and write solution vector to file
-   ! ******************************************************************
-
-   ! Final t2 solution vector
-   t2 = array4_init_file([nvirt,nocc,nvirt,nocc],1,.false.)
-   call array4_open_file(t2)
-
-   do j=1,nocc
-
-      tmp1 = array4_init([nvirt,nvirt,nocc,1])
-      do I=1,nocc
-         call array4_read_file_type2(t2tmp,j,I,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
-      end do
-      ! tmp1 now contains amplitudes t2_{aIbj} in the order (a,b,I,j) for fixed j.
-
-
-      ! Transform final index I-->i
-      ! ---------------------------
-
-      ! tmp1(a,b,I,j) --> tmp1(I,a,b,j) --> tmp2(i,a,b,j)
-      call array4_reorder(tmp1,[3,1,2,4])
-      tmp2 = array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,CoccT,tmp2,.true.)
-      call array4_free(tmp1)
-      ! Reorder to final storing order: tmp2(i,a,b,j) --> tmp2(a,i,b,j)
-      call array4_reorder(tmp2,[2,1,3,4])
-
-
-      ! Write t2_{aibj} to file for each j
-      ! ----------------------------------
-      call array4_write_file_type1(t2,j,&
-         & tmp2%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
-      call array4_free(tmp2)
-
-   end do
-
-   call array4_close_file(t2tmp,'DELETE')
-   call array4_free(t2tmp)
-   call array4_close_file(t2,'KEEP')
-   call LSTIMER('SOLVE: STEP 3',tcpu,twall,DECinfo%output)
-
-
-   ! Clean up
-   ! ********
-   call mem_dealloc(EVocc)
-   call mem_dealloc(EVvirt)
-   call array2_free(Cocc)
-   call array2_free(Cvirt)
-   call array2_free(CoccT)
-   call array2_free(CvirtT)
-
-
-
-end subroutine mp2_solver_file
+!!> \brief Solve MP2 equation when RHS and t2 are values are stored in memory.
+!!> See mp2_solver for details about the equation.
+!!> \author Kasper Kristensen
+!!> \date February 2011
+!subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!
+!   implicit none
+!   !> Number of occupied orbitals (dimension of ppfock)
+!   integer, intent(in) :: nocc
+!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   integer, intent(in) :: nvirt
+!   !> Occupied-occupied block of Fock matrix
+!   real(realk) :: ppfock(nocc,nocc)
+!   !> Unoccupied-unoccupied block of Fock matrix
+!   real(realk) :: qqfock(nvirt,nvirt)
+!   !> RHS array
+!   type(array4), intent(in) :: RHS
+!   !> Solution array
+!   type(array4), intent(inout) :: t2
+!   type(array4) :: tmp1,tmp2
+!   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
+!   real(realk),pointer :: EVocc(:), EVvirt(:)
+!   type(array2) :: Cocc, Cvirt
+!   integer :: I,J,A,B
+!   real(realk) :: tcpu, twall, deltaF
+!   integer :: dims(4), occdims(2), virtdims(2)
+!   ! real(realk) :: test
+!
+!
+!   ! Strategy for solving MP2 equation:
+!   ! 1. Find basis where Fock matrix is diagonal
+!   ! 2. Transform 2-electron integrals to diagonal basis
+!   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
+!   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+!
+!   call LSTIMER('START',tcpu,twall,DECinfo%output)
+!
+!
+!   write(DECinfo%output,*)
+!   write(DECinfo%output,*) 'Entering MP2 solver - store array values in memory'
+!   write(DECinfo%output,*)
+!
+!
+!   ! Sanity checks
+!   ! *************
+!   ! Check that nvirt /= 0.
+!   if(nvirt<1 .or. nocc<1) then
+!      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
+!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
+!   endif
+!
+!
+!
+!
+!   ! Initialize stuff
+!   ! ****************
+!   dims = [nvirt,nocc,nvirt,nocc]
+!   occdims = [nocc,nocc]
+!   virtdims = [nvirt,nvirt]
+!
+!
+!
+!
+!   ! 1. Solve Fock eigenvalue problem - each block separately
+!   ! ********************************************************
+!
+!   ! OCCUPIED-OCCUPIED BLOCK
+!   ! '''''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cocc_data,nocc,nocc)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVocc,nocc)
+!
+!   ! The overlap matrix is simply the unit matrix because
+!   ! the LCM/MLM basis is orthogonal.
+!   call mem_alloc(Socc,nocc,nocc)
+!   Socc=0.0E0_realk
+!   do i=1,nocc
+!      Socc(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   Cocc = array2_init(occdims,Cocc_data)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cocc_data)
+!   call mem_dealloc(Socc)
+!
+!
+!
+!
+!   ! VIRTUAL-VIRTUAL BLOCK
+!   ! '''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cvirt_data,nvirt,nvirt)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVvirt,nvirt)
+!
+!   ! Unit overlap for virtual space
+!   call mem_alloc(Svirt,nvirt,nvirt)
+!   Svirt=0.0E0_realk
+!   do i=1,nvirt
+!      Svirt(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   Cvirt = array2_init(virtdims,Cvirt_data)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cvirt_data)
+!   call mem_dealloc(Svirt)
+!
+!
+!   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! 2. Transform two-electron integrals to diagonal basis
+!   ! *****************************************************
+!
+!   ! Using notation that (a,i,b,j) are LCM indices
+!   ! and (A,I,B,J) are indices in the diagonal basis,
+!   ! we want to carry out the transformations:
+!   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj} (*)
+!
+!   ! 1. Init temporary array
+!   tmp1= array4_init(dims)
+!
+!   ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
+!   call array4_contract1(RHS,Cvirt,tmp1,.true.)
+!
+!   ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
+!
+!   call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! 4. Index J: tmp2(I,A,b,j) --> tmp2(j,b,A,I) --> tmp1(J,b,A,I)
+!   call array4_reorder(tmp2,[4,3,2,1])
+!   tmp1= array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp2,Cocc,tmp1,.true.)
+!   call array4_free(tmp2)
+!
+!   ! 5. Index B: tmp1(J,b,A,I) --> tmp1(b,J,A,I) --> t2(B,J,A,I)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   t2 = array4_init(dims)
+!   call array4_contract1(tmp1,Cvirt,t2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! Now t2 contains the two-electron integrals (AI|BJ) = (BJ|AI) in the order (B,J,A,I).
+!   ! [Due to the symmetry it is not necessary to reorder t2 back to (A,I,B,J)].
+!
+!
+!   call LSTIMER('SOLVE: TRANS 1',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! 3. Solve MP2 equation in the diagonal basis
+!   ! *******************************************
+!
+!   ! In the diagonal basis the solution to the MP2 equation is trivial!
+!   ! The equation:
+!   ! RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
+!   !               - sum_{c} t_{aicj} F_{cb}
+!   !               + sum_{k} t_{bjak} F_{ki}
+!   !               + sum_{k} t_{aibk} F_{kj}
+!   !
+!   ! simply becomes (using t_{BJAI} = t_{AIBJ}):
+!   !
+!   ! RHS_{BJAI} =  - t_{BJAI} F_{AA}
+!   !               - t_{AIBJ} F_{BB}
+!   !               + t_{BJAI} F_{II}
+!   !               + t_{AIBJ} F_{JJ}
+!   !            =  t_{BJAI} [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ]
+!   !
+!   ! In other words:
+!   !
+!   ! t_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
+!   !
+!
+!   ! Recalling that currently t_{BJAI} = RHS_{BJAI} and that the
+!   ! Fock matrix in the diagonal basis are the eigenvalues EVocc and EVvirt -
+!   ! we simply modify the t2 elements as follows:
+!
+!   !    test=0E0_realk
+!   do I=1,nocc
+!      do A=1,nvirt
+!         do J=1,nocc
+!            do B=1,nvirt
+!
+!               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
+!               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
+!
+!               ! Sanity check
+!               if( abs(deltaF) < 1e-9_realk ) then
+!                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
+!                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
+!                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
+!               end if
+!
+!               ! Canonical energy check
+!               ! test = test &
+!               ! & + (2E0_realk*t2%val(B,J,A,I) - t2%val(B,I,A,J))*t2%val(B,J,A,I)/deltaF
+!
+!               ! t2 according to (**)
+!               t2%val(B,J,A,I) = t2%val(B,J,A,I)/deltaF
+!
+!            end do
+!         end do
+!      end do
+!   end do
+!
+!   call LSTIMER('SOLVE: CALC T2',tcpu,twall,DECinfo%output)
+!
+!
+!
+!
+!   ! 4. Transform amplitudes back to LCM/MLM basis
+!   ! *********************************************
+!
+!   ! Since LCM/MLM and the diagonal basis are connected by a unitary
+!   ! transformation this basically corresponds to repeating step 2
+!   ! above with the transposed transformation matrices:
+!   !
+!   ! t_{aibj} = sum_{AIBJ} C_{Aa} C_{Ia} C_{Bb} C_{Jj} t_{AIBJ}
+!
+!   ! 1. Transpose transformation matrices
+!   call array2_transpose(Cocc)
+!   call array2_transpose(Cvirt)
+!
+!   ! 2. Index A: t(A,I,B,J) --> tmp1(a,I,B,J)
+!   tmp1= array4_init(dims)
+!   call array4_contract1(t2,Cvirt,tmp1,.true.)
+!   call array4_free(t2)
+!
+!   ! 3. Index I: tmp1(a,I,B,J) --> tmp1(I,a,B,J) --> tmp2(i,a,B,J)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! 4. Index J: tmp2(i,a,B,J) --> tmp2(J,B,a,i) --> tmp1(j,B,a,i)
+!   call array4_reorder(tmp2,[4,3,2,1])
+!   tmp1 = array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp2,Cocc,tmp1,.true.)
+!   call array4_free(tmp2)
+!
+!   ! 5. Index B: tmp1(j,B,a,i) --> tmp1(B,j,a,i) --> t2(b,j,a,i)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   t2 = array4_init(dims)
+!   call array4_contract1(tmp1,Cvirt,t2,.true.)
+!   call array4_free(tmp1)
+!
+!   call LSTIMER('SOLVE: TRANS 2',tcpu,twall,DECinfo%output)
+!
+!
+!   ! Clean up
+!   ! ********
+!   call mem_dealloc(EVocc)
+!   call mem_dealloc(EVvirt)
+!   call array2_free(Cocc)
+!   call array2_free(Cvirt)
+!
+!
+!
+!end subroutine mp2_solver_mem
+!
+!
+!
+!!> \brief Solve MP2 equation when RHS and t2 are values are stored on file.
+!!> See mp2_solver for details about the equation.
+!!> \author Kasper Kristensen
+!!> \date February 2011
+!subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!
+!   implicit none
+!   !> Number of occupied orbitals (dimension of ppfock)
+!   integer, intent(in) :: nocc
+!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   integer, intent(in) :: nvirt
+!   !> Occupied-occupied block of Fock matrix
+!   real(realk) :: ppfock(nocc,nocc)
+!   !> Unoccupied-unoccupied block of Fock matrix
+!   real(realk) :: qqfock(nvirt,nvirt)
+!   !> RHS array, storing type 1 (see array4_init_file)
+!   type(array4), intent(in) :: RHS
+!   !> Solution array, storing type 1 (see array4_init_file)
+!   type(array4), intent(inout) :: t2
+!   type(array4) :: tmp1,tmp2
+!   type(array4) :: RHSaib,RHSbaj,RHStmp,t2tmp
+!   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
+!   real(realk),pointer :: EVocc(:), EVvirt(:)
+!   type(array2) :: Cocc, Cvirt,CoccT,CvirtT
+!   integer :: I,J,A,B
+!   real(realk) :: tcpu, twall, deltaF
+!   integer :: occdims(2), virtdims(2)
+!
+!
+!
+!   ! Strategy for solving MP2 equation:
+!   ! 1. Find basis where Fock matrix is diagonal
+!   ! 2. Transform 2-electron integrals to diagonal basis
+!   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
+!   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+!
+!   ! Steps 2-4 necessarily overlap when we store array values on file.
+!   call LSTIMER('START',tcpu,twall,DECinfo%output)
+!
+!
+!   write(DECinfo%output,*)
+!   write(DECinfo%output,*) 'Entering MP2 solver - store array values on file'
+!   write(DECinfo%output,*)
+!
+!
+!   ! Sanity checks
+!   ! *************
+!   ! Check that nvirt /= 0.
+!   if(nvirt<1 .or. nocc<1) then
+!      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
+!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
+!   endif
+!
+!
+!   ! Initialize stuff
+!   ! ****************
+!   occdims = [nocc,nocc]
+!   virtdims = [nvirt,nvirt]
+!
+!
+!
+!   ! 1. Solve Fock eigenvalue problem - each block separately
+!   ! ********************************************************
+!
+!   ! OCCUPIED-OCCUPIED BLOCK
+!   ! '''''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cocc_data,nocc,nocc)
+!   ! Eigenvalues
+!   call mem_alloc(EVocc,nocc)
+!
+!   ! The overlap matrix is simply the unit matrix because
+!   ! the LCM/MLM basis is orthogonal.
+!   call mem_alloc(Socc,nocc,nocc)
+!   Socc=0.0E0_realk
+!   do i=1,nocc
+!      Socc(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   ! and also to have the transposed matrices available
+!   Cocc = array2_init(occdims,Cocc_data)
+!   CoccT = array2_init(occdims)
+!   call array2_copy(CoccT,Cocc)
+!   call array2_transpose(CoccT)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cocc_data)
+!   call mem_dealloc(Socc)
+!
+!
+!
+!
+!   ! VIRTUAL-VIRTUAL BLOCK
+!   ! '''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cvirt_data,nvirt,nvirt)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVvirt,nvirt)
+!
+!   ! Unit overlap for virtual space
+!   call mem_alloc(Svirt,nvirt,nvirt)
+!   Svirt=0.0E0_realk
+!   do i=1,nvirt
+!      Svirt(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   ! and also to have the transposed matrices available
+!   Cvirt = array2_init(virtdims,Cvirt_data)
+!   CvirtT = array2_init(virtdims)
+!   call array2_copy(CvirtT,Cvirt)
+!   call array2_transpose(CvirtT)
+!
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cvirt_data)
+!   call mem_dealloc(Svirt)
+!   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! Transform three indices to diagonal basis (aib-->AIB)
+!   ! *****************************************************
+!
+!   ! Using the notation that (a,i,b,j) are LCM indices
+!   ! and (A,I,B,J) are indices in the diagonal basis,
+!   ! we want to carry out the transformations:
+!   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj}
+!
+!   ! Since we cannot have full four-dimensional arrays in memory,
+!   ! we do this in steps. First, for a fixed "j" we transform the other indices:
+!   !
+!   ! RHS_{AIBj} = sum_{aib} C_{aA} C_{iI} C_{bB} RHS_{aibj}
+!
+!   ! Temporary RHS where three indices are transformed, stored on file.
+!   RHStmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
+!   ! Temporary array for keeping RHS_{aibj} for a fixed j (last dimension is one).
+!   RHSaib = array4_init([nvirt,nocc,nvirt,1])
+!   call array4_open_file(RHS)
+!   call array4_open_file(RHStmp)
+!
+!
+!   do j=1,nocc
+!
+!      ! 1. Read in RHS_{aibj} for fixed j
+!      call array4_read_file_type1(RHS,j,&
+!         & RHSaib%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
+!
+!      ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
+!      tmp1= array4_init([nvirt,nocc,nvirt,1])
+!      call array4_contract1(RHSaib,Cvirt,tmp1,.true.)
+!
+!      ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
+!      call array4_reorder(tmp1,[2,1,3,4])
+!      tmp2= array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!      ! 4. Index B: tmp2(I,A,b,j) --> tmp2(b,A,I,j) --> tmp1(B,A,I,j)
+!      call array4_reorder(tmp2,[3,2,1,4])
+!      tmp1= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp2,Cvirt,tmp1,.true.)
+!      call array4_free(tmp2)
+!
+!      ! 5. Write to file referenced by temporary RHS array (storing type 2)
+!      do I=1,nocc
+!         call array4_write_file_type2(RHStmp,I,j,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
+!      end do
+!      call array4_free(tmp1)
+!
+!   end do
+!   call array4_close_file(RHS,'KEEP')
+!   call array4_free(RHSaib)
+!   call LSTIMER('SOLVE: STEP 1',tcpu,twall,DECinfo%output)
+!   ! Now the file referenced by RHStmp contains RHS_{AIBj},
+!   ! stored in the order (B,A,I,j) using storing type 2.
+!
+!
+!
+!   ! Transform j-->J; Solve equation in diag basis; Back transform ABJ-->abj
+!   ! ***********************************************************************
+!
+!   ! Temporary array
+!   t2tmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
+!   call array4_open_file(t2tmp)
+!
+!
+!   I_loop: do I=1,nocc
+!
+!
+!      ! Read in RHS_{AIBj} for fixed I
+!      ! ------------------------------
+!      RHSbaj=array4_init([nvirt,nvirt,nocc,1])
+!      do j=1,nocc
+!         call array4_read_file_type2(RHStmp,I,j,&
+!            & RHSbaj%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt)
+!      end do
+!      ! Now RHSbaj contains elements RHS_{AIBj} for a fixed I
+!      ! stored in the order (B,A,j,I)
+!
+!
+!      ! Transform final index j-->J
+!      ! ---------------------------
+!      ! Reorder: RHSbaj(B,A,j,I) --> RHSbaj(j,B,A,I)
+!      call array4_reorder(RHSbaj,[3,1,2,4])
+!
+!
+!      ! Transform: RHSbaj(j,B,A,I) --> tmp1(J,B,A,I)
+!      tmp1=array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(RHSbaj,Cocc,tmp1,.true.)
+!      call array4_free(RHSbaj)
+!
+!
+!      ! Now tmp1 contains the RHS_{BJAI} in the diagonal basis
+!      ! stored in the order (J,B,A,I) [fixed I].
+!
+!
+!      ! Divide by deltaF (solve equation in diagonal basis)
+!      ! ---------------------------------------------------
+!      ! In the diagonal basis the t2 solution vector is simply:
+!      ! t2_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
+!      ! [See (**) in subroutine mp2_solver_mem]
+!      do A=1,nvirt
+!         do B=1,nvirt
+!            do J=1,nocc
+!
+!               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
+!               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
+!
+!               ! Sanity check
+!               if( abs(deltaF) < 1e-9_realk ) then
+!                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
+!                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
+!                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
+!               end if
+!
+!               ! Amplitude element according to (**)
+!               tmp1%val(J,B,A,1) = tmp1%val(J,B,A,1)/deltaF
+!
+!            end do
+!         end do
+!      end do
+!
+!      ! Now tmp1 contains the t2_{BJAI} solution vector in the diagonal basis
+!      ! stored in the order (J,B,A,I) [fixed I], and we "just"
+!      ! need to transform back to the original basis.
+!
+!
+!      ! Transform back three indices: JBA --> jba
+!      ! -----------------------------------------
+!      ! Note: Use Transposed transformation matrices to back transform
+!
+!      ! 1. Index j: tmp1(J,B,A,I) -->  tmp2(j,B,A,I)
+!      tmp2= array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,CoccT,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!      ! 2. Index b: tmp2(j,B,A,I) --> tmp2(B,A,j,I) --> tmp1(b,A,j,I)
+!      call array4_reorder(tmp2,[2,3,1,4])
+!      tmp1= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp2,CvirtT,tmp1,.true.)
+!      call array4_free(tmp2)
+!
+!      ! 3. Index a: tmp1(b,A,j,I) --> tmp1(A,b,j,I) --> tmp2(a,b,j,I)
+!      call array4_reorder(tmp1,[2,1,3,4])
+!      tmp2= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp1,CvirtT,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!
+!      ! Write solution vector t2_{aIbj} to file using storing type 2, order: (a,b,j,I)
+!      ! ------------------------------------------------------------------------------
+!
+!      ! Note: Now we only need to transform the last "I" index of t2 back.
+!      ! To do this we need to save on file such that we later can read in the full set of "I's"
+!      do j=1,nocc
+!         call array4_write_file_type2(t2tmp,j,I,&
+!            & tmp2%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt )
+!      end do
+!      call array4_free(tmp2)
+!
+!   end do I_loop
+!
+!   call array4_close_file(RHStmp,'DELETE')
+!   call array4_free(RHStmp)
+!   call LSTIMER('SOLVE: STEP 2',tcpu,twall,DECinfo%output)
+!   ! Now the file assosicated with t2tmp contains the final amplitudes,
+!   ! except that the I index must be transformed back.
+!
+!
+!
+!   ! Transform final t2 index (I-->i) and write solution vector to file
+!   ! ******************************************************************
+!
+!   ! Final t2 solution vector
+!   t2 = array4_init_file([nvirt,nocc,nvirt,nocc],1,.false.)
+!   call array4_open_file(t2)
+!
+!   do j=1,nocc
+!
+!      tmp1 = array4_init([nvirt,nvirt,nocc,1])
+!      do I=1,nocc
+!         call array4_read_file_type2(t2tmp,j,I,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
+!      end do
+!      ! tmp1 now contains amplitudes t2_{aIbj} in the order (a,b,I,j) for fixed j.
+!
+!
+!      ! Transform final index I-->i
+!      ! ---------------------------
+!
+!      ! tmp1(a,b,I,j) --> tmp1(I,a,b,j) --> tmp2(i,a,b,j)
+!      call array4_reorder(tmp1,[3,1,2,4])
+!      tmp2 = array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,CoccT,tmp2,.true.)
+!      call array4_free(tmp1)
+!      ! Reorder to final storing order: tmp2(i,a,b,j) --> tmp2(a,i,b,j)
+!      call array4_reorder(tmp2,[2,1,3,4])
+!
+!
+!      ! Write t2_{aibj} to file for each j
+!      ! ----------------------------------
+!      call array4_write_file_type1(t2,j,&
+!         & tmp2%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
+!      call array4_free(tmp2)
+!
+!   end do
+!
+!   call array4_close_file(t2tmp,'DELETE')
+!   call array4_free(t2tmp)
+!   call array4_close_file(t2,'KEEP')
+!   call LSTIMER('SOLVE: STEP 3',tcpu,twall,DECinfo%output)
+!
+!
+!   ! Clean up
+!   ! ********
+!   call mem_dealloc(EVocc)
+!   call mem_dealloc(EVvirt)
+!   call array2_free(Cocc)
+!   call array2_free(Cvirt)
+!   call array2_free(CoccT)
+!   call array2_free(CvirtT)
+!
+!
+!
+!end subroutine mp2_solver_file
 
 
 !> \brief adaption of the ccsolver routine, rebuild for the 

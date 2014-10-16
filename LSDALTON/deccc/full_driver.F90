@@ -309,7 +309,7 @@ contains
     type(matrix) :: Fii
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
-    type(array4) :: array4Taibj,array4gmo
+    type(tensor) :: tensor_Taibj,tensor_gmo
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
@@ -397,12 +397,16 @@ contains
        !    ! Get full MP2 (as specified in input)
 
        ! KK: Quick and dirty solution to the fact that the MP2 solver requires array4 format.
-       array4gmo = array4_init([nvirt,nocc,nvirt,nocc])
-       array4gmo%val=gmo
-       call mp2_solver(nocc,nvirt,MyMolecule%ppfock,MyMolecule%qqfock,array4gmo,array4Taibj)
-       call array4_free(array4gmo)
+       ! PE: even more quicker and dirtier solution for that the new solver
+       ! needs the tensor format
+       call tensor_init(tensor_gmo,[nvirt,nocc,nvirt,nocc],4)
+       call tensor_convert(gmo,tensor_gmo)
+       call mp2_solver(MyMolecule,mylsitem,tensor_gmo,tensor_Taibj,.true.)
+       call tensor_free(tensor_gmo)
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+       call tensor_convert(tensor_Taibj,Taibj)
+       call tensor_free(tensor_Taibj)
 
        mp2_energy = 0.0E0_realk
        do j=1,nocc
@@ -410,7 +414,7 @@ contains
              do i=1,nocc
                 do a=1,nvirt
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
-                   Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
+                   !Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
@@ -807,7 +811,6 @@ contains
        write(DECinfo%output,*)  'TOYCODE: MP2-F12 CORRELATION ENERGY =    ', mp2f12_energy
     endif
 
-    call array4_free(array4Taibj)
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
