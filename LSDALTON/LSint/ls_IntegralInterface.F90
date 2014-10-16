@@ -10,7 +10,7 @@ MODULE ls_Integral_Interface
   use Matrix_Operations, only: mtype_unres_dense, matrix_type,&
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
-       & mat_setlowertriangular_zero, mat_assign
+       & mat_setlowertriangular_zero, mat_assign, mat_print
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -1342,8 +1342,20 @@ IF(INT_INPUT%DO_LINK)THEN
          print*,'by specifying that D is symmetric. '
          print*,'This Error statement can occur if Symmetry threshold'
          print*,'too high and the Symmetric Dmat is judged to be nonsymmetric.'
+         print*,'The Matrix Judged to be non symmetric:'
+         call mat_print(setting%DmatRHS(idmat)%p,1,setting%DmatRHS(idmat)%p%nrow,&
+	              & 1,setting%DmatRHS(idmat)%p%ncol,lupri)
+         print*,'A mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'B mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'C mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'D mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'E mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'F mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'G mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'H mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'I mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'J mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
          call lsquit('Exchange Called with nonsym Dmat',-1)
-         !the code 
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
          setting%output%postprocess(idmat2) = 0         

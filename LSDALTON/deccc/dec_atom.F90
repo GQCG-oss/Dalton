@@ -6443,7 +6443,7 @@ contains
     CorrDensDefinition: select case(DECinfo%CorrDensScheme)
     case(1)
        ! Construct density matrix based only on EOS amplitudes
-       call calculate_corrdens_EOS(t2,MyFragment)
+       call calculate_corrdens_EOS(t2%val,MyFragment)
     case(2)
        ! Use AOS amplitudes but with special emphasis on EOS for virtual FOs,
        ! while, for occupied FOs, we put equal weight on all AOS amplitudes.
@@ -6467,7 +6467,7 @@ contains
   subroutine calculate_corrdens_EOS(t2,MyFragment)
     implicit none
     !> Doubles amplitudes in AOS stored as (a,i,b,j)
-    type(array4),intent(in) :: t2
+    real(realk),intent(in) :: t2(:,:,:,:)
     !> MyFragment - output occ and virt density matrices are stored in
     !> MyFragment%occmat and MyFragment%virtmat, respectively.
     type(decfrag),intent(inout) :: MyFragment
@@ -6491,7 +6491,7 @@ contains
              do i=1,MyFragment%noccAOS
                 do j=1,MyFragment%noccAOS
                    MyFragment%OccMat(i,j) = MyFragment%OccMat(i,j) + &
-                        & t2%val(ax,i,bx,k)*(i4*t2%val(ax,j,bx,k) - i2*t2%val(bx,j,ax,k))
+                        & t2(ax,i,bx,k)*(i4*t2(ax,j,bx,k) - i2*t2(bx,j,ax,k))
                 end do
              end do
           end do
@@ -6513,7 +6513,7 @@ contains
              do b=1,MyFragment%nunoccAOS
                 do c=1,MyFragment%nunoccAOS
                    MyFragment%VirtMat(a,b) = MyFragment%VirtMat(a,b) + &
-                        & t2%val(a,ix,c,jx)*(i4*t2%val(b,ix,c,jx) - i2*t2%val(c,ix,b,jx))
+                        & t2(a,ix,c,jx)*(i4*t2(b,ix,c,jx) - i2*t2(c,ix,b,jx))
                 end do
              end do
           end do

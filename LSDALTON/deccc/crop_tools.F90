@@ -487,15 +487,16 @@ module crop_tools_module
    ! li is the number of the last iteration
    ! ce is the correlation energy
    ! t* are timings
-   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,t1,t2,m1,m2)
+   ! nt*, nm* are the squared l_2 norms of the amplitudes and multipliers
+   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,nt1,nt2,nm1,nm2)
       implicit none
       logical, intent(in)        :: bi,gm,fj,us
       integer, intent(in)        :: li
       real(realk), intent(in)    :: ce,tew,tsw,tec,tsc
-      type(array2),intent(inout) :: t1
-      type(array4),intent(inout) :: t2
-      type(array2),intent(inout),optional :: m1
-      type(array4),intent(inout),optional :: m2
+      real(realk),intent(in) :: nt1
+      real(realk),intent(in) :: nt2
+      real(realk),intent(in),optional :: nm1
+      real(realk),intent(in),optional :: nm2
       real(realk) :: snorm,dnorm,tnorm
       tnorm = 0.0E0_realk
       dnorm = 0.0E0_realk
@@ -503,15 +504,16 @@ module crop_tools_module
 
       if(gm)then
          if(us)then
-            if(.not. present(m1) ) call lsquit('ERROR(print_ccjob_summary) no singles multipliers present',-1)
-            call print_norm(m1,snorm,.true.)
+            if(.not. present(nm1) ) call lsquit('ERROR(print_ccjob_summary) no singles multipliers norm present',-1)
+            snorm = nm1
          endif
-         if(.not. present(m2) ) call lsquit('ERROR(print_ccjob_summary) no doubles multipliers present',-1)
-         call print_norm(m2,dnorm,.true.)
+         if(.not. present(nm2) ) call lsquit('ERROR(print_ccjob_summary) no doubles multipliers norm present',-1)
+         dnorm = nm2
       else
-         if(us)call print_norm(t1,snorm,.true.)
-         call print_norm(t2,dnorm,.true.)
+         if(us)snorm = nt1
+         dnorm = nt2
       endif
+
       tnorm = sqrt(snorm+dnorm)
       if(us)snorm = sqrt(snorm)
       dnorm = sqrt(dnorm)
@@ -683,7 +685,7 @@ module crop_tools_module
          ! tmp(iA) U(a,A)^T   -> t(ia)
          call dgemm('n','n',no,nv,nv,1.0E0_realk,tmp,no,Uvirt,nv,0.0E0_realk,ov,no)
       endif
-      
+
       if(present(bo))then
          tmp(1:nb*no) = bo
          ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
@@ -728,4 +730,5 @@ module crop_tools_module
       ! WRKYXYX(Y,xyx)^T YY(y,Y)^T   -> XYXY (xyxy)
       call dgemm('t','t',x*x*y,y,y,1.0E0_realk,WRKYXYX,y,YY,y,0.0E0_realk,XYXY,x*x*y)
    end subroutine successive_xyxy_trafo
+
 end module crop_tools_module

@@ -1635,8 +1635,8 @@ end subroutine RIMP2_CalcEnergyContribution
     real(realk),pointer :: AIBJ(:,:,:,:)
     real(realk) :: ECCSD, Ef12, Ttmp, Gtmp,E21,E22
     integer :: ncabs, ncabsAO, nocc,nvirt,nbasis,noccfull, i,j,a,b
-    type(array2) :: Tai
-    type(array4) :: Taibj
+    type(tensor) :: Tai
+    type(tensor) :: Taibj
     real(realk),pointer :: Ripjq(:,:,:,:)
     real(realk),pointer :: Fijkl(:,:,:,:)
     real(realk),pointer :: Tijkl(:,:,:,:)
@@ -1778,7 +1778,7 @@ end subroutine RIMP2_CalcEnergyContribution
           do i=1,nocc
              do a=1,nvirt
                 ! Energy = sum_{ijab} ( Tai*Tbj + Taibj) * (ai | bj)
-                Ttmp = Tai%val(a,i)*Tai%val(b,j) + Taibj%val(a,i,b,j)
+                Ttmp = Tai%elm2(a,i)*Tai%elm2(b,j) + Taibj%elm4(a,i,b,j)
                 Gtmp = 2.0E0_realk * AIBJ(a,i,b,j) - AIBJ(b,i,a,j)
                 ECCSD = ECCSD + Ttmp * Gtmp
              end do
@@ -1848,8 +1848,8 @@ end subroutine RIMP2_CalcEnergyContribution
     call ccsdf12_Viajj(Viajj,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
     ! CCSD coupling V_ij^ij & V_ji^ij 
-    call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
-    call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
+    call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%elm4,Viajb,Viija,Viajj,Tai%elm2,nocc,nvirt)
+    call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%elm4,Viajb,Vijja,Viaji,Tai%elm2,nocc,nvirt)
 
     !call ccsdf12_Vijij_coupling_term1(Vijij_term1,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
     !call ccsdf12_Vjiij_coupling_term1(Vjiij_term1,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
@@ -1946,8 +1946,8 @@ end subroutine RIMP2_CalcEnergyContribution
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY = ', ECCSD_F12
 
     call mem_dealloc(AIBJ)
-    call array4_free(Taibj)
-    call array2_free(Tai)
+    call tensor_free(Taibj)
+    call tensor_free(Tai)
     call free_4Center_F12_integrals(&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
@@ -1960,7 +1960,7 @@ end subroutine RIMP2_CalcEnergyContribution
   !> only to be used for debugging purposes.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai, Taibj)
+  subroutine full_get_ccsd_singles_and_doubles(MyMolecule,MyLsitem,Tai_local, Taibj_local)
 
     implicit none
     !> Full molecule info
@@ -1968,13 +1968,13 @@ end subroutine RIMP2_CalcEnergyContribution
     !> Lsitem structure
     type(lsitem), intent(inout) :: mylsitem
     !> Singles amplitudes
-    type(array2),intent(inout) :: Tai
+    type(tensor),intent(inout) :: Tai_local
     !> Doubles amplitudes
-    type(array4),intent(inout) :: Taibj
+    type(tensor),intent(inout) :: Taibj_local
     integer :: nocc,nunocc,nbasis,print_level,save_model,startidx,endidx,i,j
     logical :: fragment_job
     real(realk) :: energy
-    type(array4) :: VOVO
+    type(tensor) :: VOVO,Tai,Taibj
     real(realk),pointer :: ppfock(:,:)
     logical :: local
     local = .true.
@@ -2025,7 +2025,18 @@ end subroutine RIMP2_CalcEnergyContribution
 
     end if
 
-    call array4_free(VOVO)
+    call tensor_free(VOVO)
+
+    !convert the parallel distributed quantities to local quantities, this is
+    !essentially a copying if the tensors are not parallel distributed
+    call tensor_minit(Tai_local,[nunocc,nocc],2,atype="LDAR")
+    call tensor_add(Tai_local,1.0E0_realk,Tai,a=0.0E0_realk)
+    call tensor_minit(Taibj_local,[nunocc,nocc,nunocc,nocc],4,atype="LDAR")
+    call tensor_add(Taibj_local,1.0E0_realk,Taibj,a=0.0E0_realk)
+
+    call tensor_free(Taibj)
+    call tensor_free(Tai)
+
 
   end subroutine full_get_ccsd_singles_and_doubles
 

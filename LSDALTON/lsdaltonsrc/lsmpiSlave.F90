@@ -100,10 +100,9 @@ subroutine lsmpi_slave(comm)
    do while(stay_in_slaveroutine)
 
       call time_start_phase(PHASE_IDLE)
-
       call ls_mpibcast(job,infpar%master,comm)
-
       call time_start_phase(PHASE_WORK)
+
 
       select case(job)
       case(MATRIXTY);
@@ -252,6 +251,7 @@ subroutine lsmpi_slave(comm)
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 end subroutine lsmpi_slave
