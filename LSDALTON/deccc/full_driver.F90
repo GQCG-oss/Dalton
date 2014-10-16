@@ -310,6 +310,12 @@ contains
     type(matrix) :: Fac
     Real(realk)  :: E21, E21_debug, E22, E22_debug, E23_debug, Gtmp
     type(tensor) :: tensor_Taibj,tensor_gmo
+    integer :: vs, os
+    logical :: local
+    local = .true.
+#ifdef VAR_MPI
+    local = (infpar%lg_nodtot==1)
+#endif
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
@@ -399,9 +405,7 @@ contains
        ! KK: Quick and dirty solution to the fact that the MP2 solver requires array4 format.
        ! PE: even more quicker and dirtier solution for that the new solver
        ! needs the tensor format
-       call tensor_init(tensor_gmo,[nvirt,nocc,nvirt,nocc],4)
-       call tensor_convert(gmo,tensor_gmo)
-       call mp2_solver(MyMolecule,mylsitem,tensor_gmo,tensor_Taibj,.true.)
+       call mp2_solver(MyMolecule,mylsitem,tensor_gmo,tensor_Taibj,.false.)
        call tensor_free(tensor_gmo)
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
