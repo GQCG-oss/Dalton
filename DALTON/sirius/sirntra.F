@@ -1248,10 +1248,8 @@ C
 C
 C     SET TIME AT START OF TRANSFORMATION
 C
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU0,TWALL0)
-         TCPU1  = TCPU0
-         TWALL1 = TWALL0
+      IF (IPRTRA .GE. 2) THEN
+         CALL GETTIM(TCPU1,TWALL1)
       END IF
 C
       IF (IPRTRA .GE. 2) THEN
@@ -1508,15 +1506,6 @@ C    &              X1,X2,X3, USPQ,RUPQ,TUPQ)
   102   CONTINUE
   103  CONTINUE
   104 CONTINUE
-C
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU,TWALL)
-         TCPU  = TCPU -TCPU0
-         TWALL = TWALL-TWALL0
-         WRITE(LUPRI,2200) TCPU, TWALL
-      END IF
- 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
-     &       ,2F12.3)
 C
 C     FINALLY save first free address on LUMINT in IADOUT(1,LIADUT) and
 C     WRITE OUT THE DAFILE ADDRESS LIST ON UNIT 13
@@ -3346,17 +3335,18 @@ C
       ICDTRA(1:MMORBX) = 0
 
       IDIST = 0
-      DO 780 I = 1,MORBT
+      DO I = 1,MORBT
          IF (ITRTYP(I) .GE. 3) THEN
             IR = (I*I-I)/2
-            DO 770 J = 1,I
+            DO J = 1,I
                IF ( (ITRTYP(I)+ITRTYP(J)).GE.7 ) THEN
                   IDIST = IDIST + 1
                   ICDTRA(IR+J) = IDIST
                END IF
-  770       CONTINUE
+            END DO
          END IF
-  780 CONTINUE
+      END DO
+      NCDTRA = IDIST ! save in inftra.h
       IF (IPRTRA .GE. 5) THEN
          WRITE (LUPRI,'(/A)') ' ITRTYP(1:NORBT) = '//
      &      'number of integral indices in which this orbital enters:'

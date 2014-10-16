@@ -1761,6 +1761,9 @@ C
          IPRTRA = IPRTRA_SAVE
       END IF
 C
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU0,TWALL0)
+      END IF
 C
       IF (HJJTRA) THEN
          CALL HJJTRA_CTL(KTRLVL,CMO,WORK,KWORK)
@@ -1779,6 +1782,15 @@ C
      &        WORK(KITSW),WORK(KITSX),WORK(KIT),WORK(KFREE),LFREE)
          CALL MEMREL('TRACTL_1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       END IF
+
+      IF (IPRTRA .GE. 0) THEN
+         CALL GETTIM(TCPU,TWALL)
+         TCPU  = TCPU -TCPU0
+         TWALL = TWALL-TWALL0
+         WRITE(LUPRI,2200) TCPU, TWALL
+      END IF
+ 2200 FORMAT(/' 2-el. integral transformation:',
+     &       ' Total CPU and WALL times (sec)',2F12.3)
       RETURN
       END
 C  /* Deck tractl_1 */
@@ -2221,9 +2233,6 @@ C
    45 CONTINUE
 C
       DST = SECOND()
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU0,TWALL0)
-      END IF
 C
 C     900801-hjaaj: check if transformation already done
 C     971201-hjaaj: code moved to here (was too late)
@@ -2234,8 +2243,8 @@ C        called before first call to TRACTL_1 !!!!!!
 C        SIR_INTOPEN will set LSRTAO = -1 if LUINTM exists with
 C        a 'MOLTWOEL' label. Whenever TRACTL_1 has performed
 C        a transformation LSRTAO will be = +1.
-C     
-C   
+C
+C
       IF (LSRTAO .NE. 0) THEN
          CALL REWSPL(LUINTM)
          READ  (LUINTM) NPQ,LDABUF,(LASTAD(I),I=1,2500)
@@ -2432,14 +2441,6 @@ C
       DTIM = DFIN - DSTTRA
       IF (IPRTRA .GT. 0) WRITE (LUPRI,49) DTIM
    49 FORMAT(' TOTAL TIME IN TRACD,SORTB,TRAAB',F10.2)
-      IF (IPRTRA .GE. 0) THEN
-         CALL GETTIM(TCPU,TWALL)
-         TCPU  = TCPU -TCPU0
-         TWALL = TWALL-TWALL0
-         WRITE(LUPRI,2200) TCPU, TWALL
-      END IF
- 2200 FORMAT(/' Integral transformation: Total CPU and WALL times (sec)'
-     &       ,2F12.3)
 C
 C set JTER to 2 to suppress printing on next call of TRACTL_1/hj-840710
       IF (IPRTRA .LT. 10) JTER = 2
@@ -2528,17 +2529,24 @@ C
       DIMENSION H2CD(*),NEEDTP(-4:6),WRK(LFREE)
 C
 C Used from common blocks:
+C   INFORB : N2ORBX
 C   INFTAP : LUINTM,LBINTM
 C
+#include "inforb.h"
 #include "inftap.h"
 #include "inftra.h"
-C   
+C
 C
       SAVE KBUF, KIBUF, KNEXT
       DATA KNEXT /-1/
 C
       IF (HJJTRA) THEN
-         CALL HJJTRA_NXTH2M(IC,ID,H2CD,NEEDTP,IDIST)
+         IF (LFREE .LT. N2ORBX) THEN
+            write(lupri,*) 'KFREE, LFREE, IDIST',KFREE,LFREE,IDIST
+            write(lupri,*) 'N2ORBX',N2ORBX
+            call QUIT('too little memory for HJJTRA_NXTH2M')
+         END IF
+         CALL HJJTRA_NXTH2M(IC,ID,H2CD,NEEDTP,WRK(KFREE),IDIST)
          RETURN
       ELSE IF (NEWTRA) THEN
          CALL N_NXTH2M(IC,ID,H2CD,NEEDTP,WRK,KFREE,LFREE,IDIST)
@@ -2573,7 +2581,7 @@ C        distributions must be available (needtp .gt. 0).
             CALL QUIT('NXTH2M error, LVLMOL too small')
          END IF
 C
-C        We need to keep BUF and IBUF consecutively in memory. 
+C        We need to keep BUF and IBUF consecutively in memory.
 C        IBUF(LBINTM + 1) = LENGTH of record
 C        K.Ruud, April 2000
 C
