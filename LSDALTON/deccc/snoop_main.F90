@@ -203,10 +203,10 @@ contains
                   & FAOsnoop,lssnoop,Ecorrsnoop(i))
           end if
 
-          print '(1X,a,i5,a,3g20.12)', 'Subsystem: ', this, &
+          print '(1X,a,i5,a,3g20.12)', 'SNOOP subsystem: ', this, &
                & '  *** HF/corr/HFdiff energy: ', EHFsnoop(this), Ecorrsnoop(this),EHFsnoop(this)-EHFiso(this)
 
-          write(DECinfo%output,'(1X,a,i5,a,3g20.12)') 'Subsystem: ', this, &
+          write(DECinfo%output,'(1X,a,i5,a,3g20.12)') 'SNOOP subsystem: ', this, &
                & '  *** HF/corr/HFdiff energy: ', EHFsnoop(this), Ecorrsnoop(this),EHFsnoop(this)-EHFiso(this)
 
 
@@ -303,12 +303,12 @@ contains
 
 
     ! CROP/DIIS matrices
-    call mem_alloc(B,DECinfo%kappaMaxIter,DECinfo%kappaMaxIter)
-    call mem_alloc(c,DECinfo%kappaMaxIter)
+    call mem_alloc(B,DECinfo%SNOOPMaxIter,DECinfo%SNOOPMaxIter)
+    call mem_alloc(c,DECinfo%SNOOPMaxIter)
 
     ! Fock matrices in AO basis and residuals for each iteration
-    call mem_alloc(FAO,DECinfo%kappaMaxIter)
-    call mem_alloc(residual,DECinfo%kappaMaxIter)
+    call mem_alloc(FAO,DECinfo%SNOOPMaxIter)
+    call mem_alloc(residual,DECinfo%SNOOPMaxIter)
 
     ! Other matrices
     call mat_init(DAO,nbasis,nbasis)
@@ -328,7 +328,7 @@ contains
 
     ! Solver information
     dodiis=.true.
-    convthr = DECinfo%kappaTHR      ! The convergence threshold
+    convthr = DECinfo%SNOOPTHR      ! The convergence threshold
     converged=.false.
     prev_norm = huge(1.0_realk)
 
@@ -342,15 +342,15 @@ contains
     ! Start Roothaan-Hall iterations
     ! ******************************
 
-    RHiteration : do iter=1,DECinfo%kappaMaxIter
+    RHiteration : do iter=1,DECinfo%SNOOPMaxIter
 
        ! Current iteration
        last_iter = iter
 
        ! remove old vectors
-       RemoveOldVectors : if(iter > DECinfo%kappaMaxDIIS) then
-          call mat_free(residual(iter-DECinfo%kappaMaxDIIS))
-          call mat_free(FAO(iter-DECinfo%kappaMaxDIIS))
+       RemoveOldVectors : if(iter > DECinfo%SNOOPMaxDIIS) then
+          call mat_free(residual(iter-DECinfo%SNOOPMaxDIIS))
+          call mat_free(FAO(iter-DECinfo%SNOOPMaxDIIS))
        end if RemoveOldVectors
 
 
@@ -387,7 +387,7 @@ contains
 
        ! check if this is the last iteration
        if(resnorm < convthr) converged=.true.
-       if( (iter == DECinfo%kappaMaxIter) .or. converged) then
+       if( (iter == DECinfo%SNOOPMaxIter) .or. converged) then
           call mat_assign(FAOsub,FAO(iter))
           exit RHiteration
        end if
@@ -401,7 +401,7 @@ contains
 
           ! calculate diis matrix
           B=0.0E0_realk; c=0.0E0_realk
-          do i=iter,max(iter-DECinfo%kappaMaxDIIS+1,1),-1
+          do i=iter,max(iter-DECinfo%SNOOPMaxDIIS+1,1),-1
              do j=iter,i,-1
                 B(i,j) = mat_dotproduct(residual(i),residual(j))
                 B(j,i) = B(i,j)
@@ -409,12 +409,12 @@ contains
           end do
 
           ! solve crop/diis equation
-          call CalculateDIIScoefficients(DECinfo%kappaMaxDIIS,DECinfo%kappaMaxIter,iter,B,c, &
-               DECinfo%kappa_driver_debug)
+          call CalculateDIIScoefficients(DECinfo%SNOOPMaxDIIS,DECinfo%SNOOPMaxIter,iter,B,c, &
+               DECinfo%SNOOPdebug)
 
           ! mixing to get optimal Fock matrix
           call mat_zero(FAOopt)
-          do i=iter,max(iter-DECinfo%kappaMaxDIIS+1,1),-1
+          do i=iter,max(iter-DECinfo%SNOOPMaxDIIS+1,1),-1
              call mat_daxpy(c(i),FAO(i),FAOopt)
           end do
 
@@ -460,7 +460,7 @@ contains
     call mem_dealloc(B)
     call mem_dealloc(c)
     call mem_dealloc(eival)
-    do i=last_iter,max(last_iter-DECinfo%kappaMaxDIIS+1,1),-1
+    do i=last_iter,max(last_iter-DECinfo%SNOOPMaxDIIS+1,1),-1
        call mat_free(FAO(i))
        call mat_free(residual(i))
     end do
@@ -665,32 +665,39 @@ contains
     type(matrix) ::D,S,C
     type(fullmolecule) :: MySubsystem
     real(realk) :: EHF
+    integer :: nMO,nbasis
+
+    ! Dimensions
+    nbasis = F%nrow
+    nMO= Cocc%ncol + Cvirt%ncol     ! #MOs = #occ + #virt   (different from nbasis in general)
+
 
     ! Make fullmolecule structure for subsystem
     ! *****************************************
 
     ! Density matrix for subsystem
-    call mat_init(D,F%nrow,F%ncol)
+    call mat_init(D,nbasis,nbasis)
     call get_density_from_occ_orbitals_mat(Cocc,D)
 
     ! Overlap matrix for subsystem
-    call mat_init(S,F%nrow,F%ncol)
+    call mat_init(S,nbasis,nbasis)
     call II_get_overlap(DECinfo%output,DECinfo%output,lssub%setting,S)
 
     ! Collect MO coefficients in one matrix
-    call mat_init(C,F%nrow,F%ncol)
+    call mat_init(C,nbasis,nMO)
     call collect_MO_coeff_in_one_matrix(Cocc,Cvirt,C)
     
     ! Molecule structure for subsystem
     call molecule_init_from_inputs(MySubsystem,lssub,F,S,C,D)
     call mat_free(C)
-    call mat_free(F)
+    call mat_free(S)
 
 
     ! Correlation energy for subsystem
     ! ********************************
     call full_driver(MySubsystem,lssub,D,EHF,Ecorr)
     call mat_free(D)
+    call molecule_finalize(MySubsystem)
 
   end subroutine subsystem_correlation_energy
 

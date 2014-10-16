@@ -230,7 +230,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    if(present(nMO)) then ! subsystem
+    if(nMO /= molecule%nbasis) then ! subsystem
 
        write(DECinfo%output,'(/,a)') '-- Subsystem info --'
        write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)

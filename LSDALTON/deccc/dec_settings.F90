@@ -30,8 +30,14 @@ contains
     !> Unit number for DALTON.OUT
     integer, intent(in) :: output
 
+    ! SNOOP
     DECinfo%SNOOP = .false.
     DECinfo%SNOOPjustHF = .false.
+    DECinfo%SNOOPMaxDIIS=5
+    DECinfo%SNOOPMaxIter=100
+    DECinfo%SNOOPthr=1e-7_realk
+    DECinfo%SNOOPdebug=.false.
+
 
     DECinfo%doDEC                  = .false.
 
@@ -202,9 +208,9 @@ contains
     DECinfo%gradient=.false.
     DECinfo%kappa_use_preconditioner=.true.
     DECinfo%kappa_use_preconditioner_in_b=.true.
+    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
-    DECinfo%kappa_driver_debug=.false.
     DECinfo%kappaTHR=1e-4_realk
     DECinfo%EerrFactor = 0.1_realk
     DECinfo%EerrOLD = 0.0_realk
@@ -321,6 +327,9 @@ contains
           ! These keywords should be properly documented for the release.
 
 
+          ! SNOOP
+          ! =====
+
           ! Perform SNOOP calculation rather than DEC (will be merged at some point)
        case('.SNOOP') 
           DECinfo%SNOOP=.true.
@@ -328,6 +337,17 @@ contains
           ! Just do HF calculation in SNOOP and skip correlated CC calculation?
        case('.SNOOPJUSTHF') 
           DECinfo%SNOOPjustHF=.true.
+
+          ! Threshold for residual norm in SNOOP HF calculations
+       case('.SNOOPTHR') 
+          read(input,*) DECinfo%SNOOPthr
+
+          ! Maximum number of iterations in SNOOP HF calculations
+       case('.SNOOPMAXITER'); read(input,*) DECinfo%SNOOPMaxIter
+          ! Maximum number of DIIS vectors to store in SNOOP HF calculations (RH/DIIS scheme)
+       case('.SNOOPMAXDIIS'); read(input,*) DECinfo%SNOOPMaxDIIS
+          ! Debug prints for SNOOP
+       case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
 
 
           ! GENERAL INFO
@@ -931,8 +951,12 @@ contains
     WRITE(lupri,*) ' The DEC settings structure '
     write(lupri,*) '****************************'
 
-    write(lupri,*) 
-
+    write(lupri,*) 'SNOOP ',DECinfo%SNOOP
+    write(lupri,*) 'SNOOPjustHF ', DECinfo%SNOOPjustHF
+    write(lupri,*) 'SNOOPMaxDIIS ', DECinfo%SNOOPMaxDIIS
+    write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
+    write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
+    write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc

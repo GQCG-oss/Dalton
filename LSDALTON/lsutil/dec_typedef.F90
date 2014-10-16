@@ -88,6 +88,14 @@ module dec_typedef_module
      logical :: SNOOP
      !> Skip CC calculation in SNOOP and just do HF
      logical :: SNOOPjustHF
+     !> Maximum number of iterations in SNOOP HF calculations
+     integer :: SNOOPmaxiter
+     !> Convergence threshold in SNOOP HF calculations
+     real(realk) :: SNOOPthr
+     !> Maximum number of DIIS vectors stored in RH/DIIS scheme in SNOOP
+     integer :: SNOOPmaxdiis
+     !> Debug prints for SNOOP RH/DIIS
+     logical :: SNOOPdebug
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
