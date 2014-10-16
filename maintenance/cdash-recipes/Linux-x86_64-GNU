@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export MATH_ROOT=/opt/intel/mkl
+
 BRANCH='master'
 NUM_CORES=1
 MAKE_RELEASE=0
@@ -33,6 +35,7 @@ cd $CTEST_TEMP_DIR/compile
 git checkout $BRANCH &> /dev/null
 
 if [ $MAKE_RELEASE -eq 1 ]; then
+    mkdir build
     cd build
     cmake ..
     make release
