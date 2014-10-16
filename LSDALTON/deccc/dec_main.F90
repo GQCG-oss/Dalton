@@ -24,6 +24,7 @@ module dec_main_mod
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
+  use snoop_main_module
   use dec_fragment_utils
   use array3_memory_manager!,only: print_memory_currents_3d
   use array4_memory_manager!,only: print_memory_currents4
@@ -182,6 +183,16 @@ contains
     integer, dimension(8) :: values
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
+
+    ! Perform SNOOP calculation and skip DEC calculation
+    ! (at some point SNOOP and DEC might be merged)
+    if(DECinfo%SNOOP) then
+       write(DECinfo%output,*) '***********************************************************'
+       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
+       write(DECinfo%output,*) '***********************************************************'
+       call snoop_driver(mylsitem,Molecule,D)
+       return
+    end if
 
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
     if(DECinfo%check_lcm_orbitals) then
