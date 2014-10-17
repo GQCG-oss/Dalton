@@ -37,6 +37,7 @@ contains
     DECinfo%SNOOPMaxIter=100
     DECinfo%SNOOPthr=1e-7_realk
     DECinfo%SNOOPdebug=.false.
+    DECinfo%SNOOPort=.false.
 
 
     DECinfo%doDEC                  = .false.
@@ -348,6 +349,8 @@ contains
        case('.SNOOPMAXDIIS'); read(input,*) DECinfo%SNOOPMaxDIIS
           ! Debug prints for SNOOP
        case('.SNOOP_DEBUG'); DECinfo%SNOOPdebug=.true.
+          ! Impose orthogonality constrant for occupied subsystem orbitals in SNOOP 
+       case('.SNOOPORT'); DECinfo%SNOOPort=.true.
 
 
           ! GENERAL INFO
@@ -960,6 +963,7 @@ contains
     write(lupri,*) 'SNOOPMaxIter ', DECinfo%SNOOPMaxIter
     write(lupri,*) 'SNOOPthr ', DECinfo%SNOOPthr
     write(lupri,*) 'SNOOPdebug ', DECinfo%SNOOPdebug
+    write(lupri,*) 'SNOOPort ', DECinfo%SNOOPort
     write(lupri,*) 'doDEC ', DECitem%doDEC
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
