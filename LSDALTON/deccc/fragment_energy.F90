@@ -259,14 +259,9 @@ contains
     type(decfrag), intent(inout) :: myfragment
     !> MP2 gradient structure (only calculated if DECinfo%first_order is turned on)
     type(mp2grad),intent(inout),optional :: grad
-<<<<<<< HEAD
-    type(array) :: t1, ccsdpt_t1, m1
-    type(array) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
-    type(array) :: t2_occEOS
-=======
     type(tensor) :: t1, ccsdpt_t1, m1
     type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
+    type(tensor) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
@@ -274,7 +269,6 @@ contains
     type(tensor) :: t2f_local, VOVO_local
 
     type(integer) :: a,b,i,j,k,l
-
 
     times_ccsd => null()
     times_pt   => null()
@@ -298,21 +292,16 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
-<<<<<<< HEAD
-#ifdef MOD_UNRELEASED
        ! MP2-F12 Code
        if(DECinfo%F12) then    
           call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
           !> Free cabs after each calculation
           call free_cabs()
        endif
-#endif
-=======
     case(MODEL_RIMP2) ! RIMP2 calculation
 
        if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
        call RIMP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -420,22 +409,19 @@ contains
        end if
 #endif 
 
-<<<<<<< HEAD
 #ifdef MOD_UNRELEASED
        ! CCSD-F12 Code
        if(DECinfo%F12) then
-          call array_extract_eos_indices_occ(t2_occEOS,t2,MyFragment%noccEOS,MyFragment%idxo)
+          call tensor_extract_eos_indices_occ(t2_occEOS,t2,MyFragment%noccEOS,MyFragment%idxo)
           call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
           
           !> Free cabs after each calculation
-          call array_free(t2_occEOS)
+          call tensor_free(t2_occEOS)
           call free_cabs()
        endif
 #endif
-=======
        ! free vovo integrals
        call tensor_free(VOVO)
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
 
        if(DECinfo%use_singles)then
           call tensor_free(t1)

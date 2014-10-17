@@ -4103,29 +4103,6 @@ end function max_batch_dimension
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
-<<<<<<< HEAD
-          if(.not. DECinfo%SOS) then
-             write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
-          else
-             write(lupri,'(15X,a,f20.10)') 'G: Total SOSEX energy:', Ehf+Ecorr
-          endif
-          end if
-       else
-          IF(DECinfo%InteractionEnergy)THEN
-#ifdef MOD_UNRELEASED
-             write(lupri,'(15X,a,f20.10)') 'E: Interaction Correlation energy  :', Ecorr
-             ! skip error print for full calculation (0 by definition)
-          if(.not.DECinfo%full_molecular_cc.and.(.not.(DECinfo%onlyoccpart.or.DECinfo%onlyvirtpart)))then  
-             write(lupri,'(15X,a,f20.10)') 'E: Estimated DEC error :            ', Eerr
-          end if
-#endif
-       ELSE
-          IF(.NOT.DECinfo%DFTreference)THEN
-             write(lupri,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-          ENDIF
-       IF(DECinfo%DFTreference)THEN
-          write(lupri,'(15X,a,f20.10)') 'E: DFT energy :', Ehf
-=======
          if(.not. DECinfo%SOS) then
            write(lupri,'(15X,a,f20.10)') 'G: Total dRPA energy:', Ehf+Ecorr
          else
@@ -4137,7 +4114,6 @@ end function max_batch_dimension
     else
        IF(.NOT.DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)')    'E: Hartree-Fock energy :', Ehf
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
        ENDIF
        IF(DECinfo%DFTreference)THEN
           write(lupri,'(15X,a,f20.10)')    'E: DFT energy          :', Ehf
@@ -4150,26 +4126,6 @@ end function max_batch_dimension
        if(DECinfo%ccmodel==MODEL_MP2) then
           if (DECinfo%F12) then
              write(lupri,'(15X,a,f20.10)') 'E: Total MP2-F12 energy:', Ehf+Ecorr
-<<<<<<< HEAD
-          elseif(DECinfo%ccmodel==MODEL_CC2) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-          elseif(DECinfo%ccmodel==MODEL_CCSD) then
-             if (DECinfo%F12) then
-                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
-             else          
-                write(lupri,'(15X,a,f20.10)') 'E: Total CCSD energy    :', Ehf+Ecorr
-             endif
-          elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
-             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-          elseif(DECinfo%ccmodel==MODEL_RPA) then
-             if(.not. DECinfo%SOS) then
-               write(lupri,'(15X,a,f20.10)') 'E: Total dRPA energy:', Ehf+Ecorr
-             else
-               write(lupri,'(15X,a,f20.10)') 'E: Total SOSEX energy:', Ehf+Ecorr
-             endif
-          end if
-       ENDIF
-=======
           else          
              write(lupri,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr      
           endif
@@ -4196,7 +4152,6 @@ end function max_batch_dimension
        else
           write(lupri,'(15X,A,I4)') 'G: Unknown Energy DECinfo%ccmodel',DECinfo%ccmodel
        end if
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
     end if
     write(lupri,*)
     write(lupri,*)
@@ -4547,15 +4502,9 @@ end function max_batch_dimension
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        
        case(MODEL_CCSD)
-<<<<<<< HEAD
           call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
                & 'CCSDF12 occupied single energies','AF_CCSDf12_OCC')
-          call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
-=======
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & 'MP2F12 occupied single energies','AF_CCSDf12_OCC')
-            if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
+          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        end select
 

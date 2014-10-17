@@ -430,7 +430,7 @@ contains
              do i=1,nocc
                 do a=1,nvirt
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
-                   !Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
+                   !Taibj(a,i,b,j) = array4Taibj%elm4(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
@@ -1785,15 +1785,9 @@ end subroutine RIMP2_CalcEnergyContribution
     real(realk),pointer :: gao(:,:,:,:)
     real(realk),pointer :: AIBJ(:,:,:,:)
     real(realk) :: ECCSD, Ef12, Ttmp, Gtmp,E21,E22
-<<<<<<< HEAD
-    integer :: ncabs, ncabsAO, nocc,nvirt,nbasis,noccfull, i,j,a,b,p,q,m,c
-    type(array2) :: Tai
-    type(array4) :: Taibj
-=======
     integer :: ncabs, ncabsAO, nocc,nvirt,nbasis,noccfull, i,j,a,b
     type(tensor) :: Tai
     type(tensor) :: Taibj
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
     real(realk),pointer :: Ripjq(:,:,:,:)
     real(realk),pointer :: Fijkl(:,:,:,:)
     real(realk),pointer :: Tijkl(:,:,:,:)
@@ -2128,19 +2122,12 @@ end subroutine RIMP2_CalcEnergyContribution
     call mem_alloc(Viajj,nocc,nvirt,nocc)
     call ccsdf12_Viajj(Viajj,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-<<<<<<< HEAD
     ! V_ij^ja
     call mem_alloc(Vijja,nocc,nocc,nvirt)
     call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-     ! CCSD coupling V_ij^ij & V_ji^ij 
-    call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
-    call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
-=======
-    ! CCSD coupling V_ij^ij & V_ji^ij 
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%elm4,Viajb,Viija,Viajj,Tai%elm2,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%elm4,Viajb,Vijja,Viaji,Tai%elm2,nocc,nvirt)
->>>>>>> 25b54b2c32aff9b8e58a8386a43363d09cf564dc
 
     !> Debug Coupling Terms
     if(DECinfo%F12DEBUG) then
@@ -2157,11 +2144,11 @@ end subroutine RIMP2_CalcEnergyContribution
        call mem_alloc(Vjiij_Viajb_term4,nocc,nocc)
        call mem_alloc(Vjiij_Viajb_term5,nocc,nocc)
        
-       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term1,Vjiij_Viajb_term1,Viajb_term1,Taibj%val,nocc,nvirt)
-       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term2,Vjiij_Viajb_term2,Viajb_term2,Taibj%val,nocc,nvirt)
-       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term3,Vjiij_Viajb_term3,Viajb_term3,Taibj%val,nocc,nvirt)
-       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term4,Vjiij_Viajb_term4,Viajb_term4,Taibj%val,nocc,nvirt)
-       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term5,Vjiij_Viajb_term5,Ciajb,Taibj%val,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term1,Vjiij_Viajb_term1,Viajb_term1,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term2,Vjiij_Viajb_term2,Viajb_term2,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term3,Vjiij_Viajb_term3,Viajb_term3,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term4,Vjiij_Viajb_term4,Viajb_term4,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term5,Vjiij_Viajb_term5,Ciajb,Taibj%elm4,nocc,nvirt)
 
 !!$       print *, '----------------------------------------'
 !!$       print *, '  Taibj                                 '
@@ -2170,7 +2157,7 @@ end subroutine RIMP2_CalcEnergyContribution
 !!$          DO j=1,nocc
 !!$             DO a=1,nvirt
 !!$                DO b=1,nvirt
-!!$                      print *, "a b i j value: ", a,b,i,j, Taibj%val(a,i,b,j) 
+!!$                      print *, "a b i j value: ", a,b,i,j, Taibj%elm4(a,i,b,j) 
 !!$                ENDDO
 !!$             ENDDO
 !!$          ENDDO
@@ -2181,7 +2168,7 @@ end subroutine RIMP2_CalcEnergyContribution
 !!$       print *, '----------------------------------------'
 !!$       DO i=1,nocc
 !!$          DO a=1,nvirt
-!!$             print *, "a i  value: ", a,i, Tai%val(a,i) 
+!!$             print *, "a i  value: ", a,i, Tai%velm2(a,i) 
 !!$          ENDDO
 !!$       ENDDO
 
@@ -2214,16 +2201,16 @@ end subroutine RIMP2_CalcEnergyContribution
        call mem_alloc(Vjiij_Viaji_term3,nocc,nocc)
        call mem_alloc(Vjiij_Viaji_term4,nocc,nocc)
 
-       call  ccsdf12_Viija_coupling(Vijij_Viija_term1,Vjiij_Viaji_term1,Viija_term1,Viaji_term1,Tai%val,nocc,nvirt)
-       call  ccsdf12_Viija_coupling(Vijij_Viija_term2,Vjiij_Viaji_term2,Viija_term2,Viaji_term2,Tai%val,nocc,nvirt)
-       call  ccsdf12_Viija_coupling(Vijij_Viija_term3,Vjiij_Viaji_term3,Viija_term3,Viaji_term3,Tai%val,nocc,nvirt)
-       call  ccsdf12_Viija_coupling(Vijij_Viija_term4,Vjiij_Viaji_term4,Viija_term4,Viaji_term4,Tai%val,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term1,Vjiij_Viaji_term1,Viija_term1,Viaji_term1,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term2,Vjiij_Viaji_term2,Viija_term2,Viaji_term2,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term3,Vjiij_Viaji_term3,Viija_term3,Viaji_term3,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term4,Vjiij_Viaji_term4,Viija_term4,Viaji_term4,Tai%elm2,nocc,nvirt)
 
        !> Debug Test
        call mem_alloc(Vijij_Viija_all,nocc,nocc)
        call mem_alloc(Vjiij_Viaji_all,nocc,nocc)
 
-       call ccsdf12_Viija_coupling(Vijij_Viija_all,Vjiij_Viaji_all,Viija_full,Viaji_full,Tai%val,nocc,nvirt)
+       call ccsdf12_Viija_coupling(Vijij_Viija_all,Vjiij_Viaji_all,Viija_full,Viaji_full,Tai%elm2,nocc,nvirt)
      
        print *, '----------------------------------------'
        print *, ' E21 CCSD Viija_terms (DEBUG)          '
@@ -2254,16 +2241,16 @@ end subroutine RIMP2_CalcEnergyContribution
        call mem_alloc(Vjiij_Vijja_term3,nocc,nocc)
        call mem_alloc(Vjiij_Vijja_term4,nocc,nocc)
 
-       call ccsdf12_Viajj_coupling(Vijij_Viajj_term1,Vjiij_Vijja_term1,Viajj_term1,Vijja_term1,Tai%val,nocc,nvirt)
-       call ccsdf12_Viajj_coupling(Vijij_Viajj_term2,Vjiij_Vijja_term2,Viajj_term2,Vijja_term2,Tai%val,nocc,nvirt)
-       call ccsdf12_Viajj_coupling(Vijij_Viajj_term3,Vjiij_Vijja_term3,Viajj_term3,Vijja_term3,Tai%val,nocc,nvirt)
-       call ccsdf12_Viajj_coupling(Vijij_Viajj_term4,Vjiij_Vijja_term4,Viajj_term4,Vijja_term4,Tai%val,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term1,Vjiij_Vijja_term1,Viajj_term1,Vijja_term1,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term2,Vjiij_Vijja_term2,Viajj_term2,Vijja_term2,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term3,Vjiij_Vijja_term3,Viajj_term3,Vijja_term3,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term4,Vjiij_Vijja_term4,Viajj_term4,Vijja_term4,Tai%elm2,nocc,nvirt)
      
        !> Debug Test
       call mem_alloc(Vijij_Viajj_all,nocc,nocc)
       call mem_alloc(Vjiij_Vijja_all,nocc,nocc)
 
-       call  ccsdf12_Viajj_coupling(Vijij_Viajj_all,Vjiij_Vijja_all,Viajj_full,Vijja_full,Tai%val,nocc,nvirt)
+       call  ccsdf12_Viajj_coupling(Vijij_Viajj_all,Vjiij_Vijja_all,Viajj_full,Vijja_full,Tai%elm2,nocc,nvirt)
 
        print *, '----------------------------------------'
        print *, '  E21 CCSD Viajj_terms (DEBUG)          '
@@ -2444,7 +2431,7 @@ end subroutine RIMP2_CalcEnergyContribution
        call mp2f12_Vjiij(Vjiij_mp2f12,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
        
        ! CCSD coupling V_ij^ij & V_ji^ij 
-       ! call  ccsdf12_Viajb_coupling(Vijij_mp2f12,Vjiij_mp2f12,Ciajb,Taibj%val,nocc,nvirt)
+       ! call  ccsdf12_Viajb_coupling(Vijij_mp2f12,Vjiij_mp2f12,Ciajb,Taibj%elm4,nocc,nvirt)
 
        print *, '----------------------------------------'
        print *, ' CCSD-F12 energy summary                '
