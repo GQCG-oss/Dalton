@@ -592,8 +592,9 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    local=.true.
 #ifdef VAR_MPI
-   if(infpar%lg_nodtot>1)local=.false.
+   if(infpar%lg_nodtot>1) local = .false.
 #endif
+
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
    ! from previous fragment calculations to describe long-range
@@ -618,6 +619,7 @@ subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
       call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
    endif
 #endif
+
    call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
       & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
       & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
@@ -1541,7 +1543,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
    integer                 :: iter,last_iter,i,j,k,l
-   logical                 :: crop_ok,break_iterations,saferun
+   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis
    type(ri)                :: l_ao
    type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
@@ -1646,10 +1648,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m2',DECinfo%output)
       end if
-      if(.not. local)then
-         print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
-         stop 0
-      endif
+      !if(.not. local)then
+      !   print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
+      !   stop 0
+      !endif
    endif
 
    vovo_avail = .false.
@@ -1700,7 +1702,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
 
-   if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
+   use_pseudo_diag_basis = DECinfo%CCSDpreventcanonical.or.use_pnos
+   !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
+   
+   if(use_pseudo_diag_basis)then
+      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
+         & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
+      ppfock_d = 0.0E0_realk
+      qqfock_d = 0.0E0_realk
+      do ii=1,no
+         ppfock_d(ii,ii) = focc(ii)
+      enddo
+      do aa=1,nv
+         qqfock_d(aa,aa) = fvirt(aa)
+      enddo
+   else
       !no diagonalization
       Co_d     = Co_f
       Cv_d     = Cv_f
@@ -1713,17 +1729,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       enddo
       do aa=1,nv
          Uv%elm2(aa,aa) = 1.0E0_realk
-      enddo
-   else
-      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
-         & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
-      ppfock_d = 0.0E0_realk
-      qqfock_d = 0.0E0_realk
-      do ii=1,no
-         ppfock_d(ii,ii) = focc(ii)
-      enddo
-      do aa=1,nv
-         qqfock_d(aa,aa) = fvirt(aa)
       enddo
    endif
 
@@ -1963,6 +1968,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       nspaces = 0
       set_pno_info:if(use_pnos)then
 
+         !FIXME: do the PNO construction in MPI parallel
+         call tensor_init(tmp,[nv,no,nv,no],4)
+         call tensor_convert(m2, tmp%elm1)
+
          !GET THE PNO TRANSFORMATION MATRICES
          if(fragment_job)then
 
@@ -1974,21 +1983,19 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             frag%nspaces = nspaces
 
             call mem_alloc( frag%CLocPNO, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%elm1,frag%CLocPNO,frag%nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,frag%CLocPNO,frag%nspaces,f=frag)
             pno_cv => frag%CLocPNO
 
          else
             !ALL PAIRS
             nspaces = no * ( no + 1 ) / 2
             call mem_alloc( pno_cv, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%elm1,pno_cv,nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,pno_cv,nspaces,f=frag)
 
          endif
 
-         if(.not. local)then
-            print *,"PNO currently only without MPI"
-            stop 0
-         endif
+         call tensor_free(tmp)
+
          !GET THE OVERLAP BETWEEN THE PNO SPACES
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
@@ -2078,7 +2085,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RIMP2 )
 
-            call lsquit('RI-MP2 have no residual - non iterative scheme',-1)
+            call lsquit('RI-MP2 has no residual - non iterative scheme',-1)
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
@@ -2097,7 +2104,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 #endif
 
          case default
+
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
+
          end select SelectCoupledClusterModel
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
