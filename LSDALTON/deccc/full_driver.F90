@@ -907,12 +907,13 @@ contains
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaBeta_inv(:,:),AlphaCD(:,:,:),AlphaCD2(:,:,:),AlphaCD5(:,:,:)
     real(realk),pointer :: TMPAlphaBeta_inv(:,:),Calpha(:,:,:),Calpha2(:,:,:),AlphaCD6(:,:,:)
-    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:),Calpha3(:,:,:),AlphaCD3(:,:,:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
     integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A
-    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin
-    integer(kind=ls_mpik)  :: request1,request2,request5,request6
+    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
+    logical :: RoundRobin2,RoundRobin3,useAlphaCD2,useAlphaCD3
+    integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     !use Memory leak tool
@@ -1096,6 +1097,8 @@ contains
        CurrentWait(1) = 0
        CurrentWait(2) = 0
        nAwaitDealloc = 0
+       RoundRobin5 = .FALSE.
+       RoundRobin6 = .FALSE.
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
           !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
@@ -1110,10 +1113,12 @@ contains
                 !all buffers are allocated and await to be deallocated once the memory
                 !have been recieved by the reciever.
                 IF(CurrentWait(1).EQ.5)THEN
+                   !I need to wait for AlphaCD5 to be received before I can deallocate
                    call MPI_WAIT(request5,status,ierr)
                    call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
                 ELSEIF(CurrentWait(1).EQ.6)THEN
+                   !I need to wait for AlphaCD5 to be received before I can deallocate
                    call MPI_WAIT(request6,status,ierr)
                    call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
@@ -1132,11 +1137,29 @@ contains
              COUNT = OriginalRanknauxMPI*nocc*nvirt
              MessageRecieved = .FALSE.
              IF(useAlphaCD5)THEN
+                !First time (node=1) RECV from the ISEND at line 1068, which sends AlphaCD
+                !all other times RECV AlphaCD5
                 call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
-                call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin5 = .TRUE.
+                   !SEND AlphaCD5 to sender
+                   call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                ELSE
+                   !Last time (node=numnodes-1) Do not send because the sender is the 
+                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
+                   RoundRobin5 = .FALSE.
+                ENDIF
              ELSEIF(useAlphaCD6)THEN
                 call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
-                call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin6 = .TRUE.
+                   !SEND AlphaCD6 to sender
+                   call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                ELSE
+                   !Last time (node=numnodes-1) Do not send because the sender is the 
+                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
+                   RoundRobin6 = .FALSE.
+                ENDIF
              ENDIF
              IF(MynauxMPI.GT.0)THEN
                 !Step 2: Obtain part of Calpha from this contribution
@@ -1162,6 +1185,7 @@ contains
                    CurrentWait(nAwaitDealloc) = 6
                 ENDIF
              ELSE
+                !I can deallocate directly I do not need to MPI_WAIT since I did not send
                 IF(useAlphaCD5)THEN
                    call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
@@ -1180,11 +1204,15 @@ contains
        IF(nAwaitDealloc.NE.0)THEN
           do iAwaitDealloc=1,nAwaitDealloc
              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-                call MPI_WAIT(request5,status,ierr)
+                IF(RoundRobin5)THEN
+                   call MPI_WAIT(request5,status,ierr)
+                ENDIF
                 call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                 call mem_dealloc(AlphaCD5)
              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-                call MPI_WAIT(request6,status,ierr)
+                IF(RoundRobin6)THEN
+                   call MPI_WAIT(request6,status,ierr)
+                ENDIF
                 call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                 call mem_dealloc(AlphaCD6)
              ENDIF
@@ -1217,6 +1245,16 @@ contains
 
     nullify(AlphaCD2)
     nullify(Calpha2)
+    nullify(AlphaCD3)
+    nullify(Calpha3)
+
+    useAlphaCD2 = .TRUE. 
+    useAlphaCD3 = .FALSE.
+    CurrentWait(1) = 0
+    CurrentWait(2) = 0
+    nAwaitDealloc = 0
+    RoundRobin2 = .FALSE.
+    RoundRobin3 = .FALSE.
     IF(Wakeslaves)THEN
 #ifdef VAR_MPI
        IF(MynauxMPI.GT.0)THEN 
@@ -1226,68 +1264,162 @@ contains
           !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
           COUNT = NBA*nocc*nvirt
           call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request1,ierr)
-!          call MPI_Request_free(request1,ierr)
           call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request2,ierr)
-!          call MPI_Request_free(request2,ierr)
        ENDIF
-       RoundRobin = .FALSE.
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           myOriginalRank = MOD(mynum+node,numnodes)         
           OriginalRanknauxMPI = nBasisauxMPI(myOriginalRank+1) !dim1 of recieved package
           IF(OriginalRanknauxMPI.GT.0)THEN
-             IF(associated(AlphaCD2))THEN
-                call MPI_WAIT(request5,status,ierr)
-                call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-                call mem_dealloc(AlphaCD2)              
-                call MPI_WAIT(request6,status,ierr)
-                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-                call mem_dealloc(Calpha2)
-                nullify(AlphaCD2)
-                nullify(Calpha2)                
+             IF(nAwaitDealloc.EQ.2)THEN
+                !all buffers are allocated and await to be deallocated once the memory
+                !have been recieved by the reciever.
+                !DEALLOCATE BLOCK IF NEEDED
+                IF(CurrentWait(1).EQ.2)THEN
+                   !I need to wait for AlphaCD2 to be received before I can deallocate
+                   call MPI_WAIT(request5,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD2)       
+                   call MPI_WAIT(request6,status,ierr)
+                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                   call mem_dealloc(Calpha2)
+                   nullify(AlphaCD2)
+                   nullify(Calpha2)                
+                ELSEIF(CurrentWait(1).EQ.3)THEN
+                   call MPI_WAIT(request7,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD3)       
+                   call MPI_WAIT(request8,status,ierr)
+                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                   call mem_dealloc(Calpha3)
+                   nullify(AlphaCD3)
+                   nullify(Calpha3)                
+                ENDIF
+                nAwaitDealloc = 1
+                CurrentWait(1) = CurrentWait(2)
+                CurrentWait(2) = 0 
              ENDIF
-             call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
-             call mem_leaktool_alloc(AlphaCD2,LT_AlphaCD2)
-             call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
-             call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+             !ALLOCATE BLOCK
+             IF(useAlphaCD2)THEN
+                call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD2,LT_AlphaCD2)
+                call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+             ELSE
+                call mem_alloc(AlphaCD3,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD3,LT_AlphaCD2)
+                call mem_alloc(Calpha3,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(Calpha3,LT_Calpha2)
+             ENDIF
              COUNT = OriginalRanknauxMPI*nvirt*nocc
+             !RECV BLOCK ONWARDS
              IF(node.EQ.1)THEN
                 !recieve from the ISEND above 
                 call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
                 call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
              ELSE
-                call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
-                call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                IF(useAlphaCD2)THEN
+                   call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                   call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                ELSE
+                   call MPI_RECV(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                   call MPI_RECV(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                ENDIF
+             ENDIF
+             !SEND BLOCK ONWARDS
+             IF(useAlphaCD2)THEN
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin2 = .TRUE.
+                   call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
+                   call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
+                ELSE
+                   !No need to ISEND because the sender is the original owner of the block
+                   RoundRobin2 = .FALSE.
+                ENDIF
+             ELSE
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin3 = .TRUE.
+                   call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request7,ierr)
+                   call MPI_ISEND(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request8,ierr)
+                ELSE
+                   !No need to ISEND because the sender is the original owner of the block
+                   RoundRobin3 = .FALSE.
+                ENDIF
+             ENDIF
+             !CALCULATE ENERGY CONTRIBUTION
+             IF(MynauxMPI.GT.0)THEN
+                IF(useAlphaCD2)THEN
+                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+                        & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
+                ELSE
+                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+                        & NBA,alphaCD,Calpha,alphaCD3,Calpha3,OriginalRanknauxMPI,rimp2_energy)
+                ENDIF
              ENDIF
              IF(node.NE.numnodes-1)THEN
-                RoundRobin = .TRUE.
-                call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
-                call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
-             ENDIF
-             IF(MynauxMPI.GT.0)THEN
-                call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-                     & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
+                IF(useAlphaCD2)THEN
+                   useAlphaCD2 = .FALSE.; useAlphaCD3=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 2
+                ELSE
+                   useAlphaCD3 = .FALSE.; useAlphaCD3=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 3
+                ENDIF
+             ELSE
+                !I can deallocate directly since I did not ISEND these 
+                IF(useAlphaCD2)THEN                
+                   call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD2)
+                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                   call mem_dealloc(Calpha2)              
+                   nullify(AlphaCD2)
+                   nullify(Calpha2)  
+                ELSE
+                   call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD3)
+                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                   call mem_dealloc(Calpha3)
+                   nullify(AlphaCD3)
+                   nullify(Calpha3)
+                ENDIF
              ENDIF
           ENDIF
        ENDDO
-       IF(RoundRobin)THEN
-          IF(associated(AlphaCD2))THEN
-             call MPI_WAIT(request5,status,ierr)
-             call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-             call mem_dealloc(AlphaCD2)
-             call MPI_WAIT(request6,status,ierr)
-             call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-             call mem_dealloc(Calpha2)              
-          ENDIF
-       ELSE
-          call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-          call mem_dealloc(AlphaCD2)
-          call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-          call mem_dealloc(Calpha2)              
+       IF(nAwaitDealloc.NE.0)THEN
+          do iAwaitDealloc=1,nAwaitDealloc
+             IF(CurrentWait(iAwaitDealloc).EQ.2)THEN
+                IF(RoundRobin2)THEN
+                   call MPI_WAIT(request5,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                call mem_dealloc(AlphaCD2)
+                IF(RoundRobin2)THEN       
+                   call MPI_WAIT(request6,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                call mem_dealloc(Calpha2)
+                nullify(AlphaCD2)
+                nullify(Calpha2)                
+             ELSEIF(CurrentWait(iAwaitDealloc).EQ.3)THEN
+                IF(RoundRobin3)THEN
+                   call MPI_WAIT(request7,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                call mem_dealloc(AlphaCD3)
+                IF(RoundRobin3)THEN       
+                   call MPI_WAIT(request8,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                call mem_dealloc(Calpha3)
+                nullify(AlphaCD3)
+                nullify(Calpha3)                
+             ENDIF
+          enddo
        ENDIF
        IF(MynauxMPI.GT.0)THEN
           call MPI_WAIT(request1,status,ierr)
           call mem_leaktool_dealloc(AlphaCD,LT_AlphaCD)
-          call mem_dealloc(AlphaCD)              
+          call mem_dealloc(AlphaCD)      
           call MPI_WAIT(request2,status,ierr)
           call mem_leaktool_dealloc(Calpha,LT_Calpha)
           call mem_dealloc(Calpha)              
