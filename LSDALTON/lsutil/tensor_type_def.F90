@@ -79,16 +79,16 @@ module tensor_type_def_module
   real(realk) :: tensor_aux_deallocd_mem   = 0.0E0_realk
 
 
-  !parameters to define the data distribution in the array type
-  integer, parameter :: DENSE        = 1
-  integer, parameter :: REPLICATED   = 2
-  integer, parameter :: TILED        = 3
-  integer, parameter :: TILED_DIST   = 4
+  !parameters to define the data distribution in the tensor type
+  integer, parameter :: TT_DENSE        = 1
+  integer, parameter :: TT_REPLICATED   = 2
+  integer, parameter :: TT_TILED        = 3
+  integer, parameter :: TT_TILED_DIST   = 4
 
-  !parameters for PDMTYPE:
-  integer,parameter :: NO_PDM_ACCESS = 0
-  integer,parameter :: MASTER_ACCESS = 1
-  integer,parameter :: ALL_ACCESS    = 2
+  !parameters for ACCESS TYPE:
+  integer,parameter :: AT_NO_PDM_ACCESS = 0
+  integer,parameter :: AT_MASTER_ACCESS = 1
+  integer,parameter :: AT_ALL_ACCESS    = 2
 
   !other parameters
   integer,parameter :: TENSOR_MSG_LEN = 30

@@ -5137,7 +5137,7 @@ end function max_batch_dimension
      nvirt = t2%dims(1)
 
      select case(t2%itype)
-     case(DENSE,REPLICATED)
+     case(TT_DENSE,TT_REPLICATED)
 
         ! Init combined amplitudes
         call tensor_init(u,t2%dims,4)
@@ -5165,9 +5165,9 @@ end function max_batch_dimension
 #endif
 
         endif
-     case( TILED_DIST )
+     case( TT_TILED_DIST )
 
-        if(t1%itype /= DENSE .and. t1%itype /= REPLICATED)then
+        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
            call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
         endif
 
@@ -5267,7 +5267,7 @@ end function max_batch_dimension
     dims(3) = A%dims(3)
     dims(4) = MyFragment%noccAOS
 
-    if( A%itype == DENSE )then
+    if( A%itype == TT_DENSE )then
        call tensor_init(B, dims,4) 
 
        ! Copy elements from A to B, but only valence for last index

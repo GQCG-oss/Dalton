@@ -1325,10 +1325,10 @@ contains
 
      do_non_pdm = .false.
      if( .not.DECinfo%OnlyVIRTPart )then
-        do_non_pdm = do_non_pdm .or. (t2occ%itype == DENSE .and. gocc%itype == DENSE )
+        do_non_pdm = do_non_pdm .or. (t2occ%itype == TT_DENSE .and. gocc%itype == TT_DENSE )
      endif
      if(.not.DECinfo%OnlyoccPart)then
-        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  DENSE .and. gvirt%itype == DENSE)
+        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  TT_DENSE .and. gvirt%itype == TT_DENSE)
      endif
 
      if( do_non_pdm )then

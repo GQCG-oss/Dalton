@@ -2101,11 +2101,11 @@ contains
 
        ncopy = dimQ*(dimQ+1)/2 + (ntot*(ntot-1)/2 + ntot-1)*(dimQ*(dimQ+1)/2)
        ! accumulate tile
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
           call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -2130,11 +2130,11 @@ contains
 
        ncopy = (ntot*(ntot-1)/2 + ntot)*dimP*dimQ
        ! accumulate tile
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
           call tensor_accumulate_tile(pack_gmo,tile,tmp(1:ncopy),ncopy,lock_set=.true.)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%ti(tile)%t(:),1)
        else
           call daxpy(ncopy,1.0E0_realk,tmp,1,pack_gmo%elm2(:,tile),1)
@@ -2182,11 +2182,11 @@ contains
        ! get batch from pdm:
        ncopy = ntot*(ntot+1)*dimP*(dimP+1)/4
 
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
           call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2220,11 +2220,11 @@ contains
        ! get batch from pdm:
        ncopy = dimP*dimQ*ntot*(ntot+1)/2
 
-       if (nnod>1.and.pack_gmo%itype==TILED_DIST) then
+       if (nnod>1.and.pack_gmo%itype==TT_TILED_DIST) then
           call time_start_phase(PHASE_COMM)
           call tensor_get_tile(pack_gmo,tile,tmp,ncopy)
           call time_start_phase(PHASE_WORK)
-       else if (nnod>1.and.pack_gmo%itype==TILED) then
+       else if (nnod>1.and.pack_gmo%itype==TT_TILED) then
           call dcopy(ncopy,pack_gmo%ti(tile)%t,1,tmp,1)
        else
           call dcopy(ncopy,pack_gmo%elm2(1,tile),1,tmp,1)
@@ -2437,11 +2437,11 @@ contains
 
 
     if(.not.local)then
-       integral%access_type = ALL_ACCESS
-       trafo1%access_type   = ALL_ACCESS
-       trafo2%access_type   = ALL_ACCESS
-       trafo3%access_type   = ALL_ACCESS
-       trafo4%access_type   = ALL_ACCESS
+       integral%access_type = AT_ALL_ACCESS
+       trafo1%access_type   = AT_ALL_ACCESS
+       trafo2%access_type   = AT_ALL_ACCESS
+       trafo3%access_type   = AT_ALL_ACCESS
+       trafo4%access_type   = AT_ALL_ACCESS
 #ifdef VAR_MPI
        call time_start_phase( PHASE_COMM )
        call ls_mpibcast(MaxAllowedDimAlpha,infpar%master,infpar%lg_comm)
@@ -2722,11 +2722,11 @@ contains
     endif
 
     if(.not.local)then
-       integral%access_type = MASTER_ACCESS
-       trafo1%access_type = MASTER_ACCESS
-       trafo2%access_type = MASTER_ACCESS
-       trafo3%access_type = MASTER_ACCESS
-       trafo4%access_type = MASTER_ACCESS
+       integral%access_type = AT_MASTER_ACCESS
+       trafo1%access_type = AT_MASTER_ACCESS
+       trafo2%access_type = AT_MASTER_ACCESS
+       trafo3%access_type = AT_MASTER_ACCESS
+       trafo4%access_type = AT_MASTER_ACCESS
     endif
 
 

@@ -400,11 +400,11 @@ module lspdm_basic_module
         !Check if the current tile resides on the current node
         doit=.true.
 #ifdef VAR_MPI
-        if(arr%itype==TILED_DIST.and.mod(i-1+arr%offset,lg_nnod)/=lg_me)doit=.false.
+        if(arr%itype==TT_TILED_DIST.and.mod(i-1+arr%offset,lg_nnod)/=lg_me)doit=.false.
 #endif
         !convert global tile index i to local tile index loc_idx
         loc_idx=((i-1)/lg_nnod) + 1
-        if (arr%itype==TILED) loc_idx=i 
+        if (arr%itype==TT_TILED) loc_idx=i 
          
         if(doit)then
           !only do these things if tile belongs to node
