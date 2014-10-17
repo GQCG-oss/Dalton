@@ -204,8 +204,7 @@ contains
     ! Init fragment basis information
     call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
          & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
-    
- 
+     
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
     if(DECinfo%SinglesPolari) then
@@ -278,9 +277,13 @@ contains
     type(mp2grad),intent(inout),optional :: grad
     type(array) :: t1, ccsdpt_t1, m1
     type(array) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(array) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
+
+    type(integer) :: a,b,i,j,k,l
+
 
     times_ccsd => null()
     times_pt   => null()
@@ -302,6 +305,15 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+
+#ifdef MOD_UNRELEASED
+       ! MP2-F12 Code
+       if(DECinfo%F12) then    
+          call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          !> Free cabs after each calculation
+          call free_cabs()
+       endif
+#endif
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -381,6 +393,18 @@ contains
        end if
 #endif 
 
+#ifdef MOD_UNRELEASED
+       ! CCSD-F12 Code
+       if(DECinfo%F12) then
+          call array_extract_eos_indices_occ(t2_occEOS,t2,MyFragment%noccEOS,MyFragment%idxo)
+          call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          
+          !> Free cabs after each calculation
+          call array_free(t2_occEOS)
+          call free_cabs()
+       endif
+#endif
+
        if(DECinfo%use_singles)then
           call array_free(t1)
        endif
@@ -424,16 +448,6 @@ contains
      WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
     call stats_globalmem(DECinfo%output)
 
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then    
-       call get_f12_fragment_energy(MyFragment, t2occ%elm4)
-       !> Free cabs after each calculation
-       call free_cabs()
-
-       ! call mem_dealloc(dens)
-       ! call mat_free(Dmat)
-    endif
-#endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
 
     ! First order properties
@@ -935,16 +949,16 @@ contains
 
     times_ccsd => null()
     times_pt   => null()
-
+    
     !type(matrix) :: Dmat
     !real(realk),pointer :: dens(:,:)
-
+    
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(PairFragment%ccmodel) 
-    
+
     case( MODEL_NONE ) ! SKip calculation
 
        return
@@ -956,6 +970,15 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+       
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          call get_f12_fragment_energy(PairFragment, t2occ%elm4, t1%elm2, PairFragment%ccmodel, Fragment1, Fragment2, natoms)
+
+          !> Free density matrix
+          call free_cabs()
+       endif
+#endif
 
     case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT,MODEL_RPA) ! higher order CC (-like)
 
@@ -1001,6 +1024,16 @@ contains
 
        call dec_fragment_time_get(times_ccsd)
 
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          call get_f12_fragment_energy(PairFragment, t2occ%elm4, t1%elm2, PairFragment%ccmodel, Fragment1, Fragment2, natoms)
+
+          !> Free density matrix
+          call free_cabs()
+       endif
+
+#endif
+
     case default
 
        call lsquit("ERROR(pair_fragment_energy_and_prop):MODEL not implemented",-1)
@@ -1036,15 +1069,7 @@ contains
     ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
     ! see dec_readme file.
 
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then
-       call get_f12_fragment_energy(PairFragment, t2occ%elm4, Fragment1, Fragment2, natoms)
-    
-       !> Free density matrix
-       call free_cabs()
-    endif
-   
-#endif
+
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
 
 
@@ -2093,7 +2118,7 @@ contains
      !> Number of atoms in molecule
      integer, intent(in) :: natoms
      !> Central atom in molecule
-     integer, intent(in) :: MyAtom
+     integer, intent(inout) :: MyAtom !> Wangy hack intent inout
      !> Atomic fragment to be optimized
      type(decfrag),intent(inout)        :: AtomicFragment
      !> All occupied orbitals
@@ -2130,6 +2155,65 @@ contains
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
      logical :: BruteForce,FockMatrixOrdering
 
+!!$     !! HACK for testing purposes, F12 code, Do not remove 
+!!$     !! ****
+!!$     !! All virtual, change occupied
+!!$
+!!$     MyAtom = 1
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .False.
+!!$        Virt_Atoms(i) = .True.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     All virtual", "Number of Occupied Orbitals", i
+!!$        print *, "-------------------------------------------------"
+!!$
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     !! All occupied, change virtual
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .True.
+!!$        Virt_Atoms(i) = .False.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Virt_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     All occ", "Number of Virtual Orbitals", i
+!!$        print *, "-------------------------------------------------"
+!!$
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .False.
+!!$        Virt_Atoms(i) = .False.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Virt_Atoms(1:i) = .True.
+!!$        Occ_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     Occ and Virt", i
+!!$        print *, "-------------------------------------------------"
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     stop 'KK/Wangy HACK'
 
      if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
@@ -4579,7 +4663,7 @@ contains
 #ifdef MOD_UNRELEASED         
        if(Decinfo%F12) then
           ! CCSD-F12: F12-correction
-          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_ccsdf12)      
+          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_CCSDf12)      
        endif
 #endif
 
