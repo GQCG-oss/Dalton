@@ -19,7 +19,7 @@ export CTEST_PROJECT_NAME=LSDALTON
 #./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp -D BUILDNAME="MB-Sisyphos-pgi-release" -D ENABLE_EFS=OFF build
 
 #Janus this setup should be used (I think) when the async stuff from pgi works
-./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi14.9-acc-release" -D ENABLE_EFS=OFF build
+./setup --fc=pgf90 --cc=pgcc --cxx=pgcpp --omp --openacc --collapse --extra-fc-flags="-ta=tesla:nordc,cuda5.5 -Mcuda=5.5 -Minfo" -D CPP="-DVAR_CUBLAS" --blas=builtin --lapack=builtin -D BUILDNAME="MB-Sisyphos-pgi14.9-acc-release" -D ENABLE_EFS=OFF build
 
 
 # POSSIBLE MPI STUFF

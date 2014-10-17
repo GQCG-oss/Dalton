@@ -4580,8 +4580,6 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     !   do CCSD energy part
     ! ***********************
 
-    !MODIFY FOR NEW MODEL
-
     ! ***note: we only run over nval (which might be equal to nocc_tot if frozencore = .false.)
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 

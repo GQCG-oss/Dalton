@@ -59,6 +59,7 @@ module lsmpi_type
           &           lsmpi_reduction_realk_wrapper8, &
           &           lsmpi_reduction_realkM4,lsmpi_reduction_realkM8, &
           &           lsmpi_reduction_realkT4,lsmpi_reduction_realkT8, &
+          &           lsmpi_reduction_realk4D4,lsmpi_reduction_realk4D8, &
           &           lsmpi_reduction_integer4,lsmpi_reduction_integer4_wrapper8, &
           &           lsmpi_reduction_integer8,lsmpi_reduction_integer8_wrapper8, &
           &           lsmpi_reduction_integer4M4,lsmpi_reduction_integer4M8,&
@@ -3334,6 +3335,37 @@ contains
     nullify(buf)
 #endif
   end subroutine lsmpi_reduction_realkT8
+
+  subroutine lsmpi_reduction_realk4D4(buffer,n1,n2,n3,n4,master,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: comm   ! communicator
+    integer(kind=ls_mpik),intent(in) :: master
+    integer(kind=4) ::n1,n2,n3,n4
+    real(realk) :: buffer(n1,n2,n3,n4)
+#ifdef VAR_MPI
+    integer(kind=8) :: n
+    real(realk),pointer :: buf(:)
+    n=n1*n2*n3*n4
+    call ass_4D4to1(buffer,buf,[n1,n2,n3,n4])
+    call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
+    nullify(buf)
+#endif
+  end subroutine lsmpi_reduction_realk4D4
+  subroutine lsmpi_reduction_realk4D8(buffer,n1,n2,n3,n4,master,comm)
+    implicit none
+    integer(kind=ls_mpik),intent(in) :: comm   ! communicator
+    integer(kind=ls_mpik),intent(in) :: master
+    integer(kind=8) ::n1,n2,n3,n4
+    real(realk) :: buffer(n1,n2,n3,n4)
+#ifdef VAR_MPI
+    integer(kind=8) :: n
+    real(realk),pointer :: buf(:)
+    n=n1*n2*n3*n4
+    call ass_8D4to1(buffer,buf,[n1,n2,n3,n4])
+    call lsmpi_reduction_realk_wrapper8(buf,n,master,comm)
+    nullify(buf)
+#endif
+  end subroutine lsmpi_reduction_realk4D8
 
   subroutine lsmpi_reduce_realk_min(buffer,dest,comm)
     implicit none

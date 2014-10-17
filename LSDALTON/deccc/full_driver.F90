@@ -3,6 +3,13 @@
 !> This file is mainly a playground for new developments, not intended to be included in a release.
 
 module full 
+
+#ifdef VAR_MPI
+  use infpar_module
+  use lsmpi_type
+  use decmpi_module, only: mpi_bcast_fullmolecule
+  use lsmpi_op
+#endif
   use fundamental
   use precision
   use typedeftype!,only:lsitem
@@ -29,9 +36,9 @@ module full
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
   use ccdriver!,only: ccsolver_justenergy, ccsolver
-  use fragment_energy_module,only : Full_DECMP2_calculation
+!  use fragment_energy_module,only : Full_DECMP2_calculation
 
-  public :: full_driver
+  public :: full_driver, full_canonical_rimp2
   private
 
 contains
@@ -61,6 +68,8 @@ contains
     call set_dec_settings_on_slaves()
 #endif
 
+    !MODIFY FOR NEW MODEL
+
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
 #ifdef MOD_UNRELEASED
@@ -72,6 +81,9 @@ contains
 #else
        call lsquit('f12 not released',-1)
 #endif
+    elseif(DECinfo%ccModel==MODEL_RIMP2)then
+!       call lsquit('RIMP2 currently not implemented for **CC ',-1)
+       call full_canonical_rimp2(MyMolecule,MyLsitem,Ecorr)       
     else
        !if(DECinfo%ccModel==MODEL_MP2) then
 
@@ -832,6 +844,470 @@ contains
 
   end subroutine full_canonical_mp2_memory_check
 
+  !> \brief Memory check for full_canonical_rimp2 subroutine
+  !> \author Thomas Kjaergaard
+  !> \date October 2014
+  subroutine full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
+    implicit none
+    integer,intent(in) :: nbasis,nocc,nvirt,nAux,numnodes
+    real(realk) :: MemRequired,GB
+
+    GB = 1.0E9_realk
+
+    ! Check that arrays fit in memory (hard-coded)
+    MemRequired = 2*real(nAux*nocc*nvirt/numnodes) + real(nAux*nAux)
+    MemRequired = MemRequired*realk/GB
+    if(MemRequired > DECinfo%memory) then
+       print *, 'RIMP2 Mem required (GB) = ', MemRequired
+       print *, 'RIMP2 Max memory (GB)   = ', DECinfo%memory
+       call lsquit('full_canonical_rimp2: Memory exceeded! Try to increase memory &
+            & using the .MaxMemory (in GB) keyword in the *DEC section.',-1)
+    end if
+
+  end subroutine full_canonical_rimp2_memory_check
+
+  !> \brief Calculate canonical RIMP2 energy for full molecular system
+  !> \author Thomas Kjaergaard
+  !> \date October 2014
+  subroutine full_canonical_rimp2(MyMolecule,MyLsitem,rimp2_energy)
+
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(inout) :: MyMolecule
+    !> Lsitem structure
+    type(lsitem), intent(inout) :: mylsitem
+    !> Canonical MP2 correlation energy
+    real(realk),intent(inout) :: rimp2_energy    
+
+    integer :: nbasis,nocc,nvirt,naux,noccfull,mynum,numnodes
+    logical :: master,wakeslave
+    integer,pointer :: IPVT(:)
+    real(realk), pointer   :: work1(:)
+    real(realk)            :: RCOND,dummy(2)
+    integer(kind=long) :: maxsize
+    real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
+    real(realk),pointer :: AlphaBeta_inv(:,:),AlphaCD(:,:,:),AlphaCD2(:,:,:),AlphaCD5(:,:,:)
+    real(realk),pointer :: TMPAlphaBeta_inv(:,:),Calpha(:,:,:),Calpha2(:,:,:),AlphaCD6(:,:,:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
+    integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm
+    integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
+    integer :: myOriginalRank,node,natoms,MynauxMPI,A
+    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved
+    integer(kind=ls_mpik)  :: request5,request6
+    integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
+    
+
+    !sanity check
+    if(.NOT.DECinfo%use_canonical) then
+       call lsquit('Error: full_canonical_rimp2 require canonical Orbitals',-1)
+    endif
+    ! Init stuff
+    ! **********
+    nbasis = MyMolecule%nbasis
+    nocc   = MyMolecule%nocc
+    nvirt  = MyMolecule%nunocc
+    naux   = MyMolecule%nauxbasis
+    noccfull = nocc
+
+#ifdef VAR_MPI
+    comm = MPI_COMM_LSDALTON
+    master= (infpar%mynum == infpar%master)
+    mynum = infpar%mynum
+    numnodes = infpar%nodtot
+    wakeslave = infpar%nodtot.GT.1
+#else
+    ! If MPI is not used, consider the single node to be "master"
+    master=.true.
+    mynum = 0
+    numnodes = 1
+    wakeslave = .false.
+#endif
+
+    ! Memory check!
+    ! ********************
+    call full_canonical_rimp2_memory_check(nbasis,nocc,nvirt,nAux,numnodes)
+    call Test_if_64bit_integer_required(nAux,nAux)
+
+#ifdef VAR_MPI
+    ! Master starts up slave
+    StartUpSlaves: if(wakeslave .and. master) then
+       ! Wake up slaves to do the job: slaves awoken up with (RIMP2FULL)
+       ! and call full_canonical_rimp2_slave which communicate info 
+       ! then calls full_canonical_rimp2.
+       call ls_mpibcast(RIMP2FULL,infpar%master,comm)
+       ! Communicate fragment information to slaves
+       call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpicopy_lsitem(MyLsitem,comm)
+       call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+       call mpi_bcast_fullmolecule(MyMolecule)
+    endif StartUpSlaves
+#endif
+
+    call mem_alloc(AlphaBeta_inv,nAux,nAux)
+    
+    IF(master)THEN
+       !=====================================================================================
+       ! Major Step 1: Master Obtains Overlap (alpha|beta) in Auxiliary Basis 
+       !=====================================================================================
+       !This part of the Code is NOT MPI/OpenMP parallel - all nodes calculate the full overlap
+       !this should naturally be changed      
+
+       call II_get_RI_AlphaBeta_2centerInt(DECinfo%output,DECinfo%output,&
+            & AlphaBeta_inv,Mylsitem%setting,nAux)
+
+       !=====================================================================================
+       ! Major Step 2: Calculate the inverse (alpha|beta)^(-1) and BCAST
+       !=====================================================================================
+       ! Warning the inverse is not unique so in order to make sure all slaves have the same
+       ! inverse matrix we calculate it on the master a BCAST to slaves
+
+       !Create the inverse AlphaBeta = (alpha|beta)^-1
+       call mem_alloc(work1,naux)
+       call mem_alloc(IPVT,naux)
+       IPVT = 0 ; RCOND = 0.0E0_realk  
+       call DGECO(AlphaBeta_inv,naux,naux,IPVT,RCOND,work1)
+       call DGEDI(AlphaBeta_inv,naux,naux,IPVT,dummy,work1,01)
+       call mem_dealloc(work1)
+       call mem_dealloc(IPVT)
+#ifdef VAR_MPI
+       call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,comm)
+#endif
+    ELSE
+#ifdef VAR_MPI
+       call ls_mpibcast(AlphaBeta_inv,naux,naux,infpar%master,comm)
+#endif
+    ENDIF
+
+    IF(wakeslave)then 
+       !all nodes have info about all nodes 
+       call mem_alloc(nbasisauxMPI,numnodes)        !number of Aux basis func assigned to rank
+       call mem_alloc(nAtomsMPI,numnodes)           !atoms assign to rank
+       call mem_alloc(startAuxMPI,nAtoms,numnodes)  !startindex in full (naux)
+       call mem_alloc(AtomsMPI,nAtoms,numnodes)     !identity of atoms in full molecule
+       call mem_alloc(nAuxMPI,nAtoms,numnodes)      !nauxBasis functions for each of the nAtomsMPI
+       call getRIbasisMPI(Mylsitem%SETTING%MOLECULE(1)%p,nAtoms,numnodes,&
+            & nbasisauxMPI,startAuxMPI,AtomsMPI,nAtomsMPI,nAuxMPI)
+       MynauxMPI = nbasisauxmpi(mynum+1)
+       call mem_dealloc(AtomsMPI) !not used in this subroutine 
+    ELSE
+       MynauxMPI = naux
+    ENDIF
+
+
+
+    IF(wakeslave)then 
+       !We wish to build
+       !c_(alpha,ai) = (alpha|beta)^-1 (beta|ai)
+       !where alpha runs over the Aux basis functions allocated for this rank
+       !and beta run over the full set of naux
+       call mem_alloc(TMPAlphaBeta_inv,MynauxMPI,naux)
+       call RIMP2_buildTMPAlphaBeta_inv(TMPAlphaBeta_inv,MynauxMPI,naux,&
+            & nAtomsMPI,mynum,startAuxMPI,nAuxMPI,AlphaBeta_inv,numnodes,nAtoms)
+       call mem_dealloc(AlphaBeta_inv)
+    ENDIF
+
+    IF(MynauxMPI.GT.0)THEN
+       !call mem_alloc(AlphaCD,naux,nvirt,nocc)
+       !It is very annoying but I allocated AlphaCD inside 
+       !II_get_RI_AlphaCD_3centerInt2 due to memory concerns
+       !This Part of the Code is MPI/OpenMP parallel and AlphaCD will have the dimensions
+       !(MynauxMPI,nvirt,nocc) 
+       !nauxMPI is naux divided out on the nodes so roughly nauxMPI=naux/numnodes
+       call II_get_RI_AlphaCD_3centerInt2(DECinfo%output,DECinfo%output,&
+            & AlphaCD,mylsitem%setting,naux,nbasis,&
+            & nvirt,nocc,MyMolecule%Cv,MyMolecule%Co,maxsize,mynum,numnodes)
+    ENDIF
+
+    IF(wakeslave)THEN !START BY SENDING MY OWN PACKAGE alphaCD
+#ifdef VAR_MPI
+       !A given rank always recieve a package from the same node 
+       !rank 0 recieves from rank 1, rank 1 recieves from 2 .. 
+       Receiver = MOD(1+mynum,numnodes)
+       !A given rank always send to the same node 
+       !rank 2 sends to rank 1, rank 1 sends to rank 0 ...
+       Sender = MOD(mynum-1+numnodes,numnodes)
+       COUNT = MynauxMPI*nocc*nvirt !size of alphaCD
+       call Test_if_64bit_integer_required(MynauxMPI,nocc,nvirt)
+       IF(MynauxMPI.GT.0)THEN !only send package if I have been assigned some basis functions
+          call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request,ierr)
+          call MPI_Request_free(request,ierr)
+       ENDIF
+       IF(MynauxMPI.GT.0)THEN 
+          !consider 
+          !c_(alpha,ai) = (alpha|beta)^(-1/2) (beta|ai)
+          !so that you only need 1 3dim quantity      
+          call mem_alloc(Calpha,MynauxMPI,nvirt,nocc)
+          !Use own AlphaCD to obtain part of Calpha
+          call RIMP2_buildOwnCalphaFromAlphaCD(nocc,nvirt,mynum,numnodes,natoms,MynauxMPI,&
+               & nAtomsMPI,startAuxMPI,nAuxMPI,AlphaCD,Calpha,TMPAlphaBeta_inv,naux)
+       ENDIF
+       !To complete construction of  c_(nauxMPI,nvirt,nocc) we need all
+       !alphaCD(nauxMPI,nvirt,nocc) contributions from all ranks
+       !so we do:
+       ! 1. MPI recieve a alphaCD from 'Receiver' 
+       !        the first package should already have arrived 
+       !        originating from the ISEND immidiately after
+       !        II_get_RI_AlphaCD_3centerInt2
+       ! 2. Obtain part of Calpha from this contribution
+       ! 3. MPI send the recieved alphaCD to 'Sender' 
+       ! 4. Repeat untill all contributions have been added
+
+       useAlphaCD5 = .TRUE. 
+       useAlphaCD6 = .FALSE.
+
+       CurrentWait(1) = 0
+       CurrentWait(2) = 0
+       nAwaitDealloc = 0
+       DO node=1,numnodes-1 !should recieve numnodes-1 packages 
+          !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
+          !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
+          ! ...
+          !myOriginalRank therefore determine the size of NodenauxMPI
+          myOriginalRank = MOD(mynum+node,numnodes)
+          OriginalRanknauxMPI = nbasisauxMPI(myOriginalRank+1) !dim1 of recieved package
+          call Test_if_64bit_integer_required(OriginalRanknauxMPI,nocc,nvirt)
+          IF(OriginalRanknauxMPI.GT.0)THEN
+             !Step 1 : MPI recieve a alphaCD from 'Receiver' 
+             IF(nAwaitDealloc.EQ.2)THEN
+                !all buffers are allocated and await to be deallocated once the memory
+                !have been recieved by the reciever.
+                IF(CurrentWait(1).EQ.5)THEN
+                   call MPI_WAIT(request5,status,ierr)
+                   call mem_dealloc(AlphaCD5)
+                ELSEIF(CurrentWait(1).EQ.6)THEN
+                   call MPI_WAIT(request6,status,ierr)
+                   call mem_dealloc(AlphaCD6)
+                ENDIF
+                nAwaitDealloc = 1
+                CurrentWait(1) = CurrentWait(2)
+                CurrentWait(2) = 0 
+             ENDIF
+             IF(useAlphaCD5)THEN
+                call mem_alloc(AlphaCD5,OriginalRanknauxMPI,nvirt,nocc)
+             ELSEIF(useAlphaCD6)THEN
+                call mem_alloc(AlphaCD6,OriginalRanknauxMPI,nvirt,nocc)
+             ENDIF
+             COUNT = OriginalRanknauxMPI*nocc*nvirt
+             MessageRecieved = .FALSE.
+             IF(useAlphaCD5)THEN
+                call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
+                call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+             ELSEIF(useAlphaCD6)THEN
+                call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
+                call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+             ENDIF
+             IF(MynauxMPI.GT.0)THEN
+                !Step 2: Obtain part of Calpha from this contribution
+                IF(useAlphaCD5)THEN
+                   call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                        & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
+                        & AlphaCD5,Calpha,TMPAlphaBeta_inv,naux)
+                ELSEIF(useAlphaCD6)THEN
+                   call RIMP2_buildCalphaContFromAlphaCD(nocc,nvirt,myOriginalRank,numnodes,natoms,&
+                        & OriginalRanknauxMPI,MynauxMPI,nAtomsMPI,startAuxMPI,nAuxMPI,&
+                        & AlphaCD6,Calpha,TMPAlphaBeta_inv,naux)
+                ENDIF
+             ENDIF
+             !Step 3: MPI send the recieved alphaCD to 'Sender' 
+             IF(node.NE.numnodes-1)THEN
+                IF(useAlphaCD5)THEN
+                   useAlphaCD5 = .FALSE.; useAlphaCD6=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 5
+                ELSEIF(useAlphaCD6)THEN
+                   useAlphaCD6 = .FALSE.; useAlphaCD5=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 6
+                ENDIF
+             ELSE
+                IF(useAlphaCD5)THEN
+                   call mem_dealloc(AlphaCD5)
+                ELSEIF(useAlphaCD6)THEN
+                   call mem_dealloc(AlphaCD6)
+                ENDIF
+             ENDIF
+          ENDIF
+       ENDDO
+       call mem_dealloc(nbasisauxMPI)
+       call mem_dealloc(startAuxMPI)
+       call mem_dealloc(nAtomsMPI)
+       call mem_dealloc(nAuxMPI)
+       IF(MynauxMPI.GT.0)THEN
+          call mem_dealloc(TMPAlphaBeta_inv)
+       ENDIF
+       NBA = MynauxMPI
+#endif
+    ELSE
+       call mem_alloc(Calpha,naux,nvirt,nocc)
+       !Calpha(naux,nvirt,nocc) = AlphaBeta_inv(naux,naux)*AlphaCD(naux,nvirt,nocc)
+       call DGEMM('N','N',naux,nvirt*nocc,naux,1.0E0_realk,AlphaBeta_inv,&
+            & naux,AlphaCD,naux,0.0E0_realk,Calpha,naux)
+       call mem_dealloc(AlphaBeta_inv)
+       NBA = naux
+    ENDIF
+
+    call mem_alloc(EpsOcc,nocc)
+    do I=1,nocc
+       EpsOcc(I) = MyMolecule%ppfock(I,I)
+    enddo
+    call mem_alloc(EpsVirt,nvirt)
+    do A=1,nvirt
+       EpsVirt(A) = MyMolecule%qqfock(A,A)
+    enddo
+
+    rimp2_energy = 0.0E0_realk
+
+    IF(Wakeslave)THEN
+#ifdef VAR_MPI
+       nullify(AlphaCD2)
+       nullify(Calpha2)
+       IF(MynauxMPI.GT.0)THEN 
+          !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+          call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+               & NBA,alphaCD,Calpha,rimp2_energy)
+       ENDIF
+       !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+       call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+       call MPI_Request_free(request5,ierr)
+       call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+       call MPI_Request_free(request6,ierr)
+       DO node=1,numnodes-1 !should recieve numnodes-1 packages 
+          myOriginalRank = MOD(mynum+node,numnodes)         
+          OriginalRanknauxMPI = nBasisauxMPI(myOriginalRank+1) !dim1 of recieved package
+          IF(OriginalRanknauxMPI.GT.0)THEN
+             IF(associated(AlphaCD2))THEN
+                call MPI_WAIT(request5,status,ierr)
+                call mem_dealloc(AlphaCD2)              
+                call MPI_WAIT(request6,status,ierr)
+                call mem_dealloc(Calpha2)              
+             ENDIF
+             call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
+             call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
+             COUNT = OriginalRanknauxMPI*nocc*nvirt
+             call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
+             call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
+             IF(node.NE.numnodes-1)THEN
+                call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+             ENDIF
+             IF(MynauxMPI.GT.0)THEN
+                call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+                     & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
+             ENDIF
+          ENDIF
+       ENDDO
+       IF(associated(AlphaCD2))THEN
+          call MPI_WAIT(request5,status,ierr)
+          call mem_dealloc(AlphaCD5)
+          call MPI_WAIT(request6,status,ierr)
+          call mem_dealloc(AlphaCD6)          
+       ENDIF
+#endif
+    ELSE
+       !Energy = sum_{AIBJ} (AI|BJ)_N*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+       call RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+            & NBA,alphaCD,Calpha,rimp2_energy)
+    ENDIF
+    call mem_dealloc(EpsOcc)
+    call mem_dealloc(EpsVirt)
+#ifdef VAR_MPI
+    call lsmpi_reduction(rimp2_energy,infpar%master,comm)
+#endif    
+    
+    write(DECinfo%output,*)  'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+    write(*,'(1X,a,f20.10)') 'RIMP2 CORRELATION ENERGY = ', rimp2_energy
+
+  end subroutine full_canonical_rimp2
+
+! Calculate canonical MP2 energy
+subroutine RIMP2_CalcOwnEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,alphaCD,Calpha,rimp2_energy)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,NBA
+  real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
+  real(realk),intent(in) :: alphaCD(NBA,nvirt,nocc)
+  real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
+  real(realk),intent(inout) :: rimp2_energy
+  !
+  integer :: J,B,A,I,ALPHA
+  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB
+  Tmp = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
+  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,ALPHA) REDUCTION(+:TMP) &
+  !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,alphaCD,Calpha)
+  do J=1,nocc
+     do B=1,nvirt
+        do I=1,nocc
+           epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
+           do A=1,nvirt
+              ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+              eps = epsIJB - EpsVirt(A)
+              gmoAIBJ = 0.0E0_realk
+              DO ALPHA = 1,NBA
+                 gmoAIBJ = gmoAIBJ + alphaCD(ALPHA,A,I)*Calpha(ALPHA,B,J)
+              ENDDO
+              gmoBIAJ = 0.0E0_realk                   
+              DO ALPHA = 1,NBA
+                 gmoBIAJ = gmoBIAJ + alphaCD(ALPHA,B,I)*Calpha(ALPHA,A,J)
+              ENDDO
+              !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+              Tmp = Tmp + gmoAIBJ*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+           end do
+        end do
+     end do
+  end do
+  !$OMP END PARALLEL DO
+  rimp2_energy = rimp2_energy + Tmp
+end subroutine RIMP2_CalcOwnEnergyContribution
+
+! Calculate canonical MP2 energy
+!Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
+subroutine RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,NBA,&
+     & alphaCD,Calpha,alphaCD2,Calpha2,NBA2,rimp2_energy)
+  implicit none
+  integer,intent(in) :: nocc,nvirt,NBA,NBA2
+  real(realk),intent(in) :: EpsOcc(nocc),EpsVirt(nvirt)
+  real(realk),intent(in) :: alphaCD(NBA,nvirt,nocc)
+  real(realk),intent(in) :: Calpha(NBA,nvirt,nocc)
+  real(realk),intent(in) :: alphaCD2(NBA2,nvirt,nocc)
+  real(realk),intent(in) :: Calpha2(NBA2,nvirt,nocc)
+  real(realk),intent(inout) :: rimp2_energy
+  !
+  integer :: J,B,A,I,ALPHA
+  real(realk) :: eps,gmoAIBJ,gmoBIAJ,TMP,epsIJB,gmoAIBJ2
+  Tmp = 0.0E0_realk
+  !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) &
+  !$OMP PRIVATE(J,B,A,I,eps,gmoAIBJ,gmoBIAJ,epsIJB,gmoAIBJ2,ALPHA) &
+  !$OMP REDUCTION(+:TMP) &
+  !$OMP SHARED(nocc,nvirt,EpsOcc,EpsVirt,NBA,alphaCD,Calpha,NBA2,alphaCD2,&
+  !$OMP Calpha2)
+  do J=1,nocc
+     do B=1,nvirt
+        do I=1,nocc
+           epsIJB = EpsOcc(I) + EpsOcc(J) - EpsVirt(B)
+           do A=1,nvirt
+              ! Difference in orbital energies: eps(I)+eps(J)-eps(A)-eps(B)
+              eps = epsIJB - EpsVirt(A)
+              gmoAIBJ2 = 0.0E0_realk
+              DO ALPHA = 1,NBA2
+                 gmoAIBJ2 = gmoAIBJ + alphaCD2(ALPHA,A,I)*Calpha2(ALPHA,B,J)
+              ENDDO
+              gmoAIBJ = 0.0E0_realk
+              DO ALPHA = 1,NBA
+                 gmoAIBJ = gmoAIBJ + alphaCD(ALPHA,A,I)*Calpha(ALPHA,B,J)
+              ENDDO
+              gmoBIAJ = 0.0E0_realk                   
+              DO ALPHA = 1,NBA
+                 gmoBIAJ = gmoBIAJ + alphaCD(ALPHA,B,I)*Calpha(ALPHA,A,J)
+              ENDDO
+              !Energy = sum_{AIBJ} (AI|BJ)*[ 2(AI|BJ) - (BI|AJ) ]/(epsI + epsJ - epsA - epsB)
+              Tmp = Tmp + gmoAIBJ2*(2E0_realk*gmoAIBJ-gmoBIAJ)/eps
+           end do
+        end do
+     end do
+  end do
+  !$OMP END PARALLEL DO
+  rimp2_energy = rimp2_energy + Tmp
+end subroutine RIMP2_CalcEnergyContribution
 
 #ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
@@ -1561,5 +2037,57 @@ contains
 
   end subroutine Full_canonical_mp2_correlation_energy
 
-
 end module full
+
+#ifdef VAR_MPI
+subroutine full_canonical_rimp2_slave
+  use full,only: full_canonical_rimp2
+  use infpar_module !infpar
+  use lsmpi_type,only:ls_mpiInitBuffer,ls_mpiFinalizeBuffer,&
+       & LSMPIBROADCAST,MPI_COMM_LSDALTON 
+  use lsmpi_op,only: mpicopy_lsitem
+  use precision
+  use typedeftype,only:lsitem
+  use Integralparameters
+  use decmpi_module, only: mpi_bcast_fullmolecule
+  use DALTONINFO, only: ls_free
+!  use typedef
+!  use dec_typedef_module
+  ! DEC DEPENDENCIES (within deccc directory)   
+  ! *****************************************
+!  use dec_fragment_utils
+  use full_molecule, only:fullmolecule, molecule_finalize
+  implicit none
+  !> Full molecule info
+  type(fullmolecule) :: MyMolecule
+  !> Lsitem structure
+  type(lsitem) :: mylsitem
+  !> Canonical MP2 correlation energy
+  real(realk) :: rimp2_energy    
+  
+  ! Init MPI buffer
+  ! ***************
+  ! Main master:  Prepare for writing to buffer
+  ! Local master: Receive buffer
+  call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+  ! Integral lsitem
+  ! ---------------
+  call mpicopy_lsitem(MyLsitem,MPI_COMM_LSDALTON)
+  
+  call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,MPI_COMM_LSDALTON)
+  ! Full molecule bcasting
+  ! **********************
+  call mpi_bcast_fullmolecule(MyMolecule)
+  
+  ! Finalize MPI buffer
+  ! *******************
+  ! Main master:  Send stuff to local masters and deallocate temp. buffers
+  ! Local master: Deallocate buffer etc.
+  call full_canonical_rimp2(MyMolecule,MyLsitem,rimp2_energy)
+
+  call ls_free(MyLsitem)
+  call molecule_finalize(MyMolecule)
+  
+end subroutine full_canonical_rimp2_slave
+#endif
+

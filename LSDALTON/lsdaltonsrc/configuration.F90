@@ -38,7 +38,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input,&
      & check_cc_input
-use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT
+use dec_typedef_module,only: DECinfo,MODEL_MP2,MODEL_CCSDpT,MODEL_RIMP2
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
@@ -909,9 +909,9 @@ subroutine DEC_meaningful_input(config)
      if(config%opt%cfg_prefer_CSR .and. (DECinfo%ccmodel/=MODEL_MP2) ) then
         call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .CSR!',-1)
      end if
-     if(DECinfo%FragmentExpansionRI .AND. (.NOT. config%integral%basis(AuxBasParam)))then
+     if(DECinfo%ccmodel.EQ.MODEL_RIMP2 .AND. (.NOT. config%integral%basis(AuxBasParam)))then
         WRITE(config%LUPRI,'(/A)') &
-             &     'You have specified .FRAGMENTEXPANSIONRI in the input but not supplied a fitting basis set'
+             &     'You have specified .RIMP2 in the input but not supplied a fitting basis set'
         CALL lsquit('MP2 RI input inconsitensy: add fitting basis set',config%lupri)
      endif
      ! DEC and response do not go together right now...

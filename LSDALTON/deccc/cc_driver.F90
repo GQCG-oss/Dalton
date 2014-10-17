@@ -524,6 +524,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       write(DECinfo%output,'(1X,a)') '*                      Full CC2 calculation is done !                       *'
    else if (ccmodel == MODEL_MP2 ) then
       write(DECinfo%output,'(1X,a)') '*                      Full MP2 calculation is done !                       *'
+   else if (ccmodel == MODEL_RIMP2) then
+      write(DECinfo%output,'(1X,a)') '*                      Full RI-MP2 calculation is done !                    *'
    else if (ccmodel == MODEL_RPA ) then
       write(DECinfo%output,'(1X,a)') '*                      Full RPA calculation is done !                       *'
    else
@@ -576,7 +578,6 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ncore = 0
 
       call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-         &
          mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
          & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
    end if
@@ -2093,6 +2094,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call get_simple_parallel_mp2_residual(omega2(iter),&
                &iajb,t2(iter),ppfock_prec,qqfock_prec,iter,local)
 
+         case( MODEL_RIMP2 )
+
+            call lsquit('RI-MP2 have no residual - non iterative scheme',-1)
+
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
             call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
@@ -2251,6 +2256,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
          EnergyForCCmodel: select case(CCmodel)
          case( MODEL_MP2 )
+
+            ccenergy = get_mp2_energy(t2(iter),iajb,no,nv)
+
+         case( MODEL_RIMP2 )
 
             ccenergy = get_mp2_energy(t2(iter),iajb,no,nv)
 

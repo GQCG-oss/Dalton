@@ -608,6 +608,10 @@ module cc_debug_routines_module
           call getDoublesResidualMP2_simple(Omega2(iter),t2(iter),gmo,ppfock,qqfock, &
                 & nocc,nvirt)
 
+        elseif(CCmodel==MODEL_RIMP2) then
+
+           call lsquit('MODEL_RIMP2 have no residual non iterative scheme',-1)
+
         elseif(CCmodel==MODEL_CC2) then
            u = get_u(t2(iter))
            call getSinglesResidualCCSD(omega1(iter),u,gao,pqfock,qpfock, &
@@ -861,7 +865,7 @@ module cc_debug_routines_module
         ! If you implement a new model, please insert call to energy routine here,
         ! or insert a call to get_cc_energy if your model uses the standard CC energy expression.
         if(.not. get_mult)then
-           EnergyForCCmodel: if(CCmodel==MODEL_MP2) then  
+           EnergyForCCmodel: if(CCmodel==MODEL_MP2.OR.CCmodel==MODEL_RIMP2) then  
               ! MP2
               ccenergy = get_mp2_energy(t2(iter),Lmo)
            elseif(CCmodel==MODEL_CC2 .or. CCmodel==MODEL_CCSD .or. CCmodel==MODEL_CCSDpT )then

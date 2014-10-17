@@ -5,13 +5,22 @@ use IchorEriCoulombintegralCPUOBSGeneralModSegQ
 use IchorEriCoulombintegralCPUOBSGeneralModSegP
 use IchorEriCoulombintegralCPUOBSGeneralModSeg
 use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim
-use IchorEriCoulombintegralCPUMcMGeneralMod
+use IchorEriCoulombintegralCPUOBSGeneralModGen2
+use IchorEriCoulombintegralCPUOBSGeneralModSegQ2
+use IchorEriCoulombintegralCPUOBSGeneralModSegP2
+use IchorEriCoulombintegralCPUOBSGeneralModSeg2
+use IchorEriCoulombintegralCPUOBSGeneralModSeg1Prim2
+use IchorEriCoulombintegralCPUOBSGeneralModGenSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegQSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegPSize
+use IchorEriCoulombintegralCPUOBSGeneralModSegSize
+use IchorEriCoulombintegralCPUOBSGeneralModSeg1PrimSize
 use IchorprecisionModule
 use IchorCommonModule
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000ModGen
 use AGC_CPU_OBS_BUILDRJ000ModSeg1Prim
-public :: ICI_CPU_OBS_general,ICI_CPU_OBS_general_size  
+public :: ICI_CPU_OBS_general
   
 CONTAINS
   
@@ -74,8 +83,10 @@ CONTAINS
        call IchorQuit('cartesian not testet',-1)
     ENDIF
     
-   IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
-    call ICI_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
+   IF(.NOT.UseGeneralCode.AND.(((AngmomA.LE.2).AND.(AngmomA.GE.AngmomB)).AND.&
+       ((AngmomA.GE.AngmomC).AND.(AngmomC.GE.AngmomD))))THEN
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+     call ICI_CPU_OBS_Seg1Prim(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -88,8 +99,8 @@ CONTAINS
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
-   ELSEIF(Psegmented.AND.Qsegmented)THEN
-    call ICI_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
+    ELSEIF(Psegmented.AND.Qsegmented)THEN
+     call ICI_CPU_OBS_Seg(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -102,8 +113,8 @@ CONTAINS
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
-   ELSEIF(Psegmented)THEN
-    call ICI_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
+    ELSEIF(Psegmented)THEN
+     call ICI_CPU_OBS_SegP(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -116,8 +127,8 @@ CONTAINS
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
-   ELSEIF(Qsegmented)THEN
-    call ICI_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
+    ELSEIF(Qsegmented)THEN
+     call ICI_CPU_OBS_SegQ(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -130,8 +141,24 @@ CONTAINS
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
+    ELSE
+     call ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ENDIF
    ELSE
-    call ICI_CPU_OBS_Gen(nPrimA,nPrimB,nPrimC,nPrimD,&
+    IF((Psegmented.AND.Qsegmented).AND.(nPrimQP.EQ.1))THEN
+     call ICI_CPU_OBS_Seg1Prim2(nPrimA,nPrimB,nPrimC,nPrimD,&
        & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
        & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
@@ -144,6 +171,63 @@ CONTAINS
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
        & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented.AND.Qsegmented)THEN
+     call ICI_CPU_OBS_Seg2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Psegmented)THEN
+     call ICI_CPU_OBS_SegP2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSEIF(Qsegmented)THEN
+     call ICI_CPU_OBS_SegQ2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ELSE
+     call ICI_CPU_OBS_Gen2(nPrimA,nPrimB,nPrimC,nPrimD,&
+       & nPrimP,nPrimQ,nPrimQP,nPasses,MaxPasses,IntPrint,lupri,&
+       & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&
+       & nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,&
+       & nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD,&
+       & nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV,&
+       & pcent,qcent,Ppreexpfac,Qpreexpfac,nTABFJW1,nTABFJW2,TABFJW,&
+       & Qiprim1,Qiprim2,Aexp,Bexp,Cexp,Dexp,&
+       & Qsegmented,Psegmented,reducedExponents,integralPrefactor,&
+       & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
+       & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
+       & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
+       & IatomAPass,iatomBPass)
+    ENDIF
    ENDIF
   end subroutine ICI_CPU_OBS_general
   
