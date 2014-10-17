@@ -4182,11 +4182,11 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    nnod = infpar%lg_nodtot
    mode = MPI_MODE_NOCHECK
    if(.not.local.and.me == infpar%master)call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
-   omega2%access_type = ALL_ACCESS
-   iajb%access_type   = ALL_ACCESS
-   t2%access_type     = ALL_ACCESS
-   oof%access_type    = ALL_ACCESS
-   vvf%access_type    = ALL_ACCESS
+   omega2%access_type = AT_ALL_ACCESS
+   iajb%access_type   = AT_ALL_ACCESS
+   t2%access_type     = AT_ALL_ACCESS
+   oof%access_type    = AT_ALL_ACCESS
+   vvf%access_type    = AT_ALL_ACCESS
    call tensor_lock_local_wins(omega2,'e',mode)
 #endif
 
@@ -4226,11 +4226,11 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
 
 #ifdef VAR_MPI
    call tensor_unlock_wins(omega2,.true.)
-   omega2%access_type = MASTER_ACCESS
-   iajb%access_type   = MASTER_ACCESS
-   t2%access_type     = MASTER_ACCESS
-   oof%access_type    = MASTER_ACCESS
-   vvf%access_type    = MASTER_ACCESS
+   omega2%access_type = AT_MASTER_ACCESS
+   iajb%access_type   = AT_MASTER_ACCESS
+   t2%access_type     = AT_MASTER_ACCESS
+   oof%access_type    = AT_MASTER_ACCESS
+   vvf%access_type    = AT_MASTER_ACCESS
 #endif
 
    call tensor_free(Pijab_om2)

@@ -529,10 +529,10 @@ contains
 
 #ifdef VAR_MPI
 
-    omega2%access_type = ALL_ACCESS
-    t2%access_type     = ALL_ACCESS
-    qfock%access_type    = ALL_ACCESS
-    pfock%access_type    = ALL_ACCESS
+    omega2%access_type = AT_ALL_ACCESS
+    t2%access_type     = AT_ALL_ACCESS
+    qfock%access_type    = AT_ALL_ACCESS
+    pfock%access_type    = AT_ALL_ACCESS
     nnod               = infpar%lg_nodtot
     me                 = infpar%lg_mynum
     mode               = int(MPI_MODE_NOCHECK,kind=ls_mpik)
@@ -623,10 +623,10 @@ contains
 
 
     !INTRODUCE PERMUTATION
-    omega2%access_type = MASTER_ACCESS
-    t2%access_type     = MASTER_ACCESS
-    pfock%access_type    = MASTER_ACCESS
-    qfock%access_type    = MASTER_ACCESS
+    omega2%access_type = AT_MASTER_ACCESS
+    t2%access_type     = AT_MASTER_ACCESS
+    pfock%access_type    = AT_MASTER_ACCESS
+    qfock%access_type    = AT_MASTER_ACCESS
 
     call time_start_phase(PHASE_COMM, at = tw)
     call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
@@ -1491,7 +1491,7 @@ contains
     ecorr = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+    if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE)then
       !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
       !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
       do j=1,nocc
@@ -1508,7 +1508,7 @@ contains
 
       ecorr = ecorr_d
 
-    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+    else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
       ecorr=get_rpa_energy_parallel(t2,gmo)
 
@@ -1530,7 +1530,7 @@ contains
     ecorr = 0.0E0_realk
     ecorr_d = 0.0E0_realk
 
-    if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+    if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE)then
       !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
       !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
       do j=1,nocc
@@ -1547,7 +1547,7 @@ contains
 
       ecorr = ecorr_d
 
-    else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+    else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
       ecorr=get_sosex_cont_parallel(t2,gmo)
 

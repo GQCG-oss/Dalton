@@ -1662,7 +1662,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit("ERROR(ccsolver_par): input specified that vovo was&
          & supplied, but vovo is not initialized",-1)
       endif
-      if(VOVO%itype == TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os))then
+      if(VOVO%itype == TT_TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os))then
          call lsquit("ERROR(ccsolver_par): distribution of VOVO not fit for solver",-1)
       endif
    endif
@@ -2894,7 +2894,7 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    nv = t2%dims(1) 
    no = t2%dims(3) 
 
-   ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
+   ! cp doubles from tile to dense part: (only if t2%itype/=TT_DENSE)
    if (.not.local) call tensor_cp_tiled2dense(t2,.false.)
 
    call can_local_trans(no,nv,nb,Uo,Uv,vvoo=t2%elm1)

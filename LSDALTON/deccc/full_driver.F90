@@ -430,7 +430,7 @@ contains
              do i=1,nocc
                 do a=1,nvirt
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
-                   !Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
+                   !Taibj(a,i,b,j) = array4Taibj%elm4(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
@@ -473,20 +473,20 @@ contains
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
 
        print *, '----------------------------------------'
-       print *, '  E21  V terms                          '
+       print *, ' E21 V terms                            '
        print *, '----------------------------------------'
-       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
-       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
-       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
-       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+       print *, ' E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
+       print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
+       print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
+       print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
+       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
             & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
             & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
-       print *, 'E21_Vsum: ', E21_debug
+       print *, ' E21_Vsum: ', E21_debug
        !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
@@ -629,38 +629,38 @@ contains
 
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
-          print *, '  E_22 X term                           '
+          print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
-          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
-          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
-          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+          print *, ' E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+          print *, ' E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+          print *, ' E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+          print *, ' E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
           E22_debug = mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
-          print *, 'E22_Xsum: ', E22_debug  
-          print *, 'E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          print *, ' E22_Xsum: ', E22_debug  
+          print *, ' E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, '  E_23 B term                           '
+          print *, ' E_23 B term                           '
           print *, '----------------------------------------'
-          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, 'E23_Bsum: ',  E23_debug
-          !print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, ' E23_Bsum: ',  E23_debug
+          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
        endif
        
@@ -674,35 +674,35 @@ contains
           X3 = mp2f12_E22X(Xijkl_term3,Fii%elms,nocc)
           X4 = mp2f12_E22X(Xijkl_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, '          E_22 X term                   '
+          print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, 'E22_X_term1: ', X1
-          print *, 'E22_X_term2: ', X2
-          print *, 'E22_X_term3: ', X3
-          print *, 'E22_X_term4: ', X4
+          print *, ' E22_X_term1: ', X1
+          print *, ' E22_X_term2: ', X2
+          print *, ' E22_X_term3: ', X3
+          print *, ' E22_X_term4: ', X4
           print *, '----------------------------------------'
           E22_debug = X1 + X2 + X3 + X4  
           print *, 'E22_Xsum: ', E22_debug  
           print *, '----------------------------------------'
-          print *, '          E_23 B term                   '
+          print *, ' E_23 B term                            '
           print *, '----------------------------------------'
-          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, 'E23_Bsum: ',  E23_debug
-          print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, ' E23_Bsum: ',  E23_debug
+          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
 
        endif      
@@ -907,12 +907,13 @@ contains
     real(realk) :: tcpuTOT,twallTOT,tcpu_start,twall_start, tcpu_end,twall_end
     real(realk),pointer :: AlphaBeta_inv(:,:),AlphaCD(:,:,:),AlphaCD2(:,:,:),AlphaCD5(:,:,:)
     real(realk),pointer :: TMPAlphaBeta_inv(:,:),Calpha(:,:,:),Calpha2(:,:,:),AlphaCD6(:,:,:)
-    real(realk),pointer :: EpsOcc(:),EpsVirt(:)
+    real(realk),pointer :: EpsOcc(:),EpsVirt(:),Calpha3(:,:,:),AlphaCD3(:,:,:)
     integer(kind=ls_mpik)  :: COUNT,TAG,IERR,request,Receiver,sender,J,COUNT2,comm,TAG1,TAG2
     integer ::CurrentWait(2),nAwaitDealloc,iAwaitDealloc,I,NBA,OriginalRanknauxMPI
     integer :: myOriginalRank,node,natoms,MynauxMPI,A
-    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin
-    integer(kind=ls_mpik)  :: request1,request2,request5,request6
+    logical :: useAlphaCD5,useAlphaCD6,MessageRecieved,RoundRobin,RoundRobin5,RoundRobin6
+    logical :: RoundRobin2,RoundRobin3,useAlphaCD2,useAlphaCD3
+    integer(kind=ls_mpik)  :: request1,request2,request5,request6,request7,request8
     integer,pointer :: nbasisauxMPI(:),startAuxMPI(:,:),AtomsMPI(:,:),nAtomsMPI(:),nAuxMPI(:,:)
     integer(KIND=long) :: MaxMemAllocated,MemAllocated
     !use Memory leak tool
@@ -1096,6 +1097,8 @@ contains
        CurrentWait(1) = 0
        CurrentWait(2) = 0
        nAwaitDealloc = 0
+       RoundRobin5 = .FALSE.
+       RoundRobin6 = .FALSE.
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           !When node=1 the package rank 0 recieves is from rank 1 and was created on rank 1
           !When node=2 the package rank 0 recieves is from rank 1 but was originally created on rank 2
@@ -1110,10 +1113,12 @@ contains
                 !all buffers are allocated and await to be deallocated once the memory
                 !have been recieved by the reciever.
                 IF(CurrentWait(1).EQ.5)THEN
+                   !I need to wait for AlphaCD5 to be received before I can deallocate
                    call MPI_WAIT(request5,status,ierr)
                    call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
                 ELSEIF(CurrentWait(1).EQ.6)THEN
+                   !I need to wait for AlphaCD5 to be received before I can deallocate
                    call MPI_WAIT(request6,status,ierr)
                    call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                    call mem_dealloc(AlphaCD6)
@@ -1132,11 +1137,29 @@ contains
              COUNT = OriginalRanknauxMPI*nocc*nvirt
              MessageRecieved = .FALSE.
              IF(useAlphaCD5)THEN
+                !First time (node=1) RECV from the ISEND at line 1068, which sends AlphaCD
+                !all other times RECV AlphaCD5
                 call MPI_RECV(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
-                call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin5 = .TRUE.
+                   !SEND AlphaCD5 to sender
+                   call MPI_ISEND(AlphaCD5,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request5,ierr)
+                ELSE
+                   !Last time (node=numnodes-1) Do not send because the sender is the 
+                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
+                   RoundRobin5 = .FALSE.
+                ENDIF
              ELSEIF(useAlphaCD6)THEN
                 call MPI_RECV(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG,comm,status,ierr)
-                call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin6 = .TRUE.
+                   !SEND AlphaCD6 to sender
+                   call MPI_ISEND(AlphaCD6,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG,comm,request6,ierr)
+                ELSE
+                   !Last time (node=numnodes-1) Do not send because the sender is the 
+                   !original owner of the block. Since I do not send, I do not need to MPI_WAIT
+                   RoundRobin6 = .FALSE.
+                ENDIF
              ENDIF
              IF(MynauxMPI.GT.0)THEN
                 !Step 2: Obtain part of Calpha from this contribution
@@ -1162,6 +1185,7 @@ contains
                    CurrentWait(nAwaitDealloc) = 6
                 ENDIF
              ELSE
+                !I can deallocate directly I do not need to MPI_WAIT since I did not send
                 IF(useAlphaCD5)THEN
                    call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                    call mem_dealloc(AlphaCD5)
@@ -1180,11 +1204,15 @@ contains
        IF(nAwaitDealloc.NE.0)THEN
           do iAwaitDealloc=1,nAwaitDealloc
              IF(CurrentWait(iAwaitDealloc).EQ.5)THEN
-                call MPI_WAIT(request5,status,ierr)
+                IF(RoundRobin5)THEN
+                   call MPI_WAIT(request5,status,ierr)
+                ENDIF
                 call mem_leaktool_dealloc(AlphaCD5,LT_AlphaCD5)
                 call mem_dealloc(AlphaCD5)
              ELSEIF(CurrentWait(iAwaitDealloc).EQ.6)THEN
-                call MPI_WAIT(request6,status,ierr)
+                IF(RoundRobin6)THEN
+                   call MPI_WAIT(request6,status,ierr)
+                ENDIF
                 call mem_leaktool_dealloc(AlphaCD6,LT_AlphaCD6)
                 call mem_dealloc(AlphaCD6)
              ENDIF
@@ -1217,6 +1245,16 @@ contains
 
     nullify(AlphaCD2)
     nullify(Calpha2)
+    nullify(AlphaCD3)
+    nullify(Calpha3)
+
+    useAlphaCD2 = .TRUE. 
+    useAlphaCD3 = .FALSE.
+    CurrentWait(1) = 0
+    CurrentWait(2) = 0
+    nAwaitDealloc = 0
+    RoundRobin2 = .FALSE.
+    RoundRobin3 = .FALSE.
     IF(Wakeslaves)THEN
 #ifdef VAR_MPI
        IF(MynauxMPI.GT.0)THEN 
@@ -1226,68 +1264,162 @@ contains
           !Energy = sum_{AIBJ} (AI|BJ)_K*[ 2(AI|BJ)_N - (BI|AJ)_N ]/(epsI+epsJ-epsA-epsB)
           COUNT = NBA*nocc*nvirt
           call MPI_ISEND(AlphaCD,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request1,ierr)
-!          call MPI_Request_free(request1,ierr)
           call MPI_ISEND(Calpha,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG1,comm,request2,ierr)
-!          call MPI_Request_free(request2,ierr)
        ENDIF
-       RoundRobin = .FALSE.
        DO node=1,numnodes-1 !should recieve numnodes-1 packages 
           myOriginalRank = MOD(mynum+node,numnodes)         
           OriginalRanknauxMPI = nBasisauxMPI(myOriginalRank+1) !dim1 of recieved package
           IF(OriginalRanknauxMPI.GT.0)THEN
-             IF(associated(AlphaCD2))THEN
-                call MPI_WAIT(request5,status,ierr)
-                call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-                call mem_dealloc(AlphaCD2)              
-                call MPI_WAIT(request6,status,ierr)
-                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-                call mem_dealloc(Calpha2)
-                nullify(AlphaCD2)
-                nullify(Calpha2)                
+             IF(nAwaitDealloc.EQ.2)THEN
+                !all buffers are allocated and await to be deallocated once the memory
+                !have been recieved by the reciever.
+                !DEALLOCATE BLOCK IF NEEDED
+                IF(CurrentWait(1).EQ.2)THEN
+                   !I need to wait for AlphaCD2 to be received before I can deallocate
+                   call MPI_WAIT(request5,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD2)       
+                   call MPI_WAIT(request6,status,ierr)
+                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                   call mem_dealloc(Calpha2)
+                   nullify(AlphaCD2)
+                   nullify(Calpha2)                
+                ELSEIF(CurrentWait(1).EQ.3)THEN
+                   call MPI_WAIT(request7,status,ierr)
+                   call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD3)       
+                   call MPI_WAIT(request8,status,ierr)
+                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                   call mem_dealloc(Calpha3)
+                   nullify(AlphaCD3)
+                   nullify(Calpha3)                
+                ENDIF
+                nAwaitDealloc = 1
+                CurrentWait(1) = CurrentWait(2)
+                CurrentWait(2) = 0 
              ENDIF
-             call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
-             call mem_leaktool_alloc(AlphaCD2,LT_AlphaCD2)
-             call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
-             call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+             !ALLOCATE BLOCK
+             IF(useAlphaCD2)THEN
+                call mem_alloc(AlphaCD2,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD2,LT_AlphaCD2)
+                call mem_alloc(Calpha2,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(Calpha2,LT_Calpha2)
+             ELSE
+                call mem_alloc(AlphaCD3,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(AlphaCD3,LT_AlphaCD2)
+                call mem_alloc(Calpha3,OriginalRanknauxMPI,nvirt,nocc)
+                call mem_leaktool_alloc(Calpha3,LT_Calpha2)
+             ENDIF
              COUNT = OriginalRanknauxMPI*nvirt*nocc
+             !RECV BLOCK ONWARDS
              IF(node.EQ.1)THEN
                 !recieve from the ISEND above 
                 call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
                 call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG1,comm,status,ierr)
              ELSE
-                call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
-                call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                IF(useAlphaCD2)THEN
+                   call MPI_RECV(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                   call MPI_RECV(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                ELSE
+                   call MPI_RECV(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                   call MPI_RECV(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Receiver,TAG2,comm,status,ierr)
+                ENDIF
+             ENDIF
+             !SEND BLOCK ONWARDS
+             IF(useAlphaCD2)THEN
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin2 = .TRUE.
+                   call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
+                   call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
+                ELSE
+                   !No need to ISEND because the sender is the original owner of the block
+                   RoundRobin2 = .FALSE.
+                ENDIF
+             ELSE
+                IF(node.NE.numnodes-1)THEN
+                   RoundRobin3 = .TRUE.
+                   call MPI_ISEND(AlphaCD3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request7,ierr)
+                   call MPI_ISEND(Calpha3,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request8,ierr)
+                ELSE
+                   !No need to ISEND because the sender is the original owner of the block
+                   RoundRobin3 = .FALSE.
+                ENDIF
+             ENDIF
+             !CALCULATE ENERGY CONTRIBUTION
+             IF(MynauxMPI.GT.0)THEN
+                IF(useAlphaCD2)THEN
+                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+                        & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
+                ELSE
+                   call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
+                        & NBA,alphaCD,Calpha,alphaCD3,Calpha3,OriginalRanknauxMPI,rimp2_energy)
+                ENDIF
              ENDIF
              IF(node.NE.numnodes-1)THEN
-                RoundRobin = .TRUE.
-                call MPI_ISEND(AlphaCD2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request5,ierr)
-                call MPI_ISEND(Calpha2,COUNT,MPI_DOUBLE_PRECISION,Sender,TAG2,comm,request6,ierr)
-             ENDIF
-             IF(MynauxMPI.GT.0)THEN
-                call RIMP2_CalcEnergyContribution(nocc,nvirt,EpsOcc,EpsVirt,&
-                     & NBA,alphaCD,Calpha,alphaCD2,Calpha2,OriginalRanknauxMPI,rimp2_energy)
+                IF(useAlphaCD2)THEN
+                   useAlphaCD2 = .FALSE.; useAlphaCD3=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 2
+                ELSE
+                   useAlphaCD3 = .FALSE.; useAlphaCD3=.TRUE.
+                   nAwaitDealloc = nAwaitDealloc + 1
+                   CurrentWait(nAwaitDealloc) = 3
+                ENDIF
+             ELSE
+                !I can deallocate directly since I did not ISEND these 
+                IF(useAlphaCD2)THEN                
+                   call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD2)
+                   call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                   call mem_dealloc(Calpha2)              
+                   nullify(AlphaCD2)
+                   nullify(Calpha2)  
+                ELSE
+                   call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                   call mem_dealloc(AlphaCD3)
+                   call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                   call mem_dealloc(Calpha3)
+                   nullify(AlphaCD3)
+                   nullify(Calpha3)
+                ENDIF
              ENDIF
           ENDIF
        ENDDO
-       IF(RoundRobin)THEN
-          IF(associated(AlphaCD2))THEN
-             call MPI_WAIT(request5,status,ierr)
-             call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-             call mem_dealloc(AlphaCD2)
-             call MPI_WAIT(request6,status,ierr)
-             call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-             call mem_dealloc(Calpha2)              
-          ENDIF
-       ELSE
-          call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
-          call mem_dealloc(AlphaCD2)
-          call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
-          call mem_dealloc(Calpha2)              
+       IF(nAwaitDealloc.NE.0)THEN
+          do iAwaitDealloc=1,nAwaitDealloc
+             IF(CurrentWait(iAwaitDealloc).EQ.2)THEN
+                IF(RoundRobin2)THEN
+                   call MPI_WAIT(request5,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(AlphaCD2,LT_AlphaCD2)
+                call mem_dealloc(AlphaCD2)
+                IF(RoundRobin2)THEN       
+                   call MPI_WAIT(request6,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(Calpha2,LT_Calpha2)
+                call mem_dealloc(Calpha2)
+                nullify(AlphaCD2)
+                nullify(Calpha2)                
+             ELSEIF(CurrentWait(iAwaitDealloc).EQ.3)THEN
+                IF(RoundRobin3)THEN
+                   call MPI_WAIT(request7,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(AlphaCD3,LT_AlphaCD2)
+                call mem_dealloc(AlphaCD3)
+                IF(RoundRobin3)THEN       
+                   call MPI_WAIT(request8,status,ierr)
+                ENDIF
+                call mem_leaktool_dealloc(Calpha3,LT_Calpha2)
+                call mem_dealloc(Calpha3)
+                nullify(AlphaCD3)
+                nullify(Calpha3)                
+             ENDIF
+          enddo
        ENDIF
        IF(MynauxMPI.GT.0)THEN
           call MPI_WAIT(request1,status,ierr)
           call mem_leaktool_dealloc(AlphaCD,LT_AlphaCD)
-          call mem_dealloc(AlphaCD)              
+          call mem_dealloc(AlphaCD)      
           call MPI_WAIT(request2,status,ierr)
           call mem_leaktool_dealloc(Calpha,LT_Calpha)
           call mem_dealloc(Calpha)              
@@ -1693,35 +1825,103 @@ end subroutine RIMP2_CalcEnergyContribution
 
     !   F12 specific
     real(realk),pointer :: Vijij(:,:)
-    !real(realk),pointer :: Vijij_term1(:,:)
-
     real(realk),pointer :: Vjiij(:,:)    
-    !real(realk),pointer :: Vjiij_term1(:,:)
 
+    real(realk),pointer :: Vijij_mp2f12(:,:)
+    real(realk),pointer :: Vjiij_mp2f12(:,:)    
+
+    real(realk),pointer :: Vijij_Viajb_term1(:,:)
+    real(realk),pointer :: Vijij_Viajb_term2(:,:)
+    real(realk),pointer :: Vijij_Viajb_term3(:,:)
+    real(realk),pointer :: Vijij_Viajb_term4(:,:)
+    real(realk),pointer :: Vijij_Viajb_term5(:,:)
+
+    real(realk),pointer :: Vjiij_Viajb_term1(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term2(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term3(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term4(:,:)  
+    real(realk),pointer :: Vjiij_Viajb_term5(:,:)  
+
+    real(realk),pointer :: Vijij_Viija_term1(:,:)
+    real(realk),pointer :: Vijij_Viija_term2(:,:)
+    real(realk),pointer :: Vijij_Viija_term3(:,:)
+    real(realk),pointer :: Vijij_Viija_term4(:,:)
+    real(realk),pointer :: Vijij_Viija_all(:,:)
+    
+    real(realk),pointer :: Vjiij_Viaji_term1(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term2(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term3(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term4(:,:)
+    real(realk),pointer :: Vjiij_Viaji_all(:,:)
+
+    real(realk),pointer :: Vijij_Viajj_term1(:,:)
+    real(realk),pointer :: Vijij_Viajj_term2(:,:)
+    real(realk),pointer :: Vijij_Viajj_term3(:,:)
+    real(realk),pointer :: Vijij_Viajj_term4(:,:)
+    real(realk),pointer :: Vijij_Viajj_all(:,:)
+    
+    real(realk),pointer :: Vjiij_Vijja_term1(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term2(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term3(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term4(:,:)
+    real(realk),pointer :: Vjiij_Vijja_all(:,:)
+     
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
     real(realk),pointer :: Bijij(:,:)
     real(realk),pointer :: Bjiij(:,:)
 
-    !   CCSD specific
+    ! CCSD specific
     real(realk),pointer :: Rapbq(:,:,:,:)
     real(realk),pointer :: Rambc(:,:,:,:)
     real(realk),pointer :: Fiajb(:,:,:,:)
 
     real(realk),pointer :: Viajb(:,:,:,:)
+    real(realk),pointer :: Viajb_term1(:,:,:,:)
+    real(realk),pointer :: Viajb_term2(:,:,:,:)
+    real(realk),pointer :: Viajb_term3(:,:,:,:)
+    real(realk),pointer :: Viajb_term4(:,:,:,:)
+
     real(realk),pointer :: Ripaq(:,:,:,:)
     real(realk),pointer :: Rimac(:,:,:,:)
     real(realk),pointer :: Ramic(:,:,:,:)
     real(realk),pointer :: Fijka(:,:,:,:)
 
     real(realk),pointer :: Viija(:,:,:)
-    real(realk),pointer :: Vijja(:,:,:)
+    real(realk),pointer :: Viija_term1(:,:,:)
+    real(realk),pointer :: Viija_term2(:,:,:)
+    real(realk),pointer :: Viija_term3(:,:,:)
+    real(realk),pointer :: Viija_term4(:,:,:)
+    real(realk),pointer :: Viija_full(:,:,:)
+
     real(realk),pointer :: Viaji(:,:,:)
+    real(realk),pointer :: Viaji_term1(:,:,:)
+    real(realk),pointer :: Viaji_term2(:,:,:)
+    real(realk),pointer :: Viaji_term3(:,:,:)
+    real(realk),pointer :: Viaji_term4(:,:,:)
+    real(realk),pointer :: Viaji_full(:,:,:)
+    
     real(realk),pointer :: Viajj(:,:,:)
+    real(realk),pointer :: Viajj_term1(:,:,:)
+    real(realk),pointer :: Viajj_term2(:,:,:)
+    real(realk),pointer :: Viajj_term3(:,:,:)
+    real(realk),pointer :: Viajj_term4(:,:,:)
+    real(realk),pointer :: Viajj_full(:,:,:)
+
+    real(realk),pointer :: Vijja(:,:,:)
+    real(realk),pointer :: Vijja_term1(:,:,:)
+    real(realk),pointer :: Vijja_term2(:,:,:)
+    real(realk),pointer :: Vijja_term3(:,:,:)
+    real(realk),pointer :: Vijja_term4(:,:,:)
+    real(realk),pointer :: Vijja_full(:,:,:)
+
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
+
+    real(realk) :: tmp
+    real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
 
     ! Init dimensions
     nocc = MyMolecule%nocc
@@ -1811,68 +2011,267 @@ end subroutine RIMP2_CalcEnergyContribution
     !> DEC Input
     write(DECinfo%output,*) 'TOYCODE: CCSD CORRELATION ENERGY = ', ECCSD
 
-    ! INTEGRAL GUYS: DO YOUR MAGIC FOR THE F12 CONTRIBUTION HERE...
     call mem_alloc(Vijij,nocc,nocc)
     call mem_alloc(Vjiij,nocc,nocc)
+
+    ! INTEGRAL GUYS: DO YOUR MAGIC FOR THE F12 CONTRIBUTION HERE...
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
     call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
-    call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
 
+    call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
+   
     !> --------------------------------------
     !>               Viajb ccsd
     !>---------------------------------------
-    !V_ij^ab
+    ! V_ij^ab
     call mem_alloc(Viajb,nocc,nvirt,nocc,nvirt) 
-
     call ccsdf12_Viajb(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-   
+    
     if(DECinfo%F12DEBUG) then
+       call mem_alloc(Viajb_term1,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term2,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term3,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term4,nocc,nvirt,nocc,nvirt) 
 
-!!$       print *, '----------------------------------------'
-!!$       print *, '  E21  V terms                          '
-!!$       print *, '----------------------------------------'
-!!$       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1, Vjiij_term1,nocc)
-!!$       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2, Vjiij_term2,nocc)
-!!$       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3, Vjiij_term3,nocc)
-!!$       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4, Vjiij_term4,nocc)
-!!$       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5, Vjiij_term5,nocc)
-!!$       print *, '----------------------------------------'
-!!$
-!!$       E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-!!$            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
-!!$            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
-!!$
-!!$       print *, 'E21_Vsum: ', E21_debug
-!!$      !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       call ccsdf12_Viajb_term1(Viajb_term1,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term2(Viajb_term2,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term3(Viajb_term3,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term4(Viajb_term4,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
+       call mem_alloc(Viija_term1,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term2,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term3,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term4,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_full,nocc,nocc,nvirt) 
+
+       call mem_alloc(Viaji_term1,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term2,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term3,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term4,nocc,nvirt,nocc)
+       call mem_alloc(Viaji_full,nocc,nvirt,nocc)   
+       
+       Viija_term1 = 0.0E0_realk
+       Viaji_term1 = 0.0E0_realk
+       call ccsdf12_Viija0(Viija_term1,Fijka,nocc,nvirt)
+       call ccsdf12_Viaji0(Viaji_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term2 = 0.0E0_realk
+       Viaji_term2 = 0.0E0_realk
+       call ccsdf12_Viija1(Viija_term2,Ripaq,Gipjq,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji1(Viaji_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term3 = 0.0E0_realk
+       Viaji_term3 = 0.0E0_realk     
+       call ccsdf12_Viija2(Viija_term3,Rimac,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji2(Viaji_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term4 = 0.0E0_realk
+       Viaji_term4 = 0.0E0_realk
+       call ccsdf12_Viija3(Viija_term4,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji3(Viaji_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_full = 0.0E0_realk
+       Viaji_full = 0.0E0_realk
+       call ccsdf12_Viija(Viija_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji(Viaji_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
+       !> Laster 1/3 of the terms
+
+       call mem_alloc(Viajj_term1,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term2,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term3,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term4,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_full, nocc,nvirt,nocc) 
+
+       call mem_alloc(Vijja_term1,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term2,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term3,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term4,nocc,nocc,nvirt)
+       call mem_alloc(Vijja_full, nocc,nocc,nvirt)
+       
+       call ccsdf12_Viajj0(Viajj_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj1(Viajj_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj2(Viajj_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj3(Viajj_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       
+       call ccsdf12_Vijja0(Vijja_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja1(Vijja_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja2(Vijja_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja3(Vijja_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       
+       Viajj_full = 0.0E0_realk
+       Vijja_full = 0.0E0_realk
+
+       call ccsdf12_Viajj(Viajj_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja(Vijja_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
     endif
 
-    !V_ij^ia
+    ! V_ij^ia
     call mem_alloc(Viija,nocc,nocc,nvirt)
     call ccsdf12_Viija(Viija,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    !V_ij^ja
-    call mem_alloc(Vijja,nocc,nocc,nvirt)
-    call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-
-    !V_ij^ai
+   ! V_ij^ai
     call mem_alloc(Viaji,nocc,nvirt,nocc)
     call ccsdf12_Viaji(Viaji,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    !V_ij^aj
+    ! V_ij^aj
     call mem_alloc(Viajj,nocc,nvirt,nocc)
     call ccsdf12_Viajj(Viajj,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    ! CCSD coupling V_ij^ij & V_ji^ij 
+    ! V_ij^ja
+    call mem_alloc(Vijja,nocc,nocc,nvirt)
+    call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%elm4,Viajb,Viija,Viajj,Tai%elm2,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%elm4,Viajb,Vijja,Viaji,Tai%elm2,nocc,nvirt)
 
-    !call ccsdf12_Vijij_coupling_term1(Vijij_term1,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
-    !call ccsdf12_Vjiij_coupling_term1(Vjiij_term1,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
-    
+    !> Debug Coupling Terms
+    if(DECinfo%F12DEBUG) then
+
+       call mem_alloc(Vijij_Viajb_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term4,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term5,nocc,nocc)
+
+       call mem_alloc(Vjiij_Viajb_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term4,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term5,nocc,nocc)
+       
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term1,Vjiij_Viajb_term1,Viajb_term1,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term2,Vjiij_Viajb_term2,Viajb_term2,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term3,Vjiij_Viajb_term3,Viajb_term3,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term4,Vjiij_Viajb_term4,Viajb_term4,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term5,Vjiij_Viajb_term5,Ciajb,Taibj%elm4,nocc,nvirt)
+
+!!$       print *, '----------------------------------------'
+!!$       print *, '  Taibj                                 '
+!!$       print *, '----------------------------------------'
+!!$       DO i=1,nocc
+!!$          DO j=1,nocc
+!!$             DO a=1,nvirt
+!!$                DO b=1,nvirt
+!!$                      print *, "a b i j value: ", a,b,i,j, Taibj%elm4(a,i,b,j) 
+!!$                ENDDO
+!!$             ENDDO
+!!$          ENDDO
+!!$       ENDDO
+!!$
+!!$       print *, '----------------------------------------'
+!!$       print *, '  Tai                                 '
+!!$       print *, '----------------------------------------'
+!!$       DO i=1,nocc
+!!$          DO a=1,nvirt
+!!$             print *, "a i  value: ", a,i, Tai%velm2(a,i) 
+!!$          ENDDO
+!!$       ENDDO
+
+       print *, '----------------------------------------'
+       print *, ' E21 CCSD Viajb-terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, ' E21_Viajb_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc)
+       print *, ' E21_Viajb_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc)
+       print *, ' E21_Viajb_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc)
+       print *, ' E21_Viajb_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc)
+       print *, ' E21_Viajb_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc)
+       print *, '----------------------------------------'
+       print *, ' sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc) + & 
+            & mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc) + mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc))
+
+       E21_Viajb = 2.0E0_REALK*(mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc) + & 
+            & mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc) + mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc))
+
+       call mem_alloc(Vijij_Viija_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term4,nocc,nocc)
+
+       call mem_alloc(Vjiij_Viaji_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term4,nocc,nocc)
+
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term1,Vjiij_Viaji_term1,Viija_term1,Viaji_term1,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term2,Vjiij_Viaji_term2,Viija_term2,Viaji_term2,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term3,Vjiij_Viaji_term3,Viija_term3,Viaji_term3,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term4,Vjiij_Viaji_term4,Viija_term4,Viaji_term4,Tai%elm2,nocc,nvirt)
+
+       !> Debug Test
+       call mem_alloc(Vijij_Viija_all,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_all,nocc,nocc)
+
+       call ccsdf12_Viija_coupling(Vijij_Viija_all,Vjiij_Viaji_all,Viija_full,Viaji_full,Tai%elm2,nocc,nvirt)
+     
+       print *, '----------------------------------------'
+       print *, ' E21 CCSD Viija_terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, ' E21_Viija_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc)
+       print *, ' E21_Viija_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc)     
+       print *, ' E21_Viija_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc)     
+       print *, ' E21_Viija_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc)     
+       print *, '----------------------------------------'
+       print *, ' sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc) + mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc))
+       print *, '----------------------------------------'
+       print *, ' debug: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_all,Vjiij_Viaji_all, nocc)
+       
+       E21_Viija =  2.0E0_REALK*(mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc) + mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc))
+
+       !> Last term check
+       call mem_alloc(Vijij_Viajj_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term4,nocc,nocc)
+
+       call mem_alloc(Vjiij_Vijja_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term4,nocc,nocc)
+
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term1,Vjiij_Vijja_term1,Viajj_term1,Vijja_term1,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term2,Vjiij_Vijja_term2,Viajj_term2,Vijja_term2,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term3,Vjiij_Vijja_term3,Viajj_term3,Vijja_term3,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term4,Vjiij_Vijja_term4,Viajj_term4,Vijja_term4,Tai%elm2,nocc,nvirt)
+     
+       !> Debug Test
+      call mem_alloc(Vijij_Viajj_all,nocc,nocc)
+      call mem_alloc(Vjiij_Vijja_all,nocc,nocc)
+
+       call  ccsdf12_Viajj_coupling(Vijij_Viajj_all,Vjiij_Vijja_all,Viajj_full,Vijja_full,Tai%elm2,nocc,nvirt)
+
+       print *, '----------------------------------------'
+       print *, '  E21 CCSD Viajj_terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, 'E21_Viajj_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc)
+       print *, 'E21_Viajj_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc)     
+       print *, 'E21_Viajj_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc)     
+       print *, 'E21_Viajj_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc)     
+       print *, '----------------------------------------'
+       print *, 'sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc) + mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc))
+       print *, '----------------------------------------'
+       print *, 'debug: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_all,Vjiij_Vijja_all, nocc)
+
+       E21_Viajj = 2.0E0_REALK*(mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc) + mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc))
+
+    endif
+
     ! CCSD Specific
     call mem_dealloc(Viija)
     call mem_dealloc(Vijja)
@@ -1880,15 +2279,85 @@ end subroutine RIMP2_CalcEnergyContribution
     call mem_dealloc(Viaji)
     call mem_dealloc(Viajb)
 
+    if(DECinfo%F12DEBUG) then
+       call mem_dealloc(Viajb_term1)
+       call mem_dealloc(Viajb_term2)
+       call mem_dealloc(Viajb_term3)
+       call mem_dealloc(Viajb_term4)
+
+       call mem_dealloc(Viija_term1)
+       call mem_dealloc(Viija_term2)
+       call mem_dealloc(Viija_term3)
+       call mem_dealloc(Viija_term4)
+       call mem_dealloc(Viija_full)
+
+       call mem_dealloc(Viaji_term1)
+       call mem_dealloc(Viaji_term2)
+       call mem_dealloc(Viaji_term3)
+       call mem_dealloc(Viaji_term4)
+       call mem_dealloc(Viaji_full)
+       
+       call mem_dealloc(Viajj_term1)
+       call mem_dealloc(Viajj_term2)
+       call mem_dealloc(Viajj_term3)
+       call mem_dealloc(Viajj_term4)
+       call mem_dealloc(Viajj_full)
+       
+       call mem_dealloc(Vijja_term1)
+       call mem_dealloc(Vijja_term2)
+       call mem_dealloc(Vijja_term3)
+       call mem_dealloc(Vijja_term4)
+       call mem_dealloc(Vijja_full)
+    end if
+
+    !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    
+
     ! F12 Specific
     call mem_dealloc(Vijij)
     call mem_dealloc(Vjiij)
-    call mem_dealloc(Ciajb)
-    call mem_dealloc(Cjaib)
 
-    if(DECinfo%use_canonical) then
+    if(DECinfo%F12DEBUG) then
+
+       call mem_dealloc(Vijij_Viajb_term1)
+       call mem_dealloc(Vijij_Viajb_term2)
+       call mem_dealloc(Vijij_Viajb_term3)
+       call mem_dealloc(Vijij_Viajb_term4)   
+       call mem_dealloc(Vijij_Viajb_term5)   
+
+       call mem_dealloc(Vjiij_Viajb_term1)
+       call mem_dealloc(Vjiij_Viajb_term2)
+       call mem_dealloc(Vjiij_Viajb_term3)
+       call mem_dealloc(Vjiij_Viajb_term4)
+       call mem_dealloc(Vjiij_Viajb_term5)
+
+       call mem_dealloc(Vijij_Viija_term1)
+       call mem_dealloc(Vijij_Viija_term2)
+       call mem_dealloc(Vijij_Viija_term3)
+       call mem_dealloc(Vijij_Viija_term4)   
+       call mem_dealloc(Vijij_Viija_all)   
+
+       call mem_dealloc(Vjiij_Viaji_term1)
+       call mem_dealloc(Vjiij_Viaji_term2)
+       call mem_dealloc(Vjiij_Viaji_term3)
+       call mem_dealloc(Vjiij_Viaji_term4) 
+       call mem_dealloc(Vjiij_Viaji_all)
+
+       call mem_dealloc(Vijij_Viajj_term1)
+       call mem_dealloc(Vijij_Viajj_term2)
+       call mem_dealloc(Vijij_Viajj_term3)
+       call mem_dealloc(Vijij_Viajj_term4)
+       call mem_dealloc(Vijij_Viajj_all)
+
+       call mem_dealloc(Vjiij_Vijja_term1)
+       call mem_dealloc(Vjiij_Vijja_term2)
+       call mem_dealloc(Vjiij_Vijja_term3)
+       call mem_dealloc(Vjiij_Vijja_term4) 
+       call mem_dealloc(Vjiij_Vijja_all)
+
+    endif
+
+     if(DECinfo%use_canonical) then
        call mem_alloc(Xijij,nocc,nocc)
        call mem_alloc(Xjiij,nocc,nocc)
        call mp2f12_Xijij(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
@@ -1948,21 +2417,52 @@ end subroutine RIMP2_CalcEnergyContribution
        call mem_dealloc(Xijkl)
     
     endif
+
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
-
+    
     EF12 = E21 + E22
+
+    if(DECinfo%F12Debug) then
+       call mem_alloc(Vijij_mp2f12,nocc,nocc)
+       call mem_alloc(Vjiij_mp2f12,nocc,nocc)
+
+       call mp2f12_Vijij(Vijij_mp2f12,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vjiij(Vjiij_mp2f12,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       
+       ! CCSD coupling V_ij^ij & V_ji^ij 
+       ! call  ccsdf12_Viajb_coupling(Vijij_mp2f12,Vjiij_mp2f12,Ciajb,Taibj%elm4,nocc,nvirt)
+
+       print *, '----------------------------------------'
+       print *, ' CCSD-F12 energy summary                '
+       print *, '----------------------------------------'
+       write(*,'(1X,a,f25.10)') 'E21_Vijij_MP2_noC: ', 2.0E0_REALK*mp2f12_E21(Vijij_mp2f12, Vjiij_mp2f12, nocc)
+       write(*,'(1X,a,f25.10)') 'E22+E23_Vijij_MP2: ', E22
+       write(*,'(1X,a,f25.10)') 'E21_Vijij_CCSD:    ', E21_Viajb + E21_Viija + E21_Viajj
+       print *, '----------------------------------------'
+       write(*,'(1X,a,f25.10)') 'sum:               ', 2.0E0_REALK*mp2f12_E21(Vijij_mp2f12, Vjiij_mp2f12, nocc) + & 
+            & E22 + E21_Viajb + E21_Viija + E21_Viajj
+        
+       call mem_dealloc(Vijij_mp2f12)
+       call mem_dealloc(Vjiij_mp2f12)
+
+    endif
+    
+    call mem_dealloc(Ciajb)
+    call mem_dealloc(Cjaib)
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
 
     write(*,'(1X,a)') '----------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
     write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
     write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
     
     !> Input to DEC
+    write(DECinfo%output,*) 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
-    write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY = ', ECCSD_F12
+    write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
 
     call mem_dealloc(AIBJ)
     call tensor_free(Taibj)

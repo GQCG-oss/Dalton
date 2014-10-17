@@ -136,9 +136,9 @@ function precondition_doubles_newarr(omega2,ppfock,qqfock,loc) result(prec)
 
    else
       !make sure all data is in the correct for this routine, that is omega2 is
-      !TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
+      !TT_TILED_DIST and ppfock%addr_p_arr and qqfock%addr_p_arr are associated
 
-      call tensor_init(prec,dims,4,TILED_DIST,MASTER_ACCESS,omega2%tdim)
+      call tensor_init(prec,dims,4,TT_TILED_DIST,AT_MASTER_ACCESS,omega2%tdim)
       call tensor_change_atype_to_rep(ppfock,loc)
       call tensor_change_atype_to_rep(qqfock,loc)
       call precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
@@ -1077,7 +1077,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      endif StartUpSlaves
 
      if(.not.local)then
-        t2%access_type     = ALL_ACCESS
+        t2%access_type     = AT_ALL_ACCESS
         call tensor_lock_wins( t2, 's', mode )
         call memory_allocate_tensor_dense( t2 )
         buf_size = min(int((MemFree*0.8*1024.0_realk**3)/(8.0*t2%tsize)),5)*t2%tsize
@@ -1188,17 +1188,17 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
 
 
-     govov%access_type  = ALL_ACCESS
-     omega2%access_type = ALL_ACCESS
+     govov%access_type  = AT_ALL_ACCESS
+     omega2%access_type = AT_ALL_ACCESS
 
      call lsmpi_barrier(infpar%lg_comm)
 #endif
 
      !if the residual is handeled as dense, allocate and zero it, adjust the
      !access parameters to the data
-     if(omega2%itype/=DENSE.and.(scheme==3.or.scheme==4))then
+     if(omega2%itype/=TT_DENSE.and.(scheme==3.or.scheme==4))then
         call memory_allocate_tensor_dense_pc(omega2)
-        omega2%itype=DENSE
+        omega2%itype=TT_DENSE
      endif
      call tensor_zero(omega2)
 
@@ -2129,13 +2129,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
      !set for correct access again, save as i a j b
      if(.not.local)then
         if((master.and..not.(scheme==2)).or.scheme==3) call tensor_deallocate_dense(govov)
-        govov%itype      = TILED_DIST
+        govov%itype      = TT_TILED_DIST
      endif
 
-     govov%access_type  = MASTER_ACCESS
-     omega2%access_type = MASTER_ACCESS
-     t2%access_type     = MASTER_ACCESS
-     if(scheme==2) u2%access_type     = MASTER_ACCESS
+     govov%access_type  = AT_MASTER_ACCESS
+     omega2%access_type = AT_MASTER_ACCESS
+     t2%access_type     = AT_MASTER_ACCESS
+     if(scheme==2) u2%access_type     = AT_MASTER_ACCESS
 #endif
 
 
@@ -2428,8 +2428,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 #ifdef VAR_MPI
         !THE INTENSIVE SCHEMES
      else if(s==2)then
-        omega2%access_type = ALL_ACCESS
-        t2%access_type     = ALL_ACCESS
+        omega2%access_type = AT_ALL_ACCESS
+        t2%access_type     = AT_ALL_ACCESS
         nnod             = infpar%lg_nodtot
         me               = infpar%lg_mynum
         mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
@@ -2440,7 +2440,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         !Prepare the E2 term by transforming Had and Cbi and move them in
         !PDM, here rendundand work is performed, but only O^3, so cheap
         call tensor_ainit(E1,[nv,nv],2,tdims=[vs,vs],atype="TDPD")
-        E1%itype = TILED_DIST
+        E1%itype = TT_TILED_DIST
         call dcopy(nv2,qqf,1,E1%elm1,1)
         call tensor_lock_local_wins(E1,'e',mode)
         if (Ccmodel>MODEL_CC2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,E1%elm1,nv)
@@ -2448,7 +2448,7 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
         call tensor_ainit(E2,[no,no],2,tdims=[os,os],atype="TDPD")
         call tensor_lock_local_wins(E2,'e',mode)
-        E2%itype = TILED_DIST
+        E2%itype = TT_TILED_DIST
         call dcopy(no2,ppf,1,E2%elm1,1)
         if (Ccmodel>MODEL_CC2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,E2%elm1,no)
         call tensor_mv_dense2tiled(E2,.true.)
@@ -2476,8 +2476,8 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
         call lsmpi_barrier(infpar%lg_comm)
         call tensor_free(Pijab_om2)
 
-        omega2%access_type = MASTER_ACCESS
-        t2%access_type     = MASTER_ACCESS
+        omega2%access_type = AT_MASTER_ACCESS
+        t2%access_type     = AT_MASTER_ACCESS
 
 #endif
      endif
@@ -4845,13 +4845,13 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
       end do
     end if
 
-   govov%access_type  = ALL_ACCESS
-   t2%access_type     = ALL_ACCESS
-   omega2%access_type = ALL_ACCESS
+   govov%access_type  = AT_ALL_ACCESS
+   t2%access_type     = AT_ALL_ACCESS
+   omega2%access_type = AT_ALL_ACCESS
    if (.not.local) then
      call memory_allocate_tensor_dense_pc(omega2)
-     omega2%itype = DENSE
-     govov%itype  = DENSE
+     omega2%itype = TT_DENSE
+     govov%itype  = TT_DENSE
    end if
 #endif
     if (iter==1) call tensor_zero(govov)
@@ -5055,14 +5055,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
 
     ! Move dense part to tiles
     if(.not.local)then
-      govov%access_type  = MASTER_ACCESS
-      t2%access_type     = MASTER_ACCESS
-      omega2%access_type = MASTER_ACCESS
+      govov%access_type  = AT_MASTER_ACCESS
+      t2%access_type     = AT_MASTER_ACCESS
+      omega2%access_type = AT_MASTER_ACCESS
       if (iter==1) then
         call tensor_mv_dense2tiled(govov,.true.)
       else
         call memory_deallocate_tensor_dense_pc(govov)
-        govov%itype      = TILED_DIST
+        govov%itype      = TT_TILED_DIST
       end if
       call tensor_mv_dense2tiled(omega2,.true.)
       call tensor_mv_dense2tiled(t2,.true.)
@@ -6185,7 +6185,7 @@ subroutine ccsd_data_preparation()
   use tensor_interface_module, only: tensor_ainit,tensor_free,&
       &memory_allocate_tensor_dense,memory_deallocate_tensor_dense,&
       &memory_deallocate_window,&
-      &lspdm_use_comm_proc,get_tensor_from_parr,DENSE,ALL_ACCESS,MASTER_ACCESS
+      &lspdm_use_comm_proc,get_tensor_from_parr,TT_DENSE,AT_ALL_ACCESS,AT_MASTER_ACCESS
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
   use decmpi_module, only: mpi_communicate_ccsd_calcdata
