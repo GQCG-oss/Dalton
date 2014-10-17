@@ -26,7 +26,7 @@ f.add(string = 'Final HF energy:',
 # That is an accepted error since we want the SIRIUS.RST file for the next step which is
 # going to be filtered.
 test.run(['energy_restart_scf__1.dal'], ['H2O_ccpVDZ.mol'], {'out': f}, args = '-get SIRIUS.RST',
-        accepted_errors = ['DALTON aborted because wave function not converged'])
+        accepted_errors = ['DALTON aborted because wave function not converged','Floating point exception'])
 
 shutil.move('energy_restart_scf__1_H2O_ccpVDZ.SIRIUS.RST', 'SIRIUS.RST')
 
