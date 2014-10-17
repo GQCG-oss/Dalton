@@ -1,4 +1,5 @@
 MODULE IchorParametersModule
+  use IchorCommonModule
 !> Spherical Specification
 Integer,parameter :: SphericalParam = 1 !spherical harmonic basis set
 !Job Specification
@@ -34,12 +35,26 @@ Integer,parameter :: IchorPermuteTTF = 3 !(SameLHSaos=.TRUE. , SameRHSaos=.TRUE.
 Integer,parameter :: IchorPermuteTFF = 4 !(SameLHSaos=.TRUE. , SameRHSaos=.FALSE., SameODs=.FALSE.) 
 Integer,parameter :: IchorPermuteFTF = 5 !(SameLHSaos=.FALSE., SameRHSaos=.TRUE. , SameODs=.FALSE.) 
 Integer,parameter :: IchorPermuteFFF = 6 !(SameLHSaos=.FALSE., SameRHSaos=.FALSE., SameODs=.FALSE.) 
+Integer,parameter :: MaxSpecialAngmom = 2
+!> IchorOperatorSpec
+integer,parameter :: CoulombOperator=1
+integer,parameter :: GGemOperator   =2    ! The Gaussian geminal operator g
+integer,parameter :: GGemCouOperator=3    ! The Gaussian geminal divided by the Coulomb operator g/r12
+integer,parameter :: GGemGrdOperator=4    ! The double commutator [[T,g],g]
+integer,parameter :: GGemSqOperator =5    ! The Gaussian geminal operator squared g^2
+real(realk) :: IchorGPUmaxmem
 
 !public:: SphericalParam, IcorJobEri, IcorInputNoInput, IchorParNone,&
 !     & IchorScreen, IchorScreenNone, IchorDebugNone, IchorAlgoOS, IchorPermuteTTT,&
 !     & IchorPermuteFFT, IchorPermuteTTF, IchorPermuteTFF, IchorPermuteFTF, Ichor!PermuteFFF, IchorNofilestorage
 !private
+#ifdef VAR_OPENACC
+  integer,parameter :: maxnAsyncHandles=16
+#else
+  integer,parameter :: maxnAsyncHandles=1
+#endif
 CONTAINS
+
 subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
   implicit none
   integer,intent(in) :: IchorScreenSpec
@@ -77,5 +92,57 @@ subroutine determineScreening(IchorScreenSpec,CSscreen,ODscreen,QQRscreen)
      QQRscreen = .TRUE.
   END SELECT
 END subroutine determineScreening
+
+subroutine determine_OpereratorSpec(Oper,Operparam)
+  implicit none
+  Character(len=7),intent(in)     :: Oper
+  integer,intent(inout)     :: Operparam
+
+  SELECT CASE(Oper)
+  CASE('Coulomb') 
+     !standard Coulomb Operator 
+     operparam = CoulombOperator
+  CASE('GGem   ') 
+     ! The Gaussian geminal operator g
+     operparam = GGemOperator
+  CASE('GGemCou') 
+     ! The Gaussian geminal divided by the Coulomb operator g/r12
+     operparam = GGemCouOperator
+  CASE('GGemGrd') 
+     ! The double commutator [[T,g],g]
+     operparam = GGemGrdOperator
+  CASE('GGemSq ') 
+     ! The Gaussian geminal operator squared g^2
+     operparam = GGemSqOperator
+  CASE DEFAULT
+     WRITE(6,'(1X,2A)') 'Unknown Operator =',Oper
+     CALL ICHORQUIT('Param_oper_paramfromString',-1)
+  END SELECT
+
+end subroutine Determine_OpereratorSpec
+
+subroutine Determine_Operator_From_OpereratorSpec(Oper,Operparam)
+  implicit none
+  Character(len=7),intent(inout)     :: Oper
+  integer,intent(in)     :: Operparam
+
+  SELECT CASE(Operparam)
+  CASE(CoulombOperator) 
+     oper = 'Coulomb'
+  CASE(GGemOperator) 
+     oper = 'GGem   '
+  CASE(GGemCouOperator) 
+     oper = 'GGemCou'
+  CASE(GGemGrdOperator) 
+     oper = 'GGemGrd'
+  CASE(GGemSqOperator) 
+     oper = 'GGemSq '
+  CASE DEFAULT
+     WRITE(6,'(1X,2A)') 'Unknown Operator parameter =',Operparam
+     CALL ICHORQUIT('Unknown Operator Param_oper_Stringfromparam',-1)
+  END SELECT
+
+end subroutine Determine_Operator_From_OpereratorSpec
+
 
 END MODULE IchorParametersModule

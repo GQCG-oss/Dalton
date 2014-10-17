@@ -3349,7 +3349,7 @@ C
                READ (LURSPRES,'(30X,A8,2I5)') LABEL(1),KSYMA,KSPINA
                READ (LURSPRES,'(30X,A8,2I5)') LABEL(2),KSYMB,KSPINB
                READ (LURSPRES,'(30X,A8,2I5)') LABEL(3),KSYMC,KSPINC
-               READ (LURSPRES,'(29X,3F15.8)') FRQB, FRQC, QUAVAL
+               READ (LURSPRES,'(/,30X,3F15.8)') FRQB, FRQC, QUAVAL
             ELSE
                 GOTO 346
              END IF

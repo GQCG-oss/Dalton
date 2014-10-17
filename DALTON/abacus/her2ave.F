@@ -361,12 +361,16 @@ C
                      A = ICORBA(IORBA) + ICOMPA
                      B = ICORBB(IORBB) + ICOMPB
                      DTAB  = DMAT(A,B,1)
+#ifdef BUILD_OPENRSP
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                      DTBA = DMAT(B,A,1)
                      IF (DV .OR. GENCTR) THEN
                         DVAB = DMAT(A,B,2)
                         DVBA = DMAT(B,A,2)
                      ENDIF
+#else
+                     IF (DV) DVAB  = DMAT(A,B,2)
+#endif
                                                       FAB = D1
                      IF (TCONAB .AND. IORBA.NE.IORBB) FAB = D2
                      DO 600 IORBCD = 1, NORBCD
@@ -374,6 +378,7 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                         IORBD = NINDCD(IORBCD,2)
                         C = ICORBC(IORBC) + ICOMPC
                         D = ICORBD(IORBD) + ICOMPD
+#ifdef BUILD_OPENRSP
 C
 C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                         DTAC = DMAT(A,C,1)
@@ -398,6 +403,20 @@ C modified by Bin Gao, December 24, 2009, from linsca abacus/her2ave.F
                            DVDB = DMAT(D,B,2)
                            DVDC = DMAT(D,C,2)
                         END IF
+#else
+                        DTAC = DMAT(C,A,1)
+                        DTAD = DMAT(D,A,1)
+                        DTBC = DMAT(C,B,1)
+                        DTBD = DMAT(D,B,1)
+                        DTCD = DMAT(D,C,1)
+                        IF (DV) THEN
+                           DVAC = DMAT(C,A,2)
+                           DVAD = DMAT(D,A,2)
+                           DVBC = DMAT(C,B,2)
+                           DVBD = DMAT(D,B,2)
+                           DVCD = DMAT(D,C,2)
+                        ENDIF
+#endif
                                                        FCD = D1
                         IF (TCONCD.AND.IORBC.NE.IORBD) FCD = D2
 C
@@ -513,6 +532,7 @@ C
 C                         950210-hjaaj: new SKLFC1 symmetrizes with
 C                         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
+#ifdef BUILD_OPENRSP
 C Bin Gao, December 24, 2009, copied from that of linsca
 c     vincent liegeois
                            IF (IFCTYP(1).Eq.03) THEN
@@ -559,6 +579,7 @@ c                              exchange:
                               ENDDO
                            ELSE
 c     end vincent liegeois
+#endif
                               DFAC = FAB*FCD*FCABCD
                               EFAC = -HFXFAC*DP25*DFAC
                               IF (HFXMU .NE. D0) DFAC = D0
@@ -580,9 +601,11 @@ C
                                  FT(C,B,N) = FT(C,B,N) + DINT(I)*DAD
                                  FT(D,B,N) = FT(D,B,N) + DINT(I)*DAC
   800                         CONTINUE
+#ifdef BUILD_OPENRSP
 c     vincent liegeois
                            ENDIF
 c     end vincent liegeois
+#endif
 C
 C                             Active Fock matrix
 C
@@ -1610,6 +1633,7 @@ C
  4020 FORMAT (6F12.6)
  4030 FORMAT (//,1X,' Two-electron integral Hessian ',/)
       END
+#ifdef BUILD_OPENRSP
 C Bin Gao, December 24, 2009
 C from linsca abacus/her2ave.F
 C  /* Deck droutg */
@@ -1792,6 +1816,7 @@ C
  4010 FORMAT (//,1X,' Two-electron integral gradient ',/)
  4020 FORMAT (6F12.6)
       END
+#endif
 C  /* Deck so2out */
       SUBROUTINE SO2OUT(DERIV,IPRINT)
 C

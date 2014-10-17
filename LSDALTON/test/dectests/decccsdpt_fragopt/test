@@ -13,7 +13,7 @@ f.add(string = 'Final HF energy',
       rel_tolerance = 1.0e-8)
 
 f.add(string = 'Correlation energy',
-      rel_tolerance = 1.0e-8)
+      rel_tolerance = 1.0e-3)
 
 f.add(string = 'Total CCSD(T) energy',
       rel_tolerance = 1.0e-8)
@@ -26,9 +26,9 @@ f.add(from_string = 'VIRTUAL LOCALITY',
       to_string   = 'Min. sigma_4 and orb.number',
       abs_tolerance = 1.0e-4)
 
-f.add(from_string = 'CCSD occupied single energies',
+f.add(from_string = 'Print single and pair fragment energies',
       to_string   = 'Total CCSD(T) occupied correlation energy',
-      abs_tolerance = 1.0e-4)
+      abs_tolerance = 1.0e-5)
 
 f.add(string = 'Allocated memory (TOTAL)')
 

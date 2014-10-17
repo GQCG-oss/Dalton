@@ -24,13 +24,14 @@ module dec_main_mod
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
+  use snoop_main_module
   use dec_fragment_utils
   use array3_memory_manager!,only: print_memory_currents_3d
   use array4_memory_manager!,only: print_memory_currents4
   use full_molecule!,only: molecule_init, molecule_finalize,molecule_init_from_inputs
   use orbital_operations!,only: check_lcm_against_canonical
   use full_molecule!,only: molecule_copyback_FSC_matrices
-  use mp2_gradient_module!,only: dec_get_error_difference
+  use mp2_gradient_module
   use dec_driver_module,only: dec_wrapper
   use full,only: full_driver
 
@@ -128,9 +129,9 @@ contains
     ! Minor tests
     ! ***********
     !Array test
-    if (DECinfo%array_test)then
+    if (DECinfo%tensor_test)then
       print *,"TEST ARRAY MODULE"
-      call test_array_struct()
+      call test_tensor_struct()
       return
     endif
     ! Reorder test
@@ -182,6 +183,16 @@ contains
     integer, dimension(8) :: values
     real(realk) :: tcpu1, twall1, tcpu2, twall2, EHF,Ecorr,Eerr
     real(realk) :: molgrad(3,Molecule%natoms)
+
+    ! Perform SNOOP calculation and skip DEC calculation
+    ! (at some point SNOOP and DEC might be merged)
+    if(DECinfo%SNOOP) then
+       write(DECinfo%output,*) '***********************************************************'
+       write(DECinfo%output,*) '      Performing SNOOP interaction energy calculation...'
+       write(DECinfo%output,*) '***********************************************************'
+       call snoop_driver(mylsitem,Molecule,D)
+       return
+    end if
 
     ! Sanity check: LCM orbitals span the same space as canonical orbitals 
     if(DECinfo%check_lcm_orbitals) then
@@ -362,7 +373,7 @@ contains
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
-    call dec_get_error_difference(Eerr)
+    call dec_get_error_for_geoopt(Eerr)
 
     ! Update number of DEC calculations for given FOT level
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
@@ -453,7 +464,7 @@ contains
 
     ! Set Eerr equal to the difference between the intrinsic error at this geometry
     ! (the current value of Eerr) and the intrinsic error at the previous geometry.
-    call dec_get_error_difference(Eerr)
+    call dec_get_error_for_geoopt(Eerr)
 
     ! Update number of DEC calculations for given FOT level
     DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
@@ -474,8 +485,10 @@ contains
        write(DECinfo%output,*) 'DEC CALCULATION BOOK KEEPING'
        write(DECinfo%output,*) '============================'
        write(DECinfo%output,*) 
-       do i=1,7
-          write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+       do i=1,nFOTs
+          if(DECinfo%ncalc(i)/=0) then
+             write(DECinfo%output,'(1X,a,i6,a,i6)') '# calculations done for FOTlevel ',i, ' is ', DECinfo%ncalc(i)
+          end if
        end do
        write(DECinfo%output,*) 
     end if

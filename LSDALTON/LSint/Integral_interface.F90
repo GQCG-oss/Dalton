@@ -2,7 +2,7 @@ MODULE IntegralInterfaceMOD
   use precision
   use TYPEDEFTYPE, only: LSSETTING, LSINTSCHEME, LSITEM, integralconfig
   use Matrix_module, only: MATRIX, MATRIXP
-  use Integralparameters
+  use LSparameters
   use LSTIMING
   use molecule_typetype, only: MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
@@ -65,11 +65,11 @@ MODULE IntegralInterfaceMOD
        & II_get_magderivOverlapL,II_get_ep_integrals,II_get_ep_integrals2,&
        & II_get_ep_integrals3,II_get_ep_ab,II_GET_MOLECULAR_GRADIENT,&
        & II_get_twoElectron_gradient,II_get_K_gradient,II_get_K_gradientfull,&
-       & II_get_regular_K_gradient,II_get_J_gradient,&
+       & II_get_regular_K_gradient,II_get_J_gradient,II_get_pso_spec_expval,&
        & II_get_J_gradient_regular,II_get_oneElectron_gradient,&
        & II_get_ne_gradient,II_get_kinetic_gradient,II_get_nucpot,&
        & II_get_nn_gradient,II_get_nuc_Quad,II_get_carmom,&
-       & II_get_single_carmom,II_get_nucdip,II_get_prop,&
+       & II_get_single_carmom,II_get_nucdip,II_get_prop,II_get_pso_spec,&
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_2center_mixed_eri,II_get_4center_eri,&
@@ -184,6 +184,7 @@ SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 IPRINT=SETTING%SCHEME%INTPRINT
 nbast1 = getNbasis(AO1,ContractedintType,SETTING%MOLECULE(1)%p,LUPRI)
 nbast2 = getNbasis(AO2,ContractedintType,SETTING%MOLECULE(2)%p,LUPRI)
+call Test_if_64bit_integer_required(nbast1,nbast2)
 
 IF(nBast1.NE.S%nrow)CALL LSQUIT('dim1 mismatch in II_get_mixed_overlap',-1)
 IF(nBast2.NE.S%ncol)CALL LSQUIT('dim2 mismatch in II_get_mixed_overlap',-1)
@@ -2030,6 +2031,39 @@ call time_II_operations2(JOB_II_get_prop)
 
 END SUBROUTINE II_get_prop
 
+!Get specific nuclei moment derivative 
+recursive SUBROUTINE II_get_PSO_spec(LUPRI,LUERR,SETTING,MatArray,iAtom)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR,IATOM
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: MatArray(3)
+!
+integer :: nbast,I,Operparam
+Character(len=7)     :: Oper2
+TYPE(MATRIX),pointer :: TMPMatArray(:)
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+
+call param_oper_paramfromString('PSO    ',Operparam)
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+nbast = MatArray(1)%nrow
+!PROVIDE IATOM
+call initIntegralOutputDims(setting%output,nbast,nbast,1,1,3)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,MatArray,setting%IntegralTransformGC)   
+
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('PSOspec',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop)
+
+END SUBROUTINE II_get_PSO_spec
+
 !> \brief General routine for calculation of expectation value of property integrals
 !> So in Other words does dotproduct(PropIntegral,D)
 !> \author T. Kjaergaard
@@ -2104,6 +2138,62 @@ CALL LSTIMER('Propval:'//Oper,TS,TE,LUPRI)
 call time_II_operations2(JOB_II_get_prop_expval)
 
 END SUBROUTINE II_get_prop_expval
+
+!> \brief routine for calculation of expectation value of Specific nuclei PSO integrals
+!> So in Other words does dotproduct(PSOIntegral,D)
+!> \author T. Kjaergaard
+!> \date 2010
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param expval the matrices of property integrals
+!> \param Dmat the matrices the should be contracted with the property integral
+!> \param nOperatorComp the number of matrices 
+!> \param Oper the label of property integral
+recursive SUBROUTINE II_get_pso_spec_expval(LUPRI,LUERR,SETTING,expval,Dmat,ndmat)
+IMPLICIT NONE
+INTEGER              :: LUPRI,LUERR
+TYPE(LSSETTING)      :: SETTING
+TYPE(MATRIX)         :: DMat(ndmat)
+real(realk)          :: expval(3*ndmat)
+!
+TYPE(MATRIX)         :: DMat_AO(ndmat)
+integer :: I,ndmat,J,operparam
+real(realk) :: TS,TE
+logical :: CS_screenSAVE, PS_screenSAVE
+real(realk),pointer :: TMPexpval(:)
+call time_II_operations1()
+CALL LSTIMER('START ',TS,TE,LUPRI)
+!set threshold 
+call param_oper_paramfromString('PSO    ',Operparam)
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
+setting%scheme%do_prop = .TRUE.
+setting%scheme%propoper = Operparam
+
+IF(setting%IntegralTransformGC)THEN
+   DO I=1,ndmat
+      CALL mat_init(Dmat_AO(I),Dmat(1)%nrow,Dmat(1)%ncol)
+      call GCAO2AO_transform_matrixD2(Dmat(I),Dmat_AO(I),setting,lupri)
+   ENDDO
+   CALL ls_attachDmatToSetting(Dmat_AO,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(Dmat,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
+ENDIF
+call initIntegralOutputDims(setting%output,1,1,1,1,3*ndmat)
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclearSpec,AOempty,&
+     & Operparam,EcontribSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+CALL retrieve_Output(lupri,setting,expval,setting%IntegralTransformGC)   
+CALL ls_freeDmatFromSetting(setting)
+IF(setting%IntegralTransformGC)THEN
+   DO I=1,ndmat
+      CALL mat_free(Dmat_AO(I))
+   ENDDO
+ENDIF
+setting%scheme%do_prop = .FALSE.
+CALL LSTIMER('PSOSpecExpVal:',TS,TE,LUPRI)
+call time_II_operations2(JOB_II_get_prop_expval)
+
+END SUBROUTINE II_get_pso_spec_expval
 
 !> \brief Calculates property integrals
 !> \author T. Kjaergaard
@@ -2439,16 +2529,66 @@ END SUBROUTINE II_get_2center_mixed_eri
 !> \param DIM3 the dimension of orbital delta
 !> \param DIM4 the dimension of orbital gamma
 !> \param Dirac Specifies Dirac or Mulliken (default) notation
-SUBROUTINE II_get_4center_eri(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim3,dim4,dirac)
+SUBROUTINE II_get_4center_eri(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim3,dim4,intspec,dirac)
 IMPLICIT NONE
 TYPE(LSSETTING)       :: SETTING
 INTEGER               :: LUPRI,LUERR,dim1,dim2,dim3,dim4
 REAL(REALK),target,intent(inout) :: outputintegral(dim1,dim2,dim3,dim4)
 Logical,optional,intent(in)   :: dirac
+character,intent(in)  :: intspec(5)
 !
 Logical             :: dirac_format
 REAL(REALK),pointer :: integrals(:,:,:,:)
-integer             :: i,j,k,l
+integer             :: i,j,k,l,Oper
+real(realk)         :: coeff(6),exponent(6),tmp
+real(realk)         :: coeff2(21),sumexponent(21),prodexponent(21)
+integer             :: IJ,nGaussian,nG2,ao(4),dummy
+real(realk)         :: GGem
+
+DO i=1,4
+   IF (intSpec(i).NE.'R')call lsquit('Only R allowed in II_get_4center_eri',-1)
+ENDDO
+
+IF (intSpec(5).NE.'C') THEN
+   nGaussian = 6
+   nG2 = nGaussian*(nGaussian+1)/2
+   GGem = 0E0_realk
+   call stgfit(1E0_realk,nGaussian,exponent,coeff)
+   IJ=0
+   DO I=1,nGaussian
+      DO J=1,I
+         IJ = IJ + 1
+         coeff2(IJ) = 2E0_realk * coeff(I) * coeff(J)
+         prodexponent(IJ) = exponent(I) * exponent(J)
+         sumexponent(IJ) = exponent(I) + exponent(J)
+      ENDDO
+      coeff2(IJ) = 0.5E0_realk*coeff2(IJ)
+   ENDDO
+ENDIF
+
+! ***** SELECT OPERATOR TYPE *****
+IF (intSpec(5).EQ.'C') THEN
+   ! Regular Coulomb operator 1/r12
+   oper = CoulombOperator
+ELSE IF (intSpec(5).EQ.'G') THEN
+   ! The Gaussian geminal operator g
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'F') THEN
+   ! The Gaussian geminal divided by the Coulomb operator g/r12
+   oper = GGemCouOperator
+   call set_GGem(Setting%GGem,coeff,exponent,nGaussian)
+ELSE IF (intSpec(5).EQ.'D') THEN
+   ! The double commutator [[T,g],g]
+   oper = GGemGrdOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE IF (intSpec(5).EQ.'2') THEN
+   ! The Gaussian geminal operator squared g^2
+   oper = GGemOperator
+   call set_GGem(Setting%GGem,coeff2,sumexponent,prodexponent,nG2)
+ELSE
+   call lsquit('Error in specification of operator in ',-1)
+ENDIF
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -2468,7 +2608,7 @@ ELSE
 ENDIF
  
 CALL ls_getIntegrals(AORdefault,AORdefault,AORdefault,AORdefault,&
-     &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+     &Oper,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 
 IF(setting%IntegralTransformGC)THEN
   call lsquit('Error in II_get_4center_eri - IntegralTransformGC not implemented',lupri)
@@ -4706,7 +4846,12 @@ Integer             :: mtype_save, nbas,I,J
 !type(configItem)    :: config
 TYPE(integralconfig)   :: integral
 logical,pointer       :: OLDsameMOLE(:,:)
-
+character :: intspec(5)
+intspec(1) = 'R'
+intspec(2) = 'R'
+intspec(3) = 'R'
+intspec(4) = 'R'
+intspec(5) = 'C'
 setting%batchindex(1)=batchA
 setting%batchindex(2)=batchB
 setting%batchdim(1)=dimA
@@ -4721,7 +4866,8 @@ DO I=1,2
       setting%sameMol(J,I)=.FALSE.
    ENDDO
 ENDDO
-CALL II_get_4center_eri(LUPRI,LUERR,ls%SETTING,integrals,dimA,dimB,nbast,nbast)
+CALL II_get_4center_eri(LUPRI,LUERR,ls%SETTING,integrals,dimA,dimB,&
+     & nbast,nbast,intspec)
 
 setting%batchindex(1)=0
 setting%batchindex(2)=0
@@ -4759,6 +4905,12 @@ real(realk) :: Xp,Yp,Zp,Xq,Yq,Zq,DISTX,DISTY,DISTZ,Rpq
 logical,pointer       :: OLDsameMOLE(:,:)
 real(realk),pointer   :: integrals(:,:,:,:)
 type(MOLECULE_PT)   :: temp,Point
+character :: intspec(5)
+intspec(1) = 'R'
+intspec(2) = 'R'
+intspec(3) = 'R'
+intspec(4) = 'R'
+intspec(5) = 'C'
 
 temp%p  => setting%MOLECULE(1)%p
 call mem_alloc(OLDsameMOLE,4,4)
@@ -4795,7 +4947,7 @@ do ATOMP = 1,nAtoms
       enddo
       nbastQ = getNbasis(AORdefault,Contractedinttype,setting%MOLECULE(3)%p,lupri)
       call mem_alloc(integrals,nbastP,nbastP,nbastQ,nbastQ)
-      CALL II_get_4center_eri(LUPRI,LUERR,SETTING,integrals,nbastP,nbastP,nbastQ,nbastQ)
+      CALL II_get_4center_eri(LUPRI,LUERR,SETTING,integrals,nbastP,nbastP,nbastQ,nbastQ,intspec)
 
       Xq = Setting%molecule(3)%p%ATOM(1)%CENTER(1) 
       Yq = Setting%molecule(3)%p%ATOM(1)%CENTER(1) 

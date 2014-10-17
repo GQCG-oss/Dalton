@@ -2249,7 +2249,7 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_abs_max_elm(A,val)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
+     real(realk),intent(inout)   :: val
      !
      INTEGER      :: DESC_A(9), i,j
      REAL(REALK)  :: MAXA
@@ -2271,8 +2271,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_max_elm(A,val,pos)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer, intent(out)        :: pos(2)
+     real(realk),intent(inout)     :: val
+     integer, intent(inout)        :: pos(2)
      !
      real(realk), allocatable    :: vals(:)
      integer(kind=ls_mpik), allocatable        :: poss(:)
@@ -2329,8 +2329,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_min_elm(A,val,pos)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer, intent(out)        :: pos(2)
+     real(realk),intent(inout)     :: val
+     integer, intent(inout)        :: pos(2)
      !
      real(realk), allocatable    :: vals(:)
      integer(kind=ls_mpik), allocatable :: poss(:)
@@ -2387,8 +2387,8 @@ module matrix_operations_scalapack
   subroutine mat_scalapack_max_diag_elm(A,pos,val)
      implicit none
      TYPE(Matrix), INTENT(IN)    :: A
-     real(realk),intent(out)     :: val
-     integer,intent(out)         :: pos
+     real(realk),intent(inout)   :: val
+     integer,intent(inout)       :: pos
      !
      INTEGER      :: DESC_A(9),i,j
      REAL(REALK)  :: MAXA(1)

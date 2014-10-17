@@ -27,14 +27,20 @@ module qmatrix_backend
 
     implicit none
 
+#if defined(VAR_INT64)
+    integer(kind=4), parameter :: LS_QINT = 8
+#else
+    integer(kind=4), parameter :: LS_QINT = 4
+#endif
+
     ! type of real matrix
     type, public :: real_mat_t
         private
-        integer :: nrow = -1             !number of rows
-        integer :: ncol = -1             !number of columns
-        integer :: sym_type = 0          !symmetry of the matrix, not used
-        logical :: assembled = .false.   !indicates if the matrix is assembled or not
-        type(Matrix), pointer :: ls_mat  !matrix type implemented in LSDALTON
+        integer(kind=LS_QINT) :: nrow = -1      !number of rows
+        integer(kind=LS_QINT) :: ncol = -1      !number of columns
+        integer(kind=LS_QINT) :: sym_type = 0   !symmetry of the matrix, not used
+        logical(kind=4) :: assembled = .false.  !indicates if the matrix is assembled or not
+        type(Matrix), pointer :: ls_mat         !matrix type implemented in LSDALTON
     end type real_mat_t
 
     ! the following parameters should be consistent with QMatrix library,
@@ -42,11 +48,11 @@ module qmatrix_backend
     ! # include/api/qmatrix_f_mat_duplicate.h90
     ! # include/api/qmatrix_f_mat_operations.h90
     ! # include/api/qmatrix_f_mat_view.h90
-    integer, parameter, private :: COPY_PATTERN_AND_VALUE = 1
-    integer, parameter, private :: MAT_NO_OPERATION = 0
-    integer, parameter, private :: MAT_TRANSPOSE = 1
-    integer, parameter, private :: BINARY_VIEW = 0
-    integer, parameter, private :: ASCII_VIEW = 1
+    integer(kind=LS_QINT), parameter, private :: COPY_PATTERN_AND_VALUE = 1
+    integer(kind=LS_QINT), parameter, private :: MAT_NO_OPERATION = 0
+    integer(kind=LS_QINT), parameter, private :: MAT_TRANSPOSE = 1
+    integer(kind=LS_QINT), parameter, private :: BINARY_VIEW = 0
+    integer(kind=LS_QINT), parameter, private :: ASCII_VIEW = 1
 
     public :: Matrix_Create
     public :: Matrix_Destroy
@@ -100,14 +106,14 @@ module qmatrix_backend
 
     subroutine Matrix_SetSymType(A, sym_type)
         type(real_mat_t), intent(inout) :: A
-        integer, intent(in) :: sym_type
+        integer(kind=LS_QINT), intent(in) :: sym_type
         A%sym_type = sym_type
         return
     end subroutine Matrix_SetSymType
 
     subroutine Matrix_SetDimMat(A, dim_mat)
         type(real_mat_t), intent(inout) :: A
-        integer, intent(in) :: dim_mat
+        integer(kind=LS_QINT), intent(in) :: dim_mat
         A%nrow = dim_mat
         A%ncol = dim_mat
         return
@@ -129,21 +135,21 @@ module qmatrix_backend
 
     subroutine Matrix_GetSymType(A, sym_type)
         type(real_mat_t), intent(in) :: A
-        integer, intent(out) :: sym_type
+        integer(kind=LS_QINT), intent(out) :: sym_type
         sym_type = A%sym_type
         return
     end subroutine Matrix_GetSymType
 
     subroutine Matrix_GetDimMat(A, dim_mat)
         type(real_mat_t), intent(in) :: A
-        integer, intent(out) :: dim_mat
+        integer(kind=LS_QINT), intent(out) :: dim_mat
         dim_mat = A%nrow
         return
     end subroutine Matrix_GetDimMat
 
     subroutine Matrix_IsAssembled(A, assembled)
         type(real_mat_t), intent(in) :: A
-        logical, intent(out) :: assembled
+        logical(kind=4), intent(out) :: assembled
         assembled = A%assembled
         return
     end subroutine Matrix_IsAssembled
@@ -155,11 +161,11 @@ module qmatrix_backend
                                 num_col_set,   &
                                 values)
         type(real_mat_t), intent(inout) :: A
-        integer, intent(in) :: idx_first_row
-        integer, intent(in) :: num_row_set
-        integer, intent(in) :: idx_first_col
-        integer, intent(in) :: num_col_set
-        real(realk), intent(in) :: values(num_row_set*num_col_set)
+        integer(kind=LS_QINT), intent(in) :: idx_first_row
+        integer(kind=LS_QINT), intent(in) :: num_row_set
+        integer(kind=LS_QINT), intent(in) :: idx_first_col
+        integer(kind=LS_QINT), intent(in) :: num_col_set
+        real(kind=realk), intent(in) :: values(num_row_set*num_col_set)
         if (A%assembled) then
             call mat_create_block(A%ls_mat,      &
                                   values,        &
@@ -168,7 +174,7 @@ module qmatrix_backend
                                   idx_first_row, &
                                   idx_first_col)
         else
-            call lsquit("Matrix_SetValues>> A is not assembled", -1)
+            call lsquit("Matrix_SetValues>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_SetValues
@@ -180,11 +186,11 @@ module qmatrix_backend
                                 num_col_add,   &
                                 values)
         type(real_mat_t), intent(inout) :: A
-        integer, intent(in) :: idx_first_row
-        integer, intent(in) :: num_row_add
-        integer, intent(in) :: idx_first_col
-        integer, intent(in) :: num_col_add
-        real(realk), intent(in) :: values(num_row_add*num_col_add)
+        integer(kind=LS_QINT), intent(in) :: idx_first_row
+        integer(kind=LS_QINT), intent(in) :: num_row_add
+        integer(kind=LS_QINT), intent(in) :: idx_first_col
+        integer(kind=LS_QINT), intent(in) :: num_col_add
+        real(kind=realk), intent(in) :: values(num_row_add*num_col_add)
         if (A%assembled) then
             call mat_add_block(A%ls_mat,      &
                                values,        &
@@ -193,7 +199,7 @@ module qmatrix_backend
                                idx_first_row, &
                                idx_first_col)
         else
-            call lsquit("Matrix_AddValues>> A is not assembled", -1)
+            call lsquit("Matrix_AddValues>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_AddValues
@@ -205,11 +211,11 @@ module qmatrix_backend
                                 num_col_get,   &
                                 values)
         type(real_mat_t), intent(inout) :: A
-        integer, intent(in) :: idx_first_row
-        integer, intent(in) :: num_row_get
-        integer, intent(in) :: idx_first_col
-        integer, intent(in) :: num_col_get
-        real(realk), intent(out) :: values(num_row_get*num_col_get)
+        integer(kind=LS_QINT), intent(in) :: idx_first_row
+        integer(kind=LS_QINT), intent(in) :: num_row_get
+        integer(kind=LS_QINT), intent(in) :: idx_first_col
+        integer(kind=LS_QINT), intent(in) :: num_col_get
+        real(kind=realk), intent(out) :: values(num_row_get*num_col_get)
         if (A%assembled) then
             call mat_retrieve_block(A%ls_mat,      &
                                     values,        &
@@ -218,7 +224,7 @@ module qmatrix_backend
                                     idx_first_row, &
                                     idx_first_col)
         else
-            call lsquit("Matrix_GetValues>> A is not assembled", -1)
+            call lsquit("Matrix_GetValues>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_GetValues
@@ -226,7 +232,7 @@ module qmatrix_backend
     ! B should be created, but may not be assembled
     subroutine Matrix_Duplicate(A, duplicate_option, B)
         type(real_mat_t), intent(in) :: A
-        integer, intent(in) :: duplicate_option
+        integer(kind=LS_QINT), intent(in) :: duplicate_option
         type(real_mat_t), intent(inout) :: B
         ! B has been assembled before
         if (B%assembled) then
@@ -251,18 +257,18 @@ module qmatrix_backend
         if (A%assembled) then
             call mat_zero(A%ls_mat)
         else
-            call lsquit("Matrix_ZeroEntries>> A is not assembled", -1)
+            call lsquit("Matrix_ZeroEntries>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_ZeroEntries
 
     subroutine Matrix_GetTrace(A, trace)
         type(real_mat_t), intent(in) :: A
-        real(realk), intent(out) :: trace
+        real(kind=realk), intent(out) :: trace
         if (A%assembled) then
             trace = mat_tr(A%ls_mat)
         else
-            call lsquit("Matrix_GetTrace>> A is not assembled", -1)
+            call lsquit("Matrix_GetTrace>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_GetTrace
@@ -270,13 +276,13 @@ module qmatrix_backend
     subroutine Matrix_GetMatProdTrace(A, B, op_B, trace)
         type(real_mat_t), intent(in) :: A
         type(real_mat_t), intent(in) :: B
-        integer, intent(in) :: op_B
-        real(realk), intent(out) :: trace
+        integer(kind=LS_QINT), intent(in) :: op_B
+        real(kind=realk), intent(out) :: trace
         if (.not.A%assembled) then
-            call lsquit("Matrix_GEMM>> A is not assembled", -1)
+            call lsquit("Matrix_GEMM>> A is not assembled", -1_LS_QINT)
         end if
         if (.not.B%assembled) then
-            call lsquit("Matrix_GEMM>> B is not assembled", -1)
+            call lsquit("Matrix_GEMM>> B is not assembled", -1_LS_QINT)
         end if
         select case (op_B)
         case (MAT_NO_OPERATION)
@@ -310,8 +316,8 @@ module qmatrix_backend
     subroutine Matrix_Write(A, mat_label, view_option)
         type(real_mat_t), intent(in) :: A
         character*(*), intent(in) :: mat_label
-        integer, intent(in) :: view_option
-        integer io_matrix
+        integer(kind=LS_QINT), intent(in) :: view_option
+        integer(kind=LS_QINT) io_matrix
         if (A%assembled) then
             select case (view_option)
             ! BINARY_VIEW
@@ -321,7 +327,7 @@ module qmatrix_backend
                             "qmatrix_"//trim(mat_label), &
                             "unknown",                   &
                             "unformatted")
-                call mat_write_to_disk(io_matrix, A%ls_mat, .true.)
+                call mat_write_to_disk(io_matrix, A%ls_mat)
                 call lsclose(io_matrix, "KEEP")
                 io_matrix = -1
                 call lsopen(io_matrix,                           &
@@ -337,13 +343,18 @@ module qmatrix_backend
                             "qmatrix_"//trim(mat_label), &
                             "unknown",                   &
                             "formatted")
-                call mat_print(A%ls_mat, 1, A%nrow, 1, A%ncol, io_matrix)
+                call mat_print(A%ls_mat,  &
+                               1_LS_QINT, &
+                               A%nrow,    &
+                               1_LS_QINT, &
+                               A%ncol,    &
+                               io_matrix)
                 call lsclose(io_matrix, "KEEP")
             case default
                 call lsquit("Matrix_Write>> invalid view option", view_option)
             end select
         else
-            call lsquit("Matrix_Write>> A is not assembled", -1)
+            call lsquit("Matrix_Write>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_Write
@@ -352,8 +363,8 @@ module qmatrix_backend
     subroutine Matrix_Read(A, mat_label, view_option)
         type(real_mat_t), intent(inout) :: A
         character*(*), intent(in) :: mat_label
-        integer, intent(in) :: view_option
-        integer io_matrix
+        integer(kind=LS_QINT), intent(in) :: view_option
+        integer(kind=LS_QINT) io_matrix
         ! A has been assembled before
         if (A%assembled) then
             call mat_free(A%ls_mat)
@@ -384,25 +395,25 @@ module qmatrix_backend
     end subroutine Matrix_Read
 
     subroutine Matrix_Scale(scal_number, A)
-        real(realk), intent(in) :: scal_number
+        real(kind=realk), intent(in) :: scal_number
         type(real_mat_t), intent(inout) :: A
         if (A%assembled) then
             call mat_scal(scal_number, A%ls_mat)
         else
-            call lsquit("Matrix_Scale>> A is not assembled", -1)
+            call lsquit("Matrix_Scale>> A is not assembled", -1_LS_QINT)
         end if
         return
     end subroutine Matrix_Scale
 
     subroutine Matrix_AXPY(multiplier, X, Y)
-        real(realk), intent(in) :: multiplier
+        real(kind=realk), intent(in) :: multiplier
         type(real_mat_t), intent(in) :: X
         type(real_mat_t), intent(inout) :: Y
         if (.not.X%assembled) then
-            call lsquit("Matrix_AXPY>> X is not assembled", -1)
+            call lsquit("Matrix_AXPY>> X is not assembled", -1_LS_QINT)
         end if
         if (.not.Y%assembled) then
-            call lsquit("Matrix_AXPY>> Y is not assembled", -1)
+            call lsquit("Matrix_AXPY>> Y is not assembled", -1_LS_QINT)
         end if
         call mat_daxpy(multiplier, X%ls_mat, Y%ls_mat)
         Y%sym_type = X%sym_type
@@ -411,12 +422,12 @@ module qmatrix_backend
 
     ! B should be created, but may not be assembled
     subroutine Matrix_Transpose(op_A, A, B)
-        integer, intent(in) :: op_A
+        integer(kind=LS_QINT), intent(in) :: op_A
         type(real_mat_t), intent(inout) :: A
         type(real_mat_t), intent(inout) :: B
         type(real_mat_t) C
         if (.not.A%assembled) then
-            call lsquit("Matrix_Transpose>> A is not assembled", -1)
+            call lsquit("Matrix_Transpose>> A is not assembled", -1_LS_QINT)
         end if
         select case (op_A)
         case (MAT_NO_OPERATION)
@@ -464,19 +475,19 @@ module qmatrix_backend
 
     ! C should be created, but may not be assembled
     subroutine Matrix_GEMM(op_A, op_B, alpha, A, B, beta, C)
-        integer, intent(in) :: op_A
-        integer, intent(in) :: op_B
-        real(realk), intent(in) :: alpha
+        integer(kind=LS_QINT), intent(in) :: op_A
+        integer(kind=LS_QINT), intent(in) :: op_B
+        real(kind=realk), intent(in) :: alpha
         type(real_mat_t), intent(in) :: A
         type(real_mat_t), intent(in) :: B
-        real(realk), intent(in) :: beta
+        real(kind=realk), intent(in) :: beta
         type(real_mat_t), intent(inout) :: C
         character transa, transb
         if (.not.A%assembled) then
-            call lsquit("Matrix_GEMM>> A is not assembled", -1)
+            call lsquit("Matrix_GEMM>> A is not assembled", -1_LS_QINT)
         end if
         if (.not.B%assembled) then
-            call lsquit("Matrix_GEMM>> B is not assembled", -1)
+            call lsquit("Matrix_GEMM>> B is not assembled", -1_LS_QINT)
         end if
         select case (op_A)
         case (MAT_NO_OPERATION)

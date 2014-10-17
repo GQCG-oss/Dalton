@@ -1,7 +1,7 @@
       MODULE IIDFTD
       use gridgenerationmodule
       use dft_memory_handling
-      use Integralparameters
+      use LSparameters
       !use memory_handling
       !WARNING you must not add memory_handling, all memory goes through 
       !grid_memory_handling  module so as to determine the memory used in this

@@ -1,8 +1,8 @@
 \chapter{Polarizable embedding calculations}\label{ch:embedding}
 
 \index{polarizable embedding}\index{electrostatic embedding}\index{PE}\index{environment model}\index{embedding model}\index{multiscale modeling}\index{embedding}\index{QM/MM}\index{quantum mechanics / molecular mechanics}\index{solvent effects}\index{enviroment effects}
-This chapter introduces the polarizable embedding (PE) model as implemented
-in the PE library~\cite{pelib2012} included in the \latestrelease\ release.
+This chapter introduces the polarizable embedding (PE) model\cite{pemodel1,pemodel2} as implemented
+in the PE library~\cite{pelib} included in the \latestrelease\ release.
 Methods available are: PE-HF~\cite{pescf}, PE-DFT~\cite{pescf},
 PE-MP2/SOPPA~\cite{pesoppa}, PE-MCSCF~\cite{pemcscf}
 and PE-CC\footnote{Currently, the PE-CC uses an older implementation
@@ -21,6 +21,7 @@ basic examples.
 \noindent
 {\bf Reference literature:}
 \begin{list}{}{}
+\item PE library: J.~M.~H.~Olsen. The polarizable embedding (PE) library (version 1.2), 2014
 \item PE model: J.~M.~H.~Olsen and J.~Kongsted. \newblock {\em Adv. Quantum Chem.}, {\bf 61}, 107 (2011) and J.~M.~H.~Olsen. PhD thesis, University of Southern Denmark, Odense, Denmark, 2012. DOI: 10.6084/m9.figshare.156852.
 \item PE-HF/DFT: J.~M.~Olsen, K.~Aidas and J.~Kongsted. \newblock {\em J.~Chem.~Theory~Comput.}, {\bf 6}, 3721 (2010).
 \item PE-MP2/SOPPA: J.~J.~Eriksen, S.~P.~A.~Sauer, K.~V.~Mikkelsen, H.~J.~Aa.~Jensen and J.~Kongsted.\newblock {\em J.~Comp.~Chem.}, {\bf 33}, 2012, (2012).
@@ -78,10 +79,12 @@ and at PE-SOPPA, PE-MCSCF, PE-CC2 and PE-CCSD levels for closed-shell systems.
 Furthermore, the PE library has been coupled with the complex polarization
 propagator (CPP) module to allow damped linear response properties at
 PE-HF and PE-DFT levels of theory for closed- and open-shell systems~\cite{pecpp}.
-Triplet linear response and singlet quadratic and cubic response properties are
+Triplet linear response properties are
 available at the PE-HF and PE-DFT levels for closed-shell systems
-only~\cite{pemodel}. Magnetic linear response properties using London atomic
-orbitals (LAOs) are also available~\cite{pelao}. In the PE-MP2/SOPPA models, the
+only. Magnetic linear response properties using London atomic
+orbitals (LAOs) are also available. Singlet quadratic response properties can be
+calculated at PE-HF and PE-DFT levels for closed-shell systems.
+In the PE-MP2/SOPPA models, the
 environment response is taken into account at the HF/RPA level
 (see Ref.~\cite{pesoppa} for details). Note, that the current implementation
 does not support point-group symmetry or analytical molecular gradients and Hessians.

@@ -19,6 +19,10 @@ module lspdm_basic_module
                     &get_tileinfo_nelspmode_frombas,&
                     &get_tileinfo_nels_fromarr8,&
                     &get_tileinfo_nels_fromarr4,&
+                    &get_tileinfo_nels_fromarr8mode,&
+                    &get_tileinfo_nels_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr4mode,&
+                    &get_tileinfo_nelspermode_fromarr8mode,&
                     &get_tileinfo_nelspermode_fromarr4,&
                     &get_tileinfo_nelspermode_fromarr8
   end interface get_tile_dim
@@ -56,13 +60,52 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nels_frombas
 
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr8mode
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global mode index of the tile
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr4mode
+
   !> \brief this function returns the number of elements of a tile where the tile index is
   ! a global tile index
   !> \author Patrick Ettenhuber
   subroutine get_tileinfo_nels_fromarr8(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=long), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -82,7 +125,7 @@ module lspdm_basic_module
   subroutine get_tileinfo_nels_fromarr4(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=4), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -102,7 +145,7 @@ module lspdm_basic_module
   subroutine get_tileinfo_nelspermode_fromarr8(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=long), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -119,10 +162,46 @@ module lspdm_basic_module
     enddo
   end subroutine get_tileinfo_nelspermode_fromarr8
 
+  subroutine get_tileinfo_nelspermode_fromarr4mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr4mode
+  subroutine get_tileinfo_nelspermode_fromarr8mode(nels,arr,orig_addr)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(tensor),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: orig_addr(arr%mode)
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::j
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr8mode
   subroutine get_tileinfo_nelspermode_fromarr4(nels,arr,tnumber)
     implicit none
     !> array for which nels shoulb be calculated
-    type(array),intent(in) :: arr
+    type(tensor),intent(in) :: arr
     !> global tile index for which nels should be calculated
     integer(kind=4), intent(in) :: tnumber
     !> return value, number of elements in the desired tile
@@ -160,7 +239,7 @@ module lspdm_basic_module
 
   subroutine memory_deallocate_window(arr)
     implicit none
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer :: i,ierr
@@ -180,8 +259,8 @@ module lspdm_basic_module
        vector_size = dble(size(arr%wi(:)))
        call mem_dealloc(arr%wi)
 !$OMP CRITICAL
-       array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-       array_memory_in_use = array_memory_in_use - vector_size
+       tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+       tensor_memory_in_use = tensor_memory_in_use - vector_size
 !$OMP END CRITICAL
 
     endif
@@ -192,7 +271,7 @@ module lspdm_basic_module
 
   subroutine memory_allocate_window(arr)
     implicit none
-    type(array),intent(inout) :: arr
+    type(tensor),intent(inout) :: arr
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
 
@@ -209,9 +288,9 @@ module lspdm_basic_module
 
     !print *,infpar%lg_mynum,"mem update"
 !$OMP CRITICAL
-    array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-    array_memory_in_use = array_memory_in_use + vector_size
-    array_max_memory = max(array_max_memory,array_memory_in_use)
+    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+    tensor_memory_in_use = tensor_memory_in_use + vector_size
+    tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
 
     call LSTIMER('START',tcpu2,twall2,lspdm_stdout)
@@ -223,7 +302,7 @@ module lspdm_basic_module
   !> \author Patrick Ettenhuber 
   subroutine memory_allocate_tiles(arr)
     implicit none
-    type(array) :: arr
+    type(tensor) :: arr
     real(realk) :: vector_size
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: i,counter
@@ -274,8 +353,8 @@ module lspdm_basic_module
 
     vector_size = dble(size(arr%ti))
 !$OMP CRITICAL
-    array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-    array_memory_in_use  = array_memory_in_use  + vector_size
+    tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+    tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
     counter = 1 
     !allocate tiles with zeros wherever there is mod --> this is experimental
@@ -293,19 +372,19 @@ module lspdm_basic_module
           else
             call mem_alloc(arr%ti(counter)%t,arr%tsize)
             call mem_alloc(arr%ti(counter)%d,arr%mode)
-            if( array_debug_mode )then
+            if( tensor_debug_mode )then
                arr%ti(counter)%t=0.0E0_realk
             endif
           endif
           arr%ti(counter)%e=arr%tsize
           vector_size = dble(arr%ti(counter)%e)*realk
 !$OMP CRITICAL
-          array_tiled_allocd_mem = array_tiled_allocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use    + vector_size
+          tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
+          tensor_memory_in_use    = tensor_memory_in_use    + vector_size
           vector_size            = dble(size(arr%ti(counter)%d))
-          array_aux_allocd_mem   = array_aux_allocd_mem   + vector_size
-          array_memory_in_use    = array_memory_in_use    + vector_size
-          array_max_memory       = max(array_max_memory,array_memory_in_use)
+          tensor_aux_allocd_mem   = tensor_aux_allocd_mem   + vector_size
+          tensor_memory_in_use    = tensor_memory_in_use    + vector_size
+          tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
           do j=1,arr%mode
             arr%ti(counter)%d(j)=arr%tdim(j)
@@ -335,8 +414,8 @@ module lspdm_basic_module
           call mem_alloc(arr%ti(loc_idx)%d,arr%mode)
           vector_size = dble(size(arr%ti(loc_idx)%d))
 !$OMP CRITICAL
-          array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-          array_memory_in_use  = array_memory_in_use  + vector_size
+          tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+          tensor_memory_in_use  = tensor_memory_in_use  + vector_size
 !$OMP END CRITICAL
           !get the actual tile size of current tile, here the index is per
           !mode
@@ -360,16 +439,16 @@ module lspdm_basic_module
          if( parent )&
             &call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
 
-         if( array_debug_mode )then
+         if( tensor_debug_mode )then
             arr%ti(loc_idx)%t=0.0E0_realk
          endif
 #endif
 
           vector_size = dble(arr%ti(loc_idx)%e)*realk
 !$OMP CRITICAL
-          array_tiled_allocd_mem = array_tiled_allocd_mem + vector_size
-          array_memory_in_use    = array_memory_in_use + vector_size
-          array_max_memory       = max(array_max_memory,array_memory_in_use)
+          tensor_tiled_allocd_mem = tensor_tiled_allocd_mem + vector_size
+          tensor_memory_in_use    = tensor_memory_in_use + vector_size
+          tensor_max_memory       = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
 
           counter = counter +1
@@ -399,7 +478,7 @@ module lspdm_basic_module
 
     subroutine memory_allocate_dummy(arr,nel)
       implicit none
-      type(array),intent(inout) :: arr
+      type(tensor),intent(inout) :: arr
       integer, intent(in),optional :: nel
       integer(kind=8) :: nelms
       real(realk)     :: vector_size
@@ -428,15 +507,15 @@ module lspdm_basic_module
         call mem_alloc(arr%dummy,arr%dummyc,nelms)
       endif
 
-      if( array_debug_mode )then
+      if( tensor_debug_mode )then
          arr%dummy = 0.0E0_realk
       endif
 #endif
 
 !$OMP CRITICAL
-      array_aux_allocd_mem = array_aux_allocd_mem + vector_size
-      array_memory_in_use = array_memory_in_use + vector_size
-      array_max_memory = max(array_max_memory,array_memory_in_use)
+      tensor_aux_allocd_mem = tensor_aux_allocd_mem + vector_size
+      tensor_memory_in_use = tensor_memory_in_use + vector_size
+      tensor_max_memory = max(tensor_max_memory,tensor_memory_in_use)
 !$OMP END CRITICAL
       arr%dummy=0.0E0_realk
 
@@ -446,7 +525,7 @@ module lspdm_basic_module
 
     subroutine memory_deallocate_dummy(arr)
       implicit none
-      type(array) :: arr
+      type(tensor) :: arr
       real(realk) :: vector_size
       real(realk) :: dim1
       real(realk) :: tcpu1,twall1,tcpu2,twall2
@@ -465,8 +544,8 @@ module lspdm_basic_module
 #endif
          nullify(arr%dummy)
 !$OMP CRITICAL
-         array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
-         array_memory_in_use = array_memory_in_use - vector_size
+         tensor_aux_deallocd_mem = tensor_aux_deallocd_mem + vector_size
+         tensor_memory_in_use = tensor_memory_in_use - vector_size
 !$OMP END CRITICAL
       end if
 
@@ -476,12 +555,12 @@ module lspdm_basic_module
     end subroutine memory_deallocate_dummy
 
 
-    subroutine array_pdm_free_special_aux(arr)
+    subroutine tensor_pdm_free_special_aux(arr)
       implicit none
-      type(array), intent(inout) :: arr
+      type(tensor), intent(inout) :: arr
       call memory_deallocate_window(arr)
       call memory_deallocate_dummy(arr)
-    end subroutine array_pdm_free_special_aux
+    end subroutine tensor_pdm_free_special_aux
 
     
     

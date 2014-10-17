@@ -318,7 +318,7 @@
 #ifdef VAR_OPENACC
   !> \brief general gpu array reordering routine, can add to destination matrix
   !> \author Janus Juul Eriksen, adapted scheme from Patrick Ettenhuber and Marcin Ziolkowski
-  subroutine array_reorder_4d_acc(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out,async_id)
+  subroutine array_reorder_4d_acc(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out,async_idx)
 
     use openacc
     implicit none
@@ -327,7 +327,7 @@
     real(realk), intent(in)::    array_in(i8*d1*d2*d3*d4),pre1,pre2
     real(realk), intent(inout):: array_out(i8*d1*d2*d3*d4)
     integer, dimension(4), intent(in) :: order
-    integer(kind=acc_handle_kind), optional :: async_id
+    integer(kind=acc_handle_kind), intent(in) :: async_idx
 
     integer, dimension(4) :: new_order,order1,order2,dims
     integer :: a,b,c,d,maxdim
@@ -337,14 +337,6 @@
     integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
     integer(kind=long) :: vec_size64
-    integer(kind=acc_handle_kind) :: async_idx
-
-    ! test for async_id - if not present, set async_idx to -1 (blocking)
-    if (present(async_id)) then
-       async_idx = async_id
-    else
-       async_idx = int(-1,kind=acc_handle_kind)
-    end if 
 
     vec_size64 = int(d1*d2*d3*d4,kind=8)
     if(vec_size64>MAXINT)then
@@ -906,7 +898,7 @@
 #ifdef VAR_OPENACC
   !> \brief general gpu 3d array reordering routine, can add to destination matrix
   !> \author Janus Juul Eriksen, adapted scheme from Patrick Ettenhuber and Marcin Ziolkowski
-  subroutine array_reorder_3d_acc(pre1,array_in,d1,d2,d3,order,pre2,array_out,async_id)
+  subroutine array_reorder_3d_acc(pre1,array_in,d1,d2,d3,order,pre2,array_out,async_idx)
 
     use openacc
     implicit none
@@ -915,7 +907,7 @@
     real(realk), intent(in)::    array_in((i8*d1)*d2*d3),pre1,pre2
     real(realk), intent(inout):: array_out((i8*d1)*d2*d3)
     integer, dimension(3), intent(in) :: order
-    integer(kind=acc_handle_kind), optional :: async_id
+    integer(kind=acc_handle_kind), intent(in) :: async_idx
 
     integer, dimension(3) :: new_order,order1,order2,dims
     integer :: a,b,c,fina,finb,finc
@@ -924,14 +916,6 @@
     integer :: di2(2)
     integer(kind=long) :: vec_size64
     real(realk) :: tcpu1,twall1,tcpu2,twall2
-    integer(kind=acc_handle_kind) :: async_idx
-
-    ! test for async_id - if not present, set async_idx to -1 (blocking)
-    if (present(async_id)) then
-       async_idx = async_id
-    else
-       async_idx = int(-1,kind=acc_handle_kind)
-    end if
 
     vec_size64 = int(d1*d2*d3,kind=8)
     if(vec_size64>MAXINT)then
@@ -1433,6 +1417,7 @@
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
     integer :: order_type,bs,a,b,c,d
 
+
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
     order_type=0
@@ -1460,33 +1445,46 @@
     !print *,"ntpm   :",ntpm
     !print *,"td     :",tdims
 
-    if(mode==4)then
-      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
-      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
-      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
-      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
-      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
-      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
-      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
-      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
-      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
-      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
-      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
-      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
-      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
-      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
-      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
-      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
-      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
-      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
-      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
-      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
-      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
-      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
-      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
-      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
-    endif
+    select case(mode)
+    case(4)
+       if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+       if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+       if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+       if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+       if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+       if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+       if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+       if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+       if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+       if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+       if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+       if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+       if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+       if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+       if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+       if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+       if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+       if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+       if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+       if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+       if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+       if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+       if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+       if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+    case(3)
+       if(o(1)==1.and.o(2)==2.and.o(3)==3)            order_type = 0
+       if(o(1)==3.and.o(2)==1.and.o(3)==2)            order_type = 24
+       if(o(1)==2.and.o(2)==3.and.o(3)==1)            order_type = 25
+       if(o(1)==1.and.o(2)==3.and.o(3)==2)            order_type = 26
+       if(o(1)==2.and.o(2)==1.and.o(3)==3)            order_type = 27
+       if(o(1)==3.and.o(2)==2.and.o(3)==1)            order_type = 28
+    case(2)
+       if(o(1)==1.and.o(2)==2)                        order_type = 0
+       if(o(1)==2.and.o(2)==1)                        order_type = 29
+    end select
+
     call get_midx(tnr,tmodeidx,ntpm,mode)
+
     ntimes=1
     do i=1,mode
       fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
@@ -1565,11 +1563,23 @@
         call manual_3241_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(23)
         call manual_4213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(24)
+        call manual_312_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(25)
+        call manual_231_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(26)
+        call manual_132_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(27)
+        call manual_213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(28)
+        call manual_321_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(29)
+        call manual_21_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case default
         print *,"expensive default tile_from_fort",o
-        !print *,"order  :",o
-        !print *,"rorder :",ro
-        !print *,"atd    :",acttdim
+        print *,"order  :",o
+        print *,"rorder :",ro
+        print *,"atd    :",acttdim
         !count elements in the current tile for loop over elements
         !identify their original position and put them in tile
         nelms=1
@@ -1585,8 +1595,15 @@
           do k=1,mode
             glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
           enddo
+
           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+
+          if(pre2==0)then
+             tileout(i)=pre1*fort(pos1)
+          else
+             tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+          endif
+
         enddo
     end select
 

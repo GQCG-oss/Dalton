@@ -15,8 +15,8 @@ Subroutine IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -92,6 +92,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -158,8 +160,8 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
      & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
      & startBatchD,endBatchD,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
      & THRESHOLD_CS,THRESHOLD_QQR,&
      & IchorGabID1,IchorGabID2,IchorDebugSpec,&
@@ -170,14 +172,187 @@ call IchorEri(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
 
 end Subroutine IchorEriInterface
 
+Subroutine IchorEriMemInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+     & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+     & startBatchA,endBatchA,&
+     & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+     & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+     & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & startBatchB,endBatchB,&
+     & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+     & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+     & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & startBatchC,endBatchC,&
+     & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+     & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+     & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & startBatchD,endBatchD,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
+     & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
+     & THRESHOLD_CS,THRESHOLD_QQR,&
+     & IchorGabID1,IchorGabID2,IchorDebugSpec,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+     & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+     & OutputStorage,lupri)
+  use IchorErimodule
+  use IchorPrecisionModule
+implicit none
+!> nTypesA is the number of different types of shells, each type is defined by 
+!> an angular momentum, a number of primitives(nPrim), a number of contracted functions
+!> (nCont) a set of exponents and a set of contraction coefficients. [For Center A]
+integer,intent(in) :: nTypesA
+!> MaxnAtomsA is the maximum number of Atoms that have the same type. [For Center A]
+integer,intent(in) :: MaxnAtomsA
+!> MaxnPrim is the maximum number of Primitives among all the types. [For Center A]
+integer,intent(in) :: MaxnPrimA
+!> MaxnPrim is the maximum number of Contracted functions among all the types. [For Center A]
+integer,intent(in) :: MaxnContA
+!> AngmomOfTypeA is the angular momentum for each type. [For Center A]
+Integer,intent(in) :: AngmomOfTypeA(ntypesA)
+!> nAtomsOfTypeA is the number of atoms that have the given type. [For Center A]
+Integer,intent(in) :: nAtomsOfTypeA(ntypesA)
+!> nPrimOfTypeA is the number of primitive for the given type. [For Center A]
+Integer,intent(in) :: nPrimOfTypeA(ntypesA)
+!> nContOfTypeA is the number of contracted function for the given type. [For Center A]
+Integer,intent(in) :: nContOfTypeA(ntypesA)
+!> startorbital for this atom of this type
+Integer,intent(in) :: startOrbitalOfTypeA(MaxNatomsA,ntypesA)
+!> Acenters is the centers of all the atoms that have the given type. [For Center A]
+Real(realk),intent(in) :: Acenters(3,MaxNatomsA,ntypesA)
+!> exponentsOfTypeA is the nPrim exponents for the given type. [For Center A]
+Real(realk),intent(in) :: exponentsOfTypeA(MaxnprimA,ntypesA)
+!> ContractCoeffOfTypeA is the contrction coefficient matrix (nPrim,nCont) for the given type. [For Center A]
+Real(realk),intent(in) :: ContractCoeffOfTypeA(MaxnprimA,MaxnContA,ntypesA)
+!> startindex of first Batch
+Integer,intent(in) :: startBatchA
+!> endindex of last Batch
+Integer,intent(in) :: endBatchA
+!
+! Same for Center B
+!
+integer,intent(in) :: nTypesB,MaxnAtomsB,MaxnPrimB,MaxnContB,startBatchB,endBatchB
+Integer,intent(in) :: AngmomOfTypeB(ntypesB),nAtomsOfTypeB(ntypesB)
+Integer,intent(in) :: nContOfTypeB(ntypesB),nPrimOfTypeB(ntypesB)
+Integer,intent(in) :: startOrbitalOfTypeB(MaxNatomsB,ntypesB)
+Real(realk),intent(in) :: Bcenters(3,MaxNatomsB,ntypesB),exponentsOfTypeB(MaxnprimB,ntypesB)
+Real(realk),intent(in) :: ContractCoeffOfTypeB(MaxnprimB,MaxnContB,ntypesB)
+!
+! Same for Center C
+!
+integer,intent(in) :: nTypesC,MaxnAtomsC,MaxnPrimC,MaxnContC,startBatchC,endBatchC
+Integer,intent(in) :: AngmomOfTypeC(ntypesC),nAtomsOfTypeC(ntypesC)
+Integer,intent(in) :: nContOfTypeC(ntypesC),nPrimOfTypeC(ntypesC)
+Integer,intent(in) :: startOrbitalOfTypeC(MaxNatomsC,ntypesC)
+Real(realk),intent(in) :: Ccenters(3,MaxNatomsC,ntypesC),exponentsOfTypeC(MaxnprimC,ntypesC)
+Real(realk),intent(in) :: ContractCoeffOfTypeC(MaxnprimC,MaxnContC,ntypesC)
+!
+! Same for Center D
+!
+integer,intent(in) :: nTypesD,MaxnAtomsD,MaxnPrimD,MaxnContD,startBatchD,endBatchD
+Integer,intent(in) :: AngmomOfTypeD(ntypesD),nAtomsOfTypeD(ntypesD)
+Integer,intent(in) :: nContOfTypeD(ntypesD),nPrimOfTypeD(ntypesD)
+Integer,intent(in) :: startOrbitalOfTypeD(MaxNatomsD,ntypesD)
+Real(realk),intent(in) :: Dcenters(3,MaxNatomsD,ntypesD),exponentsOfTypeD(MaxnprimD,ntypesD)
+Real(realk),intent(in) :: ContractCoeffOfTypeD(MaxnprimD,MaxnContD,ntypesD)
+!
+!> Spherical Specification (SphericalSpec = SphericalParam = 1) means to use Spherical Harmonic basis functions
+Integer,intent(in) :: SphericalSpec
+!> Job Specification (IcorJob = IcorJobEri = 1) means that the 4 center 2 electron repulsion integrals
+!> should be calculated. 
+Integer,intent(in) :: IchorJobSpec
+!> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
+Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperatorSpec = CoulombOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
+!> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
+Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
+!> InputStorage
+real(realk),intent(in) :: InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
+!> Parallelization specification (communicator and other stuff should be set up with other call) 
+!> IchorParSpec = IchorParNone = 1 means no parallelization - no OpenMP, no MPI, no GPU
+Integer,intent(in) :: IchorParSpec
+!> Screening specification 
+!> IchorScreenSpec = IchorScreen = 1 means default screening including Cauchy-Schwarz screening and QQR and OD
+!> IchorScreenSpec = IchorScreenNone = 2 means no screening
+Integer,intent(in) :: IchorScreenSpec
+!> Overlap Density Screening 
+real(realk),intent(in) :: THRESHOLD_OD
+!> Cauchy-Schwarz screening Threshold only used if Cauchy-Schwarz screening is activated
+real(realk),intent(in) :: THRESHOLD_CS
+!> Cauchy-Schwarz screening with distance dependence (QQR) Threshold
+real(realk),intent(in) :: THRESHOLD_QQR
+!> Screening Matrix LHS Identification, used in connection with IchorSaveGabModule
+Integer,intent(in) :: IchorGabID1
+!> Screening Matrix RHS Identification, used in connection with IchorSaveGabModule
+Integer,intent(in) :: IchorGabID2
+!> Debug info specification - The print Level or IchorDebugNone=0
+!> IchorDebugSpec = IchorDebugNone = 0 means no debug info
+Integer,intent(in) :: IchorDebugSpec
+!> Integral Algorithm specification 
+!> IchorAlgoSpec = IchorAlgoOS = 1 means Obara-Saika (Head-Gordon Pople)
+Integer,intent(in) :: IchorAlgoSpec
+!> Permutation specification (SameLHSaos, SameRHSaos, SameODs) 
+!> IchorPermuteSpec = IchorPermuteTTT = 1 means (SameLHSaos=.TRUE., SameRHSaos=.TRUE., SameODs=.TRUE.) 
+Integer,intent(in) :: IchorPermuteSpec
+!> Identifier to determine which file should be used to save integrals on disk, This 
+!> should be logical unit number, if IchorNofilestorage=0 no file is open. 
+Integer,intent(in) :: filestorageIdentifier
+!> Maximum Memory that the integral program is allowed to use. Zero means no restrictions 
+Integer(kind=long),intent(in) :: MaxMem
+!> Maximum File size, if zero - no file will be written or read. 
+Integer,intent(in) :: MaxFileStorage
+!> Maximum Memory used in the program. The Ichor program adds to this value.  
+Integer(kind=long),intent(inout) :: MaxMemAllocated
+!> Memory allocated in the program. If the input value is not equal to the output value the
+!> there is a memory leak inside the program. 
+Integer(kind=long),intent(inout) :: MemAllocated
+!> Output dimensions assuming 
+!> OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
+Integer,intent(in) :: OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5
+!> OutputStorage
+real(realk),intent(inout)::OutputStorage(OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5)
+!> Logical unit number of output file.
+Integer,intent(in) :: lupri
+
+call IchorEriMem(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
+     & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
+     & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
+     & startBatchA,endBatchA,&
+     & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
+     & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
+     & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
+     & startBatchB,endBatchB,&
+     & nTypesC,MaxNatomsC,MaxnPrimC,MaxnContC,&
+     & AngmomOfTypeC,nAtomsOfTypeC,nPrimOfTypeC,nContOfTypeC,&
+     & startOrbitalOfTypeC,Ccenters,exponentsOfTypeC,ContractCoeffOfTypeC,&
+     & startBatchC,endBatchC,&
+     & nTypesD,MaxNatomsD,MaxnPrimD,MaxnContD,&
+     & AngmomOfTypeD,nAtomsOfTypeD,nPrimOfTypeD,nContOfTypeD,&
+     & startOrbitalOfTypeD,Dcenters,exponentsOfTypeD,ContractCoeffOfTypeD,&
+     & startBatchD,endBatchD,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
+     & InputStorage,IchorParSpec,IchorScreenSpec,THRESHOLD_OD,&
+     & THRESHOLD_CS,THRESHOLD_QQR,&
+     & IchorGabID1,IchorGabID2,IchorDebugSpec,&
+     & IchorAlgoSpec,IchorPermuteSpec,filestorageIdentifier,MaxMem,&
+     & MaxFileStorage,MaxMemAllocated,MemAllocated,&
+     & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
+     & OutputStorage,lupri)
+
+end Subroutine IchorEriMemInterface
+
 subroutine IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & AngmomOfTypeA,nAtomsOfTypeA,nPrimOfTypeA,nContOfTypeA,&
      & startOrbitalOfTypeA,Acenters,exponentsOfTypeA,ContractCoeffOfTypeA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -228,6 +403,8 @@ Integer,intent(in) :: SphericalSpec
 Integer,intent(in) :: IchorJobSpec
 !> Input Specification (IchorInputSpec = IcorInputNoInput = 1) means no Input have been provided
 Integer,intent(in) :: IchorInputSpec
+!> Operator Specification (IchorOperator = 1) means Coulomb operator
+Integer,intent(in) :: IchorOperatorSpec
 !> Input dimensions assuming InputStorage(IchorInputDim1,IchorInputDim2,IchorInputDim3)
 Integer,intent(in) :: IchorInputDim1,IchorInputDim2,IchorInputDim3
 !> InputStorage
@@ -273,8 +450,8 @@ call IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & nTypesB,MaxNatomsB,MaxnPrimB,MaxnContB,&
      & AngmomOfTypeB,nAtomsOfTypeB,nPrimOfTypeB,nContOfTypeB,&
      & startOrbitalOfTypeB,Bcenters,exponentsOfTypeB,ContractCoeffOfTypeB,&
-     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorInputDim1,&
-     & IchorInputDim2,IchorInputDim3,&
+     & SphericalSpec,IchorJobSpec,IchorInputSpec,IchorOperatorSpec,&
+     & IchorInputDim1,IchorInputDim2,IchorInputDim3,&
      & InputStorage,IchorParSpec,IchorScreenSpec,IchorDebugSpec,&
      & IchorAlgoSpec,SameLHSaos,filestorageIdentifier,MaxMem,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
@@ -402,12 +579,27 @@ subroutine GetIchorDebugIdentifier(Identifier,iprint)
   Identifier = Iprint
 end subroutine GetIchorDebugIdentifier
 
+subroutine GetIchorOpererator(Oper,IchorOperatorSpec)
+  use IchorParametersModule
+  implicit none
+  Character(len=7),intent(in)     :: Oper
+  integer,intent(inout)     :: IchorOperatorSpec
+  call determine_OpereratorSpec(Oper,IchorOperatorSpec)
+end subroutine GetIchorOpererator
+
 subroutine GetIchorAlgorithmSpecIdentifier(Identifier)
   use IchorParametersModule
   implicit none
   integer,intent(inout) :: Identifier
   Identifier = IchorAlgoOS
 end subroutine GetIchorAlgorithmSpecIdentifier
+
+subroutine SetIchorGPUMAXMEM(InputGPUMAXMEM)
+  use IchorParametersModule
+  implicit none
+  real(realk),intent(inout) :: InputGPUMAXMEM
+  IchorGPUMAXMEM = InputGPUMAXMEM
+end subroutine SetIchorGPUMAXMEM
 
 subroutine FreeIchorSaveGabModuleInterface()
 use IchorSaveGabModule

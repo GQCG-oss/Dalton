@@ -1,3 +1,5 @@
+set(LSDALTON_EXTERNAL_LIBS)
+
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
@@ -64,10 +66,20 @@ set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
     ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
@@ -144,9 +156,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-matrix-defop)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-matrix-defop matrixmlib)
@@ -200,10 +212,10 @@ if(ENABLE_XCFUN)
     add_external(xcfun)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
-    set(EXTERNAL_LIBS
+    set(LSDALTON_EXTERNAL_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
-        ${EXTERNAL_LIBS}
+        ${LSDALTON_EXTERNAL_LIBS}
         )
 endif()
 
@@ -309,9 +321,9 @@ set(ExternalProjectCMakeArgs
     )
 if(ENABLE_RSP)
 add_external(ls-openrsp)
-set(EXTERNAL_LIBS
+set(LSDALTON_EXTERNAL_LIBS
     ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
-    ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 add_dependencies(ls-openrsp ls-matrix-defop)
@@ -352,7 +364,7 @@ if(ENABLE_QMATRIX)
         )
     include(LibsQMatrix)
     add_dependencies(ls_qmatrix_interface matrixulib)
-    add_dependencies(ls_qmatrix_interface ${LIB_QMATRIX})
+    add_dependencies(ls_qmatrix_interface qmatrix)
     add_dependencies(linearslib ls_qmatrix_interface)
 endif()
 
@@ -462,6 +474,7 @@ target_link_libraries(
     lsdalton
     lsdaltonmain
     ${EXTERNAL_LIBS}
+    ${LSDALTON_EXTERNAL_LIBS}
     )
 
 if(NOT ENABLE_CHEMSHELL)

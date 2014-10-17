@@ -6,7 +6,7 @@
 MODULE Thermite_integrals
 use typedef
 use thermite_OD
-use Integralparameters
+use LSparameters
 use OverlapType
 !****** INTEGRAND
 TYPE Integrand
@@ -2815,7 +2815,7 @@ SUBROUTINE printHermitePQ(tuvTUV,nPrim,startP,endP,startQ,endQ,&
                    WRITE(LUPRI,'(5X,A,I1,A,I1,A,I1,A,I1,A,I1,A,I1,A)') &
                         &            'W(',tP,',',uP,',',vP,'|',tQ,',',uQ,',',vQ,') ='
 
-                   WRITE(LUPRI,'(5X,6ES10.4/,(5X,6ES10.4))') &
+                   WRITE(LUPRI,'(5X,6ES12.4/,(5X,6ES12.4))') &
                         &           (tuvTUV(ituvQ,ituvP,iPrimPQ),iPrimPQ=1,nPrim)
                 ENDDO
              ENDDO
@@ -2906,7 +2906,7 @@ SUBROUTINE PrintTuvQ_old(TUVQ,nTUVP,nPrimP,nCompQ,nContQ,LUPRI,IPRINT)
        DO iCompQ=1,nCompQ
           DO iTUVP=1,nTUVP
              WRITE(LUPRI,'(5X,A,I3,A,I3,A,I3)') 'iTUVP =',iTUVP,' iCompQ =',iCompQ,' iContQ =',iContQ
-             WRITE(LUPRI,'(5X,5ES10.4)')  (TUVQ(iPrimP,iTUVP,iCompQ,iContQ), iPrimP=1,nPrimP)
+             WRITE(LUPRI,'(5X,5ES12.4)')  (TUVQ(iPrimP,iTUVP,iCompQ,iContQ), iPrimP=1,nPrimP)
           ENDDO
        ENDDO
     ENDDO
