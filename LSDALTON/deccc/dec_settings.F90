@@ -97,7 +97,7 @@ contains
     DECinfo%PNOtriangular        = .true.
     DECinfo%CCDhack              = .false.
     DECinfo%NO_MO_CCSD           = .false.
-    DECinfo%cc_solver_tile_mem   = 1.0E_realk
+    DECinfo%cc_solver_tile_mem   = 1.0E0_realk
 
     ! -- Output options 
     DECinfo%output               = output
