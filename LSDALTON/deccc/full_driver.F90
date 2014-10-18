@@ -430,7 +430,7 @@ contains
              do i=1,nocc
                 do a=1,nvirt
                    ! Energy = sum_{ijab} ( Taibj) * (ai | bj)
-                   !Taibj(a,i,b,j) = array4Taibj%val(a,i,b,j)
+                   !Taibj(a,i,b,j) = array4Taibj%elm4(a,i,b,j)
                    Gtmp = 2.0E0_realk * gmo(a,i,b,j) - gmo(b,i,a,j)
                    mp2_energy = mp2_energy + Taibj(a,i,b,j) * Gtmp
                 end do
@@ -473,20 +473,20 @@ contains
        call mp2f12_Vjiij_term5(Vjiij_term5,Ciajb,Taibj,nocc,nvirt)
 
        print *, '----------------------------------------'
-       print *, '  E21  V terms                          '
+       print *, ' E21 V terms                            '
        print *, '----------------------------------------'
-       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
-       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
-       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
-       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
-       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
+       print *, ' E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1,Vjiij_term1,nocc)
+       print *, ' E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2,Vjiij_term2,nocc)
+       print *, ' E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3,Vjiij_term3,nocc)
+       print *, ' E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4,Vjiij_term4,nocc)
+       print *, ' E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)
        print *, '----------------------------------------'
 
        E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
             & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
             & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
 
-       print *, 'E21_Vsum: ', E21_debug
+       print *, ' E21_Vsum: ', E21_debug
        !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
     endif
 
@@ -629,38 +629,38 @@ contains
 
        if(DECinfo%F12DEBUG) then
           print *, '----------------------------------------'
-          print *, '  E_22 X term                           '
+          print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
-          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
-          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
-          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+          print *, ' E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+          print *, ' E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+          print *, ' E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+          print *, ' E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
           E22_debug = mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
                & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
                & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
-          print *, 'E22_Xsum: ', E22_debug  
-          print *, 'E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
+          print *, ' E22_Xsum: ', E22_debug  
+          print *, ' E22_debug: ', mp2f12_E22(Xijij,Xjiij,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, '  E_23 B term                           '
+          print *, ' E_23 B term                           '
           print *, '----------------------------------------'
-          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, 'E23_Bsum: ',  E23_debug
-          !print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, ' E23_Bsum: ',  E23_debug
+          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
        endif
        
@@ -674,35 +674,35 @@ contains
           X3 = mp2f12_E22X(Xijkl_term3,Fii%elms,nocc)
           X4 = mp2f12_E22X(Xijkl_term4,Fii%elms,nocc)
           print *, '----------------------------------------'
-          print *, '          E_22 X term                   '
+          print *, ' E_22 X term                            '
           print *, '----------------------------------------'
-          print *, 'E22_X_term1: ', X1
-          print *, 'E22_X_term2: ', X2
-          print *, 'E22_X_term3: ', X3
-          print *, 'E22_X_term4: ', X4
+          print *, ' E22_X_term1: ', X1
+          print *, ' E22_X_term2: ', X2
+          print *, ' E22_X_term3: ', X3
+          print *, ' E22_X_term4: ', X4
           print *, '----------------------------------------'
           E22_debug = X1 + X2 + X3 + X4  
           print *, 'E22_Xsum: ', E22_debug  
           print *, '----------------------------------------'
-          print *, '          E_23 B term                   '
+          print *, ' E_23 B term                            '
           print *, '----------------------------------------'
-          print *, 'E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
-          print *, 'E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
-          print *, 'E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
-          print *, 'E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
-          print *, 'E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
-          print *, 'E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
-          print *, 'E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
-          print *, 'E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
-          print *, 'E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
+          print *, ' E23_B_term1: ', mp2f12_E23(Bijij_term1,Bjiij_term1,nocc)
+          print *, ' E23_B_term2: ', mp2f12_E23(Bijij_term2,Bjiij_term2,nocc)
+          print *, ' E23_B_term3: ', mp2f12_E23(Bijij_term3,Bjiij_term3,nocc)
+          print *, ' E23_B_term4: ', mp2f12_E23(Bijij_term4,Bjiij_term4,nocc)
+          print *, ' E23_B_term5: ', mp2f12_E23(Bijij_term5,Bjiij_term5,nocc)
+          print *, ' E23_B_term6: ', mp2f12_E23(Bijij_term6,Bjiij_term6,nocc)
+          print *, ' E23_B_term7: ', mp2f12_E23(Bijij_term7,Bjiij_term7,nocc)
+          print *, ' E23_B_term8: ', mp2f12_E23(Bijij_term8,Bjiij_term8,nocc)
+          print *, ' E23_B_term9: ', mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)   
           print *, '----------------------------------------'
           E23_debug = mp2f12_E23(Bijij_term1,Bjiij_term1,nocc) & 
                & + mp2f12_E23(Bijij_term2,Bjiij_term2,nocc) + mp2f12_E23(Bijij_term3,Bjiij_term3,nocc) &
                & + mp2f12_E23(Bijij_term4,Bjiij_term4,nocc) + mp2f12_E23(Bijij_term5,Bjiij_term5,nocc) &
                & + mp2f12_E23(Bijij_term6,Bjiij_term6,nocc) + mp2f12_E23(Bijij_term7,Bjiij_term7,nocc) &
                & + mp2f12_E23(Bijij_term8,Bjiij_term8,nocc) + mp2f12_E23(Bijij_term9,Bjiij_term9,nocc)
-          print *, 'E23_Bsum: ',  E23_debug
-          print *, 'E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
+          print *, ' E23_Bsum: ',  E23_debug
+          print *, ' E23_Bsum_debug: ',  mp2f12_E23(Bijij,Bjiij,nocc)
           print *, '----------------------------------------'
 
        endif      
@@ -1825,35 +1825,103 @@ end subroutine RIMP2_CalcEnergyContribution
 
     !   F12 specific
     real(realk),pointer :: Vijij(:,:)
-    !real(realk),pointer :: Vijij_term1(:,:)
-
     real(realk),pointer :: Vjiij(:,:)    
-    !real(realk),pointer :: Vjiij_term1(:,:)
 
+    real(realk),pointer :: Vijij_mp2f12(:,:)
+    real(realk),pointer :: Vjiij_mp2f12(:,:)    
+
+    real(realk),pointer :: Vijij_Viajb_term1(:,:)
+    real(realk),pointer :: Vijij_Viajb_term2(:,:)
+    real(realk),pointer :: Vijij_Viajb_term3(:,:)
+    real(realk),pointer :: Vijij_Viajb_term4(:,:)
+    real(realk),pointer :: Vijij_Viajb_term5(:,:)
+
+    real(realk),pointer :: Vjiij_Viajb_term1(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term2(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term3(:,:)
+    real(realk),pointer :: Vjiij_Viajb_term4(:,:)  
+    real(realk),pointer :: Vjiij_Viajb_term5(:,:)  
+
+    real(realk),pointer :: Vijij_Viija_term1(:,:)
+    real(realk),pointer :: Vijij_Viija_term2(:,:)
+    real(realk),pointer :: Vijij_Viija_term3(:,:)
+    real(realk),pointer :: Vijij_Viija_term4(:,:)
+    real(realk),pointer :: Vijij_Viija_all(:,:)
+    
+    real(realk),pointer :: Vjiij_Viaji_term1(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term2(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term3(:,:)
+    real(realk),pointer :: Vjiij_Viaji_term4(:,:)
+    real(realk),pointer :: Vjiij_Viaji_all(:,:)
+
+    real(realk),pointer :: Vijij_Viajj_term1(:,:)
+    real(realk),pointer :: Vijij_Viajj_term2(:,:)
+    real(realk),pointer :: Vijij_Viajj_term3(:,:)
+    real(realk),pointer :: Vijij_Viajj_term4(:,:)
+    real(realk),pointer :: Vijij_Viajj_all(:,:)
+    
+    real(realk),pointer :: Vjiij_Vijja_term1(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term2(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term3(:,:)
+    real(realk),pointer :: Vjiij_Vijja_term4(:,:)
+    real(realk),pointer :: Vjiij_Vijja_all(:,:)
+     
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
     real(realk),pointer :: Bijij(:,:)
     real(realk),pointer :: Bjiij(:,:)
 
-    !   CCSD specific
+    ! CCSD specific
     real(realk),pointer :: Rapbq(:,:,:,:)
     real(realk),pointer :: Rambc(:,:,:,:)
     real(realk),pointer :: Fiajb(:,:,:,:)
 
     real(realk),pointer :: Viajb(:,:,:,:)
+    real(realk),pointer :: Viajb_term1(:,:,:,:)
+    real(realk),pointer :: Viajb_term2(:,:,:,:)
+    real(realk),pointer :: Viajb_term3(:,:,:,:)
+    real(realk),pointer :: Viajb_term4(:,:,:,:)
+
     real(realk),pointer :: Ripaq(:,:,:,:)
     real(realk),pointer :: Rimac(:,:,:,:)
     real(realk),pointer :: Ramic(:,:,:,:)
     real(realk),pointer :: Fijka(:,:,:,:)
 
     real(realk),pointer :: Viija(:,:,:)
-    real(realk),pointer :: Vijja(:,:,:)
+    real(realk),pointer :: Viija_term1(:,:,:)
+    real(realk),pointer :: Viija_term2(:,:,:)
+    real(realk),pointer :: Viija_term3(:,:,:)
+    real(realk),pointer :: Viija_term4(:,:,:)
+    real(realk),pointer :: Viija_full(:,:,:)
+
     real(realk),pointer :: Viaji(:,:,:)
+    real(realk),pointer :: Viaji_term1(:,:,:)
+    real(realk),pointer :: Viaji_term2(:,:,:)
+    real(realk),pointer :: Viaji_term3(:,:,:)
+    real(realk),pointer :: Viaji_term4(:,:,:)
+    real(realk),pointer :: Viaji_full(:,:,:)
+    
     real(realk),pointer :: Viajj(:,:,:)
+    real(realk),pointer :: Viajj_term1(:,:,:)
+    real(realk),pointer :: Viajj_term2(:,:,:)
+    real(realk),pointer :: Viajj_term3(:,:,:)
+    real(realk),pointer :: Viajj_term4(:,:,:)
+    real(realk),pointer :: Viajj_full(:,:,:)
+
+    real(realk),pointer :: Vijja(:,:,:)
+    real(realk),pointer :: Vijja_term1(:,:,:)
+    real(realk),pointer :: Vijja_term2(:,:,:)
+    real(realk),pointer :: Vijja_term3(:,:,:)
+    real(realk),pointer :: Vijja_term4(:,:,:)
+    real(realk),pointer :: Vijja_full(:,:,:)
+
     !    logical :: fulldriver 
     !    fulldriver = .TRUE.
     !    call init_cabs(fulldriver)
+
+    real(realk) :: tmp
+    real(realk) :: E21_Viajb, E21_Viija, E21_Viajj 
 
     ! Init dimensions
     nocc = MyMolecule%nocc
@@ -1943,68 +2011,267 @@ end subroutine RIMP2_CalcEnergyContribution
     !> DEC Input
     write(DECinfo%output,*) 'TOYCODE: CCSD CORRELATION ENERGY = ', ECCSD
 
-    ! INTEGRAL GUYS: DO YOUR MAGIC FOR THE F12 CONTRIBUTION HERE...
     call mem_alloc(Vijij,nocc,nocc)
     call mem_alloc(Vjiij,nocc,nocc)
+
+    ! INTEGRAL GUYS: DO YOUR MAGIC FOR THE F12 CONTRIBUTION HERE...
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
     call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
-    call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
 
+    call mp2f12_Ciajb(Ciajb,Giajc,Fac%elms,nocc,nvirt,ncabs)
+   
     !> --------------------------------------
     !>               Viajb ccsd
     !>---------------------------------------
-    !V_ij^ab
+    ! V_ij^ab
     call mem_alloc(Viajb,nocc,nvirt,nocc,nvirt) 
-
     call ccsdf12_Viajb(Viajb,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-   
+    
     if(DECinfo%F12DEBUG) then
+       call mem_alloc(Viajb_term1,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term2,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term3,nocc,nvirt,nocc,nvirt) 
+       call mem_alloc(Viajb_term4,nocc,nvirt,nocc,nvirt) 
 
-!!$       print *, '----------------------------------------'
-!!$       print *, '  E21  V terms                          '
-!!$       print *, '----------------------------------------'
-!!$       print *, 'E21_V_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_term1, Vjiij_term1,nocc)
-!!$       print *, 'E21_V_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_term2, Vjiij_term2,nocc)
-!!$       print *, 'E21_V_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_term3, Vjiij_term3,nocc)
-!!$       print *, 'E21_V_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_term4, Vjiij_term4,nocc)
-!!$       print *, 'E21_V_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_term5, Vjiij_term5,nocc)
-!!$       print *, '----------------------------------------'
-!!$
-!!$       E21_debug = 2.0E0_REALK*(mp2f12_E21(Vijij_term1,Vjiij_term1,nocc) + mp2f12_E21(Vijij_term2,Vjiij_term2,nocc) &
-!!$            & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) &
-!!$            & + mp2f12_E21(Vijij_term5,Vjiij_term5,nocc)) 
-!!$
-!!$       print *, 'E21_Vsum: ', E21_debug
-!!$      !print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
+       call ccsdf12_Viajb_term1(Viajb_term1,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term2(Viajb_term2,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term3(Viajb_term3,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajb_term4(Viajb_term4,Rapbq,Gipjq,Fiajb,Rambc,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
+       call mem_alloc(Viija_term1,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term2,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term3,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_term4,nocc,nocc,nvirt) 
+       call mem_alloc(Viija_full,nocc,nocc,nvirt) 
+
+       call mem_alloc(Viaji_term1,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term2,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term3,nocc,nvirt,nocc) 
+       call mem_alloc(Viaji_term4,nocc,nvirt,nocc)
+       call mem_alloc(Viaji_full,nocc,nvirt,nocc)   
+       
+       Viija_term1 = 0.0E0_realk
+       Viaji_term1 = 0.0E0_realk
+       call ccsdf12_Viija0(Viija_term1,Fijka,nocc,nvirt)
+       call ccsdf12_Viaji0(Viaji_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term2 = 0.0E0_realk
+       Viaji_term2 = 0.0E0_realk
+       call ccsdf12_Viija1(Viija_term2,Ripaq,Gipjq,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji1(Viaji_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term3 = 0.0E0_realk
+       Viaji_term3 = 0.0E0_realk     
+       call ccsdf12_Viija2(Viija_term3,Rimac,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji2(Viaji_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_term4 = 0.0E0_realk
+       Viaji_term4 = 0.0E0_realk
+       call ccsdf12_Viija3(Viija_term4,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji3(Viaji_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)      
+
+       Viija_full = 0.0E0_realk
+       Viaji_full = 0.0E0_realk
+       call ccsdf12_Viija(Viija_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viaji(Viaji_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
+       !> Laster 1/3 of the terms
+
+       call mem_alloc(Viajj_term1,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term2,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term3,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_term4,nocc,nvirt,nocc) 
+       call mem_alloc(Viajj_full, nocc,nvirt,nocc) 
+
+       call mem_alloc(Vijja_term1,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term2,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term3,nocc,nocc,nvirt) 
+       call mem_alloc(Vijja_term4,nocc,nocc,nvirt)
+       call mem_alloc(Vijja_full, nocc,nocc,nvirt)
+       
+       call ccsdf12_Viajj0(Viajj_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj1(Viajj_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj2(Viajj_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Viajj3(Viajj_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       
+       call ccsdf12_Vijja0(Vijja_term1,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja1(Vijja_term2,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja2(Vijja_term3,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja3(Vijja_term4,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       
+       Viajj_full = 0.0E0_realk
+       Vijja_full = 0.0E0_realk
+
+       call ccsdf12_Viajj(Viajj_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+       call ccsdf12_Vijja(Vijja_full,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
     endif
 
-    !V_ij^ia
+    ! V_ij^ia
     call mem_alloc(Viija,nocc,nocc,nvirt)
     call ccsdf12_Viija(Viija,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    !V_ij^ja
-    call mem_alloc(Vijja,nocc,nocc,nvirt)
-    call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
-
-    !V_ij^ai
+   ! V_ij^ai
     call mem_alloc(Viaji,nocc,nvirt,nocc)
     call ccsdf12_Viaji(Viaji,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    !V_ij^aj
+    ! V_ij^aj
     call mem_alloc(Viajj,nocc,nvirt,nocc)
     call ccsdf12_Viajj(Viajj,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
 
-    ! CCSD coupling V_ij^ij & V_ji^ij 
+    ! V_ij^ja
+    call mem_alloc(Vijja,nocc,nocc,nvirt)
+    call ccsdf12_Vijja(Vijja,Ripaq,Gipjq,Fijka,Rimac,Ramic,Gimjc,nocc,noccfull,nbasis,ncabs,nvirt)
+
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%elm4,Viajb,Viija,Viajj,Tai%elm2,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%elm4,Viajb,Vijja,Viaji,Tai%elm2,nocc,nvirt)
 
-    !call ccsdf12_Vijij_coupling_term1(Vijij_term1,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
-    !call ccsdf12_Vjiij_coupling_term1(Vjiij_term1,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
-    
+    !> Debug Coupling Terms
+    if(DECinfo%F12DEBUG) then
+
+       call mem_alloc(Vijij_Viajb_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term4,nocc,nocc)
+       call mem_alloc(Vijij_Viajb_term5,nocc,nocc)
+
+       call mem_alloc(Vjiij_Viajb_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term4,nocc,nocc)
+       call mem_alloc(Vjiij_Viajb_term5,nocc,nocc)
+       
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term1,Vjiij_Viajb_term1,Viajb_term1,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term2,Vjiij_Viajb_term2,Viajb_term2,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term3,Vjiij_Viajb_term3,Viajb_term3,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term4,Vjiij_Viajb_term4,Viajb_term4,Taibj%elm4,nocc,nvirt)
+       call  ccsdf12_Viajb_coupling(Vijij_Viajb_term5,Vjiij_Viajb_term5,Ciajb,Taibj%elm4,nocc,nvirt)
+
+!!$       print *, '----------------------------------------'
+!!$       print *, '  Taibj                                 '
+!!$       print *, '----------------------------------------'
+!!$       DO i=1,nocc
+!!$          DO j=1,nocc
+!!$             DO a=1,nvirt
+!!$                DO b=1,nvirt
+!!$                      print *, "a b i j value: ", a,b,i,j, Taibj%elm4(a,i,b,j) 
+!!$                ENDDO
+!!$             ENDDO
+!!$          ENDDO
+!!$       ENDDO
+!!$
+!!$       print *, '----------------------------------------'
+!!$       print *, '  Tai                                 '
+!!$       print *, '----------------------------------------'
+!!$       DO i=1,nocc
+!!$          DO a=1,nvirt
+!!$             print *, "a i  value: ", a,i, Tai%velm2(a,i) 
+!!$          ENDDO
+!!$       ENDDO
+
+       print *, '----------------------------------------'
+       print *, ' E21 CCSD Viajb-terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, ' E21_Viajb_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc)
+       print *, ' E21_Viajb_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc)
+       print *, ' E21_Viajb_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc)
+       print *, ' E21_Viajb_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc)
+       print *, ' E21_Viajb_term5: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc)
+       print *, '----------------------------------------'
+       print *, ' sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc) + & 
+            & mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc) + mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc))
+
+       E21_Viajb = 2.0E0_REALK*(mp2f12_E21(Vijij_Viajb_term1, Vjiij_Viajb_term1, nocc) + & 
+            & mp2f12_E21(Vijij_Viajb_term2, Vjiij_Viajb_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term3, Vjiij_Viajb_term3, nocc) + mp2f12_E21(Vijij_Viajb_term4, Vjiij_Viajb_term4, nocc) + &
+            & mp2f12_E21(Vijij_Viajb_term5, Vjiij_Viajb_term5, nocc))
+
+       call mem_alloc(Vijij_Viija_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viija_term4,nocc,nocc)
+
+       call mem_alloc(Vjiij_Viaji_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_term4,nocc,nocc)
+
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term1,Vjiij_Viaji_term1,Viija_term1,Viaji_term1,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term2,Vjiij_Viaji_term2,Viija_term2,Viaji_term2,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term3,Vjiij_Viaji_term3,Viija_term3,Viaji_term3,Tai%elm2,nocc,nvirt)
+       call  ccsdf12_Viija_coupling(Vijij_Viija_term4,Vjiij_Viaji_term4,Viija_term4,Viaji_term4,Tai%elm2,nocc,nvirt)
+
+       !> Debug Test
+       call mem_alloc(Vijij_Viija_all,nocc,nocc)
+       call mem_alloc(Vjiij_Viaji_all,nocc,nocc)
+
+       call ccsdf12_Viija_coupling(Vijij_Viija_all,Vjiij_Viaji_all,Viija_full,Viaji_full,Tai%elm2,nocc,nvirt)
+     
+       print *, '----------------------------------------'
+       print *, ' E21 CCSD Viija_terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, ' E21_Viija_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc)
+       print *, ' E21_Viija_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc)     
+       print *, ' E21_Viija_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc)     
+       print *, ' E21_Viija_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc)     
+       print *, '----------------------------------------'
+       print *, ' sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc) + mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc))
+       print *, '----------------------------------------'
+       print *, ' debug: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viija_all,Vjiij_Viaji_all, nocc)
+       
+       E21_Viija =  2.0E0_REALK*(mp2f12_E21(Vijij_Viija_term1, Vjiij_Viaji_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term2, Vjiij_Viaji_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viija_term3, Vjiij_Viaji_term3, nocc) + mp2f12_E21(Vijij_Viija_term4, Vjiij_Viaji_term4, nocc))
+
+       !> Last term check
+       call mem_alloc(Vijij_Viajj_term1,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term2,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term3,nocc,nocc)
+       call mem_alloc(Vijij_Viajj_term4,nocc,nocc)
+
+       call mem_alloc(Vjiij_Vijja_term1,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term2,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term3,nocc,nocc)
+       call mem_alloc(Vjiij_Vijja_term4,nocc,nocc)
+
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term1,Vjiij_Vijja_term1,Viajj_term1,Vijja_term1,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term2,Vjiij_Vijja_term2,Viajj_term2,Vijja_term2,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term3,Vjiij_Vijja_term3,Viajj_term3,Vijja_term3,Tai%elm2,nocc,nvirt)
+       call ccsdf12_Viajj_coupling(Vijij_Viajj_term4,Vjiij_Vijja_term4,Viajj_term4,Vijja_term4,Tai%elm2,nocc,nvirt)
+     
+       !> Debug Test
+      call mem_alloc(Vijij_Viajj_all,nocc,nocc)
+      call mem_alloc(Vjiij_Vijja_all,nocc,nocc)
+
+       call  ccsdf12_Viajj_coupling(Vijij_Viajj_all,Vjiij_Vijja_all,Viajj_full,Vijja_full,Tai%elm2,nocc,nvirt)
+
+       print *, '----------------------------------------'
+       print *, '  E21 CCSD Viajj_terms (DEBUG)          '
+       print *, '----------------------------------------'
+       print *, 'E21_Viajj_term1: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc)
+       print *, 'E21_Viajj_term2: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc)     
+       print *, 'E21_Viajj_term3: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc)     
+       print *, 'E21_Viajj_term4: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc)     
+       print *, '----------------------------------------'
+       print *, 'sum: ', 2.0E0_REALK*(mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc) + mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc))
+       print *, '----------------------------------------'
+       print *, 'debug: ', 2.0E0_REALK*mp2f12_E21(Vijij_Viajj_all,Vjiij_Vijja_all, nocc)
+
+       E21_Viajj = 2.0E0_REALK*(mp2f12_E21(Vijij_Viajj_term1, Vjiij_Vijja_term1, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term2, Vjiij_Vijja_term2, nocc) + &
+            & mp2f12_E21(Vijij_Viajj_term3, Vjiij_Vijja_term3, nocc) + mp2f12_E21(Vijij_Viajj_term4, Vjiij_Vijja_term4, nocc))
+
+    endif
+
     ! CCSD Specific
     call mem_dealloc(Viija)
     call mem_dealloc(Vijja)
@@ -2012,15 +2279,85 @@ end subroutine RIMP2_CalcEnergyContribution
     call mem_dealloc(Viaji)
     call mem_dealloc(Viajb)
 
+    if(DECinfo%F12DEBUG) then
+       call mem_dealloc(Viajb_term1)
+       call mem_dealloc(Viajb_term2)
+       call mem_dealloc(Viajb_term3)
+       call mem_dealloc(Viajb_term4)
+
+       call mem_dealloc(Viija_term1)
+       call mem_dealloc(Viija_term2)
+       call mem_dealloc(Viija_term3)
+       call mem_dealloc(Viija_term4)
+       call mem_dealloc(Viija_full)
+
+       call mem_dealloc(Viaji_term1)
+       call mem_dealloc(Viaji_term2)
+       call mem_dealloc(Viaji_term3)
+       call mem_dealloc(Viaji_term4)
+       call mem_dealloc(Viaji_full)
+       
+       call mem_dealloc(Viajj_term1)
+       call mem_dealloc(Viajj_term2)
+       call mem_dealloc(Viajj_term3)
+       call mem_dealloc(Viajj_term4)
+       call mem_dealloc(Viajj_full)
+       
+       call mem_dealloc(Vijja_term1)
+       call mem_dealloc(Vijja_term2)
+       call mem_dealloc(Vijja_term3)
+       call mem_dealloc(Vijja_term4)
+       call mem_dealloc(Vijja_full)
+    end if
+
+    !> CCSD Specific MP2-F12 energy
     E21 = 2.0E0_realk*mp2f12_E21(Vijij,Vjiij,nocc)
-    
+
     ! F12 Specific
     call mem_dealloc(Vijij)
     call mem_dealloc(Vjiij)
-    call mem_dealloc(Ciajb)
-    call mem_dealloc(Cjaib)
 
-    if(DECinfo%use_canonical) then
+    if(DECinfo%F12DEBUG) then
+
+       call mem_dealloc(Vijij_Viajb_term1)
+       call mem_dealloc(Vijij_Viajb_term2)
+       call mem_dealloc(Vijij_Viajb_term3)
+       call mem_dealloc(Vijij_Viajb_term4)   
+       call mem_dealloc(Vijij_Viajb_term5)   
+
+       call mem_dealloc(Vjiij_Viajb_term1)
+       call mem_dealloc(Vjiij_Viajb_term2)
+       call mem_dealloc(Vjiij_Viajb_term3)
+       call mem_dealloc(Vjiij_Viajb_term4)
+       call mem_dealloc(Vjiij_Viajb_term5)
+
+       call mem_dealloc(Vijij_Viija_term1)
+       call mem_dealloc(Vijij_Viija_term2)
+       call mem_dealloc(Vijij_Viija_term3)
+       call mem_dealloc(Vijij_Viija_term4)   
+       call mem_dealloc(Vijij_Viija_all)   
+
+       call mem_dealloc(Vjiij_Viaji_term1)
+       call mem_dealloc(Vjiij_Viaji_term2)
+       call mem_dealloc(Vjiij_Viaji_term3)
+       call mem_dealloc(Vjiij_Viaji_term4) 
+       call mem_dealloc(Vjiij_Viaji_all)
+
+       call mem_dealloc(Vijij_Viajj_term1)
+       call mem_dealloc(Vijij_Viajj_term2)
+       call mem_dealloc(Vijij_Viajj_term3)
+       call mem_dealloc(Vijij_Viajj_term4)
+       call mem_dealloc(Vijij_Viajj_all)
+
+       call mem_dealloc(Vjiij_Vijja_term1)
+       call mem_dealloc(Vjiij_Vijja_term2)
+       call mem_dealloc(Vjiij_Vijja_term3)
+       call mem_dealloc(Vjiij_Vijja_term4) 
+       call mem_dealloc(Vjiij_Vijja_all)
+
+    endif
+
+     if(DECinfo%use_canonical) then
        call mem_alloc(Xijij,nocc,nocc)
        call mem_alloc(Xjiij,nocc,nocc)
        call mp2f12_Xijij(Xijij,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
@@ -2080,21 +2417,52 @@ end subroutine RIMP2_CalcEnergyContribution
        call mem_dealloc(Xijkl)
     
     endif
+
     call mem_dealloc(Bijij)
     call mem_dealloc(Bjiij)
-
+    
     EF12 = E21 + E22
+
+    if(DECinfo%F12Debug) then
+       call mem_alloc(Vijij_mp2f12,nocc,nocc)
+       call mem_alloc(Vjiij_mp2f12,nocc,nocc)
+
+       call mp2f12_Vijij(Vijij_mp2f12,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       call mp2f12_Vjiij(Vjiij_mp2f12,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+       
+       ! CCSD coupling V_ij^ij & V_ji^ij 
+       ! call  ccsdf12_Viajb_coupling(Vijij_mp2f12,Vjiij_mp2f12,Ciajb,Taibj%elm4,nocc,nvirt)
+
+       print *, '----------------------------------------'
+       print *, ' CCSD-F12 energy summary                '
+       print *, '----------------------------------------'
+       write(*,'(1X,a,f25.10)') 'E21_Vijij_MP2_noC: ', 2.0E0_REALK*mp2f12_E21(Vijij_mp2f12, Vjiij_mp2f12, nocc)
+       write(*,'(1X,a,f25.10)') 'E22+E23_Vijij_MP2: ', E22
+       write(*,'(1X,a,f25.10)') 'E21_Vijij_CCSD:    ', E21_Viajb + E21_Viija + E21_Viajj
+       print *, '----------------------------------------'
+       write(*,'(1X,a,f25.10)') 'sum:               ', 2.0E0_REALK*mp2f12_E21(Vijij_mp2f12, Vjiij_mp2f12, nocc) + & 
+            & E22 + E21_Viajb + E21_Viija + E21_Viajj
+        
+       call mem_dealloc(Vijij_mp2f12)
+       call mem_dealloc(Vjiij_mp2f12)
+
+    endif
+    
+    call mem_dealloc(Ciajb)
+    call mem_dealloc(Cjaib)
 
     ! Add contributions
     ECCSD_F12 = ECCSD + EF12
 
     write(*,'(1X,a)') '----------------------------------------------------'  
+    write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
     write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
     write(*,'(1X,a,f20.10)') 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
     
     !> Input to DEC
+    write(DECinfo%output,*) 'TOYCODE: CCSD CORRECTION TO ENERGY      = ', ECCSD
     write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRECTION TO ENERGY  = ', EF12
-    write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY = ', ECCSD_F12
+    write(DECinfo%output,*) 'TOYCODE: CCSD-F12 CORRELATION ENERGY    = ', ECCSD_F12
 
     call mem_dealloc(AIBJ)
     call tensor_free(Taibj)

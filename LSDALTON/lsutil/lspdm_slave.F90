@@ -43,7 +43,7 @@ subroutine pdm_tensor_slave(comm)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
       call tensor_free_aux(A)
-      call tensor_init_standard(A,intarr1,A%mode,MASTER_ACCESS) 
+      call tensor_init_standard(A,intarr1,A%mode,AT_MASTER_ACCESS) 
       call mem_dealloc(intarr1)
 
    CASE(JOB_INIT_TENSOR_TILED)
@@ -57,9 +57,9 @@ subroutine pdm_tensor_slave(comm)
       call ls_mpibcast(INT1,infpar%master,infpar%lg_comm)
 
       if(INT1==-1)then
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,MASTER_ACCESS,intarr2,A%zeros) 
+         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,intarr2,A%zeros) 
       else
-         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,MASTER_ACCESS,intarr2,A%zeros,force_offset=INT1) 
+         call tensor_init_tiled(A,intarr1,A%mode,at,INT1,AT_MASTER_ACCESS,intarr2,A%zeros,force_offset=INT1) 
       endif
 
       call mem_dealloc(intarr2)
@@ -73,7 +73,7 @@ subroutine pdm_tensor_slave(comm)
       call mem_alloc(intarr1,A%mode)
       intarr1 =A%dims
       call tensor_free_aux(A)
-      call tensor_init_replicated(A,intarr1,A%mode,MASTER_ACCESS) 
+      call tensor_init_replicated(A,intarr1,A%mode,AT_MASTER_ACCESS) 
       call mem_dealloc(intarr1)
    CASE(JOB_PRINT_MEM_INFO1)
       call print_mem_per_node(DECinfo%output,.false.)

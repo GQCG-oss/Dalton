@@ -679,7 +679,7 @@ module lspdm_tensor_operations_module
 
     fEc = 0.50E0_realk*(Eocc + Evirt)
 #else
-    fec = 0.0E0_realk
+    fEc = 0.0E0_realk
 #endif
   end function get_fragment_cc_energy_parallel
 
@@ -935,7 +935,7 @@ module lspdm_tensor_operations_module
      new_dims = [nEOS,nocc,nEOS,nocc] ! nEOS=Number of occupied EOS orbitals
 #ifdef VAR_MPI
      if(infpar%lg_mynum == infpar%master.and. &
-        & tensor_full%access_type==MASTER_ACCESS)then
+        & tensor_full%access_type==AT_MASTER_ACCESS)then
         call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_VEOS,tensor_full)
         call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
         call ls_mpi_buffer(nEOS,infpar%master)
@@ -1005,9 +1005,9 @@ module lspdm_tensor_operations_module
      call mem_dealloc(idxatil)
      call mem_dealloc(idxbtil)
 
-     if(tensor_full%access_type==MASTER_ACCESS)then
+     if(tensor_full%access_type==AT_MASTER_ACCESS)then
         call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
-     else if(tensor_full%access_type==ALL_ACCESS)then
+     else if(tensor_full%access_type==AT_ALL_ACCESS)then
         call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
      endif
 
@@ -1039,7 +1039,7 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
      if(infpar%lg_mynum == infpar%master.and. &
-        & tensor_full%access_type==MASTER_ACCESS)then
+        & tensor_full%access_type==AT_MASTER_ACCESS)then
         call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_EXTRACT_OEOS,tensor_full)
         call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
         call ls_mpi_buffer(nEOS,infpar%master)
@@ -1109,9 +1109,9 @@ module lspdm_tensor_operations_module
      call mem_dealloc(idxitil)
      call mem_dealloc(idxjtil)
 
-     if(tensor_full%access_type==MASTER_ACCESS)then
+     if(tensor_full%access_type==AT_MASTER_ACCESS)then
         call lsmpi_reduction(Arr%elm1,Arr%nelms,infpar%master,infpar%lg_comm)
-     else if(tensor_full%access_type==ALL_ACCESS)then
+     else if(tensor_full%access_type==AT_ALL_ACCESS)then
         call lsmpi_allreduce(Arr%elm1,Arr%nelms,infpar%lg_comm)
      endif
 
@@ -1134,10 +1134,10 @@ module lspdm_tensor_operations_module
 
 #ifdef VAR_MPI
      
-     if( t2%access_type == MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
-        if(t1%itype == REPLICATED.or.t1%itype==TILED_DIST)then
+     if( t2%access_type == AT_MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
+        if(t1%itype == TT_REPLICATED.or.t1%itype==TT_TILED_DIST)then
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_1,t1,t2,u)
-        else if(t1%itype == DENSE)then
+        else if(t1%itype == TT_DENSE)then
            call pdm_tensor_sync(infpar%lg_comm,JOB_GET_COMBINEDT1T2_2,t2,u)
            call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
            call ls_mpi_buffer(t1%dims,2,infpar%master)
@@ -1149,7 +1149,7 @@ module lspdm_tensor_operations_module
      endif
 
      select case(t1%itype)
-     case(DENSE,REPLICATED)
+     case(TT_DENSE,TT_REPLICATED)
 
         call mem_alloc(ttile,u%tsize)
 
@@ -1529,14 +1529,13 @@ module lspdm_tensor_operations_module
         endif
      enddo
 
-     if(t2%access_type == MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
+     if(t2%access_type == AT_MASTER_ACCESS .and. infpar%lg_mynum == infpar%master)then
         call time_start_phase(PHASE_COMM)
         call pdm_tensor_sync(infpar%lg_comm,JOB_GET_MP2_ST_GUESS,iajb,t2,oof,vvf)
         call time_start_phase(PHASE_WORK)
      endif
 
-     select case(oof%itype)
-     case(DENSE,REPLICATED)
+     if( oof%itype == TT_DENSE .or. oof%itype == TT_REPLICATED )then
 
         !TODO: introduce prefetching of tiles
         call mem_alloc(buf,iajb%tsize)
@@ -1591,9 +1590,9 @@ module lspdm_tensor_operations_module
 
         call mem_dealloc(buf)
 
-     case default
+     else
         call lsquit("ERROR(lspdm_get_mp2_starting_guess): the routine does not accept this type of fock matrix",-1)
-     end select
+     end if
 
      call time_start_phase(PHASE_IDLE)
      call lsmpi_barrier(infpar%lg_comm)
@@ -1719,13 +1718,13 @@ module lspdm_tensor_operations_module
 
     !check if the destination to collet the resut makes sense in connection with
     !the access_type
-    if(arr1%access_type==MASTER_ACCESS.and.dest/=0)then
+    if(arr1%access_type==AT_MASTER_ACCESS.and.dest/=0)then
       call lsquit("ERROR(tensor_ddot_par): the choice of destnation is&
       & useless",DECinfo%output)
     endif
 
     !get the slaves to this routine
-    if(arr1%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+    if(arr1%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_DDOT_PAR,arr1,arr2)
     endif
     
@@ -1767,7 +1766,7 @@ module lspdm_tensor_operations_module
   end function tensor_ddot_par
 
   !> x = a * x + b * y
-  !> \brief array addition routine for TILED_DIST arrays
+  !> \brief array addition routine for TT_TILED_DIST arrays
   !> \author Patrick Ettenhuber
   !> \date January 2013
   subroutine tensor_add_par(a,x,b,y,order)
@@ -1794,9 +1793,9 @@ module lspdm_tensor_operations_module
       & impossible",DECinfo%output)
     endif
 
-    !IF NOT MASTER_ACCESS all processes should know b on call-time, else b is
+    !IF NOT AT_MASTER_ACCESS all processes should know b on call-time, else b is
     !broadcasted here
-    if(x%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+    if(x%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_ADD_PAR,x,y)
       call time_start_phase(PHASE_COMM)
       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -1927,7 +1926,7 @@ module lspdm_tensor_operations_module
  end subroutine tensor_add_par
 
 
-  !> \brief array copying routine for TILED_DIST arrays
+  !> \brief array copying routine for TT_TILED_DIST arrays
   !> \author Patrick Ettenhuber
   !> \date January 2013
   subroutine tensor_cp_tiled(from,to_ar)
@@ -1947,7 +1946,7 @@ module lspdm_tensor_operations_module
     endif
 
     !get the slaves
-    if(from%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+    if(from%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_CP_ARR,from,to_ar)
     endif
 
@@ -1978,7 +1977,7 @@ module lspdm_tensor_operations_module
     integer :: lt
 #ifdef VAR_MPI
     !get the slaves here
-    if(a%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+    if(a%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_tensor_ZERO,a)
     endif
 
@@ -2051,7 +2050,7 @@ module lspdm_tensor_operations_module
     call tensor_set_dims(p_arr%a(addr),dims,nmodes)
 
     !SET ARRAY TYPE
-    p_arr%a(addr)%itype=REPLICATED
+    p_arr%a(addr)%itype=TT_REPLICATED
 
     !SET NELMS
     nelms=1
@@ -2076,22 +2075,22 @@ module lspdm_tensor_operations_module
     
     !if master init only master has to init the addresses addresses before
     !pdm syncronization
-    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS)then
+    if(lg_master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
       call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
       call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_REPLICATED,p_arr%a(addr),loc_addr=.false.)
 #endif
     endif
 
-!    if(pc_master .and.  p_arr%a(addr)%access_type==MASTER_ACCESS.and.lspdm_use_comm_proc)then
+!    if(pc_master .and.  p_arr%a(addr)%access_type==AT_MASTER_ACCESS.and.lspdm_use_comm_proc)then
 !      call tensor_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
 !#ifdef VAR_MPI
 !      call pdm_tensor_sync(infpar%pc_comm,JOB_INIT_tensor_REPLICATED,p_arr%a(addr),loc_addr=.true.)
 !#endif
 !    endif
 
-    !if ALL_ACCESS all have to have the addresses allocated
-    if(p_arr%a(addr)%access_type==ALL_ACCESS)then
+    !if AT_ALL_ACCESS all have to have the addresses allocated
+    if(p_arr%a(addr)%access_type==AT_ALL_ACCESS)then
       call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
       !if(lspdm_use_comm_proc)call tensor_set_addr(p_arr%a(addr),pc_buf,pc_nnodes,.true.)
     endif
@@ -2133,7 +2132,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
 
     !get the slaves
-    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS)then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_NORM_REPLICATED,arr)
     endif
 
@@ -2163,16 +2162,16 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
 
     !give meaningful quit statement for useless input
-    if(present(fromnode).and.arr%access_type==MASTER_ACCESS)then
+    if(present(fromnode).and.arr%access_type==AT_MASTER_ACCESS)then
       call lsquit("ERROR(tensor_sync_replicated): This combintion of input&
       &elements does not give sense",DECinfo%output)
       ! why would you want to collect the data on a node you cannot direcly
       ! access, or if you can access the data in the calling subroutine on the
-      ! specified node, why is the init_tyep MASTER_ACCESS?
+      ! specified node, why is the init_tyep AT_MASTER_ACCESS?
     endif
 
     ! get slaves
-    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS)then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_SYNC_REPLICATED,arr)
     endif
 
@@ -2393,7 +2392,7 @@ module lspdm_tensor_operations_module
     lg_buf = 0
     
     !if master init only master has to get addresses
-    if(lg_master .and. p_arr%a(addr)%access_type==MASTER_ACCESS)then
+    if(lg_master .and. p_arr%a(addr)%access_type==AT_MASTER_ACCESS)then
       call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 #ifdef VAR_MPI
       call pdm_tensor_sync(infpar%lg_comm,JOB_INIT_TENSOR_TILED,p_arr%a(addr))
@@ -2406,8 +2405,8 @@ module lspdm_tensor_operations_module
     call ls_mpibcast(p_arr%a(addr)%atype,4,infpar%master,infpar%lg_comm)
 #endif
 
-    !if ALL_ACCESS only all have to know the addresses
-    if(p_arr%a(addr)%access_type==ALL_ACCESS)call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
+    !if AT_ALL_ACCESS only all have to know the addresses
+    if(p_arr%a(addr)%access_type==AT_ALL_ACCESS)call tensor_set_addr(p_arr%a(addr),lg_buf,lg_nnodes)
 
     call get_distribution_info(p_arr%a(addr),force_offset = force_offset)
 
@@ -2428,7 +2427,7 @@ module lspdm_tensor_operations_module
     call tensor_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
 
-    if(pseudo_dense .and. (lg_master.or.p_arr%a(addr)%access_type==ALL_ACCESS))then
+    if(pseudo_dense .and. (lg_master.or.p_arr%a(addr)%access_type==AT_ALL_ACCESS))then
       call memory_allocate_tensor_dense(p_arr%a(addr))
     endif
 
@@ -2468,7 +2467,7 @@ module lspdm_tensor_operations_module
      sync = .false.
      if(present(force_sync))sync = force_sync
 
-     B_dense = (B%itype == DENSE) .or. (B%itype == REPLICATED)
+     B_dense = (B%itype == TT_DENSE) .or. (B%itype == TT_REPLICATED)
 
      if(B_dense)then
         ntens_to_get_from = 1
@@ -2479,12 +2478,12 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
      master = (infpar%lg_mynum == infpar%master)
 
-     test_all_master_access = (A%access_type == MASTER_ACCESS).and.&
-        &((B%access_type == MASTER_ACCESS) .or. (B%itype == DENSE)).and.&
-        &(C%access_type == MASTER_ACCESS)
-     test_all_all_access = (A%access_type == ALL_ACCESS).and.&
-        &((B%access_type == ALL_ACCESS) .or. (B%itype == DENSE)).and.&
-        &(C%access_type == ALL_ACCESS)
+     test_all_master_access = (A%access_type == AT_MASTER_ACCESS).and.&
+        &((B%access_type == AT_MASTER_ACCESS) .or. (B%itype == TT_DENSE)).and.&
+        &(C%access_type == AT_MASTER_ACCESS)
+     test_all_all_access = (A%access_type == AT_ALL_ACCESS).and.&
+        &((B%access_type == AT_ALL_ACCESS) .or. (B%itype == TT_DENSE)).and.&
+        &(C%access_type == AT_ALL_ACCESS)
 
      if(  (.not.test_all_master_access.and..not.test_all_all_access) .or. &
         & (     test_all_master_access.and.     test_all_all_access)  )then
@@ -2552,7 +2551,7 @@ module lspdm_tensor_operations_module
 
 
      if(master.and.test_all_master_access)then
-        if(B%itype == TILED_DIST .or. B%itype == REPLICATED)then
+        if(B%itype == TT_TILED_DIST .or. B%itype == TT_REPLICATED)then
            call pdm_tensor_sync(infpar%lg_comm,JOB_TENSOR_CONTRACT_SIMPLE,A,B,C)
            call time_start_phase(PHASE_COMM)
            call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -4563,7 +4562,7 @@ module lspdm_tensor_operations_module
     integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
     logical :: pdm
     assert = 0
-    pdm=(arr%itype==TILED_DIST)
+    pdm=(arr%itype==TT_TILED_DIST)
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
@@ -4964,7 +4963,7 @@ module lspdm_tensor_operations_module
     integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
     logical :: pdm
 
-    pdm=(arr%itype==TILED_DIST)
+    pdm=(arr%itype==TT_TILED_DIST)
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
@@ -5383,7 +5382,7 @@ module lspdm_tensor_operations_module
      ch = .false.
      if(present(check))ch=check
 
-     if(arr%itype/=DENSE)then
+     if(arr%itype/=TT_DENSE)then
         if(ch)then
            do i=1,arr%ntiles
               if(arr%lock_set(i))then
@@ -5444,7 +5443,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     parent = (infpar%parent_comm == MPI_COMM_NULL)
 
-    if( arr%access_type==MASTER_ACCESS &
+    if( arr%access_type==AT_MASTER_ACCESS &
     &   .and.infpar%lg_mynum==infpar%master &
     &   .and. parent                          )then
 
@@ -5480,7 +5479,7 @@ module lspdm_tensor_operations_module
     !  lg_nnod = buf(2)
     !endif
  
-    if(arr%access_type==NO_PDM_ACCESS.or.arr%itype==TILED)then
+    if(arr%access_type==AT_NO_PDM_ACCESS.or.arr%itype==TT_TILED)then
        arr%offset       = 0
        p_arr%new_offset = 0
        arr%nlti         = arr%ntiles
@@ -5539,7 +5538,7 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: dest
 #ifdef VAR_MPI
     gtnr=globtinr
-    if(arr%access_type==MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
+    if(arr%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_PRINT_TI_NRM,arr)
     endif
     call ls_mpibcast(gtnr,infpar%master,infpar%lg_comm)
@@ -5575,7 +5574,7 @@ module lspdm_tensor_operations_module
     real(realk) :: nrm
     integer :: i,j,should
 #ifdef VAR_MPI
-    if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS) then
+    if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS) then
       call pdm_tensor_sync(infpar%lg_comm,JOB_GET_NRM2_TILED,arr)
     endif
     nrm=0.0E0_realk
@@ -5584,8 +5583,8 @@ module lspdm_tensor_operations_module
         nrm = nrm +(arr%ti(i)%t(j) * arr%ti(i)%t(j))
       enddo
     enddo
-    if(arr%access_type==MASTER_ACCESS)call lsmpi_local_reduction(nrm,infpar%master)
-    if(arr%access_type==ALL_ACCESS)call lsmpi_allreduce(nrm,infpar%lg_comm)
+    if(arr%access_type==AT_MASTER_ACCESS)call lsmpi_local_reduction(nrm,infpar%master)
+    if(arr%access_type==AT_ALL_ACCESS)call lsmpi_allreduce(nrm,infpar%lg_comm)
 #else
     nrm = 0.0E0_realk
 #endif
@@ -5596,10 +5595,10 @@ module lspdm_tensor_operations_module
      type(tensor),intent(inout) :: arr
      integer,intent(in) :: totype
 #ifdef VAR_MPI
-     if(totype/=REPLICATED.and.totype/=DENSE.and.totype/=TILED_DIST.and.totype/=TILED)then
+     if(totype/=TT_REPLICATED.and.totype/=TT_DENSE.and.totype/=TT_TILED_DIST.and.totype/=TT_TILED)then
        call lsquit("ERROR(change_access_type_td): wrong type given",-1)
      endif
-     if(infpar%lg_mynum==infpar%master.and.arr%access_type==MASTER_ACCESS) then
+     if(infpar%lg_mynum==infpar%master.and.arr%access_type==AT_MASTER_ACCESS) then
        call pdm_tensor_sync(infpar%lg_comm,JOB_CHANGE_access_type,arr)
      endif
      arr%access_type=totype
@@ -6231,7 +6230,7 @@ module lspdm_tensor_operations_module
 #ifdef VAR_MPI
     integer     :: i
 
-    if(arr%access_type==MASTER_ACCESS)then
+    if(arr%access_type==AT_MASTER_ACCESS)then
       call PDM_tensor_SYNC(infpar%lg_comm,JOB_tensor_SCALE,arr)
       call ls_mpibcast(sc,infpar%master,infpar%lg_comm)
     endif
@@ -6249,7 +6248,7 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
+      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==AT_MASTER_ACCESS)then
       !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_ALLOC_DENSE,arr,loc_addr=.true.)
       !endif
 #endif
@@ -6262,7 +6261,7 @@ module lspdm_tensor_operations_module
       logical :: parent
 #ifdef VAR_MPI
       parent = (infpar%parent_comm == MPI_COMM_NULL)
-      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==MASTER_ACCESS)then
+      !if(lspdm_use_comm_proc.and.parent.and.arr%access_type==AT_MASTER_ACCESS)then
       !  call pdm_tensor_sync(infpar%pc_comm,JOB_PC_DEALLOC_DENSE,arr,loc_addr=.true.)
       !endif
 #endif
