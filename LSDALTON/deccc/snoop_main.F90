@@ -31,6 +31,7 @@ module snoop_main_module
   use ccintegrals
   use full_molecule
   use full
+  use array2_simple_operations
 
   public :: snoop_driver
   private
@@ -81,12 +82,16 @@ contains
     !> Density matrix for full system
     type(matrix),intent(in) :: D
     real(realk),pointer :: EHFsnoop(:),Ecorrsnoop(:),EHFiso(:) 
-    real(realk) :: EHFfull,Ecorrfull
+    real(realk) :: EHFfull,Ecorrfull,EHFold,EHFnew,Ethr
     integer :: nsub,nbasis,nvirtfull,noccfull,i,this,noccsnoop,nvirtsnoop,nbasissnoop,nelsnoop
     type(matrix),pointer :: Coccsnoop(:)
     type(matrix) :: FAOsnoop, FAOiso,Cvirtall
     type(lsitem) :: lssnoop,lsiso
     integer :: nocciso,nvirtiso,nbasisiso,neliso, nsteps, j
+
+    ! HF Energy threshold, set conservatively now
+    Ethr=1.0e-10
+    
 
     ! Number of subsystems
     nsub = lsfull%input%molecule%nSubSystems
@@ -123,7 +128,8 @@ contains
     ! *******************************************************************************
     ! Self-consistent determination of SNOOP orbitals with orthogonality constraint *
     ! *******************************************************************************
-    nsteps = 5 ! DECinfo%SNOOPMaxIter fix me
+    ! Set number of steps in self-consistent SNOOP to the same as in RH/DIIS SNOOP iterations
+    nsteps = DECinfo%SNOOPMaxIter 
     call mat_init(FAOsnoop,nbasis,nbasis)
 
     SNOOPSCF: do j=1,nsteps
@@ -154,11 +160,18 @@ contains
           end if
 
           ! Orthogonal virtual orbitals for subsystem "this"
+          ! This orthogonalization of virtual orbitals is actually redundant 
+          ! since the orbitals remain orthogonal when we carry out unitary transformations
+          ! - but we keep it to remove possible numerical noise.
           call get_orthogonal_basis_for_subsystem_allvirt(MyMolecule,Coccsnoop(this),Cvirtall)
+          call subsystem_orbitals_sanity_check_snooport(nsub,Coccsnoop,&
+               & Cvirtall,MyMolecule)
 
           ! SCF optimization for subsystem "this"
           call solve_subsystem_scf_rh(lssnoop,Coccsnoop(this),&
                & Cvirtall,FAOsnoop,EHFsnoop(this))
+          call subsystem_orbitals_sanity_check_snooport(nsub,Coccsnoop,&
+               & Cvirtall,MyMolecule)
 
           ! Correlation energy for subsystem
           if(.not. DECinfo%SNOOPjustHF) then
@@ -176,6 +189,23 @@ contains
           call ls_free(lssnoop)
 
        End do SNOOPLOOP
+
+       write(DECinfo%output,'(1X,a,i7,g22.12)') 'Step/SNOOP-SCF monomer energy: ', j,sum(EHFsnoop)
+
+       ! Check for convergence of sum of monomer energies
+       if(j==1) then
+          EHFold = sum(EHFsnoop)
+       else
+          EHFnew = sum(EHFsnoop)
+          if(abs(EHFnew-EHFold)<Ethr) then
+             write(DECinfo%output,'(1X,a,i7,a,g15.5)') 'SNOOP-SCF converged in ', j, &
+                  & ' steps! Ediff =', abs(EHFnew-EHFold)
+             exit SNOOPSCF
+          else
+             ! New reference energy for next step
+             EHFold=EHFnew
+          end if
+       end if
 
     end do SNOOPSCF
 
@@ -746,6 +776,129 @@ contains
     call mem_dealloc(Cvirtsub)
 
   end subroutine subsystem_orbitals_sanity_check
+
+
+
+  !> Check that subsystem orbitals are properly orthogonal and normalized
+  !> for SNOOP scheme with orthogonality constraint.
+  subroutine subsystem_orbitals_sanity_check_snooport(nsub,Cocc_mat,&
+       & Cvirt_mat,MyMolecule)
+    implicit none
+
+    !> Number of subsystems
+    integer,intent(in) :: nsub
+    !> Occupied MOs for all subsystems
+    type(matrix),intent(in) :: Cocc_mat(nsub)
+    !> All virtual MOs (common for all subsystems)
+    type(matrix),intent(in) :: Cvirt_mat
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMolecule
+    type(array2),pointer :: Cocc(:)
+    real(realk),pointer :: tmp(:,:),Cvirt(:,:)
+    integer :: nocc(nsub),nvirt,nbasis,i,j,k,l
+    real(realk) :: thr,ref
+
+    thr = 1.0E-8_realk
+
+    ! Dimensions
+    nbasis = Cvirt_mat%nrow
+    nvirt = Cvirt_mat%ncol
+    do i=1,nsub
+       nocc(i) = Cocc_mat(i)%ncol
+    end do
+
+    ! Work with Fortran arrays - occ and virt MOs for subsystem
+    call mem_alloc(Cvirt,nbasis,nvirt)
+    call mem_alloc(Cocc,nsub)
+    do i=1,nsub
+       Cocc(i) = array2_init([nbasis,nocc(i)])
+       call mat_to_full(Cocc_mat(i), 1.0_realk, Cocc(i)%val)
+    end do
+    call mat_to_full(Cvirt_mat, 1.0_realk, Cvirt)
+
+    ! Occ-occ overlaps
+    do k=1,nsub
+       do l=k,nsub
+
+          call mem_alloc(tmp,nocc(k),nocc(l))
+          call dec_diff_basis_transform1(nbasis,nocc(k),nocc(l),&
+               & Cocc(k)%val,Cocc(l)%val,MyMolecule%overlap,tmp)
+          do j=1,nocc(l)
+             do i=1,nocc(k)
+
+                if(k==l .and. i==j) then
+                   ref=1.0_realk
+                else
+                   ref=0.0_realk
+                end if
+
+                if(abs(ref-tmp(i,j))>thr) then
+                   print *, 'Check1: k,l,i,j,value,thr',k,l,i,j,tmp(i,j),thr
+                   call lsquit('subsystem_orbitals_sanity_check_snooport1: Orbitals are not orthogonal!',-1)
+                end if
+             end do
+          end do
+
+          call mem_dealloc(tmp)
+
+       end do
+    end do
+
+
+
+    ! Occ-virt overlaps
+    do k=1,nsub
+
+       call mem_alloc(tmp,nocc(k),nvirt)
+       call dec_diff_basis_transform1(nbasis,nocc(k),nvirt,&
+            & Cocc(k)%val,Cvirt,MyMolecule%overlap,tmp)
+       do j=1,nvirt
+          do i=1,nocc(k)
+
+             if(abs(tmp(i,j))>thr) then
+                print *, 'Check2: k,i,j,value,thr',k,i,j,tmp(i,j),thr
+                call lsquit('subsystem_orbitals_sanity_check_snooport2: Orbitals are not orthogonal!',-1)
+             end if
+          end do
+       end do
+
+       call mem_dealloc(tmp)
+
+    end do
+
+
+
+    ! Virt-virt overlap
+    call mem_alloc(tmp,nvirt,nvirt)
+    call dec_diff_basis_transform1(nbasis,nvirt,nvirt,&
+         & Cvirt,Cvirt,MyMolecule%overlap,tmp)
+    do j=1,nvirt
+       do i=1,nvirt
+
+          if(i==j) then
+             ref=1.0_realk
+          else
+             ref=0.0_realk
+          end if
+
+          if(abs(ref-tmp(i,j))>thr) then
+             print *, 'Check3: k,l,i,j,value,thr',k,l,i,j,tmp(i,j),thr
+             call lsquit('subsystem_orbitals_sanity_check_snooport3: Orbitals are not orthogonal!',-1)
+          end if
+
+       end do
+    end do
+    call mem_dealloc(tmp)
+
+
+
+    do i=1,nsub
+       call array2_free(Cocc(i))
+    end do
+    call mem_dealloc(Cocc)
+    call mem_dealloc(Cvirt)
+
+  end subroutine subsystem_orbitals_sanity_check_snooport
 
 
 
