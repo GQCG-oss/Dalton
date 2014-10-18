@@ -716,23 +716,31 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
     logical :: parent
     integer :: lg_me,lg_nnod
     type(tensor) :: tloc,oloc,gloc
+    integer   :: tdi(4), odi(4)
+    integer   :: ttd(4), otd(4)
+    character(4) :: ats, aos
 
 #ifdef MOD_UNRELEASED
     if(use_pnos)then
 
        !TODO: remove these sortings
-       call tensor_init(tloc,[nv,no,nv,no],4)
-       call tensor_init(oloc,[nv,no,nv,no],4)
-       call tensor_init(gloc,[nv,no,nv,no],4)
-
+       call tensor_init( tloc, [nv,no,nv,no], 4 )
        call tensor_cp_data( t2,   tloc, order = [1,3,2,4] )
-       call tensor_cp_data( iajb, gloc                    )
+       tdi = t2%dims
+       if(.not.local)ttd = t2%tdim
+       ats = t2%atype
+       call tensor_free( t2 )
 
-       call tensor_zero(oloc)
+       call tensor_init( oloc, [nv,no,nv,no], 4 )
+       call tensor_zero( oloc )
+       odi = omega2%dims
+       if(.not.local)otd = omega2%tdim
+       aos = omega2%atype
+       call tensor_free( omega2 )
 
-       call print_norm(tloc," tloc")
-       call print_norm(tloc," gloc")
-       call print_norm(oloc," oloc")
+
+       call tensor_init(gloc,[nv,no,nv,no],4)
+       call tensor_cp_data( iajb, gloc )
 
        call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
           &oloc%elm1,gloc%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
@@ -740,11 +748,14 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
           &qqfock%elm1,delta_fock%elm1,iter,f=frag)
 
        !TODO: remove these sortings
+       call tensor_minit( t2, tdi, 4, local = local, atype = ats, tdims=ttd )
        call tensor_cp_data( tloc, t2,     order = [1,3,2,4] )
-       call tensor_cp_data( oloc, omega2, order = [1,3,2,4] )
-
        call tensor_free(tloc)
+
+       call tensor_minit( omega2, odi, 4, local = local, atype = aos, tdims=otd )
+       call tensor_cp_data( oloc, omega2, order = [1,3,2,4] )
        call tensor_free(oloc)
+
        call tensor_free(gloc)
 
     else
