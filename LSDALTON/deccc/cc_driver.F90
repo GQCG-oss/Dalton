@@ -1889,8 +1889,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
       print *,"WARNING(ccsolver_par): vovo given on input has not been tested thoroughly"
-      !call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      call tensor_add(iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3])
+      call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
+      !call tensor_add(iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3])
       call tensor_free(VOVO)
       call print_norm(iajb,"iajb norm")
    endif
