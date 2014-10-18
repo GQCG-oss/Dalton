@@ -1935,12 +1935,15 @@ module lspdm_tensor_operations_module
     type(tensor), intent(in) :: from
     !> drain, the copied array
     type(tensor), intent(inout) :: to_ar
-    integer, intent(in), optional :: order(to_ar%mode)
-    real(realk),pointer :: buffer(:)
-    integer :: lt
+    integer, intent(in) :: order(to_ar%mode)
+    real(realk),pointer :: buffer(:,:)
+    real(realk), parameter :: prex = 0.0E0_realk
+    real(realk), parameter :: prey = 1.0E0_realk
+    integer :: i,lt,nbuffs,ibuf,cmidy,buffer_lt
+    integer :: xmidx(from%mode), ymidx(to_ar%mode), ytdim(to_ar%mode), ynels
 #ifdef VAR_MPI
     
-    if(present(order)) call lsquit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
+    !if(present(order)) call lsquit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
 
     !check for the same access_types
     if(from%access_type/=to_ar%access_type)then
@@ -1951,20 +1954,112 @@ module lspdm_tensor_operations_module
     !get the slaves
     if(from%access_type==AT_MASTER_ACCESS.and.infpar%lg_mynum==infpar%master)then
       call pdm_tensor_sync(infpar%lg_comm,JOB_CP_ARR,from,to_ar)
+      call time_start_phase(PHASE_COMM)
+      call ls_mpibcast(order,from%mode,infpar%master,infpar%lg_comm)
+      call time_start_phase(PHASE_WORK)
     endif
 
-    !check for the same distributions
-    if(from%tdim(1)==to_ar%tdim(1).and.from%tdim(2)==to_ar%tdim(2).and.&
-      &from%tdim(3)==to_ar%tdim(3).and.to_ar%tdim(4)==to_ar%tdim(4))then
-      do lt=1,to_ar%nlti
-        call tensor_get_tile(from,to_ar%ti(lt)%gt,to_ar%ti(lt)%t,to_ar%ti(lt)%e,flush_it=(to_ar%ti(lt)%e>MAX_SIZE_ONE_SIDED))
-      enddo
-    else
-      call lsquit("ERROR(tensor_cp_tiled):NOT YET IMPLEMENTED, if the arrato_ars have&
-      & different distributions",DECinfo%output)
-    endif
+    ! now set to two and that ought to be enough, but should work with any
+    ! number >0
+    nbuffs = 2
+      
+    !allocate buffer for the tiles
+    call mem_alloc(buffer,to_ar%tsize,nbuffs)
+    !fill buffer
+    do lt=1,min(nbuffs-1,to_ar%nlti)
 
-    !crucial barrier as remote direct memory access is used
+       call get_midx(to_ar%ti(lt)%gt,xmidx,to_ar%ntpm,to_ar%mode)
+
+       do i=1,to_ar%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,from,ymidx)
+
+       ynels = 1
+       do i=1,from%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= to_ar%ti(lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)+1
+
+       cmidy = get_cidx(ymidx,from%ntpm,from%mode)
+
+       call tensor_lock_win(from,cmidy,'s')
+       call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+    enddo
+  
+    !lsoop over local tiles of array to_ar
+    do lt=1,to_ar%nlti
+
+       !buffer last element
+       buffer_lt = lt + nbuffs - 1
+       if(buffer_lt <= to_ar%nlti)then
+
+          call get_midx(to_ar%ti(buffer_lt)%gt,xmidx,to_ar%ntpm,to_ar%mode)
+
+          do i=1,to_ar%mode
+             ymidx(order(i)) = xmidx(i)
+          enddo
+
+          call get_tile_dim(ytdim,from,ymidx)
+
+          ynels = 1
+          do i=1,from%mode
+             ynels = ynels * ytdim(i)
+          enddo
+
+          if(ynels /= to_ar%ti(buffer_lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+
+          ibuf = mod(buffer_lt-1,nbuffs)+1
+
+
+          cmidy = get_cidx(ymidx,from%ntpm,from%mode)
+
+          call tensor_lock_win(from,cmidy,'s')
+          call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels,lock_set=.true.,flush_it=(ynels>MAX_SIZE_ONE_SIDED))
+       endif
+
+       call get_midx(to_ar%ti(lt)%gt,xmidx,to_ar%ntpm,to_ar%mode)
+
+       do i=1,to_ar%mode
+          ymidx(order(i)) = xmidx(i)
+       enddo
+
+       call get_tile_dim(ytdim,from,ymidx)
+
+       ynels = 1
+       do i=1,from%mode
+          ynels = ynels * ytdim(i)
+       enddo
+
+       if(ynels /= to_ar%ti(lt)%e)call lsquit("ERROR(tensor_cp_tiled): #elements in tiles mismatch",-1)
+
+       ibuf = mod(lt-1,nbuffs)+1
+
+       cmidy = get_cidx(ymidx,from%ntpm,from%mode)
+       !call tensor_get_tile(from,ymidx,buffer(:,ibuf),ynels)
+       call tensor_unlock_win(from,cmidy)
+
+       select case(to_ar%mode)
+       case(1)
+          call dcopy(to_ar%ti(lt)%e,buffer(:,ibuf),1,to_ar%ti(lt)%t,1)
+       case(2)
+          call array_reorder_2d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),order,prex,to_ar%ti(lt)%t)
+       case(3)
+          call array_reorder_3d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),order,prex,to_ar%ti(lt)%t)
+       case(4)
+          call array_reorder_4d(prey,buffer(:,ibuf),ytdim(1),ytdim(2),ytdim(3),ytdim(4),order,prex,to_ar%ti(lt)%t)
+       case default
+          call lsquit("ERROR(tensor_cp_tiled): mode>4 not yet implemented",-1)
+       end select
+    enddo
+
+    call mem_dealloc(buffer)
+
+    !crucial barrier, because direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine tensor_cp_tiled
@@ -4881,6 +4976,7 @@ module lspdm_tensor_operations_module
       call tensor_accumulate_tile(arr,i,buf,nelmsit,lock_set=arr%lock_set(i),flush_it=.true.)
 #endif
     enddo
+
     call mem_dealloc(buf)
   end subroutine add_data2tiled_intiles_stackbuffer
 
@@ -5112,7 +5208,7 @@ module lspdm_tensor_operations_module
       stop 1
     endif
     do i=1,mode
-      if(arr%dims(i)/=dims(i))then
+      if(arr%dims(i)/=dims(order(i)))then
         print *,"ERROR(cp_data2tiled_intiles):dims in input do not match dims of tiled_array"
         stop 1
       endif
@@ -5120,13 +5216,15 @@ module lspdm_tensor_operations_module
     ! corresponding elements
     call mem_alloc(buf,arr%tsize)
 
+    print *,"FUCKING CONVERTING",norm2(A(1:arr%nelms))
     
     do i=1,arr%ntiles
       call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
       call get_tile_dim(nelmsit,arr,i)
       !copy data to the identified places
+      print *,"norm of extracted",norm2(buf(1:nelmsit))
 #ifdef VAR_MPI
-      call tensor_put_tile(arr,i,buf,nelmsit,flush_it=.true.)
+      call tensor_put_tile(arr,i,buf,nelmsit,lock_set = .false., flush_it=.true.)
 #endif
     enddo
     call mem_dealloc(buf)

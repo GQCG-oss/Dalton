@@ -118,7 +118,11 @@ subroutine pdm_tensor_slave(comm)
 
       call mem_dealloc(intarr1)
    CASE(JOB_CP_ARR)
-      call tensor_cp_tiled(A,B)
+      INT1 = A%mode
+      call mem_alloc(intarr1,INT1)
+      call ls_mpibcast(intarr1,INT1,infpar%master,infpar%lg_comm)
+      call tensor_cp_tiled(A,B,intarr1)
+      call mem_dealloc(intarr1)
    CASE(JOB_tensor_ZERO)
       call tensor_zero_tiled_dist(A)
    CASE(JOB_GET_CC_ENERGY)

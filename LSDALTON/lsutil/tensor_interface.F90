@@ -187,17 +187,20 @@ contains
 
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype",DECinfo%output)
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 1",DECinfo%output)
         end select
 
      case(TT_TILED_DIST)
 
         select case(y%itype)
+        !case(TT_DENSE,TT_REPLICATED)
+        !   if(present(a))call tensor_scale(x,a)
+        !   call tensor_add_fullfort2arr(x,b,y%elm1, order = o)
         case(TT_TILED_DIST)
            call tensor_add_par(pre2,x,b,y,o)
         case default
            print *,x%itype,y%itype
-           call lsquit("ERROR(tensor_add):not yet implemented y%itype",DECinfo%output)
+           call lsquit("ERROR(tensor_add):not yet implemented y%itype 2",DECinfo%output)
         end select
 
      case default
@@ -2213,8 +2216,7 @@ contains
 
        case(TT_TILED_DIST)
 
-          if(present(order))call lsquit("ERROR(tensor_cp_data) order not yet implemented for tiled dist",-1)
-          call tensor_cp_tiled(from_arr,to_arr)
+          call tensor_cp_tiled(from_arr,to_arr,o)
 
        case default
 

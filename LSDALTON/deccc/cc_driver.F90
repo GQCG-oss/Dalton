@@ -1889,8 +1889,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
       print *,"WARNING(ccsolver_par): vovo given on input has not been tested thoroughly"
-      call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
+      !call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
+      call tensor_add(iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3])
       call tensor_free(VOVO)
+      call print_norm(iajb,"iajb norm")
    endif
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -1976,7 +1978,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !FIXME: do the PNO construction in MPI parallel
          call tensor_init(tmp,[nv,no,nv,no],4)
          call tensor_convert(m2, tmp%elm1 )
-         call print_norm(tmp%elm1,i8*nv**2*no**2,"FOOBAR:")
 
          !GET THE PNO TRANSFORMATION MATRICES
          if(fragment_job)then
@@ -2006,8 +2007,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
-
-         print *,"aibJ",iajb%elm1(1:5)
 
          call tensor_zero(t2(1))
          call tensor_zero(t1(1))
@@ -2100,18 +2099,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
-            call print_norm(t2(iter))
-            call print_norm(t1(iter))
-            call print_norm(iajb)
-
             call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
                & pno_cv,pno_s,nspaces,&
                & iter,local,use_pnos,restart,frag=frag)
-
-            call print_norm(omega2(iter))
-            call print_norm(omega1(iter))
 
          case( MODEL_RPA )
 
@@ -2308,6 +2300,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call tensor_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
+
                call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
                !call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call tensor_cp_data(t2_opt,t2(iter+1))
@@ -2325,6 +2318,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                call tensor_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
          end if
+
+         call print_norm(t2(iter+1),"NEW GUESS")
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
