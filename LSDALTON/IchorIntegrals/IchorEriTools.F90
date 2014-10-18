@@ -6,7 +6,7 @@ MODULE IchorEriToolsmod
   use IchorCommonMod
   use IchorParametersMod
 
-  logical,parameter :: UseSP = .TRUE.!SinglePrecision default double precision
+  logical,parameter :: UseSP = .FALSE.!SinglePrecision default double precision
 
 CONTAINS
 subroutine ObtainTypeInfo(nTypesD,ItypeDnon,OrderdListD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
