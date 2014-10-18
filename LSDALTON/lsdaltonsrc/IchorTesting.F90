@@ -703,7 +703,7 @@ CONTAINS
                         DO A=1,dim1
                            IF(ABS(integralsII(A,B,C,D)).GT.1.0E-10_realk)THEN
                               IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
-                                   & 1.0E-7_realk/(ABS(integralsII(A,B,C,D))))THEN
+                                   & 1.0E-10_realk/(ABS(integralsII(A,B,C,D))))THEN
                                  FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
                                  write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
                                  write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
@@ -711,11 +711,11 @@ CONTAINS
                                  write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
                                  write(lupri,'(A,ES16.8)')'DIFF                   ',&
                                       & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-!                                 call lsquit('ERROR',-1)
+                                 call lsquit('ERROR',-1)
                               ENDIF
                            ELSE
                               IF(ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D)).GT. &
-                                   & 1.0E-7_realk)THEN
+                                   & 1.0E-10_realk)THEN
                                  FAIL(iBasis1,ibasis2,ibasis3,ibasis4) = .TRUE.
                                  write(lupri,'(A,ES16.8)')'THRESHOLD=',1.0E-10_realk/(ABS(integralsII(A,B,C,D)))
                                  write(lupri,'(A,4I4)')'ELEMENTS: (A,B,C,D)=',A,B,C,D
@@ -723,11 +723,11 @@ CONTAINS
                                  write(lupri,'(A,ES16.8)')'integralsIchor(A,B,C,D)',integralsIchor(A,B,C,D)
                                  write(lupri,'(A,ES16.8)')'DIFF                   ',&
                                       & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
-!                                 call lsquit('ERROR',-1)
-                              ELSE
-                                 write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
-                                      & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-                                      & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+                                 call lsquit('ERROR',-1)
+!                              ELSE
+!                                 write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+!                                      & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+!                                      & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                               ENDIF
                            ENDIF
                         ENDDO
