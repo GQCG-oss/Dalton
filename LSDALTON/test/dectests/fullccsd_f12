@@ -101,7 +101,7 @@ CTRL[3]=1
 ERROR[3]="CCSD correlation energy is not correct"
 
 # CCSD-F12 CORRELATION ENERGY
-CRIT1=`$GREP "TOYCODE: CCSD-F12 CORRELATION ENERGY = *\-0.44291" $log | wc -l`
+CRIT1=`$GREP "TOYCODE: CCSD-F12 CORRELATION ENERGY *\ = *\-0.44291" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="CCSD correlation energy is not correct"

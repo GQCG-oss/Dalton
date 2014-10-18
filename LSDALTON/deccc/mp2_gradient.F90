@@ -296,8 +296,8 @@ contains
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-     if( t2occ%itype == DENSE .and. t2virt%itype == DENSE .and. VOOO%itype == DENSE .and.&
-        & VOVV%itype == DENSE .and. VOVOocc%itype == DENSE .and. VOVOvirt%itype == DENSE ) then
+     if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE .and.&
+        & VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
 
         write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%EOSatoms(1)
 
@@ -675,8 +675,8 @@ contains
      call LSTIMER('START',tcpu,twall,DECinfo%output)
      call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-     if( t2occ%itype == DENSE .and. t2virt%itype == DENSE .and. VOOO%itype == DENSE &
-        &.and.  VOVV%itype == DENSE .and. VOVOocc%itype == DENSE .and. VOVOvirt%itype == DENSE ) then
+     if( t2occ%itype == TT_DENSE .and. t2virt%itype == TT_DENSE .and. VOOO%itype == TT_DENSE &
+        &.and.  VOVV%itype == TT_DENSE .and. VOVOocc%itype == TT_DENSE .and. VOVOvirt%itype == TT_DENSE ) then
 
         write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
            & PairFragment%EOSatoms
