@@ -1,8 +1,8 @@
 !> @file
 !> Contains the Distribution
-MODULE IchorEriDistmodule
-  use IchorprecisionModule
-  use IchorCommonModule
+MODULE IchorEriDistmod
+  use IchorprecisionMod
+  use IchorCommonMod
 
 CONTAINS
 subroutine DetermineMaxPasses(nAtomsD,iBatchIndexOfTypeD,nAtomsC,nAtomsA,nAtomsB,&
@@ -1266,4 +1266,4 @@ subroutine IchorDistribute(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
 !!$OMP END PARALLEL
 end subroutine IchorDistribute
 
-END MODULE IchorEriDistmodule
+END MODULE IchorEriDistmod

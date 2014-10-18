@@ -1,6 +1,6 @@
 MODULE AGC_GPU_OBS_Sphcontract2Mod
 !Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory
-use IchorPrecisionModule  
+use IchorPrecisionMod
   
  CONTAINS
   
@@ -136,7 +136,7 @@ end subroutine SphericalContractOBS2_GPU_maxAngQ3_maxAngC1
   real(realk),parameter :: SPHMAT10_5     =   -5.0000000000000000E-01_realk
   real(realk),parameter :: SPHMAT12_3     =    5.7735026918962584E-01_realk
   real(realk),parameter :: SPHMAT36_13    =    3.3333333333333343E-01_realk
-!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(IN,OUT(nContPasses*nlmP, 25)) ASYNC(iASync)
+!$ACC PARALLEL LOOP PRIVATE(iP) PRESENT(IN,OUT) ASYNC(iASync)
   DO iP=1,nContPasses*nlmP
     OUT(iP,1) = IN(iP,8)
     OUT(iP,2) = IN(iP,11)
@@ -172,4 +172,4 @@ end subroutine SphericalContractOBS2_GPU_maxAngQ3_maxAngC1
 end subroutine SphericalContractOBS2_GPU_maxAngQ4_maxAngC2 
   
   
-END MODULE
+END MODULE AGC_GPU_OBS_Sphcontract2Mod

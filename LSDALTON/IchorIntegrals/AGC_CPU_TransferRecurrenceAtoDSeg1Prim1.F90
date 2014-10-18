@@ -1,5 +1,5 @@
 MODULE AGC_CPU_OBS_TRMODAtoDSeg1Prim1
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
  subroutine TransferRecurrenceCPUP1Q1AtoDSeg1Prim(nPasses,nPrimP,nPrimQ,reducedExponents,&

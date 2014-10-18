@@ -267,8 +267,7 @@ contains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc
     type(tensor) :: t2f_local, VOVO_local
-
-    type(integer) :: a,b,i,j,k,l
+    integer :: a,b,i,j,k,l
 
     times_ccsd => null()
     times_pt   => null()

@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_TRMODAtoCSegQ3
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
  subroutine TransferRecurrenceGPUP4Q4AtoCSegQ(nPasses,nPrimP,nPrimQ,reducedExponents,&

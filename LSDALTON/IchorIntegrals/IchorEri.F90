@@ -11,10 +11,10 @@
 !> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorErimodule
-  use IchorprecisionModule
-  use IchorCommonModule
-  use IchorBatchToolsModule
+MODULE IchorErimod
+  use IchorprecisionMod
+  use IchorCommonMod
+  use IchorBatchToolsMod
   use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,DetermineSizeTmpArray34,&
        & precalcichorsphmat, freeichorsphmat,nTmpArray3,nTmpArray4
   use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general, &
@@ -23,13 +23,13 @@ MODULE IchorErimodule
        & ICI_GPU_OBS_general_size
   use ICI_seg_seg_SSSS_mod, only: ICI_seg_seg_SSSS
   use IchorMemory
-  use IchorGammaTabulationModule
-  use IchorParametersModule
-  use IchorSaveGabModule
-  use IchorInputInfoModule
-  use IchorEriToolsmodule
-  use IchorEriLinkmodule
-  use IchorEriDistmodule
+  use IchorGammaTabulationMod
+  use IchorParametersMod
+  use IchorSaveGabMod
+  use IchorInputInfoMod
+  use IchorEriToolsmod
+  use IchorEriLinkmod
+  use IchorEriDistmod
 #ifdef VAR_OPENACC
   !OpenACC libary routines  
   use openacc, only: acc_async_test
@@ -261,6 +261,10 @@ real(realk),allocatable :: CMO1A(:,:),CMO2B(:,:)
 real(realk),allocatable :: CMO1B(:,:),CMO2A(:,:)
 real(realk),allocatable :: CMO3C(:,:),CMO4D(:,:)
 real(realk),allocatable :: CMO3D(:,:),CMO4C(:,:)
+
+IF(.NOT.UseCPU)THEN
+   Write(lupri,'(A,F10.3,A)')'Ichor: GPU Maximum Memory : ', IchorGPUMAXMEM, ' GB'
+ENDIF
 
 doMOtrans = IchorJobSpec.EQ.IchorJobMOtrans
 IF(doMOtrans)Then
@@ -2131,7 +2135,7 @@ subroutine IchorTypeIntegralLoopCPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-          & TMParray2maxsizePass,IatomAPass,iatomBPass)
+          & TMParray2maxsizePass,IatomAPass,iatomBPass,UseSP)
      !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
      !this can be done on the accelerator
@@ -2269,7 +2273,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
 
   !Determine number of Async handles (related to size of memory required)
 #ifdef VAR_OPENACC
-  MaxGPUmemory = FLOOR(GPUMAXMEM,kind=long)*1000_long*1000_long*1000_long !given by input
+  MaxGPUmemory = FLOOR(IchorGPUMAXMEM,kind=long)*1000_long*1000_long*1000_long !given by input
   call DeterminenAsyncHandles(nAsyncHandles,MaxGPUmemory,maxnAsyncHandles,nPrimP,&
        & nPrimQ,nPrimA,nContA,nPrimB,nContB,nPrimC,nContC,nPrimD,nContD,nTABFJW1,&
        & nTABFJW2,natomsA,natomsB,TMParray1maxsize,TMParray2maxsize,MaxPasses,nLocalIntPass)
@@ -2402,7 +2406,7 @@ subroutine IchorTypeIntegralLoopGPU(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbital
           & LocalIntPass1(:,iCAH),nLocalIntPass,Acenter,Bcenter,&
           & CcenterSpec(:,iCAH),DcenterSpec(:,iCAH),nAtomsA,nAtomsB,Spherical,&
           & TmpArray1(:,iCAH),TMParray1maxsizePass,TmpArray2(:,iCAH),&
-          & TMParray2maxsizePass,IatomAPass(:,iCAH),iatomBPass(:,iCAH),iSync(iCAH))
+          & TMParray2maxsizePass,IatomAPass(:,iCAH),iatomBPass(:,iCAH),iSync(iCAH),UseSP)
      
 !$ACC UPDATE HOST(LocalIntPass1(:,iCAH)) ASYNC(iSync(iCAH))
 
@@ -2746,4 +2750,4 @@ subroutine Distribute_seg_seg_SSSS(nAtomsA,nAtomsB,startOrbitalA,startOrbitalB,&
   ENDIF
 end subroutine Distribute_seg_seg_SSSS
 
-END MODULE IchorErimodule
+END MODULE IchorErimod

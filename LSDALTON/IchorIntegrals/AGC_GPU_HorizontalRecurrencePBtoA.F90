@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_HorizontalRecurrenceLHSModBtoA
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 

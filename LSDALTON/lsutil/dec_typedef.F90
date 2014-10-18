@@ -96,6 +96,8 @@ module dec_typedef_module
      integer :: SNOOPmaxdiis
      !> Debug prints for SNOOP RH/DIIS
      logical :: SNOOPdebug
+     !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
+     logical :: SNOOPort
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

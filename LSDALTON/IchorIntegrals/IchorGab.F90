@@ -7,18 +7,18 @@
 !> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorGabmodule
-  use IchorprecisionModule
-  use IchorBatchToolsModule
-  use IchorCommonModule
+MODULE IchorGabmod
+  use IchorprecisionMod
+  use IchorBatchToolsMod
+  use IchorCommonMod
   use IchorEriGabintegralOBSGeneralMod, only: IGI_OBS_general, &
        & IGI_OBS_general_size
   use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,&
        & DetermineSizeTmpArray34,precalcichorsphmat,freeichorsphmat,&
        & nTmpArray3,nTmpArray4
   use IchorMemory
-  use IchorGammaTabulationModule
-  use IchorParametersModule
+  use IchorGammaTabulationMod
+  use IchorParametersMod
 !debugging
   use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general
   use IchorGaussianGeminalMod, only: set_GGem, free_GGem, GGemOperatorCalc
@@ -540,4 +540,4 @@ DO IA = 1,nBatchA
    ENDDO
 ENDDO
 end subroutine AddUpperTriAngular
-END MODULE IchorGabmodule
+END MODULE IchorGabmod

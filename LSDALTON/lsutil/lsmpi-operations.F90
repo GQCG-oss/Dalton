@@ -470,6 +470,7 @@ SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   call mpicopy_reduced_screen_info(setting%redCS,slave,master)               !LSSETTING080
 
   !if (.NOT.SLAVE) call lstimer('copy8',ts,te,6)
+  CALL LS_MPI_BUFFER(setting%GPUMAXMEM,Master)                               !LSSETTING081
 
 END SUBROUTINE mpicopy_setting
 

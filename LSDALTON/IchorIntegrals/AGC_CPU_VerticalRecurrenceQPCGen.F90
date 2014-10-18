@@ -1,5 +1,5 @@
 MODULE AGC_CPU_OBS_VERTICALRECURRENCEMODCGen
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 
