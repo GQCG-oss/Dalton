@@ -1,5 +1,5 @@
-MODULE IchorParametersModule
-  use IchorCommonModule
+MODULE IchorParametersMod
+  use IchorCommonMod
 !> Spherical Specification
 Integer,parameter :: SphericalParam = 1 !spherical harmonic basis set
 !Job Specification
@@ -144,5 +144,4 @@ subroutine Determine_Operator_From_OpereratorSpec(Oper,Operparam)
 
 end subroutine Determine_Operator_From_OpereratorSpec
 
-
-END MODULE IchorParametersModule
+END MODULE IchorParametersMod

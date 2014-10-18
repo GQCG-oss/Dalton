@@ -1,5 +1,5 @@
 MODULE AGC_CPU_OBS_BUILDRJ000MODGen
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 

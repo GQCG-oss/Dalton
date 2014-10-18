@@ -50,7 +50,7 @@ CONTAINS
        open(unit = LUFILE, file=TRIM(FileName),status="unknown")
        
        WRITE(LUFILE,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_HorizontalRecurrenceLHSModBtoA'
-       WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+       WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
        WRITE(LUFILE,'(A)')'  '
        WRITE(LUFILE,'(A)')' CONTAINS'
 

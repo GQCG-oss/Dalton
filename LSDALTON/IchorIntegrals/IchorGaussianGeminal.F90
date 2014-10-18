@@ -5,8 +5,8 @@
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorGaussianGeminalMod
-use IchorPrecisionModule
-use IchorParametersModule
+use IchorPrecisionMod
+use IchorParametersMod
 use IchorMemory
 integer :: nGGem
 real(realk),allocatable :: GGemCoeff(:)

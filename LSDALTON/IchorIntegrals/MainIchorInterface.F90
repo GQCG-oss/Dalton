@@ -24,8 +24,8 @@ Subroutine IchorEriInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & OutputStorage,lupri)
-  use IchorErimodule
-  use IchorPrecisionModule
+  use IchorErimod
+  use IchorPrecisionMod
 implicit none
 !> nTypesA is the number of different types of shells, each type is defined by 
 !> an angular momentum, a number of primitives(nPrim), a number of contracted functions
@@ -197,8 +197,8 @@ Subroutine IchorEriMemInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & OutputStorage,lupri)
-  use IchorErimodule
-  use IchorPrecisionModule
+  use IchorErimod
+  use IchorPrecisionMod
 implicit none
 !> nTypesA is the number of different types of shells, each type is defined by 
 !> an angular momentum, a number of primitives(nPrim), a number of contracted functions
@@ -358,8 +358,8 @@ subroutine IchorGabInterface(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
      & MaxFileStorage,MaxMemAllocated,MemAllocated,&
      & OutputDim1,OutputDim2,OutputDim3,OutputDim4,OutputDim5,&
      & OutputStorage,lupri)
-  use IchorGabmodule
-  use IchorPrecisionModule
+  use IchorGabmod
+  use IchorPrecisionMod
 implicit none
 !> nTypesA is the number of different types of shells, each type is defined by 
 !> an angular momentum, a number of primitives(nPrim), a number of contracted functions
@@ -461,14 +461,14 @@ call IchorGab(nTypesA,MaxNatomsA,MaxnPrimA,MaxnContA,&
 end subroutine IchorGabInterface
 
 subroutine GET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 implicit none
 integer,intent(inout) :: IchorGabID1,IchorGabID2
 call GET_IchorGabID(IchorGabID1,IchorGabID2)
 end subroutine GET_IchorGabIDInterface
 
 subroutine SET_IchorGabIDInterface(IchorGabID1,IchorGabID2)
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 implicit none
 integer,intent(in) :: IchorGabID1,IchorGabID2
 call SET_IchorGabID(IchorGabID1,IchorGabID2)
@@ -476,8 +476,8 @@ end subroutine SET_IchorGabIDInterface
 
 subroutine GetIchorScreeningParameter(IchorScreenSpec,CSscreen,&
      & ODscreen,QQRscreen)
-  use IchorParametersModule
-  use IchorCommonModule
+  use IchorParametersMod
+  use IchorCommonMod
   implicit none
   integer,intent(inout) :: IchorScreenSpec
   logical,intent(in)    :: CSscreen,ODscreen,QQRscreen
@@ -500,7 +500,7 @@ subroutine GetIchorScreeningParameter(IchorScreenSpec,CSscreen,&
 END subroutine GetIchorScreeningParameter
 
 subroutine GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameODs)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: IchorPermuteSpec
   logical,intent(in)    :: SameLHSaos,SameRHSaos,SameODs
@@ -520,21 +520,21 @@ subroutine GetIchorPermuteParameter(IchorPermuteSpec,SameLHSaos,SameRHSaos,SameO
 end subroutine GetIchorPermuteParameter
 
 subroutine GetIchorFilestorageIdentifier(filestorageIdentifier)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: filestorageIdentifier
   filestorageIdentifier = IchorNofilestorage
 end subroutine GetIchorFilestorageIdentifier
 
 subroutine GetIchorSphericalParamIdentifier(Identifier)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   Identifier = SphericalParam
 end subroutine GetIchorSphericalParamIdentifier
 
 subroutine GetIchorJobEriIdentifier(Identifier,doLink)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   logical,intent(in)    :: doLink
@@ -546,14 +546,14 @@ subroutine GetIchorJobEriIdentifier(Identifier,doLink)
 end subroutine GetIchorJobEriIdentifier
 
 subroutine GetIchorJobMOtransIdentifier(Identifier)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   Identifier = IchorJobMoTrans
 end subroutine GetIchorJobMOtransIdentifier
 
 subroutine GetIchorInputIdentifier(Identifier,rhsDmat)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   logical,intent(in)    :: rhsDmat
@@ -565,14 +565,14 @@ subroutine GetIchorInputIdentifier(Identifier,rhsDmat)
 end subroutine GetIchorInputIdentifier
 
 subroutine GetIchorParallelSpecIdentifier(Identifier)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   Identifier = IchorParNone
 end subroutine GetIchorParallelSpecIdentifier
 
 subroutine GetIchorDebugIdentifier(Identifier,iprint)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   integer,intent(in)    :: IPRINT
@@ -580,7 +580,7 @@ subroutine GetIchorDebugIdentifier(Identifier,iprint)
 end subroutine GetIchorDebugIdentifier
 
 subroutine GetIchorOpererator(Oper,IchorOperatorSpec)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   Character(len=7),intent(in)     :: Oper
   integer,intent(inout)     :: IchorOperatorSpec
@@ -588,34 +588,34 @@ subroutine GetIchorOpererator(Oper,IchorOperatorSpec)
 end subroutine GetIchorOpererator
 
 subroutine GetIchorAlgorithmSpecIdentifier(Identifier)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   integer,intent(inout) :: Identifier
   Identifier = IchorAlgoOS
 end subroutine GetIchorAlgorithmSpecIdentifier
 
 subroutine SetIchorGPUMAXMEM(InputGPUMAXMEM)
-  use IchorParametersModule
+  use IchorParametersMod
   implicit none
   real(realk),intent(inout) :: InputGPUMAXMEM
   IchorGPUMAXMEM = InputGPUMAXMEM
 end subroutine SetIchorGPUMAXMEM
 
 subroutine FreeIchorSaveGabModuleInterface()
-use IchorSaveGabModule
+use IchorSaveGabMod
 implicit none
 call FreeIchorSaveGabModule
 end subroutine FreeIchorSaveGabModuleInterface
 
 subroutine InitIchorSaveGabModuleInterface()
-use IchorSaveGabModule
+use IchorSaveGabMod
 implicit none
 call InitIchorSaveGabModule
 end subroutine InitIchorSaveGabModuleInterface
 
 subroutine AddGabToIchorSaveGabModuleInterface(nBatch1,nBatch2,GabIdentifier,BATCHGAB)
-use IchorSaveGabModule
-use IchorPrecisionModule
+use IchorSaveGabMod
+use IchorPrecisionMod
 implicit none
 integer :: nBatch1,nBatch2,GabIdentifier
 real(realk) :: BATCHGAB(nBatch1*nBatch2) 
@@ -624,8 +624,8 @@ end subroutine AddGabToIchorSaveGabModuleInterface
 
 subroutine RetrieveGabFromIchorSaveGabModuleInterface(nBatch1,nBatch2,&
      &GabIdentifier,BATCHGAB)
-use IchorSaveGabModule
-use IchorPrecisionModule
+use IchorSaveGabMod
+use IchorPrecisionMod
 implicit none
 integer :: nBatch1,nBatch2,GabIdentifier
 real(realk) :: BATCHGAB(nBatch1*nBatch2) 
@@ -637,27 +637,27 @@ end subroutine RetrieveGabFromIchorSaveGabModuleInterface
 
 subroutine RetrieveGabDimFromIchorSaveGabModuleInterface(&
      & nBatch1,nBatch2,GabIdentifier)
-use IchorSaveGabModule
+use IchorSaveGabMod
 implicit none
 integer :: nBatch1,nBatch2,GabIdentifier
 call RetrieveGabDimFromIchorSaveGabModule(nBatch1,nBatch2,GabIdentifier)
 end subroutine RetrieveGabDimFromIchorSaveGabModuleInterface
 
 subroutine InitIchorInputInfo()
-  use IchorInputInfoModule
+  use IchorInputInfoMod
   implicit none
   call InitIchorInputInfoModule
 end subroutine InitIchorInputInfo
 
 subroutine FreeIchorInputInfo()
-  use IchorInputInfoModule
+  use IchorInputInfoMod
   implicit none
   call FreeIchorInputInfoModule()
 end subroutine FreeIchorInputInfo
 
 subroutine IchorInputM1(M,n1,n2)
-  use IchorInputInfoModule
-  use IchorPrecisionModule
+  use IchorInputInfoMod
+  use IchorPrecisionMod
   implicit none
   integer,intent(in) :: n1,n2
   real(realk),intent(in) :: M(n1,n2)
@@ -665,8 +665,8 @@ subroutine IchorInputM1(M,n1,n2)
 end subroutine IchorInputM1
 
 subroutine IchorInputM2(M1,n11,n12,M2,n21,n22)
-  use IchorInputInfoModule
-  use IchorPrecisionModule
+  use IchorInputInfoMod
+  use IchorPrecisionMod
   implicit none
   integer,intent(in) :: n11,n12,n21,n22
   real(realk),intent(in) :: M1(n11,n12),M2(n21,n22)
@@ -674,8 +674,8 @@ subroutine IchorInputM2(M1,n11,n12,M2,n21,n22)
 end subroutine IchorInputM2
 
 subroutine IchorInputM3(M1,n11,n12,M2,n21,n22,M3,n31,n32)
-  use IchorInputInfoModule
-  use IchorPrecisionModule
+  use IchorInputInfoMod
+  use IchorPrecisionMod
   implicit none
   integer,intent(in) :: n11,n12,n21,n22,n31,n32
   real(realk),intent(in) :: M1(n11,n12),M2(n21,n22),M3(n31,n32)
@@ -683,8 +683,8 @@ subroutine IchorInputM3(M1,n11,n12,M2,n21,n22,M3,n31,n32)
 end subroutine IchorInputM3
 
 subroutine IchorInputM4(M1,n11,n12,M2,n21,n22,M3,n31,n32,M4,n41,n42)
-  use IchorInputInfoModule
-  use IchorPrecisionModule
+  use IchorInputInfoMod
+  use IchorPrecisionMod
   implicit none
   integer,intent(in) :: n11,n12,n21,n22,n31,n32,n41,n42
   real(realk),intent(in) :: M1(n11,n12),M2(n21,n22),M3(n31,n32),M4(n41,n42)
@@ -692,7 +692,7 @@ subroutine IchorInputM4(M1,n11,n12,M2,n21,n22,M3,n31,n32,M4,n41,n42)
 end subroutine IchorInputM4
 
 subroutine IchorInputSpec(CenterA,CenterB,CenterC,CenterD)
-  use IchorInputInfoModule
+  use IchorInputInfoMod
   implicit none
   integer :: CenterA,CenterB,CenterC,CenterD
   call IchorInputInfoSpec(CenterA,CenterB,CenterC,CenterD)
@@ -717,7 +717,7 @@ end subroutine WriteCenterInfo1
 subroutine WriteCenterInfo2(luoutput,nTypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
      & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
      & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,spherical)
-  use IchorPrecisionModule
+  use IchorPrecisionMod
 implicit none
 integer,intent(in) :: LUOUTPUT !logical unit number of file to write
 logical,intent(in) :: spherical
@@ -786,7 +786,7 @@ end subroutine ReadCenterInfo1
 subroutine ReadCenterInfo2(luoutput,nTypesA,nBatchesA,nAtomsOfTypeA,AngmomOfTypeA,&
      & nPrimOfTypeA,nContOfTypeA,MaxnAtomsA,MaxnPrimA,MaxnContA,&
      & startOrbitalOfTypeA,exponentsOfTypeA,ContractCoeffOfTypeA,Acenters,spherical)
-  use IchorPrecisionModule
+  use IchorPrecisionMod
 implicit none
 integer,intent(in) :: LUOUTPUT !logical unit number of file to read from
 logical,intent(in) :: spherical

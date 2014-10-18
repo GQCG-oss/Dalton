@@ -1,7 +1,7 @@
 !Monitor memory NON THREAD SAFE
 MODULE IchorMemory
-  use IchorCommonModule
-  use IchorprecisionModule
+  use IchorCommonMod
+  use IchorprecisionMod
    private
    public set_ichor_memvar, retrieve_ichor_memvar
    public stats_ichor_mem

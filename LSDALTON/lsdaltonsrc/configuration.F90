@@ -1092,15 +1092,15 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
            ! Max memory available on gpu measured in GB. By default set to 2 GB
         CASE('.GPUMAXMEM');             
-           READ(LUCMD,*) GPUMAXMEM
-           IF(GPUMAXMEM.LT.0.0E0_realk)THEN
+           READ(LUCMD,*) config%GPUMAXMEM
+           IF(config%GPUMAXMEM.LT.0.0E0_realk)THEN
               CALL LSQUIT('.GPUMAXMEM error: less than 0 GB supplied on input',-1)
-           ELSEIF(GPUMAXMEM.GT.100.0E0_realk)THEN
+           ELSEIF(config%GPUMAXMEM.GT.100.0E0_realk)THEN
               CALL LSQUIT('.GPUMAXMEM error: More than 100 GB supplied on input',-1)
            ENDIF
 #ifdef VAR_MPI
            call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
-           call ls_mpibcast(GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
 #endif
 #ifdef VAR_MPI
         CASE('.MAX_MPI_MSG_SIZE_NEL');
@@ -3786,7 +3786,7 @@ ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
-
+   ls%setting%GPUMAXMEM = config%GPUMAXMEM
 end subroutine set_final_config_and_print
 
 SUBROUTINE TRIM_STRING(string,n,words)

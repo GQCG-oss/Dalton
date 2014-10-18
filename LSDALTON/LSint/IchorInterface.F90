@@ -425,7 +425,7 @@ call mem_alloc(InputStorage,1)
 call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-call SetIchorGPUMaxMem(GPUMAXMEM)
+call SetIchorGPUMaxMem(setting%GPUMAXMEM)
 IF(FullBatch)THEN
    SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.Setting%sameBas(1,2)
    SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.Setting%sameBas(3,4)
@@ -665,7 +665,7 @@ call mem_alloc(InputStorage,1)
 call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-call SetIchorGPUMaxMem(GPUMAXMEM)
+call SetIchorGPUMaxMem(setting%GPUMAXMEM)
 IF(FullBatch)THEN
    SameLHSaos = (intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)).AND.Setting%sameBas(1,2)
    SameRHSaos = (intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)).AND.Setting%sameBas(3,4)
@@ -948,7 +948,7 @@ IF(SETTING%SCHEME%CS_SCREEN)THEN
    call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
    call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
    call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-   call SetIchorGPUMaxMem(GPUMAXMEM)
+   call SetIchorGPUMaxMem(setting%GPUMAXMEM)
    !no Permutational Sym: SameLHSaos=SameRHSaos=SameODs=.FALSE. 
    call GetIchorPermuteParameter(IchorPermuteSpec,.FALSE.,.FALSE.,.FALSE.)
    call GetIchorFileStorageIdentifier(filestorageIdentifier)
@@ -1168,7 +1168,7 @@ IchorInputDim3=nDmat
 call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-call SetIchorGPUMaxMem(GPUMAXMEM)
+call SetIchorGPUMaxMem(setting%GPUMAXMEM)
 
 SameLHSaos = .FALSE.!intSpec(1).EQ.intSpec(2).AND.Setting%sameMol(1,2)
 SameRHSaos = .FALSE.!intSpec(3).EQ.intSpec(4).AND.Setting%sameMol(3,4)
@@ -1945,7 +1945,7 @@ call mem_alloc(InputStorage,1)
 call GetIchorParallelSpecIdentifier(IchorParSpec)   !no parallelization
 call GetIchorDebugIdentifier(IchorDebugSpec,iprint) !Debug PrintLevel
 call GetIchorAlgorithmSpecIdentifier(IchorAlgoSpec)
-call SetIchorGPUMaxMem(GPUMAXMEM)
+call SetIchorGPUMaxMem(0.0E0_realk)
 SameLHSaos = .FALSE. 
 SameRHSaos = .FALSE. 
 SameODs = .FALSE. 

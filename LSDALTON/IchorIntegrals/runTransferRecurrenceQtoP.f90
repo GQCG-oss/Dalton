@@ -38,7 +38,7 @@ subroutine PASSsub
   !    LUSPECIAL = 2
   !    open(unit = LUSPECIAL, file="runNewTRQPBasic.F90",status="unknown")
   !    WRITE(LUSPECIAL,'(A)')'MODULE AGC_OBS_TRANSFERRECURRENCEMODBASIC'
-  !    WRITE(LUSPECIAL,'(A)')' use IchorPrecisionModule'
+  !    WRITE(LUSPECIAL,'(A)')' use IchorPrecisionMod'
   !    WRITE(LUSPECIAL,'(A)')'  '
   !    WRITE(LUSPECIAL,'(A)')' CONTAINS'
   DO GPUrun = 1,2
@@ -96,7 +96,7 @@ subroutine PASSsub
           open(unit = LUFILE1, file=TRIM(FileName),status="unknown")
 
           WRITE(LUFILE1,'(7A)')'MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel)
-          WRITE(LUFILE1,'(A)')' use IchorPrecisionModule'
+          WRITE(LUFILE1,'(A)')' use IchorPrecisionMod'
           WRITE(LUFILE1,'(A)')'  '
           WRITE(LUFILE1,'(A)')' CONTAINS'
           MaxAngmomQP = 8-1 !PDDD highest possible 

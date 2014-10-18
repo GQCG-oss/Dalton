@@ -5,14 +5,14 @@
 !> \author T. Kjaergaard
 !> \date 2013 
 MODULE IchorEriCoulombintegralCPUMcMGeneralEcoeffMod
-use IchorPrecisionModule
-use IchorCommonModule
+use IchorPrecisionMod
+use IchorCommonMod
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 use IchorEriCoulombintegralCPUMcMspecREcoeffMod
 use IchorEriCoulombintegralCPUMcMspecLEcoeffMod
 use IchorEriCoulombintegralCPUMcMspecL2EcoeffMod
-private 
-public :: Ichorbuild_Ecoeff_LHS,Ichorbuild_Ecoeff_RHS, printEcoeff
+!private 
+!public :: Ichorbuild_Ecoeff_LHS,Ichorbuild_Ecoeff_RHS, printEcoeff
 
 CONTAINS
 Subroutine Ichorbuild_Ecoeff_RHS(nPrimP,nPrimA,nPrimB,maxAngP,maxAng1,maxAng2,nTUV,&

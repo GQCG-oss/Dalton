@@ -1,10 +1,12 @@
 !> @file
 !> Contains some tools for the main Ichor integral drivers
 
-MODULE IchorEriToolsmodule
-  use IchorprecisionModule
-  use IchorCommonModule
-  use IchorParametersModule
+MODULE IchorEriToolsmod
+  use IchorprecisionMod
+  use IchorCommonMod
+  use IchorParametersMod
+
+  logical,parameter :: UseSP = .TRUE.!SinglePrecision default double precision
 
 CONTAINS
 subroutine ObtainTypeInfo(nTypesD,ItypeDnon,OrderdListD,nAtomsOfTypeD,AngmomOfTypeD,nPrimOfTypeD,&
@@ -681,4 +683,4 @@ subroutine FormActiveCmat(nDimB,nOcc,CmatB,nAtomsB,startOrbitalB,nOrbB,&
   enddo
 end subroutine FormActiveCmat
 
-END MODULE IchorEriToolsmodule
+END MODULE IchorEriToolsmod
