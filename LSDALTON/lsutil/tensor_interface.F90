@@ -1969,10 +1969,13 @@ contains
     !> if the array should have a different ordering than the fortran array,
     ! this can be specified with order
     integer, intent(in),optional :: order(arr%mode)
-    !> checkmem is outdated
     real(realk) :: tilemem,MemFree
     integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
+    logical :: simpleord
+
+    simpleord = .true.
+
     do  i=1,arr%mode
       o(i)=i
     enddo
@@ -1980,40 +1983,60 @@ contains
     do  i=1,arr%mode
       fullfortdims(o(i))=arr%dims(i)
     enddo
+
+    do  i=1,arr%mode
+      simpleord = simpleord.and.(o(i)==i)
+    enddo
     
     if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_fort2arr):array&
-    &dimensions are not the same",-1)
+       &dimensions are not the same",-1)
     select case(arr%itype)
-      case(TT_DENSE)
+    case(TT_DENSE,TT_REPLICATED)
+       if(simpleord)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
+          call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
 #else
-        call dcopy(int(nelms),fortarr,1,arr%elm1,1)
+          call dcopy(int(nelms),fortarr,1,arr%elm1,1)
 #endif
-      case(TT_REPLICATED)
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(arr%elm1,'=',fortarr,nelms)
-#else
-        call dcopy(int(nelms),fortarr,1,arr%elm1,1)
-#endif
-        call tensor_sync_replicated(arr)
-      case(TT_TILED)
-        call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
-      case(TT_TILED_DIST)
-        !if enough memory is available the lower one should be faster      
-        if(arr%access_type==AT_ALL_ACCESS)then
+       else
+          select case(arr%mode)
+          case(2)
+             call array_reorder_2d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &o,0.0E0_realk,arr%elm1)
+          case(3)
+             call array_reorder_3d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),o,0.0E0_realk,arr%elm1)
+          case(4)
+             call array_reorder_4d(1.0E0_realk,fortarr,fullfortdims(1),fullfortdims(2),&
+                &fullfortdims(3),fullfortdims(4),o,0.0E0_realk,arr%elm1)
+          case default
+             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+          end select
+       endif
+
+       if(arr%itype==TT_REPLICATED)call tensor_sync_replicated(arr)
+
+    case(TT_TILED)
+
+       call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
+
+    case(TT_TILED_DIST)
+
+       !if enough memory is available the lower one should be faster      
+       if(arr%access_type==AT_ALL_ACCESS)then
           do i=1,arr%nlti
-            call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
-                               &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
+             call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
+                &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
           enddo
-        else
+       else
           !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
           call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
-        endif
-      case default
-        call lsquit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
+       endif
+
+    case default
+       call lsquit("ERROR(tensor_convert_fort2arr) the array type is not implemented",-1)
     end select
-  end subroutine tensor_convert_fort2arr
+ end subroutine tensor_convert_fort2arr
   !> \brief change the init type for a fortan array
   !> \author Patrick Ettenhuber
   !> \date late 2012
@@ -2046,21 +2069,64 @@ contains
     !> if the fortan array has a different order than the array this specifies
     !the reordering
     integer, intent(in), optional :: order(arr%mode)
+    real(realk) :: tilemem,MemFree
+    integer :: i,o(arr%mode),fullfortdims(arr%mode)
+    real(realk) :: nrm
+    logical :: simpleord
+
+    simpleord = .true.
+
+    do  i=1,arr%mode
+      o(i)=i
+    enddo
+    if(present(order))o=order
+    do  i=1,arr%mode
+      fullfortdims(o(i))=arr%dims(i)
+    enddo
+
+    do  i=1,arr%mode
+      simpleord = simpleord.and.(o(i)==i)
+    enddo
+
+
     if(nelms/=arr%nelms)call lsquit("ERROR(tensor_convert_tensor2fort):array&
     &dimensions are not the same",DECinfo%output)
+
+
     select case(arr%itype)
-      case(TT_DENSE)
+
+    case(TT_DENSE,TT_REPLICATED)
+
+       if(simpleord)then
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-        call assign_in_subblocks(fort,'=',arr%elm1,nelms)
+          call assign_in_subblocks(fort,'=',arr%elm1,nelms)
 #else
-        call dcopy(int(nelms),arr%elm1,1,fort,1)
+          call dcopy(int(nelms),arr%elm1,1,fort,1)
 #endif
-      case(TT_TILED)
-        if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
-        if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
-      case(TT_TILED_DIST)
-        if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
-        if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
+       else
+
+          select case(arr%mode)
+          case(2)
+             call array_reorder_2d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &o,0.0E0_realk,fort)
+          case(3)
+             call array_reorder_3d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),o,0.0E0_realk,fort)
+          case(4)
+             call array_reorder_4d(1.0E0_realk,arr%elm1,arr%dims(1),arr%dims(2),&
+                &arr%dims(3),arr%dims(4),o,0.0E0_realk,fort)
+          case default
+             call lsquit("ERROR(tensor_convert_fort2arr): mode not implemented",-1)
+          end select
+
+       endif
+
+    case(TT_TILED)
+       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.false.,order)
+       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.false.)
+    case(TT_TILED_DIST)
+       if(present(order))call cp_tileddata2fort(arr,fort,nelms,.true.,order)
+       if(.not.present(order))call cp_tileddata2fort(arr,fort,nelms,.true.)
     end select
   end subroutine tensor_convert_tensor2fort
 
@@ -2092,10 +2158,11 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY UTILITIES !!!!!!!!! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  subroutine tensor_cp_data(from_arr,to_arr)
+  subroutine tensor_cp_data(from_arr,to_arr,order)
     implicit none
-    type(tensor),intent(in) :: from_arr
+    type(tensor),intent(inout) :: from_arr
     type(tensor),intent(inout) :: to_arr
+    integer, intent(in),optional :: order(to_arr%mode)
     integer :: i
     real(realk) :: tilemem,MemFree
     integer :: o(from_arr%mode)
@@ -2107,41 +2174,57 @@ contains
     do i=1,from_arr%mode
        o(i) = i
     enddo
+    if(present(order)) o = order
     
     select case(from_arr%itype)
-      case(TT_DENSE,TT_REPLICATED)
-        select case(to_arr%itype)
-          case(TT_DENSE)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-          case(TT_REPLICATED)
-            call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
-            call tensor_sync_replicated(to_arr)
-          case(TT_TILED_DIST)
-             if(to_arr%access_type==AT_ALL_ACCESS)then
-                do i=1,to_arr%nlti
-                   call tile_from_fort(1.0E0_realk,from_arr%elm1,from_arr%dims,to_arr%mode,&
-                      &0.0E0_realk,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
-                enddo
-             else
-                call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
-             endif
-          case default
-            call lsquit("ERROR(tensor_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case(TT_TILED_DIST)
-        select case(to_arr%itype)
-          case(TT_DENSE)
-            call cp_tileddata2fort(from_arr,to_arr%elm1,from_arr%nelms,.true.)
-          case(TT_TILED_DIST)
-            call tensor_cp_tiled(from_arr,to_arr)
-          case default
-            call lsquit("ERROR(tensor_cp_data):operation not yet&
-            & implemented",DECinfo%output)
-        end select
-      case default
-        call lsquit("ERROR(tensor_cp_data):operation not yet&
-        & implemented",DECinfo%output)
+
+
+    case(TT_DENSE,TT_REPLICATED)
+       select case(to_arr%itype)
+
+       case(TT_DENSE,TT_REPLICATED)
+
+          call tensor_convert(from_arr, to_arr%elm1, order = o)
+          if(to_arr%itype == TT_REPLICATED)call tensor_sync_replicated(to_arr)
+
+       case(TT_TILED_DIST)
+
+          if(to_arr%access_type==AT_ALL_ACCESS)then
+             do i=1,to_arr%nlti
+                call tile_from_fort(1.0E0_realk,from_arr%elm1,from_arr%dims,to_arr%mode,&
+                   &0.0E0_realk,to_arr%ti(i)%t,to_arr%ti(i)%gt,to_arr%tdim,o)
+             enddo
+          else
+             call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode,optorder=o)
+          endif
+
+       case default
+          call lsquit("ERROR(tensor_cp_data):operation not yet implemented",DECinfo%output)
+       end select
+
+
+
+    case(TT_TILED_DIST)
+
+       select case(to_arr%itype)
+       case(TT_DENSE)
+
+          call cp_tileddata2fort(from_arr,to_arr%elm1,from_arr%nelms,.true.,order = o)
+
+       case(TT_TILED_DIST)
+
+          if(present(order))call lsquit("ERROR(tensor_cp_data) order not yet implemented for tiled dist",-1)
+          call tensor_cp_tiled(from_arr,to_arr)
+
+       case default
+
+          call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
+
+       end select
+
+
+    case default
+        call lsquit("ERROR(tensor_cp_data):operation not yet  implemented",DECinfo%output)
     end select
 
   end subroutine tensor_cp_data

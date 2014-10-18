@@ -125,7 +125,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_full = 2
    pT_4    = 3
    pT_5    = 4
-
+   
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
       ! is this a frozen core calculation or not?
@@ -145,10 +145,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               call print_norm(mp2_amp,"FREAKING MP2")
          endif
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp )
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
          if(DECinfo%use_pnos)call tensor_free( mp2_amp )
       else
@@ -157,10 +158,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+               call print_norm(mp2_amp,"FREAKING MP2")
          endif
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp )
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
          if(DECinfo%use_pnos)call tensor_free( mp2_amp )
 
@@ -184,8 +186,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       !one node is used
       call tensor_init(VOVO_local,VOVO%dims,4)
       call tensor_init(t2f_local,t2_final%dims,4)
-      call tensor_add(VOVO_local, 1.0E0_realk, VOVO, a = 0.0E0_realk)
-      call tensor_add(t2f_local, 1.0E0_realk, t2_final, a = 0.0E0_realk)
+      call tensor_add(VOVO_local, 1.0E0_realk, VOVO,     a = 0.0E0_realk)
+      call tensor_add(t2f_local,  1.0E0_realk, t2_final, a = 0.0E0_realk)
 
       if(ccmodel == MODEL_CCSDpT)then
 
@@ -366,7 +368,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,.false.)
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       else
          ncore = 0
          if(DECinfo%use_pnos)then
@@ -377,7 +379,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final,t2_final,VOVO,.false.,local,.false.)
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       end if
 
       if(DECinfo%PL>1)then
@@ -1574,6 +1576,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
 
+
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
    time_idle        = 0.0E0_realk
@@ -1702,9 +1705,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
 
-   use_pseudo_diag_basis = DECinfo%CCSDpreventcanonical.or.use_pnos
+   use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical.or.use_pnos)
    !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
    
+
    if(use_pseudo_diag_basis)then
       call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
          & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
@@ -1885,7 +1889,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
       print *,"WARNING(ccsolver_par): vovo given on input has not been tested thoroughly"
-      call tensor_add(iajb,1.0E0_realk,VOVO, a=0.0E0_realk,order = [2,1,4,3])
+      call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
       call tensor_free(VOVO)
    endif
 
@@ -1965,12 +1969,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 #endif
 
+      print *,"are we setting pnos or what?",use_pnos,mo_ccsd,fragment_job
       nspaces = 0
       set_pno_info:if(use_pnos)then
 
          !FIXME: do the PNO construction in MPI parallel
          call tensor_init(tmp,[nv,no,nv,no],4)
-         call tensor_convert(m2, tmp%elm1)
+         call tensor_convert(m2, tmp%elm1 )
+         call print_norm(tmp%elm1,i8*nv**2*no**2,"FOOBAR:")
 
          !GET THE PNO TRANSFORMATION MATRICES
          if(fragment_job)then
@@ -2000,6 +2006,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
+
+         print *,"aibJ",iajb%elm1(1:5)
+
+         call tensor_zero(t2(1))
+         call tensor_zero(t1(1))
 
       endif set_pno_info
 
@@ -2089,11 +2100,18 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
+            call print_norm(t2(iter))
+            call print_norm(t1(iter))
+            call print_norm(iajb)
+
             call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
                & pno_cv,pno_s,nspaces,&
                & iter,local,use_pnos,restart,frag=frag)
+
+            call print_norm(omega2(iter))
+            call print_norm(omega1(iter))
 
          case( MODEL_RPA )
 
@@ -2451,19 +2469,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
    call print_norm(t2_final,t2fnorm2,.true.)
-   if(DECinfo%use_singles)then
+   if(use_singles)then
       call print_norm(t1_final,t1fnorm2,.true.)
    endif
 
    call print_ccjob_summary(break_iterations,.false.,fragment_job,&
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
       &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2)
+   
 
-   ! Save two-electron integrals in the order (virt,occ,virt,occ)
-   if(.not.use_pnos)then
-      call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
-      call tensor_add(   VOVO, 1.0E0_realk, iajb, a = 0.0E0_realk, order = [2,1,4,3] )
-   endif
+   ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
+   ! RHS or restore the old rhs
+   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+   call tensor_add(   VOVO, 1.0E0_realk, iajb, a = 0.0E0_realk, order = [2,1,4,3] )
+
    call tensor_free(iajb)
 
    ! deallocate stuff

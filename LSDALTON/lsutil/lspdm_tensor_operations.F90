@@ -1929,15 +1929,18 @@ module lspdm_tensor_operations_module
   !> \brief array copying routine for TT_TILED_DIST arrays
   !> \author Patrick Ettenhuber
   !> \date January 2013
-  subroutine tensor_cp_tiled(from,to_ar)
+  subroutine tensor_cp_tiled(from,to_ar, order )
     implicit none
     !> source, array to copy
     type(tensor), intent(in) :: from
     !> drain, the copied array
     type(tensor), intent(inout) :: to_ar
+    integer, intent(in), optional :: order(to_ar%mode)
     real(realk),pointer :: buffer(:)
     integer :: lt
 #ifdef VAR_MPI
+    
+    if(present(order)) call lsquit("ERROR(tensor_cp_tiled): order not yet implemented",-1)
 
     !check for the same access_types
     if(from%access_type/=to_ar%access_type)then

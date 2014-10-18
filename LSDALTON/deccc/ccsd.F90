@@ -724,21 +724,24 @@ function precondition_doubles_memory(omega2,ppfock,qqfock) result(prec)
        call tensor_init(tloc,[nv,no,nv,no],4)
        call tensor_init(oloc,[nv,no,nv,no],4)
        call tensor_init(gloc,[nv,no,nv,no],4)
-       call tensor_convert( t2,     tloc%elm1, order = [1,3,2,4] )
-       call tensor_convert( omega2, oloc%elm1, order = [1,3,2,4] )
-       call tensor_convert( iajb,   gloc%elm1, order = [1,3,2,4] )
+       call tensor_cp_data( t2,     tloc, order = [1,3,2,4] )
+       call tensor_cp_data( omega2, oloc, order = [1,3,2,4] )
+       call tensor_cp_data( iajb,   gloc )
 
-       call get_ccsd_residual_pno_style(t1%elm1,t2%elm1,omega1%elm1,&
-          &omega2%elm1,iajb%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
+       call get_ccsd_residual_pno_style(t1%elm1,tloc%elm1,omega1%elm1,&
+          &oloc%elm1,iajb%elm1,no,nv,nb,xo%elm1,xv%elm1,yo%elm1,yv%elm1,mylsitem,&
           &present(frag),pno_cv,pno_S,nspaces,ppfock%elm1,&
           &qqfock%elm1,delta_fock%elm1,iter,f=frag)
 
+       call print_norm(oloc,"fuck that shit")
+
        !TODO: remove these sortings
-       call tensor_convert( tloc%elm1, t2,      order = [1,3,2,4] )
-       call tensor_convert( oloc%elm1, omega2,  order = [1,3,2,4] )
+       call tensor_cp_data( tloc, t2,     order = [1,3,2,4] )
+       call tensor_cp_data( oloc, omega2, order = [1,3,2,4] )
        call tensor_free(tloc)
        call tensor_free(oloc)
        call tensor_free(gloc)
+       call print_norm(omega2,"fuck that shit")
 
     else
 
