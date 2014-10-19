@@ -5220,7 +5220,6 @@ module lspdm_tensor_operations_module
       call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,order)
       call get_tile_dim(nelmsit,arr,i)
       !copy data to the identified places
-      print *,"norm of extracted",norm2(buf(1:nelmsit))
 #ifdef VAR_MPI
       call tensor_put_tile(arr,i,buf,nelmsit,lock_set = .false., flush_it=.true.)
 #endif
