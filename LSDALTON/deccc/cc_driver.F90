@@ -145,26 +145,27 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-               call print_norm(mp2_amp,"FREAKING MP2")
          endif
+
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
-         if(DECinfo%use_pnos)call tensor_free( mp2_amp )
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
       else
          ncore = 0
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-               call print_norm(mp2_amp,"FREAKING MP2")
          endif
+
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
-         if(DECinfo%use_pnos)call tensor_free( mp2_amp )
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
       end if
    
@@ -185,9 +186,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
       !one node is used
       call tensor_init(VOVO_local,VOVO%dims,4)
-      call tensor_init(t2f_local,t2_final%dims,4)
-      call tensor_add(VOVO_local, 1.0E0_realk, VOVO,     a = 0.0E0_realk)
-      call tensor_add(t2f_local,  1.0E0_realk, t2_final, a = 0.0E0_realk)
+      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_cp_data( VOVO,     VOVO_local  )
+      call tensor_cp_data( t2_final, t2f_local   )
 
       if(ccmodel == MODEL_CCSDpT)then
 
@@ -393,10 +394,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if(ccmodel == MODEL_CCSDpT)then
          !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
          !one node is used
-         call tensor_init(VOVO_local,VOVO%dims,4)
-         call tensor_init(t2f_local,t2_final%dims,4)
-         call tensor_add(VOVO_local, 1.0E0_realk, VOVO, a = 0.0E0_realk)
-         call tensor_add(t2f_local, 1.0E0_realk, t2_final, a = 0.0E0_realk)
+         call tensor_init( VOVO_local, VOVO%dims,    4 )
+         call tensor_init( t2f_local, t2_final%dims, 4 )
+         call tensor_cp_data( VOVO,     VOVO_local )
+         call tensor_cp_data( t2_final, t2f_local  )
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
@@ -1888,11 +1889,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_zero(iajb)
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
-      print *,"WARNING(ccsolver_par): vovo given on input has not been tested thoroughly"
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      !call tensor_add(iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3])
       call tensor_free(VOVO)
-      call print_norm(iajb,"iajb norm")
    endif
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -2318,8 +2316,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                call tensor_add(t2(iter+1),1.0E0_realk,omega2_opt)
             end if
          end if
-
-         call print_norm(t2(iter+1),"NEW GUESS")
 
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
