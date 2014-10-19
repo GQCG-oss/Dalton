@@ -91,7 +91,7 @@ subroutine PASSsub
           open(unit = LUFILE, file=TRIM(FileName),status="unknown")
 
           WRITE(LUFILE,'(7A,I1)')'MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),nFiles
-          WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+          WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
           WRITE(LUFILE,'(A)')'  '
           WRITE(LUFILE,'(A)')' CONTAINS'
           nLines = nLines + 4
@@ -161,7 +161,7 @@ subroutine PASSsub
                    nLines = 0 
                    open(unit = LUFILE, file=TRIM(FileName),status="unknown")
                    WRITE(LUFILE,'(7A,I1)')'MODULE AGC_',ARCSTRING,'_OBS_TRMOD',FromLabel,'to',ToLabel,SegLabel(1:iSegLabel),nFiles
-                   WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+                   WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
                    WRITE(LUFILE,'(A)')'  '
                    WRITE(LUFILE,'(A)')' CONTAINS'
                    nLines=0

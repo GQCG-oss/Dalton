@@ -2,7 +2,7 @@ module lsmpi_mod
   use precision
   use lsmpi_type
   use lsmpi_op
-  use Integralparameters
+  use LSparameters
   use memory_handling
   use typedefType
   use typedef

@@ -172,6 +172,7 @@ module cc_debug_routines_module
      type(array4) :: Lmo
      real(realk) :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
      real(realk) :: iter_cpu,iter_wall, sosex
+     real(realk) :: t1fnorm2,m1fnorm2,t2fnorm2,m2fnorm2
      character(18) :: save_to,keep
      character(tensor_MSG_LEN) :: msg
      integer :: ii,aa, cc
@@ -1022,11 +1023,22 @@ module cc_debug_routines_module
      !if(.not.DECinfo%use_singles)then
      !  t1_final = array2_init([nvirt,nocc])
      !endif
+     call print_norm(t2_final,t2fnorm2,.true.)
+     if(DECinfo%use_singles)then
+       call print_norm(t1_final,t1fnorm2,.true.)
+     endif
+     if(get_mult)then
+        call print_norm(m2,m2fnorm2,.true.)
+        if(DECinfo%use_singles)then
+           call print_norm(m1,m1fnorm2,.true.)
+        endif
+     endif
+
 
      ! Write finalization message
      !---------------------------
      call print_ccjob_summary(break_iterations,get_mult,fragment_job,last_iter,DECinfo%use_singles, &
-     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final,m1 = m1, m2 = m2)
+     &ccenergy,ttotend_wall,ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2, nm1 = m1fnorm2, nm2 = m2fnorm2)
 
 
      ! Save two-electron integrals in the order (virt,occ,virt,occ)

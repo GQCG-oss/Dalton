@@ -5,7 +5,7 @@ use precision
 use TYPEDEF  
 use matrix_operations
 use ls_Integral_Interface
-use Integralparameters
+use LSparameters
 use lstiming
 CONTAINS
 

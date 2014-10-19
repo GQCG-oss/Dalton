@@ -2,8 +2,8 @@ MODULE IchorEriGabintegralOBSGeneralMod
 !Automatic Generated Code (AGC) by runGABdriver.f90 in tools directory
 use IchorEriGabintegralOBSGeneralModGen
 use IchorEriGabintegralOBSGeneralModSeg
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_CPU_OBS_BUILDRJ000MODGen
 use AGC_CPU_OBS_BUILDRJ000MODSeg1Prim

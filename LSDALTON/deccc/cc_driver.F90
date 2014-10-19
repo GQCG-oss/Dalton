@@ -16,7 +16,7 @@ use files!,only:lsopen,lsclose
 use memory_handling
 use dec_typedef_module
 use integralinterfaceMod
-use integralparameters
+use lsparameters
 #ifdef VAR_MPI
 use infpar_module
 #endif
@@ -52,6 +52,10 @@ public :: ccsolver, ccsolver_par, fragment_ccsolver, ccsolver_justenergy,&
    & mp2_solver
 private
 
+interface mp2_solver
+   module procedure mp2_solver_frag, mp2_solver_mol
+end interface mp2_solver
+
 contains
 
 
@@ -83,10 +87,11 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    real(realk), dimension(nbasis,nocc), intent(in),optional :: Co_fc
    !> Occ-occ block of Fock matrix in MO basis (only used for frozen core)
    real(realk), dimension(nocc,nocc), intent(in),optional :: ppfock_fc
-   type(array2) :: t1_final_arr2
-   type(array4) :: t2_final_arr4, VOVO_arr4, mp2_amp
-   type(tensor) :: t2_final,ccsdpt_t2,VOVO
+   !type(array2) :: t1_final_arr2
+   !type(array4) :: t2_final_arr4, VOVO_arr4
+   type(tensor) :: t2_final,ccsdpt_t2,VOVO, mp2_amp
    type(tensor) :: t1_final,ccsdpt_t1,e4_mat_tot,e4_mat_tmp,e5_mat_tot
+   type(tensor) :: t2f_local, VOVO_local
    integer :: natoms,nfrags,ncore,nocc_tot,p,pdx,i
    type(decorbital), pointer :: occ_orbitals(:)
    type(decorbital), pointer :: unocc_orbitals(:)
@@ -105,6 +110,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
    call time_start_phase(PHASE_WORK, swwork = time_CCSD_work, swcomm = time_CCSD_comm, swidle = time_CCSD_idle) 
 
+   local=.true.
+#ifdef VAR_MPI
+   if(infpar%lg_nodtot>1)local=.false.
+#endif
+
+#ifdef MOD_UNRELEASED
    ! nenergies is set to 4: a CC solver model plus pT corrections, 
    ! (4th order, 5th order and both):
    nenergies = 4
@@ -114,118 +125,50 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    pT_full = 2
    pT_4    = 3
    pT_5    = 4
-
-   local=.true.
-#ifdef VAR_MPI
-   if(infpar%lg_nodtot>1)local=.false.
-#endif
-
-#ifdef MOD_UNRELEASED
+   
    if (DECinfo%print_frags) then ! should we print fragment energies?
 
       ! is this a frozen core calculation or not?
       if (DECinfo%frozencore) then
-   
+
          ncore = MyMolecule%ncore
-   
+
          if(.not. present(Co_fc)) then
             call lsquit('ccsolver_justenergy_pt: Occ MOs not present for frozencore!',-1)
          end if
-   
+
          if(.not. present(ppfock_fc)) then
             call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
          end if
-   
-         if (DECinfo%CCDEBUG) then
-            if(DECinfo%use_pnos)then
-   
-               !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
-               call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, Co_fc, VOVO_arr4 )
-               call mp2_solver( nocc, nvirt, ppfock_fc, MyMolecule%qqfock, VOVO_arr4, mp2_amp )
-               call array4_free( VOVO_arr4 )
-   
-               !CALL THE SOLVER WITH PNO ARGUMENT
-               call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
-                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol), &
-                  & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
-   
-               !FREE MP2 AMPLITUDES
-               call array4_free( mp2_amp )
-   
-            else
-   
-               call ccsolver_debug(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,fragment_job,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-                  & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
-   
-            endif
-   
-         else
-            if(DECinfo%use_pnos)then
-               call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-                  & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,.false.)
-            endif
-            call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+
+         if(DECinfo%use_pnos)then
+            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,DECinfo%use_pnos,m2=mp2_amp )
-   
-            if(DECinfo%use_pnos)call array4_free( mp2_amp )
+               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
          endif
+
+         call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+            & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
+
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
       else
          ncore = 0
-   
-         if (DECinfo%CCDEBUG) then
-            if(DECinfo%use_pnos)then
-   
-               !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
-               call get_VOVO_integrals( mylsitem, nbasis, nocc, nvirt, MyMolecule%Cv, MyMolecule%Co, VOVO_arr4 )
-               call mp2_solver( nocc, nvirt,MyMolecule%ppfock,MyMolecule%qqfock, VOVO_arr4, mp2_amp )
-               call array4_free( VOVO_arr4 )
-   
-               !CALL THE SOLVER WITH PNO ARGUMENT
-               call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt, &
-                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol), &
-                  & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos)
-   
-               !FREE MP2 AMPLITUDES
-               call array4_free( mp2_amp )
-   
-            else
-               call ccsolver_debug(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-                  & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,SOLVE_AMPLITUDES)
-            endif
-         else
-            if(DECinfo%use_pnos)then
-               call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
-                  & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-                  & t1_final_arr2,mp2_amp,VOVO_arr4,.false.,local,.false.)
-            endif
-            call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+         if(DECinfo%use_pnos)then
+            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-               & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,DECinfo%use_pnos, m2 = mp2_amp )
-   
-            if(DECinfo%use_pnos)call array4_free( mp2_amp )
+               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
          endif
-   
+
+         call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+            & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
+
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
       end if
    
-   
-      !FIXME: remove all array2 and array4 structures from this driver
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      if(DECinfo%use_singles)then
-         call tensor_init(t1_final,t1_final_arr2%dims,2)
-         call tensor_convert(t1_final_arr2%val,t1_final)
-         call array2_free(t1_final_arr2)
-      endif
-      call tensor_init(t2_final,t2_final_arr4%dims,4)
-      call tensor_convert(t2_final_arr4%val,t2_final)
-      call array4_free(t2_final_arr4)
-      call tensor_init(VOVO,VOVO_arr4%dims,4)
-      call tensor_convert(VOVO_arr4%val,VOVO)
-      call array4_free(VOVO_arr4)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    
       if(DECinfo%PL>1)then
          call time_start_phase(PHASE_WORK, dwwork = time_CCSD_work, dwcomm = time_CCSD_comm, dwidle = time_CCSD_idle, &
@@ -239,23 +182,42 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       nfrags   = MyMolecule%nfrags
       nocc_tot = MyMolecule%nocc
    
+      !FIXME: all the following should be implemented in PDM
+      !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+      !one node is used
+      call tensor_init(VOVO_local,VOVO%dims,4)
+      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_cp_data( VOVO,     VOVO_local  )
+      call tensor_cp_data( t2_final, t2f_local   )
+
       if(ccmodel == MODEL_CCSDpT)then
+
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
  
          if (abc) then
 
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !FIXME: MAKE (T) independent of the tensor _reorder subroutines since each of
+            !these essentialliy allocates another V^2O^2 in local memory.
+            !Alternative: use parallel distributed tensors
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
    
             call tensor_init(ccsdpt_t1 , [nocc,nvirt],2)
             call tensor_init(ccsdpt_t2 , [nocc,nocc,nvirt,nvirt],4)
 
          else
  
-            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
     
             call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
             call tensor_init(ccsdpt_t2, [nvirt,nvirt,nocc,nocc],4)
@@ -263,20 +225,20 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
 
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,&
                & ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+               & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
          end if
   
          ! now, reorder amplitude and integral arrays
          if (abc) then
 
             call tensor_reorder(ccsdpt_t1,[2,1]) ! order (i,a) --> (a,i)
-            call tensor_reorder(VOVO,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
+            call tensor_reorder(VOVO_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
             call tensor_reorder(ccsdpt_t2,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
-            call tensor_reorder(t2_final,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
+            call tensor_reorder(t2f_local,[3,4,1,2]) ! order (i,j,a,b) --> (a,b,i,j)
      
          endif
  
@@ -288,8 +250,8 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
          endif
       else
    
-         call tensor_reorder(t2_final,[1,3,2,4])
-         call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+         call tensor_reorder(t2f_local,[1,3,2,4])
+         call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
    
       endif
    
@@ -345,12 +307,12 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       FragEnergies     = 0.0E0_realk
       FragEnergies_tmp = 0.0E0_realk
    
-      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2_final,t1_final,VOVO,occ_orbitals,&
+      call ccsd_energy_full_occ(nocc,nvirt,nfrags,ncore,t2f_local,t1_final,VOVO_local,occ_orbitals,&
          & FragEnergies(:,:,cc_sol),FragEnergies_tmp)
    
       if(ccmodel == MODEL_CCSDpT)then
          ! now we calculate fourth-order and fifth-order energies
-         call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2_final,ccsdpt_t2,occ_orbitals,&
+         call ccsdpt_energy_e4_full(nocc,nvirt,nfrags,ncore,t2f_local,ccsdpt_t2,occ_orbitals,&
             & FragEnergies(:,:,pT_4),FragEnergies_tmp,ccenergies(pT_4))
    
          call ccsdpt_energy_e5_full(nocc,nvirt,nfrags,ncore,t1_final,ccsdpt_t1,&
@@ -381,6 +343,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       ! release stuff
       call mem_dealloc(FragEnergies)
       call mem_dealloc(FragEnergies_tmp)
+
+      call tensor_free(t2f_local)
+      call tensor_free(VOVO_local)
    
    else ! we do not print fragment energies
 
@@ -397,15 +362,25 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call lsquit('ccsolver_justenergy_pt: Occ-occ Fock matrix not present for frozencore!',-1)
          end if
    
+         if(DECinfo%use_pnos)then
+            call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
+               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+         endif
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       else
          ncore = 0
+         if(DECinfo%use_pnos)then
+            call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
+               & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
+               & t1_final,mp2_amp,VOVO,.false.,local,.false.)
+         endif
    
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
-            & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
+            & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
       end if
 
       if(DECinfo%PL>1)then
@@ -416,48 +391,39 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             &labeldwidle = 'MASTER IDLE CC solver: ')
       endif
  
-      !FIXME: remove all array2 and array4 structures from this driver
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      if(DECinfo%use_singles)then
-         call tensor_init(t1_final,t1_final_arr2%dims,2)
-         call tensor_convert(t1_final_arr2%val,t1_final)
-         call array2_free(t1_final_arr2)
-      endif
-      call tensor_init(t2_final,t2_final_arr4%dims,4)
-      call tensor_convert(t2_final_arr4%val,t2_final)
-      call array4_free(t2_final_arr4)
-      call tensor_init(VOVO,VOVO_arr4%dims,4)
-      call tensor_convert(VOVO_arr4%val,VOVO)
-      call array4_free(VOVO_arr4)
-      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
       if(ccmodel == MODEL_CCSDpT)then
+         !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
+         !one node is used
+         call tensor_init( VOVO_local, VOVO%dims,    4 )
+         call tensor_init( t2f_local, t2_final%dims, 4 )
+         call tensor_cp_data( VOVO,     VOVO_local )
+         call tensor_cp_data( t2_final, t2f_local  )
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
 
          if (abc) then
 
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2_final,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
             call tensor_init(ccsdpt_t1, [nocc,nvirt],2)
 
          else
 
-            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2_final,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
             call tensor_init(ccsdpt_t1, [nvirt,nocc],2)
 
          endif
 
          if(DECinfo%frozencore) then
-            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO,t2_final,&
+            call ccsdpt_driver(nocc,nvirt,nbasis,ppfock_fc,MyMolecule%qqfock,Co_fc,MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,&
                & ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
          else
             call ccsdpt_driver(nocc,nvirt,nbasis,MyMolecule%ppfock,MyMolecule%qqfock,MyMolecule%Co,&
-               & MyMolecule%Cv,mylsitem,VOVO,t2_final,ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
+               & MyMolecule%Cv,mylsitem,VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,e4=ccenergies(pT_4))
          end if
 
 
@@ -473,6 +439,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
                &labeldwcomm = 'MASTER COMM pT: ',&
                &labeldwidle = 'MASTER IDLE pT: ')
          endif
+
+         call tensor_free(t2f_local)
+         call tensor_free(VOVO_local)
       endif
 
       CorrEnergyString = 'correlation energy            '
@@ -573,23 +542,19 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
 
       call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
          & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergy,&
-         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
+         & t1_final,t2_final,VOVO,.false.,local,.false.)
    else
       ncore = 0
 
       call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
          mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergy,&
-         & t1_final_arr2,t2_final_arr4,VOVO_arr4,.false.,local,.false.)
+         & t1_final,t2_final,VOVO,.false.,local,.false.)
    end if
 
-   !FIXME: remove all array2 and array4 structures from this driver
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   if(DECinfo%use_singles)then
-      call array2_free(t1_final_arr2)
-   endif
-   call array4_free(t2_final_arr4)
-   call array4_free(VOVO_arr4)
-   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   call tensor_free(t1_final)
+   call tensor_free(t2_final)
+   call tensor_free(VOVO)
+
 !endif mod unreleased
 #endif
 end function ccsolver_justenergy
@@ -599,30 +564,25 @@ end function ccsolver_justenergy
 !> Intended to be used for CC2 and CCSD (and NOT for MP2).
 !> \author Kasper Kristensen, heavily modifed by PE
 !> \date January 2012
-subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
+subroutine fragment_ccsolver(MyFragment,t1,t2,VOVO,m1,m2)
 
    implicit none
 
    !> Fragment info (only t1 information in MyFragment may be changed here)
    type(decfrag), intent(inout) :: MyFragment
    !> Singles amplitudes t1(a,i)
-   type(tensor),intent(inout) :: t1_arr
+   type(tensor),intent(inout) :: t1
    !> Doubles amplitudes t2(a,i,b,j)
-   type(tensor),intent(inout) :: t2_arr
+   type(tensor),intent(inout) :: t2
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
-   type(tensor),intent(inout) :: VOVO_arr
+   type(tensor),intent(inout) :: VOVO
    !> Singles multipliers m1(a,i)
-   type(tensor),intent(inout), optional :: m1_arr
+   type(tensor),intent(inout), optional :: m1
    !> Doubles multipliers m2(a,i,b,j)
-   type(tensor),intent(inout), optional :: m2_arr
-   type(array2) :: t1
-   type(array4) :: t2
-   type(array4) :: VOVO
-   type(array2) :: m1
-   type(array4) :: m2
+   type(tensor),intent(inout), optional :: m2
 
    !INTERNAL PARAMETERS
-   type(array4) :: mp2_amp
+   type(tensor) :: mp2_amp
    integer :: dims(2)
    real(realk) :: ccenergy
    logical :: local
@@ -635,8 +595,9 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
 
    local=.true.
 #ifdef VAR_MPI
-   if(infpar%lg_nodtot>1)local=.false.
+   if(infpar%lg_nodtot>1) local = .false.
 #endif
+
 
    ! If MyFragment%t1_stored is TRUE, then we reuse the singles amplitudes
    ! from previous fragment calculations to describe long-range
@@ -645,116 +606,43 @@ subroutine fragment_ccsolver(MyFragment,t1_arr,t2_arr,VOVO_arr,m1_arr,m2_arr)
    if(MyFragment%t1_stored) then
       dims(1) = MyFragment%nunoccAOS
       dims(2) = MyFragment%noccAOS
-      t1 = array2_init(dims,MyFragment%t1)
+      call tensor_init(t1,dims,2)
+      call tensor_convert(MyFragment%t1,t1)
    end if
 
 #ifdef MOD_UNRELEASED
-   if(DECinfo%CCDEBUG)then
-      if(DECinfo%use_pnos)then
-
-         !GET MP2 AMPLITUDES TO CONSTRUCT PNOS
-         call get_VOVO_integrals( myfragment%mylsitem, myfragment%nbasis, &
-            &myfragment%noccAOS, myfragment%nunoccAOS, myfragment%Cv, myfragment%Co, VOVO )
-         call mp2_solver( myfragment%noccAOS, myfragment%nunoccAOS, myfragment%ppfock,&
-            & myfragment%qqfock, VOVO, mp2_amp )
-         call array4_free( VOVO )
-
-         !GET THE CORRELATION DENSITY FOR THE CENTRAL ATOM
-         call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
-         call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
-         call calculate_corrdens_EOS(mp2_amp,MyFragment) 
-         MyFragment%CDset=.true.
-
-         !CALL THE SOLVER WITH PNO ARGUMENT
-         call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
-            & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
-            & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-            & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,&
-            &MyFragment%t1_stored,SOLVE_AMPLITUDES,m2=mp2_amp,use_pnos=DECinfo%use_pnos, fraginfo=myfragment)
-
-         call array4_free(mp2_amp)
-
-      else
-
-         call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
-            & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
-            & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-            & .true.,myfragment%ppfock,myfragment%qqfock,ccenergy,t1,t2,VOVO,MyFragment%t1_stored,SOLVE_AMPLITUDES)
-
-         if(DECinfo%CCSDmultipliers)then
-
-            call array4_free(VOVO)
-
-            call ccsolver_debug(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,myfragment%fock,myfragment%nbasis,&
-               &myfragment%noccAOS,myfragment%nunoccAOS, &
-               &myfragment%mylsitem,DECinfo%PL,.true.,myfragment%ppfock,myfragment%qqfock,ccenergy, &
-               & t1,t2,VOVO, .false., SOLVE_MULTIPLIERS, m2 = m2, m1 = m1)
-
-         endif
-
-      endif
-   else
-      if(DECinfo%use_pnos)then
-         call ccsolver_par(MODEL_MP2,myfragment%Co,myfragment%Cv,&
-            & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
-            & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
-            & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-            & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,.false.,frag=myfragment)
-
-         !GET THE CORRELATION DENSITY FOR THE CENTRAL ATOM
-         call mem_alloc(MyFragment%occmat,MyFragment%noccAOS,MyFragment%noccAOS)
-         call mem_alloc(MyFragment%virtmat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
-         call calculate_corrdens_EOS(mp2_amp,MyFragment) 
-         MyFragment%CDset=.true.
-      endif
-#endif
-      call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+   if(DECinfo%use_pnos)then
+      call ccsolver_par(MODEL_MP2,myfragment%Co,myfragment%Cv,&
          & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
          & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
          & myfragment%ppfock,myfragment%qqfock,ccenergy,&
-         & t1,t2,VOVO,MyFragment%t1_stored,local,DECinfo%use_pnos,frag=myfragment, &
-         & m2=mp2_amp)
+         & t1,mp2_amp,VOVO,MyFragment%t1_stored,local,.false.,frag=myfragment)
+
+      !GET THE MP2 CORRELATION DENSITY FOR THE CENTRAL ATOM
+      call calculate_MP2corrdens_frag(mp2_amp,MyFragment) 
+   endif
+#endif
+
+   call ccsolver_par(MyFragment%ccmodel,myfragment%Co,myfragment%Cv,&
+      & myfragment%fock, myfragment%nbasis,myfragment%noccAOS,&
+      & myfragment%nunoccAOS,myfragment%mylsitem,DECinfo%PL,&
+      & myfragment%ppfock,myfragment%qqfock,ccenergy,&
+      & t1,t2,VOVO,MyFragment%t1_stored,local,DECinfo%use_pnos,frag=myfragment, &
+      & m2=mp2_amp,vovo_supplied=DECinfo%use_pnos)
 
 #ifdef MOD_UNRELEASED
-      if(DECinfo%use_pnos)call array4_free(mp2_amp)
+   if(DECinfo%use_pnos)call tensor_free(mp2_amp)
 
-      if(DECinfo%CCSDmultipliers)then
-         call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
-      endif
+   if(DECinfo%CCSDmultipliers)then
+      call lsquit("ERROR(fragment_ccsolver):no parallel version of multipliers, yet. run with .CCDEBUG",-1)
    endif
 #endif
 
    ! Save singles amplitudes in fragment structure
    if(DECinfo%SinglesPolari) then
-      call save_fragment_t1_AOSAOSamplitudes(MyFragment,t1)
+      call save_fragment_t1_AOSAOSamplitudes(MyFragment,t1%elm2)
    end if
 
-   if(DECinfo%use_singles)then
-      call tensor_init(t1_arr, t1%dims,2)
-      call tensor_convert(t1%val,t1_arr)
-      call array2_free(t1)
-   endif
-
-   call tensor_init(t2_arr,t2%dims,4)
-   call tensor_convert(t2%val,t2_arr)
-   call array4_free(t2)
-
-   call tensor_init(VOVO_arr, VOVO%dims,4)
-   call tensor_convert(VOVO%val,VOVO_arr)
-   call array4_free(VOVO)
-
-   if(DECinfo%CCSDmultipliers)then
-      if(present(m1_arr))then
-         call tensor_init(m1_arr, m1%dims,2)
-         call tensor_convert(m1%val,m1_arr)
-         call array2_free(m1)
-      endif
-      if(present(m2_arr))then
-         call tensor_init(m2_arr,m2%dims,4)
-         call tensor_convert(m2%val,m2_arr)
-         call array4_free(m2)
-      endif
-   endif
 
 end subroutine fragment_ccsolver
 
@@ -766,677 +654,797 @@ end subroutine fragment_ccsolver
 !>               + sum_{k} t_{bjak} F_{ki}
 !>               + sum_{k} t_{aibk} F_{kj}
 !> It is assumed that RHS_{bjai} = R_{aibj} !
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!> \author Patrick Ettenhuber adapted from Kasper Kristensen
+!> \date October 2014
+subroutine mp2_solver_frag(frag,RHS,t2,rhs_input,mp2_energy)
 
    implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
+   !> fragment
+   type(decfrag), intent(inout) :: frag 
    !> RHS array
-   type(array4), intent(in) :: RHS
+   type(tensor), intent(inout)  :: RHS
    !> Solution array
-   type(array4), intent(inout) :: t2
-   real(realk) :: tcpu1,twall1,tcpu2,twall2
+   type(tensor), intent(inout)  :: t2
+   !> logical to specify whether to use the supplied RHS or calculate it in the
+   !solver
+   logical, intent(in)          :: rhs_input
+   !> output mp2 energy
+   real(realk), intent(out), optional   :: mp2_energy
+   real(realk)  :: tcpu1,twall1,tcpu2,twall2
+   type(tensor) :: t1_dummy
+   real(realk) :: e
+   integer :: Ncore, no, nv, nb
+   logical :: local
 
    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-   if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
-      call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
-   else ! RHS and t2 values are stored in memory
-      call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
-   end if
+   local = .true.
+#ifdef VAR_MPI
+   local = (infpar%lg_nodtot==1)
+#endif
+
+   !if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
+   !   call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !else ! RHS and t2 values are stored in memory
+   !   call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !end if
+
+   nb    = frag%nbasis
+   nv    = frag%nunoccAOS
+   no    = frag%noccAOS
+   Ncore = frag%ncore
+
+   call ccsolver_par(MODEL_MP2,frag%Co,frag%Cv,frag%fock,nb,&
+      & no,nv, frag%mylsitem,DECinfo%PL,frag%ppfock,&
+      & frag%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false.,frag=frag,&
+      & vovo_supplied = rhs_input)
+
+   if(present(mp2_energy)) mp2_energy = e
 
    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
+   if(t1_dummy%initialized)then
+      call lsquit("ERROR(mp2_solver_frag) something wrong with singles handling in ccsolver_par",-1)
+   endif
 
-end subroutine mp2_solver
+end subroutine mp2_solver_frag
 
-
-
-!> \brief Solve MP2 equation when RHS and t2 are values are stored in memory.
-!> See mp2_solver for details about the equation.
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!> \brief Solve MP2 equation:
+!> RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
+!>               - sum_{c} t_{aicj} F_{cb}
+!>               + sum_{k} t_{bjak} F_{ki}
+!>               + sum_{k} t_{aibk} F_{kj}
+!> It is assumed that RHS_{bjai} = R_{aibj} !
+!> \author Patrick Ettenhuber adapted from Kasper Kristensen
+!> \date October 2014
+subroutine mp2_solver_mol(mol,mls,RHS,t2,rhs_input,mp2_energy)
 
    implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
+   !> Full molecular information
+   type(fullmolecule), intent(in) :: mol 
+   !corresponding lsitem info
+   type(lsitem), intent(inout)  :: mls
    !> RHS array
-   type(array4), intent(in) :: RHS
+   type(tensor), intent(inout)  :: RHS
    !> Solution array
-   type(array4), intent(inout) :: t2
-   type(array4) :: tmp1,tmp2
-   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
-   real(realk),pointer :: EVocc(:), EVvirt(:)
-   type(array2) :: Cocc, Cvirt
-   integer :: I,J,A,B
-   real(realk) :: tcpu, twall, deltaF
-   integer :: dims(4), occdims(2), virtdims(2)
-   ! real(realk) :: test
+   type(tensor), intent(inout)  :: t2
+   !> logical to specify whether to use the supplied RHS or calculate it in the
+   !solver
+   logical, intent(in)          :: rhs_input
+   !> output mp2 energy
+   real(realk), intent(out), optional   :: mp2_energy
 
+   !internal variables
+   real(realk)  :: tcpu1,twall1,tcpu2,twall2
+   type(tensor) :: t1_dummy
+   real(realk)  :: e
+   real(realk), pointer :: Co(:,:),oof(:,:)
+   integer :: Ncore, no, nv, nb, i, j
+   logical :: local
 
-   ! Strategy for solving MP2 equation:
-   ! 1. Find basis where Fock matrix is diagonal
-   ! 2. Transform 2-electron integrals to diagonal basis
-   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
-   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+   call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-   call LSTIMER('START',tcpu,twall,DECinfo%output)
+   local = .true.
+#ifdef VAR_MPI
+   local = (infpar%lg_nodtot==1)
+#endif
 
+   !if(DECinfo%array4OnFile) then ! RHS and t2 values are stored on file
+   !   call mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !else ! RHS and t2 values are stored in memory
+   !   call mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+   !end if
 
-   write(DECinfo%output,*)
-   write(DECinfo%output,*) 'Entering MP2 solver - store array values in memory'
-   write(DECinfo%output,*)
+   nb    = mol%nbasis
+   nv    = mol%nunocc
+   Ncore = mol%ncore
 
+   if(DECinfo%frozencore) then
 
-   ! Sanity checks
-   ! *************
-   ! Check that nvirt /= 0.
-   if(nvirt<1 .or. nocc<1) then
-      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
-      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
-   endif
+      no = mol%nval
 
+      ! Only copy valence orbitals
 
+      call mem_alloc(Co,nb,no)
+      call mem_alloc(oof,no,no)
 
-
-   ! Initialize stuff
-   ! ****************
-   dims = [nvirt,nocc,nvirt,nocc]
-   occdims = [nocc,nocc]
-   virtdims = [nvirt,nvirt]
-
-
-
-
-   ! 1. Solve Fock eigenvalue problem - each block separately
-   ! ********************************************************
-
-   ! OCCUPIED-OCCUPIED BLOCK
-   ! '''''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cocc_data,nocc,nocc)
-
-   ! Eigenvalues
-   call mem_alloc(EVocc,nocc)
-
-   ! The overlap matrix is simply the unit matrix because
-   ! the LCM/MLM basis is orthogonal.
-   call mem_alloc(Socc,nocc,nocc)
-   Socc=0.0E0_realk
-   do i=1,nocc
-      Socc(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   Cocc = array2_init(occdims,Cocc_data)
-
-   ! Done with some matrices
-   call mem_dealloc(Cocc_data)
-   call mem_dealloc(Socc)
-
-
-
-
-   ! VIRTUAL-VIRTUAL BLOCK
-   ! '''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cvirt_data,nvirt,nvirt)
-
-   ! Eigenvalues
-   call mem_alloc(EVvirt,nvirt)
-
-   ! Unit overlap for virtual space
-   call mem_alloc(Svirt,nvirt,nvirt)
-   Svirt=0.0E0_realk
-   do i=1,nvirt
-      Svirt(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   Cvirt = array2_init(virtdims,Cvirt_data)
-
-   ! Done with some matrices
-   call mem_dealloc(Cvirt_data)
-   call mem_dealloc(Svirt)
-
-
-   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
-
-
-
-   ! 2. Transform two-electron integrals to diagonal basis
-   ! *****************************************************
-
-   ! Using notation that (a,i,b,j) are LCM indices
-   ! and (A,I,B,J) are indices in the diagonal basis,
-   ! we want to carry out the transformations:
-   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj} (*)
-
-   ! 1. Init temporary array
-   tmp1= array4_init(dims)
-
-   ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
-   call array4_contract1(RHS,Cvirt,tmp1,.true.)
-
-   ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
-   call array4_reorder(tmp1,[2,1,3,4])
-   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
-
-   call array4_contract1(tmp1,Cocc,tmp2,.true.)
-   call array4_free(tmp1)
-
-   ! 4. Index J: tmp2(I,A,b,j) --> tmp2(j,b,A,I) --> tmp1(J,b,A,I)
-   call array4_reorder(tmp2,[4,3,2,1])
-   tmp1= array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp2,Cocc,tmp1,.true.)
-   call array4_free(tmp2)
-
-   ! 5. Index B: tmp1(J,b,A,I) --> tmp1(b,J,A,I) --> t2(B,J,A,I)
-   call array4_reorder(tmp1,[2,1,3,4])
-   t2 = array4_init(dims)
-   call array4_contract1(tmp1,Cvirt,t2,.true.)
-   call array4_free(tmp1)
-
-   ! Now t2 contains the two-electron integrals (AI|BJ) = (BJ|AI) in the order (B,J,A,I).
-   ! [Due to the symmetry it is not necessary to reorder t2 back to (A,I,B,J)].
-
-
-   call LSTIMER('SOLVE: TRANS 1',tcpu,twall,DECinfo%output)
-
-
-
-   ! 3. Solve MP2 equation in the diagonal basis
-   ! *******************************************
-
-   ! In the diagonal basis the solution to the MP2 equation is trivial!
-   ! The equation:
-   ! RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
-   !               - sum_{c} t_{aicj} F_{cb}
-   !               + sum_{k} t_{bjak} F_{ki}
-   !               + sum_{k} t_{aibk} F_{kj}
-   !
-   ! simply becomes (using t_{BJAI} = t_{AIBJ}):
-   !
-   ! RHS_{BJAI} =  - t_{BJAI} F_{AA}
-   !               - t_{AIBJ} F_{BB}
-   !               + t_{BJAI} F_{II}
-   !               + t_{AIBJ} F_{JJ}
-   !            =  t_{BJAI} [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ]
-   !
-   ! In other words:
-   !
-   ! t_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
-   !
-
-   ! Recalling that currently t_{BJAI} = RHS_{BJAI} and that the
-   ! Fock matrix in the diagonal basis are the eigenvalues EVocc and EVvirt -
-   ! we simply modify the t2 elements as follows:
-
-   !    test=0E0_realk
-   do I=1,nocc
-      do A=1,nvirt
-         do J=1,nocc
-            do B=1,nvirt
-
-               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
-               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
-
-               ! Sanity check
-               if( abs(deltaF) < 1e-9_realk ) then
-                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
-                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
-                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
-               end if
-
-               ! Canonical energy check
-               ! test = test &
-               ! & + (2E0_realk*t2%val(B,J,A,I) - t2%val(B,I,A,J))*t2%val(B,J,A,I)/deltaF
-
-               ! t2 according to (**)
-               t2%val(B,J,A,I) = t2%val(B,J,A,I)/deltaF
-
-            end do
-         end do
+      do i=1,no
+         Co(:,i) = mol%Co(:,i+Ncore)
       end do
-   end do
 
-   call LSTIMER('SOLVE: CALC T2',tcpu,twall,DECinfo%output)
-
-
-
-
-   ! 4. Transform amplitudes back to LCM/MLM basis
-   ! *********************************************
-
-   ! Since LCM/MLM and the diagonal basis are connected by a unitary
-   ! transformation this basically corresponds to repeating step 2
-   ! above with the transposed transformation matrices:
-   !
-   ! t_{aibj} = sum_{AIBJ} C_{Aa} C_{Ia} C_{Bb} C_{Jj} t_{AIBJ}
-
-   ! 1. Transpose transformation matrices
-   call array2_transpose(Cocc)
-   call array2_transpose(Cvirt)
-
-   ! 2. Index A: t(A,I,B,J) --> tmp1(a,I,B,J)
-   tmp1= array4_init(dims)
-   call array4_contract1(t2,Cvirt,tmp1,.true.)
-   call array4_free(t2)
-
-   ! 3. Index I: tmp1(a,I,B,J) --> tmp1(I,a,B,J) --> tmp2(i,a,B,J)
-   call array4_reorder(tmp1,[2,1,3,4])
-   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp1,Cocc,tmp2,.true.)
-   call array4_free(tmp1)
-
-   ! 4. Index J: tmp2(i,a,B,J) --> tmp2(J,B,a,i) --> tmp1(j,B,a,i)
-   call array4_reorder(tmp2,[4,3,2,1])
-   tmp1 = array4_init([nocc,nvirt,nvirt,nocc])
-   call array4_contract1(tmp2,Cocc,tmp1,.true.)
-   call array4_free(tmp2)
-
-   ! 5. Index B: tmp1(j,B,a,i) --> tmp1(B,j,a,i) --> t2(b,j,a,i)
-   call array4_reorder(tmp1,[2,1,3,4])
-   t2 = array4_init(dims)
-   call array4_contract1(tmp1,Cvirt,t2,.true.)
-   call array4_free(tmp1)
-
-   call LSTIMER('SOLVE: TRANS 2',tcpu,twall,DECinfo%output)
-
-
-   ! Clean up
-   ! ********
-   call mem_dealloc(EVocc)
-   call mem_dealloc(EVvirt)
-   call array2_free(Cocc)
-   call array2_free(Cvirt)
-
-
-
-end subroutine mp2_solver_mem
-
-
-
-!> \brief Solve MP2 equation when RHS and t2 are values are stored on file.
-!> See mp2_solver for details about the equation.
-!> \author Kasper Kristensen
-!> \date February 2011
-subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
-
-   implicit none
-   !> Number of occupied orbitals (dimension of ppfock)
-   integer, intent(in) :: nocc
-   !> Number of unoccupied orbitals (dimension of qqfock)
-   integer, intent(in) :: nvirt
-   !> Occupied-occupied block of Fock matrix
-   real(realk) :: ppfock(nocc,nocc)
-   !> Unoccupied-unoccupied block of Fock matrix
-   real(realk) :: qqfock(nvirt,nvirt)
-   !> RHS array, storing type 1 (see array4_init_file)
-   type(array4), intent(in) :: RHS
-   !> Solution array, storing type 1 (see array4_init_file)
-   type(array4), intent(inout) :: t2
-   type(array4) :: tmp1,tmp2
-   type(array4) :: RHSaib,RHSbaj,RHStmp,t2tmp
-   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
-   real(realk),pointer :: EVocc(:), EVvirt(:)
-   type(array2) :: Cocc, Cvirt,CoccT,CvirtT
-   integer :: I,J,A,B
-   real(realk) :: tcpu, twall, deltaF
-   integer :: occdims(2), virtdims(2)
-
-
-
-   ! Strategy for solving MP2 equation:
-   ! 1. Find basis where Fock matrix is diagonal
-   ! 2. Transform 2-electron integrals to diagonal basis
-   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
-   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
-
-   ! Steps 2-4 necessarily overlap when we store array values on file.
-   call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-
-   write(DECinfo%output,*)
-   write(DECinfo%output,*) 'Entering MP2 solver - store array values on file'
-   write(DECinfo%output,*)
-
-
-   ! Sanity checks
-   ! *************
-   ! Check that nvirt /= 0.
-   if(nvirt<1 .or. nocc<1) then
-      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
-      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
-      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
-   endif
-
-
-   ! Initialize stuff
-   ! ****************
-   occdims = [nocc,nocc]
-   virtdims = [nvirt,nvirt]
-
-
-
-   ! 1. Solve Fock eigenvalue problem - each block separately
-   ! ********************************************************
-
-   ! OCCUPIED-OCCUPIED BLOCK
-   ! '''''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cocc_data,nocc,nocc)
-   ! Eigenvalues
-   call mem_alloc(EVocc,nocc)
-
-   ! The overlap matrix is simply the unit matrix because
-   ! the LCM/MLM basis is orthogonal.
-   call mem_alloc(Socc,nocc,nocc)
-   Socc=0.0E0_realk
-   do i=1,nocc
-      Socc(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   ! and also to have the transposed matrices available
-   Cocc = array2_init(occdims,Cocc_data)
-   CoccT = array2_init(occdims)
-   call array2_copy(CoccT,Cocc)
-   call array2_transpose(CoccT)
-
-   ! Done with some matrices
-   call mem_dealloc(Cocc_data)
-   call mem_dealloc(Socc)
-
-
-
-
-   ! VIRTUAL-VIRTUAL BLOCK
-   ! '''''''''''''''''''''
-
-   ! Eigenvectors
-   call mem_alloc(Cvirt_data,nvirt,nvirt)
-
-   ! Eigenvalues
-   call mem_alloc(EVvirt,nvirt)
-
-   ! Unit overlap for virtual space
-   call mem_alloc(Svirt,nvirt,nvirt)
-   Svirt=0.0E0_realk
-   do i=1,nvirt
-      Svirt(i,i) = 1E0_realk
-   end do
-
-   ! Solve eigenvalue problem
-   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
-
-   ! For later, it is convenient to keep eigenvectors in array2 form
-   ! and also to have the transposed matrices available
-   Cvirt = array2_init(virtdims,Cvirt_data)
-   CvirtT = array2_init(virtdims)
-   call array2_copy(CvirtT,Cvirt)
-   call array2_transpose(CvirtT)
-
-
-   ! Done with some matrices
-   call mem_dealloc(Cvirt_data)
-   call mem_dealloc(Svirt)
-   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
-
-
-
-   ! Transform three indices to diagonal basis (aib-->AIB)
-   ! *****************************************************
-
-   ! Using the notation that (a,i,b,j) are LCM indices
-   ! and (A,I,B,J) are indices in the diagonal basis,
-   ! we want to carry out the transformations:
-   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj}
-
-   ! Since we cannot have full four-dimensional arrays in memory,
-   ! we do this in steps. First, for a fixed "j" we transform the other indices:
-   !
-   ! RHS_{AIBj} = sum_{aib} C_{aA} C_{iI} C_{bB} RHS_{aibj}
-
-   ! Temporary RHS where three indices are transformed, stored on file.
-   RHStmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
-   ! Temporary array for keeping RHS_{aibj} for a fixed j (last dimension is one).
-   RHSaib = array4_init([nvirt,nocc,nvirt,1])
-   call array4_open_file(RHS)
-   call array4_open_file(RHStmp)
-
-
-   do j=1,nocc
-
-      ! 1. Read in RHS_{aibj} for fixed j
-      call array4_read_file_type1(RHS,j,&
-         & RHSaib%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
-
-      ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
-      tmp1= array4_init([nvirt,nocc,nvirt,1])
-      call array4_contract1(RHSaib,Cvirt,tmp1,.true.)
-
-      ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
-      call array4_reorder(tmp1,[2,1,3,4])
-      tmp2= array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,Cocc,tmp2,.true.)
-      call array4_free(tmp1)
-
-      ! 4. Index B: tmp2(I,A,b,j) --> tmp2(b,A,I,j) --> tmp1(B,A,I,j)
-      call array4_reorder(tmp2,[3,2,1,4])
-      tmp1= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp2,Cvirt,tmp1,.true.)
-      call array4_free(tmp2)
-
-      ! 5. Write to file referenced by temporary RHS array (storing type 2)
-      do I=1,nocc
-         call array4_write_file_type2(RHStmp,I,j,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
-      end do
-      call array4_free(tmp1)
-
-   end do
-   call array4_close_file(RHS,'KEEP')
-   call array4_free(RHSaib)
-   call LSTIMER('SOLVE: STEP 1',tcpu,twall,DECinfo%output)
-   ! Now the file referenced by RHStmp contains RHS_{AIBj},
-   ! stored in the order (B,A,I,j) using storing type 2.
-
-
-
-   ! Transform j-->J; Solve equation in diag basis; Back transform ABJ-->abj
-   ! ***********************************************************************
-
-   ! Temporary array
-   t2tmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
-   call array4_open_file(t2tmp)
-
-
-   I_loop: do I=1,nocc
-
-
-      ! Read in RHS_{AIBj} for fixed I
-      ! ------------------------------
-      RHSbaj=array4_init([nvirt,nvirt,nocc,1])
-      do j=1,nocc
-         call array4_read_file_type2(RHStmp,I,j,&
-            & RHSbaj%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt)
-      end do
-      ! Now RHSbaj contains elements RHS_{AIBj} for a fixed I
-      ! stored in the order (B,A,j,I)
-
-
-      ! Transform final index j-->J
-      ! ---------------------------
-      ! Reorder: RHSbaj(B,A,j,I) --> RHSbaj(j,B,A,I)
-      call array4_reorder(RHSbaj,[3,1,2,4])
-
-
-      ! Transform: RHSbaj(j,B,A,I) --> tmp1(J,B,A,I)
-      tmp1=array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(RHSbaj,Cocc,tmp1,.true.)
-      call array4_free(RHSbaj)
-
-
-      ! Now tmp1 contains the RHS_{BJAI} in the diagonal basis
-      ! stored in the order (J,B,A,I) [fixed I].
-
-
-      ! Divide by deltaF (solve equation in diagonal basis)
-      ! ---------------------------------------------------
-      ! In the diagonal basis the t2 solution vector is simply:
-      ! t2_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
-      ! [See (**) in subroutine mp2_solver_mem]
-      do A=1,nvirt
-         do B=1,nvirt
-            do J=1,nocc
-
-               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
-               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
-
-               ! Sanity check
-               if( abs(deltaF) < 1e-9_realk ) then
-                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
-                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
-                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
-               end if
-
-               ! Amplitude element according to (**)
-               tmp1%val(J,B,A,1) = tmp1%val(J,B,A,1)/deltaF
-
-            end do
+      ! Fock valence
+      do j=1,no
+         do i=1,no
+            oof(i,j) = mol%ppfock(i+Ncore,j+Ncore)
          end do
       end do
 
-      ! Now tmp1 contains the t2_{BJAI} solution vector in the diagonal basis
-      ! stored in the order (J,B,A,I) [fixed I], and we "just"
-      ! need to transform back to the original basis.
+   else
+      ! No frozen core, simply copy elements for all occupied orbitals
+      no = mol%nocc
 
+      call mem_alloc(Co,nb,no)
+      call mem_alloc(oof,no,no)
 
-      ! Transform back three indices: JBA --> jba
-      ! -----------------------------------------
-      ! Note: Use Transposed transformation matrices to back transform
+      Co  = mol%Co
+      oof = mol%ppfock
 
-      ! 1. Index j: tmp1(J,B,A,I) -->  tmp2(j,B,A,I)
-      tmp2= array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,CoccT,tmp2,.true.)
-      call array4_free(tmp1)
+   end if
 
-      ! 2. Index b: tmp2(j,B,A,I) --> tmp2(B,A,j,I) --> tmp1(b,A,j,I)
-      call array4_reorder(tmp2,[2,3,1,4])
-      tmp1= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp2,CvirtT,tmp1,.true.)
-      call array4_free(tmp2)
+   call ccsolver_par(MODEL_MP2,Co,mol%Cv,mol%fock,nb,no,nv,mls,DECinfo%PL,oof,&
+      & mol%qqfock,e,t1_dummy,t2,RHS,.false.,local,.false., vovo_supplied = rhs_input)
 
-      ! 3. Index a: tmp1(b,A,j,I) --> tmp1(A,b,j,I) --> tmp2(a,b,j,I)
-      call array4_reorder(tmp1,[2,1,3,4])
-      tmp2= array4_init([nvirt,nvirt,nocc,1])
-      call array4_contract1(tmp1,CvirtT,tmp2,.true.)
-      call array4_free(tmp1)
+   if(present(mp2_energy)) mp2_energy = e
 
+   if(t1_dummy%initialized)then
+      call lsquit("ERROR(mp2_solver_mol) something wrong with singles handling in ccsolver_par",-1)
+   endif
 
-      ! Write solution vector t2_{aIbj} to file using storing type 2, order: (a,b,j,I)
-      ! ------------------------------------------------------------------------------
+   call mem_dealloc(Co)
+   call mem_dealloc(oof)
 
-      ! Note: Now we only need to transform the last "I" index of t2 back.
-      ! To do this we need to save on file such that we later can read in the full set of "I's"
-      do j=1,nocc
-         call array4_write_file_type2(t2tmp,j,I,&
-            & tmp2%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt )
-      end do
-      call array4_free(tmp2)
-
-   end do I_loop
-
-   call array4_close_file(RHStmp,'DELETE')
-   call array4_free(RHStmp)
-   call LSTIMER('SOLVE: STEP 2',tcpu,twall,DECinfo%output)
-   ! Now the file assosicated with t2tmp contains the final amplitudes,
-   ! except that the I index must be transformed back.
+   call LSTIMER('START',tcpu2,twall2,DECinfo%output)
+end subroutine mp2_solver_mol
 
 
 
-   ! Transform final t2 index (I-->i) and write solution vector to file
-   ! ******************************************************************
-
-   ! Final t2 solution vector
-   t2 = array4_init_file([nvirt,nocc,nvirt,nocc],1,.false.)
-   call array4_open_file(t2)
-
-   do j=1,nocc
-
-      tmp1 = array4_init([nvirt,nvirt,nocc,1])
-      do I=1,nocc
-         call array4_read_file_type2(t2tmp,j,I,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
-      end do
-      ! tmp1 now contains amplitudes t2_{aIbj} in the order (a,b,I,j) for fixed j.
-
-
-      ! Transform final index I-->i
-      ! ---------------------------
-
-      ! tmp1(a,b,I,j) --> tmp1(I,a,b,j) --> tmp2(i,a,b,j)
-      call array4_reorder(tmp1,[3,1,2,4])
-      tmp2 = array4_init([nocc,nvirt,nvirt,1])
-      call array4_contract1(tmp1,CoccT,tmp2,.true.)
-      call array4_free(tmp1)
-      ! Reorder to final storing order: tmp2(i,a,b,j) --> tmp2(a,i,b,j)
-      call array4_reorder(tmp2,[2,1,3,4])
-
-
-      ! Write t2_{aibj} to file for each j
-      ! ----------------------------------
-      call array4_write_file_type1(t2,j,&
-         & tmp2%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
-      call array4_free(tmp2)
-
-   end do
-
-   call array4_close_file(t2tmp,'DELETE')
-   call array4_free(t2tmp)
-   call array4_close_file(t2,'KEEP')
-   call LSTIMER('SOLVE: STEP 3',tcpu,twall,DECinfo%output)
-
-
-   ! Clean up
-   ! ********
-   call mem_dealloc(EVocc)
-   call mem_dealloc(EVvirt)
-   call array2_free(Cocc)
-   call array2_free(Cvirt)
-   call array2_free(CoccT)
-   call array2_free(CvirtT)
-
-
-
-end subroutine mp2_solver_file
+!!> \brief Solve MP2 equation when RHS and t2 are values are stored in memory.
+!!> See mp2_solver for details about the equation.
+!!> \author Kasper Kristensen
+!!> \date February 2011
+!subroutine mp2_solver_mem(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!
+!   implicit none
+!   !> Number of occupied orbitals (dimension of ppfock)
+!   integer, intent(in) :: nocc
+!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   integer, intent(in) :: nvirt
+!   !> Occupied-occupied block of Fock matrix
+!   real(realk) :: ppfock(nocc,nocc)
+!   !> Unoccupied-unoccupied block of Fock matrix
+!   real(realk) :: qqfock(nvirt,nvirt)
+!   !> RHS array
+!   type(array4), intent(in) :: RHS
+!   !> Solution array
+!   type(array4), intent(inout) :: t2
+!   type(array4) :: tmp1,tmp2
+!   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
+!   real(realk),pointer :: EVocc(:), EVvirt(:)
+!   type(array2) :: Cocc, Cvirt
+!   integer :: I,J,A,B
+!   real(realk) :: tcpu, twall, deltaF
+!   integer :: dims(4), occdims(2), virtdims(2)
+!   ! real(realk) :: test
+!
+!
+!   ! Strategy for solving MP2 equation:
+!   ! 1. Find basis where Fock matrix is diagonal
+!   ! 2. Transform 2-electron integrals to diagonal basis
+!   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
+!   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+!
+!   call LSTIMER('START',tcpu,twall,DECinfo%output)
+!
+!
+!   write(DECinfo%output,*)
+!   write(DECinfo%output,*) 'Entering MP2 solver - store array values in memory'
+!   write(DECinfo%output,*)
+!
+!
+!   ! Sanity checks
+!   ! *************
+!   ! Check that nvirt /= 0.
+!   if(nvirt<1 .or. nocc<1) then
+!      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
+!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
+!   endif
+!
+!
+!
+!
+!   ! Initialize stuff
+!   ! ****************
+!   dims = [nvirt,nocc,nvirt,nocc]
+!   occdims = [nocc,nocc]
+!   virtdims = [nvirt,nvirt]
+!
+!
+!
+!
+!   ! 1. Solve Fock eigenvalue problem - each block separately
+!   ! ********************************************************
+!
+!   ! OCCUPIED-OCCUPIED BLOCK
+!   ! '''''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cocc_data,nocc,nocc)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVocc,nocc)
+!
+!   ! The overlap matrix is simply the unit matrix because
+!   ! the LCM/MLM basis is orthogonal.
+!   call mem_alloc(Socc,nocc,nocc)
+!   Socc=0.0E0_realk
+!   do i=1,nocc
+!      Socc(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   Cocc = array2_init(occdims,Cocc_data)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cocc_data)
+!   call mem_dealloc(Socc)
+!
+!
+!
+!
+!   ! VIRTUAL-VIRTUAL BLOCK
+!   ! '''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cvirt_data,nvirt,nvirt)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVvirt,nvirt)
+!
+!   ! Unit overlap for virtual space
+!   call mem_alloc(Svirt,nvirt,nvirt)
+!   Svirt=0.0E0_realk
+!   do i=1,nvirt
+!      Svirt(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   Cvirt = array2_init(virtdims,Cvirt_data)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cvirt_data)
+!   call mem_dealloc(Svirt)
+!
+!
+!   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! 2. Transform two-electron integrals to diagonal basis
+!   ! *****************************************************
+!
+!   ! Using notation that (a,i,b,j) are LCM indices
+!   ! and (A,I,B,J) are indices in the diagonal basis,
+!   ! we want to carry out the transformations:
+!   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj} (*)
+!
+!   ! 1. Init temporary array
+!   tmp1= array4_init(dims)
+!
+!   ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
+!   call array4_contract1(RHS,Cvirt,tmp1,.true.)
+!
+!   ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
+!
+!   call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! 4. Index J: tmp2(I,A,b,j) --> tmp2(j,b,A,I) --> tmp1(J,b,A,I)
+!   call array4_reorder(tmp2,[4,3,2,1])
+!   tmp1= array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp2,Cocc,tmp1,.true.)
+!   call array4_free(tmp2)
+!
+!   ! 5. Index B: tmp1(J,b,A,I) --> tmp1(b,J,A,I) --> t2(B,J,A,I)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   t2 = array4_init(dims)
+!   call array4_contract1(tmp1,Cvirt,t2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! Now t2 contains the two-electron integrals (AI|BJ) = (BJ|AI) in the order (B,J,A,I).
+!   ! [Due to the symmetry it is not necessary to reorder t2 back to (A,I,B,J)].
+!
+!
+!   call LSTIMER('SOLVE: TRANS 1',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! 3. Solve MP2 equation in the diagonal basis
+!   ! *******************************************
+!
+!   ! In the diagonal basis the solution to the MP2 equation is trivial!
+!   ! The equation:
+!   ! RHS_{bjai} =  - sum_{c} t_{bjci} F_{ca}
+!   !               - sum_{c} t_{aicj} F_{cb}
+!   !               + sum_{k} t_{bjak} F_{ki}
+!   !               + sum_{k} t_{aibk} F_{kj}
+!   !
+!   ! simply becomes (using t_{BJAI} = t_{AIBJ}):
+!   !
+!   ! RHS_{BJAI} =  - t_{BJAI} F_{AA}
+!   !               - t_{AIBJ} F_{BB}
+!   !               + t_{BJAI} F_{II}
+!   !               + t_{AIBJ} F_{JJ}
+!   !            =  t_{BJAI} [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ]
+!   !
+!   ! In other words:
+!   !
+!   ! t_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
+!   !
+!
+!   ! Recalling that currently t_{BJAI} = RHS_{BJAI} and that the
+!   ! Fock matrix in the diagonal basis are the eigenvalues EVocc and EVvirt -
+!   ! we simply modify the t2 elements as follows:
+!
+!   !    test=0E0_realk
+!   do I=1,nocc
+!      do A=1,nvirt
+!         do J=1,nocc
+!            do B=1,nvirt
+!
+!               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
+!               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
+!
+!               ! Sanity check
+!               if( abs(deltaF) < 1e-9_realk ) then
+!                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
+!                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
+!                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
+!               end if
+!
+!               ! Canonical energy check
+!               ! test = test &
+!               ! & + (2E0_realk*t2%val(B,J,A,I) - t2%val(B,I,A,J))*t2%val(B,J,A,I)/deltaF
+!
+!               ! t2 according to (**)
+!               t2%val(B,J,A,I) = t2%val(B,J,A,I)/deltaF
+!
+!            end do
+!         end do
+!      end do
+!   end do
+!
+!   call LSTIMER('SOLVE: CALC T2',tcpu,twall,DECinfo%output)
+!
+!
+!
+!
+!   ! 4. Transform amplitudes back to LCM/MLM basis
+!   ! *********************************************
+!
+!   ! Since LCM/MLM and the diagonal basis are connected by a unitary
+!   ! transformation this basically corresponds to repeating step 2
+!   ! above with the transposed transformation matrices:
+!   !
+!   ! t_{aibj} = sum_{AIBJ} C_{Aa} C_{Ia} C_{Bb} C_{Jj} t_{AIBJ}
+!
+!   ! 1. Transpose transformation matrices
+!   call array2_transpose(Cocc)
+!   call array2_transpose(Cvirt)
+!
+!   ! 2. Index A: t(A,I,B,J) --> tmp1(a,I,B,J)
+!   tmp1= array4_init(dims)
+!   call array4_contract1(t2,Cvirt,tmp1,.true.)
+!   call array4_free(t2)
+!
+!   ! 3. Index I: tmp1(a,I,B,J) --> tmp1(I,a,B,J) --> tmp2(i,a,B,J)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   tmp2= array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!   call array4_free(tmp1)
+!
+!   ! 4. Index J: tmp2(i,a,B,J) --> tmp2(J,B,a,i) --> tmp1(j,B,a,i)
+!   call array4_reorder(tmp2,[4,3,2,1])
+!   tmp1 = array4_init([nocc,nvirt,nvirt,nocc])
+!   call array4_contract1(tmp2,Cocc,tmp1,.true.)
+!   call array4_free(tmp2)
+!
+!   ! 5. Index B: tmp1(j,B,a,i) --> tmp1(B,j,a,i) --> t2(b,j,a,i)
+!   call array4_reorder(tmp1,[2,1,3,4])
+!   t2 = array4_init(dims)
+!   call array4_contract1(tmp1,Cvirt,t2,.true.)
+!   call array4_free(tmp1)
+!
+!   call LSTIMER('SOLVE: TRANS 2',tcpu,twall,DECinfo%output)
+!
+!
+!   ! Clean up
+!   ! ********
+!   call mem_dealloc(EVocc)
+!   call mem_dealloc(EVvirt)
+!   call array2_free(Cocc)
+!   call array2_free(Cvirt)
+!
+!
+!
+!end subroutine mp2_solver_mem
+!
+!
+!
+!!> \brief Solve MP2 equation when RHS and t2 are values are stored on file.
+!!> See mp2_solver for details about the equation.
+!!> \author Kasper Kristensen
+!!> \date February 2011
+!subroutine mp2_solver_file(nocc,nvirt,ppfock,qqfock,RHS,t2)
+!
+!   implicit none
+!   !> Number of occupied orbitals (dimension of ppfock)
+!   integer, intent(in) :: nocc
+!   !> Number of unoccupied orbitals (dimension of qqfock)
+!   integer, intent(in) :: nvirt
+!   !> Occupied-occupied block of Fock matrix
+!   real(realk) :: ppfock(nocc,nocc)
+!   !> Unoccupied-unoccupied block of Fock matrix
+!   real(realk) :: qqfock(nvirt,nvirt)
+!   !> RHS array, storing type 1 (see array4_init_file)
+!   type(array4), intent(in) :: RHS
+!   !> Solution array, storing type 1 (see array4_init_file)
+!   type(array4), intent(inout) :: t2
+!   type(array4) :: tmp1,tmp2
+!   type(array4) :: RHSaib,RHSbaj,RHStmp,t2tmp
+!   real(realk),pointer :: Cocc_data(:,:), Cvirt_data(:,:), Socc(:,:), Svirt(:,:)
+!   real(realk),pointer :: EVocc(:), EVvirt(:)
+!   type(array2) :: Cocc, Cvirt,CoccT,CvirtT
+!   integer :: I,J,A,B
+!   real(realk) :: tcpu, twall, deltaF
+!   integer :: occdims(2), virtdims(2)
+!
+!
+!
+!   ! Strategy for solving MP2 equation:
+!   ! 1. Find basis where Fock matrix is diagonal
+!   ! 2. Transform 2-electron integrals to diagonal basis
+!   ! 3. In diagonal basis the solution is trivial and the amplitudes are found.
+!   ! 4. Transform amplitudes in diagonal basis back to LCM basis.
+!
+!   ! Steps 2-4 necessarily overlap when we store array values on file.
+!   call LSTIMER('START',tcpu,twall,DECinfo%output)
+!
+!
+!   write(DECinfo%output,*)
+!   write(DECinfo%output,*) 'Entering MP2 solver - store array values on file'
+!   write(DECinfo%output,*)
+!
+!
+!   ! Sanity checks
+!   ! *************
+!   ! Check that nvirt /= 0.
+!   if(nvirt<1 .or. nocc<1) then
+!      write(DECinfo%output,*) 'Number of occupied orbitals = ', nocc
+!      write(DECinfo%output,*) 'Number of unoccupied orbitals = ', nvirt
+!      call lsquit('Error in mp2_solver: Number of orbitals is smaller than one!', DECinfo%output)
+!   endif
+!
+!
+!   ! Initialize stuff
+!   ! ****************
+!   occdims = [nocc,nocc]
+!   virtdims = [nvirt,nvirt]
+!
+!
+!
+!   ! 1. Solve Fock eigenvalue problem - each block separately
+!   ! ********************************************************
+!
+!   ! OCCUPIED-OCCUPIED BLOCK
+!   ! '''''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cocc_data,nocc,nocc)
+!   ! Eigenvalues
+!   call mem_alloc(EVocc,nocc)
+!
+!   ! The overlap matrix is simply the unit matrix because
+!   ! the LCM/MLM basis is orthogonal.
+!   call mem_alloc(Socc,nocc,nocc)
+!   Socc=0.0E0_realk
+!   do i=1,nocc
+!      Socc(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nocc,ppfock,Socc,EVocc,Cocc_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   ! and also to have the transposed matrices available
+!   Cocc = array2_init(occdims,Cocc_data)
+!   CoccT = array2_init(occdims)
+!   call array2_copy(CoccT,Cocc)
+!   call array2_transpose(CoccT)
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cocc_data)
+!   call mem_dealloc(Socc)
+!
+!
+!
+!
+!   ! VIRTUAL-VIRTUAL BLOCK
+!   ! '''''''''''''''''''''
+!
+!   ! Eigenvectors
+!   call mem_alloc(Cvirt_data,nvirt,nvirt)
+!
+!   ! Eigenvalues
+!   call mem_alloc(EVvirt,nvirt)
+!
+!   ! Unit overlap for virtual space
+!   call mem_alloc(Svirt,nvirt,nvirt)
+!   Svirt=0.0E0_realk
+!   do i=1,nvirt
+!      Svirt(i,i) = 1E0_realk
+!   end do
+!
+!   ! Solve eigenvalue problem
+!   call solve_eigenvalue_problem(nvirt,qqfock,Svirt,EVvirt,Cvirt_data)
+!
+!   ! For later, it is convenient to keep eigenvectors in array2 form
+!   ! and also to have the transposed matrices available
+!   Cvirt = array2_init(virtdims,Cvirt_data)
+!   CvirtT = array2_init(virtdims)
+!   call array2_copy(CvirtT,Cvirt)
+!   call array2_transpose(CvirtT)
+!
+!
+!   ! Done with some matrices
+!   call mem_dealloc(Cvirt_data)
+!   call mem_dealloc(Svirt)
+!   call LSTIMER('SOLVE: EIVAL',tcpu,twall,DECinfo%output)
+!
+!
+!
+!   ! Transform three indices to diagonal basis (aib-->AIB)
+!   ! *****************************************************
+!
+!   ! Using the notation that (a,i,b,j) are LCM indices
+!   ! and (A,I,B,J) are indices in the diagonal basis,
+!   ! we want to carry out the transformations:
+!   ! RHS_{AIBJ} = sum_{aibj} C_{aA} C_{iI} C_{bB} C_{jJ} RHS_{aibj}
+!
+!   ! Since we cannot have full four-dimensional arrays in memory,
+!   ! we do this in steps. First, for a fixed "j" we transform the other indices:
+!   !
+!   ! RHS_{AIBj} = sum_{aib} C_{aA} C_{iI} C_{bB} RHS_{aibj}
+!
+!   ! Temporary RHS where three indices are transformed, stored on file.
+!   RHStmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
+!   ! Temporary array for keeping RHS_{aibj} for a fixed j (last dimension is one).
+!   RHSaib = array4_init([nvirt,nocc,nvirt,1])
+!   call array4_open_file(RHS)
+!   call array4_open_file(RHStmp)
+!
+!
+!   do j=1,nocc
+!
+!      ! 1. Read in RHS_{aibj} for fixed j
+!      call array4_read_file_type1(RHS,j,&
+!         & RHSaib%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
+!
+!      ! 2. Index A: RHS(a,i,b,j) --> tmp1(A,i,b,j)
+!      tmp1= array4_init([nvirt,nocc,nvirt,1])
+!      call array4_contract1(RHSaib,Cvirt,tmp1,.true.)
+!
+!      ! 3. Index I: tmp1(A,i,b,j) --> tmp1(i,A,b,j) --> tmp2(I,A,b,j)
+!      call array4_reorder(tmp1,[2,1,3,4])
+!      tmp2= array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,Cocc,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!      ! 4. Index B: tmp2(I,A,b,j) --> tmp2(b,A,I,j) --> tmp1(B,A,I,j)
+!      call array4_reorder(tmp2,[3,2,1,4])
+!      tmp1= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp2,Cvirt,tmp1,.true.)
+!      call array4_free(tmp2)
+!
+!      ! 5. Write to file referenced by temporary RHS array (storing type 2)
+!      do I=1,nocc
+!         call array4_write_file_type2(RHStmp,I,j,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
+!      end do
+!      call array4_free(tmp1)
+!
+!   end do
+!   call array4_close_file(RHS,'KEEP')
+!   call array4_free(RHSaib)
+!   call LSTIMER('SOLVE: STEP 1',tcpu,twall,DECinfo%output)
+!   ! Now the file referenced by RHStmp contains RHS_{AIBj},
+!   ! stored in the order (B,A,I,j) using storing type 2.
+!
+!
+!
+!   ! Transform j-->J; Solve equation in diag basis; Back transform ABJ-->abj
+!   ! ***********************************************************************
+!
+!   ! Temporary array
+!   t2tmp = array4_init_file([nvirt,nvirt,nocc,nocc],2,.false.)
+!   call array4_open_file(t2tmp)
+!
+!
+!   I_loop: do I=1,nocc
+!
+!
+!      ! Read in RHS_{AIBj} for fixed I
+!      ! ------------------------------
+!      RHSbaj=array4_init([nvirt,nvirt,nocc,1])
+!      do j=1,nocc
+!         call array4_read_file_type2(RHStmp,I,j,&
+!            & RHSbaj%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt)
+!      end do
+!      ! Now RHSbaj contains elements RHS_{AIBj} for a fixed I
+!      ! stored in the order (B,A,j,I)
+!
+!
+!      ! Transform final index j-->J
+!      ! ---------------------------
+!      ! Reorder: RHSbaj(B,A,j,I) --> RHSbaj(j,B,A,I)
+!      call array4_reorder(RHSbaj,[3,1,2,4])
+!
+!
+!      ! Transform: RHSbaj(j,B,A,I) --> tmp1(J,B,A,I)
+!      tmp1=array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(RHSbaj,Cocc,tmp1,.true.)
+!      call array4_free(RHSbaj)
+!
+!
+!      ! Now tmp1 contains the RHS_{BJAI} in the diagonal basis
+!      ! stored in the order (J,B,A,I) [fixed I].
+!
+!
+!      ! Divide by deltaF (solve equation in diagonal basis)
+!      ! ---------------------------------------------------
+!      ! In the diagonal basis the t2 solution vector is simply:
+!      ! t2_{BJAI} = RHS_{BJAI} / [ F_{II} + F_{JJ} - F_{AA} - F_{BB} ] (**)
+!      ! [See (**) in subroutine mp2_solver_mem]
+!      do A=1,nvirt
+!         do B=1,nvirt
+!            do J=1,nocc
+!
+!               ! deltaF = F_{II} + F_{JJ} - F_{AA} - F_{BB}
+!               deltaF = EVocc(I) + EVocc(J) - EVvirt(A) - EVvirt(B)
+!
+!               ! Sanity check
+!               if( abs(deltaF) < 1e-9_realk ) then
+!                  write(DECinfo%output,*) 'WARNING: SMALL NUMBERS OCCURING IN SOLVER!!!'
+!                  write(DECinfo%output,*) 'WARNING: SOLVER MAY BE UNSTABLE!!!'
+!                  write(DECinfo%output,*) 'Delta epsilon value = ', deltaF
+!               end if
+!
+!               ! Amplitude element according to (**)
+!               tmp1%val(J,B,A,1) = tmp1%val(J,B,A,1)/deltaF
+!
+!            end do
+!         end do
+!      end do
+!
+!      ! Now tmp1 contains the t2_{BJAI} solution vector in the diagonal basis
+!      ! stored in the order (J,B,A,I) [fixed I], and we "just"
+!      ! need to transform back to the original basis.
+!
+!
+!      ! Transform back three indices: JBA --> jba
+!      ! -----------------------------------------
+!      ! Note: Use Transposed transformation matrices to back transform
+!
+!      ! 1. Index j: tmp1(J,B,A,I) -->  tmp2(j,B,A,I)
+!      tmp2= array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,CoccT,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!      ! 2. Index b: tmp2(j,B,A,I) --> tmp2(B,A,j,I) --> tmp1(b,A,j,I)
+!      call array4_reorder(tmp2,[2,3,1,4])
+!      tmp1= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp2,CvirtT,tmp1,.true.)
+!      call array4_free(tmp2)
+!
+!      ! 3. Index a: tmp1(b,A,j,I) --> tmp1(A,b,j,I) --> tmp2(a,b,j,I)
+!      call array4_reorder(tmp1,[2,1,3,4])
+!      tmp2= array4_init([nvirt,nvirt,nocc,1])
+!      call array4_contract1(tmp1,CvirtT,tmp2,.true.)
+!      call array4_free(tmp1)
+!
+!
+!      ! Write solution vector t2_{aIbj} to file using storing type 2, order: (a,b,j,I)
+!      ! ------------------------------------------------------------------------------
+!
+!      ! Note: Now we only need to transform the last "I" index of t2 back.
+!      ! To do this we need to save on file such that we later can read in the full set of "I's"
+!      do j=1,nocc
+!         call array4_write_file_type2(t2tmp,j,I,&
+!            & tmp2%val(1:nvirt,1:nvirt,j,1), nvirt,nvirt )
+!      end do
+!      call array4_free(tmp2)
+!
+!   end do I_loop
+!
+!   call array4_close_file(RHStmp,'DELETE')
+!   call array4_free(RHStmp)
+!   call LSTIMER('SOLVE: STEP 2',tcpu,twall,DECinfo%output)
+!   ! Now the file assosicated with t2tmp contains the final amplitudes,
+!   ! except that the I index must be transformed back.
+!
+!
+!
+!   ! Transform final t2 index (I-->i) and write solution vector to file
+!   ! ******************************************************************
+!
+!   ! Final t2 solution vector
+!   t2 = array4_init_file([nvirt,nocc,nvirt,nocc],1,.false.)
+!   call array4_open_file(t2)
+!
+!   do j=1,nocc
+!
+!      tmp1 = array4_init([nvirt,nvirt,nocc,1])
+!      do I=1,nocc
+!         call array4_read_file_type2(t2tmp,j,I,tmp1%val(1:nvirt,1:nvirt,I,1),nvirt,nvirt)
+!      end do
+!      ! tmp1 now contains amplitudes t2_{aIbj} in the order (a,b,I,j) for fixed j.
+!
+!
+!      ! Transform final index I-->i
+!      ! ---------------------------
+!
+!      ! tmp1(a,b,I,j) --> tmp1(I,a,b,j) --> tmp2(i,a,b,j)
+!      call array4_reorder(tmp1,[3,1,2,4])
+!      tmp2 = array4_init([nocc,nvirt,nvirt,1])
+!      call array4_contract1(tmp1,CoccT,tmp2,.true.)
+!      call array4_free(tmp1)
+!      ! Reorder to final storing order: tmp2(i,a,b,j) --> tmp2(a,i,b,j)
+!      call array4_reorder(tmp2,[2,1,3,4])
+!
+!
+!      ! Write t2_{aibj} to file for each j
+!      ! ----------------------------------
+!      call array4_write_file_type1(t2,j,&
+!         & tmp2%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
+!      call array4_free(tmp2)
+!
+!   end do
+!
+!   call array4_close_file(t2tmp,'DELETE')
+!   call array4_free(t2tmp)
+!   call array4_close_file(t2,'KEEP')
+!   call LSTIMER('SOLVE: STEP 3',tcpu,twall,DECinfo%output)
+!
+!
+!   ! Clean up
+!   ! ********
+!   call mem_dealloc(EVocc)
+!   call mem_dealloc(EVvirt)
+!   call array2_free(Cocc)
+!   call array2_free(Cvirt)
+!   call array2_free(CoccT)
+!   call array2_free(CvirtT)
+!
+!
+!
+!end subroutine mp2_solver_file
 
 
 !> \brief adaption of the ccsolver routine, rebuild for the 
@@ -1465,7 +1473,8 @@ end subroutine mp2_solver_file
 !> \author Patrick Ettenhuber (heavily adapted version from Marcin)
 subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       & mylsitem,ccPrintLevel,ppfock_f,qqfock_f,ccenergy, &
-      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos,m2,m1,frag)
+      & t1_final,t2_final,VOVO,longrange_singles,local,use_pnos, &
+      & m2,m1,frag,vovo_supplied)
 
    implicit none
 
@@ -1495,11 +1504,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    !> Coupled cluster energy for fragment/full molecule
    real(realk),intent(inout)                 :: ccenergy
    !> Final singles amplitudes
-   type(array2),intent(inout)                :: t1_final
+   type(tensor),intent(inout)                :: t1_final
    !> Final doubles amplitudes
-   type(array4),intent(inout)                :: t2_final
+   type(tensor),intent(inout)                :: t2_final
    !> Two electron integrals (a i | b j) stored as (a,i,b,j)
-   type(array4),intent(inout)                :: VOVO
+   type(tensor),intent(inout)                :: VOVO
    !> Include long-range singles effects using singles amplitudes
    !> from previous fragment calculations.
    !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
@@ -1507,9 +1516,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    logical,intent(in)                        :: longrange_singles
    logical,intent(inout)                     :: local
    logical,intent(in)                        :: use_pnos
-   type(array4), intent(inout), optional     :: m2
-   type(array2), intent(inout), optional     :: m1
+   type(tensor), intent(inout), optional     :: m2
+   type(tensor), intent(inout), optional     :: m1
    type(decfrag), intent(inout), optional    :: frag
+   logical, intent(in), optional             :: vovo_supplied
    !
    !> Do an MO-based CCSD calculation?
    logical :: mo_ccsd
@@ -1518,12 +1528,12 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    type(MObatchInfo) :: MOinfo
    !
    !work stuff
-   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),Co2_d(:,:), Cv2_d(:,:),focc(:),fvirt(:)
-   real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
+   real(realk),pointer :: Co_d(:,:),Cv_d(:,:),focc(:),fvirt(:)
+   real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:)
    real(realk) :: ccenergy_check
    integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims, ord2
    integer, dimension(4) :: ampl4_dims
-   type(tensor)  :: fock,Co,Cv,Co2,Cv2
+   type(tensor)  :: fock,Co,Cv,Uo,Uv
    type(tensor)  :: ppfock,qqfock,pqfock,qpfock
    type(tensor)  :: ifock,delta_fock
    type(tensor)  :: iajb
@@ -1536,9 +1546,9 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)             :: test_norm,two_norm_total, one_norm_total,one_norm1, one_norm2, prev_norm
    real(realk), pointer    :: B(:,:),c(:)
    integer                 :: iter,last_iter,i,j,k,l
-   logical                 :: crop_ok,break_iterations,saferun
+   logical                 :: crop_ok,break_iterations,saferun, use_pseudo_diag_basis
    type(ri)                :: l_ao
-   type(tensor)             :: ppfock_prec, qqfock_prec, qpfock_prec
+   type(tensor)            :: ppfock_prec, qqfock_prec, qpfock_prec
    real(realk)             :: tcpu, twall, ttotend_cpu, ttotend_wall, ttotstart_cpu, ttotstart_wall
    real(realk)             :: iter_cpu,iter_wall
    integer                 :: nnodes
@@ -1554,6 +1564,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk) :: time_start_guess,time_copy_opt,time_crop_mat,time_energy,time_iter 
    real(realk) :: time_main,time_mixing,time_mo_ints,time_new_guess,time_norm,time_residual
    real(realk) :: time_solve_crop,time_t1_trafo,time_write,time_finalize
+   real(realk) :: t2fnorm2, t1fnorm2
    !SOME DUMMIES FOR TESTING
    type(array4) :: iajb_a4
    type(tensor)            :: tmp
@@ -1561,10 +1572,13 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    integer(kind=8)        :: o2v2
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
-   logical                :: restart, w_cp, restart_from_converged,collective,use_singles
+   logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
+   logical                :: trafo_vovo, trafo_m2
+   logical                :: diag_oo_block, diag_vv_block
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
+
 
    time_work        = 0.0E0_realk
    time_comm        = 0.0E0_realk
@@ -1598,7 +1612,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    !Set defaults
    restart          = .false.
-   w_cp             = .false.
    saferun          = (.not.DECinfo%CCSDnosaferun.or.(DECinfo%only_n_frag_jobs>0))
 
    if( saferun .and. (2.0E0_realk*mem_o2v2 > 0.5E0_realk*MemFree) )then
@@ -1612,20 +1625,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
 #ifdef VAR_MPI
    nnodes      = infpar%lg_nodtot
-   w_cp        = DECinfo%spawn_comm_proc
-
-   call time_start_phase(PHASE_COMM, at = time_work)
-
-   if ( w_cp ) call lspdm_start_up_comm_procs
-
-   call time_start_phase(PHASE_WORK, at = time_comm)
-
 #ifndef COMPILER_UNDERSTANDS_FORTRAN_2003
    call lsquit("ERROR(ccsolver_par):Your compiler does not support certain&
       & features needed to run that part of the code. Use a compiler supporting&
       & Fortran 2003 features",-1)
 #endif
-
 #endif
 
    call get_symm_tensor_segmenting_simple(no,nv,os,vs)
@@ -1639,7 +1643,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    ! Sanity check 2: Singles amplitudes initiated appropriately
    if(longrange_singles) then
-      if(.not. associated(t1_final%val)) then
+      if(.not. t1_final%initialized) then
          call lsquit('ccsolver: Long range singles corrections requested, &
             & but t1_final does not contain existing amplitudes!',DECinfo%output)
       end if
@@ -1650,12 +1654,34 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m2',DECinfo%output)
       end if
-      if(.not. local)then
-         print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
-         stop 0
-      endif
    endif
 
+   vovo_avail = .false.
+   trafo_vovo = .false.
+   if(present(vovo_supplied)) vovo_avail = vovo_supplied
+
+   if(vovo_avail)then
+
+      if(.not.VOVO%initialized)then
+         call lsquit("ERROR(ccsolver_par): input specified that vovo was&
+         & supplied, but vovo is not initialized",-1)
+      endif
+
+      if(VOVO%itype == TT_TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os))then
+         call lsquit("ERROR(ccsolver_par): distribution of VOVO not fit for solver",-1)
+      endif
+
+      trafo_vovo = .true.
+
+   endif
+
+   !see if m2 has to be transformed to the pseudo diag basis
+   trafo_m2 = .false.
+   if(present(m2))then
+
+      trafo_m2 = use_pnos
+
+   endif
 
    !Settings for the models
    ModelSpecificSettings: select case(ccmodel)
@@ -1676,8 +1702,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    case default
 
-      call lsquit("ERROR(ccsolver_par): requested model&
-         & not yet implemented",-1)
+      call lsquit("ERROR(ccsolver_par): requested model not yet implemented",-1)
 
    end select ModelSpecificSettings
 
@@ -1687,48 +1712,85 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_alloc( fvirt,    nv     )
    call mem_alloc( Co_d,     nb, no )
    call mem_alloc( Cv_d,     nb, nv )
-   call mem_alloc( Co2_d,    nb, no )
-   call mem_alloc( Cv2_d,    nb, nv )
    call mem_alloc( ppfock_d, no, no )
    call mem_alloc( qqfock_d, nv, nv )
-   call mem_alloc( Uocc,     no, no )
-   call mem_alloc( Uvirt,    nv, nv )
+   call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
+   call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
 
-   if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
+   use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
+   !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
+   
+   if(use_pseudo_diag_basis)then
+
+      diag_oo_block = .not.use_pnos
+      diag_vv_block = .true.
+
+      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
+         & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
+
+      !OO BLOCK
+      if( diag_oo_block )then
+         ppfock_d = 0.0E0_realk
+         do ii=1,no
+            ppfock_d(ii,ii) = focc(ii)
+         enddo
+      else
+         Co_d     = Co_f
+         ppfock_d = ppfock_f
+         Uo%elm2  = 0.0E0_realk
+         do ii=1,no
+            Uo%elm2(ii,ii) = 1.0E0_realk
+         enddo
+      endif
+
+      !VV BLOCK
+      if( diag_vv_block )then
+         qqfock_d = 0.0E0_realk
+         do aa=1,nv
+            qqfock_d(aa,aa) = fvirt(aa)
+         enddo
+      else
+         Cv_d     = Cv_f
+         qqfock_d = qqfock_f
+         Uv%elm2  = 0.0E0_realk
+         do aa=1,nv
+            Uv%elm2(aa,aa) = 1.0E0_realk
+         enddo
+      endif
+   else
       !no diagonalization
       Co_d     = Co_f
       Cv_d     = Cv_f
       ppfock_d = ppfock_f
       qqfock_d = qqfock_f
-      Uocc     = 0.0E0_realk
-      Uvirt    = 0.0E0_realk
+      Uo%elm2  = 0.0E0_realk
+      Uv%elm2  = 0.0E0_realk
       do ii=1,no
-         Uocc(ii,ii) = 1.0E0_realk
+         Uo%elm2(ii,ii) = 1.0E0_realk
       enddo
       do aa=1,nv
-         Uvirt(aa,aa) = 1.0E0_realk
-      enddo
-   else
-      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
-         & Co_d,Cv_d,Uocc,Uvirt,focc,fvirt)
-      ppfock_d = 0.0E0_realk
-      qqfock_d = 0.0E0_realk
-      do ii=1,no
-         ppfock_d(ii,ii) = focc(ii)
-      enddo
-      do aa=1,nv
-         qqfock_d(aa,aa) = fvirt(aa)
+         Uv%elm2(aa,aa) = 1.0E0_realk
       enddo
    endif
 
    call mem_dealloc( focc  )
    call mem_dealloc( fvirt )
+   call tensor_mv_dense2tiled(Uo,.not.local,dealloc_local = .false.)
+   call tensor_mv_dense2tiled(Uv,.not.local,dealloc_local = .false.)
 
-   ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
-   ! (including transposed MO matrices) efficiently. 
-   Co2_d = Co_d
-   Cv2_d = Cv_d
 
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+   !transform input to the diagonal basis!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
+      & [ m2   ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,&
+      & [ VOVO ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+
+   if(fragment_job.and.use_pnos)then
+      call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vv=frag%VirtMat,oo=frag%OccMat)
+   endif
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -1740,20 +1802,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! create transformation matrices in array form
    call tensor_minit(Co  , occ_dims, 2, local=local, atype="REAR" )
    call tensor_minit(Cv  , virt_dims,2, local=local, atype="REAR" )
-   call tensor_minit(Co2 , occ_dims, 2, local=local, atype=atype )
-   call tensor_minit(Cv2 , virt_dims,2, local=local, atype=atype )
    call tensor_minit(fock, ao2_dims, 2, local=local, atype=atype )
 
    call tensor_convert( Co_d,   Co   )
    call tensor_convert( Cv_d,   Cv   )
-   call tensor_convert( Co2_d,  Co2  )
-   call tensor_convert( Cv2_d,  Cv2  )
    call tensor_convert( fock_f, fock )
 
    call mem_dealloc( Co_d )
    call mem_dealloc( Cv_d )
-   call mem_dealloc( Co2_d )
-   call mem_dealloc( Cv2_d )
 
    ! Get Fock matrix correction (for fragment and/or frozen core)
    ! ************************************************************
@@ -1778,12 +1834,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          ! Get Fock matrix using singles amplitudes from previous
          ! fragment calculation, thereby effectively including long-range
          ! correlated polarization effects
-         call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co2,Cv2)
+         call Get_AOt1Fock(mylsitem,t1_final,ifock,no,nv,nb,Co,Co,Cv)
       else
          ! Fock matrix for fragment from density made from input MOs
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
-         !print *,"DEBUGGGING: zero fragment iFOck instead of calculating it"
-         !call tensor_zero(ifock)
       end if
 
       ! Long range Fock correction:
@@ -1798,8 +1852,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       if(DECinfo%frozencore) then
          ! Fock matrix from input MOs
          call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
-         !print *,"DEBUGGGING: zero iFOck instead of calculating it"
-         !call tensor_zero(ifock)
          ! Correction to actual Fock matrix
          call tensor_minit(delta_fock, ao2_dims, 2, local=local, atype='LDAR' )
          call tensor_cp_data(fock,delta_fock)
@@ -1830,17 +1882,17 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    else
       call tensor_minit(tmp, [nb,no], 2, local=local, atype='LDAR' )
       ord2 = [1,2]
-      call tensor_contract(1.0E0_realk,fock,Co2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
       call tensor_contract(1.0E0_realk,Co,tmp,[1],[1],1,0.0E0_realk,ppfock_prec,ord2)
       call tensor_free(tmp)
 
       call tensor_minit(tmp, [nb,nv], 2, local=local, atype='LDAR'  )
-      call tensor_contract(1.0E0_realk,fock,Cv2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call tensor_contract(1.0E0_realk,fock,Cv,[2],[1],1,0.0E0_realk,tmp,ord2)
       call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qqfock_prec,ord2)
       call tensor_free(tmp)
 
       call tensor_minit(tmp, [nb,no], 2, local=local, atype='LDAR'  )
-      call tensor_contract(1.0E0_realk,fock,Co2,[2],[1],1,0.0E0_realk,tmp,ord2)
+      call tensor_contract(1.0E0_realk,fock,Co,[2],[1],1,0.0E0_realk,tmp,ord2)
       call tensor_contract(1.0E0_realk,Cv,tmp,[1],[1],1,0.0E0_realk,qpfock_prec,ord2)
       call tensor_free(tmp)
    end if
@@ -1881,15 +1933,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_minit(yv, virt_dims,2, local=local, atype='LDAR' )
    end if
 
+   !GET OVOV integrals from NON-T_1 transformed VOVO integrals or generate
    call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR', tdims=[os,vs,os,vs] )
-   !call tensor_minit(iajb, [no,nv,no,nv], 4, local=local, atype='TDAR' )
-   call tensor_zero(iajb)
+   if(.not.vovo_avail)then
+      call tensor_zero(iajb)
+      call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
+   else
+      call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
+      call tensor_free(VOVO)
+   endif
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
    call mem_alloc( c, DECinfo%ccMaxIter                    )
 
    call time_start_phase( PHASE_work, at = time_work, twall = time_start_guess )
-
 
 
    ! get guess amplitude vectors in the first iteration --> zero if no
@@ -1899,35 +1956,28 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       call tensor_minit(t1(1), ampl2_dims, 2, local=local, atype='REPD' )
       call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
-      !call tensor_minit(t2(1), ampl4_dims, 4, local=local, atype='TDAR' )
 
-      call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
+      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
          & ppfock_prec,qqfock_prec,qpfock_prec, mylsitem, local, safefilet21,safefilet22, safefilet2f, &
          & t1(1),safefilet11,safefilet12, safefilet1f  )
    else
 
-      !if MP2, just zero the array, and keep it in PDM all the time
-      atype = 'TDAR'
-      call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype, tdims=[vs,vs,os,os] )
-      !call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype=atype )
-      if(ccmodel == MODEL_MP2 )then
-         old_iter = 0
-      else
-         call get_guess_vectors(restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uocc,Uvirt,&
-            & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
-      endif
+      call tensor_minit(t2(1),  ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
+
+      call get_guess_vectors(ccmodel,restart,old_iter,nb,two_norm_total,ccenergy,t2(1),iajb,Co,Cv,Uo%elm2,Uv%elm2,&
+         & ppfock_prec,qqfock_prec,qpfock_prec,mylsitem,local,safefilet21,safefilet22, safefilet2f )
+
    endif
    restart_from_converged = (two_norm_total < DECinfo%ccConvergenceThreshold)
 
    call tensor_free(qpfock_prec)
 
-
    if(DECinfo%PL>1)call time_start_phase( PHASE_WORK, at = time_work, ttot = time_start_guess,&
       &labelttot = 'CCSOL: STARTING GUESS :', output = DECinfo%output, twall = time_main  )
 
 
-
-   ! title
+   ! Print Job Header
+   ! ****************
    Call print_ccjob_header(ccmodel,ccPrintLevel,fragment_job,&
       &.false.,nb,no,nv,DECinfo%ccMaxDIIS,restart,restart_from_converged,old_iter)
 
@@ -1949,35 +1999,32 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
         end if
       end if
 
-      INTEGRAL : if(ccmodel == MODEL_MP2) then
-
-         call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
-         call get_mp2_starting_guess( iajb, t2(1), ppfock_prec, qqfock_prec, local )
-
-      else
 
 #ifdef MOD_UNRELEASED
-         !============================================================================!
-         !                          MO-CCSD initialization                            !
-         !____________________________________________________________________________!
-         ! Check if there is enough memory to performed an MO-CCSD calculation.
-         !   YES: get full set of t1 free gmo and pack them
-         !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
-         if (mo_ccsd.or.(ccmodel == MODEL_RPA)) then
-            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
+      !============================================================================!
+      !                          MO-CCSD initialization                            !
+      !____________________________________________________________________________!
+      ! Check if there is enough memory to performed an MO-CCSD calculation.
+      !   YES: get full set of t1 free gmo and pack them
+      !   NO:  returns mo_ccsd == .false. and switch to standard CCSD.
+      if (mo_ccsd.or.(ccmodel == MODEL_RPA).and.(.not.ccmodel==MODEL_MP2)) then
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, twall = time_mo_ints ) 
 
-            call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv2%elm2,iajb,pgmo_diag,pgmo_up, &
-               & nb,no,nv,CCmodel,MOinfo)
+         call get_t1_free_gmo(mo_ccsd,mylsitem,Co%elm2,Cv%elm2,iajb,pgmo_diag,pgmo_up, &
+            & nb,no,nv,CCmodel,MOinfo)
 
-            if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
-               &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
+         if(DECinfo%PL>1)call time_start_phase( PHASE_work, at = time_work, ttot = time_mo_ints,&
+            &labelttot = 'CCSOL: INIT MO INTS   :', output = DECinfo%output )
 
-         end if
+      end if
 #endif
-      end if INTEGRAL
 
       nspaces = 0
       set_pno_info:if(use_pnos)then
+
+         !FIXME: do the PNO construction in MPI parallel
+         call tensor_init(tmp,[nv,no,nv,no],4)
+         call tensor_convert(m2, tmp%elm1 )
 
          !GET THE PNO TRANSFORMATION MATRICES
          if(fragment_job)then
@@ -1990,27 +2037,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             frag%nspaces = nspaces
 
             call mem_alloc( frag%CLocPNO, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%val,frag%CLocPNO,frag%nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,frag%CLocPNO,frag%nspaces,f=frag)
             pno_cv => frag%CLocPNO
 
          else
             !ALL PAIRS
             nspaces = no * ( no + 1 ) / 2
             call mem_alloc( pno_cv, nspaces )
-            call get_pno_trafo_matrices(no,nv,nb,m2%val,pno_cv,nspaces,f=frag)
+            call get_pno_trafo_matrices(no,nv,nb,tmp%elm1,pno_cv,nspaces,f=frag)
 
          endif
 
-         if(.not. local)then
-            print *,"PNO currently only without MPI"
-            stop 0
-         endif
+         call tensor_free(tmp)
+
          !GET THE OVERLAP BETWEEN THE PNO SPACES
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
-         !Get the integrals provided by MP2
-         call array_reorder_4d(1.0E0_realk,VOVO%val,nv,no,nv,no,[2,1,4,3],0.0E0_realk,iajb%elm1)
 
       endif set_pno_info
 
@@ -2024,7 +2067,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       ! iterate
       break_iterations = .false.
       crop_ok          = .false.
-      prev_norm        = 1.0E6_realk
+      prev_norm        = huge(prev_norm)
 
 
       CCIteration : do iter=1,DECinfo%ccMaxIter
@@ -2067,15 +2110,15 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             call tensor_sync_replicated(t1(iter))
 
             ! get the T1 transformation matrices
-            call tensor_cp_data(Cv2,yv)
+            call tensor_cp_data(Cv,yv)
             call tensor_cp_data(Cv,xv)
             ord2 = [1,2]
             call tensor_contract(-1.0E0_realk,Co,t1(iter),[2],[2],1,1.0E0_realk,xv,ord2)
             
 
-            call tensor_cp_data(Co2,yo)
+            call tensor_cp_data(Co,yo)
             call tensor_cp_data(Co,xo)
-            call tensor_contract(1.0E0_realk,Cv2,t1(iter),[2],[1],1,1.0E0_realk,yo,ord2)
+            call tensor_contract(1.0E0_realk,Cv,t1(iter),[2],[1],1,1.0E0_realk,yo,ord2)
 
          end if T1Related
 
@@ -2096,26 +2139,28 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case( MODEL_RIMP2 )
 
-            call lsquit('RI-MP2 have no residual - non iterative scheme',-1)
+            call lsquit('RI-MP2 has no residual - non iterative scheme',-1)
 
          case( MODEL_CC2, MODEL_CCSD, MODEL_CCSDpT ) !CC2 or  CCSD or CCSD(T)
 
-            call ccsd_residual_wrapper(ccmodel,w_cp,delta_fock,omega2(iter),t2(iter),&
+            call ccsd_residual_wrapper(ccmodel,delta_fock,omega2(iter),t2(iter),&
                & fock,iajb,no,nv,ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,&
                & MyLsItem,omega1(iter),t1(iter),pgmo_diag,pgmo_up,MOinfo,mo_ccsd,&
                & pno_cv,pno_s,nspaces,&
                & iter,local,use_pnos,restart,frag=frag)
 
          case( MODEL_RPA )
-           
+
 #ifdef VAR_MPI
-           call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
+            call RPA_residual_par(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv,local)
 #else
-           call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
+            call RPA_residual(Omega2(iter),t2(iter),iajb,ppfock_prec,qqfock_prec,no,nv)
 #endif
 
          case default
+
             call lsquit("ERROR(ccsolver_par):wrong choice of ccmodel",DECinfo%output)
+
          end select SelectCoupledClusterModel
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_residual, &
@@ -2270,11 +2315,11 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
          case(MODEL_RPA)
 
-           ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
+            ccenergy = get_RPA_energy_arrnew(t2(iter),iajb,no,nv)
 
-           if(DECinfo%SOS) then
-             ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
-           endif
+            if(DECinfo%SOS) then
+               ccenergy =ccenergy+get_SOSEX_cont_arrnew(t2(iter),iajb,no,nv)
+            endif
 
 
          case default
@@ -2299,6 +2344,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
                   call tensor_free(omega1_prec)
                end if
                omega2_prec = precondition_doubles(omega2_opt,ppfock_prec,qqfock_prec,local)
+
                call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR', tdims=[vs,vs,os,os] )
                !call tensor_minit(t2(iter+1), ampl4_dims, 4, local=local, atype='TDAR')
                call tensor_cp_data(t2_opt,t2(iter+1))
@@ -2335,10 +2381,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, twall = time_write ) 
 
             if(use_singles)then
-               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,t2(iter+1),safefilet21,&
-                  &safefilet22,t1(iter+1),safefilet11,safefilet12)                   
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(iter+1),safefilet21,&
+                  &safefilet22,t1(iter+1),safefilet11,safefilet12)                  
             else                                                                     
-               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,t2(iter+1),safefilet21,&
+               call save_current_guess(local,iter+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,t2(iter+1),safefilet21,&
                   &safefilet22)
             endif
 
@@ -2419,29 +2465,23 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
       ! Save final double amplitudes (to file if saferun)
       if(i==last_iter) then
-         ! Save two-electron integrals in the order (virt,occ,virt,occ)
-         t2_final = array4_init([nv,nv,no,no])
-         call tensor_convert(t2(last_iter),t2_final%val)
-         call array4_reorder(t2_final,[1,3,2,4])
-         !if(.not.restart_from_converged)then
-         !   call tensor_cp_tiled2dense(t2(last_iter),.true.)
-         !endif
-         !call array_reorder_4d(1.0E0_realk,t2(last_iter)%elm1,nv,nv,no,no,[1,3,2,4],0.0E0_realk,t2_final%val)
+         call tensor_minit( t2_final, [nv,no,nv,no], 4 , local=local, tdims = [vs,os,vs,os], atype = "TDAR")
+         call tensor_add(   t2_final, 1.0E0_realk, t2(last_iter), a = 0.0E0_realk, order = [1,3,2,4] )
 
          if(use_singles) then
             if(.not.longrange_singles) then ! intitialize and copy, else just copy
-               t1_final = array2_init(ampl2_dims)
+               call tensor_minit(t1_final,[nv,no],2)
             end if
-            call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%val,1)
+            call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%elm1,1)
          endif
 
          !SAFE THE FINAL AMPLITUDES, NOT YET REORDERED
          if(saferun.and..not.restart_from_converged)then
             if(use_singles)then
-               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,&
+               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
                   &t2(last_iter),safefilet2f,safefilet2f,t1(last_iter),safefilet1f,safefilet1f)
             else
-               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uocc,Uvirt,&
+               call save_current_guess(local,i+old_iter,nb,two_norm_total,ccenergy,Uo%elm2,Uv%elm2,&
                   &t2(last_iter),safefilet2f,safefilet2f)
             endif
          endif
@@ -2465,17 +2505,21 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    call time_start_phase(PHASE_WORK,at = time_work, twall = ttotend_wall, tcpu = ttotend_cpu )
 
-   ! Write finalization message
+   call print_norm(t2_final,t2fnorm2,.true.)
+   if(use_singles)then
+      call print_norm(t1_final,t1fnorm2,.true.)
+   endif
+
    call print_ccjob_summary(break_iterations,.false.,fragment_job,&
       &last_iter+old_iter,use_singles,ccenergy,ttotend_wall,&
-      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1_final,t2_final)
+      &ttotstart_wall,ttotend_cpu,ttotstart_cpu,t1fnorm2,t2fnorm2)
+   
 
-   ! Save two-electron integrals in the order (virt,occ,virt,occ)
-   if(.not.use_pnos)then
-      VOVO = array4_init([no,nv,no,nv])
-      call tensor_convert(iajb,VOVO%val)
-      call array4_reorder(VOVO,[2,1,4,3])
-   endif
+   ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
+   ! RHS or restore the old rhs
+   call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
+   call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
+
    call tensor_free(iajb)
 
    ! deallocate stuff
@@ -2508,16 +2552,14 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_free(qpfock)
    end if
 
-   
+
    if(ccmodel /= MODEL_MP2 .and. ccmodel /= MODEL_RPA)then
-     call tensor_free(ppfock)
-     call tensor_free(qqfock)
+      call tensor_free(ppfock)
+      call tensor_free(qqfock)
    endif
 
    call tensor_free(Co)
-   call tensor_free(Co2)
    call tensor_free(Cv)
-   call tensor_free(Cv2)
    call tensor_free(fock)
 
    !Free PNO information
@@ -2559,25 +2601,31 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    endif
 
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !transform back to original basis!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-   !transform back to original basis   
+   call tensor_transform_basis([Uo,Uv],2,&
+      & [ t2_final, VOVO    ],  &
+      & [[2,1,2,1],[2,1,2,1]], &
+      & [[2,2,2,2],[2,2,2,2]],  4, 2)
+
    if(use_singles)then
-      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val,vo=t1_final%val)
-      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
-   else
-      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=t2_final%val)
-      call can_local_trans(no,nv,nb,Uocc,Uvirt,vovo=VOVO%val)
+      !this should be replaced if/whenever t1 is not local
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=t1_final%elm1)
    endif
 
-   call mem_dealloc(Uocc)
-   call mem_dealloc(Uvirt)
+   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
+      & [ m2   ], [[2,1,2,1]], [[2,2,2,2]],  4, 1)
 
-#ifdef VAR_MPI
-   if ( w_cp ) call lspdm_shut_down_comm_procs
-   !print *,"ALL DONE"
-   !call sleep(3)
-   !stop 0
-#endif
+   if(fragment_job.and.use_pnos)then
+      print *,"DO FOO BACK TRAFO"
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
+      print *,"DO FOO DONE"
+   endif
+
+   call tensor_free(Uo)
+   call tensor_free(Uv)
 
 #ifdef MOD_UNRELEASED
    ! free memory from MO-based CCSD
@@ -2611,10 +2659,10 @@ end subroutine ccsolver_par
 !is returned
 !> \author Patrick Ettenhuber
 !> \date December 2012
-subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
+subroutine get_guess_vectors(ccmodel,restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,Uv,oof,vvf,vof,mylsitem,local,&
    & safefilet21,safefilet22,safefilet2f, t1,safefilet11,safefilet12,safefilet1f)
    implicit none
-   integer, intent(in) :: nb
+   integer, intent(in) :: nb,ccmodel
    logical,intent(out) :: restart
    real(realk), intent(inout) :: norm,energy,Uo(:,:),Uv(:,:)
    !> contains the guess doubles amplitudes on output
@@ -2640,8 +2688,26 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    character(11) :: fullname11, fullname12, fin1, fullname21, fullname22,fin2
    character(tensor_MSG_LEN) :: msg
    integer :: a,i
+   logical :: use_singles
 
    all_singles=present(t1).and.present(safefilet11).and.present(safefilet12).and.present(safefilet1f)
+
+   !MODIFY FOR NEW MODEL THAT IS USING THE CC DRIVER
+   ! set model specifics here
+   select case(ccmodel)
+   case(MODEL_MP2)
+      use_singles = .false.
+   case(MODEL_CC2)
+      use_singles = .true.
+   case(MODEL_CCSD)
+      use_singles = .true.
+   case(MODEL_CCSDpT)
+      use_singles = .true.
+   case(MODEL_RPA)
+      use_singles = .false.
+   case default
+      call lsquit("ERROR(get_guess_vectors) unknown model",-1)
+   end select
 
    !print *,"CHECK INPUT",safefilet11,safefilet12,all_singles,DECinfo%use_singles
    fu_t11=111
@@ -2663,7 +2729,7 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    if(DECinfo%DECrestart)then
 
       !CHECK IF THERE ARE CONVERGED AMPLITUDES AVAILABLE
-      if(DECinfo%use_singles.and.all_singles)then
+      if(use_singles.and.all_singles)then
          fin1=safefilet1f//'.restart'
          INQUIRE(FILE=fin1,EXIST=file_exists1f)
          if(file_exists1f)then
@@ -2699,7 +2765,7 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
       endif
 
       !THEN CHECK IF THERE ARE AMPLITUDES FROM OTHER ITERATIONS AVAILALBE
-      if(DECinfo%use_singles.and.all_singles.and..not.readfile1)then
+      if(use_singles.and.all_singles.and..not.readfile1)then
          fullname11=safefilet11//'.restart'
          fullname12=safefilet12//'.restart'
 
@@ -2812,22 +2878,31 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
    endif
 
 
-   if(readfile1)then
-      READ(fu_t1) t1%elm1
-      READ(fu_t1) norm
-      READ(fu_t1) energy
-      CLOSE(fu_t1)
-      restart = .true.
-      call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
-   else
-      !do a=1,nv
-      !   do i=1,no
+   if(use_singles)then
+      if(readfile1)then
+         READ(fu_t1) t1%elm1
+         READ(fu_t1) norm
+         READ(fu_t1) energy
+         CLOSE(fu_t1)
+         restart = .true.
+         call local_can_trans(no,nv,nb,Uo,Uv,vo=t1%elm1)
+      else
+         !This was an attempt to start with something else than 0 for CCSD, but
+         !it does not seem worth it, even if the start is the amplitudes of the
+         !second iteration
+         select case(ccmodel)
+         case(MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+            do a=1,nv
+               do i=1,no
 
-      !      t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
+                  t1%elm2(a,i) = vof%elm2(a,i)/( oof%elm2(i,i) - vvf%elm2(a,a) ) 
 
-      !   end do
-      !end do
-      if(DECinfo%use_singles) call tensor_zero(t1)
+               end do
+            end do
+         case default
+            call tensor_zero(t1)
+         end select
+      endif
    endif
 
    if(readfile2)then
@@ -2842,10 +2917,12 @@ subroutine get_guess_vectors(restart,iter_start,nb,norm,energy,t2,iajb,Co,Cv,Uo,
       if (.not.local) call tensor_mv_dense2tiled(t2,.false.)
       restart = .true.
    else
-      !call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, .true.)
-      !call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
-      call tensor_zero(t2)
-      !call tensor_zero(iajb)
+      select case(ccmodel)
+      case(MODEL_MP2,MODEL_CC2,MODEL_CCSD,MODEL_CCSDpT)
+         call get_mp2_starting_guess( iajb, t2, oof, vvf, local )
+      case default
+         call tensor_zero(t2)
+      end select
    endif
 end subroutine get_guess_vectors
 
@@ -2886,7 +2963,7 @@ subroutine save_current_guess(local,iter,nb,res_norm,energy,Uo,Uv,t2,safefilet21
    nv = t2%dims(1) 
    no = t2%dims(3) 
 
-   ! cp doubles from tile to dense part: (only if t2%itype/=DENSE)
+   ! cp doubles from tile to dense part: (only if t2%itype/=TT_DENSE)
    if (.not.local) call tensor_cp_tiled2dense(t2,.false.)
 
    call can_local_trans(no,nv,nb,Uo,Uv,vvoo=t2%elm1)

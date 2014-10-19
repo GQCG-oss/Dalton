@@ -1945,6 +1945,7 @@ module pno_ccsd_module
      call dgemm('n','t',nv,nv,nv,1.0E0_realk,tildetvv,nv,tvv,nv,0.0E0_realk,PD,nv)
      call dgemm('t','n',nv,nv,nv,1.0E0_realk,tildetvv,nv,tvv,nv,1.0E0_realk,PD,nv)
 
+     call print_norm(PD,i8*nv*nv,"PD:")
   end subroutine calculate_pair_density_matrix
 
   !\brief 

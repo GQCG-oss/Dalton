@@ -42,11 +42,13 @@ module ccsdpt_module
   use array3_simple_operations
   use array4_simple_operations
   
+#ifdef MOD_UNRELEASED
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&
        & ccsdpt_energy_e4_full, print_e4_full,&
        & ccsdpt_energy_e5_full,print_e5_full,ccsdpt_energy_e5_ddot
   private
+#endif
 
 #ifdef VAR_OPENACC
 #if defined(VAR_CRAY) && defined(VAR_CUBLAS)

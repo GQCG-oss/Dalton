@@ -6,14 +6,14 @@
 !> \date 2013 
 MODULE IchorEriGabintegralCPUMcMGeneralMod
 use IchorEriCoulombintegralCPUMcMGeneralMod
-use IchorPrecisionModule
+use IchorPrecisionMod
 use IchorMemory
-use IchorCommonModule
+use IchorCommonMod
 use IchorEriCoulombintegralCPUMcMGeneralEcoeffMod, only: &
      & Ichorbuild_Ecoeff_RHS,Ichorbuild_Ecoeff_LHS, printEcoeff
 use IchorEriCoulombintegralCPUMcMGeneralWTUVMod
 use IchorGaussianGeminalMod
-use IchorParametersModule
+use IchorParametersMod
 
 CONTAINS
   subroutine IGI_CPU_McM_general(nPrimA,nPrimB,&

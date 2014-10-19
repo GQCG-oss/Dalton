@@ -204,7 +204,7 @@ module crop_tools_module
       ecorr_s = 0.0E0_realk
       ecorr_d = 0.0E0_realk
 
-      if(t2%itype==DENSE.and.gmo%itype==DENSE.and.(t1%itype==DENSE.or.t1%itype==REPLICATED))then
+      if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE.and.(t1%itype==TT_DENSE.or.t1%itype==TT_REPLICATED))then
 
          do j=1,nocc
             do b=1,nvirt
@@ -226,12 +226,12 @@ module crop_tools_module
 
          ecorr = ecorr_s + ecorr_d
 
-      else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
-         t1%itype = REPLICATED
+         t1%itype = TT_REPLICATED
          call tensor_sync_replicated(t1)
          ecorr    = get_cc_energy_parallel(t1,t2,gmo)
-         t1%itype = DENSE
+         t1%itype = TT_DENSE
 
       endif
 
@@ -250,7 +250,7 @@ module crop_tools_module
       ecorr = 0.0E0_realk
       ecorr_d = 0.0E0_realk
 
-      if(t2%itype==DENSE.and.gmo%itype==DENSE)then
+      if(t2%itype==TT_DENSE.and.gmo%itype==TT_DENSE)then
          !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(nocc,&
          !$OMP nvirt,t2,gmo) REDUCTION(+:ecorr_d)
          do j=1,nocc
@@ -267,7 +267,7 @@ module crop_tools_module
 
          ecorr = ecorr_d
 
-      else if(t2%itype==TILED_DIST.and.gmo%itype==TILED_DIST)then
+      else if(t2%itype==TT_TILED_DIST.and.gmo%itype==TT_TILED_DIST)then
 
          ecorr=get_mp2_energy_parallel(t2,gmo)
 
@@ -487,15 +487,16 @@ module crop_tools_module
    ! li is the number of the last iteration
    ! ce is the correlation energy
    ! t* are timings
-   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,t1,t2,m1,m2)
+   ! nt*, nm* are the squared l_2 norms of the amplitudes and multipliers
+   subroutine print_ccjob_summary(bi,gm,fj,li,us,ce,tew,tsw,tec,tsc,nt1,nt2,nm1,nm2)
       implicit none
       logical, intent(in)        :: bi,gm,fj,us
       integer, intent(in)        :: li
       real(realk), intent(in)    :: ce,tew,tsw,tec,tsc
-      type(array2),intent(inout) :: t1
-      type(array4),intent(inout) :: t2
-      type(array2),intent(inout),optional :: m1
-      type(array4),intent(inout),optional :: m2
+      real(realk),intent(in) :: nt1
+      real(realk),intent(in) :: nt2
+      real(realk),intent(in),optional :: nm1
+      real(realk),intent(in),optional :: nm2
       real(realk) :: snorm,dnorm,tnorm
       tnorm = 0.0E0_realk
       dnorm = 0.0E0_realk
@@ -503,15 +504,16 @@ module crop_tools_module
 
       if(gm)then
          if(us)then
-            if(.not. present(m1) ) call lsquit('ERROR(print_ccjob_summary) no singles multipliers present',-1)
-            call print_norm(m1,snorm,.true.)
+            if(.not. present(nm1) ) call lsquit('ERROR(print_ccjob_summary) no singles multipliers norm present',-1)
+            snorm = nm1
          endif
-         if(.not. present(m2) ) call lsquit('ERROR(print_ccjob_summary) no doubles multipliers present',-1)
-         call print_norm(m2,dnorm,.true.)
+         if(.not. present(nm2) ) call lsquit('ERROR(print_ccjob_summary) no doubles multipliers norm present',-1)
+         dnorm = nm2
       else
-         if(us)call print_norm(t1,snorm,.true.)
-         call print_norm(t2,dnorm,.true.)
+         if(us)snorm = nt1
+         dnorm = nt2
       endif
+
       tnorm = sqrt(snorm+dnorm)
       if(us)snorm = sqrt(snorm)
       dnorm = sqrt(dnorm)
@@ -569,7 +571,7 @@ module crop_tools_module
    !> \date: April 2013
    !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
    !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
+   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv,vv,oo)
 
       implicit none
       !> integers
@@ -578,6 +580,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no),ov(no*nv)
+      real(realk), intent(inout),optional :: oo(no*no),vv(nv*nv)
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
       !> temp array2 and array4 structures
@@ -592,6 +595,8 @@ module crop_tools_module
       if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
+      if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
+      if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
       call mem_alloc(tmp,wrksize)
 
@@ -629,10 +634,24 @@ module crop_tools_module
          call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
       endif
 
+      if(present(vv))then
+         !U(a,A) t(AB)    -> t(aB)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,Uvirt,nv,vv,nv,0.0E0_realk,tmp,nv)
+         ! tmp(aB) U(b,B)^T   -> t(ab)
+         call dgemm('n','t',nv,nv,nv,1.0E0_realk,tmp,nv,Uvirt,nv,0.0E0_realk,vv,nv)
+      endif
+
+      if(present(oo))then
+         !U(i,I) t(IJ)    -> t(iJ)
+         call dgemm('n','n',no,no,no,1.0E0_realk,Uocc,no,oo,no,0.0E0_realk,tmp,no)
+         ! tmp(iJ) U(j,J)^T   -> t(iJ)
+         call dgemm('n','t',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
+      endif
+
       call mem_dealloc(tmp)
    end subroutine can_local_trans
 
-   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
+   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv,oo,vv)
 
       implicit none
       !> integers
@@ -641,6 +660,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no), ov(no*nv)
+      real(realk), intent(inout),optional :: oo(no*no), vv(nv*nv)
       !> unitary transformation matrices
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
@@ -660,6 +680,8 @@ module crop_tools_module
       if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
+      if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
+      if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
       call mem_alloc(tmp,wrksize)
 
@@ -683,7 +705,7 @@ module crop_tools_module
          ! tmp(iA) U(a,A)^T   -> t(ia)
          call dgemm('n','n',no,nv,nv,1.0E0_realk,tmp,no,Uvirt,nv,0.0E0_realk,ov,no)
       endif
-      
+
       if(present(bo))then
          tmp(1:nb*no) = bo
          ! tmp(alpha,i) U(i,I)   -> Co(alpha,I)
@@ -694,6 +716,20 @@ module crop_tools_module
          tmp(1:nb*nv) = bv
          ! tmp(alpha,a) U(a,A)   -> Cv(alpha,A)
          call dgemm('n','n',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
+      endif
+
+      if(present(vv))then
+         !U(a,A) t(AB)    -> t(aB)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,UvirtT,nv,vv,nv,0.0E0_realk,tmp,nv)
+         ! tmp(aB) U(b,B)^T   -> t(ab)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,tmp,nv,Uvirt,nv,0.0E0_realk,vv,nv)
+      endif
+
+      if(present(oo))then
+         !U(i,I) t(IJ)    -> t(iJ)
+         call dgemm('n','n',no,no,no,1.0E0_realk,UoccT,no,oo,no,0.0E0_realk,tmp,no)
+         ! tmp(iJ) U(j,J)^T   -> t(ij)
+         call dgemm('n','n',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
       endif
 
       call mem_dealloc(tmp)
@@ -728,4 +764,5 @@ module crop_tools_module
       ! WRKYXYX(Y,xyx)^T YY(y,Y)^T   -> XYXY (xyxy)
       call dgemm('t','t',x*x*y,y,y,1.0E0_realk,WRKYXYX,y,YY,y,0.0E0_realk,XYXY,x*x*y)
    end subroutine successive_xyxy_trafo
+
 end module crop_tools_module

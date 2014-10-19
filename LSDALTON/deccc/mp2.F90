@@ -18,7 +18,7 @@ module mp2_module
   use typedef!, only: typedef_free_setting,copy_setting
   use memory_handling
   use screen_mod!,only: free_decscreen, DECSCREENITEM
-  use Integralparameters!, only: MP2INAMP
+  use lsparameters
   use IntegralInterfaceMod!, only: II_getBatchOrbitalInfo
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
@@ -4144,30 +4144,8 @@ subroutine get_mp2_starting_guess(iajb,t2, oof, vvf, local)
 
    else
 
-      iwrk = 2_long * t2%tsize
-      call mem_alloc(o2v2,iajb%nelms)
-      call mem_alloc(wrk,iwrk)
+      call lspdm_get_mp2_starting_guess(iajb,t2,oof,vvf)
 
-      call time_start_phase( PHASE_COMM )
-      call tensor_gather(1.0E0_realk,iajb,0.0E0_realk,o2v2,iajb%nelms,oo=[2,4,1,3],wrk=wrk,iwrk=iwrk)
-      call ass_D1to4(o2v2,elm4,[nv,nv,no,no])
-      !$OMP PARALLEL DO COLLAPSE(3) DEFAULT(NONE) PRIVATE(i,a,j,b) SHARED(no,nv,elm4,oof,vvf)
-      do j = 1, no
-         do i = 1, no
-            do b = 1, nv
-               do a = 1, nv
-                  elm4(a,b,i,j) = elm4(a,b,i,j) / &
-                     &(oof%elm2(i,i) - vvf%elm2(a,a) + oof%elm2(j,j) - vvf%elm2(b,b) )
-               enddo
-            enddo
-         enddo
-      enddo
-      !$OMP END PARALLEL DO
-      call tensor_scatter(1.0E0_realk,o2v2,0.0E0_realk,t2,t2%nelms,wrk=wrk,iwrk=iwrk)
-      call time_start_phase( PHASE_WORK )
-
-      call mem_dealloc(o2v2)
-      call mem_dealloc(wrk)
    endif
 end subroutine get_mp2_starting_guess
 
@@ -4185,259 +4163,79 @@ subroutine get_simple_parallel_mp2_residual(omega2,iajb,t2,oof,vvf,iter,local)
    integer(kind=ls_mpik) :: me,nnod,nod
    integer :: ml1,fai1,l1,tl1,lai1
    integer :: ml2,fai2,l2,tl2,lai2
-   integer :: fri,tri
+   integer :: fri,tri,vs,os
    character(tensor_MSG_LEN) :: msg
    real(realk) :: nrm
    integer(kind=8) :: w3size
    integer(kind=ls_mpik) :: mode
+   type(tensor) :: E1,E2, Pijab_om2
+   integer :: ord(4)
    logical :: lock_safe,lock_outside,traf1,traf2,trafi
 
 
    me   = 0
    nnod = 1
+
+   !GET SLAVES
 #ifdef VAR_MPI
    me   = infpar%lg_mynum
    nnod = infpar%lg_nodtot
+   mode = MPI_MODE_NOCHECK
+   if(.not.local.and.me == infpar%master)call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
+   omega2%access_type = AT_ALL_ACCESS
+   iajb%access_type   = AT_ALL_ACCESS
+   t2%access_type     = AT_ALL_ACCESS
+   oof%access_type    = AT_ALL_ACCESS
+   vvf%access_type    = AT_ALL_ACCESS
+   call tensor_lock_local_wins(omega2,'e',mode)
 #endif
 
-
+   vs = t2%tdim(1)
+   os = t2%tdim(3)
    no = iajb%dims(1)
    nv = iajb%dims(2)
 
-   no2  = no**2
-   nv2  = nv**2
-   o2v2 = (i8*no2)*(i8*nv2)
-   o2v  = no2*nv 
-   v2o  = nv2*no 
+   ord = [1,4,2,3]
+   call tensor_contract( 1.0E0_realk,t2,vvf,[2],[2],1,0.0E0_realk,omega2,ord)
 
-   call mem_alloc(w_o2v2,iajb%nelms)
+   ord = [1,2,3,4]
+   call tensor_contract(-1.0E0_realk,t2,oof,[4],[1],1,1.0E0_realk,omega2,ord)
 
-   if( local )then
-      
-      call array_reorder_4d(0.5E0_realk,iajb%elm1,no,nv,no,nv,[2,4,1,3],1.0E0_realk,omega2%elm1)
 
-      !calculate first part of doubles E term and its permutation
-      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-      call dgemm('n','n',v2o,no,no,-1.0E0_realk,t2%elm1,v2o,oof%elm1,no,1.0E0_realk,omega2%elm1,v2o)
-
-      !calculate second part of doubles E term
-      ! F [a c] * t [c b i j] =+ Omega [a b i j]
-      call dgemm('n','n',nv,o2v,nv,1.0E0_realk,vvf%elm1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
-
-      !INTRODUCE PERMUTATION
-#ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
-      call assign_in_subblocks(w_o2v2,'=',omega2%elm1,o2v2)
-#else
-      !$OMP WORKSHARE
-      w_o2v2(1_long:o2v2) = omega2%elm1(1_long:o2v2)
-      !$OMP END WORKSHARE
-#endif
-
-      call array_reorder_4d(1.0E0_realk,w_o2v2,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
-
-   else
-
+   call tensor_ainit(Pijab_om2,omega2%dims,4,local=local,tdims=omega2%tdim,atype="TDAR",fo=omega2%offset)
 
 #ifdef VAR_MPI
-      !THE INTENSIVE SCHEMES
-
-          
-
-      if( me == 0 )then
-
-         if(iter>1)call tensor_mv_dense2tiled( t2, .true. )
-
-         call tensor_gather(0.5E0_realk,iajb,0.0E0_realk,w_o2v2,iajb%nelms,oo=[2,4,1,3])
-         call tensor_scatter(1.0E0_realk,w_o2v2,0.0E0_realk,omega2,t2%nelms)
-
-         call get_slaves_to_simple_par_mp2_res(omega2,iajb,t2,oof,vvf,iter)
-
-      endif
-
-      omega2%access_type = ALL_ACCESS
-      t2%access_type     = ALL_ACCESS
-      iajb%access_type   = ALL_ACCESS
-      oof%access_type    = ALL_ACCESS
-      vvf%access_type    = ALL_ACCESS
-      nnod               = infpar%lg_nodtot
-      me                 = infpar%lg_mynum
-      mode               = int(MPI_MODE_NOCHECK,kind=ls_mpik)
-      lock_safe          = .false.
-      !FIXME: the code has to work with lock_outside=.true.
-      lock_outside       = .false.
-
-      !Setting transformation variables for each rank
-      !**********************************************
-      call mo_work_dist(v2o,fai1,tl1,traf1)
-      call mo_work_dist(o2v,fai2,tl2,traf2)
-
-
-      w3size = max(tl1*no,tl2*nv)
-      if(nnod>1)w3size = max(w3size,2*omega2%tsize)
-      call mem_alloc(w3,w3size)
-
-      !DO ALL THINGS DEPENDING ON 1
-      if(lock_outside.and.traf1)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call tensor_lock_wins(t2,'s',mode)
-         call tensor_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside)
-         call time_start_phase(PHASE_WORK, at = tc)
-      endif
-
-
-
-
-      ! (-1) t [a b i k] * F [k j] =+ Omega [a b i j]
-      !if(me==0) call tensor_convert(t2,w_o2v2,t2%nelms)
-      if(.not.lock_outside)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
-         do nod=1,nnod-1
-            call mo_work_dist(nv*nv*no,fri,tri,trafi,nod)
-            if(trafi)then
-               if(me==0)then
-                  do i=1,no
-                     call dcopy(tri,w_o2v2(fri+(i-1)*no*nv*nv),1,w3(1+(i-1)*tri),1)
-                  enddo
-               endif
-               if(me==0.or.me==nod)then
-                  call ls_mpisendrecv(w3(1:no*tri),int((i8*no)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-               endif
-            endif
-         enddo
-         if(me==0.and.traf1)then
-            do i=1,no
-               call dcopy(tl1,w_o2v2(fai1+(i-1)*no*nv*nv),1,w3(1+(i-1)*tl1),1)
-            enddo
-         endif
-         w_o2v2=0.0E0_realk
-         call time_start_phase(PHASE_WORK, at = tc)
-      else
-         if(traf1)then
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_unlock_wins(t2)
-            call time_start_phase(PHASE_WORK, at = tc)
-         endif
-      endif
-
-      if(traf1)then
-         if(.not.lock_outside)then
-            call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2(fai1),v2o)
-            call time_start_phase(PHASE_COMM, at = tw)
-            call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-            call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-            call time_start_phase(PHASE_WORK, at = tc)
-         else
-            !call tensor_lock_wins(omega2,'s',mode)
-            call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,oof%elm1,no,0.0E0_realk,w_o2v2,tl1)
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_two_dim_1batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai1,tl1,.false.)
-            call time_start_phase(PHASE_WORK, at = tc)
-         endif
-      endif
-
-
-      !DO ALL THINGS DEPENDING ON 2
-      if(lock_outside.and.traf2)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call tensor_lock_wins(t2,'s',mode)
-         call tensor_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
-         call time_start_phase(PHASE_WORK, at = tc)
-      endif
-
-
-      ! F[a c] * t [c b i j] =+ Omega [a b i j]
-      if(.not.lock_outside)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call tensor_gather(1.0E0_realk,t2,0.0E0_realk,w_o2v2,o2v2)
-         call time_start_phase(PHASE_WORK, at = tc)
-         do nod=1,nnod-1
-            call mo_work_dist(nv*no*no,fri,tri,trafi,nod)
-            if(trafi)then
-               if(me==0)then
-                  do i=1,tri
-                     call dcopy(nv,w_o2v2(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
-                  enddo
-               endif
-               if(me==0.or.me==nod)then
-                  call time_start_phase(PHASE_COMM, at = tw)
-                  call ls_mpisendrecv(w3(1:nv*tri),int((i8*nv)*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-                  call time_start_phase(PHASE_WORK, at = tc)
-               endif
-            endif
-         enddo
-         if(me==0.and.traf2)then
-            do i=1,tl2
-               call dcopy(nv,w_o2v2(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
-            enddo
-         endif
-         w_o2v2=0.0E0_realk
-      else
-         if(traf2)then
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_unlock_wins(t2)
-            call time_start_phase(PHASE_WORK, at = tc)
-         endif
-      endif
-
-
-      if(traf2)then
-         if(.not.lock_outside)then
-            call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2(1+(fai2-1)*nv),nv)
-            call time_start_phase(PHASE_COMM, at = tw)
-            call lsmpi_local_reduction(w_o2v2,o2v2,infpar%master)
-            call tensor_scatteradd_densetotiled(omega2,1.0E0_realk,w_o2v2,o2v2,infpar%master)
-            call time_start_phase(PHASE_WORK, at = tc)
-         else
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_unlock_wins(omega2,.true.)
-            call tensor_lock_wins(omega2,'s',mode)
-            call time_start_phase(PHASE_WORK, at = tc)
-            call dgemm('n','n',nv,tl2,nv,1.0E0_realk,vvf%elm1,nv,w3,nv,0.0E0_realk,w_o2v2,nv)
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_two_dim_2batch(omega2,[1,2,3,4],'a',w_o2v2,3,fai2,tl2,lock_outside)
-            call tensor_unlock_wins(omega2)
-            call time_start_phase(PHASE_IDLE, at = tc)
-            call lsmpi_barrier(infpar%lg_comm)
-            call time_start_phase(PHASE_WORK, at = tc)
-         endif
-      endif
-
-
-
-      !INTRODUCE PERMUTATION
-      omega2%access_type = MASTER_ACCESS
-      t2%access_type     = MASTER_ACCESS
-      iajb%access_type   = MASTER_ACCESS
-      oof%access_type    = MASTER_ACCESS
-      vvf%access_type    = MASTER_ACCESS
-
-      if(.not.lock_outside)then
-         call time_start_phase(PHASE_COMM, at = tw)
-         call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,wrk=w3,iwrk=w3size)
-         call tensor_gather(1.0E0_realk,omega2,1.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
-         call tensor_scatter_densetotiled(omega2,w_o2v2,o2v2,infpar%master)
-         call time_start_phase(PHASE_WORK, at = tc)
-      else
-         if(me==0)then
-            call time_start_phase(PHASE_COMM, at = tw)
-            call tensor_lock_wins(omega2,'s',mode)
-            call tensor_gather(1.0E0_realk,omega2,0.0E0_realk,w_o2v2,o2v2,oo=[2,1,4,3])
-            call tensor_unlock_wins(omega2,.true.)
-            call tensor_lock_wins(omega2,'s',mode)
-            call tensor_scatter(1.0E0_realk,w_o2v2,1.0E0_realk,omega2,o2v2)
-            call tensor_unlock_wins(omega2,.true.)
-            call time_start_phase(PHASE_WORK, at = tc)
-         endif
-      endif
-
-      call mem_dealloc(w3)
-      lock_outside     = lock_safe
+   call tensor_lock_local_wins(Pijab_om2,'e',mode)
+   call tensor_unlock_wins(omega2,.true.)
 #endif
-   endif
+
+   !INTRODUCE PERMUTATION
+   ord = [2,1,4,3]
+   call tensor_add(Pijab_om2,1.0E0_realk,omega2, a = 0.0E0_realk, order = ord )
+
+#ifdef VAR_MPI
+   call tensor_lock_local_wins(omega2,'e',mode)
+   call tensor_unlock_wins(Pijab_om2,.true.)
+#endif
+
+   call tensor_add(omega2,1.0E0_realk,Pijab_om2)
+
+   !ADD INTEGRAL CONTRIB
+   ord = [2,4,1,3]
+   call tensor_add(omega2,1.0E0_realk,iajb, order = ord )
+
+#ifdef VAR_MPI
+   call tensor_unlock_wins(omega2,.true.)
+   omega2%access_type = AT_MASTER_ACCESS
+   iajb%access_type   = AT_MASTER_ACCESS
+   t2%access_type     = AT_MASTER_ACCESS
+   oof%access_type    = AT_MASTER_ACCESS
+   vvf%access_type    = AT_MASTER_ACCESS
+#endif
+
+   call tensor_free(Pijab_om2)
 
 
-   call mem_dealloc(w_o2v2)
 end subroutine get_simple_parallel_mp2_residual
 
 end module mp2_module

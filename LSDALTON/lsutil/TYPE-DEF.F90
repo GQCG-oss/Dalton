@@ -12,7 +12,7 @@ MODULE TYPEDEFTYPE
  use lsmatrix_type
  use LSTENSOR_typetype
  use matrix_module
- use Integralparameters
+ use LSparameters
  use integralOutput_typetype
  use tensor_type_def_module,only:tensor
 #ifdef VAR_MPI
@@ -599,6 +599,7 @@ TYPE(INTEGRALOUTPUT)       :: OUTPUT  !The structure containing the output
 !if you add a structure to this type remember to add it to MPI_ALLOC_DALTONINPUT
 TYPE(GaussianGeminal)      :: GGem !Information about the Gaussian geminal expansion        
 TYPE(ReducedScreeningInfo) :: RedCS !Batchinformation and batchwise screening and density matrices  
+REAL(REALK)                :: GPUMAXMEM !Maximum Memory on Device
 END TYPE LSSETTING
 
 !*****************************************

@@ -15,8 +15,18 @@ use IchorEriCoulombintegralGPUOBSGeneralModSegQSize
 use IchorEriCoulombintegralGPUOBSGeneralModSegPSize
 use IchorEriCoulombintegralGPUOBSGeneralModSegSize
 use IchorEriCoulombintegralGPUOBSGeneralModSeg1PrimSize
-use IchorprecisionModule
-use IchorCommonModule
+use SPIchorEriCoulombintegralGPUOBSGeneralModGen
+use SPIchorEriCoulombintegralGPUOBSGeneralModSegQ
+use SPIchorEriCoulombintegralGPUOBSGeneralModSegP
+use SPIchorEriCoulombintegralGPUOBSGeneralModSeg
+use SPIchorEriCoulombintegralGPUOBSGeneralModSeg1Prim
+use SPIchorEriCoulombintegralGPUOBSGeneralModGen2
+use SPIchorEriCoulombintegralGPUOBSGeneralModSegQ2
+use SPIchorEriCoulombintegralGPUOBSGeneralModSegP2
+use SPIchorEriCoulombintegralGPUOBSGeneralModSeg2
+use SPIchorEriCoulombintegralGPUOBSGeneralModSeg1Prim2
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_GPU_OBS_BUILDRJ000ModGen
 use AGC_GPU_OBS_BUILDRJ000ModSeg1Prim
@@ -37,7 +47,7 @@ CONTAINS
        & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12,Qdistance12,PQorder,LOCALINTS,localintsmaxsize,&
        & Acenter,Bcenter,Ccenter,Dcenter,nAtomsA,nAtomsB,spherical,&
        & TmpArray1,TMParray1maxsize,TmpArray2,TMParray2maxsize,&
-       & IatomAPass,iatomBPass,iASync)
+       & IatomAPass,iatomBPass,iASync,UseSP)
     implicit none
     integer,intent(in) :: nPrimQ,nPrimP,nPasses,nPrimA,nPrimB,nPrimC,nPrimD
     integer,intent(in) :: nPrimQP,MaxPasses,IntPrint,lupri
@@ -49,7 +59,7 @@ CONTAINS
     integer,intent(in) :: nCartOrbCompA,nCartOrbCompB,nCartOrbCompC,nCartOrbCompD
     integer,intent(in) :: nCartOrbCompP,nCartOrbCompQ,nOrbCompP,nOrbCompQ,nTUVP,nTUVQ,nTUV
     real(realk),intent(in) :: Aexp(nPrimA),Bexp(nPrimB),Cexp(nPrimC),Dexp(nPrimD)
-    logical,intent(in)     :: Qsegmented,Psegmented
+    logical,intent(in)     :: Qsegmented,Psegmented,UseSP
     real(realk),intent(in) :: pexp(nPrimP),qexp(nPrimQ)
     real(realk),intent(in) :: pcent(3*nPrimP*nAtomsA*nAtomsB)   !pcent(3,nPrimP)
     real(realk),intent(in) :: qcent(3*nPrimQ)           !qcent(3,nPrimQ)

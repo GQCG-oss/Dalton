@@ -1,8 +1,8 @@
 MODULE IchorEriCoulombintegralGPUOBSGeneralModGen
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for General Contracted Basisset 
-use IchorprecisionModule
-use IchorCommonModule
+use IchorprecisionMod
+use IchorCommonMod
 use IchorMemory
 use AGC_GPU_OBS_BUILDRJ000ModGen
 use AGC_GPU_OBS_BUILDRJ000ModSeg1Prim

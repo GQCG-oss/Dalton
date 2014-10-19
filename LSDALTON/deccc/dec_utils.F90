@@ -2960,7 +2960,7 @@ end function max_batch_dimension
     !> Fragment info (only t1-related information will be modified here)
     type(decfrag), intent(inout) :: MyFragment
     !> Singles amplitudes to be stored (stored as virtual,occupied)
-    type(array2),intent(in) :: t1
+    real(realk),intent(in) :: t1(:,:)
     integer :: nocc,nvirt,i,a,ix,ax
 
     ! Init dimensions
@@ -2968,12 +2968,12 @@ end function max_batch_dimension
     nvirt = MyFragment%nunoccAOS   ! virtual AOS dimension
 
     ! Sanity check
-    if( (nvirt/=t1%dims(1)) .or. (nocc/=t1%dims(2)) ) then
-       write(DECinfo%output,*) 'Fragment virt,occ', nvirt,nocc
-       write(DECinfo%output,*) 't1 input virt,occ', t1%dims
-       call lsquit('save_fragment_t1_AOSAOSamplitudes &
-            & AOS dimension mismatch!',DECinfo%output)
-    end if
+    !if( (nvirt/=t1%dims(1)) .or. (nocc/=t1%dims(2)) ) then
+    !   write(DECinfo%output,*) 'Fragment virt,occ', nvirt,nocc
+    !   write(DECinfo%output,*) 't1 input virt,occ', t1%dims
+    !   call lsquit('save_fragment_t1_AOSAOSamplitudes &
+    !        & AOS dimension mismatch!',DECinfo%output)
+    !end if
 
     ! Free t1 stuff (in case old ampltiudes are already stored)
     call free_fragment_t1(MyFragment)
@@ -2992,7 +2992,7 @@ end function max_batch_dimension
     ! Save amplitudes and indices
     do i=1,nocc
        do a=1,nvirt
-          MyFragment%t1(a,i) = t1%val(a,i)
+          MyFragment%t1(a,i) = t1(a,i)
        end do
     end do
 
@@ -4095,7 +4095,11 @@ end function max_batch_dimension
        elseif(DECinfo%ccmodel==MODEL_CC2) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_CCSD) then
-          write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
+          if (DECinfo%F12) then
+             write(lupri,'(15X,a,f20.10)') 'E: Total CCSD-F12 energy:', Ehf+Ecorr
+          else    
+             write(lupri,'(15X,a,f20.10)') 'G: Total CCSD energy    :', Ehf+Ecorr
+          endif
        elseif(DECinfo%ccmodel==MODEL_CCSDpT) then
           write(lupri,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
        elseif(DECinfo%ccmodel==MODEL_RPA) then
@@ -4498,12 +4502,11 @@ end function max_batch_dimension
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        
        case(MODEL_CCSD)
-          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
-               & 'MP2F12 occupied single energies','AF_CCSDf12_OCC')
-            if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_MP2f12),dofrag,&
+          call print_atomic_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
+               & 'CCSDF12 occupied single energies','AF_CCSDf12_OCC')
+          if (print_pair) call print_pair_fragment_energies(natoms,FragEnergies(:,:,FRAGMODEL_CCSDf12),dofrag,&
                & DistanceTable, 'CCSDf12 occupied pair energies','PF_CCSDf12_OCC')
        end select
-
 
        write(DECinfo%output,*)
        write(DECinfo%output,'(1X,a)') '**********************************************************'
@@ -4512,17 +4515,17 @@ end function max_batch_dimension
 
        select case(DECinfo%ccmodel)
        case(MODEL_MP2)
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:     ', energies(FRAGMODEL_OCCMP2)  
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2 CORRECTION TO ENERGY:      ', energies(FRAGMODEL_OCCMP2)  
           write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO MP2 ENERGY:  ', energies(FRAGMODEL_MP2f12)
-          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY:   ', &
+          write(DECinfo%output,'(1X,a,f20.10)') 'MP2-F12 CORRELATION ENERGY:    ', &
                & energies(FRAGMODEL_OCCMP2) + energies(FRAGMODEL_MP2f12)
           write(DECinfo%output,*)       
 
        case(MODEL_CCSD)
-          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY: ', energies(FRAGMODEL_OCCCCSD)
-          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD ENERGY: ', energies(FRAGMODEL_MP2f12)
-          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:    ', &
-               & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_MP2f12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD CORRECTION TO ENERGY:     ', energies(FRAGMODEL_OCCCCSD)
+          write(DECinfo%output,'(1X,a,f20.10)') 'F12 CORRECTION TO CCSD ENERGY: ', energies(FRAGMODEL_CCSDf12)
+          write(DECinfo%output,'(1X,a,f20.10)') 'CCSD-F12 CORRELATION ENERGY:   ', &
+               & energies(FRAGMODEL_OCCCCSD) + energies(FRAGMODEL_CCSDf12)
        end select
 
 !!$       if(DECinfo%F12debug) then
@@ -5136,11 +5139,14 @@ end function max_batch_dimension
      nocc  = t2%dims(2)
      nvirt = t2%dims(1)
 
-     if(t2%itype == DENSE)then
+     select case(t2%itype)
+     case(TT_DENSE,TT_REPLICATED)
+
         ! Init combined amplitudes
         call tensor_init(u,t2%dims,4)
 
         if(DECinfo%use_singles)then
+
            do j=1,nocc
               do b=1,nvirt
                  do i=1,nocc
@@ -5150,7 +5156,9 @@ end function max_batch_dimension
                  end do
               end do
            end do
+
         else
+
 #ifdef VAR_WORKAROUND_CRAY_MEM_ISSUE_LARGE_ASSIGN
            call assign_in_subblocks(u%elm1,'=',t2%elm1,t2%nelms)
 #else
@@ -5158,10 +5166,27 @@ end function max_batch_dimension
            u%elm1 = t2%elm1
            !$OMP END WORKSHARE
 #endif
+
         endif
-     else
+     case( TT_TILED_DIST )
+
+        if(t1%itype /= TT_DENSE .and. t1%itype /= TT_REPLICATED)then
+           call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr): only dense and replicated t1 implemented",-1)
+        endif
+
+        call tensor_init(u, t2%dims, t2%mode, tensor_type = t2%itype,&
+           &pdm = t2%access_type, tdims = t2%tdim, fo = t2%offset )
+
+        if(DECinfo%use_singles)then
+           call lspdm_get_combined_SingleDouble_amplitudes( t1, t2, u )
+        else
+           !this is just copying t2 to u
+           call tensor_add( u, 1.0E0_realk, t2, a = 0.0E0_realk)
+        endif
+
+     case default
         call lsquit("ERROR(get_combined_SingleDouble_amplitudes_newarr) no PDM version implemented yet",-1)
-     endif
+     end select
 
 
   end subroutine get_combined_SingleDouble_amplitudes_newarr
@@ -5245,7 +5270,7 @@ end function max_batch_dimension
     dims(3) = A%dims(3)
     dims(4) = MyFragment%noccAOS
 
-    if( A%itype == DENSE )then
+    if( A%itype == TT_DENSE )then
        call tensor_init(B, dims,4) 
 
        ! Copy elements from A to B, but only valence for last index

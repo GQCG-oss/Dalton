@@ -3,8 +3,8 @@
 !> \brief Contains common routine for the Ichor Code
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorCommonModule
-use IchorprecisionModule
+MODULE IchorCommonMod
+use IchorprecisionMod
 logical :: UseGeneralCode
 
 CONTAINS
@@ -24,6 +24,23 @@ subroutine ichor_dzero(dx, length)
      enddo
   endif
 end subroutine ichor_dzero
+
+subroutine spichor_dzero(dx, length)
+  implicit none
+  !Length of array
+  integer, intent(in)      :: length
+  !Array to be nullified
+  real(reals), intent(inout) :: dx(length)
+  integer                  :: i
+  
+  if (length < 0) then
+     !do nothing
+  else
+     do i = 1, length
+        dx(i) = 0.0E0_realk
+     enddo
+  endif
+end subroutine spichor_dzero
 
 subroutine ichor_tstamp(TEXT,LUPRIN)
   implicit none
@@ -1043,11 +1060,11 @@ subroutine ichorzero2(OutputStorage, Dim1,Dim2)
 !$OMP END PARALLEL DO 
 end subroutine ichorzero2
 
-END MODULE IchorCommonModule
+END MODULE IchorCommonMod
 
 !Return elapsed CPU time and elapsed real time.
 subroutine Ichor_gettim(cputime,walltime)
-  use IchorCommonModule
+  use IchorCommonMod
   implicit none
   real(8), intent(out) :: cputime, walltime  
   logical    :: first = .true.

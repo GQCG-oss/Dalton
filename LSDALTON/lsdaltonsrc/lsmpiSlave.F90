@@ -80,6 +80,7 @@ end subroutine lsmpi_init
 #ifdef VAR_MPI
 
 subroutine lsmpi_slave(comm)
+   use lsparameters
    use lstiming
    use infpar_module
    use lsmpi_type
@@ -99,10 +100,9 @@ subroutine lsmpi_slave(comm)
    do while(stay_in_slaveroutine)
 
       call time_start_phase(PHASE_IDLE)
-
       call ls_mpibcast(job,infpar%master,comm)
-
       call time_start_phase(PHASE_WORK)
+
 
       select case(job)
       case(MATRIXTY);
@@ -146,10 +146,10 @@ subroutine lsmpi_slave(comm)
          ! DEC MP2 integrals and amplitudes
       case(MP2INAMP);
          call MP2_integrals_and_amplitudes_workhorse_slave
-#ifdef MOD_UNRELEASED
       case(RIMP2INAMP);
          call RIMP2_integrals_and_amplitudes_slave
-#endif
+      case(RIMP2FULL);
+         call full_canonical_rimp2_slave
       case(DEC_SETTING_TO_SLAVES);
          call set_dec_settings_on_slaves
       case(CCSDDATA);
@@ -217,6 +217,9 @@ subroutine lsmpi_slave(comm)
          if(infpar%parent_comm/=MPI_COMM_NULL)stay_in_slaveroutine = .false.
          call lspdm_shut_down_comm_procs
 
+      case(SET_GPUMAXMEM);
+         call ls_mpibcast(GPUMAXMEM,infpar%master,comm)
+
       case(SET_SPLIT_MPI_MSG);
          call ls_mpibcast(SPLIT_MPI_MSG,infpar%master,comm)
       case(SET_MAX_SIZE_ONE_SIDED);
@@ -248,6 +251,7 @@ subroutine lsmpi_slave(comm)
          call lsmpi_finalize(6,.FALSE.)
          stay_in_slaveroutine = .false.
       end select
+
    end do
 
 end subroutine lsmpi_slave

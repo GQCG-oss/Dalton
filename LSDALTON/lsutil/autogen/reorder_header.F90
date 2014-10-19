@@ -1417,6 +1417,7 @@
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
     integer :: order_type,bs,a,b,c,d
 
+
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
     order_type=0
@@ -1444,33 +1445,46 @@
     !print *,"ntpm   :",ntpm
     !print *,"td     :",tdims
 
-    if(mode==4)then
-      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
-      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
-      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
-      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
-      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
-      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
-      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
-      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
-      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
-      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
-      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
-      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
-      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
-      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
-      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
-      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
-      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
-      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
-      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
-      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
-      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
-      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
-      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
-      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
-    endif
+    select case(mode)
+    case(4)
+       if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+       if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+       if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+       if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+       if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+       if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+       if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+       if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+       if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+       if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+       if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+       if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+       if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+       if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+       if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+       if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+       if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+       if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+       if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+       if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+       if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+       if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+       if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+       if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+    case(3)
+       if(o(1)==1.and.o(2)==2.and.o(3)==3)            order_type = 0
+       if(o(1)==3.and.o(2)==1.and.o(3)==2)            order_type = 24
+       if(o(1)==2.and.o(2)==3.and.o(3)==1)            order_type = 25
+       if(o(1)==1.and.o(2)==3.and.o(3)==2)            order_type = 26
+       if(o(1)==2.and.o(2)==1.and.o(3)==3)            order_type = 27
+       if(o(1)==3.and.o(2)==2.and.o(3)==1)            order_type = 28
+    case(2)
+       if(o(1)==1.and.o(2)==2)                        order_type = 0
+       if(o(1)==2.and.o(2)==1)                        order_type = 29
+    end select
+
     call get_midx(tnr,tmodeidx,ntpm,mode)
+
     ntimes=1
     do i=1,mode
       fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
@@ -1549,11 +1563,23 @@
         call manual_3241_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case(23)
         call manual_4213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(24)
+        call manual_312_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(25)
+        call manual_231_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(26)
+        call manual_132_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(27)
+        call manual_213_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(28)
+        call manual_321_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(29)
+        call manual_21_reordering_f2t(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
       case default
         print *,"expensive default tile_from_fort",o
-        !print *,"order  :",o
-        !print *,"rorder :",ro
-        !print *,"atd    :",acttdim
+        print *,"order  :",o
+        print *,"rorder :",ro
+        print *,"atd    :",acttdim
         !count elements in the current tile for loop over elements
         !identify their original position and put them in tile
         nelms=1
@@ -1569,8 +1595,15 @@
           do k=1,mode
             glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
           enddo
+
           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+
+          if(pre2==0)then
+             tileout(i)=pre1*fort(pos1)
+          else
+             tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+          endif
+
         enddo
     end select
 

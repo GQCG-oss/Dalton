@@ -3,7 +3,7 @@
 !> \brief Contains definition of realk - normally double precision
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorPrecisionModule
+MODULE IchorPrecisionMod
 #ifdef VAR_OPENACC
   !OpenACC libary routines 
   use openacc, only: acc_handle_kind
@@ -36,4 +36,4 @@ contains
 subroutine Ichorprecision_void()
 end subroutine Ichorprecision_void
 
-END MODULE IchorPrecisionModule
+END MODULE IchorPrecisionMod

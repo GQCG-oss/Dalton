@@ -1,7 +1,7 @@
 MODULE IchorEriCoulombintegralCPUOBSGeneralModGenSize
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for General Contracted Basisset 
-use IchorCommonModule
+use IchorCommonMod
 use IchorEriCoulombintegralCPUMcMGeneralMod
   
 private   

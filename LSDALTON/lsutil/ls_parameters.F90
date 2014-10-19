@@ -1,6 +1,7 @@
 !> @file 
 !> Contains the precision specifications
-MODULE Integralparameters
+MODULE lsparameters
+  use precision
 ! THESE ARE STRING SPECIFIERS FOR THE AOs
   integer,parameter :: AORegular = 1
   integer,parameter :: AOEmpty = 2
@@ -119,11 +120,14 @@ MODULE Integralparameters
   integer,parameter :: SET_SPLIT_MPI_MSG            = 53
   integer,parameter :: SET_MAX_SIZE_ONE_SIDED       = 54
   integer,parameter :: RIMP2FULL                    = 55
+  integer,parameter :: SET_GPUMAXMEM                = 56
 
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2
   integer,parameter :: AntiSymmetricPostprocess=3
+
+  real(realk) :: GPUMAXMEM
 save
 INTEGER :: AORdefault
 INTEGER :: AODFdefault
@@ -332,5 +336,5 @@ subroutine param_inttype_Stringfromparam(inttype,inttypeparam)
 
 end subroutine Param_inttype_Stringfromparam
 
-END MODULE Integralparameters
+END MODULE Lsparameters
 

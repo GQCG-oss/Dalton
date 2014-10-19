@@ -2,7 +2,7 @@
 !> Contains soubroutines that bridges integral interface routines to the main Thermite driver
 MODULE ls_Integral_Interface
   use precision
-  use Integralparameters
+  use lsparameters
   use TYPEDEFTYPE, only: lssetting, LSINTSCHEME
   use integraloutput_typetype, only: INTEGRALOUTPUT
   use integral_type, only: INTEGRALINPUT
@@ -10,7 +10,7 @@ MODULE ls_Integral_Interface
   use Matrix_Operations, only: mtype_unres_dense, matrix_type,&
        & mtype_scalapack, mat_to_full, mat_free, mat_retrieve_block,&
        & mat_init, mat_trans, mat_daxpy, mat_scal_dia, &
-       & mat_setlowertriangular_zero, mat_assign
+       & mat_setlowertriangular_zero, mat_assign, mat_print
   use matrix_operations_scalapack, only: PDM_MATRIXSYNC,&
        & free_in_darray
   use matrix_util, only : matfull_get_isym,mat_get_isym,mat_same
@@ -1342,8 +1342,20 @@ IF(INT_INPUT%DO_LINK)THEN
          print*,'by specifying that D is symmetric. '
          print*,'This Error statement can occur if Symmetry threshold'
          print*,'too high and the Symmetric Dmat is judged to be nonsymmetric.'
+         print*,'The Matrix Judged to be non symmetric:'
+         call mat_print(setting%DmatRHS(idmat)%p,1,setting%DmatRHS(idmat)%p%nrow,&
+	              & 1,setting%DmatRHS(idmat)%p%ncol,lupri)
+         print*,'A mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'B mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'C mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'D mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'E mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'F mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'G mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'H mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'I mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
+         print*,'J mat_get_isym',mat_get_isym(setting%DmatRHS(idmat)%p)
          call lsquit('Exchange Called with nonsym Dmat',-1)
-         !the code 
       ENDIF
       IF(Spec.EQ.MagDerivSpec)THEN
          setting%output%postprocess(idmat2) = 0         
@@ -6938,7 +6950,7 @@ END MODULE ls_Integral_Interface
 #ifdef VAR_MPI
 SUBROUTINE lsmpi_getIntegrals_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,geoOrder,SETTING,LUPRI,LUERR)
 use lsmpi_op, only: mpicopy_setting
-use Integralparameters
+use lsparameters
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
@@ -6971,7 +6983,7 @@ SUBROUTINE lsmpi_getIntegrals_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_getIntegrals
@@ -7007,7 +7019,7 @@ use precision
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 !use lstiming, only: lstimer
@@ -7042,7 +7054,7 @@ SUBROUTINE lsmpi_jengine_Slave(comm)
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_jengine
@@ -7071,7 +7083,7 @@ SUBROUTINE lsmpi_LinK_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LU
 use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
-use Integralparameters
+use lsparameters
 use infpar_module
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
@@ -7103,7 +7115,7 @@ use lsmpi_op, only: mpicopy_setting
 use lsmpi_type, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, ls_mpi_buffer, &
      & LSMPIBROADCAST
 use infpar_module
-use Integralparameters
+use lsparameters
 use typedeftype, only: lssetting
 use ls_Integral_Interface, only: ls_get_exchange_mat
 implicit none

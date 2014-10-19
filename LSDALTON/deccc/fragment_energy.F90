@@ -188,8 +188,7 @@ contains
     ! Init fragment basis information
     call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
          & UnoccOrbitals,MyMolecule,mylsitem,MyFragment)
-    
- 
+     
     ! Attach fragments singles amplitudes to fragment structure
     ! if long-range singles polarization effects are requested.
     if(DECinfo%SinglesPolari) then
@@ -262,10 +261,13 @@ contains
     type(mp2grad),intent(inout),optional :: grad
     type(tensor) :: t1, ccsdpt_t1, m1
     type(tensor) :: VOVO,VOVOocc,VOVOvirt,t2occ,t2virt,VOOO,VOVV,t2,u,VOVOvirtTMP,ccsdpt_t2,m2
+    type(tensor) :: t2_occEOS
     real(realk) :: tcpu, twall,debugenergy
     ! timings are allocated and deallocated behind the curtains
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc
+    type(tensor) :: t2f_local, VOVO_local
+    integer :: a,b,i,j,k,l
 
     times_ccsd => null()
     times_pt   => null()
@@ -289,6 +291,12 @@ contains
           call MP2_integrals_and_amplitudes(MyFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
 
+       ! MP2-F12 Code
+       if(DECinfo%F12) then    
+          call get_f12_fragment_energy(MyFragment, t2occ%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          !> Free cabs after each calculation
+          call free_cabs()
+       endif
     case(MODEL_RIMP2) ! RIMP2 calculation
 
        if(DECinfo%first_order)call lsquit('no first order RIMP2',-1)
@@ -304,7 +312,7 @@ contains
        ! calculate also MP2 density integrals
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then  
-          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
+          call fragment_ccsolver(MyFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
 #endif
           call fragment_ccsolver(MyFragment,t1,t2,VOVO)
@@ -315,7 +323,6 @@ contains
        ! Extract EOS indices for integrals
        ! *********************************
        call tensor_extract_eos_indices(VOVO,MyFragment,tensor_occEOS=VOVOocc,tensor_virtEOS=VOVOvirt)
-!       call tensor_free(VOVO)
 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then
@@ -346,6 +353,14 @@ contains
        ! and store in MyFragment%energies(FRAGMODEL_OCCpT) and MyFragment%energies(FRAGMODEL_VIRTpT)
        if(MyFragment%ccmodel==MODEL_CCSDpT) then
 
+          !FIXME: (T) DEPENDING ON MANY V^2O^2 ALLOCATIONS ON A LOCAL NODE
+          !THIS IS A WORKAROUND:
+          call tensor_init(VOVO_local,VOVO%dims,4)
+          call tensor_init(t2f_local,t2%dims,4)
+
+          call tensor_add(VOVO_local,1.0E0_realk, VOVO, a = 0.0E0_realk ) 
+          call tensor_add(t2f_local, 1.0E0_realk, t2,   a = 0.0E0_realk ) 
+
           call dec_fragment_time_init(times_pt)
 
           print_frags = DECinfo%print_frags
@@ -354,8 +369,8 @@ contains
           ! init ccsd(t) singles and ccsd(t) doubles (*T1 and *T2)
          if (abc) then
 
-            call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-            call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+            call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+            call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
             call tensor_init(ccsdpt_t1,[MyFragment%noccAOS,MyFragment%nunoccAOS],2)
             call tensor_init(ccsdpt_t2,[MyFragment%noccAOS,MyFragment%noccAOS,&
@@ -363,8 +378,8 @@ contains
 
          else
 
-            call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-            call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+            call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+            call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
             call tensor_init(ccsdpt_t1, [MyFragment%nunoccAOS,MyFragment%noccAOS],2)
             call tensor_init(ccsdpt_t2, [MyFragment%nunoccAOS,MyFragment%nunoccAOS,&
@@ -377,8 +392,8 @@ contains
                              & MyFragment%nbasis,MyFragment%ppfock,&
                              & MyFragment%qqfock,MyFragment%Co,&
                              & MyFragment%Cv,MyFragment%mylsitem,&
-                             & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
-          call ccsdpt_energy_e4_frag(MyFragment,t2,ccsdpt_t2,&
+                             & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+          call ccsdpt_energy_e4_frag(MyFragment,t2f_local,ccsdpt_t2,&
                              & MyFragment%OccContribs,MyFragment%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment,t1,ccsdpt_t1)
 
@@ -388,9 +403,22 @@ contains
 
           call dec_fragment_time_get(times_pt)
 
+          call tensor_free(VOVO_local)
+          call tensor_free(t2f_local)
        end if
 #endif 
 
+#ifdef MOD_UNRELEASED
+       ! CCSD-F12 Code
+       if(DECinfo%F12) then
+          call tensor_extract_eos_indices_occ(t2_occEOS,t2,MyFragment%noccEOS,MyFragment%idxo)
+          call get_f12_fragment_energy(MyFragment, t2_occEOS%elm4, t1%elm2, MyFragment%ccmodel)   ! WANGY t2_justdoublesEOS
+          
+          !> Free cabs after each calculation
+          call tensor_free(t2_occEOS)
+          call free_cabs()
+       endif
+#endif
        ! free vovo integrals
        call tensor_free(VOVO)
 
@@ -437,16 +465,6 @@ contains
      WRITE(DECinfo%output,*) "Memstats before F12 fragment_energy calculation"  
     call stats_globalmem(DECinfo%output)
 
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then    
-       call get_f12_fragment_energy(MyFragment, t2occ%elm4)
-       !> Free cabs after each calculation
-       call free_cabs()
-
-       ! call mem_dealloc(dens)
-       ! call mat_free(Dmat)
-    endif
-#endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
 
     ! First order properties
@@ -548,14 +566,14 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
     ! Init stuff
-    noccEOS = MyFragment%noccEOS
+    noccEOS  = MyFragment%noccEOS
     nvirtEOS = MyFragment%nunoccEOS
-    noccAOS = MyFragment%noccAOS
+    noccAOS  = MyFragment%noccAOS
     nvirtAOS = MyFragment%nunoccAOS
-    Eocc=0E0_realk
-    lag_occ=0E0_realk
-    Evirt=0E0_realk
-    lag_virt=0E0_realk
+    Eocc     = 0E0_realk
+    lag_occ  = 0E0_realk
+    Evirt    = 0E0_realk
+    lag_virt = 0E0_realk
     ! Just in case, zero individual orbital contributions for fragment
     MyFragment%OccContribs=0E0_realk
     MyFragment%VirtContribs=0E0_realk
@@ -946,20 +964,21 @@ contains
     real(realk) :: tmp_energy
     real(realk),pointer :: times_ccsd(:), times_pt(:)
     logical :: print_frags,abc
+    type(tensor) :: t2f_local, VOVO_local
 
     times_ccsd => null()
     times_pt   => null()
-
+    
     !type(matrix) :: Dmat
     !real(realk),pointer :: dens(:,:)
-
+    
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! MODIFY FOR NEW MODEL!
 
     ! Which model? MP2,CC2, CCSD etc.
     WhichCCmodel: select case(PairFragment%ccmodel) 
-    
+
     case( MODEL_NONE ) ! SKip calculation
 
        return
@@ -971,6 +990,15 @@ contains
        else ! calculate only MP2 energy integrals and MP2 amplitudes
           call MP2_integrals_and_amplitudes(PairFragment,VOVOocc,t2occ,VOVOvirt,t2virt)
        end if
+       
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          call get_f12_fragment_energy(PairFragment, t2occ%elm4, t1%elm2, PairFragment%ccmodel, Fragment1, Fragment2, natoms)
+
+          !> Free density matrix
+          call free_cabs()
+       endif
+#endif
 
     case( MODEL_RIMP2 ) ! RI-MP2
 
@@ -986,7 +1014,7 @@ contains
        ! Here all output indices in t1,t2, and VOVO are AOS indices. 
 #ifdef MOD_UNRELEASED
        if(DECinfo%first_order) then 
-          call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1_arr=m1,m2_arr=m2)
+          call fragment_ccsolver(PairFragment,t1,t2,VOVO,m1=m1,m2=m2)
        else
 #endif
           call fragment_ccsolver(PairFragment,t1,t2,VOVO)
@@ -1019,6 +1047,16 @@ contains
        call tensor_free(u)
 
        call dec_fragment_time_get(times_ccsd)
+
+#ifdef MOD_UNRELEASED
+       if(DECinfo%F12) then
+          call get_f12_fragment_energy(PairFragment, t2occ%elm4, t1%elm2, PairFragment%ccmodel, Fragment1, Fragment2, natoms)
+
+          !> Free density matrix
+          call free_cabs()
+       endif
+
+#endif
 
     case default
 
@@ -1055,15 +1093,7 @@ contains
     ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
     ! see dec_readme file.
 
-#ifdef MOD_UNRELEASED
-    if(DECinfo%F12) then
-       call get_f12_fragment_energy(PairFragment, t2occ%elm4, Fragment1, Fragment2, natoms)
-    
-       !> Free density matrix
-       call free_cabs()
-    endif
-   
-#endif
+
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
 
 
@@ -1085,7 +1115,14 @@ contains
 
     if (PairFragment%CCModel == MODEL_CCSDpT) then
 
-       print *,"DOING(T)"
+       !FIXME: (T) DEPENDING ON MANY LOCAL V^2O^2 ALLOCATIONS
+       !THIS IS A WORKAROUND:
+       call tensor_init(VOVO_local,VOVO%dims,4)
+       call tensor_init(t2f_local,t2%dims,4)
+
+       call tensor_add(VOVO_local,1.0E0_realk, VOVO, a = 0.0E0_realk ) 
+       call tensor_add(t2f_local, 1.0E0_realk, t2,   a = 0.0E0_realk ) 
+
        call dec_fragment_time_init(times_pt)
 
        print_frags = DECinfo%print_frags
@@ -1094,8 +1131,8 @@ contains
        ! init ccsd(t) singles and ccsd(t) doubles
        if (abc) then
 
-          call tensor_reorder(VOVO,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
-          call tensor_reorder(t2,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
+          call tensor_reorder(VOVO_local,[2,4,1,3]) ! vovo integrals in the order (i,j,a,b)
+          call tensor_reorder(t2f_local,[2,4,1,3]) ! ccsd_doubles in the order (i,j,a,b)
 
           call tensor_init(ccsdpt_t1,[PairFragment%noccAOS,PairFragment%nunoccAOS],2)
           call tensor_init(ccsdpt_t2,[PairFragment%noccAOS,PairFragment%noccAOS,&
@@ -1103,8 +1140,8 @@ contains
 
        else
 
-          call tensor_reorder(VOVO,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
-          call tensor_reorder(t2,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
+          call tensor_reorder(VOVO_local,[1,3,2,4]) ! vovo integrals in the order (a,b,i,j)
+          call tensor_reorder(t2f_local,[1,3,2,4]) ! ccsd_doubles in the order (a,b,i,j)
 
           call tensor_init(ccsdpt_t1, [PairFragment%nunoccAOS,PairFragment%noccAOS],2)
           call tensor_init(ccsdpt_t2, [PairFragment%nunoccAOS,PairFragment%nunoccAOS,&
@@ -1117,8 +1154,8 @@ contains
                           & PairFragment%nbasis,PairFragment%ppfock,&
                           & PairFragment%qqfock,PairFragment%Co,&
                           & PairFragment%Cv,PairFragment%mylsitem,&
-                          & VOVO,t2,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
-       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2,ccsdpt_t2)
+                          & VOVO_local,t2f_local,ccsdpt_t1,print_frags,abc,ccsdpt_doubles=ccsdpt_t2)
+       call ccsdpt_energy_e4_pair(Fragment1,Fragment2,PairFragment,t2f_local,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(PairFragment,t1,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
@@ -1127,6 +1164,8 @@ contains
 
        call dec_fragment_time_get(times_pt)
 
+       call tensor_free(VOVO_local)
+       call tensor_free(t2f_local)
     end if
 #endif
 
@@ -1134,7 +1173,9 @@ contains
     if (PairFragment%CCModel == MODEL_RPA  .or. &
        &PairFragment%CCModel == MODEL_CC2  .or. &
        &PairFragment%CCModel == MODEL_CCSD .or. &
-       &PairFragment%CCModel == MODEL_CCSDpT ) call tensor_free(VOVO)
+       &PairFragment%CCModel == MODEL_CCSDpT )then
+       call tensor_free(VOVO)
+    endif
 
     if(PairFragment%ccmodel /= MODEL_MP2.AND.PairFragment%ccmodel.NE.MODEL_RIMP2) then
        if(DECinfo%use_singles)then
@@ -1303,10 +1344,10 @@ contains
 
      do_non_pdm = .false.
      if( .not.DECinfo%OnlyVIRTPart )then
-        do_non_pdm = do_non_pdm .or. (t2occ%itype == DENSE .and. gocc%itype == DENSE )
+        do_non_pdm = do_non_pdm .or. (t2occ%itype == TT_DENSE .and. gocc%itype == TT_DENSE )
      endif
      if(.not.DECinfo%OnlyoccPart)then
-        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  DENSE .and. gvirt%itype == DENSE)
+        do_non_pdm = do_non_pdm .or. (t2virt%itype ==  TT_DENSE .and. gvirt%itype == TT_DENSE)
      endif
 
      if( do_non_pdm )then
@@ -1503,6 +1544,7 @@ contains
     real(realk),intent(inout) :: Ecorr
     logical,dimension(MyMolecule%natoms) :: orbitals_assigned
     real(realk),pointer :: Cocc(:,:), Cvirt(:,:)
+    type(tensor) :: t2_t, g_t
     type(array4) :: t2, g
     real(realk) :: energy_matrix(MyMolecule%natoms,MyMolecule%natoms), multaibj, multbiaj
     integer :: nthreads, idx, nbatchINT, intstep, ncore,offset
@@ -1665,14 +1707,28 @@ contains
 
     ! Get (C K | D L) integrals stored in the order (C,K,D,L)
     ! *******************************************************
-    call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cvirt,Cocc,g)
+    !call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cvirt,Cocc,g)
     call mem_dealloc(Cocc)
     call mem_dealloc(Cvirt)
 
 
     ! Get t2 amplitudes
     ! *****************
-    call mp2_solver(nocc,nunocc,ppfock,MyMolecule%qqfock,g,t2)
+    call mp2_solver(MyMolecule,mylsitem,g_t,t2_t,.false.)
+
+
+    !FIXME:THIS IS A DIRTY WORKAROUND NOT TO CHANGE TOO MUCH IN THE SUBROUTINE
+    !-------------------------------------------------------------------------
+    t2 = array4_init(t2%dims)                                                !
+    g  = array4_init(g%dims)                                                 !
+                                                                             !
+    call tensor_convert(t2_t,t2%val)                                         !
+    call tensor_convert(g_t,g%val)                                           !
+                                                                             !
+    call tensor_free(t2_t)                                                   !
+    call tensor_free(g_t)                                                    !
+    !-------------------------------------------------------------------------
+
 
     ! STATUS: Now integrals (g) and amplitudes (t) have been determined
     ! for the full molecular system. The individual fragment contributions - solved in the
@@ -2108,7 +2164,7 @@ contains
      !> Number of atoms in molecule
      integer, intent(in) :: natoms
      !> Central atom in molecule
-     integer, intent(in) :: MyAtom
+     integer, intent(inout) :: MyAtom !> Wangy hack intent inout
      !> Atomic fragment to be optimized
      type(decfrag),intent(inout)        :: AtomicFragment
      !> All occupied orbitals
@@ -2134,8 +2190,8 @@ contains
      logical :: expansion_converged,ExpandFragmentConverged,DistanceRemoval
      logical :: OccUnchanged,VirtUnchanged,ExpandVirt,ExpandOcc
      logical :: BinarySearch,SeperateExpansion,OrbDistanceSpec,TestOcc
-     type(array4) :: t2,g
-     real(realk) :: FmaxOcc(nocc),FmaxVirt(nunocc)
+     type(tensor) :: t2,g
+     real(realk)  :: FmaxOcc(nocc),FmaxVirt(nunocc)
      real(realk),pointer :: OccContribs(:),VirtContribs(:)    
      real(realk),pointer :: times_fragopt(:)
      real(realk),pointer :: SortedDistanceTableOrbAtomOcc(:)
@@ -2145,6 +2201,65 @@ contains
      logical,pointer :: OccAOS(:),VirtAOS(:),OldOccAOS(:),OldVirtAOS(:)
      logical :: BruteForce,FockMatrixOrdering
 
+!!$     !! HACK for testing purposes, F12 code, Do not remove 
+!!$     !! ****
+!!$     !! All virtual, change occupied
+!!$
+!!$     MyAtom = 1
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .False.
+!!$        Virt_Atoms(i) = .True.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     All virtual", "Number of Occupied Orbitals", i
+!!$        print *, "-------------------------------------------------"
+!!$
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     !! All occupied, change virtual
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .True.
+!!$        Virt_Atoms(i) = .False.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Virt_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     All occ", "Number of Virtual Orbitals", i
+!!$        print *, "-------------------------------------------------"
+!!$
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     do i=1,natoms
+!!$        Occ_Atoms(i) = .False.
+!!$        Virt_Atoms(i) = .False.
+!!$     enddo
+!!$
+!!$     do i=1,natoms
+!!$        Virt_Atoms(1:i) = .True.
+!!$        Occ_Atoms(1:i) = .True.
+!!$        print *, "-------------------------------------------------"
+!!$        print *, "     Occ and Virt", i
+!!$        print *, "-------------------------------------------------"
+!!$        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+!!$             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+!!$             & AtomicFragment)
+!!$        call atomic_fragment_free(AtomicFragment)
+!!$     end do
+!!$
+!!$     stop 'KK/Wangy HACK'
 
      if (.not.DECinfo%no_orb_based_fragopt) then
        call optimize_atomic_fragment_clean(MyAtom,AtomicFragment,nAtoms, &
@@ -2467,15 +2582,16 @@ contains
         ! Get MP2 amplitudes for fragment
         ! *******************************
         ! Integrals (ai|bj)
-        call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-           & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-           & AtomicFragment%Cv, AtomicFragment%Co, g)
-        ! Amplitudes
-        call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-           & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
-        call array4_free(g)
+        !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
+        !   & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+        !   & AtomicFragment%Cv, AtomicFragment%Co, g)
+        !! Amplitudes
+        call mp2_solver(AtomicFragment,g,t2,.false.)
+        !call array4_free(g)
+
+        call tensor_free(g)
         ! Get correlation density matrix for atomic fragment
-        call calculate_corrdens_frag(t2,AtomicFragment)
+        call calculate_MP2corrdens_frag(t2,AtomicFragment)
      end if FragAdapt
 
 
@@ -2526,10 +2642,12 @@ contains
 
      WhichReductionScheme: if(DECinfo%fragadapt) then
         ! Reduce using fragment-adapted orbitals
+        print *,"before",t2%initialized
         call fragopt_reduce_FOs(MyAtom,AtomicFragment, &
            &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
            &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
-        call array4_free(t2)
+        print *,"freeing tesn",t2%initialized
+        call tensor_free(t2)
      else
         ! Reduce using local orbitals
         if(present(t1full)) then
@@ -3016,7 +3134,7 @@ contains
   !> \author Kasper Kristensen
   subroutine fragopt_reduce_FOs(MyAtom,AtomicFragment, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc, &
-       &MyMolecule,mylsitem,freebasisinfo,t2,max_iter_red)
+       &MyMolecule,mylsitem,freebasisinfo,t2tens,max_iter_red)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3038,14 +3156,16 @@ contains
     logical,intent(in) :: freebasisinfo
     !> Doubles amplitudes for converged fragment (local orbital basis, index order: a,i,b,j)
     !> At output, the virtual indices will have been transformed to the (smaller) FO orbital space
-    type(array4),intent(inout) :: t2
+    type(tensor),intent(inout) :: t2tens
     !> Maximum number of reduction steps
     integer,intent(in) :: max_iter_red
     integer :: ov,iter,Nold,Nnew,nocc_exp,nvirt_exp
     logical :: reduction_converged,ReductionPossible(2)
     real(realk) :: FOT,LagEnergyOld,OccEnergyOld,VirtEnergyOld
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
-
+    type(array4)  :: t2
+    character(4) :: stens_atype
+    integer :: os,vs
 
     ! Init stuff
     ! **********
@@ -3084,8 +3204,22 @@ contains
        !       we are not allowed to mix the virtual orbitals assigned to the central atom
        !       with the other atoms.
        if(ov==1 .and. DECinfo%onlyoccpart) then
+
+          !FIXME: dirty hack
+          t2 = array4_init(t2tens%dims)
+          call tensor_convert(t2tens, t2%val)
+          stens_atype = t2tens%atype
+          call tensor_free(t2tens)
+
           call transform_virt_amp_to_FOs(t2,AtomicFragment)
           call calculate_corrdens_AOS_occocc(t2,AtomicFragment)
+
+          !FIXME: dirty hack-restore input tensor with the new dimensions and data
+          call get_symm_tensor_segmenting_simple(t2%dims(2),t2%dims(1),os,vs)
+          call tensor_minit(t2tens,t2%dims,4, atype = stens_atype, tdims=[vs,os,vs,os])
+          call tensor_convert(t2%val,t2tens)
+          call array4_free(t2)
+
        end if
        if(DECinfo%onlyVirtpart) then
           WRITE(DECinfo%output,*)'WARNING FOs usign onlyVirtpart not tested'
@@ -4098,7 +4232,7 @@ contains
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
-    type(array4) :: g, t2
+    type(tensor) :: g, t2
 
 
     write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
@@ -4114,16 +4248,17 @@ contains
        MyMolecule%ccmodel(MyAtom,MyAtom) = MODEL_MP2
 
        ! Integrals (ai|bj)
-       call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
-            & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%Cv, AtomicFragment%Co, g)
+       !call get_VOVO_integrals(AtomicFragment%mylsitem,AtomicFragment%nbasis,&
+       !     & AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !     & AtomicFragment%Cv, AtomicFragment%Co, g)
        ! MP2 amplitudes
-       call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
-            & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
-       call array4_free(g)
+       !call mp2_solver(AtomicFragment%noccAOS,AtomicFragment%nunoccAOS,&
+       !     & AtomicFragment%ppfock,AtomicFragment%qqfock,g,t2)
+       call mp2_solver(AtomicFragment,g,t2,.false.)
+       call tensor_free(g)
        ! Get correlation density matrix
-       call calculate_corrdens_frag(t2,AtomicFragment)
-       call array4_free(t2)
+       call calculate_MP2corrdens_frag(t2,AtomicFragment)
+       call tensor_free(t2)
 
        ! Set MO coefficient matrices corresponding to fragment-adapted orbitals
        call fragment_adapted_transformation_matrices(AtomicFragment)
@@ -4590,7 +4725,7 @@ contains
 #ifdef MOD_UNRELEASED         
        if(Decinfo%F12) then
           ! CCSD-F12: F12-correction
-          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_ccsdf12)      
+          fragment%EoccFOP_Corr = fragment%energies(FRAGMODEL_CCSDf12)      
        endif
 #endif
 

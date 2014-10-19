@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_VERTICALRECURRENCEMODASegP
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 

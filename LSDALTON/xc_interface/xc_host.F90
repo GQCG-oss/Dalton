@@ -6,7 +6,7 @@
 MODULE XCHOST
 !use gridgenerationmodule
 !use memory_handling
-!use Integralparameters
+!use LSparameters
 use precision
 use TYPEDEF
 use dft_type

@@ -12,7 +12,7 @@ module lsmpi_op
   use basis_type, only: lsmpi_alloc_basissetinfo
   use memory_handling, only: mem_alloc,mem_dealloc, mem_shortintsize,&
        & mem_realsize, mem_intsize, mem_allocated_mem_lstensor
-  use integralparameters
+  use LSparameters
   use Matrix_Operations, only: mat_mpicopy, mtype_scalapack, matrix_type
   use matrix_operations_scalapack, only: pdm_matrixsync
   use molecule_typetype, only: MOLECULEINFO
@@ -470,6 +470,7 @@ SUBROUTINE mpicopy_setting(setting,comm,rankslave)
   call mpicopy_reduced_screen_info(setting%redCS,slave,master)               !LSSETTING080
 
   !if (.NOT.SLAVE) call lstimer('copy8',ts,te,6)
+  CALL LS_MPI_BUFFER(setting%GPUMAXMEM,Master)                               !LSSETTING081
 
 END SUBROUTINE mpicopy_setting
 

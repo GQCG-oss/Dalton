@@ -67,6 +67,8 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+use LSparameters
+
 private
 public :: config_set_default_config, config_read_input, config_shutdown,&
      & config_free, set_final_config_and_print
@@ -140,6 +142,7 @@ implicit none
   config%SubSystemDensity = .false.
   config%PrintMemory = .false.
   config%doESGopt = .false.
+  config%GPUMAXMEM = 2.0E0_realk
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
 #ifdef MOD_UNRELEASED
@@ -1086,7 +1089,19 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         CASE('.NOGCBASIS');             config%decomp%cfg_gcbasis    = .false.
         CASE('.FORCEGCBASIS');          config%INTEGRAL%FORCEGCBASIS = .true.
         CASE('.TESTMPICOPY');           config%doTestMPIcopy         = .true.
-        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug     = .true.
+        CASE('.TYPE_TENSOR_DEBUG');     config%type_tensor_debug    = .true.
+           ! Max memory available on gpu measured in GB. By default set to 2 GB
+        CASE('.GPUMAXMEM');             
+           READ(LUCMD,*) config%GPUMAXMEM
+           IF(config%GPUMAXMEM.LT.0.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: less than 0 GB supplied on input',-1)
+           ELSEIF(config%GPUMAXMEM.GT.100.0E0_realk)THEN
+              CALL LSQUIT('.GPUMAXMEM error: More than 100 GB supplied on input',-1)
+           ENDIF
+#ifdef VAR_MPI
+           call ls_mpibcast(SET_GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+           call ls_mpibcast(config%GPUMAXMEM,infpar%master,MPI_COMM_LSDALTON)
+#endif
 #ifdef VAR_MPI
         CASE('.MAX_MPI_MSG_SIZE_NEL');
            READ(LUCMD,*) SPLIT_MPI_MSG 
@@ -3771,7 +3786,7 @@ ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
-
+   ls%setting%GPUMAXMEM = config%GPUMAXMEM
 end subroutine set_final_config_and_print
 
 SUBROUTINE TRIM_STRING(string,n,words)

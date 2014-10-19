@@ -16,7 +16,7 @@ use IIABSVALINT
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
-  use Integralparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
+  use LSparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
        & IIDFTMAG,IIDFTMAL,IIDFTGKS,IIDFTGLR,LSMPI_IIDFTKSME
 #endif
   use xcfun_host,only: xcfun_type_gga,xcfun_type_lda,xcfun_type_metagga,&
