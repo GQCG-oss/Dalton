@@ -146,26 +146,27 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             call ccsolver_par(MODEL_MP2,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-               call print_norm(mp2_amp,"FREAKING MP2")
          endif
+
          call ccsolver_par(ccmodel,Co_fc,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,ppfock_fc,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos,m2=mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
-         if(DECinfo%use_pnos)call tensor_free( mp2_amp )
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
+
       else
          ncore = 0
          if(DECinfo%use_pnos)then
             call ccsolver_par(MODEL_MP2,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
                & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
                & t1_final,mp2_amp,VOVO,.false.,local,.false.)
-               call print_norm(mp2_amp,"FREAKING MP2")
          endif
+
          call ccsolver_par(ccmodel,MyMolecule%Co,MyMolecule%Cv,MyMolecule%fock,nbasis,nocc,nvirt,&
             & mylsitem,ccPrintLevel,MyMolecule%ppfock,MyMolecule%qqfock,ccenergies(cc_sol),&
             & t1_final,t2_final,VOVO,.false.,local,DECinfo%use_pnos, m2 = mp2_amp,vovo_supplied=DECinfo%use_pnos )
 
-         if(DECinfo%use_pnos)call tensor_free( mp2_amp )
+         if(DECinfo%use_pnos) call tensor_free( mp2_amp )
 
       end if
    
@@ -186,9 +187,9 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
       !one node is used
       call tensor_init(VOVO_local,VOVO%dims,4)
-      call tensor_init(t2f_local,t2_final%dims,4)
-      call tensor_add(VOVO_local, 1.0E0_realk, VOVO,     a = 0.0E0_realk)
-      call tensor_add(t2f_local,  1.0E0_realk, t2_final, a = 0.0E0_realk)
+      call tensor_init(t2f_local,t2_final%dims,4 )
+      call tensor_cp_data( VOVO,     VOVO_local  )
+      call tensor_cp_data( t2_final, t2f_local   )
 
       if(ccmodel == MODEL_CCSDpT)then
 
@@ -402,10 +403,10 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
       if(ccmodel == MODEL_CCSDpT)then
          !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than
          !one node is used
-         call tensor_init(VOVO_local,VOVO%dims,4)
-         call tensor_init(t2f_local,t2_final%dims,4)
-         call tensor_add(VOVO_local, 1.0E0_realk, VOVO, a = 0.0E0_realk)
-         call tensor_add(t2f_local, 1.0E0_realk, t2_final, a = 0.0E0_realk)
+         call tensor_init( VOVO_local, VOVO%dims,    4 )
+         call tensor_init( t2f_local, t2_final%dims, 4 )
+         call tensor_cp_data( VOVO,     VOVO_local )
+         call tensor_cp_data( t2_final, t2f_local  )
 
          print_frags = DECinfo%print_frags
          abc = DECinfo%abc
@@ -1581,6 +1582,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    real(realk)            :: mem_o2v2, MemFree
    integer                :: ii, jj, aa, bb, cc, old_iter, nspaces, os, vs, counter
    logical                :: restart, restart_from_converged,collective,use_singles,vovo_avail
+   logical                :: trafo_vovo, trafo_m2
+   logical                :: diag_oo_block, diag_vv_block
    character(4)           :: atype
 
    call time_start_phase(PHASE_WORK, twall = ttotstart_wall, tcpu = ttotstart_cpu )
@@ -1660,25 +1663,34 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call lsquit('ccsolver: When using PNOs make sure MP2 amplitudes are &
             & in m2',DECinfo%output)
       end if
-      !if(.not. local)then
-      !   print *,"WARINING(ccsolver): does not work with mpi and parallel solver"
-      !   stop 0
-      !endif
    endif
 
    vovo_avail = .false.
+   trafo_vovo = .false.
    if(present(vovo_supplied)) vovo_avail = vovo_supplied
 
    if(vovo_avail)then
+
       if(.not.VOVO%initialized)then
          call lsquit("ERROR(ccsolver_par): input specified that vovo was&
          & supplied, but vovo is not initialized",-1)
       endif
+
       if(VOVO%itype == TT_TILED_DIST .and.(VOVO%tdim(1)/=vs .or.  VOVO%tdim(2)/=os))then
          call lsquit("ERROR(ccsolver_par): distribution of VOVO not fit for solver",-1)
       endif
+
+      trafo_vovo = .true.
+
    endif
 
+   !see if m2 has to be transformed to the pseudo diag basis
+   trafo_m2 = .false.
+   if(present(m2))then
+
+      trafo_m2 = use_pnos
+
+   endif
 
    !Settings for the models
    ModelSpecificSettings: select case(ccmodel)
@@ -1714,21 +1726,46 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call tensor_minit(Uo,   [no,no],  2, local=local, atype="TDPD", tdims = [os,os] )
    call tensor_minit(Uv,   [nv,nv],  2, local=local, atype="TDPD", tdims = [vs,vs] )
 
-   use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical.or.use_pnos)
+   use_pseudo_diag_basis = .not.(DECinfo%CCSDpreventcanonical)
    !if(DECinfo%CCSDpreventcanonical.or.(use_pnos.and.ccmodel/=MODEL_MP2))then
    
-
    if(use_pseudo_diag_basis)then
+
+      diag_oo_block = .not.use_pnos
+      diag_vv_block = .true.
+
       call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,Co_f,Cv_f,&
          & Co_d,Cv_d,Uo%elm2,Uv%elm2,focc,fvirt)
-      ppfock_d = 0.0E0_realk
-      qqfock_d = 0.0E0_realk
-      do ii=1,no
-         ppfock_d(ii,ii) = focc(ii)
-      enddo
-      do aa=1,nv
-         qqfock_d(aa,aa) = fvirt(aa)
-      enddo
+
+      !OO BLOCK
+      if( diag_oo_block )then
+         ppfock_d = 0.0E0_realk
+         do ii=1,no
+            ppfock_d(ii,ii) = focc(ii)
+         enddo
+      else
+         Co_d     = Co_f
+         ppfock_d = ppfock_f
+         Uo%elm2  = 0.0E0_realk
+         do ii=1,no
+            Uo%elm2(ii,ii) = 1.0E0_realk
+         enddo
+      endif
+
+      !VV BLOCK
+      if( diag_vv_block )then
+         qqfock_d = 0.0E0_realk
+         do aa=1,nv
+            qqfock_d(aa,aa) = fvirt(aa)
+         enddo
+      else
+         Cv_d     = Cv_f
+         qqfock_d = qqfock_f
+         Uv%elm2  = 0.0E0_realk
+         do aa=1,nv
+            Uv%elm2(aa,aa) = 1.0E0_realk
+         enddo
+      endif
    else
       !no diagonalization
       Co_d     = Co_f
@@ -1749,6 +1786,20 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    call mem_dealloc( fvirt )
    call tensor_mv_dense2tiled(Uo,.not.local,dealloc_local = .false.)
    call tensor_mv_dense2tiled(Uv,.not.local,dealloc_local = .false.)
+
+
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+   !transform input to the diagonal basis!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
+      & [ m2   ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+   if(trafo_vovo) call tensor_transform_basis([Uo,Uv],2,&
+      & [ VOVO ], [[2,1,2,1]], [[1,1,1,1]],  4, 1)
+
+   if(fragment_job.and.use_pnos)then
+      call local_can_trans(no,nv,nb,Uo%elm2,Uv%elm2,vv=frag%VirtMat,oo=frag%OccMat)
+   endif
 
    ! dimension vectors
    occ_dims   = [nb,no]
@@ -1897,11 +1948,8 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       call tensor_zero(iajb)
       call get_mo_integral_par( iajb, Co, Cv, Co, Cv, mylsitem, local, collective )
    else
-      print *,"WARNING(ccsolver_par): vovo given on input has not been tested thoroughly"
       call tensor_cp_data(VOVO, iajb, order = [2,1,4,3])
-      !call tensor_add(iajb, 1.0E0_realk, VOVO, a = 0.0E0_realk, order = [2,1,4,3])
       call tensor_free(VOVO)
-      call print_norm(iajb,"iajb norm")
    endif
 
    call mem_alloc( B, DECinfo%ccMaxIter, DECinfo%ccMaxIter )
@@ -1980,7 +2028,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       end if
 #endif
 
-      print *,"are we setting pnos or what?",use_pnos,mo_ccsd,fragment_job
       nspaces = 0
       set_pno_info:if(use_pnos)then
 
@@ -2016,9 +2063,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          call mem_alloc( pno_S , nspaces * (nspaces - 1)/2 )   
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
-
-         call tensor_zero(t2(1))
-         call tensor_zero(t1(1))
 
       endif set_pno_info
 
@@ -2328,8 +2372,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
             end if
          end if
 
-         call print_norm(t2(iter+1),"NEW GUESS")
-
 
          if(DECinfo%PL>1) call time_start_phase( PHASE_work, at = time_work, ttot = time_new_guess, &
             &labelttot= 'CCIT: NEW GUESS VEC.  :', output = DECinfo%output ) 
@@ -2485,7 +2527,7 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
    ! Save two-electron integrals in the order (virt,occ,virt,occ), save the used
    ! RHS or restore the old rhs
    call tensor_minit( VOVO, [nv,no,nv,no], 4, local=local, tdims=[vs,os,vs,os],atype = "TDAR" )
-   call tensor_add(   VOVO, 1.0E0_realk, iajb, a = 0.0E0_realk, order = [2,1,4,3] )
+   call tensor_cp_data(iajb, VOVO, order = [2,1,4,3] )
 
    call tensor_free(iajb)
 
@@ -2568,7 +2610,10 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
 
    endif
 
-   !transform back to original basis   
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   !transform back to original basis!
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
    call tensor_transform_basis([Uo,Uv],2,&
       & [ t2_final, VOVO    ],  &
       & [[2,1,2,1],[2,1,2,1]], &
@@ -2578,6 +2623,16 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
       !this should be replaced if/whenever t1 is not local
       call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,vo=t1_final%elm1)
    endif
+
+   if(trafo_m2)   call tensor_transform_basis([Uo,Uv],2,&
+      & [ m2   ], [[2,1,2,1]], [[2,2,2,2]],  4, 1)
+
+   if(fragment_job.and.use_pnos)then
+      print *,"DO FOO BACK TRAFO"
+      call can_local_trans(no,nv,nb,Uo%elm2,Uv%elm2,oo=frag%OccMat,vv=frag%VirtMat)
+      print *,"DO FOO DONE"
+   endif
+
    call tensor_free(Uo)
    call tensor_free(Uv)
 

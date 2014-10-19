@@ -571,7 +571,7 @@ module crop_tools_module
    !> \date: April 2013
    !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
    !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
-   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
+   subroutine can_local_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv,vv,oo)
 
       implicit none
       !> integers
@@ -580,6 +580,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no),ov(no*nv)
+      real(realk), intent(inout),optional :: oo(no*no),vv(nv*nv)
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
       !> temp array2 and array4 structures
@@ -594,6 +595,8 @@ module crop_tools_module
       if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
+      if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
+      if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
       call mem_alloc(tmp,wrksize)
 
@@ -631,10 +634,24 @@ module crop_tools_module
          call dgemm('n','t',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
       endif
 
+      if(present(vv))then
+         !U(a,A) t(AB)    -> t(aB)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,Uvirt,nv,vv,nv,0.0E0_realk,tmp,nv)
+         ! tmp(aB) U(b,B)^T   -> t(ab)
+         call dgemm('n','t',nv,nv,nv,1.0E0_realk,tmp,nv,Uvirt,nv,0.0E0_realk,vv,nv)
+      endif
+
+      if(present(oo))then
+         !U(i,I) t(IJ)    -> t(iJ)
+         call dgemm('n','n',no,no,no,1.0E0_realk,Uocc,no,oo,no,0.0E0_realk,tmp,no)
+         ! tmp(iJ) U(j,J)^T   -> t(iJ)
+         call dgemm('n','t',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
+      endif
+
       call mem_dealloc(tmp)
    end subroutine can_local_trans
 
-   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv)
+   subroutine local_can_trans(no,nv,nb,Uocc,Uvirt,vovo,vvoo,oovv,vo,ov,bo,bv,oo,vv)
 
       implicit none
       !> integers
@@ -643,6 +660,7 @@ module crop_tools_module
       real(realk), intent(inout),optional :: vovo(nv*nv*no*no),vvoo(nv*nv*no*no),oovv(no*no*nv*nv)
       real(realk), intent(inout),optional :: bo(nb*no), bv(nb*nv)
       real(realk), intent(inout),optional :: vo(nv*no), ov(no*nv)
+      real(realk), intent(inout),optional :: oo(no*no), vv(nv*nv)
       !> unitary transformation matrices
       !> unitary transformation matrices - indices: (local,pseudo-canonical)
       real(realk), intent(in) :: Uocc(no*no), Uvirt(nv*nv)
@@ -662,6 +680,8 @@ module crop_tools_module
       if(present(ov))   wrksize = max(wrksize,(i8*no) * nv)
       if(present(bo))   wrksize = max(wrksize,(i8*nb) * no)
       if(present(bv))   wrksize = max(wrksize,(i8*nb) * nv)
+      if(present(oo))   wrksize = max(wrksize,(i8*no) * no)
+      if(present(vv))   wrksize = max(wrksize,(i8*nv) * nv)
 
       call mem_alloc(tmp,wrksize)
 
@@ -696,6 +716,20 @@ module crop_tools_module
          tmp(1:nb*nv) = bv
          ! tmp(alpha,a) U(a,A)   -> Cv(alpha,A)
          call dgemm('n','n',nb,nv,nv,1.0E0_realk,tmp,nb,Uvirt,nv,0.0E0_realk,bv,nb)
+      endif
+
+      if(present(vv))then
+         !U(a,A) t(AB)    -> t(aB)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,UvirtT,nv,vv,nv,0.0E0_realk,tmp,nv)
+         ! tmp(aB) U(b,B)^T   -> t(ab)
+         call dgemm('n','n',nv,nv,nv,1.0E0_realk,tmp,nv,Uvirt,nv,0.0E0_realk,vv,nv)
+      endif
+
+      if(present(oo))then
+         !U(i,I) t(IJ)    -> t(iJ)
+         call dgemm('n','n',no,no,no,1.0E0_realk,UoccT,no,oo,no,0.0E0_realk,tmp,no)
+         ! tmp(iJ) U(j,J)^T   -> t(ij)
+         call dgemm('n','n',no,no,no,1.0E0_realk,tmp,no,Uocc,no,0.0E0_realk,oo,no)
       endif
 
       call mem_dealloc(tmp)
