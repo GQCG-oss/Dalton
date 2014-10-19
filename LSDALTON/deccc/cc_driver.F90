@@ -38,6 +38,7 @@ use ccsd_module!,only: getDoublesResidualMP2_simple, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldtensor_wrapper
 use pno_ccsd_module
+use snoop_tools_module
 #ifdef MOD_UNRELEASED
 use cc_debug_routines_module
 use ccsdpt_module
@@ -70,7 +71,7 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
    !> CC model
    integer,intent(inout) :: ccmodel
    !> full molecule information
-   type(fullmolecule), intent(in) :: MyMolecule
+   type(fullmolecule), intent(inout) :: MyMolecule
    !> Number of occupied orbitals in full molecule/fragment AOS
    integer, intent(in) :: nocc
    !> Number of virtual orbitals in full molecule/fragment AOS
@@ -389,6 +390,14 @@ function ccsolver_justenergy(ccmodel,MyMolecule,nbasis,nocc,nvirt,mylsitem,&
             &labeldwcomm = 'MASTER COMM CC solver: ',&
             &labeldwidle = 'MASTER IDLE CC solver: ')
       endif
+
+      ! If there are two subsystems, calculate dispersion, charge transfer and subsystem energy contributions 
+      !> (KK: FIX for MPI and for more than two subsystems!!!)
+#ifndef VAR_MPI
+      if(mylsitem%input%molecule%nSubSystems==2) then
+         call SNOOP_partition_energy(VOVO,t1_final,t2_final,mylsitem,MyMolecule)
+      end if
+#endif
  
       if(ccmodel == MODEL_CCSDpT)then
          !THIS IS JUST A WORKAROUND, ccsolver_par gives PDM tensors if more than

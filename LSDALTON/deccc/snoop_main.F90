@@ -210,8 +210,8 @@ contains
     end do SNOOPSCF
 
     ! Print interaction energy summary
-    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull)
-
+    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull,&
+         & MyMolecule%Edisp,MyMolecule%Ect,MyMolecule%Esub)
 
     call mat_free(FAOsnoop)
     call mem_dealloc(EHFsnoop)
@@ -404,7 +404,8 @@ contains
 
 
     ! Print interaction energy summary
-    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull)
+    call SNOOP_interaction_energy_print(nsub,EHFsnoop,Ecorrsnoop,EHFfull,Ecorrfull,&
+         & MyMolecule%Edisp,MyMolecule%Ect,MyMolecule%Esub)
 
     call mat_free(FAOsnoop)
     call mem_dealloc(EHFsnoop)
@@ -903,7 +904,8 @@ contains
 
 
   !> Print energy summary for SNOOP interaction energy calculation
-  subroutine SNOOP_interaction_energy_print(nsub,EHFsub,Ecorrsub,EHFfull,Ecorrfull)
+  subroutine SNOOP_interaction_energy_print(nsub,EHFsub,Ecorrsub,&
+       & EHFfull,Ecorrfull,Edisp,Ect,Esub)
     implicit none
     !> Number of subsystems
     integer,intent(in) :: nsub
@@ -913,6 +915,11 @@ contains
     real(realk),intent(in) :: Ecorrsub(nsub)
     !> HF and correlation energy for total system
     real(realk),intent(in) :: EHFfull,Ecorrfull
+    !> Correlation energy split into dispersion, charge transfer,
+    !> and internal subsystem correlation contributions
+    !> (Ecorrfull should be equal to the sum of these for MP2 and
+    !  CCSD - but not for CCSD(T) or if F12 correction is included)
+    real(realk),intent(in) :: Edisp, Ect, Esub
     real(realk) :: EHFint,Ecorrint
     integer :: i
 
@@ -945,12 +952,16 @@ contains
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a,g22.12)') 'HF Interaction energy      = ', EHFint
     if(.not. DECinfo%SNOOPjustHF) then
+       write(DECinfo%output,'(1X,a,g22.12)') 'Corr dispersion            = ', Edisp
+       write(DECinfo%output,'(1X,a,g22.12)') 'Corr charge transfer       = ', Ect
+       write(DECinfo%output,'(1X,a,g22.12)') 'Corr internal subsystem    = ', Esub-sum(Ecorrsub)
        write(DECinfo%output,'(1X,a,g22.12)') 'Corr Interaction energy    = ', Ecorrint
        write(DECinfo%output,'(1X,a,g22.12)') 'Total Interaction energy   = ', EHFint+Ecorrint
     end if
     write(DECinfo%output,'(1X,a)') '---------------------------------------------------------------'
     write(DECinfo%output,'(1X,a)') ''
     write(DECinfo%output,'(1X,a)') ''
+
 
   end subroutine SNOOP_interaction_energy_print
 

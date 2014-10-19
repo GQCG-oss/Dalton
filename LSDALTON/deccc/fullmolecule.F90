@@ -188,6 +188,10 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
+    molecule%Edisp = 0.0_realk
+    molecule%Ect = 0.0_realk
+    molecule%Esub = 0.0_realk
+
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
