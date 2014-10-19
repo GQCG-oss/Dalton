@@ -2055,9 +2055,6 @@ subroutine ccsolver_par(ccmodel,Co_f,Cv_f,fock_f,nb,no,nv, &
          !Get all the overlap matrices necessary
          call get_pno_overlap_matrices(no,nv,pno_cv,pno_S,nspaces,.true.)
 
-         call tensor_zero(t2(1))
-         call tensor_zero(t1(1))
-
       endif set_pno_info
 
 
