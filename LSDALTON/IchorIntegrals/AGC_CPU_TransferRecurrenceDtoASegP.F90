@@ -1,5 +1,5 @@
 MODULE AGC_CPU_OBS_TRMODDtoASegP
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
  subroutine TransferRecurrenceCPUP1Q2DtoASegP(nPasses,nPrimP,nPrimQ,reducedExponents,&

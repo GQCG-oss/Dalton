@@ -44,7 +44,7 @@ PROGRAM TUV
      
   ILUMOD = LUFILE
   WRITE(ILUMOD,'(2A)')'MODULE AGC_Distribute'//ARCSTRING,SegLabel(1:iSegLabel)
-  WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+  WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
   WRITE(LUFILE,'(A)')'  '
   WRITE(LUFILE,'(A)')' CONTAINS'
   DO AngmomA = 0,2
@@ -309,7 +309,7 @@ PROGRAM TUV
      
   ILUMOD = LUFILE
   WRITE(ILUMOD,'(2A)')'MODULE AGC_TriDistribute'//ARCSTRING,SegLabel(1:iSegLabel)
-  WRITE(LUFILE,'(A)')' use IchorPrecisionModule'
+  WRITE(LUFILE,'(A)')' use IchorPrecisionMod'
   WRITE(LUFILE,'(A)')'  '
   WRITE(LUFILE,'(A)')' CONTAINS'
   DO AngmomA = 0,2

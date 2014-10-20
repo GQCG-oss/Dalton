@@ -1,6 +1,6 @@
-MODULE IchorInputInfoModule
-  use IchorprecisionModule
-  use IchorCommonModule
+MODULE IchorInputInfoMod
+  use IchorprecisionMod
+  use IchorCommonMod
 !  use IchorMemory
   public :: InputM,InputMspec,InitIchorInputInfoModule,&
        & FreeIchorInputInfoModule,IchorInputInfoM1,&
@@ -194,4 +194,4 @@ ENDIF
 
 end subroutine IchorInputInfoSpec
 
-END MODULE ICHORINPUTINFOMODULE
+END MODULE ICHORINPUTINFOMOD

@@ -1,7 +1,7 @@
 MODULE IchorEriCoulombintegralCPUOBSGeneralModSegQSize
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for a General Contracted LHS Segmented contracted RHS and Basisset 
-use IchorCommonModule
+use IchorCommonMod
 use IchorEriCoulombintegralCPUMcMGeneralMod
   
 private   

@@ -770,7 +770,7 @@ SUBROUTINE lsinit_all(OnMaster,lupri,luerr,t1,t2)
   use papi_module, only: mypapi_init, eventset
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 #endif
   use lsmpi_type,only: NullifyMPIbuffers
   implicit none
@@ -824,7 +824,7 @@ SUBROUTINE lsfree_all(OnMaster,lupri,luerr,t1,t2,meminfo)
   use lsmpi_type
 #endif
 #ifdef VAR_ICHOR
-  use IchorSaveGabModule
+  use IchorSaveGabMod
 #endif
 implicit none
   logical,intent(in)         :: OnMaster

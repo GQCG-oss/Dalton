@@ -96,6 +96,8 @@ module dec_typedef_module
      integer :: SNOOPmaxdiis
      !> Debug prints for SNOOP RH/DIIS
      logical :: SNOOPdebug
+     !> Impose orthogonality constrant for occupied subsystem orbitals in SNOOP
+     logical :: SNOOPort
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION
@@ -653,6 +655,13 @@ module dec_typedef_module
      !> model=MODEL_MP2 :  Do MP2
      !> etc., see MODEL_* definitions below
      integer,pointer :: ccmodel(:,:) => null()
+
+     !> Partitioning of energy into dispersion, charge transfer,
+     !> and internal subsystem excitations 
+     !> (see SNOOP_partition_energy).
+     real(realk) :: Edisp
+     real(realk) :: Ect
+     real(realk) :: Esub
 
   end type fullmolecule
 

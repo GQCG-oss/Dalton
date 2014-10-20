@@ -1,7 +1,7 @@
 MODULE IchorEriCoulombintegralGPUOBSGeneralModSegPSize
 !Automatic Generated Code (AGC) by runOBSdriver.f90 in tools directory
 !Contains routines for Segmented contracted LHS and a General Contracted RHS Basisset 
-use IchorCommonModule
+use IchorCommonMod
   
 private   
 public :: ICI_GPU_OBS_general_sizeSegP  

@@ -50,8 +50,8 @@ PROGRAM TUV
   WRITE(LUMOD2,'(A)')'use IchorEriGabintegralOBSGeneralModGen'
   WRITE(LUMOD2,'(A)')'use IchorEriGabintegralOBSGeneralModSeg'
   DO ILUMOD=2,4
-     WRITE(ILUMOD,'(A)')'use IchorprecisionModule'
-     WRITE(ILUMOD,'(A)')'use IchorCommonModule'
+     WRITE(ILUMOD,'(A)')'use IchorprecisionMod'
+     WRITE(ILUMOD,'(A)')'use IchorCommonMod'
      WRITE(ILUMOD,'(A)')'use IchorMemory'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODGen'
      WRITE(ILUMOD,'(A)')'use AGC_'//ARCSTRING//'_OBS_BUILDRJ000MODSeg1Prim'

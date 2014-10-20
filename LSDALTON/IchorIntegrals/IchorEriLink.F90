@@ -11,9 +11,9 @@
 !> based on the Obara Saika(OS)/Head-Gordon-Pople(HGP)
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorEriLinkmodule
-  use IchorprecisionModule
-  use IchorCommonModule
+MODULE IchorEriLinkmod
+  use IchorprecisionMod
+  use IchorCommonMod
   use IchorEriCoulombintegralCPUMcMGeneralMod, only: TmpArray3,TmpArray4,DetermineSizeTmpArray34,&
        & precalcichorsphmat, freeichorsphmat,nTmpArray3,nTmpArray4
   use IchorEriCoulombintegralCPUOBSGeneralMod, only: ICI_CPU_OBS_general, &
@@ -22,8 +22,8 @@ MODULE IchorEriLinkmodule
        & ICI_GPU_OBS_general_size
   use ICI_seg_seg_SSSS_mod, only: ICI_seg_seg_SSSS
   use IchorMemory
-  use IchorEriToolsmodule
-  use IchorEriDistModule
+  use IchorEriToolsmod
+  use IchorEriDistMod
 
 CONTAINS
 
@@ -254,7 +254,7 @@ subroutine IchorTypeLinKLoop(nAtomsA,nPrimA,nContA,nOrbCompA,&
          & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
          & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
          & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-         & TMParray2maxsizePass,IatomAPass,iatomBPass)
+         & TMParray2maxsizePass,IatomAPass,iatomBPass,useSP)
     !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
     !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
     !this can be done on the accelerator.
@@ -565,7 +565,7 @@ subroutine IchorTypeMOtransLoop(nAtomsA,nPrimA,nContA,nOrbCompA,startOrbitalA,&
           & AngmomA,AngmomB,AngmomC,AngmomD,Pdistance12Pass,Qdistance12,PQorder,&
           & LocalIntPass1,nLocalIntPass,Acenter,Bcenter,CcenterSpec,DcenterSpec,&
           & nAtomsA,nAtomsB,Spherical,TmpArray1,TMParray1maxsizePass,TmpArray2,&
-          & TMParray2maxsizePass,IatomAPass,iatomBPass)
+          & TMParray2maxsizePass,IatomAPass,iatomBPass,useSP)
      !output private LocalIntPass(nOrbCompA,nOrbCompB,nOrbCompC,nOrbCompD,nContQ,nContP,nPasses)
      !reorder (including LHS permute) to LocalIntPass(nOrbA,nAtomsA,nOrbB,nAtomsB,nOrbC,nOrbD)
      !this can be done on the accelerator
@@ -1120,4 +1120,4 @@ subroutine DistributeLink_MOtransformDold(ndimD,&
   !$OMP END PARALLEL DO
 end subroutine DistributeLink_MOtransformDold
 
-END MODULE IchorEriLinkmodule
+END MODULE IchorEriLinkmod

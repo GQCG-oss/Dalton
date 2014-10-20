@@ -185,8 +185,15 @@ contains
     !> can be the case for subsystems)
     integer,intent(in),optional :: nMO
     real(realk) :: memory_use, tcpu, twall
+    integer :: nMOintern
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+    molecule%Edisp = 0.0_realk
+    molecule%Ect = 0.0_realk
+    molecule%Esub = 0.0_realk
+    nMOintern = 0
+    if(present(nMO)) nMOintern = nMO
 
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
@@ -230,7 +237,7 @@ contains
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
-    if(nMO /= molecule%nbasis) then ! subsystem
+    if(nMOintern /= molecule%nbasis) then ! subsystem
 
        write(DECinfo%output,'(/,a)') '-- Subsystem info --'
        write(DECinfo%output,'(/,a,i6)') 'SUB: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)

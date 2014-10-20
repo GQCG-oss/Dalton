@@ -3,8 +3,8 @@
 !> \brief Contains common routine for the Ichor Code
 !> \author T. Kjaergaard
 !> \date 2013 
-MODULE IchorGammaTabulationModule
-use IchorprecisionModule
+MODULE IchorGammaTabulationMod
+use IchorprecisionMod
 public:: gammaTabulation
 private
 CONTAINS
@@ -78,4 +78,4 @@ SUBROUTINE gammaTabulation(LUPRI,JMX,nTABFJW1,nTABFJW2,TABFJW)
 !$OMP END PARALLEL DO 
 END SUBROUTINE gammaTabulation
 
-END MODULE IchorGammaTabulationModule
+END MODULE IchorGammaTabulationMod

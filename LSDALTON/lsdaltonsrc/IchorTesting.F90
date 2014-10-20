@@ -724,10 +724,10 @@ CONTAINS
                                  write(lupri,'(A,ES16.8)')'DIFF                   ',&
                                       & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                                  call lsquit('ERROR',-1)
-                                 !                   ELSE
-                                 !                      write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
-                                 !                           & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
-                                 !                           & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
+!                              ELSE
+!                                 write(lupri,'(A,I3,A,I3,A,I3,A,I3,A,ES16.8,A,ES16.8)')&
+!                                      & 'SUCCESS(',A,',',B,',',C,',',D,')=',integralsIchor(A,B,C,D),'  DIFF',&
+!                                      & ABS(integralsII(A,B,C,D)-integralsIchor(A,B,C,D))
                               ENDIF
                            ENDIF
                         ENDDO

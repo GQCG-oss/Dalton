@@ -1,7 +1,7 @@
 MODULE AGC_GPU_PrimContractGenMod
 !Automatic Generated Code (AGC) by runPrimContraction.f90 in tools directory
 !Contains routines for General Contracted Basisset 
-use IchorprecisionModule
+use IchorprecisionMod
   
 CONTAINS
   

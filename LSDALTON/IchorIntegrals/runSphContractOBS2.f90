@@ -43,7 +43,7 @@ DO GPUrun = 1,2
   open(unit = LUMOD3, file="AutoGenCoderunSphContractOBS2_"//ARCSTRING//"_new.F90",status="unknown")
   WRITE(LUMOD3,'(A)')'MODULE AGC_'//ARCSTRING//'_OBS_Sphcontract2Mod'
   WRITE(LUMOD3,'(A)')'!Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory'
-  WRITE(LUMOD3,'(A)')'use IchorPrecisionModule  '
+  WRITE(LUMOD3,'(A)')'use IchorPrecisionMod'
 
   WRITE(LUMOD3,'(A)')'  '
   WRITE(LUMOD3,'(A)')' CONTAINS'
@@ -365,7 +365,7 @@ DO GPUrun = 1,2
      enddo
   enddo
 !    IF(GPUrun.EQ.2)WRITE(LUMOD3,'(A)')'#endif'
-    WRITE(LUMOD3,'(A)')'END MODULE'
+    WRITE(LUMOD3,'(A)')'END MODULE AGC_'//ARCSTRING//'_OBS_Sphcontract2Mod'
     close(unit = LUMOD3)
   enddo
 

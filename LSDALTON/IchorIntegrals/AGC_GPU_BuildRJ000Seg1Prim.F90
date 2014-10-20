@@ -1,5 +1,5 @@
 MODULE AGC_GPU_OBS_BUILDRJ000MODSeg1Prim
- use IchorPrecisionModule
+ use IchorPrecisionMod
   
  CONTAINS
 

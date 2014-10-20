@@ -1,6 +1,6 @@
 MODULE AGC_CPU_OBS_Sphcontract2Mod
 !Automatic Generated Code (AGC) by runSphContractOBS2.f90 in tools directory
-use IchorPrecisionModule  
+use IchorPrecisionMod
   
  CONTAINS
   
@@ -182,4 +182,4 @@ end subroutine SphericalContractOBS2_CPU_maxAngQ3_maxAngC1
 end subroutine SphericalContractOBS2_CPU_maxAngQ4_maxAngC2 
   
   
-END MODULE
+END MODULE AGC_CPU_OBS_Sphcontract2Mod
